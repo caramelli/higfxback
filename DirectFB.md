@@ -16,10 +16,13 @@ Welcome to [**HiGFXback**](README.md) with the _DirectFB_ graphics backend!
   * [Cairo](#cairo)
   * [Evas](#evas)
 * [Multimedia frameworks](#multimedia-frameworks)
+  * [FFmpeg](#ffmpeg)
   * [GStreamer](#gstreamer)
   * [Xine](#xine)
   * [DirectFB-media](#directfb-media)
 * [Tools](#tools)
+  * [DFBView](#dfbview)
+  * [Projektor](#projektor)
   * [NetSurf, Links](#netsurf-links)
   * [DFBSee, ilixi_player, MPlayer](#dfbsee-ilixi_player-mplayer)
 * [Graphics abstraction layers](#graphics-abstraction-layers)
@@ -109,7 +112,7 @@ But depending on the platform, specific ICD can be used.
 
 <p align="center"><img src="dfb-vulkan.png"></p>
 
-_**Vulkan-Tools**_, _**Vulkan-Examples**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
+_**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
 ![](vulkan-directfb.png)
 
@@ -197,19 +200,35 @@ _**expedite**_ program is available as examples, tests or benchmarks.
 
 # Multimedia frameworks
 
+<a name="ffmpeg">
+
+### FFmpeg
+
+On **HiGFXback**, _FFmpeg_ interfaces for _DirectFB_ graphics backend are provided by _**libavformat.so, libavcodec.so, libswscale.so** libraries_ and rely on _**libavdevice.so** library_ for output.
+
+_**ffmpeg**_ program is available as example.
+
+![](ffmpeg-directfb.png)
+
+[Back to Top](#contents)
+
 <a name="gstreamer">
 
 ### GStreamer
 
 On **HiGFXback**, _GStreamer_ interfaces for _DirectFB_ graphics backend are provided by:
- * _**libgstreamer-0.10.so** library_ on _GStreamer 0.10_
- * _**libgstreamer-1.0.so** library_ on _GStreamer 1_
+  * _**libgstreamer-0.10.so** library_ on _GStreamer 0.10_
+  * _**libgstreamer-1.0.so** library_ on _GStreamer 1_
 
 and rely on _**libgstdfbvideosink.so** plugin_ for output.
 
 _**gst-launch-0.10**_ program is available as example on _GStreamer 0.10_.
 
+![](gstreamer-0.10-directfb.png)
+
 _**gst-launch-1.0**_ program is available as example on _GStreamer 1_.
+
+![](gstreamer-1.0-directfb.png)
 
 [Back to Top](#contents)
 
@@ -238,6 +257,18 @@ _**df_video_sample**_ program is available as example.
 <a name="tools">
 
 # Tools
+
+<a name="dfbview">
+
+### DFBView
+
+![](dfbview.png)
+
+<a name="projektor">
+
+### Projektor
+
+![](projektor.png)
 
 <a name="netsurf-links">
 

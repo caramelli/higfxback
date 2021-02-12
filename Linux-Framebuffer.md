@@ -109,7 +109,7 @@ But depending on the platform, specific ICD can be used.
 
 <p align="center"><img src="fb-vulkan.png"></p>
 
-_**Vulkan-Tools**_, _**Vulkan-Examples**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
+_**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
 ![](vulkan-linux-framebuffer.png)
 
@@ -214,8 +214,8 @@ _**ffmpeg**_ program is available as example.
 ### GStreamer
 
 On **HiGFXback**, _GStreamer_ interfaces for _Linux Framebuffer_ graphics backend are provided by:
- * _**libgstreamer-0.10.so** library_ on _GStreamer 0.10_
- * _**libgstreamer-1.0.so** library_ on _GStreamer 1_
+  * _**libgstreamer-0.10.so** library_ on _GStreamer 0.10_
+  * _**libgstreamer-1.0.so** library_ on _GStreamer 1_
 
 and rely on _**libgstfbdevsink.so** plugin_ for output.
 

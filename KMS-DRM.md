@@ -8,7 +8,15 @@ Welcome to [**HiGFXback**](README.md) with the _KMS/DRM_ graphics backend!
   * [Kmscon](#kmscon)
   * [drm-tests, drm-howto](#drm-tests-drm-howto)
   * [evtest, libevdev-events](#evtest-libevdev-events)
+* [Vulkan rendering](#vulkan-rendering)
 * [OpenGL rendering](#opengl-rendering)
+* [Multimedia frameworks](#multimedia-frameworks)
+  * [FFmpeg](#ffmpeg)
+  * [GStreamer](#gstreamer)
+* [Tools](#tools)
+  * [Kmsi](#kmsi)
+  * [Kmspdf](#kmspdf)
+* [Graphics abstraction layers](#graphics-abstraction-layers)
 
 <a name="getting-started">
 
@@ -61,6 +69,34 @@ Programs are available for testing _event device_ input interfaces used by compo
 
 [Back to Top](#contents)
 
+<a name="vulkan-rendering">
+
+# Vulkan rendering
+
+For display rendering with _KMS/DRM_ graphics backend, _Vulkan_ implementation in _**libvulkan.so** library_ (loading library from _Vulkan-Loader_) and its ICD (Installable Client Driver) relies on _Direct-to-Display WSI_ interface.
+
+On **HiGFXback**, _Direct-to-Display WSI_ interfaces (Window System Integration for _KMS/DRM_) are used with one of the following ICD selected with `VK_ICD_FILENAMES` environment variable:
+  * _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
+  * _Kazan_ associated to _**kazan_icd.json** manifest file_
+
+But depending on the platform, specific ICD can be used.
+
+<p align="center"><img src="drm-vulkan.png"></p>
+
+_**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
+
+> vkcube
+
+> /drm/share/Vulkan-Examples/vulkanscene
+
+> vkcube2 -m khr -k 0:0:0
+
+> yagears2-vk -w vk-d2d
+
+![](vulkan-kms-drm.png)
+
+[Back to Top](#contents)
+
 <a name="opengl-rendering">
 
 # OpenGL rendering
@@ -90,5 +126,93 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 > yagears -b egl-drm -e glesv2
 
 ![](egl-kms-drm.png)
+
+[Back to Top](#contents)
+
+<a name="multimedia-frameworks">
+
+# Multimedia frameworks
+
+<a name="ffmpeg">
+
+### FFmpeg
+
+On **HiGFXback**, _FFmpeg_ interfaces for _KMS/DRM_ graphics backend are provided by _**libavformat.so, libavcodec.so, libswscale.so** libraries_ and rely on _**libavdevice.so** library_ for output.
+
+_**ffmpeg**_ program is available as example.
+
+> ffmpeg -loglevel quiet -s 854x480 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -re -i big_buck_bunny_480p_stereo.avi
+
+> ffmpeg -loglevel quiet -s 808:216 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -loop 1 -i ffmpeg-logo.png
+
+![](ffmpeg-kms-drm.png)
+
+[Back to Top](#contents)
+
+<a name="gstreamer">
+
+### GStreamer
+
+On **HiGFXback**, _GStreamer_ interfaces for _KMS/DRM_ graphics backend are provided by _**libgstreamer-1.0.so** library_ and rely on _**libgstkms.so** plugin_ for output.
+
+_**gst-launch-1.0**_ program is available as example.
+
+> gst-launch-1.0 -q filesrc location=big_buck_bunny_480p_stereo.avi ! decodebin ! videoconvert ! videobox autocrop=true ! kmssink
+
+> gst-launch-1.0 -q filesrc location=gstreamer-logo.jpg ! decodebin ! videoconvert ! imagefreeze ! videobox autocrop=true ! kmssink
+
+![](gstreamer-1.0-kms-drm.png)
+
+[Back to Top](#contents)
+
+<a name="tools">
+
+# Tools
+
+<a name="kmsi">
+
+### Kmsi
+
+> kmsi tux.jpg
+
+> kmsi gnu.png
+
+![](kmsi.png)
+
+<a name="kmspdf">
+
+### Kmspdf
+
+> kmspdf -r poppler vulkan11-reference-guide.pdf
+
+> kmspdf -r mupdf opengles20-reference-card.pdf
+
+![](kmspdf.png)
+
+[Back to Top](#contents)
+
+<a name="graphics-abstraction-layers">
+
+# Graphics abstraction layers
+
+On **HiGFXback**, _SDL (Simple Directmedia Layer)_ interfaces running on _KMS/DRM_ graphics backend are provided by _**libSDL2.so** library_.
+
+<p align="center"><img src="drm-sdl.png"></p>
+
+_**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
+
+> /drm/share/SDL2/test/testsprite2
+
+> /drm/share/SDL2/test/testgles2
+
+> yagears2-gui -t sdl -e glesv2
+
+> /drm/share/SDL2/test/testoverlay2 -scale 8
+
+> /drm/share/SDL2/test/testvulkan
+
+> yagears2-vk-gui -t sdl
+
+![](sdl2-kms-drm.png)
 
 [Back to Top](#contents)

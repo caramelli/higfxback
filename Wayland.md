@@ -12,8 +12,12 @@ Welcome to [**HiGFXback**](README.md) with the _Wayland_ graphics backend!
 * [Drawing libraries](#drawing-libraries)
   * [Cairo](#cairo)
   * [Evas](#evas)
+* [Multimedia frameworks](#multimedia-frameworks)
+  * [FFmpeg](#ffmpeg)
+  * [GStreamer](#gstreamer)
 * [Tools](#tools)
   * [weston-image](#weston-image)
+  * [weston-view](#weston-view)
   * [NetSurf](#netsurf)
   * [mpv](#mpv)
 * [Graphics abstraction layers](#graphics-abstraction-layers)
@@ -77,7 +81,7 @@ But depending on the platform, specific ICD can be used.
 
 <p align="center"><img src="wl-vulkan.png"></p>
 
-_**Vulkan-Tools**_, _**Vulkan-Examples**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
+_**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
 ![](vulkan-wayland.png)
 
@@ -139,6 +143,34 @@ _**expedite**_ program is available as examples, tests or benchmarks.
 
 [Back to Top](#contents)
 
+<a name="multimedia-frameworks">
+
+# Multimedia frameworks
+
+<a name="ffmpeg">
+
+### FFmpeg
+
+On **HiGFXback**, _FFmpeg_ interfaces for _Wayland_ graphics backend are provided by _**libavformat.so, libavcodec.so, libswscale.so** libraries_ and rely on _**libavdevice.so** library_ for output.
+
+_**ffmpeg**_ program is available as example.
+
+![](ffmpeg-wayland.png)
+
+[Back to Top](#contents)
+
+<a name="gstreamer">
+
+### GStreamer
+
+On **HiGFXback**, _GStreamer_ interfaces for _Wayland_ graphics backend are provided by _**libgstreamer-1.0.so** library_ and rely on _**libgstwaylandsink.so** plugin_ for output.
+
+_**gst-launch-1.0**_ program is available as example.
+
+![](gstreamer-1.0-wayland.png)
+
+[Back to Top](#contents)
+
 <a name="tools">
 
 # Tools
@@ -148,6 +180,12 @@ _**expedite**_ program is available as examples, tests or benchmarks.
 ### weston-image
 
 ![](weston-image.png)
+
+<a name="weston-view">
+
+### weston-view
+
+![](weston-view.png)
 
 <a name="netsurf">
 
