@@ -64,7 +64,7 @@ But depending on the input peripheral, it's possible to use specific input drive
 ### DFBTerm
 
 When starting on _DirectFB_ graphics backend, _**dfbterm**_ terminal emulator is displayed.
-System informations about DirectFB settings can be get with _**dfbinfo**_.
+System informations about _DirectFB_ settings can be get with _**dfbinfo**_.
 
 ![](dfbterm.png)
 
@@ -240,13 +240,19 @@ On **HiGFXback**, _Xine_ interfaces for _DirectFB_ graphics backend are provided
 
 _**xine-ui**_ program is available as example.
 
+![](xine-directfb.png)
+
 [Back to Top](#contents)
 
 <a name="directfb-media">
 
 ### DirectFB-media
 
-On **HiGFXback**, _DirectFBVideoProvider_ interfaces are provided.
+On **HiGFXback**, _DirectFBImageProvider_ and _DirectFBVideoProvider_ interfaces are provided.
+
+_**df_image_sample**_ program is available as example.
+
+![](directfbimageprovider.png)
 
 _**df_video_sample**_ program is available as example.
 

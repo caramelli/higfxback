@@ -16,6 +16,7 @@ Welcome to [**HiGFXback**](README.md) with the _KMS/DRM_ graphics backend!
 * [Tools](#tools)
   * [Kmsi](#kmsi)
   * [Kmspdf](#kmspdf)
+  * [mpv](#mpv)
 * [Graphics abstraction layers](#graphics-abstraction-layers)
 
 <a name="getting-started">
@@ -51,9 +52,10 @@ System informations about _KMS/DRM_ settings can be get with _**modetest**_.
 
 Programs running on _KMS/DRM_ graphics backend are available as examples, tests or benchmarks.
 
-> modetest -s 23:1024x768
-
-> modeset
+```
+$ modetest -s 23:1024x768
+$ modeset
+```
 
 ![](drm-tests-drm-howto.png)
 
@@ -85,13 +87,12 @@ But depending on the platform, specific ICD can be used.
 
 _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-> vkcube
-
-> /drm/share/Vulkan-Examples/vulkanscene
-
-> vkcube2 -m khr -k 0:0:0
-
-> yagears2-vk -w vk-d2d
+```
+$ vkcube
+$ /drm/share/Vulkan-Examples/vulkanscene
+$ vkcube2 -m khr -k 0:0:0
+$ yagears2-vk -w vk-d2d
+```
 
 ![](vulkan-kms-drm.png)
 
@@ -117,13 +118,12 @@ But depending on the platform, specific implementation can be used.
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-> /drm/share/mesa-demos/eglkms
-
-> yagears -b egl-drm -e gl
-
-> yagears -b egl-drm -e glesv1_cm
-
-> yagears -b egl-drm -e glesv2
+```
+$ /drm/share/mesa-demos/eglkms
+$ yagears -b egl-drm -e gl
+$ yagears -b egl-drm -e glesv1_cm
+$ yagears -b egl-drm -e glesv2
+```
 
 ![](egl-kms-drm.png)
 
@@ -141,9 +141,10 @@ On **HiGFXback**, _FFmpeg_ interfaces for _KMS/DRM_ graphics backend are provide
 
 _**ffmpeg**_ program is available as example.
 
-> ffmpeg -loglevel quiet -s 854x480 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -re -i big_buck_bunny_480p_stereo.avi
-
-> ffmpeg -loglevel quiet -s 808:216 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -loop 1 -i ffmpeg-logo.png
+```
+$ ffmpeg -loglevel quiet -s 854x480 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -re -i big_buck_bunny_480p_stereo.avi
+$ ffmpeg -loglevel quiet -s 808:216 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -loop 1 -i ffmpeg-logo.png
+```
 
 ![](ffmpeg-kms-drm.png)
 
@@ -157,9 +158,10 @@ On **HiGFXback**, _GStreamer_ interfaces for _KMS/DRM_ graphics backend are prov
 
 _**gst-launch-1.0**_ program is available as example.
 
-> gst-launch-1.0 -q filesrc location=big_buck_bunny_480p_stereo.avi ! decodebin ! videoconvert ! videobox autocrop=true ! kmssink
-
-> gst-launch-1.0 -q filesrc location=gstreamer-logo.jpg ! decodebin ! videoconvert ! imagefreeze ! videobox autocrop=true ! kmssink
+```
+$ gst-launch-1.0 -q filesrc location=big_buck_bunny_480p_stereo.avi ! decodebin ! videoconvert ! videobox autocrop=true ! kmssink
+$ gst-launch-1.0 -q filesrc location=gstreamer-logo.jpg ! decodebin ! videoconvert ! imagefreeze ! videobox autocrop=true ! kmssink
+```
 
 ![](gstreamer-1.0-kms-drm.png)
 
@@ -173,9 +175,10 @@ _**gst-launch-1.0**_ program is available as example.
 
 ### Kmsi
 
-> kmsi tux.jpg
-
-> kmsi gnu.png
+```
+$ kmsi tux.jpg
+$ kmsi gnu.png
+```
 
 ![](kmsi.png)
 
@@ -183,11 +186,22 @@ _**gst-launch-1.0**_ program is available as example.
 
 ### Kmspdf
 
-> kmspdf -r poppler vulkan11-reference-guide.pdf
-
-> kmspdf -r mupdf opengles20-reference-card.pdf
+```
+$ kmspdf -r poppler vulkan11-reference-guide.pdf
+$ kmspdf -r mupdf opengles20-reference-card.pdf
+```
 
 ![](kmspdf.png)
+
+<a name="mpv">
+
+### mpv
+
+```
+$ mpv -quiet -vo=drm 02_gran_dillama_1080p.mp4
+```
+
+![](mpv-kms-drm.png)
 
 [Back to Top](#contents)
 
@@ -201,17 +215,14 @@ On **HiGFXback**, _SDL (Simple Directmedia Layer)_ interfaces running on _KMS/DR
 
 _**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-> /drm/share/SDL2/test/testsprite2
-
-> /drm/share/SDL2/test/testgles2
-
-> yagears2-gui -t sdl -e glesv2
-
-> /drm/share/SDL2/test/testoverlay2 -scale 8
-
-> /drm/share/SDL2/test/testvulkan
-
-> yagears2-vk-gui -t sdl
+```
+$ /drm/share/SDL2/test/testsprite2
+$ /drm/share/SDL2/test/testgles2
+$ yagears2-gui -t sdl -e glesv2
+$ /drm/share/SDL2/test/testoverlay2 -scale 8
+$ /drm/share/SDL2/test/testvulkan
+$ yagears2-vk-gui -t sdl
+```
 
 ![](sdl2-kms-drm.png)
 
