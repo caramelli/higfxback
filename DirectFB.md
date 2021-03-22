@@ -448,4 +448,10 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 ![](qupzilla-directfb.png)
 
+| | |
+--|--
+![](billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+
+![](billardgl-gtktetris-pinball-directfb.png)
+
 [Back to Top](#contents)

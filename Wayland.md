@@ -347,4 +347,10 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 ![](qupzilla-wayland.png)
 
+| | |
+--|--
+![](billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+
+![](billardgl-gtktetris-pinball-wayland.png)
+
 [Back to Top](#contents)
