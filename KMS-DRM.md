@@ -142,8 +142,8 @@ On **HiGFXback**, _FFmpeg_ interfaces for _KMS/DRM_ graphics backend are provide
 _**ffmpeg**_ program is available as example.
 
 ```
-$ ffmpeg -loglevel quiet -s 854x480 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -re -i big_buck_bunny_480p_stereo.avi
-$ ffmpeg -loglevel quiet -s 808:216 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0 -loop 1 -i ffmpeg-logo.png
+$ ffmpeg -loglevel quiet -re -i big_buck_bunny_480p_stereo.avi -s 854x480 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0
+$ ffmpeg -loglevel quiet -loop 1 -i ffmpeg-logo.png -s 808:216 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0
 ```
 
 ![](ffmpeg-kms-drm.png)
