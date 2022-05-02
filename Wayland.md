@@ -1,44 +1,45 @@
 Welcome to [**HiGFXback**](README.md) with the _Wayland_ graphics backend!
 
-<a name="contents">
+<a name="contents"></a>
 
 # Contents
 
 * [Getting started](#getting-started)
-  * [weston-terminal](#weston-terminal)
-  * [weston-clients](#weston-clients)
+    * [weston-terminal](#weston-terminal)
+    * [weston-clients](#weston-clients)
 * [Vulkan rendering](#vulkan-rendering)
 * [OpenGL rendering](#opengl-rendering)
 * [Drawing libraries](#drawing-libraries)
-  * [Cairo](#cairo)
-  * [Evas](#evas)
+    * [Cairo](#cairo)
+    * [Evas](#evas)
 * [Multimedia frameworks](#multimedia-frameworks)
-  * [FFmpeg](#ffmpeg)
-  * [GStreamer](#gstreamer)
+    * [FFmpeg](#ffmpeg)
+    * [GStreamer](#gstreamer)
 * [Tools](#tools)
-  * [weston-image](#weston-image)
-  * [weston-view](#weston-view)
-  * [NetSurf](#netsurf)
-  * [mpv](#mpv)
+    * [weston-image](#weston-image)
+    * [weston-view](#weston-view)
+    * [NetSurf](#netsurf)
+    * [mpv](#mpv)
 * [Graphics abstraction layers](#graphics-abstraction-layers)
-  * [GLUT](#glut)
-  * [SDL](#sdl)
-  * [GLFW](#glfw)
+    * [GLUT](#glut)
+    * [SDL](#sdl)
+    * [GLFW](#glfw)
 * [User interface toolkits](#user-interface-toolkits)
-  * [GTK+](#gtk)
-  * [Qt](#qt)
-  * [EFL](#efl)
+    * [GTK+](#gtk)
+    * [Qt](#qt)
+    * [EFL](#efl)
 * [Applications](#applications)
 
-<a name="getting-started">
+<a name="getting-started"></a>
 
 # Getting started
 
 Components running on _Wayland_ graphics backend are based on _**libwayland-client.so** library_ for the communication with _**weston**_, the _Wayland_ compositor.
 
 If the current graphics backend used on **HiGFXback** is not _Wayland_, switch on it with `startwl` command. Select one of the following graphics driver interface available on **HiGFXback** and used by _**weston**_ for the display:
-  * _Linux Framebuffer_ interface (`/dev/fb0`) with _**weston fbdev-backend.so** plugin_
-  * _KMS/DRM_ interface with (`/dev/dri/card0`) _**weston drm-backend.so** plugin_
+
+* _Linux Framebuffer_ interface (`/dev/fb0`) with _**weston fbdev-backend.so** plugin_
+* _KMS/DRM_ interface with (`/dev/dri/card0`) _**weston drm-backend.so** plugin_
 
 But depending on the platform, it's possible to use specific graphics driver interfaces based on the _**weston** backend module_ architecture.
 
@@ -46,7 +47,7 @@ But depending on the platform, it's possible to use specific graphics driver int
 
 Keyboard and mouse are managed by _**weston**_ with _**libinput.so** library_ which provides a generic input abstraction layer of the _event device_ input driver interface (`/dev/input/event0` and `/dev/input/event1`) available on **HiGFXback**.
 
-<a name="weston-terminal">
+<a name="weston-terminal"></a>
 
 ### weston-terminal
 
@@ -57,7 +58,7 @@ System informations about _Wayland_ settings can be get with _**weston-info**_.
 
 [Back to Top](#contents)
 
-<a name="weston-clients">
+<a name="weston-clients"></a>
 
 ### weston-clients
 
@@ -67,15 +68,16 @@ Programs running on _Wayland_ graphics backend are available as examples, tests 
 
 [Back to Top](#contents)
 
-<a name="vulkan-rendering">
+<a name="vulkan-rendering"></a>
 
 # Vulkan rendering
 
 For display rendering with _Wayland_ graphics backend, _Vulkan_ implementation in _**libvulkan.so** library_ (loading library from _Vulkan-Loader_) and its ICD (Installable Client Driver) relies on _Wayland WSI_ interface.
 
 On **HiGFXback**, _Wayland WSI_ interfaces (Window System Integration for _Wayland_) are used with one of the following ICD selected with `VK_ICD_FILENAMES` environment variable:
-  * _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
-  * _Kazan_ associated to _**kazan_icd.json** manifest file_
+
+* _Mesa_ associated to _**lvp_icd.json** manifest file_
+* _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
 
 But depending on the platform, specific ICD can be used.
 
@@ -87,19 +89,21 @@ _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ prog
 
 [Back to Top](#contents)
 
-<a name="opengl-rendering">
+<a name="opengl-rendering"></a>
 
 # OpenGL rendering
 
 For display rendering with _Wayland_ graphics backend, _OpenGL_ implementation in _**libGL.so** library_, but also _OpenGL ES 1.1 CM_ implementation in _**libGLESv1_CM.so** library_ and _OpenGL ES 2.0_ implementation in _**libGLESv2.so** library_, rely on _EGL for Wayland_ interface.
 
 Loading libraries can be used:
-  * _**libGLEW.so** library_ from _GLEW_ (OpenGL Extension Wrangler)
-  * _**libepoxy.so** library_ from _Epoxy_
+
+* _**libGLEW.so** library_ from _GLEW_ (OpenGL Extension Wrangler)
+* _**libepoxy.so** library_ from _Epoxy_
 
 On **HiGFXback**, _EGL for Wayland_ interfaces are used with one of the following implementation selected with `alternatives-GL` command:
-  * _Mesa_ with _**libEGL.so `->` libmesaEGL.so**, **libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
-  * _SwiftShader_ with _**libEGL.so `->` libswiftshaderEGL.so**, **libGLESv1_CM.so `->` libswiftshaderGLESv1_CM.so**, **libGLESv2.so `->` libswiftshaderGLESv2.so** libraries_
+
+* _Mesa_ with _**libEGL.so `->` libmesaEGL.so**, **libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
+* _SwiftShader_ with _**libEGL.so `->` libswiftshaderEGL.so**, **libGLESv1_CM.so `->` libswiftshaderGLESv1_CM.so**, **libGLESv2.so `->` libswiftshaderGLESv2.so** libraries_
 
 But depending on the platform, specific implementation can be used.
 
@@ -111,11 +115,11 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 [Back to Top](#contents)
 
-<a name="drawing-libraries">
+<a name="drawing-libraries"></a>
 
 # Drawing libraries
 
-<a name="cairo">
+<a name="cairo"></a>
 
 ### Cairo
 
@@ -129,7 +133,7 @@ _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
 [Back to Top](#contents)
 
-<a name="evas">
+<a name="evas"></a>
 
 ### Evas
 
@@ -143,11 +147,11 @@ _**expedite**_ program is available as examples, tests or benchmarks.
 
 [Back to Top](#contents)
 
-<a name="multimedia-frameworks">
+<a name="multimedia-frameworks"></a>
 
 # Multimedia frameworks
 
-<a name="ffmpeg">
+<a name="ffmpeg"></a>
 
 ### FFmpeg
 
@@ -159,7 +163,7 @@ _**ffmpeg**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="gstreamer">
+<a name="gstreamer"></a>
 
 ### GStreamer
 
@@ -171,29 +175,29 @@ _**gst-launch-1.0**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="tools">
+<a name="tools"></a>
 
 # Tools
 
-<a name="weston-image">
+<a name="weston-image"></a>
 
 ### weston-image
 
 ![](weston-image.png)
 
-<a name="weston-view">
+<a name="weston-view"></a>
 
 ### weston-view
 
 ![](weston-view.png)
 
-<a name="netsurf">
+<a name="netsurf"></a>
 
 ### NetSurf
 
 ![](netsurf-wayland.png)
 
-<a name="mpv">
+<a name="mpv"></a>
 
 ### mpv
 
@@ -201,17 +205,18 @@ _**gst-launch-1.0**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="graphics-abstraction-layers">
+<a name="graphics-abstraction-layers"></a>
 
 # Graphics abstraction layers
 
-<a name="glut">
+<a name="glut"></a>
 
 ### GLUT
 
 On **HiGFXback**, _GLUT (openGL Utility Toolkit)_ interfaces running on _Wayland_ graphics backend are provided by one of the following implementation selected with `alternatives-glut` command:
-  * _FreeGLUT_ with _**libglut.so `->` libfreeglut.so** library_
-  * _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
+
+* _FreeGLUT_ with _**libglut.so `->` libfreeglut.so** library_
+* _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
 
 <p align="center"><img src="wl-glut.png"></p>
 
@@ -221,7 +226,7 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 [Back to Top](#contents)
 
-<a name="sdl">
+<a name="sdl"></a>
 
 ### SDL
 
@@ -235,7 +240,7 @@ _**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or 
 
 [Back to Top](#contents)
 
-<a name="glfw">
+<a name="glfw"></a>
 
 ### GLFW
 
@@ -249,11 +254,11 @@ _**GLFW-examples**_ and _**yagears2**_ programs are available as examples, tests
 
 [Back to Top](#contents)
 
-<a name="user-interface-toolkits">
+<a name="user-interface-toolkits"></a>
 
 # User interface toolkits
 
-<a name="gtk">
+<a name="gtk"></a>
 
 ### GTK+
 
@@ -278,7 +283,7 @@ _**GtkLauncher**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="qt">
+<a name="qt"></a>
 
 ### Qt
 
@@ -303,7 +308,7 @@ _**QtTestBrowser**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="efl">
+<a name="efl"></a>
 
 ### EFL
 
@@ -319,7 +324,7 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 [Back to Top](#contents)
 
-<a name="applications">
+<a name="applications"></a>
 
 # Applications
 

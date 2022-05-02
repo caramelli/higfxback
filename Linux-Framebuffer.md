@@ -1,41 +1,41 @@
 Welcome to [**HiGFXback**](README.md) with the _Linux Framebuffer_ graphics backend!
 
-<a name="contents">
+<a name="contents"></a>
 
 # Contents
 
 * [Getting started](#getting-started)
-  * [Fbpad](#fbpad)
-  * [fb-test-app, fbmark](#fb-test-app-fbmark)
-  * [showkey, input-events](#showkey-input-events)
-  * [test-mouse, input-events](#test-mouse-input-events)
+    * [Fbpad](#fbpad)
+    * [fb-test-app, fbmark](#fb-test-app-fbmark)
+    * [showkey, input-events](#showkey-input-events)
+    * [test-mouse, input-events](#test-mouse-input-events)
 * [Vulkan rendering](#vulkan-rendering)
 * [OpenGL rendering](#opengl-rendering)
-  * [GLFBDev](#glfbdev)
-  * [EGL for Linux Framebuffer](#egl-for-linux-framebuffer)
+    * [GLFBDev](#glfbdev)
+    * [EGL for Linux Framebuffer](#egl-for-linux-framebuffer)
 * [Drawing libraries](#drawing-libraries)
-  * [Cairo](#cairo)
-  * [Evas](#evas)
+    * [Cairo](#cairo)
+    * [Evas](#evas)
 * [Multimedia frameworks](#multimedia-frameworks)
-  * [FFmpeg](#ffmpeg)
-  * [GStreamer](#gstreamer)
-  * [Xine](#xine)
-  * [VLC](#vlc)
+    * [FFmpeg](#ffmpeg)
+    * [GStreamer](#gstreamer)
+    * [Xine](#xine)
+    * [VLC](#vlc)
 * [Tools](#tools)
-  * [Fbi, FIM](#fbi-fim)
-  * [Fbpdf](#fbpdf)
-  * [NetSurf, Links](#netsurf-links)
-  * [Fbff, MPlayer](#fbff-mplayer)
+    * [Fbi, FIM](#fbi-fim)
+    * [Fbpdf](#fbpdf)
+    * [NetSurf, Links](#netsurf-links)
+    * [Fbff, MPlayer](#fbff-mplayer)
 * [Graphics abstraction layers](#graphics-abstraction-layers)
-  * [GLUT](#glut)
-  * [SDL](#sdl)
+    * [GLUT](#glut)
+    * [SDL](#sdl)
 * [User interface toolkits](#user-interface-toolkits)
-  * [GTK+](#gtk)
-  * [Qt](#qt)
-  * [EFL](#efl)
+    * [GTK+](#gtk)
+    * [Qt](#qt)
+    * [EFL](#efl)
 * [Applications](#applications)
 
-<a name="getting-started">
+<a name="getting-started"></a>
 
 # Getting started
 
@@ -46,15 +46,16 @@ If the current graphics backend used on **HiGFXback** is not _Linux Framebuffer_
 <p align="center"><img src="fb.png"></p>
 
 Components running on _Linux Framebuffer_ graphics backend directly handle keyboard and mouse input events with one of the following input driver interface available on **HiGFXback**:
-  * _console_ interface (`/dev/tty0`)
-  * _PS/2 mouse_ interface (`/dev/psaux`)
-  * _event device_ interface (`/dev/input/event0` and `/dev/input/event1`)
+
+* _console_ interface (`/dev/tty0`)
+* _PS/2 mouse_ interface (`/dev/psaux`)
+* _event device_ interface (`/dev/input/event0` and `/dev/input/event1`)
 
 But depending on the input peripheral, it's possible to use specific input driver interfaces if supported by the component running on the _Linux Framebuffer_ graphics backend.
 
 Note that input driver interfaces used for mouse input events are also accessible through the _**gpm**_ (General Purpose Mouse) mouse server.
 
-<a name="fbpad">
+<a name="fbpad"></a>
 
 ### Fbpad
 
@@ -65,7 +66,7 @@ System informations about _Linux Framebuffer_ settings can be get with _**fbset*
 
 [Back to Top](#contents)
 
-<a name="fb-test-app-fbmark">
+<a name="fb-test-app-fbmark"></a>
 
 ### fb-test-app, fbmark
 
@@ -75,7 +76,7 @@ Programs running on _Linux Framebuffer_ graphics backend are available as exampl
 
 [Back to Top](#contents)
 
-<a name="showkey-input-events">
+<a name="showkey-input-events"></a>
 
 ### showkey, input-events
 
@@ -85,7 +86,7 @@ Programs are available for testing keyboard input interfaces used by components 
 
 [Back to Top](#contents)
 
-<a name="test-mouse-input-events">
+<a name="test-mouse-input-events"></a>
 
 ### test-mouse, input-events
 
@@ -95,15 +96,16 @@ Programs are available for testing mouse input interfaces used by components run
 
 [Back to Top](#contents)
 
-<a name="vulkan-rendering">
+<a name="vulkan-rendering"></a>
 
 # Vulkan rendering
 
 For display rendering with _Linux Framebuffer_ graphics backend, _Vulkan_ implementation in _**libvulkan.so** library_ (loading library from _Vulkan-Loader_) and its ICD (Installable Client Driver) relies on _FBDev WSI_ interface.
 
 On **HiGFXback**, _FBDev WSI_ interfaces (Window System Integration for _Linux Framebuffer_) are used with one of the following ICD selected with `VK_ICD_FILENAMES` environment variable:
-  * _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
-  * _Kazan_ associated to _**kazan_icd.json** manifest file_
+
+* _Mesa_ associated to _**lvp_icd.json** manifest file_
+* _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
 
 But depending on the platform, specific ICD can be used.
 
@@ -115,23 +117,25 @@ _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ prog
 
 [Back to Top](#contents)
 
-<a name="opengl-rendering">
+<a name="opengl-rendering"></a>
 
 # OpenGL rendering
 
 For display rendering with _Linux Framebuffer_ graphics backend, _OpenGL_ implementation in _**libGL.so** library_, but also _OpenGL ES 1.1 CM_ implementation in _**libGLESv1_CM.so** library_ and _OpenGL ES 2.0_ implementation in _**libGLESv2.so** library_, rely on _GLFBDev_ or _EGL for Linux Framebuffer_ interfaces.
 
 Loading libraries can be used:
-  * _**libGLEW.so** library_ from _GLEW_ (OpenGL Extension Wrangler)
-  * _**libepoxy.so** library_ from _Epoxy_
 
-<a name="glfbdev">
+* _**libGLEW.so** library_ from _GLEW_ (OpenGL Extension Wrangler)
+* _**libepoxy.so** library_ from _Epoxy_
+
+<a name="glfbdev"></a>
 
 ### GLFBDev
 
 On **HiGFXback**, _GLFBDev_ interfaces (_OpenGL_ extension for _Linux Framebuffer_) are used with one of the following implementation selected with `alternatives-GL` command:
-  * _Mesa_ with _**libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
-  * _TinyGL_ with _**libGL.so `->` libtinyGL.so** library_
+
+* _Mesa_ with _**libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
+* _TinyGL_ with _**libGL.so `->` libtinyGL.so** library_
 
 But depending on the platform, specific implementation can be used.
 
@@ -143,13 +147,14 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 [Back to Top](#contents)
 
-<a name="egl-for-linux-framebuffer">
+<a name="egl-for-linux-framebuffer"></a>
 
 ### EGL for Linux Framebuffer
 
 On **HiGFXback**, EGL for _Linux Framebuffer_ interfaces are used with one of the following implementation selected with `alternatives-GL` command:
-  * _Mesa_ with _**libEGL.so `->` libmesaEGL.so**, **libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
-  * _SwiftShader_ with _**libEGL.so `->` libswiftshaderEGL.so**, **libGLESv1_CM.so `->` libswiftshaderGLESv1_CM.so**, **libGLESv2.so `->` libswiftshaderGLESv2.so** libraries_
+
+* _Mesa_ with _**libEGL.so `->` libmesaEGL.so**, **libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
+* _SwiftShader_ with _**libEGL.so `->` libswiftshaderEGL.so**, **libGLESv1_CM.so `->` libswiftshaderGLESv1_CM.so**, **libGLESv2.so `->` libswiftshaderGLESv2.so** libraries_
 
 But depending on the platform, specific implementation can be used.
 
@@ -161,11 +166,11 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 [Back to Top](#contents)
 
-<a name="drawing-libraries">
+<a name="drawing-libraries"></a>
 
 # Drawing libraries
 
-<a name="cairo">
+<a name="cairo"></a>
 
 ### Cairo
 
@@ -179,7 +184,7 @@ _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
 [Back to Top](#contents)
 
-<a name="evas">
+<a name="evas"></a>
 
 ### Evas
 
@@ -193,11 +198,11 @@ _**expedite**_ program is available as examples, tests or benchmarks.
 
 [Back to Top](#contents)
 
-<a name="multimedia-frameworks">
+<a name="multimedia-frameworks"></a>
 
 # Multimedia frameworks
 
-<a name="ffmpeg">
+<a name="ffmpeg"></a>
 
 ### FFmpeg
 
@@ -209,13 +214,14 @@ _**ffmpeg**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="gstreamer">
+<a name="gstreamer"></a>
 
 ### GStreamer
 
 On **HiGFXback**, _GStreamer_ interfaces for _Linux Framebuffer_ graphics backend are provided by:
-  * _**libgstreamer-0.10.so** library_ on _GStreamer 0.10_
-  * _**libgstreamer-1.0.so** library_ on _GStreamer 1_
+
+* _**libgstreamer-0.10.so** library_ on _GStreamer 0.10_
+* _**libgstreamer-1.0.so** library_ on _GStreamer 1_
 
 and rely on _**libgstfbdevsink.so** plugin_ for output.
 
@@ -229,7 +235,7 @@ _**gst-launch-1.0**_ program is available as example on _GStreamer 1_.
 
 [Back to Top](#contents)
 
-<a name="xine">
+<a name="xine"></a>
 
 ### Xine
 
@@ -241,7 +247,7 @@ _**xine-ui**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="vlc">
+<a name="vlc"></a>
 
 ### VLC
 
@@ -253,29 +259,29 @@ _**vlc**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="tools">
+<a name="tools"></a>
 
 # Tools
 
-<a name="fbi-fim">
+<a name="fbi-fim"></a>
 
 ### Fbi, FIM
 
 ![](fbi-fim.png)
 
-<a name="fbpdf">
+<a name="fbpdf"></a>
 
 ### Fbpdf
 
 ![](fbpdf.png)
 
-<a name="netsurf-links">
+<a name="netsurf-links"></a>
 
 ### NetSurf, Links
 
 ![](netsurf-links-linux-framebuffer.png)
 
-<a name="fbff-mplayer">
+<a name="fbff-mplayer"></a>
 
 ### Fbff, MPlayer
 
@@ -283,17 +289,18 @@ _**vlc**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="graphics-abstraction-layers">
+<a name="graphics-abstraction-layers"></a>
 
 # Graphics abstraction layers
 
-<a name="glut">
+<a name="glut"></a>
 
 ### GLUT
 
 On **HiGFXback**, _GLUT (openGL Utility Toolkit)_ interfaces running on _Linux Framebuffer_ graphics backend are provided by one of the following implementation selected with `alternatives-glut` command:
-  * _MesaGLUT_ with _**libglut.so `->` libmesaglut.so** library_
-  * _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
+
+* _MesaGLUT_ with _**libglut.so `->` libmesaglut.so** library_
+* _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
 
 <p align="center"><img src="fb-glut.png"></p>
 
@@ -305,7 +312,7 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 [Back to Top](#contents)
 
-<a name="sdl">
+<a name="sdl"></a>
 
 ### SDL
 
@@ -321,11 +328,11 @@ _**SDL-test**_ and _**yagears**_ programs are available as examples, tests or be
 
 [Back to Top](#contents)
 
-<a name="user-interface-toolkits">
+<a name="user-interface-toolkits"></a>
 
 # User interface toolkits
 
-<a name="gtk">
+<a name="gtk"></a>
 
 ### GTK+
 
@@ -354,7 +361,7 @@ _**GtkLauncher**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="qt">
+<a name="qt"></a>
 
 ### Qt
 
@@ -383,7 +390,7 @@ _**QtTestBrowser**_ program is available as example.
 
 [Back to Top](#contents)
 
-<a name="efl">
+<a name="efl"></a>
 
 ### EFL
 
@@ -401,7 +408,7 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 [Back to Top](#contents)
 
-<a name="applications">
+<a name="applications"></a>
 
 # Applications
 

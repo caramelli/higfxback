@@ -3,6 +3,7 @@
 ![](backends.png)
 
 With **HiGFXback**, is's possible to run components **natively based on the following graphics backends**:
+
 * [Linux Framebuffer](Linux-Framebuffer.md)
 * [DirectFB](DirectFB.md)
 * [X11](X11.md)

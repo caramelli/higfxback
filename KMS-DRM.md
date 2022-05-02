@@ -1,25 +1,25 @@
 Welcome to [**HiGFXback**](README.md) with the _KMS/DRM_ graphics backend!
 
-<a name="contents">
+<a name="contents"></a>
 
 # Contents
 
 * [Getting started](#getting-started)
-  * [Kmscon](#kmscon)
-  * [drm-tests, drm-howto](#drm-tests-drm-howto)
-  * [evtest, libevdev-events](#evtest-libevdev-events)
+    * [Kmscon](#kmscon)
+    * [drm-tests, drm-howto](#drm-tests-drm-howto)
+    * [evtest, libevdev-events](#evtest-libevdev-events)
 * [Vulkan rendering](#vulkan-rendering)
 * [OpenGL rendering](#opengl-rendering)
 * [Multimedia frameworks](#multimedia-frameworks)
-  * [FFmpeg](#ffmpeg)
-  * [GStreamer](#gstreamer)
+    * [FFmpeg](#ffmpeg)
+    * [GStreamer](#gstreamer)
 * [Tools](#tools)
-  * [Kmsi](#kmsi)
-  * [Kmspdf](#kmspdf)
-  * [mpv](#mpv)
+    * [Kmsi](#kmsi)
+    * [Kmspdf](#kmspdf)
+    * [mpv](#mpv)
 * [Graphics abstraction layers](#graphics-abstraction-layers)
 
-<a name="getting-started">
+<a name="getting-started"></a>
 
 # Getting started
 
@@ -35,7 +35,7 @@ But depending on the input peripheral, it's possible to use specific input drive
 
 Note that _event device_ input driver interface is also accessible through the _**libevdev.so** library_.
 
-<a name="kmscon">
+<a name="kmscon"></a>
 
 ### Kmscon
 
@@ -46,7 +46,7 @@ System informations about _KMS/DRM_ settings can be get with _**modetest**_.
 
 [Back to Top](#contents)
 
-<a name="drm-tests-drm-howto">
+<a name="drm-tests-drm-howto"></a>
 
 ### drm-tests, drm-howto
 
@@ -61,7 +61,7 @@ $ modeset
 
 [Back to Top](#contents)
 
-<a name="evtest-libevdev-events">
+<a name="evtest-libevdev-events"></a>
 
 ### evtest, libevdev-events
 
@@ -71,15 +71,16 @@ Programs are available for testing _event device_ input interfaces used by compo
 
 [Back to Top](#contents)
 
-<a name="vulkan-rendering">
+<a name="vulkan-rendering"></a>
 
 # Vulkan rendering
 
 For display rendering with _KMS/DRM_ graphics backend, _Vulkan_ implementation in _**libvulkan.so** library_ (loading library from _Vulkan-Loader_) and its ICD (Installable Client Driver) relies on _Direct-to-Display WSI_ interface.
 
 On **HiGFXback**, _Direct-to-Display WSI_ interfaces (Window System Integration for _KMS/DRM_) are used with one of the following ICD selected with `VK_ICD_FILENAMES` environment variable:
-  * _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
-  * _Kazan_ associated to _**kazan_icd.json** manifest file_
+
+* _Mesa_ associated to _**lvp_icd.json** manifest file_
+* _SwiftShader_ associated to _**swiftshader_icd.json** manifest file_
 
 But depending on the platform, specific ICD can be used.
 
@@ -98,19 +99,21 @@ $ yagears2-vk -w vk-d2d
 
 [Back to Top](#contents)
 
-<a name="opengl-rendering">
+<a name="opengl-rendering"></a>
 
 # OpenGL rendering
 
 For display rendering with _KMS/DRM_ graphics backend, _OpenGL_ implementation in _**libGL.so** library_, but also _OpenGL ES 1.1 CM_ implementation in _**libGLESv1_CM.so** library_ and _OpenGL ES 2.0_ implementation in _**libGLESv2.so** library_, rely on _EGL for KMS/DRM_ interface through _GBM_ (Generic Buffer Management) with the _**libgbm.so** library_.
 
 Loading libraries can be used:
-  * _**libGLEW.so** library_ from _GLEW_ (OpenGL Extension Wrangler)
-  * _**libepoxy.so** library_ from _Epoxy_
+
+* _**libGLEW.so** library_ from _GLEW_ (OpenGL Extension Wrangler)
+* _**libepoxy.so** library_ from _Epoxy_
 
 On **HiGFXback**, _EGL for KMS/DRM_ interfaces are used with one of the following implementation selected with `alternatives-GL` command:
-  * _Mesa_ with _**libEGL.so `->` libmesaEGL.so**, **libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
-  * _SwiftShader_ with _**libEGL.so `->` libswiftshaderEGL.so**, **libGLESv1_CM.so `->` libswiftshaderGLESv1_CM.so**, **libGLESv2.so `->` libswiftshaderGLESv2.so** libraries_
+
+* _Mesa_ with _**libEGL.so `->` libmesaEGL.so**, **libGL.so `->` libmesaGL.so**, **libGLESv1_CM.so `->` libmesaGLESv1_CM.so**, **libGLESv2.so `->` libmesaGLESv2.so** libraries_
+* _SwiftShader_ with _**libEGL.so `->` libswiftshaderEGL.so**, **libGLESv1_CM.so `->` libswiftshaderGLESv1_CM.so**, **libGLESv2.so `->` libswiftshaderGLESv2.so** libraries_
 
 But depending on the platform, specific implementation can be used.
 
@@ -129,11 +132,11 @@ $ yagears -b egl-drm -e glesv2
 
 [Back to Top](#contents)
 
-<a name="multimedia-frameworks">
+<a name="multimedia-frameworks"></a>
 
 # Multimedia frameworks
 
-<a name="ffmpeg">
+<a name="ffmpeg"></a>
 
 ### FFmpeg
 
@@ -150,7 +153,7 @@ $ ffmpeg -loglevel quiet -loop 1 -i ffmpeg-logo.png -s 808:216 -pix_fmt bgr0 -f 
 
 [Back to Top](#contents)
 
-<a name="gstreamer">
+<a name="gstreamer"></a>
 
 ### GStreamer
 
@@ -167,11 +170,11 @@ $ gst-launch-1.0 -q filesrc location=gstreamer-logo.jpg ! decodebin ! videoconve
 
 [Back to Top](#contents)
 
-<a name="tools">
+<a name="tools"></a>
 
 # Tools
 
-<a name="kmsi">
+<a name="kmsi"></a>
 
 ### Kmsi
 
@@ -182,7 +185,7 @@ $ kmsi gnu.png
 
 ![](kmsi.png)
 
-<a name="kmspdf">
+<a name="kmspdf"></a>
 
 ### Kmspdf
 
@@ -193,7 +196,7 @@ $ kmspdf -r mupdf opengles20-reference-card.pdf
 
 ![](kmspdf.png)
 
-<a name="mpv">
+<a name="mpv"></a>
 
 ### mpv
 
@@ -205,7 +208,7 @@ $ mpv -quiet -vo=drm 02_gran_dillama_1080p.mp4
 
 [Back to Top](#contents)
 
-<a name="graphics-abstraction-layers">
+<a name="graphics-abstraction-layers"></a>
 
 # Graphics abstraction layers
 
