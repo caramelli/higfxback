@@ -32,13 +32,14 @@ Welcome to [**HiGFXback**](README.md) with the _DirectFB_ graphics backend!
     * [GTK+](#gtk)
     * [Qt](#qt)
     * [EFL](#efl)
+    * [FLTK](#fltk)
 * [Applications](#applications)
 
 <a name="getting-started"></a>
 
 # Getting started
 
-Components running on _DirectFB_ graphics backend are based on _**libdirectfb.so** library_. Compositing windowing system is performed by the default _**libdirectfb.so** window manager module_ with _**libidirectfbwindows_default.so** plugin_. Cooperation between various process is achieved through the _**fusion.ko** kernel module_.
+Components running on _DirectFB_ graphics backend are based on _**libdirectfb.so** library_. Compositing windowing system is performed by the default _**libdirectfb.so** window manager module_ with _**libdirectfbwm_default.so** plugin_. Cooperation between various process is achieved through the _**fusion.ko** kernel module_.
 
 If the current graphics backend used on **HiGFXback** is not _DirectFB_, switch on it with `startdfb` command. Select one of the following graphics driver interface available on **HiGFXback** and used by _**libdirectfb.so** library_ for the display:
 
@@ -86,7 +87,7 @@ Programs running on _DirectFB_ graphics backend are available as examples, tests
 
 ### DirectFB toolkits
 
-On **HiGFXback**, _LiTE_ interfaces are provided by _**libleck.so** library_ and _ilixi_ interfaces are provided by _**libilixi.so** library_.
+On **HiGFXback**, _LiTE_ interfaces are provided by _**liblite.so, libleck.so** libraries_ and _ilixi_ interfaces are provided by _**libilixi.so** library_.
 
 <p align="center"><img src="lite-ilixi.png"></p>
 
@@ -427,9 +428,27 @@ On **HiGFXback**, _EFL_ with _Elementary_ interfaces running on _DirectFB_ graph
 
 <p align="center"><img src="dfb-efl.png"></p>
 
-For _OpenGL_ rendering, note that _EGL for Linux DirectFB_ interfaces can also be used internally by _EFL_ with _Elementary_ instead of _DirectFBGL_ interfaces.
+For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _EFL_ with _Elementary_ instead of _DirectFBGL_ interfaces.
 
 _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
+
+[Back to Top](#contents)
+
+<a name="fltk"></a>
+
+### FLTK
+
+Graphical user interfaces can rely on _FLTK_ (Fast Light Tool Kit) using the port for _DirectFB_ graphics backend.
+
+On **HiGFXback**, _FLTK_ interfaces running on _DirectFB_ graphics backend are provided by _**libfltk.so** and **libfltk_gl.so** libraries_.
+
+<p align="center"><img src="dfb-fltk.png"></p>
+
+For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _FLTK_ instead of _DirectFBGL_ interfaces.
+
+_**fltk-test**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
+
+![](fltk-directfb.png)
 
 [Back to Top](#contents)
 
