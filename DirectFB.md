@@ -87,7 +87,7 @@ Programs running on _DirectFB_ graphics backend are available as examples, tests
 
 ### DirectFB toolkits
 
-On **HiGFXback**, _LiTE_ interfaces are provided by _**liblite.so, libleck.so** libraries_ and _ilixi_ interfaces are provided by _**libilixi.so** library_.
+On **HiGFXback**, _LiTE_ interfaces are provided by _**liblite.so** library_ and _ilixi_ interfaces are provided by _**libilixi.so** library_.
 
 <p align="center"><img src="lite-ilixi.png"></p>
 
