@@ -358,4 +358,10 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 ![](billardgl-gtktetris-pinball-wayland.png)
 
+| | |
+--|--
+![](chocolate-doom.png) | _**chocolate-doom**_ game engine
+
+![](chocolate-doom-wayland.png)
+
 [Back to Top](#contents)

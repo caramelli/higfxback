@@ -486,4 +486,10 @@ _**fltk-test**_ and _**yagears**_ programs are available as examples, tests or b
 
 ![](billardgl-gtktetris-pinball-directfb.png)
 
+| | |
+--|--
+![](chocolate-doom.png) | _**chocolate-doom**_ game engine
+
+![](chocolate-doom-directfb.png)
+
 [Back to Top](#contents)
