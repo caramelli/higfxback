@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxaw-build libxft-build ncurses-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.52.20150926)
+autoconf
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --without-pixmapdir --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install xterm $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xterm-build.pc << EOF
+Name: xterm
+Version: 327
+Description: X terminal emulator
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/xterm
+EOF
+
+exit

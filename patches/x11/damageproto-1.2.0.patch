@@ -1,0 +1,43 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build fixesproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 damageproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 damagewire.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 damageproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/damageproto-build.pc << EOF
+Name: damageproto
+Version: 1.2.0
+Description: Damage extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/damageproto.h \\
+/x11/include/X11/extensions/damagewire.h \\
+/x11/lib/pkgconfig/damageproto.pc
+EOF
+
+exit
+--- damageproto-1.2.0.orig/damageproto.h
++++ damageproto-1.2.0/damageproto.h
+@@ -25,6 +25,7 @@
+ #define _DAMAGEPROTO_H_
+ 
+ #include <X11/Xmd.h>
++#include <X11/Xprotostr.h>
+ #include <X11/extensions/xfixesproto.h>
+ #include <X11/extensions/damagewire.h>
+ 

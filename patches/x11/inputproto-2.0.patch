@@ -1,0 +1,47 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 XI.h $DESTDIR/x11/include/X11/extensions
+install -m 644 XIproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 XI2.h $DESTDIR/x11/include/X11/extensions
+install -m 644 XI2proto.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 inputproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/inputproto-build.pc << EOF
+Name: inputproto
+Version: 2.0
+Description: Input extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/XI.h \\
+/x11/include/X11/extensions/XIproto.h \\
+/x11/include/X11/extensions/XI2.h \\
+/x11/include/X11/extensions/XI2proto.h \\
+/x11/lib/pkgconfig/inputproto.pc
+EOF
+
+exit
+--- inputproto-2.0.orig/XI2proto.h
++++ inputproto-2.0/XI2proto.h
+@@ -57,6 +57,7 @@
+ #ifndef _XI2PROTO_H_
+ #define _XI2PROTO_H_
+ 
++#include <stdint.h>
+ #include <X11/Xproto.h>
+ #include <X11/X.h>
+ #include <X11/extensions/XI2.h>

@@ -1,0 +1,34 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/tar $DESTDIR/bin
+install -d $DESTDIR/libexec
+install rmt/rmt $DESTDIR/libexec
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/tar-build.pc << EOF
+Name: tar
+Version: 1.32
+Description: GNU tape archiver
+Requires: $REQUIRES
+
+exec=\\
+/bin/tar \\
+/libexec/rmt
+EOF
+
+exit

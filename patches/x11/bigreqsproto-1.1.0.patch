@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 bigreqsproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 bigreqstr.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 bigreqsproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/bigreqsproto-build.pc << EOF
+Name: bigreqsproto
+Version: 1.1.0
+Description: Big Requests extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/bigreqsproto.h \\
+/x11/include/X11/extensions/bigreqstr.h \\
+/x11/lib/pkgconfig/bigreqsproto.pc
+EOF
+
+exit
+--- bigreqsproto-1.1.0.orig/bigreqsproto.h
++++ bigreqsproto-1.1.0/bigreqsproto.h
+@@ -27,6 +27,8 @@
+ #ifndef _BIGREQSPROTO_H_
+ #define _BIGREQSPROTO_H_
+ 
++#include <X11/Xmd.h>
++
+ #define X_BigReqEnable		0
+ 
+ #define XBigReqNumberEvents	0

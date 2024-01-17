@@ -1,0 +1,519 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="m4-build perl-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+cd autoconf-2.52-20101002; ./configure --program-suffix=-autoconf-2.52.20101002 --prefix=; cd -
+cd autoconf-2.52-20121002; ./configure --program-suffix=-autoconf-2.52.20121002 --prefix=; cd -
+cd autoconf-2.52-20150926; ./configure --program-suffix=-autoconf-2.52.20150926 --prefix=; cd -
+cd autoconf-2.61; ./configure --program-suffix=-2.61 --prefix=; cd -
+cd autoconf-2.62; ./configure --program-suffix=-2.62 --prefix=; cd -
+cd autoconf-2.63; ./configure --program-suffix=-2.63 --prefix=; cd -
+cd autoconf-2.64; ./configure --program-suffix=-2.64 --prefix=; cd -
+cd autoconf-2.65; ./configure --program-suffix=-2.65 --prefix=; cd -
+cd autoconf-2.66; ./configure --program-suffix=-2.66 --prefix=; cd -
+cd autoconf-2.67; ./configure --program-suffix=-2.67 --prefix=; cd -
+cd autoconf-2.68; ./configure --program-suffix=-2.68 --prefix=; cd -
+cd autoconf-2.69; ./configure --program-suffix=-2.69 --prefix=; cd -
+cd autoconf-2.70; ./configure --program-suffix=-2.70 --prefix=; cd -
+cd autoconf-2.71; ./configure --program-suffix=-2.71 --prefix=; cd -
+
+# build
+make pkgdatadir=/share/autoconf-2.52.20101002 -C autoconf-2.52-20101002
+make pkgdatadir=/share/autoconf-2.52.20121002 -C autoconf-2.52-20121002
+make pkgdatadir=/share/autoconf-2.52.20150926 -C autoconf-2.52-20150926
+make pkgdatadir=/share/autoconf-2.61 -C autoconf-2.61
+make pkgdatadir=/share/autoconf-2.62 -C autoconf-2.62
+make pkgdatadir=/share/autoconf-2.63 -C autoconf-2.63
+make pkgdatadir=/share/autoconf-2.64 -C autoconf-2.64
+make pkgdatadir=/share/autoconf-2.65 -C autoconf-2.65
+make pkgdatadir=/share/autoconf-2.66 -C autoconf-2.66
+make pkgdatadir=/share/autoconf-2.67 -C autoconf-2.67
+make pkgdatadir=/share/autoconf-2.68 -C autoconf-2.68
+make pkgdatadir=/share/autoconf-2.69 -C autoconf-2.69
+make pkgdatadir=/share/autoconf-2.70 -C autoconf-2.70
+make pkgdatadir=/share/autoconf-2.71 -C autoconf-2.71
+
+# install
+install -d $DESTDIR/bin
+install ac-wrapper.sh $DESTDIR/bin
+ln -sf ac-wrapper.sh $DESTDIR/bin/autoconf
+ln -sf ac-wrapper.sh $DESTDIR/bin/autoheader
+ln -sf ac-wrapper.sh $DESTDIR/bin/autom4te
+
+install autoconf-2.52-20101002/autoconf $DESTDIR/bin/autoconf-2.52.20101002
+install autoconf-2.52-20101002/autoheader $DESTDIR/bin/autoheader-2.52.20101002
+install -d $DESTDIR/share/autoconf-2.52.20101002
+install -m 644 autoconf-2.52-20101002/autoconf.m4f $DESTDIR/share/autoconf-2.52.20101002
+
+install autoconf-2.52-20121002/autoconf $DESTDIR/bin/autoconf-2.52.20121002
+install autoconf-2.52-20121002/autoheader $DESTDIR/bin/autoheader-2.52.20121002
+install -d $DESTDIR/share/autoconf-2.52.20121002
+install -m 644 autoconf-2.52-20121002/autoconf.m4f $DESTDIR/share/autoconf-2.52.20121002
+
+install autoconf-2.52-20150926/autoconf $DESTDIR/bin/autoconf-2.52.20150926
+install autoconf-2.52-20150926/autoheader $DESTDIR/bin/autoheader-2.52.20150926
+install -d $DESTDIR/share/autoconf-2.52.20150926
+install -m 644 autoconf-2.52-20150926/autoconf.m4f $DESTDIR/share/autoconf-2.52.20150926
+
+install autoconf-2.61/bin/autoconf $DESTDIR/bin/autoconf-2.61
+install autoconf-2.61/bin/autoheader $DESTDIR/bin/autoheader-2.61
+install autoconf-2.61/bin/autom4te $DESTDIR/bin/autom4te-2.61
+install -d $DESTDIR/share/autoconf-2.61
+install -m 644 autoconf-2.61/lib/autom4te.cfg $DESTDIR/share/autoconf-2.61
+install -d $DESTDIR/share/autoconf-2.61/autoconf
+install -m 644 autoconf-2.61/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.61/autoconf
+install -d $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -m 644 autoconf-2.61/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.61/Autom4te
+install -d $DESTDIR/share/autoconf-2.61/m4sugar
+install -m 644 autoconf-2.61/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.61/m4sugar
+install -m 644 autoconf-2.61/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.61/m4sugar
+
+install autoconf-2.62/bin/autoconf $DESTDIR/bin/autoconf-2.62
+install autoconf-2.62/bin/autoheader $DESTDIR/bin/autoheader-2.62
+install autoconf-2.62/bin/autom4te $DESTDIR/bin/autom4te-2.62
+install -d $DESTDIR/share/autoconf-2.62
+install -m 644 autoconf-2.62/lib/autom4te.cfg $DESTDIR/share/autoconf-2.62
+install -d $DESTDIR/share/autoconf-2.62/autoconf
+install -m 644 autoconf-2.62/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.62/autoconf
+install -d $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -m 644 autoconf-2.62/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.62/Autom4te
+install -d $DESTDIR/share/autoconf-2.62/m4sugar
+install -m 644 autoconf-2.62/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.62/m4sugar
+install -m 644 autoconf-2.62/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.62/m4sugar
+
+install autoconf-2.63/bin/autoconf $DESTDIR/bin/autoconf-2.63
+install autoconf-2.63/bin/autoheader $DESTDIR/bin/autoheader-2.63
+install autoconf-2.63/bin/autom4te $DESTDIR/bin/autom4te-2.63
+install -d $DESTDIR/share/autoconf-2.63
+install -m 644 autoconf-2.63/lib/autom4te.cfg $DESTDIR/share/autoconf-2.63
+install -d $DESTDIR/share/autoconf-2.63/autoconf
+install -m 644 autoconf-2.63/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.63/autoconf
+install -d $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -m 644 autoconf-2.63/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.63/Autom4te
+install -d $DESTDIR/share/autoconf-2.63/m4sugar
+install -m 644 autoconf-2.63/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.63/m4sugar
+install -m 644 autoconf-2.63/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.63/m4sugar
+install -m 644 autoconf-2.63/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.63/m4sugar
+
+install autoconf-2.64/bin/autoconf $DESTDIR/bin/autoconf-2.64
+install autoconf-2.64/bin/autoheader $DESTDIR/bin/autoheader-2.64
+install autoconf-2.64/bin/autom4te $DESTDIR/bin/autom4te-2.64
+install -d $DESTDIR/share/autoconf-2.64
+install -m 644 autoconf-2.64/lib/autom4te.cfg $DESTDIR/share/autoconf-2.64
+install -d $DESTDIR/share/autoconf-2.64/autoconf
+install -m 644 autoconf-2.64/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.64/autoconf
+install -d $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -m 644 autoconf-2.64/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.64/Autom4te
+install -d $DESTDIR/share/autoconf-2.64/m4sugar
+install -m 644 autoconf-2.64/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.64/m4sugar
+install -m 644 autoconf-2.64/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.64/m4sugar
+install -m 644 autoconf-2.64/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.64/m4sugar
+
+install autoconf-2.65/bin/autoconf $DESTDIR/bin/autoconf-2.65
+install autoconf-2.65/bin/autoheader $DESTDIR/bin/autoheader-2.65
+install autoconf-2.65/bin/autom4te $DESTDIR/bin/autom4te-2.65
+install -d $DESTDIR/share/autoconf-2.65
+install -m 644 autoconf-2.65/lib/autom4te.cfg $DESTDIR/share/autoconf-2.65
+install -d $DESTDIR/share/autoconf-2.65/autoconf
+install -m 644 autoconf-2.65/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.65/autoconf
+install -d $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -m 644 autoconf-2.65/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.65/Autom4te
+install -d $DESTDIR/share/autoconf-2.65/m4sugar
+install -m 644 autoconf-2.65/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.65/m4sugar
+install -m 644 autoconf-2.65/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.65/m4sugar
+install -m 644 autoconf-2.65/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.65/m4sugar
+
+install autoconf-2.66/bin/autoconf $DESTDIR/bin/autoconf-2.66
+install autoconf-2.66/bin/autoheader $DESTDIR/bin/autoheader-2.66
+install autoconf-2.66/bin/autom4te $DESTDIR/bin/autom4te-2.66
+install -d $DESTDIR/share/autoconf-2.66
+install -m 644 autoconf-2.66/lib/autom4te.cfg $DESTDIR/share/autoconf-2.66
+install -d $DESTDIR/share/autoconf-2.66/autoconf
+install -m 644 autoconf-2.66/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.66/autoconf
+install -d $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -m 644 autoconf-2.66/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.66/Autom4te
+install -d $DESTDIR/share/autoconf-2.66/m4sugar
+install -m 644 autoconf-2.66/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.66/m4sugar
+install -m 644 autoconf-2.66/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.66/m4sugar
+install -m 644 autoconf-2.66/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.66/m4sugar
+
+install autoconf-2.67/bin/autoconf $DESTDIR/bin/autoconf-2.67
+install autoconf-2.67/bin/autoheader $DESTDIR/bin/autoheader-2.67
+install autoconf-2.67/bin/autom4te $DESTDIR/bin/autom4te-2.67
+install -d $DESTDIR/share/autoconf-2.67
+install -m 644 autoconf-2.67/lib/autom4te.cfg $DESTDIR/share/autoconf-2.67
+install -d $DESTDIR/share/autoconf-2.67/autoconf
+install -m 644 autoconf-2.67/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.67/autoconf
+install -d $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -m 644 autoconf-2.67/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.67/Autom4te
+install -d $DESTDIR/share/autoconf-2.67/m4sugar
+install -m 644 autoconf-2.67/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.67/m4sugar
+install -m 644 autoconf-2.67/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.67/m4sugar
+install -m 644 autoconf-2.67/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.67/m4sugar
+
+install autoconf-2.68/bin/autoconf $DESTDIR/bin/autoconf-2.68
+install autoconf-2.68/bin/autoheader $DESTDIR/bin/autoheader-2.68
+install autoconf-2.68/bin/autom4te $DESTDIR/bin/autom4te-2.68
+install -d $DESTDIR/share/autoconf-2.68
+install -m 644 autoconf-2.68/lib/autom4te.cfg $DESTDIR/share/autoconf-2.68
+install -d $DESTDIR/share/autoconf-2.68/autoconf
+install -m 644 autoconf-2.68/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.68/autoconf
+install -d $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/Struct.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -m 644 autoconf-2.68/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.68/Autom4te
+install -d $DESTDIR/share/autoconf-2.68/m4sugar
+install -m 644 autoconf-2.68/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.68/m4sugar
+install -m 644 autoconf-2.68/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.68/m4sugar
+install -m 644 autoconf-2.68/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.68/m4sugar
+
+install autoconf-2.69/bin/autoconf $DESTDIR/bin/autoconf-2.69
+install autoconf-2.69/bin/autoheader $DESTDIR/bin/autoheader-2.69
+install autoconf-2.69/bin/autom4te $DESTDIR/bin/autom4te-2.69
+install -d $DESTDIR/share/autoconf-2.69
+install -m 644 autoconf-2.69/lib/autom4te.cfg $DESTDIR/share/autoconf-2.69
+install -d $DESTDIR/share/autoconf-2.69/autoconf
+install -m 644 autoconf-2.69/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.69/autoconf
+install -d $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/Getopt.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -m 644 autoconf-2.69/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.69/Autom4te
+install -d $DESTDIR/share/autoconf-2.69/m4sugar
+install -m 644 autoconf-2.69/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.69/m4sugar
+install -m 644 autoconf-2.69/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.69/m4sugar
+install -m 644 autoconf-2.69/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.69/m4sugar
+
+install autoconf-2.70/bin/autoconf $DESTDIR/bin/autoconf-2.70
+install autoconf-2.70/bin/autoheader $DESTDIR/bin/autoheader-2.70
+install autoconf-2.70/bin/autom4te $DESTDIR/bin/autom4te-2.70
+install -d $DESTDIR/share/autoconf-2.70
+install -m 644 autoconf-2.70/lib/autom4te.cfg $DESTDIR/share/autoconf-2.70
+install -d $DESTDIR/share/autoconf-2.70/autoconf
+install -m 644 autoconf-2.70/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.70/autoconf
+install -m 644 autoconf-2.70/lib/autoconf/trailer.m4 $DESTDIR/share/autoconf-2.70/autoconf
+install -d $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/Config.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/Getopt.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -m 644 autoconf-2.70/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.70/Autom4te
+install -d $DESTDIR/share/autoconf-2.70/m4sugar
+install -m 644 autoconf-2.70/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.70/m4sugar
+install -m 644 autoconf-2.70/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.70/m4sugar
+install -m 644 autoconf-2.70/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.70/m4sugar
+
+install autoconf-2.71/bin/autoconf $DESTDIR/bin/autoconf-2.71
+install autoconf-2.71/bin/autoheader $DESTDIR/bin/autoheader-2.71
+install autoconf-2.71/bin/autom4te $DESTDIR/bin/autom4te-2.71
+install -d $DESTDIR/share/autoconf-2.71
+install -m 644 autoconf-2.71/lib/autom4te.cfg $DESTDIR/share/autoconf-2.71
+install -d $DESTDIR/share/autoconf-2.71/autoconf
+install -m 644 autoconf-2.71/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.71/autoconf
+install -m 644 autoconf-2.71/lib/autoconf/trailer.m4 $DESTDIR/share/autoconf-2.71/autoconf
+install -d $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/Config.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/Getopt.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -m 644 autoconf-2.71/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.71/Autom4te
+install -d $DESTDIR/share/autoconf-2.71/m4sugar
+install -m 644 autoconf-2.71/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.71/m4sugar
+install -m 644 autoconf-2.71/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.71/m4sugar
+install -m 644 autoconf-2.71/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.71/m4sugar
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/autotools-wrappers-ac-build.pc << EOF
+Name: autotools-wrappers-ac
+Version: 20221207
+Description: GNU Autoconf wrapper
+Requires: $REQUIRES
+
+devel=\\
+/bin/ac-wrapper.sh \\
+/bin/autoconf \\
+/bin/autoconf-2.52.20101002 \\
+/bin/autoconf-2.52.20121002 \\
+/bin/autoconf-2.52.20150926 \\
+/bin/autoconf-2.61 \\
+/bin/autoconf-2.62 \\
+/bin/autoconf-2.63 \\
+/bin/autoconf-2.64 \\
+/bin/autoconf-2.65 \\
+/bin/autoconf-2.66 \\
+/bin/autoconf-2.67 \\
+/bin/autoconf-2.68 \\
+/bin/autoconf-2.69 \\
+/bin/autoconf-2.70 \\
+/bin/autoconf-2.71 \\
+/bin/autoheader \\
+/bin/autoheader-2.52.20101002 \\
+/bin/autoheader-2.52.20121002 \\
+/bin/autoheader-2.52.20150926 \\
+/bin/autoheader-2.61 \\
+/bin/autoheader-2.62 \\
+/bin/autoheader-2.63 \\
+/bin/autoheader-2.64 \\
+/bin/autoheader-2.65 \\
+/bin/autoheader-2.66 \\
+/bin/autoheader-2.67 \\
+/bin/autoheader-2.68 \\
+/bin/autoheader-2.69 \\
+/bin/autoheader-2.70 \\
+/bin/autoheader-2.71 \\
+/bin/autom4te \\
+/bin/autom4te-2.61 \\
+/bin/autom4te-2.62 \\
+/bin/autom4te-2.63 \\
+/bin/autom4te-2.64 \\
+/bin/autom4te-2.65 \\
+/bin/autom4te-2.66 \\
+/bin/autom4te-2.67 \\
+/bin/autom4te-2.68 \\
+/bin/autom4te-2.69 \\
+/bin/autom4te-2.70 \\
+/bin/autom4te-2.71 \\
+/share/autoconf-2.52.20101002/autoconf.m4f \\
+/share/autoconf-2.52.20121002/autoconf.m4f \\
+/share/autoconf-2.52.20150926/autoconf.m4f \\
+/share/autoconf-2.61/autom4te.cfg \\
+/share/autoconf-2.61/autoconf/autoconf.m4f \\
+/share/autoconf-2.61/Autom4te/C4che.pm \\
+/share/autoconf-2.61/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.61/Autom4te/Channels.pm \\
+/share/autoconf-2.61/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.61/Autom4te/FileUtils.pm \\
+/share/autoconf-2.61/Autom4te/General.pm \\
+/share/autoconf-2.61/Autom4te/Request.pm \\
+/share/autoconf-2.61/Autom4te/Struct.pm \\
+/share/autoconf-2.61/Autom4te/XFile.pm \\
+/share/autoconf-2.61/m4sugar/m4sh.m4 \\
+/share/autoconf-2.61/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.62/autom4te.cfg \\
+/share/autoconf-2.62/autoconf/autoconf.m4f \\
+/share/autoconf-2.62/Autom4te/C4che.pm \\
+/share/autoconf-2.62/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.62/Autom4te/Channels.pm \\
+/share/autoconf-2.62/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.62/Autom4te/FileUtils.pm \\
+/share/autoconf-2.62/Autom4te/General.pm \\
+/share/autoconf-2.62/Autom4te/Request.pm \\
+/share/autoconf-2.62/Autom4te/Struct.pm \\
+/share/autoconf-2.62/Autom4te/XFile.pm \\
+/share/autoconf-2.62/m4sugar/m4sh.m4 \\
+/share/autoconf-2.62/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.63/autom4te.cfg \\
+/share/autoconf-2.63/autoconf/autoconf.m4f \\
+/share/autoconf-2.63/Autom4te/C4che.pm \\
+/share/autoconf-2.63/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.63/Autom4te/Channels.pm \\
+/share/autoconf-2.63/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.63/Autom4te/FileUtils.pm \\
+/share/autoconf-2.63/Autom4te/General.pm \\
+/share/autoconf-2.63/Autom4te/Request.pm \\
+/share/autoconf-2.63/Autom4te/Struct.pm \\
+/share/autoconf-2.63/Autom4te/XFile.pm \\
+/share/autoconf-2.63/m4sugar/foreach.m4 \\
+/share/autoconf-2.63/m4sugar/m4sh.m4 \\
+/share/autoconf-2.63/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.64/autom4te.cfg \\
+/share/autoconf-2.64/autoconf/autoconf.m4f \\
+/share/autoconf-2.64/Autom4te/C4che.pm \\
+/share/autoconf-2.64/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.64/Autom4te/Channels.pm \\
+/share/autoconf-2.64/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.64/Autom4te/FileUtils.pm \\
+/share/autoconf-2.64/Autom4te/General.pm \\
+/share/autoconf-2.64/Autom4te/Request.pm \\
+/share/autoconf-2.64/Autom4te/Struct.pm \\
+/share/autoconf-2.64/Autom4te/XFile.pm \\
+/share/autoconf-2.64/m4sugar/foreach.m4 \\
+/share/autoconf-2.64/m4sugar/m4sh.m4 \\
+/share/autoconf-2.64/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.65/autom4te.cfg \\
+/share/autoconf-2.65/autoconf/autoconf.m4f \\
+/share/autoconf-2.65/Autom4te/C4che.pm \\
+/share/autoconf-2.65/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.65/Autom4te/Channels.pm \\
+/share/autoconf-2.65/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.65/Autom4te/FileUtils.pm \\
+/share/autoconf-2.65/Autom4te/General.pm \\
+/share/autoconf-2.65/Autom4te/Request.pm \\
+/share/autoconf-2.65/Autom4te/Struct.pm \\
+/share/autoconf-2.65/Autom4te/XFile.pm \\
+/share/autoconf-2.65/m4sugar/foreach.m4 \\
+/share/autoconf-2.65/m4sugar/m4sh.m4 \\
+/share/autoconf-2.65/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.66/autom4te.cfg \\
+/share/autoconf-2.66/autoconf/autoconf.m4f \\
+/share/autoconf-2.66/Autom4te/C4che.pm \\
+/share/autoconf-2.66/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.66/Autom4te/Channels.pm \\
+/share/autoconf-2.66/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.66/Autom4te/FileUtils.pm \\
+/share/autoconf-2.66/Autom4te/General.pm \\
+/share/autoconf-2.66/Autom4te/Request.pm \\
+/share/autoconf-2.66/Autom4te/Struct.pm \\
+/share/autoconf-2.66/Autom4te/XFile.pm \\
+/share/autoconf-2.66/m4sugar/foreach.m4 \\
+/share/autoconf-2.66/m4sugar/m4sh.m4 \\
+/share/autoconf-2.66/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.67/autom4te.cfg \\
+/share/autoconf-2.67/autoconf/autoconf.m4f \\
+/share/autoconf-2.67/Autom4te/C4che.pm \\
+/share/autoconf-2.67/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.67/Autom4te/Channels.pm \\
+/share/autoconf-2.67/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.67/Autom4te/FileUtils.pm \\
+/share/autoconf-2.67/Autom4te/General.pm \\
+/share/autoconf-2.67/Autom4te/Request.pm \\
+/share/autoconf-2.67/Autom4te/Struct.pm \\
+/share/autoconf-2.67/Autom4te/XFile.pm \\
+/share/autoconf-2.67/m4sugar/foreach.m4 \\
+/share/autoconf-2.67/m4sugar/m4sh.m4 \\
+/share/autoconf-2.67/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.68/autom4te.cfg \\
+/share/autoconf-2.68/autoconf/autoconf.m4f \\
+/share/autoconf-2.68/Autom4te/C4che.pm \\
+/share/autoconf-2.68/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.68/Autom4te/Channels.pm \\
+/share/autoconf-2.68/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.68/Autom4te/FileUtils.pm \\
+/share/autoconf-2.68/Autom4te/General.pm \\
+/share/autoconf-2.68/Autom4te/Request.pm \\
+/share/autoconf-2.68/Autom4te/Struct.pm \\
+/share/autoconf-2.68/Autom4te/XFile.pm \\
+/share/autoconf-2.68/m4sugar/foreach.m4 \\
+/share/autoconf-2.68/m4sugar/m4sh.m4 \\
+/share/autoconf-2.68/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.69/autom4te.cfg \\
+/share/autoconf-2.69/autoconf/autoconf.m4f \\
+/share/autoconf-2.69/Autom4te/C4che.pm \\
+/share/autoconf-2.69/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.69/Autom4te/Channels.pm \\
+/share/autoconf-2.69/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.69/Autom4te/FileUtils.pm \\
+/share/autoconf-2.69/Autom4te/General.pm \\
+/share/autoconf-2.69/Autom4te/Getopt.pm \\
+/share/autoconf-2.69/Autom4te/Request.pm \\
+/share/autoconf-2.69/Autom4te/XFile.pm \\
+/share/autoconf-2.69/m4sugar/foreach.m4 \\
+/share/autoconf-2.69/m4sugar/m4sh.m4 \\
+/share/autoconf-2.69/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.70/autom4te.cfg \\
+/share/autoconf-2.70/autoconf/autoconf.m4f \\
+/share/autoconf-2.70/autoconf/trailer.m4 \\
+/share/autoconf-2.70/Autom4te/C4che.pm \\
+/share/autoconf-2.70/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.70/Autom4te/Channels.pm \\
+/share/autoconf-2.70/Autom4te/Config.pm \\
+/share/autoconf-2.70/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.70/Autom4te/FileUtils.pm \\
+/share/autoconf-2.70/Autom4te/General.pm \\
+/share/autoconf-2.70/Autom4te/Getopt.pm \\
+/share/autoconf-2.70/Autom4te/Request.pm \\
+/share/autoconf-2.70/Autom4te/XFile.pm \\
+/share/autoconf-2.70/m4sugar/foreach.m4 \\
+/share/autoconf-2.70/m4sugar/m4sh.m4 \\
+/share/autoconf-2.70/m4sugar/m4sugar.m4 \\
+/share/autoconf-2.71/autom4te.cfg \\
+/share/autoconf-2.71/autoconf/autoconf.m4f \\
+/share/autoconf-2.71/autoconf/trailer.m4 \\
+/share/autoconf-2.71/Autom4te/C4che.pm \\
+/share/autoconf-2.71/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.71/Autom4te/Channels.pm \\
+/share/autoconf-2.71/Autom4te/Config.pm \\
+/share/autoconf-2.71/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.71/Autom4te/FileUtils.pm \\
+/share/autoconf-2.71/Autom4te/General.pm \\
+/share/autoconf-2.71/Autom4te/Getopt.pm \\
+/share/autoconf-2.71/Autom4te/Request.pm \\
+/share/autoconf-2.71/Autom4te/XFile.pm \\
+/share/autoconf-2.71/m4sugar/foreach.m4 \\
+/share/autoconf-2.71/m4sugar/m4sh.m4 \\
+/share/autoconf-2.71/m4sugar/m4sugar.m4
+EOF
+
+exit

@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.64; am-1.11)
+aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install gunzip $DESTDIR/bin
+ln -sf gunzip $DESTDIR/bin/uncompress
+install gzexe $DESTDIR/bin
+install gzip $DESTDIR/bin
+install zcat $DESTDIR/bin
+install zcmp $DESTDIR/bin
+install zdiff $DESTDIR/bin
+install zegrep $DESTDIR/bin
+install zfgrep $DESTDIR/bin
+install zforce $DESTDIR/bin
+install zgrep $DESTDIR/bin
+install zless $DESTDIR/bin
+install zmore $DESTDIR/bin
+install znew $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gzip-build.pc << EOF
+Name: gzip
+Version: 1.3.13
+Description: GNU zip
+Requires: $REQUIRES
+
+exec=\\
+/bin/gunzip \\
+/bin/gzexe \\
+/bin/gzip \\
+/bin/uncompress \\
+/bin/zcat \\
+/bin/zcmp \\
+/bin/zdiff \\
+/bin/zegrep \\
+/bin/zfgrep \\
+/bin/zforce \\
+/bin/zgrep \\
+/bin/zless \\
+/bin/zmore \\
+/bin/znew
+EOF
+
+exit

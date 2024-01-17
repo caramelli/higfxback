@@ -1,0 +1,60 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxkbfile-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --with-xkb-config-root=/share/X11/xkb --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install xkbcomp $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xkbcomp-build.pc << EOF
+Name: xkbcomp
+Version: 1.1.1
+Description: X keyboard description compiler
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/xkbcomp
+EOF
+
+exit
+--- xkbcomp-1.1.1.orig/symbols.c
++++ xkbcomp-1.1.1/symbols.c
+@@ -342,18 +342,19 @@
+     clobber = (from->defs.merge != MergeAugment);
+     report = (warningLevel > 9) ||
+         ((into->defs.fileID == from->defs.fileID) && (warningLevel > 0));
+-    if (into->numLevels[group] >= from->numLevels[group])
+-    {
+-        resultSyms = into->syms[group];
+-        resultActs = into->acts[group];
+-        resultWidth = into->numLevels[group];
+-    }
+-    else
++    if ((from->numLevels[group] > into->numLevels[group])
++        || (clobber && (from->types[group] != None)))
+     {
+         resultSyms = from->syms[group];
+         resultActs = from->acts[group];
+         resultWidth = from->numLevels[group];
+     }
++    else
++    {
++        resultSyms = into->syms[group];
++        resultActs = into->acts[group];
++        resultWidth = into->numLevels[group];
++    }
+     if (resultSyms == NULL)
+     {
+         resultSyms = uTypedCalloc(resultWidth, KeySym);

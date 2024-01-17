@@ -1,0 +1,76 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libsm-build libx11-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install util/makestrs $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/X11
+install -m 644 include/X11/Composite.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/CompositeP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/ConstrainP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Constraint.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Core.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/CoreP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Intrinsic.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/IntrinsicP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Object.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/ObjectP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/RectObj.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/RectObjP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Shell.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/ShellP.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/StringDefs.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Vendor.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/VendorP.h $DESTDIR/x11/include/X11
+install -d $DESTDIR/x11/lib
+install src/.libs/libXt.so.6.* $DESTDIR/x11/lib/libXt.so.6
+ln -sf libXt.so.6 $DESTDIR/x11/lib/libXt.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xt.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxt-build.pc << EOF
+Name: libXt
+Version: 1.0.7
+Description: X toolkit intrinsics library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Composite.h \\
+/x11/include/X11/CompositeP.h \\
+/x11/include/X11/ConstrainP.h \\
+/x11/include/X11/Constraint.h \\
+/x11/include/X11/Core.h \\
+/x11/include/X11/CoreP.h \\
+/x11/include/X11/Intrinsic.h \\
+/x11/include/X11/IntrinsicP.h \\
+/x11/include/X11/Object.h \\
+/x11/include/X11/ObjectP.h \\
+/x11/include/X11/RectObj.h \\
+/x11/include/X11/RectObjP.h \\
+/x11/include/X11/Shell.h \\
+/x11/include/X11/ShellP.h \\
+/x11/include/X11/StringDefs.h \\
+/x11/include/X11/Vendor.h \\
+/x11/include/X11/VendorP.h \\
+/x11/lib/libXt.so \\
+/x11/lib/pkgconfig/xt.pc
+
+exec=\\
+/x11/bin/makestrs \\
+/x11/lib/libXt.so.6
+EOF
+
+exit

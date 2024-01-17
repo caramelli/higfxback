@@ -1,0 +1,81 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build directfb2-build fontconfig-build glib-build libpng-build pixman-build"
+
+if ! PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.68; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I build; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --disable-interpreter --enable-directfb --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install util/cairo-trace/cairo-trace $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/cairo
+install -m 644 cairo-version.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-deprecated.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-directfb.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-features.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-ft.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-pdf.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-ps.h $DESTDIR/dfb/include/cairo
+install -m 644 src/cairo-svg.h $DESTDIR/dfb/include/cairo
+install -m 644 util/cairo-gobject/cairo-gobject.h $DESTDIR/dfb/include/cairo
+install -d $DESTDIR/dfb/lib
+install src/.libs/libcairo.so.2.* $DESTDIR/dfb/lib/libcairo.so.2
+ln -sf libcairo.so.2 $DESTDIR/dfb/lib/libcairo.so
+install util/cairo-gobject/.libs/libcairo-gobject.so.2.* $DESTDIR/dfb/lib/libcairo-gobject.so.2
+ln -sf libcairo-gobject.so.2 $DESTDIR/dfb/lib/libcairo-gobject.so
+install -d $DESTDIR/dfb/lib/cairo
+install util/cairo-trace/.libs/libcairo-trace.so.0.0.0 $DESTDIR/dfb/lib/cairo/libcairo-trace.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 src/cairo.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 src/cairo-gobject.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/cairo-build.pc << EOF
+Name: cairo
+Version: 20110910
+Description: Cairo drawing library
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/cairo.h \\
+/dfb/include/cairo-deprecated.h \\
+/dfb/include/cairo-directfb.h \\
+/dfb/include/cairo-features.h \\
+/dfb/include/cairo-ft.h \\
+/dfb/include/cairo-gobject.h \\
+/dfb/include/cairo-pdf.h \\
+/dfb/include/cairo-ps.h \\
+/dfb/include/cairo-svg.h \\
+/dfb/include/cairo-version.h \\
+/dfb/lib/libcairo.so \\
+/dfb/lib/libcairo-gobject.so \\
+/dfb/lib/pkgconfig/cairo.pc \\
+/dfb/lib/pkgconfig/cairo-gobject.pc
+
+exec=\\
+/dfb/bin/cairo-trace \\
+/dfb/lib/libcairo.so.2  \\
+/dfb/lib/libcairo-gobject.so.2 \\
+/dfb/lib/cairo/libcairo-trace.so
+EOF
+
+exit
+--- cairo-20110910.orig/src/cairo-directfb-surface.c
++++ cairo-20110910/src/cairo-directfb-surface.c
+@@ -41,6 +41,7 @@
+ #include "cairo-clip-private.h"
+ #include "cairo-default-context-private.h"
+ #include "cairo-error-private.h"
++#include "cairo-image-surface-private.h"
+ #include "cairo-pattern-private.h"
+ 
+ #include <pixman.h>

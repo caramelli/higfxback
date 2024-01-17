@@ -1,0 +1,66 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --with-noarch-pkgconfigdir=/x11/lib/pkgconfig --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/Xtrans
+install -m 644 Xtrans.c $DESTDIR/x11/include/X11/Xtrans
+install -m 644 Xtrans.h $DESTDIR/x11/include/X11/Xtrans
+install -m 644 Xtransint.h $DESTDIR/x11/include/X11/Xtrans
+install -m 644 Xtranssock.c $DESTDIR/x11/include/X11/Xtrans
+install -m 644 Xtransutil.c $DESTDIR/x11/include/X11/Xtrans
+install -m 644 transport.c $DESTDIR/x11/include/X11/Xtrans
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xtrans.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/aclocal
+install -m 644 xtrans.m4 $DESTDIR/x11/share/aclocal
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xtrans-build.pc << EOF
+Name: xtrans
+Version: 1.2.5
+Description: X Network Transport layer shared code
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Xtrans/Xtrans.c \\
+/x11/include/X11/Xtrans/Xtrans.h \\
+/x11/include/X11/Xtrans/Xtransint.h \\
+/x11/include/X11/Xtrans/Xtranssock.c \\
+/x11/include/X11/Xtrans/Xtransutil.c \\
+/x11/include/X11/Xtrans/transport.c \\
+/x11/lib/pkgconfig/xtrans.pc \\
+/x11/share/aclocal/xtrans.m4
+EOF
+
+exit
+--- xtrans-1.2.5.orig/Makefile.am
++++ xtrans-1.2.5/Makefile.am
+@@ -12,8 +12,7 @@
+ aclocaldir = $(datadir)/aclocal
+ aclocal_DATA = xtrans.m4
+ 
+-pkgconfigdir = $(datadir)/pkgconfig
+-pkgconfig_DATA = xtrans.pc
++noarch_pkgconfig_DATA = xtrans.pc
+ 
+ EXTRA_DIST = xtrans.pc.in ${aclocal_DATA} ChangeLog Xtrans.mm
+ 
+--- xtrans-1.2.5.orig/configure.ac
++++ xtrans-1.2.5/configure.ac
+@@ -24,6 +24,7 @@
+ AC_INIT(xtrans, [1.2.5], [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xtrans)
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ AM_MAINTAINER_MODE
++PKG_NOARCH_INSTALLDIR
+ 
+ # Require xorg-macros 1.3 or later: XORG_DEFAULT_OPTIONS
+ m4_ifndef([XORG_MACROS_VERSION],

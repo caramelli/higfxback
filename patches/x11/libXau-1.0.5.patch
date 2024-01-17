@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xauth.h $DESTDIR/x11/include/X11
+install -d $DESTDIR/x11/lib
+install .libs/libXau.so.6.* $DESTDIR/x11/lib/libXau.so.6
+ln -sf libXau.so.6 $DESTDIR/x11/lib/libXau.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xau.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxau-build.pc << EOF
+Name: libXau
+Version: 1.0.5
+Description: X authorization library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Xauth.h \\
+/x11/lib/libXau.so \\
+/x11/lib/pkgconfig/xau.pc
+
+exec=\\
+/x11/lib/libXau.so.6
+EOF
+
+exit
+--- libXau-1.0.5.orig/configure.ac
++++ libXau-1.0.5/configure.ac
+@@ -25,6 +25,7 @@
+ 
+ AC_PREREQ([2.57])
+ AC_INIT(libXau, 1.0.5, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],libXau)
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ AM_MAINTAINER_MODE
+ 

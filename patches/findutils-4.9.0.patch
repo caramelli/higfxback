@@ -1,0 +1,40 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.16)
+aclocal -I m4 -I gl/m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install find/find $DESTDIR/bin
+install locate/locate $DESTDIR/bin
+install locate/updatedb $DESTDIR/bin
+install xargs/xargs $DESTDIR/bin
+install -d $DESTDIR/libexec
+install locate/frcode $DESTDIR/libexec
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/findutils-build.pc << EOF
+Name: findutils
+Version: 4.9.0
+Description: GNU utilities to find files
+Requires: $REQUIRES
+
+exec=\\
+/bin/find \\
+/bin/locate \\
+/bin/updatedb \\
+/bin/xargs \\
+/libexec/frcode
+EOF
+
+exit

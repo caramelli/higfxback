@@ -1,0 +1,87 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="bison-build make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+sh ./Configure --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install fbset $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbset-build.pc << EOF
+Name: fbset
+Version: 2.1
+Description: Framebuffer setup utility
+Requires: $REQUIRES
+
+devel=\\
+/bin/fbset
+EOF
+
+exit
+--- fbset-2.1.orig/Configure
++++ fbset-2.1/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
+--- fbset-2.1.orig/Makefile
++++ fbset-2.1/Makefile
+@@ -6,6 +6,7 @@
+ BISON =		bison -d
+ FLEX =		flex
+ INSTALL =	install
++PREFIX = /usr/local
+ RM =		rm -f
+ 
+ All:		fbset
+@@ -24,18 +25,9 @@
+ 		$(BISON) modes.y
+ 
+ install:	fbset
+-		if [ -f /sbin/fbset ]; then rm /sbin/fbset; fi
+-		$(INSTALL) fbset /usr/sbin
+-		$(INSTALL) fbset.8 /usr/man/man8
+-		$(INSTALL) fb.modes.5 /usr/man/man5
+-		if [ ! -c /dev/fb0 ]; then mknod /dev/fb0 c 29 0; fi
+-		if [ ! -c /dev/fb1 ]; then mknod /dev/fb1 c 29 32; fi
+-		if [ ! -c /dev/fb2 ]; then mknod /dev/fb2 c 29 64; fi
+-		if [ ! -c /dev/fb3 ]; then mknod /dev/fb3 c 29 96; fi
+-		if [ ! -c /dev/fb4 ]; then mknod /dev/fb4 c 29 128; fi
+-		if [ ! -c /dev/fb5 ]; then mknod /dev/fb5 c 29 160; fi
+-		if [ ! -c /dev/fb6 ]; then mknod /dev/fb6 c 29 192; fi
+-		if [ ! -c /dev/fb7 ]; then mknod /dev/fb7 c 29 224; fi
++		$(INSTALL) -D fbset $(DESTDIR)$(PREFIX)/bin/fbset
++		$(INSTALL) -D fbset.8 $(DESTDIR)$(PREFIX)/share/man/man8/fbset.8
++		$(INSTALL) -D fb.modes.5 $(DESTDIR)$(PREFIX)/share/man/man5/fb.modes.5
+ 
+ clean:
+ 		$(RM) *.o fbset lex.yy.c modes.tab.c modes.tab.h

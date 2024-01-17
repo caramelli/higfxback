@@ -1,0 +1,366 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+sh ./Configure --disable-bootlogd --disable-last --disable-logsave --disable-mesg --disable-mountpoint --disable-readbootlog --disable-sulogin --disable-utmpdump --disable-wall --sbindir /bin --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/fstab-decode $DESTDIR/bin
+install src/halt $DESTDIR/bin
+ln -sf halt $DESTDIR/bin/poweroff
+ln -sf halt $DESTDIR/bin/reboot
+install src/init $DESTDIR/bin
+ln -sf init $DESTDIR/bin/telinit
+install src/killall5 $DESTDIR/bin
+ln -sf killall5 $DESTDIR/bin/pidof
+install src/runlevel $DESTDIR/bin
+install src/shutdown $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/sysvinit-build.pc << EOF
+Name: sysvinit
+Version: 2.96
+Description: System V init system
+Requires: $REQUIRES
+
+exec=\\
+/bin/fstab-decode \\
+/bin/halt \\
+/bin/init \\
+/bin/killall5 \\
+/bin/pidof \\
+/bin/poweroff \\
+/bin/reboot \\
+/bin/runlevel \\
+/bin/shutdown \\
+/bin/telinit
+EOF
+
+exit
+--- sysvinit-2.96.orig/Configure
++++ sysvinit-2.96/Configure
+@@ -0,0 +1,82 @@
++#!/bin/sh
++
++PREFIX=/usr
++SBINDIR=/sbin
++
++BUILD_BOOTLOGD=yes
++BUILD_LAST=yes
++BUILD_LOGSAVE=yes
++BUILD_MESG=yes
++BUILD_MOUNTPOINT=yes
++BUILD_READBOOTLOG=yes
++BUILD_SULOGIN=yes
++BUILD_UTMPDUMP=yes
++BUILD_WALL=yes
++
++WITH_SELINUX=no
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --sbindir)
++      SBINDIR=$2
++      shift
++    ;;
++    --disable-bootlogd)
++      BUILD_BOOTLOGD=no
++    ;;
++    --disable-last)
++      BUILD_LAST=no
++    ;;
++    --disable-logsave)
++      BUILD_LOGSAVE=no
++    ;;
++    --disable-mesg)
++      BUILD_MESG=no
++    ;;
++    --disable-mountpoint)
++      BUILD_MOUNTPOINT=no
++    ;;
++    --disable-readbootlog)
++      BUILD_READBOOTLOG=no
++    ;;
++    --disable-sulogin)
++      BUILD_SULOGIN=no
++    ;;
++    --disable-utmpdump)
++      BUILD_UTMPDUMP=no
++    ;;
++    --disable-wall)
++      BUILD_WALL=no
++    ;;
++    --with-selinux)
++      WITH_SELINUX=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" src/Makefile
++sed -i "/^SBINDIR=/s#=.*#=$SBINDIR#" src/Makefile
++
++sed -i "/^BUILD_BOOTLOGD=/s#=.*#=$BUILD_BOOTLOGD#" src/Makefile
++sed -i "/^BUILD_LAST=/s#=.*#=$BUILD_LAST#" src/Makefile
++sed -i "/^BUILD_LOGSAVE=/s#=.*#=$BUILD_LOGSAVE#" src/Makefile
++sed -i "/^BUILD_MESG=/s#=.*#=$BUILD_MESG#" src/Makefile
++sed -i "/^BUILD_MOUNTPOINT=/s#=.*#=$BUILD_MOUNTPOINT#" src/Makefile
++sed -i "/^BUILD_READBOOTLOG=/s#=.*#=$BUILD_READBOOTLOG#" src/Makefile
++sed -i "/^BUILD_SULOGIN=/s#=.*#=$BUILD_SULOGIN#" src/Makefile
++sed -i "/^BUILD_UTMPDUMP=/s#=.*#=$BUILD_UTMPDUMP#" src/Makefile
++sed -i "/^BUILD_WALL=/s#=.*#=$BUILD_WALL#" src/Makefile
++
++sed -i "/^WITH_SELINUX=/s#=.*#=$WITH_SELINUX#" src/Makefile
+--- sysvinit-2.96.orig/src/Makefile
++++ sysvinit-2.96/src/Makefile
+@@ -8,61 +8,82 @@
+ # Version:	@(#)Makefile  2.85-13  23-Mar-2004  miquels@cistron.nl
+ #
+ 
++PREFIX=/usr
++SBINDIR=/sbin
++
++BUILD_BOOTLOGD=yes
++BUILD_LAST=yes
++BUILD_LOGSAVE=yes
++BUILD_MESG=yes
++BUILD_MOUNTPOINT=yes
++BUILD_READBOOTLOG=yes
++BUILD_SULOGIN=yes
++BUILD_UTMPDUMP=yes
++BUILD_WALL=yes
++
++WITH_SELINUX=no
++
+ CPPFLAGS =
+ CFLAGS  ?= -O2
+-override CFLAGS += -ansi -fomit-frame-pointer -fstack-protector-strong -W -Wall -Wunreachable-code -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -D_XOPEN_SOURCE -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
++override CFLAGS += -ansi -fomit-frame-pointer -fstack-protector -W -Wall -Wunreachable-code -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -D_XOPEN_SOURCE -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
+ override CFLAGS += $(shell getconf LFS_CFLAGS)
++override CFLAGS += -DSBINDIR=\"$(SBINDIR)\"
+ STATIC	=
+ MANDB	:= s@^\('\\\\\"\)[^\*-]*-\*- coding: [^[:blank:]]\+ -\*-@\1@
+ 
+-#
+-# Leave empty if the mountpoint(1) command from util-linux 2.20
+-# and above should be used, otherwise set it to yes.
+-#
+-MNTPOINT=
+-
+ # For some known distributions we do not build all programs, otherwise we do.
+ BIN	=
+-SBIN	= init halt shutdown runlevel killall5 fstab-decode logsave
+-USRBIN	= last mesg readbootlog
++SBIN	= init halt shutdown runlevel killall5 fstab-decode
++USRBIN	=
+ 
+-MAN1	= last.1 lastb.1 mesg.1 readbootlog.1
++MAN1	=
+ MAN5	= initscript.5 inittab.5 initctl.5
+ MAN8	= halt.8 init.8 killall5.8 pidof.8 poweroff.8 reboot.8 runlevel.8
+-MAN8	+= shutdown.8 telinit.8 fstab-decode.8 logsave.8
++MAN8	+= shutdown.8 telinit.8 fstab-decode.8
+ 
+-ifeq ($(DISTRO),)
+-SBIN	+= sulogin bootlogd
+-USRBIN	+= utmpdump wall
+-MAN1	+= utmpdump.1 wall.1
+-MAN8	+= sulogin.8 bootlogd.8
++ifeq ($(BUILD_BOOTLOGD),yes)
++SBIN	+= bootlogd
++MAN8	+= bootlogd.8
+ endif
+ 
+-ifeq ($(DISTRO),Debian)
+-CPPFLAGS+= -DACCTON_OFF
+-SBIN	+= sulogin bootlogd
+-MAN8	+= sulogin.8 bootlogd.8
+-MANDB	:=
++ifeq ($(BUILD_LAST),yes)
++USRBIN	+= last
++MAN1	+= last.1 lastb.1
+ endif
+ 
+-ifeq ($(DISTRO),Owl)
+-USRBIN	+= wall
+-MAN1	+= wall.1
+-MANDB	:=
++ifeq ($(BUILD_LOGSAVE),yes)
++SBIN	+= logsave
++MAN8	+= logsave.8
++endif
++
++ifeq ($(BUILD_MESG),yes)
++USRBIN	+= mesg
++MAN1	+= mesg.1
+ endif
+ 
+-ifeq ($(DISTRO),SuSE)
+-CPPFLAGS+= -DUSE_SYSFS -DSANE_TIO -DSIGINT_ONLYONCE -DUSE_ONELINE
++ifeq ($(BUILD_MOUNTPOINT),yes)
++BIN	+= mountpoint
++MAN1	+= mountpoint.1
++endif
++
++ifeq ($(BUILD_READBOOTLOG),yes)
++USRBIN	+= readbootlog
++MAN1	+= readbootlog.1
++endif
++
++ifeq ($(BUILD_SULOGIN),yes)
+ SBIN	+= sulogin
++MAN8	+= sulogin.8
++endif
++
++ifeq ($(BUILD_UTMPDUMP),yes)
+ USRBIN	+= utmpdump
+ MAN1	+= utmpdump.1
+-MAN8	+= sulogin.8
+-MANDB	:=
+ endif
+ 
+-ifeq ($(MNTPOINT),yes)
+-BIN	+= mountpoint
+-MAN1	+= mountpoint.1
++ifeq ($(BUILD_WALL),yes)
++USRBIN	+= wall
++MAN1	+= wall.1
+ endif
+ 
+ ID		= $(shell id -u)
+@@ -77,7 +98,7 @@
+   INSTALL_DATA	= install -m 644
+ endif
+ INSTALL_DIR	= install -m 755 -d
+-MANDIR		= /usr/share/man
++MANDIR		= $(PREFIX)/share/man
+ 
+ ifeq ($(WITH_SELINUX),yes)
+   SELINUX_DEF	=  -DWITH_SELINUX
+@@ -90,12 +111,12 @@
+ endif
+ 
+ # Additional libs for GNU libc.
+-ifneq ($(wildcard /usr/lib*/libcrypt.*),)
++ifneq ($(wildcard $(PREFIX)/lib*/libcrypt.*),)
+   SULOGINLIBS	+= -lcrypt
+ endif
+ 
+ # Additional libs for GNU libc / multiarch on Debian based systems.
+-ifneq ($(wildcard /usr/lib/*/libcrypt.*),)
++ifneq ($(wildcard $(PREFIX)/lib/*/libcrypt.*),)
+   SULOGINLIBS	+= -lcrypt
+ endif
+ 
+@@ -189,28 +210,28 @@
+ distclean:	clobber
+ 
+ install:	all
+-		$(INSTALL_DIR) $(ROOT)/bin/ $(ROOT)/sbin/
+-		$(INSTALL_DIR) $(ROOT)/usr/bin/
++		$(INSTALL_DIR) $(ROOT)/bin/ $(ROOT)$(SBINDIR)/
++		$(INSTALL_DIR) $(ROOT)$(PREFIX)/bin/
+ 		for i in $(BIN); do \
+ 			$(INSTALL_EXEC) $$i $(ROOT)/bin/ ; \
+ 		done
+ 		for i in $(SBIN); do \
+-			$(INSTALL_EXEC) $$i $(ROOT)/sbin/ ; \
++			$(INSTALL_EXEC) $$i $(ROOT)$(SBINDIR)/ ; \
+ 		done
+ 		for i in $(USRBIN); do \
+-			$(INSTALL_EXEC) $$i $(ROOT)/usr/bin/ ; \
++			$(INSTALL_EXEC) $$i $(ROOT)$(PREFIX)/bin/ ; \
+ 		done
+ 		# $(INSTALL_DIR) $(ROOT)/etc/
+ 		# $(INSTALL_EXEC) ../doc/initscript.sample $(ROOT)/etc/
+-		ln -sf halt $(ROOT)/sbin/reboot
+-		ln -sf halt $(ROOT)/sbin/poweroff
+-		ln -sf init $(ROOT)/sbin/telinit
+-		ln -sf /sbin/killall5 $(ROOT)/bin/pidof
+-		if [ ! -f $(ROOT)/usr/bin/lastb ]; then \
+-			ln -sf last $(ROOT)/usr/bin/lastb; \
++		ln -sf halt $(ROOT)$(SBINDIR)/reboot
++		ln -sf halt $(ROOT)$(SBINDIR)/poweroff
++		ln -sf init $(ROOT)$(SBINDIR)/telinit
++		ln -sf $(SBINDIR)/killall5 $(ROOT)/bin/pidof
++		if [ -f $(ROOT)$(PREFIX)/bin/last ]; then \
++			ln -sf last $(ROOT)$(PREFIX)/bin/lastb; \
+ 		fi
+-		$(INSTALL_DIR) $(ROOT)/usr/include/
+-		$(INSTALL_DATA) initreq.h $(ROOT)/usr/include/
++		$(INSTALL_DIR) $(ROOT)$(PREFIX)/include/
++		$(INSTALL_DATA) initreq.h $(ROOT)$(PREFIX)/include/
+ 		$(INSTALL_DIR) $(ROOT)$(MANDIR)/man1/
+ 		$(INSTALL_DIR) $(ROOT)$(MANDIR)/man5/
+ 		$(INSTALL_DIR) $(ROOT)$(MANDIR)/man8/
+@@ -226,12 +247,3 @@
+ 			$(INSTALL_DATA) ../man/$$man $(ROOT)$(MANDIR)/man8/; \
+ 			sed -i "1{ $(MANDB); }" $(ROOT)$(MANDIR)/man8/$$man ; \
+ 		done
+-ifeq ($(ROOT),)
+-		#
+-		# This part is skipped on Debian systems, the
+-		# debian.preinst script takes care of it.
+-		@if [ ! -p /run/initctl ]; then \
+-		 echo "Creating /run/initctl"; \
+-		 rm -f /run/initctl; \
+-		 mknod -m 600 /run/initctl p; fi
+-endif
+--- sysvinit-2.96.orig/src/init.c
++++ sysvinit-2.96/src/init.c
+@@ -125,7 +125,7 @@
+ 	"~~",
+ 	"S",
+ 	3,
+-	"/sbin/sulogin",
++	SBINDIR"/sulogin",
+ 	NULL,
+ 	NULL
+ };
+@@ -1397,7 +1397,7 @@
+ 					ch->action = RESPAWN;
+ 					strcpy(ch->id, id);
+ 					strcpy(ch->rlevel, "2345");
+-					sprintf(ch->process, "/sbin/agetty -L -s 115200,38400,9600 %s vt102", dev);
++					sprintf(ch->process, SBINDIR"/agetty -L -s 115200,38400,9600 %s vt102", dev);
+ 					ch->next = NULL;
+ 					for(old = family; old; old = old->next) {
+ 						if (strcmp(old->id, ch->id) == 0) {
+--- sysvinit-2.96.orig/src/paths.h
++++ sysvinit-2.96/src/paths.h
+@@ -27,13 +27,13 @@
+ #define SECURETTY	"/etc/securetty"	/* List of root terminals */
+ #define SDALLOW		"/etc/shutdown.allow"	/* Users allowed to shutdown */
+ #define INITTAB		"/etc/inittab"		/* Location of inittab */
+-#define INIT		"/sbin/init"		/* Location of init itself. */
++#define INIT		SBINDIR"/init"		/* Location of init itself. */
+ #define NOLOGIN		"/etc/nologin"		/* Stop user logging in. */
+ #define FASTBOOT	"/fastboot"		/* Enable fast boot. */
+ #define FORCEFSCK	"/forcefsck"		/* Force fsck on boot */
+ #define SDPID		"/var/run/shutdown.pid"	/* PID of shutdown program */
+ #define SHELL		"/bin/sh"		/* Default shell */
+-#define SULOGIN		"/sbin/sulogin"		/* Sulogin */
++#define SULOGIN		SBINDIR"/sulogin"	/* Sulogin */
+ #define INITSCRIPT	"/etc/initscript"	/* Initscript. */
+ #define PWRSTAT_OLD	"/etc/powerstatus"	/* COMPAT: SIGPWR reason (OK/BAD) */
+ #define PWRSTAT		"/var/run/powerstatus"	/* COMPAT: SIGPWR reason (OK/BAD) */

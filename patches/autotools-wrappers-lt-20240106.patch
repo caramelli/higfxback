@@ -1,0 +1,1435 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.61; am-1.10)
+cd libtool-1.5.26
+find . -name acinclude.m4 | xargs rm -f
+aclocal -I .; autoconf; automake -a -c
+cd libltdl; aclocal -I ..; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-1.5.26 --prefix= --with-aclocal-path=/share/libtool-1.5.26 --with-pkgdata-path=/share/libtool-1.5.26
+cd ..
+# configure (ac-2.61; am-1.10)
+cd libtool-2.2.4
+aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-2.2.4 --prefix=
+cd ..
+# configure (ac-2.62; am-1.10)
+cd libtool-2.2.6
+aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-2.2.6 --prefix=
+cd ..
+# configure (ac-2.64; am-1.11)
+cd libtool-2.2.6b
+aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-2.2.6b --prefix=
+cd ..
+# configure (ac-2.65; am-1.11)
+cd libtool-2.2.10
+aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-2.2.10 --prefix=
+cd ..
+# configure (ac-2.67; am-1.11)
+cd libtool-2.4
+aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-2.4 --prefix=
+cd ..
+# configure (ac-2.68; am-1.11)
+cd libtool-2.4.2
+aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --disable-ltdl-install --program-suffix=-2.4.2 --prefix=
+cd ..
+# configure (ac-2.69; am-1.14)
+cd libtool-2.4.4
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; autoheader; cd -
+./configure --disable-ltdl-install --program-suffix=-2.4.4 --prefix=
+cd ..
+# configure (ac-2.69; am-1.15)
+cd libtool-2.4.6
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; autoheader; cd -
+./configure --disable-ltdl-install --program-suffix=-2.4.6 --prefix=
+cd ..
+# configure (ac-2.69; am-1.16)
+cd libtool-2.4.7
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+cd libltdl; autoheader; cd -
+./configure --disable-ltdl-install --program-suffix=-2.4.7 --prefix=
+cd ..
+
+# build
+make -C libtool-1.5.26
+make aclocaldir=/share/libtool-2.2.4/aclocal pkgdatadir=/share/libtool-2.2.4 -C libtool-2.2.4
+make aclocaldir=/share/libtool-2.2.6/aclocal pkgdatadir=/share/libtool-2.2.6 -C libtool-2.2.6
+make aclocaldir=/share/libtool-2.2.6b/aclocal pkgdatadir=/share/libtool-2.2.6b -C libtool-2.2.6b
+make aclocaldir=/share/libtool-2.2.10/aclocal pkgdatadir=/share/libtool-2.2.10 -C libtool-2.2.10
+make aclocaldir=/share/libtool-2.4/aclocal pkgdatadir=/share/libtool-2.4 -C libtool-2.4
+make aclocaldir=/share/libtool-2.4.2/aclocal pkgdatadir=/share/libtool-2.4.2 -C libtool-2.4.2
+make aclocaldir=/share/libtool-2.4.4/aclocal pkgdatadir=/share/libtool-2.4.4 -C libtool-2.4.4
+make aclocaldir=/share/libtool-2.4.6/aclocal pkgdatadir=/share/libtool-2.4.6 -C libtool-2.4.6
+make aclocaldir=/share/libtool-2.4.7/aclocal pkgdatadir=/share/libtool-2.4.7 -C libtool-2.4.7
+
+# install
+install -d $DESTDIR/bin
+install lt-wrapper.sh $DESTDIR/bin
+ln -sf lt-wrapper.sh $DESTDIR/bin/libtoolize
+
+install -d $DESTDIR/bin
+install libtool-1.5.26/libtoolize $DESTDIR/bin/libtoolize-1.5.26
+install -d $DESTDIR/share/libtool-1.5.26
+install libtool-1.5.26/config.guess $DESTDIR/share/libtool-1.5.26
+install libtool-1.5.26/config.sub $DESTDIR/share/libtool-1.5.26
+install libtool-1.5.26/install-sh $DESTDIR/share/libtool-1.5.26
+install -m 644 libtool-1.5.26/libtool.m4 $DESTDIR/share/libtool-1.5.26
+install -m 644 libtool-1.5.26/ltmain.sh $DESTDIR/share/libtool-1.5.26
+
+install -d $DESTDIR/bin
+install libtool-2.2.4/libtoolize $DESTDIR/bin/libtoolize-2.2.4
+install -d $DESTDIR/share/libtool-2.2.4/aclocal
+install -m 644 libtool-2.2.4/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.2.4/aclocal
+install -m 644 libtool-2.2.4/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.2.4/aclocal
+install -m 644 libtool-2.2.4/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.2.4/aclocal
+install -m 644 libtool-2.2.4/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.2.4/aclocal
+install -m 644 libtool-2.2.4/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.2.4/aclocal
+install -d $DESTDIR/share/libtool-2.2.4/config
+install libtool-2.2.4/libltdl/config/config.guess $DESTDIR/share/libtool-2.2.4/config
+install libtool-2.2.4/libltdl/config/config.sub $DESTDIR/share/libtool-2.2.4/config
+install libtool-2.2.4/libltdl/config/install-sh $DESTDIR/share/libtool-2.2.4/config
+install -m 644 libtool-2.2.4/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.2.4/config
+
+install -d $DESTDIR/bin
+install libtool-2.2.6/libtoolize $DESTDIR/bin/libtoolize-2.2.6
+install -d $DESTDIR/share/libtool-2.2.6/aclocal
+install -m 644 libtool-2.2.6/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.2.6/aclocal
+install -m 644 libtool-2.2.6/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.2.6/aclocal
+install -m 644 libtool-2.2.6/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.2.6/aclocal
+install -m 644 libtool-2.2.6/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.2.6/aclocal
+install -m 644 libtool-2.2.6/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.2.6/aclocal
+install -d $DESTDIR/share/libtool-2.2.6/config
+install libtool-2.2.6/libltdl/config/config.guess $DESTDIR/share/libtool-2.2.6/config
+install libtool-2.2.6/libltdl/config/config.sub $DESTDIR/share/libtool-2.2.6/config
+install libtool-2.2.6/libltdl/config/install-sh $DESTDIR/share/libtool-2.2.6/config
+install -m 644 libtool-2.2.6/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.2.6/config
+
+install -d $DESTDIR/bin
+install libtool-2.2.6b/libtoolize $DESTDIR/bin/libtoolize-2.2.6b
+install -d $DESTDIR/share/libtool-2.2.6b/aclocal
+install -m 644 libtool-2.2.6b/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.2.6b/aclocal
+install -m 644 libtool-2.2.6b/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.2.6b/aclocal
+install -m 644 libtool-2.2.6b/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.2.6b/aclocal
+install -m 644 libtool-2.2.6b/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.2.6b/aclocal
+install -m 644 libtool-2.2.6b/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.2.6b/aclocal
+install -d $DESTDIR/share/libtool-2.2.6b/config
+install libtool-2.2.6b/libltdl/config/config.guess $DESTDIR/share/libtool-2.2.6b/config
+install libtool-2.2.6b/libltdl/config/config.sub $DESTDIR/share/libtool-2.2.6b/config
+install libtool-2.2.6b/libltdl/config/install-sh $DESTDIR/share/libtool-2.2.6b/config
+install -m 644 libtool-2.2.6b/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.2.6b/config
+
+install -d $DESTDIR/bin
+install libtool-2.2.10/libtoolize $DESTDIR/bin/libtoolize-2.2.10
+install -d $DESTDIR/share/libtool-2.2.10/aclocal
+install -m 644 libtool-2.2.10/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.2.10/aclocal
+install -m 644 libtool-2.2.10/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.2.10/aclocal
+install -m 644 libtool-2.2.10/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.2.10/aclocal
+install -m 644 libtool-2.2.10/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.2.10/aclocal
+install -m 644 libtool-2.2.10/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.2.10/aclocal
+install -d $DESTDIR/share/libtool-2.2.10/config
+install libtool-2.2.10/libltdl/config/config.guess $DESTDIR/share/libtool-2.2.10/config
+install libtool-2.2.10/libltdl/config/config.sub $DESTDIR/share/libtool-2.2.10/config
+install libtool-2.2.10/libltdl/config/install-sh $DESTDIR/share/libtool-2.2.10/config
+install -m 644 libtool-2.2.10/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.2.10/config
+
+install -d $DESTDIR/bin
+install libtool-2.4/libtoolize $DESTDIR/bin/libtoolize-2.4
+install -d $DESTDIR/share/libtool-2.4/aclocal
+install -m 644 libtool-2.4/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.4/aclocal
+install -m 644 libtool-2.4/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.4/aclocal
+install -m 644 libtool-2.4/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.4/aclocal
+install -m 644 libtool-2.4/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.4/aclocal
+install -m 644 libtool-2.4/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.4/aclocal
+install -d $DESTDIR/share/libtool-2.4/config
+install libtool-2.4/libltdl/config/config.guess $DESTDIR/share/libtool-2.4/config
+install libtool-2.4/libltdl/config/config.sub $DESTDIR/share/libtool-2.4/config
+install libtool-2.4/libltdl/config/install-sh $DESTDIR/share/libtool-2.4/config
+install -m 644 libtool-2.4/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.4/config
+
+install -d $DESTDIR/bin
+install libtool-2.4.2/libtoolize $DESTDIR/bin/libtoolize-2.4.2
+install -d $DESTDIR/share/libtool-2.4.2/aclocal
+install -m 644 libtool-2.4.2/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.4.2/aclocal
+install -m 644 libtool-2.4.2/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.4.2/aclocal
+install -m 644 libtool-2.4.2/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.4.2/aclocal
+install -m 644 libtool-2.4.2/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.4.2/aclocal
+install -m 644 libtool-2.4.2/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.4.2/aclocal
+install -d $DESTDIR/share/libtool-2.4.2/config
+install libtool-2.4.2/libltdl/config/config.guess $DESTDIR/share/libtool-2.4.2/config
+install libtool-2.4.2/libltdl/config/config.sub $DESTDIR/share/libtool-2.4.2/config
+install libtool-2.4.2/libltdl/config/install-sh $DESTDIR/share/libtool-2.4.2/config
+install -m 644 libtool-2.4.2/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.4.2/config
+
+install -d $DESTDIR/bin
+install libtool-2.4.4/libtoolize $DESTDIR/bin/libtoolize-2.4.4
+install -d $DESTDIR/share/libtool-2.4.4/aclocal
+install -m 644 libtool-2.4.4/m4/libtool.m4 $DESTDIR/share/libtool-2.4.4/aclocal
+install -m 644 libtool-2.4.4/m4/ltoptions.m4 $DESTDIR/share/libtool-2.4.4/aclocal
+install -m 644 libtool-2.4.4/m4/ltsugar.m4 $DESTDIR/share/libtool-2.4.4/aclocal
+install -m 644 libtool-2.4.4/m4/ltversion.m4 $DESTDIR/share/libtool-2.4.4/aclocal
+install -m 644 libtool-2.4.4/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.4.4/aclocal
+install -d $DESTDIR/share/libtool-2.4.4/build-aux
+install libtool-2.4.4/build-aux/config.guess $DESTDIR/share/libtool-2.4.4/build-aux
+install libtool-2.4.4/build-aux/config.sub $DESTDIR/share/libtool-2.4.4/build-aux
+install libtool-2.4.4/build-aux/install-sh $DESTDIR/share/libtool-2.4.4/build-aux
+install -m 644 libtool-2.4.4/build-aux/ltmain.sh $DESTDIR/share/libtool-2.4.4/build-aux
+
+install -d $DESTDIR/bin
+install libtool-2.4.6/libtoolize $DESTDIR/bin/libtoolize-2.4.6
+install -d $DESTDIR/share/libtool-2.4.6/aclocal
+install -m 644 libtool-2.4.6/m4/libtool.m4 $DESTDIR/share/libtool-2.4.6/aclocal
+install -m 644 libtool-2.4.6/m4/ltoptions.m4 $DESTDIR/share/libtool-2.4.6/aclocal
+install -m 644 libtool-2.4.6/m4/ltsugar.m4 $DESTDIR/share/libtool-2.4.6/aclocal
+install -m 644 libtool-2.4.6/m4/ltversion.m4 $DESTDIR/share/libtool-2.4.6/aclocal
+install -m 644 libtool-2.4.6/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.4.6/aclocal
+install -d $DESTDIR/share/libtool-2.4.6/build-aux
+install libtool-2.4.6/build-aux/config.guess $DESTDIR/share/libtool-2.4.6/build-aux
+install libtool-2.4.6/build-aux/config.sub $DESTDIR/share/libtool-2.4.6/build-aux
+install libtool-2.4.6/build-aux/install-sh $DESTDIR/share/libtool-2.4.6/build-aux
+install -m 644 libtool-2.4.6/build-aux/ltmain.sh $DESTDIR/share/libtool-2.4.6/build-aux
+
+install -d $DESTDIR/bin
+install libtool-2.4.7/libtoolize $DESTDIR/bin/libtoolize-2.4.7
+install -d $DESTDIR/share/libtool-2.4.7/aclocal
+install -m 644 libtool-2.4.7/m4/libtool.m4 $DESTDIR/share/libtool-2.4.7/aclocal
+install -m 644 libtool-2.4.7/m4/ltoptions.m4 $DESTDIR/share/libtool-2.4.7/aclocal
+install -m 644 libtool-2.4.7/m4/ltsugar.m4 $DESTDIR/share/libtool-2.4.7/aclocal
+install -m 644 libtool-2.4.7/m4/ltversion.m4 $DESTDIR/share/libtool-2.4.7/aclocal
+install -m 644 libtool-2.4.7/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.4.7/aclocal
+install -d $DESTDIR/share/libtool-2.4.7/build-aux
+install libtool-2.4.7/build-aux/config.guess $DESTDIR/share/libtool-2.4.7/build-aux
+install libtool-2.4.7/build-aux/config.sub $DESTDIR/share/libtool-2.4.7/build-aux
+install libtool-2.4.7/build-aux/install-sh $DESTDIR/share/libtool-2.4.7/build-aux
+install -m 644 libtool-2.4.7/build-aux/ltmain.sh $DESTDIR/share/libtool-2.4.7/build-aux
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/autotools-wrappers-lt-build.pc << EOF
+Name: autotools-wrappers-lt
+Version: 20231206
+Description: GNU Libtool wrapper
+Requires: $REQUIRES
+
+devel=\\
+/bin/libtoolize \\
+/bin/libtoolize-1.5.26 \\
+/bin/libtoolize-2.2.4 \\
+/bin/libtoolize-2.2.6 \\
+/bin/libtoolize-2.2.6b \\
+/bin/libtoolize-2.2.10 \\
+/bin/libtoolize-2.4 \\
+/bin/libtoolize-2.4.2 \\
+/bin/libtoolize-2.4.4 \\
+/bin/libtoolize-2.4.6 \\
+/bin/libtoolize-2.4.7 \\
+/bin/lt-wrapper.sh \\
+/share/libtool-1.5.26/config.guess \\
+/share/libtool-1.5.26/config.sub \\
+/share/libtool-1.5.26/install-sh \\
+/share/libtool-1.5.26/libtool.m4 \\
+/share/libtool-1.5.26/ltmain.sh \\
+/share/libtool-2.2.4/aclocal/libtool.m4 \\
+/share/libtool-2.2.4/aclocal/ltoptions.m4 \\
+/share/libtool-2.2.4/aclocal/ltsugar.m4 \\
+/share/libtool-2.2.4/aclocal/ltversion.m4 \\
+/share/libtool-2.2.4/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.2.4/config/config.guess \\
+/share/libtool-2.2.4/config/config.sub \\
+/share/libtool-2.2.4/config/install-sh \\
+/share/libtool-2.2.4/config/ltmain.sh \\
+/share/libtool-2.2.6/aclocal/libtool.m4 \\
+/share/libtool-2.2.6/aclocal/ltoptions.m4 \\
+/share/libtool-2.2.6/aclocal/ltsugar.m4 \\
+/share/libtool-2.2.6/aclocal/ltversion.m4 \\
+/share/libtool-2.2.6/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.2.6/config/config.guess \\
+/share/libtool-2.2.6/config/config.sub \\
+/share/libtool-2.2.6/config/install-sh \\
+/share/libtool-2.2.6/config/ltmain.sh \\
+/share/libtool-2.2.6b/aclocal/libtool.m4 \\
+/share/libtool-2.2.6b/aclocal/ltoptions.m4 \\
+/share/libtool-2.2.6b/aclocal/ltsugar.m4 \\
+/share/libtool-2.2.6b/aclocal/ltversion.m4 \\
+/share/libtool-2.2.6b/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.2.6b/config/config.guess \\
+/share/libtool-2.2.6b/config/config.sub \\
+/share/libtool-2.2.6b/config/install-sh \\
+/share/libtool-2.2.6b/config/ltmain.sh \\
+/share/libtool-2.2.10/aclocal/libtool.m4 \\
+/share/libtool-2.2.10/aclocal/ltoptions.m4 \\
+/share/libtool-2.2.10/aclocal/ltsugar.m4 \\
+/share/libtool-2.2.10/aclocal/ltversion.m4 \\
+/share/libtool-2.2.10/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.2.10/config/config.guess \\
+/share/libtool-2.2.10/config/config.sub \\
+/share/libtool-2.2.10/config/install-sh \\
+/share/libtool-2.2.10/config/ltmain.sh \\
+/share/libtool-2.4/aclocal/libtool.m4 \\
+/share/libtool-2.4/aclocal/ltoptions.m4 \\
+/share/libtool-2.4/aclocal/ltsugar.m4 \\
+/share/libtool-2.4/aclocal/ltversion.m4 \\
+/share/libtool-2.4/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.4/config/config.guess \\
+/share/libtool-2.4/config/config.sub \\
+/share/libtool-2.4/config/install-sh \\
+/share/libtool-2.4/config/ltmain.sh \\
+/share/libtool-2.4.2/aclocal/libtool.m \\4
+/share/libtool-2.4.2/aclocal/ltoptions.m4 \\
+/share/libtool-2.4.2/aclocal/ltsugar.m4 \\
+/share/libtool-2.4.2/aclocal/ltversion.m4 \\
+/share/libtool-2.4.2/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.4.2/config/config.guess \\
+/share/libtool-2.4.2/config/config.sub \\
+/share/libtool-2.4.2/config/install-sh \\
+/share/libtool-2.4.2/config/ltmain.sh \\
+/share/libtool-2.4.4/aclocal/libtool.m4 \\
+/share/libtool-2.4.4/aclocal/ltoptions.m4 \\
+/share/libtool-2.4.4/aclocal/ltsugar.m4 \\
+/share/libtool-2.4.4/aclocal/ltversion.m4 \\
+/share/libtool-2.4.4/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.4.4/build-aux/config.guess \\
+/share/libtool-2.4.4/build-aux/config.sub \\
+/share/libtool-2.4.4/build-aux/install-sh \\
+/share/libtool-2.4.4/build-aux/ltmain.sh \\
+/share/libtool-2.4.6/aclocal/libtool.m4 \\
+/share/libtool-2.4.6/aclocal/ltoptions.m4 \\
+/share/libtool-2.4.6/aclocal/ltsugar.m4 \\
+/share/libtool-2.4.6/aclocal/ltversion.m4 \\
+/share/libtool-2.4.6/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.4.6/build-aux/config.guess \\
+/share/libtool-2.4.6/build-aux/config.sub \\
+/share/libtool-2.4.6/build-aux/install-sh \\
+/share/libtool-2.4.6/build-aux/ltmain.sh \\
+/share/libtool-2.4.7/aclocal/libtool.m4 \\
+/share/libtool-2.4.7/aclocal/ltoptions.m4 \\
+/share/libtool-2.4.7/aclocal/ltsugar.m4 \\
+/share/libtool-2.4.7/aclocal/ltversion.m4 \\
+/share/libtool-2.4.7/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.4.7/build-aux/config.guess \\
+/share/libtool-2.4.7/build-aux/config.sub \\
+/share/libtool-2.4.7/build-aux/install-sh \\
+/share/libtool-2.4.7/build-aux/ltmain.sh
+EOF
+
+exit
+--- autotools-wrappers-lt-20240106.orig/libtool-1.5.26/configure.ac
++++ autotools-wrappers-lt-20240106/libtool-1.5.26/configure.ac
+@@ -58,10 +58,12 @@
+ ## ------------------------------- ##
+ ## Libtool specific configuration. ##
+ ## ------------------------------- ##
+-pkgdatadir='${datadir}'"/${PACKAGE}"
++AC_ARG_WITH(pkgdata-path, AS_HELP_STRING([--with-pkgdata-path=PATH], [pkgdata]),
++    [pkgdatadir="$withval"], [pkgdatadir="${datadir}/${PACKAGE}"])
+ AC_SUBST([pkgdatadir]) # automake does not need this, but libtoolize does
+ 
+-aclocaldir='${datadir}/aclocal'
++AC_ARG_WITH(aclocal-path, AS_HELP_STRING([--with-aclocal-path=PATH], [aclocal]),
++    [aclocaldir="$withval"], [aclocaldir="${datadir}/aclocal"])
+ AC_SUBST([aclocaldir])
+ 
+ AC_ARG_ENABLE(ltdl-install,
+--- autotools-wrappers-lt-20240106.orig/libtool-1.5.26/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-1.5.26/libtool.m4
+@@ -99,6 +99,8 @@
+ AC_LIBTOOL_SYS_GLOBAL_SYMBOL_PIPE
+ AC_LIBTOOL_OBJDIR
+ 
++AC_REQUIRE([LT_AC_PROG_FILE])dnl
++
+ AC_REQUIRE([_LT_AC_SYS_COMPILER])dnl
+ _LT_AC_PROG_ECHO_BACKSLASH
+ 
+@@ -561,7 +563,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILE conftest.$ac_objext` in
+     *ELF-32*)
+       HPUX_IA64_MODE="32"
+       ;;
+@@ -577,7 +579,7 @@
+   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+    if test "$lt_cv_prog_gnu_ld" = yes; then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILE conftest.$ac_objext` in
+     *32-bit*)
+       LD="${LD-ld} -melf32bsmip"
+       ;;
+@@ -589,7 +591,7 @@
+       ;;
+     esac
+    else
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILE conftest.$ac_objext` in
+     *32-bit*)
+       LD="${LD-ld} -32"
+       ;;
+@@ -610,7 +612,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILE conftest.o` in
+     *32-bit*)
+       case $host in
+         x86_64-*kfreebsd*-gnu)
+@@ -671,7 +673,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILE conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2405,7 +2407,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILE -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -2439,7 +2441,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILE
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -2453,7 +2455,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILE
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -2500,7 +2502,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILE
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -6566,6 +6568,10 @@
+ [AC_CHECK_TOOL(RC, windres, no)
+ ])
+ 
++AC_DEFUN([LT_AC_PROG_FILE],
++[AC_CHECK_TOOL(FILE, file, :)
++])
++
+ 
+ # Cheap backport of AS_EXECUTABLE_P and required macros
+ # from Autoconf 2.59; we should not use $as_executable_p directly.
+--- autotools-wrappers-lt-20240106.orig/libtool-1.5.26/libtoolize.in
++++ autotools-wrappers-lt-20240106/libtool-1.5.26/libtoolize.in
+@@ -364,6 +364,18 @@
+   fi
+ done
+ 
++if test -f libtool.m4 && test -z "$force"; then
++  test -z "$automake" && echo "$progname: \`libtool.m4' exists: use \`--force' to overwrite" 1>&2
++else
++  $rm libtool.m4
++  if test -n "$ln_s" && $ln_s $libtool_m4 libtool.m4; then :
++  elif $cp $libtool_m4 libtool.m4; then :
++  else
++    echo "$progname: cannot copy \`$libtool_m4' to \`libtool.m4'" 1>&2
++    status=1
++  fi
++fi
++
+ exit $status
+ 
+ # Local Variables:
+--- autotools-wrappers-lt-20240106.orig/libtool-2.2.10/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.2.10/libltdl/m4/libtool.m4
+@@ -169,6 +169,7 @@
+ m4_require([_LT_FILEUTILS_DEFAULTS])dnl
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+ m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
+@@ -1180,7 +1181,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1196,7 +1197,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1208,7 +1209,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1229,7 +1230,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1290,7 +1291,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2992,7 +2993,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3034,7 +3035,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3052,7 +3053,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3099,7 +3100,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -7099,6 +7100,13 @@
+ AC_SUBST([OBJDUMP])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
+ 
+ # _LT_DECL_SED
+ # ------------
+--- autotools-wrappers-lt-20240106.orig/libtool-2.2.4/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.2.4/libltdl/m4/libtool.m4
+@@ -161,6 +161,7 @@
+ m4_require([_LT_FILEUTILS_DEFAULTS])dnl
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+ m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
+@@ -1219,7 +1220,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1235,7 +1236,7 @@
+   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1247,7 +1248,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1268,7 +1269,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1329,7 +1330,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2983,7 +2984,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3017,7 +3018,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3031,7 +3032,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3078,7 +3079,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -6969,6 +6970,13 @@
+ AC_SUBST([GREP])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
+ 
+ # _LT_DECL_SED
+ # ------------
+--- autotools-wrappers-lt-20240106.orig/libtool-2.2.6/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.2.6/libltdl/m4/libtool.m4
+@@ -161,6 +161,7 @@
+ m4_require([_LT_FILEUTILS_DEFAULTS])dnl
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+ m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
+@@ -1223,7 +1224,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1239,7 +1240,7 @@
+   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1251,7 +1252,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1272,7 +1273,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1333,7 +1334,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2985,7 +2986,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3025,7 +3026,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3039,7 +3040,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3086,7 +3087,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -7017,6 +7018,13 @@
+ AC_SUBST([OBJDUMP])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
+ 
+ # _LT_DECL_SED
+ # ------------
+--- autotools-wrappers-lt-20240106.orig/libtool-2.2.6b/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.2.6b/libltdl/m4/libtool.m4
+@@ -161,6 +161,7 @@
+ m4_require([_LT_FILEUTILS_DEFAULTS])dnl
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+ m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
+@@ -1223,7 +1224,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1239,7 +1240,7 @@
+   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1251,7 +1252,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1272,7 +1273,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1333,7 +1334,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2985,7 +2986,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3025,7 +3026,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3039,7 +3040,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3086,7 +3087,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -7005,7 +7006,6 @@
+ AC_SUBST([GREP])
+ ])
+ 
+-
+ # _LT_DECL_OBJDUMP
+ # --------------
+ # If we don't have a new enough Autoconf to choose the best objdump
+@@ -7017,6 +7017,13 @@
+ AC_SUBST([OBJDUMP])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
+ 
+ # _LT_DECL_SED
+ # ------------
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.4/libltdl/m4/libtool.m4
+@@ -170,6 +170,7 @@
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CHECK_SHAREDLIB_FROM_LINKLIB])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+@@ -1224,7 +1225,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1240,7 +1241,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1252,7 +1253,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1273,7 +1274,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1334,7 +1335,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -3133,7 +3134,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3175,7 +3176,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3193,7 +3194,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3240,7 +3241,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -7538,6 +7539,14 @@
+ AC_SUBST([DLLTOOL])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
++
+ # _LT_DECL_SED
+ # ------------
+ # Check for a fully-functional sed program, that truncates
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4.2/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.4.2/libltdl/m4/libtool.m4
+@@ -172,6 +172,7 @@
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CHECK_SHAREDLIB_FROM_LINKLIB])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+@@ -1268,7 +1269,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1284,7 +1285,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1296,7 +1297,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1317,7 +1318,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1378,7 +1379,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*)
+@@ -3192,7 +3193,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3234,7 +3235,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3252,7 +3253,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3299,7 +3300,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -7689,6 +7690,14 @@
+ AC_SUBST([DLLTOOL])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
++
+ # _LT_DECL_SED
+ # ------------
+ # Check for a fully-functional sed program, that truncates
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4.4/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.4.4/m4/libtool.m4
+@@ -164,6 +164,7 @@
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CHECK_SHAREDLIB_FROM_LINKLIB])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+@@ -1261,7 +1262,7 @@
+   # options accordingly.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE=32
+ 	;;
+@@ -1278,7 +1279,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test yes = "$lt_cv_prog_gnu_ld"; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1290,7 +1291,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1312,7 +1313,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     emul=elf
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *32-bit*)
+ 	emul="${emul}32"
+ 	;;
+@@ -1320,7 +1321,7 @@
+ 	emul="${emul}64"
+ 	;;
+     esac
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *MSB*)
+ 	emul="${emul}btsmip"
+ 	;;
+@@ -1328,7 +1329,7 @@
+ 	emul="${emul}ltsmip"
+ 	;;
+     esac
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *N32*)
+ 	emul="${emul}n32"
+ 	;;
+@@ -1348,14 +1349,14 @@
+   # not appear in the list.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+ 	    LD="${LD-ld} -m elf_i386_fbsd"
+ 	    ;;
+ 	  x86_64-*linux*)
+-	    case `/usr/bin/file conftest.o` in
++	    case `$FILECMD conftest.o` in
+ 	      *x86-64*)
+ 		LD="${LD-ld} -m elf32_x86_64"
+ 		;;
+@@ -1423,7 +1424,7 @@
+   # options accordingly.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*)
+@@ -3359,7 +3360,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3400,7 +3401,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3414,7 +3415,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3461,7 +3462,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -8138,6 +8139,14 @@
+ AC_SUBST([DLLTOOL])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
++
+ # _LT_DECL_SED
+ # ------------
+ # Check for a fully-functional sed program, that truncates
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4.6/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.4.6/m4/libtool.m4
+@@ -181,6 +181,7 @@
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CHECK_SHAREDLIB_FROM_LINKLIB])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+@@ -1292,7 +1293,7 @@
+   # options accordingly.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE=32
+ 	;;
+@@ -1309,7 +1310,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test yes = "$lt_cv_prog_gnu_ld"; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1321,7 +1322,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1343,7 +1344,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     emul=elf
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *32-bit*)
+ 	emul="${emul}32"
+ 	;;
+@@ -1351,7 +1352,7 @@
+ 	emul="${emul}64"
+ 	;;
+     esac
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *MSB*)
+ 	emul="${emul}btsmip"
+ 	;;
+@@ -1359,7 +1360,7 @@
+ 	emul="${emul}ltsmip"
+ 	;;
+     esac
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *N32*)
+ 	emul="${emul}n32"
+ 	;;
+@@ -1379,14 +1380,14 @@
+   # not appear in the list.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+ 	    LD="${LD-ld} -m elf_i386_fbsd"
+ 	    ;;
+ 	  x86_64-*linux*)
+-	    case `/usr/bin/file conftest.o` in
++	    case `$FILECMD conftest.o` in
+ 	      *x86-64*)
+ 		LD="${LD-ld} -m elf32_x86_64"
+ 		;;
+@@ -1454,7 +1455,7 @@
+   # options accordingly.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*)
+@@ -3454,7 +3455,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3495,7 +3496,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3509,7 +3510,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3556,7 +3557,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -8189,6 +8190,14 @@
+ AC_SUBST([DLLTOOL])
+ ])
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
++
+ # _LT_DECL_SED
+ # ------------
+ # Check for a fully-functional sed program, that truncates
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4.7/Makefile.am
++++ autotools-wrappers-lt-20240106/libtool-2.4.7/Makefile.am
+@@ -289,6 +289,8 @@
+ 	$(AM_V_GEN)$(configure_edit) '$(libtoolize_in)' > '$@'
+ 	$(AM_V_at)chmod a+x '$@'
+ 	$(AM_V_at)chmod a-w '$@'
++	$(SED) -i '1s|.*|#! $(ENV) sh|' '$@'
++	$(SED) -i '1s|.*|#! $(ENV) sh|' '$(ltmain_sh)'
+ 
+ # We used to do this with a 'stamp-vcl' file, but non-gmake builds
+ # would rerun configure on every invocation, so now we manually
+@@ -421,7 +423,7 @@
+ # files created in the build tree, so instead we regenerate the
+ # manual pages if the sources for the build-tree files we want to
+ # run have changed.
+-$(libtool_1): $(ltmain_sh)
++$(libtool_1): $(ltmain_in)
+ 	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
+ $(libtoolize_1): $(libtoolize_in)
+ 	$(AM_V_GEN)$(update_mans) libtoolize
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4.7/configure.ac
++++ autotools-wrappers-lt-20240106/libtool-2.4.7/configure.ac
+@@ -85,6 +85,7 @@
+ ## Shell tools. ##
+ ## ------------ ##
+ 
++AC_PATH_PROG([ENV], [env])
+ AC_PROG_GNU_M4
+ 
+ 
+--- autotools-wrappers-lt-20240106.orig/libtool-2.4.7/m4/libtool.m4
++++ autotools-wrappers-lt-20240106/libtool-2.4.7/m4/libtool.m4
+@@ -8218,7 +8218,7 @@
+ m4_defun([_LT_DECL_FILECMD],
+ [AC_CHECK_TOOL([FILECMD], [file], [:])
+ _LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
+-])# _LD_DECL_FILECMD
++])# _LT_DECL_FILECMD
+ 
+ # _LT_DECL_SED
+ # ------------

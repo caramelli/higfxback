@@ -1,0 +1,70 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.71; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install rdjpgcom $DESTDIR/bin
+install wrjpgcom $DESTDIR/bin
+install .libs/cjpeg $DESTDIR/bin
+install .libs/djpeg $DESTDIR/bin
+install .libs/jpegtran $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 jconfig.h $DESTDIR/include
+install -m 644 jerror.h $DESTDIR/include
+install -m 644 jmorecfg.h $DESTDIR/include
+install -m 644 jpeglib.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libjpeg.so.9.* $DESTDIR/lib/libjpeg.so.9
+ln -sf libjpeg.so.9 $DESTDIR/lib/libjpeg.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libjpeg.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/jpeg-build.pc << EOF
+Name: jpeg
+Version: 9e
+Description: JPEG library
+Requires: $REQUIRES
+
+devel=\\
+/include/jconfig.h \\
+/include/jerror.h \\
+/include/jmorecfg.h \\
+/include/jpeglib.h \\
+/lib/libjpeg.so \\
+/lib/pkgconfig/libjpeg.pc
+
+exec=\\
+/bin/cjpeg \\
+/bin/djpeg \\
+/bin/jpegtran \\
+/bin/rdjpgcom \\
+/bin/wrjpgcom \\
+/lib/libjpeg.so.9
+EOF
+
+exit
+--- jpeg-9e.orig/configure.ac
++++ jpeg-9e/configure.ac
+@@ -7,6 +7,9 @@
+ 
+ AC_INIT([libjpeg], [9.5.0])
+ 
++# Directory for additional local autotools macros.
++AC_CONFIG_MACRO_DIR([m4])
++
+ # Directory where autotools helper scripts lives.
+ AC_CONFIG_AUX_DIR([.])
+ 

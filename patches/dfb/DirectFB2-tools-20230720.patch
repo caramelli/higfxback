@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build freetype-build libpng-build meson-build"
+
+if ! PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/src/dfbg $DESTDIR/dfb/bin
+install build/src/dfbinfo $DESTDIR/dfb/bin
+install build/src/dfiffinfo $DESTDIR/dfb/bin
+install build/src/dfiffcolorkeying $DESTDIR/dfb/bin
+install build/src/dflayerlevel $DESTDIR/dfb/bin
+install build/src/dfvffinfo $DESTDIR/dfb/bin
+install build/src/mkdfiff $DESTDIR/dfb/bin
+install build/src/mkdgiff $DESTDIR/dfb/bin
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc << EOF
+Name: DirectFB2-tools
+Version: 20230720
+Description: A collection of DirectFB utilities
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/dfbg \\
+/dfb/bin/dfbinfog \\
+/dfb/bin/dfiffinfog \\
+/dfb/bin/dfiffcolorkeyingg \\
+/dfb/bin/dflayerlevelg \\
+/dfb/bin/dfvffinfog \\
+/dfb/bin/mkdfiffg \\
+/dfb/bin/mkdgiff
+EOF
+
+exit

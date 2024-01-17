@@ -1,0 +1,71 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build bison-build util-macros-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --disable-x11 --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/xkbcommon
+install -m 644 xkbcommon/xkbcommon.h $DESTDIR/include/xkbcommon
+install -m 644 xkbcommon/xkbcommon-compat.h $DESTDIR/include/xkbcommon
+install -m 644 xkbcommon/xkbcommon-compose.h $DESTDIR/include/xkbcommon
+install -m 644 xkbcommon/xkbcommon-keysyms.h $DESTDIR/include/xkbcommon
+install -m 644 xkbcommon/xkbcommon-names.h $DESTDIR/include/xkbcommon
+install -d $DESTDIR/lib
+install .libs/libxkbcommon.so.0.* $DESTDIR/lib/libxkbcommon.so.0
+ln -sf libxkbcommon.so.0 $DESTDIR/lib/libxkbcommon.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 xkbcommon.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libxkbcommon-build.pc << EOF
+Name: libxkbcommon
+Version: 0.5.0
+Description: keyboard description handling library
+Requires: $REQUIRES
+
+devel=\\
+/include/libevdev-1.0/libevdev/libevdev.h \\
+/lib/libevdev.so \\
+/lib/pkgconfig/libevdev.pc
+
+exec=\\
+/lib/libevdev.so.1
+EOF
+
+exit
+--- libxkbcommon-0.5.0.orig/configure.ac
++++ libxkbcommon-0.5.0/configure.ac
+@@ -42,8 +42,8 @@
+ 
+ # Add xorg-macros stuff
+ m4_ifndef([XORG_MACROS_VERSION],
+-          [m4_fatal([must install xorg-macros 1.16 or later before running autoconf/autogen])])
+-XORG_MACROS_VERSION(1.16)
++          [m4_fatal([must install xorg-macros 1.13 or later before running autoconf/autogen])])
++XORG_MACROS_VERSION(1.13)
+ XORG_DEFAULT_OPTIONS
+ XORG_MEMORY_CHECK_FLAGS
+ XORG_ENABLE_DOCS
+@@ -88,9 +88,9 @@
+ AC_CHECK_HEADER([linux/input.h])
+ AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
+ 
+-XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
+-XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wextra -Wno-unused-parameter -Wno-missing-field-initializers])
+-XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wdocumentation])
++if test "x$GCC" = xyes ; then
++    CFLAGS="$CFLAGS -fvisibility=hidden"
++fi
+ 
+ # OpenBSD does not have DT_NEEDED entries for libc by design
+ # so when these flags are passed to ld via libtool the checks will fail

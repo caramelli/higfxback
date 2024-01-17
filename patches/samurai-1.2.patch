@@ -1,0 +1,66 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install samu $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/samurai-build.pc << EOF
+Name: samurai
+Version: 1.2
+Description: Ninja-compatible build automation tool written in C
+Requires: $REQUIRES
+
+devel=\\
+/bin/samu
+EOF
+
+exit
+--- samurai-1.2.orig/Configure
++++ samurai-1.2/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" Makefile
+--- samurai-1.2.orig/Makefile
++++ samurai-1.2/Makefile
+@@ -3,7 +3,7 @@
+ PREFIX=/usr/local
+ BINDIR=$(PREFIX)/bin
+ MANDIR=$(PREFIX)/share/man
+-ALL_CFLAGS=$(CFLAGS) -std=c99 -Wall -Wextra -Wpedantic -Wno-unused-parameter
++ALL_CFLAGS=$(CFLAGS) -std=c99 -Wall -Wextra -Wno-unused-parameter
+ OBJ=\
+ 	build.o\
+ 	deps.o\

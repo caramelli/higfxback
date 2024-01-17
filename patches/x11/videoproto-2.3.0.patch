@@ -1,0 +1,48 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 Xv.h $DESTDIR/x11/include/X11/extensions
+install -m 644 Xvproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 XvMC.h $DESTDIR/x11/include/X11/extensions
+install -m 644 XvMCproto.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 videoproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/videoproto-build.pc << EOF
+Name: videoproto
+Version: 2.3.0
+Description: Video extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/Xv.h \\
+/x11/include/X11/extensions/Xvproto.h \\
+/x11/include/X11/extensions/XvMC.h \\
+/x11/include/X11/extensions/XvMCproto.h \\
+/x11/lib/pkgconfig/bigreqsproto.pc
+EOF
+
+exit
+--- videoproto-2.3.0.orig/XvMCproto.h
++++ videoproto-2.3.0/XvMCproto.h
+@@ -1,6 +1,8 @@
+ #ifndef _XVMCPROTO_H_
+ #define _XVMCPROTO_H_
+ 
++#include <X11/Xmd.h>
++
+ #define xvmc_QueryVersion		0
+ #define xvmc_ListSurfaceTypes		1
+ #define xvmc_CreateContext		2

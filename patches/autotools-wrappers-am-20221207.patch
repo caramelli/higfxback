@@ -1,0 +1,1389 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+cd automake-1.10.3; ./configure --prefix=; cd -
+cd automake-1.11.6; ./configure --prefix=; cd -
+cd automake-1.12.6; ./configure --prefix=; cd -
+cd automake-1.13.4; ./configure --prefix=; cd -
+cd automake-1.14.1; ./configure --prefix=; cd -
+cd automake-1.15.1; ./configure --prefix=; cd -
+cd automake-1.16.5; ./configure --prefix=; cd -
+
+# build
+make -C automake-1.10.3
+make -C automake-1.11.6
+make -C automake-1.12.6
+make -C automake-1.13.4
+make -C automake-1.14.1
+make -C automake-1.15.1
+make -C automake-1.16.5
+
+# install
+install -d $DESTDIR/bin
+install am-wrapper.sh $DESTDIR/bin
+ln -sf am-wrapper.sh $DESTDIR/bin/aclocal
+ln -sf am-wrapper.sh $DESTDIR/bin/automake
+
+install automake-1.10.3/aclocal $DESTDIR/bin/aclocal-1.10
+install automake-1.10.3/automake $DESTDIR/bin/automake-1.10
+install -d $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/amversion.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/as.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/auxdir.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/cond.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/depend.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/depout.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/header.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/init.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/install-sh.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/lex.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/make.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/maintainer.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/minuso.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/missing.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/options.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/protos.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/python.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/runlog.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/sanity.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/strip.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/substnot.m4 $DESTDIR/share/aclocal-1.10
+install -m 644 automake-1.10.3/m4/tar.m4 $DESTDIR/share/aclocal-1.10
+install -d $DESTDIR/share/automake-1.10
+install automake-1.10.3/lib/compile $DESTDIR/share/automake-1.10
+install automake-1.10.3/lib/config.guess $DESTDIR/share/automake-1.10
+install automake-1.10.3/lib/config.sub $DESTDIR/share/automake-1.10
+install automake-1.10.3/lib/depcomp $DESTDIR/share/automake-1.10
+install automake-1.10.3/lib/install-sh $DESTDIR/share/automake-1.10
+install automake-1.10.3/lib/missing $DESTDIR/share/automake-1.10
+install -d $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/ansi2knr.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/check.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/clean.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/clean-hdr.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/compile.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/configure.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/data.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/dejagnu.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/depend.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/depend2.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/distdir.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/footer.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/header.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/header-vars.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/install.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/inst-vars.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/lang-compile.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/lex.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/library.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/libs.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/libtool.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/ltlib.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/ltlibrary.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/mans.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/mans-vars.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/program.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/progs.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/python.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/remake-hdr.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/scripts.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/subdirs.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/tags.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/texi-vers.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/texibuild.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/texinfos.am $DESTDIR/share/automake-1.10/am
+install -m 644 automake-1.10.3/lib/am/yacc.am $DESTDIR/share/automake-1.10/am
+install -d $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Channels.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Condition.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Config.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Item.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/General.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Location.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Options.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Rule.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Struct.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Variable.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Version.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.10/Automake
+install -m 644 automake-1.10.3/lib/Automake/XFile.pm $DESTDIR/share/automake-1.10/Automake
+
+install automake-1.11.6/aclocal $DESTDIR/bin/aclocal-1.11
+install automake-1.11.6/automake $DESTDIR/bin/automake-1.11
+install -d $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/amversion.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/ar-lib.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/as.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/auxdir.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/cond.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/cond-if.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/depend.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/depout.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/header.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/init.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/install-sh.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/lex.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/make.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/maintainer.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/minuso.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/missing.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/options.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/protos.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/python.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/runlog.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/sanity.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/silent.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/strip.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/substnot.m4 $DESTDIR/share/aclocal-1.11
+install -m 644 automake-1.11.6/m4/tar.m4 $DESTDIR/share/aclocal-1.11
+install -d $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/ar-lib $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/compile $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/config.guess $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/config.sub $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/depcomp $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/install-sh $DESTDIR/share/automake-1.11
+install automake-1.11.6/lib/missing $DESTDIR/share/automake-1.11
+install -d $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/ansi2knr.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/check-html.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/check.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/check2.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/clean.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/clean-hdr.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/compile.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/configure.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/data.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/dejagnu.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/depend.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/depend2.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/distdir.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/footer.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/header.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/header-vars.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/install.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/inst-vars.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/lang-compile.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/lex.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/library.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/libs.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/libtool.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/ltlib.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/ltlibrary.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/mans.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/mans-vars.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/program.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/progs.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/python.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/remake-hdr.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/scripts.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/subdirs.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/tags.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/texi-vers.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/texibuild.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/texinfos.am $DESTDIR/share/automake-1.11/am
+install -m 644 automake-1.11.6/lib/am/yacc.am $DESTDIR/share/automake-1.11/am
+install -d $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Channels.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Condition.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Config.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Getopt.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Item.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/General.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Location.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Options.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Rule.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Struct.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Variable.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Version.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.11/Automake
+install -m 644 automake-1.11.6/lib/Automake/XFile.pm $DESTDIR/share/automake-1.11/Automake
+
+install automake-1.12.6/aclocal $DESTDIR/bin/aclocal-1.12
+install automake-1.12.6/automake $DESTDIR/bin/automake-1.12
+install -d $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/amversion.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/ar-lib.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/as.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/auxdir.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/cond.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/cond-if.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/depend.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/depout.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/header.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/init.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/install-sh.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/lex.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/make.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/maintainer.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/minuso.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/missing.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/options.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/protos.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/python.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/runlog.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/sanity.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/silent.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/strip.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/substnot.m4 $DESTDIR/share/aclocal-1.12
+install -m 644 automake-1.12.6/m4/tar.m4 $DESTDIR/share/aclocal-1.12
+install -d $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/ar-lib $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/compile $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/config.guess $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/config.sub $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/depcomp $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/install-sh $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/missing $DESTDIR/share/automake-1.12
+install automake-1.12.6/lib/test-driver $DESTDIR/share/automake-1.12
+install -d $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/contrib/check-html.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/check.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/check2.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/clean.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/clean-hdr.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/compile.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/configure.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/data.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/dejagnu.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/depend.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/depend2.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/distdir.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/footer.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/header.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/header-vars.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/install.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/inst-vars.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/lang-compile.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/lex.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/library.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/libs.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/libtool.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/ltlib.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/ltlibrary.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/mans.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/mans-vars.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/program.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/progs.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/python.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/remake-hdr.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/scripts.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/subdirs.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/tags.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/texi-vers.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/texibuild.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/texinfos.am $DESTDIR/share/automake-1.12/am
+install -m 644 automake-1.12.6/lib/am/yacc.am $DESTDIR/share/automake-1.12/am
+install -d $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Channels.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Condition.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Config.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Getopt.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Item.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/General.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Location.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Options.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Rule.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Variable.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Version.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.12/Automake
+install -m 644 automake-1.12.6/lib/Automake/XFile.pm $DESTDIR/share/automake-1.12/Automake
+
+install automake-1.13.4/aclocal $DESTDIR/bin/aclocal-1.13
+install automake-1.13.4/automake $DESTDIR/bin/automake-1.13
+install -d $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/amversion.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/ar-lib.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/as.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/auxdir.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/cond.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/cond-if.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/depend.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/depout.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/init.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/install-sh.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/lex.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/make.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/maintainer.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/minuso.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/missing.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/options.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/python.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/runlog.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/sanity.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/silent.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/strip.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/substnot.m4 $DESTDIR/share/aclocal-1.13
+install -m 644 automake-1.13.4/m4/tar.m4 $DESTDIR/share/aclocal-1.13
+install -d $DESTDIR/share/aclocal-1.13/internal
+install -m 644 automake-1.13.4/m4/internal/ac-config-macro-dirs.m4 $DESTDIR/share/aclocal-1.13/internal
+install -d $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/ar-lib $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/compile $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/config.guess $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/config.sub $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/depcomp $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/install-sh $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/missing $DESTDIR/share/automake-1.13
+install automake-1.13.4/lib/test-driver $DESTDIR/share/automake-1.13
+install -d $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/contrib/check-html.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/check.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/check2.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/clean.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/clean-hdr.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/compile.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/configure.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/data.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/dejagnu.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/depend.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/depend2.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/distdir.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/footer.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/header.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/header-vars.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/install.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/inst-vars.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/lang-compile.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/lex.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/library.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/libs.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/libtool.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/ltlib.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/ltlibrary.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/mans.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/mans-vars.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/program.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/progs.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/python.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/remake-hdr.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/scripts.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/subdirs.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/tags.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/texi-vers.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/texibuild.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/texinfos.am $DESTDIR/share/automake-1.13/am
+install -m 644 automake-1.13.4/lib/am/yacc.am $DESTDIR/share/automake-1.13/am
+install -d $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Channels.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Condition.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Config.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Getopt.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Item.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/General.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Location.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Options.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Rule.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Variable.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Version.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.13/Automake
+install -m 644 automake-1.13.4/lib/Automake/XFile.pm $DESTDIR/share/automake-1.13/Automake
+
+install automake-1.14.1/bin/aclocal $DESTDIR/bin/aclocal-1.14
+install automake-1.14.1/bin/automake $DESTDIR/bin/automake-1.14
+install -d $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/amversion.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/ar-lib.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/as.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/auxdir.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/cond.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/cond-if.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/depend.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/depout.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/init.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/install-sh.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/lex.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/make.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/maintainer.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/missing.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/options.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/prog-cc-c-o.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/runlog.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/python.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/sanity.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/silent.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/strip.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/substnot.m4 $DESTDIR/share/aclocal-1.14
+install -m 644 automake-1.14.1/m4/tar.m4 $DESTDIR/share/aclocal-1.14
+install -d $DESTDIR/share/aclocal-1.14/internal
+install -m 644 automake-1.14.1/m4/internal/ac-config-macro-dirs.m4 $DESTDIR/share/aclocal-1.14/internal
+install -d $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/ar-lib $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/compile $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/config.guess $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/config.sub $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/depcomp $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/install-sh $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/missing $DESTDIR/share/automake-1.14
+install automake-1.14.1/lib/test-driver $DESTDIR/share/automake-1.14
+install -d $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/contrib/check-html.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/check.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/check2.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/clean.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/clean-hdr.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/compile.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/configure.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/data.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/dejagnu.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/depend.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/depend2.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/distdir.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/footer.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/header.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/header-vars.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/install.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/inst-vars.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/lang-compile.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/lex.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/library.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/libs.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/libtool.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/ltlib.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/ltlibrary.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/mans.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/mans-vars.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/program.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/progs.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/python.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/remake-hdr.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/scripts.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/subdirs.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/tags.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/texi-vers.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/texibuild.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/texinfos.am $DESTDIR/share/automake-1.14/am
+install -m 644 automake-1.14.1/lib/am/yacc.am $DESTDIR/share/automake-1.14/am
+install -d $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Channels.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Condition.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Config.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Getopt.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Item.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/General.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Language.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Location.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Options.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Rule.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Variable.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Version.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.14/Automake
+install -m 644 automake-1.14.1/lib/Automake/XFile.pm $DESTDIR/share/automake-1.14/Automake
+
+install automake-1.15.1/bin/aclocal $DESTDIR/bin/aclocal-1.15
+install automake-1.15.1/bin/automake $DESTDIR/bin/automake-1.15
+install -d $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/amversion.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/ar-lib.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/as.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/auxdir.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/cond.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/cond-if.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/depend.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/depout.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/init.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/install-sh.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/lex.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/make.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/maintainer.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/missing.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/options.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/prog-cc-c-o.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/python.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/runlog.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/sanity.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/silent.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/strip.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/substnot.m4 $DESTDIR/share/aclocal-1.15
+install -m 644 automake-1.15.1/m4/tar.m4 $DESTDIR/share/aclocal-1.15
+install -d $DESTDIR/share/aclocal-1.15/internal
+install -m 644 automake-1.15.1/m4/internal/ac-config-macro-dirs.m4 $DESTDIR/share/aclocal-1.15/internal
+install -d $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/ar-lib $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/compile $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/config.guess $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/config.sub $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/depcomp $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/install-sh $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/missing $DESTDIR/share/automake-1.15
+install automake-1.15.1/lib/test-driver $DESTDIR/share/automake-1.15
+install -d $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/contrib/check-html.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/check.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/check2.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/clean.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/clean-hdr.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/compile.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/configure.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/data.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/dejagnu.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/depend.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/depend2.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/distdir.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/footer.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/header.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/header-vars.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/install.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/inst-vars.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/lang-compile.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/library.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/lex.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/libs.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/libtool.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/ltlib.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/ltlibrary.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/mans.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/mans-vars.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/program.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/progs.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/python.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/remake-hdr.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/scripts.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/subdirs.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/tags.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/texi-vers.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/texibuild.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/texinfos.am $DESTDIR/share/automake-1.15/am
+install -m 644 automake-1.15.1/lib/am/yacc.am $DESTDIR/share/automake-1.15/am
+install -d $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Channels.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Condition.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Config.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Getopt.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Item.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/General.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Language.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Location.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Options.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Rule.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Variable.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Version.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.15/Automake
+install -m 644 automake-1.15.1/lib/Automake/XFile.pm $DESTDIR/share/automake-1.15/Automake
+
+install automake-1.16.5/bin/aclocal $DESTDIR/bin/aclocal-1.16
+install automake-1.16.5/bin/automake $DESTDIR/bin/automake-1.16
+install -d $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/amversion.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/ar-lib.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/as.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/auxdir.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/cond.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/cond-if.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/depend.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/depout.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/init.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/install-sh.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/lead-dot.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/lex.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/make.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/maintainer.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/missing.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/mkdirp.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/options.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/prog-cc-c-o.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/python.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/runlog.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/sanity.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/silent.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/strip.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/substnot.m4 $DESTDIR/share/aclocal-1.16
+install -m 644 automake-1.16.5/m4/tar.m4 $DESTDIR/share/aclocal-1.16
+install -d $DESTDIR/share/aclocal-1.16/internal
+install -m 644 automake-1.16.5/m4/internal/ac-config-macro-dirs.m4 $DESTDIR/share/aclocal-1.16/internal
+install -d $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/ar-lib $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/compile $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/config.guess $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/config.sub $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/depcomp $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/install-sh $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/missing $DESTDIR/share/automake-1.16
+install automake-1.16.5/lib/test-driver $DESTDIR/share/automake-1.16
+install -d $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/contrib/check-html.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/check.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/check2.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/clean.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/clean-hdr.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/compile.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/configure.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/data.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/dejagnu.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/depend.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/depend2.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/distdir.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/footer.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/header.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/header-vars.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/install.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/inst-vars.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/lang-compile.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/lex.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/library.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/libs.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/libtool.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/ltlib.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/ltlibrary.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/mans.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/mans-vars.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/program.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/progs.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/python.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/remake-hdr.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/scripts.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/subdirs.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/tags.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/texi-vers.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/texibuild.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/texinfos.am $DESTDIR/share/automake-1.16/am
+install -m 644 automake-1.16.5/lib/am/yacc.am $DESTDIR/share/automake-1.16/am
+install -d $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/ChannelDefs.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Channels.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Condition.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Config.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Configure_ac.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/DisjConditions.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/FileUtils.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Getopt.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Item.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/ItemDef.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/General.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Language.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Location.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Options.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Rule.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/RuleDef.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/VarDef.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Variable.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Version.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/Wrap.pm $DESTDIR/share/automake-1.16/Automake
+install -m 644 automake-1.16.5/lib/Automake/XFile.pm $DESTDIR/share/automake-1.16/Automake
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/autotools-wrappers-am-build.pc << EOF
+Name: autotools-wrappers-am
+Version: 20221207
+Description: GNU Automake wrapper
+Requires: $REQUIRES
+
+devel=\\
+/bin/aclocal \\
+/bin/aclocal-1.10 \\
+/bin/aclocal-1.11 \\
+/bin/aclocal-1.12 \\
+/bin/aclocal-1.13 \\
+/bin/aclocal-1.14 \\
+/bin/aclocal-1.15 \\
+/bin/aclocal-1.16 \\
+/bin/am-wrapper.sh \\
+/bin/automake \\
+/bin/automake-1.10 \\
+/bin/automake-1.11 \\
+/bin/automake-1.12 \\
+/bin/automake-1.13 \\
+/bin/automake-1.14 \\
+/bin/automake-1.15 \\
+/bin/automake-1.16 \\
+/share/aclocal-1.10/amversion.m4 \\
+/share/aclocal-1.10/as.m4 \\
+/share/aclocal-1.10/auxdir.m4 \\
+/share/aclocal-1.10/cond.m4 \\
+/share/aclocal-1.10/depend.m4 \\
+/share/aclocal-1.10/depout.m4 \\
+/share/aclocal-1.10/header.m4 \\
+/share/aclocal-1.10/init.m4 \\
+/share/aclocal-1.10/install-sh.m4 \\
+/share/aclocal-1.10/lead-dot.m4 \\
+/share/aclocal-1.10/lex.m4 \\
+/share/aclocal-1.10/maintainer.m4 \\
+/share/aclocal-1.10/make.m4 \\
+/share/aclocal-1.10/minuso.m4 \\
+/share/aclocal-1.10/missing.m4 \\
+/share/aclocal-1.10/mkdirp.m4 \\
+/share/aclocal-1.10/options.m4 \\
+/share/aclocal-1.10/protos.m4 \\
+/share/aclocal-1.10/python.m4 \\
+/share/aclocal-1.10/runlog.m4 \\
+/share/aclocal-1.10/sanity.m4 \\
+/share/aclocal-1.10/strip.m4 \\
+/share/aclocal-1.10/substnot.m4 \\
+/share/aclocal-1.10/tar.m4 \\
+/share/aclocal-1.11/amversion.m4 \\
+/share/aclocal-1.11/ar-lib.m4 \\
+/share/aclocal-1.11/as.m4 \\
+/share/aclocal-1.11/auxdir.m4 \\
+/share/aclocal-1.11/cond.m4 \\
+/share/aclocal-1.11/cond-if.m4 \\
+/share/aclocal-1.11/depend.m4 \\
+/share/aclocal-1.11/depout.m4 \\
+/share/aclocal-1.11/header.m4 \\
+/share/aclocal-1.11/init.m4 \\
+/share/aclocal-1.11/install-sh.m4 \\
+/share/aclocal-1.11/lead-dot.m4 \\
+/share/aclocal-1.11/lex.m4 \\
+/share/aclocal-1.11/maintainer.m4 \\
+/share/aclocal-1.11/make.m4 \\
+/share/aclocal-1.11/minuso.m4 \\
+/share/aclocal-1.11/missing.m4 \\
+/share/aclocal-1.11/mkdirp.m4 \\
+/share/aclocal-1.11/options.m4 \\
+/share/aclocal-1.11/protos.m4 \\
+/share/aclocal-1.11/python.m4 \\
+/share/aclocal-1.11/runlog.m4 \\
+/share/aclocal-1.11/sanity.m4 \\
+/share/aclocal-1.11/silent.m4 \\
+/share/aclocal-1.11/strip.m4 \\
+/share/aclocal-1.11/substnot.m4 \\
+/share/aclocal-1.11/tar.m4 \\
+/share/aclocal-1.12/amversion.m4 \\
+/share/aclocal-1.12/ar-lib.m4 \\
+/share/aclocal-1.12/as.m4 \\
+/share/aclocal-1.12/auxdir.m4 \\
+/share/aclocal-1.12/cond.m4 \\
+/share/aclocal-1.12/cond-if.m4 \\
+/share/aclocal-1.12/depend.m4 \\
+/share/aclocal-1.12/depout.m4 \\
+/share/aclocal-1.12/header.m4 \\
+/share/aclocal-1.12/init.m4 \\
+/share/aclocal-1.12/install-sh.m4 \\
+/share/aclocal-1.12/lead-dot.m4 \\
+/share/aclocal-1.12/lex.m4 \\
+/share/aclocal-1.12/maintainer.m4 \\
+/share/aclocal-1.12/make.m4 \\
+/share/aclocal-1.12/minuso.m4 \\
+/share/aclocal-1.12/missing.m4 \\
+/share/aclocal-1.12/mkdirp.m4 \\
+/share/aclocal-1.12/options.m4 \\
+/share/aclocal-1.12/protos.m4 \\
+/share/aclocal-1.12/python.m4 \\
+/share/aclocal-1.12/runlog.m4 \\
+/share/aclocal-1.12/sanity.m4 \\
+/share/aclocal-1.12/silent.m4 \\
+/share/aclocal-1.12/strip.m4 \\
+/share/aclocal-1.12/substnot.m4 \\
+/share/aclocal-1.12/tar.m4 \\
+/share/aclocal-1.13/amversion.m4 \\
+/share/aclocal-1.13/ar-lib.m4 \\
+/share/aclocal-1.13/as.m4 \\
+/share/aclocal-1.13/auxdir.m4 \\
+/share/aclocal-1.13/cond.m4 \\
+/share/aclocal-1.13/cond-if.m4 \\
+/share/aclocal-1.13/depend.m4 \\
+/share/aclocal-1.13/depout.m4 \\
+/share/aclocal-1.13/init.m4 \\
+/share/aclocal-1.13/install-sh.m4 \\
+/share/aclocal-1.13/lead-dot.m4 \\
+/share/aclocal-1.13/lex.m4 \\
+/share/aclocal-1.13/maintainer.m4 \\
+/share/aclocal-1.13/make.m4 \\
+/share/aclocal-1.13/minuso.m4 \\
+/share/aclocal-1.13/missing.m4 \\
+/share/aclocal-1.13/mkdirp.m4 \\
+/share/aclocal-1.13/options.m4 \\
+/share/aclocal-1.13/python.m4 \\
+/share/aclocal-1.13/runlog.m4 \\
+/share/aclocal-1.13/sanity.m4 \\
+/share/aclocal-1.13/silent.m4 \\
+/share/aclocal-1.13/strip.m4 \\
+/share/aclocal-1.13/substnot.m4 \\
+/share/aclocal-1.13/tar.m4 \\
+/share/aclocal-1.13/internal/ac-config-macro-dirs.m4 \\
+/share/aclocal-1.14/amversion.m4 \\
+/share/aclocal-1.14/ar-lib.m4 \\
+/share/aclocal-1.14/as.m4 \\
+/share/aclocal-1.14/auxdir.m4 \\
+/share/aclocal-1.14/cond.m4 \\
+/share/aclocal-1.14/cond-if.m4 \\
+/share/aclocal-1.14/depend.m4 \\
+/share/aclocal-1.14/depout.m4 \\
+/share/aclocal-1.14/init.m4 \\
+/share/aclocal-1.14/install-sh.m4 \\
+/share/aclocal-1.14/lead-dot.m4 \\
+/share/aclocal-1.14/lex.m4 \\
+/share/aclocal-1.14/maintainer.m4 \\
+/share/aclocal-1.14/make.m4 \\
+/share/aclocal-1.14/missing.m4 \\
+/share/aclocal-1.14/mkdirp.m4 \\
+/share/aclocal-1.14/options.m4 \\
+/share/aclocal-1.14/prog-cc-c-o.m4 \\
+/share/aclocal-1.14/python.m4 \\
+/share/aclocal-1.14/runlog.m4 \\
+/share/aclocal-1.14/sanity.m4 \\
+/share/aclocal-1.14/silent.m4 \\
+/share/aclocal-1.14/strip.m4 \\
+/share/aclocal-1.14/substnot.m4 \\
+/share/aclocal-1.14/tar.m4 \\
+/share/aclocal-1.14/internal/ac-config-macro-dirs.m4 \\
+/share/aclocal-1.15/amversion.m4 \\
+/share/aclocal-1.15/ar-lib.m4 \\
+/share/aclocal-1.15/as.m4 \\
+/share/aclocal-1.15/auxdir.m4 \\
+/share/aclocal-1.15/cond.m4 \\
+/share/aclocal-1.15/cond-if.m4 \\
+/share/aclocal-1.15/depend.m4 \\
+/share/aclocal-1.15/depout.m4 \\
+/share/aclocal-1.15/init.m4 \\
+/share/aclocal-1.15/install-sh.m4 \\
+/share/aclocal-1.15/lead-dot.m4 \\
+/share/aclocal-1.15/lex.m4 \\
+/share/aclocal-1.15/maintainer.m4 \\
+/share/aclocal-1.15/make.m4 \\
+/share/aclocal-1.15/missing.m4 \\
+/share/aclocal-1.15/mkdirp.m4 \\
+/share/aclocal-1.15/options.m4 \\
+/share/aclocal-1.15/prog-cc-c-o.m4 \\
+/share/aclocal-1.15/python.m4 \\
+/share/aclocal-1.15/runlog.m4 \\
+/share/aclocal-1.15/sanity.m4 \\
+/share/aclocal-1.15/silent.m4 \\
+/share/aclocal-1.15/strip.m4 \\
+/share/aclocal-1.15/substnot.m4 \\
+/share/aclocal-1.15/tar.m4 \\
+/share/aclocal-1.15/internal/ac-config-macro-dirs.m4 \\
+/share/aclocal-1.16/amversion.m4 \\
+/share/aclocal-1.16/ar-lib.m4 \\
+/share/aclocal-1.16/as.m4 \\
+/share/aclocal-1.16/auxdir.m4 \\
+/share/aclocal-1.16/cond.m4 \\
+/share/aclocal-1.16/cond-if.m4 \\
+/share/aclocal-1.16/depend.m4 \\
+/share/aclocal-1.16/depout.m4 \\
+/share/aclocal-1.16/init.m4 \\
+/share/aclocal-1.16/install-sh.m4 \\
+/share/aclocal-1.16/lead-dot.m4 \\
+/share/aclocal-1.16/lex.m4 \\
+/share/aclocal-1.16/maintainer.m4 \\
+/share/aclocal-1.16/make.m4 \\
+/share/aclocal-1.16/missing.m4 \\
+/share/aclocal-1.16/mkdirp.m4 \\
+/share/aclocal-1.16/options.m4 \\
+/share/aclocal-1.16/prog-cc-c-o.m4 \\
+/share/aclocal-1.16/python.m4 \\
+/share/aclocal-1.16/runlog.m4 \\
+/share/aclocal-1.16/sanity.m4 \\
+/share/aclocal-1.16/silent.m4 \\
+/share/aclocal-1.16/strip.m4 \\
+/share/aclocal-1.16/substnot.m4 \\
+/share/aclocal-1.16/tar.m4 \\
+/share/aclocal-1.16/internal/ac-config-macro-dirs.m4 \\
+/share/automake-1.10/compile \\
+/share/automake-1.10/config.guess \\
+/share/automake-1.10/config.sub \\
+/share/automake-1.10/depcomp \\
+/share/automake-1.10/install-sh \\
+/share/automake-1.10/missing \\
+/share/automake-1.10/am/ansi2knr.am \\
+/share/automake-1.10/am/check.am \\
+/share/automake-1.10/am/clean-hdr.am \\
+/share/automake-1.10/am/clean.am \\
+/share/automake-1.10/am/compile.am \\
+/share/automake-1.10/am/configure.am \\
+/share/automake-1.10/am/data.am \\
+/share/automake-1.10/am/dejagnu.am \\
+/share/automake-1.10/am/depend.am \\
+/share/automake-1.10/am/depend2.am \\
+/share/automake-1.10/am/distdir.am \\
+/share/automake-1.10/am/footer.am \\
+/share/automake-1.10/am/header-vars.am \\
+/share/automake-1.10/am/header.am \\
+/share/automake-1.10/am/inst-vars.am \\
+/share/automake-1.10/am/install.am \\
+/share/automake-1.10/am/lang-compile.am \\
+/share/automake-1.10/am/lex.am \\
+/share/automake-1.10/am/library.am \\
+/share/automake-1.10/am/libs.am \\
+/share/automake-1.10/am/libtool.am \\
+/share/automake-1.10/am/ltlib.am \\
+/share/automake-1.10/am/ltlibrary.am \\
+/share/automake-1.10/am/mans-vars.am \\
+/share/automake-1.10/am/mans.am \\
+/share/automake-1.10/am/program.am \\
+/share/automake-1.10/am/progs.am \\
+/share/automake-1.10/am/python.am \\
+/share/automake-1.10/am/remake-hdr.am \\
+/share/automake-1.10/am/scripts.am \\
+/share/automake-1.10/am/subdirs.am \\
+/share/automake-1.10/am/tags.am \\
+/share/automake-1.10/am/texi-vers.am \\
+/share/automake-1.10/am/texibuild.am \\
+/share/automake-1.10/am/texinfos.am \\
+/share/automake-1.10/am/yacc.am \\
+/share/automake-1.10/Automake/ChannelDefs.pm \\
+/share/automake-1.10/Automake/Channels.pm \\
+/share/automake-1.10/Automake/Condition.pm \\
+/share/automake-1.10/Automake/Config.pm \\
+/share/automake-1.10/Automake/Configure_ac.pm \\
+/share/automake-1.10/Automake/DisjConditions.pm \\
+/share/automake-1.10/Automake/FileUtils.pm \\
+/share/automake-1.10/Automake/General.pm \\
+/share/automake-1.10/Automake/Item.pm \\
+/share/automake-1.10/Automake/ItemDef.pm \\
+/share/automake-1.10/Automake/Location.pm \\
+/share/automake-1.10/Automake/Options.pm \\
+/share/automake-1.10/Automake/Rule.pm \\
+/share/automake-1.10/Automake/RuleDef.pm \\
+/share/automake-1.10/Automake/Struct.pm \\
+/share/automake-1.10/Automake/VarDef.pm \\
+/share/automake-1.10/Automake/Variable.pm \\
+/share/automake-1.10/Automake/Version.pm \\
+/share/automake-1.10/Automake/Wrap.pm \\
+/share/automake-1.10/Automake/XFile.pm \\
+/share/automake-1.11/ar-lib \\
+/share/automake-1.11/compile \\
+/share/automake-1.11/config.guess \\
+/share/automake-1.11/config.sub \\
+/share/automake-1.11/depcomp \\
+/share/automake-1.11/install-sh \\
+/share/automake-1.11/missing \\
+/share/automake-1.11/am/ansi2knr.am \\
+/share/automake-1.11/am/check-html.am \\
+/share/automake-1.11/am/check.am \\
+/share/automake-1.11/am/check2.am \\
+/share/automake-1.11/am/clean-hdr.am \\
+/share/automake-1.11/am/clean.am \\
+/share/automake-1.11/am/compile.am \\
+/share/automake-1.11/am/configure.am \\
+/share/automake-1.11/am/data.am \\
+/share/automake-1.11/am/dejagnu.am \\
+/share/automake-1.11/am/depend.am \\
+/share/automake-1.11/am/depend2.am \\
+/share/automake-1.11/am/distdir.am \\
+/share/automake-1.11/am/footer.am \\
+/share/automake-1.11/am/header-vars.am \\
+/share/automake-1.11/am/header.am \\
+/share/automake-1.11/am/inst-vars.am \\
+/share/automake-1.11/am/install.am \\
+/share/automake-1.11/am/lang-compile.am \\
+/share/automake-1.11/am/lex.am \\
+/share/automake-1.11/am/library.am \\
+/share/automake-1.11/am/libs.am \\
+/share/automake-1.11/am/libtool.am \\
+/share/automake-1.11/am/ltlib.am \\
+/share/automake-1.11/am/ltlibrary.am \\
+/share/automake-1.11/am/mans-vars.am \\
+/share/automake-1.11/am/mans.am \\
+/share/automake-1.11/am/program.am \\
+/share/automake-1.11/am/progs.am \\
+/share/automake-1.11/am/python.am \\
+/share/automake-1.11/am/remake-hdr.am \\
+/share/automake-1.11/am/scripts.am \\
+/share/automake-1.11/am/subdirs.am \\
+/share/automake-1.11/am/tags.am \\
+/share/automake-1.11/am/texi-vers.am \\
+/share/automake-1.11/am/texibuild.am \\
+/share/automake-1.11/am/texinfos.am \\
+/share/automake-1.11/am/yacc.am \\
+/share/automake-1.11/Automake/ChannelDefs.pm \\
+/share/automake-1.11/Automake/Channels.pm \\
+/share/automake-1.11/Automake/Condition.pm \\
+/share/automake-1.11/Automake/Config.pm \\
+/share/automake-1.11/Automake/Configure_ac.pm \\
+/share/automake-1.11/Automake/DisjConditions.pm \\
+/share/automake-1.11/Automake/FileUtils.pm \\
+/share/automake-1.11/Automake/General.pm \\
+/share/automake-1.11/Automake/Getopt.pm \\
+/share/automake-1.11/Automake/Item.pm \\
+/share/automake-1.11/Automake/ItemDef.pm \\
+/share/automake-1.11/Automake/Location.pm \\
+/share/automake-1.11/Automake/Options.pm \\
+/share/automake-1.11/Automake/Rule.pm \\
+/share/automake-1.11/Automake/RuleDef.pm \\
+/share/automake-1.11/Automake/Struct.pm \\
+/share/automake-1.11/Automake/VarDef.pm \\
+/share/automake-1.11/Automake/Variable.pm \\
+/share/automake-1.11/Automake/Version.pm \\
+/share/automake-1.11/Automake/Wrap.pm \\
+/share/automake-1.11/Automake/XFile.pm \\
+/share/automake-1.12/ar-lib \\
+/share/automake-1.12/compile \\
+/share/automake-1.12/config.guess \\
+/share/automake-1.12/config.sub \\
+/share/automake-1.12/depcomp \\
+/share/automake-1.12/install-sh \\
+/share/automake-1.12/missing \\
+/share/automake-1.12/test-driver \\
+/share/automake-1.12/am/check-html.am \\
+/share/automake-1.12/am/check.am \\
+/share/automake-1.12/am/check2.am \\
+/share/automake-1.12/am/clean-hdr.am \\
+/share/automake-1.12/am/clean.am \\
+/share/automake-1.12/am/compile.am \\
+/share/automake-1.12/am/configure.am \\
+/share/automake-1.12/am/data.am \\
+/share/automake-1.12/am/dejagnu.am \\
+/share/automake-1.12/am/depend.am \\
+/share/automake-1.12/am/depend2.am \\
+/share/automake-1.12/am/distdir.am \\
+/share/automake-1.12/am/footer.am \\
+/share/automake-1.12/am/header-vars.am \\
+/share/automake-1.12/am/header.am \\
+/share/automake-1.12/am/inst-vars.am \\
+/share/automake-1.12/am/install.am \\
+/share/automake-1.12/am/lang-compile.am \\
+/share/automake-1.12/am/lex.am \\
+/share/automake-1.12/am/library.am \\
+/share/automake-1.12/am/libs.am \\
+/share/automake-1.12/am/libtool.am \\
+/share/automake-1.12/am/ltlib.am \\
+/share/automake-1.12/am/ltlibrary.am \\
+/share/automake-1.12/am/mans-vars.am \\
+/share/automake-1.12/am/mans.am \\
+/share/automake-1.12/am/program.am \\
+/share/automake-1.12/am/progs.am \\
+/share/automake-1.12/am/python.am \\
+/share/automake-1.12/am/remake-hdr.am \\
+/share/automake-1.12/am/scripts.am \\
+/share/automake-1.12/am/subdirs.am \\
+/share/automake-1.12/am/tags.am \\
+/share/automake-1.12/am/texi-vers.am \\
+/share/automake-1.12/am/texibuild.am \\
+/share/automake-1.12/am/texinfos.am \\
+/share/automake-1.12/am/yacc.am \\
+/share/automake-1.12/Automake/ChannelDefs.pm \\
+/share/automake-1.12/Automake/Channels.pm \\
+/share/automake-1.12/Automake/Condition.pm \\
+/share/automake-1.12/Automake/Config.pm \\
+/share/automake-1.12/Automake/Configure_ac.pm \\
+/share/automake-1.12/Automake/DisjConditions.pm \\
+/share/automake-1.12/Automake/FileUtils.pm \\
+/share/automake-1.12/Automake/General.pm \\
+/share/automake-1.12/Automake/Getopt.pm \\
+/share/automake-1.12/Automake/Item.pm \\
+/share/automake-1.12/Automake/ItemDef.pm \\
+/share/automake-1.12/Automake/Location.pm \\
+/share/automake-1.12/Automake/Options.pm \\
+/share/automake-1.12/Automake/Rule.pm \\
+/share/automake-1.12/Automake/RuleDef.pm \\
+/share/automake-1.12/Automake/VarDef.pm \\
+/share/automake-1.12/Automake/Variable.pm \\
+/share/automake-1.12/Automake/Version.pm \\
+/share/automake-1.12/Automake/Wrap.pm \\
+/share/automake-1.12/Automake/XFile.pm \\
+/share/automake-1.13/ar-lib \\
+/share/automake-1.13/compile \\
+/share/automake-1.13/config.guess \\
+/share/automake-1.13/config.sub \\
+/share/automake-1.13/depcomp \\
+/share/automake-1.13/install-sh \\
+/share/automake-1.13/missing \\
+/share/automake-1.13/test-driver \\
+/share/automake-1.13/am/check-html.am \\
+/share/automake-1.13/am/check.am \\
+/share/automake-1.13/am/check2.am \\
+/share/automake-1.13/am/clean-hdr.am \\
+/share/automake-1.13/am/clean.am \\
+/share/automake-1.13/am/compile.am \\
+/share/automake-1.13/am/configure.am \\
+/share/automake-1.13/am/data.am \\
+/share/automake-1.13/am/dejagnu.am \\
+/share/automake-1.13/am/depend.am \\
+/share/automake-1.13/am/depend2.am \\
+/share/automake-1.13/am/distdir.am \\
+/share/automake-1.13/am/footer.am \\
+/share/automake-1.13/am/header-vars.am \\
+/share/automake-1.13/am/header.am \\
+/share/automake-1.13/am/inst-vars.am \\
+/share/automake-1.13/am/install.am \\
+/share/automake-1.13/am/lang-compile.am \\
+/share/automake-1.13/am/lex.am \\
+/share/automake-1.13/am/library.am \\
+/share/automake-1.13/am/libs.am \\
+/share/automake-1.13/am/libtool.am \\
+/share/automake-1.13/am/ltlib.am \\
+/share/automake-1.13/am/ltlibrary.am \\
+/share/automake-1.13/am/mans-vars.am \\
+/share/automake-1.13/am/mans.am \\
+/share/automake-1.13/am/program.am \\
+/share/automake-1.13/am/progs.am \\
+/share/automake-1.13/am/python.am \\
+/share/automake-1.13/am/remake-hdr.am \\
+/share/automake-1.13/am/scripts.am \\
+/share/automake-1.13/am/subdirs.am \\
+/share/automake-1.13/am/tags.am \\
+/share/automake-1.13/am/texi-vers.am \\
+/share/automake-1.13/am/texibuild.am \\
+/share/automake-1.13/am/texinfos.am \\
+/share/automake-1.13/am/yacc.am \\
+/share/automake-1.13/Automake/ChannelDefs.pm \\
+/share/automake-1.13/Automake/Channels.pm \\
+/share/automake-1.13/Automake/Condition.pm \\
+/share/automake-1.13/Automake/Config.pm \\
+/share/automake-1.13/Automake/Configure_ac.pm \\
+/share/automake-1.13/Automake/DisjConditions.pm \\
+/share/automake-1.13/Automake/FileUtils.pm \\
+/share/automake-1.13/Automake/General.pm \\
+/share/automake-1.13/Automake/Getopt.pm \\
+/share/automake-1.13/Automake/Item.pm \\
+/share/automake-1.13/Automake/ItemDef.pm \\
+/share/automake-1.13/Automake/Location.pm \\
+/share/automake-1.13/Automake/Options.pm \\
+/share/automake-1.13/Automake/Rule.pm \\
+/share/automake-1.13/Automake/RuleDef.pm \\
+/share/automake-1.13/Automake/VarDef.pm \\
+/share/automake-1.13/Automake/Variable.pm \\
+/share/automake-1.13/Automake/Version.pm \\
+/share/automake-1.13/Automake/Wrap.pm \\
+/share/automake-1.13/Automake/XFile.pm \\
+/share/automake-1.14/ar-lib \\
+/share/automake-1.14/compile \\
+/share/automake-1.14/config.guess \\
+/share/automake-1.14/config.sub \\
+/share/automake-1.14/depcomp \\
+/share/automake-1.14/install-sh \\
+/share/automake-1.14/missing \\
+/share/automake-1.14/test-driver \\
+/share/automake-1.14/am/check-html.am \\
+/share/automake-1.14/am/check.am \\
+/share/automake-1.14/am/check2.am \\
+/share/automake-1.14/am/clean-hdr.am \\
+/share/automake-1.14/am/clean.am \\
+/share/automake-1.14/am/compile.am \\
+/share/automake-1.14/am/configure.am \\
+/share/automake-1.14/am/data.am \\
+/share/automake-1.14/am/dejagnu.am \\
+/share/automake-1.14/am/depend.am \\
+/share/automake-1.14/am/depend2.am \\
+/share/automake-1.14/am/distdir.am \\
+/share/automake-1.14/am/footer.am \\
+/share/automake-1.14/am/header-vars.am \\
+/share/automake-1.14/am/header.am \\
+/share/automake-1.14/am/inst-vars.am \\
+/share/automake-1.14/am/install.am \\
+/share/automake-1.14/am/lang-compile.am \\
+/share/automake-1.14/am/lex.am \\
+/share/automake-1.14/am/library.am \\
+/share/automake-1.14/am/libs.am \\
+/share/automake-1.14/am/libtool.am \\
+/share/automake-1.14/am/ltlib.am \\
+/share/automake-1.14/am/ltlibrary.am \\
+/share/automake-1.14/am/mans-vars.am \\
+/share/automake-1.14/am/mans.am \\
+/share/automake-1.14/am/program.am \\
+/share/automake-1.14/am/progs.am \\
+/share/automake-1.14/am/python.am \\
+/share/automake-1.14/am/remake-hdr.am \\
+/share/automake-1.14/am/scripts.am \\
+/share/automake-1.14/am/subdirs.am \\
+/share/automake-1.14/am/tags.am \\
+/share/automake-1.14/am/texi-vers.am \\
+/share/automake-1.14/am/texibuild.am \\
+/share/automake-1.14/am/texinfos.am \\
+/share/automake-1.14/am/yacc.am \\
+/share/automake-1.14/Automake/ChannelDefs.pm \\
+/share/automake-1.14/Automake/Channels.pm \\
+/share/automake-1.14/Automake/Condition.pm \\
+/share/automake-1.14/Automake/Config.pm \\
+/share/automake-1.14/Automake/Configure_ac.pm \\
+/share/automake-1.14/Automake/DisjConditions.pm \\
+/share/automake-1.14/Automake/FileUtils.pm \\
+/share/automake-1.14/Automake/General.pm \\
+/share/automake-1.14/Automake/Getopt.pm \\
+/share/automake-1.14/Automake/Item.pm \\
+/share/automake-1.14/Automake/ItemDef.pm \\
+/share/automake-1.14/Automake/Language.pm \\
+/share/automake-1.14/Automake/Location.pm \\
+/share/automake-1.14/Automake/Options.pm \\
+/share/automake-1.14/Automake/Rule.pm \\
+/share/automake-1.14/Automake/RuleDef.pm \\
+/share/automake-1.14/Automake/VarDef.pm \\
+/share/automake-1.14/Automake/Variable.pm \\
+/share/automake-1.14/Automake/Version.pm \\
+/share/automake-1.14/Automake/Wrap.pm \\
+/share/automake-1.14/Automake/XFile.pm \\
+/share/automake-1.15/ar-lib \\
+/share/automake-1.15/compile \\
+/share/automake-1.15/config.guess \\
+/share/automake-1.15/config.sub \\
+/share/automake-1.15/depcomp \\
+/share/automake-1.15/install-sh \\
+/share/automake-1.15/missing \\
+/share/automake-1.15/test-driver \\
+/share/automake-1.15/am/check-html.am \\
+/share/automake-1.15/am/check.am \\
+/share/automake-1.15/am/check2.am \\
+/share/automake-1.15/am/clean-hdr.am \\
+/share/automake-1.15/am/clean.am \\
+/share/automake-1.15/am/compile.am \\
+/share/automake-1.15/am/configure.am \\
+/share/automake-1.15/am/data.am \\
+/share/automake-1.15/am/dejagnu.am \\
+/share/automake-1.15/am/depend.am \\
+/share/automake-1.15/am/depend2.am \\
+/share/automake-1.15/am/distdir.am \\
+/share/automake-1.15/am/footer.am \\
+/share/automake-1.15/am/header-vars.am \\
+/share/automake-1.15/am/header.am \\
+/share/automake-1.15/am/inst-vars.am \\
+/share/automake-1.15/am/install.am \\
+/share/automake-1.15/am/lang-compile.am \\
+/share/automake-1.15/am/lex.am \\
+/share/automake-1.15/am/library.am \\
+/share/automake-1.15/am/libs.am \\
+/share/automake-1.15/am/libtool.am \\
+/share/automake-1.15/am/ltlib.am \\
+/share/automake-1.15/am/ltlibrary.am \\
+/share/automake-1.15/am/mans-vars.am \\
+/share/automake-1.15/am/mans.am \\
+/share/automake-1.15/am/program.am \\
+/share/automake-1.15/am/progs.am \\
+/share/automake-1.15/am/python.am \\
+/share/automake-1.15/am/remake-hdr.am \\
+/share/automake-1.15/am/scripts.am \\
+/share/automake-1.15/am/subdirs.am \\
+/share/automake-1.15/am/tags.am \\
+/share/automake-1.15/am/texi-vers.am \\
+/share/automake-1.15/am/texibuild.am \\
+/share/automake-1.15/am/texinfos.am \\
+/share/automake-1.15/am/yacc.am \\
+/share/automake-1.15/Automake/ChannelDefs.pm \\
+/share/automake-1.15/Automake/Channels.pm \\
+/share/automake-1.15/Automake/Condition.pm \\
+/share/automake-1.15/Automake/Config.pm \\
+/share/automake-1.15/Automake/Configure_ac.pm \\
+/share/automake-1.15/Automake/DisjConditions.pm \\
+/share/automake-1.15/Automake/FileUtils.pm \\
+/share/automake-1.15/Automake/General.pm \\
+/share/automake-1.15/Automake/Getopt.pm \\
+/share/automake-1.15/Automake/Item.pm \\
+/share/automake-1.15/Automake/ItemDef.pm \\
+/share/automake-1.15/Automake/Language.pm \\
+/share/automake-1.15/Automake/Location.pm \\
+/share/automake-1.15/Automake/Options.pm \\
+/share/automake-1.15/Automake/Rule.pm \\
+/share/automake-1.15/Automake/RuleDef.pm \\
+/share/automake-1.15/Automake/VarDef.pm \\
+/share/automake-1.15/Automake/Variable.pm \\
+/share/automake-1.15/Automake/Version.pm \\
+/share/automake-1.15/Automake/Wrap.pm \\
+/share/automake-1.15/Automake/XFile.pm \\
+/share/automake-1.16/ar-lib \\
+/share/automake-1.16/compile \\
+/share/automake-1.16/config.guess \\
+/share/automake-1.16/config.sub \\
+/share/automake-1.16/depcomp \\
+/share/automake-1.16/install-sh \\
+/share/automake-1.16/missing \\
+/share/automake-1.16/test-driver \\
+/share/automake-1.16/am/check-html.am \\
+/share/automake-1.16/am/check.am \\
+/share/automake-1.16/am/check2.am \\
+/share/automake-1.16/am/clean-hdr.am \\
+/share/automake-1.16/am/clean.am \\
+/share/automake-1.16/am/compile.am \\
+/share/automake-1.16/am/configure.am \\
+/share/automake-1.16/am/data.am \\
+/share/automake-1.16/am/dejagnu.am \\
+/share/automake-1.16/am/depend.am \\
+/share/automake-1.16/am/depend2.am \\
+/share/automake-1.16/am/distdir.am \\
+/share/automake-1.16/am/footer.am \\
+/share/automake-1.16/am/header-vars.am \\
+/share/automake-1.16/am/header.am \\
+/share/automake-1.16/am/inst-vars.am \\
+/share/automake-1.16/am/install.am \\
+/share/automake-1.16/am/lang-compile.am \\
+/share/automake-1.16/am/lex.am \\
+/share/automake-1.16/am/library.am \\
+/share/automake-1.16/am/libs.am \\
+/share/automake-1.16/am/libtool.am \\
+/share/automake-1.16/am/ltlib.am \\
+/share/automake-1.16/am/ltlibrary.am \\
+/share/automake-1.16/am/mans-vars.am \\
+/share/automake-1.16/am/mans.am \\
+/share/automake-1.16/am/program.am \\
+/share/automake-1.16/am/progs.am \\
+/share/automake-1.16/am/python.am \\
+/share/automake-1.16/am/remake-hdr.am \\
+/share/automake-1.16/am/scripts.am \\
+/share/automake-1.16/am/subdirs.am \\
+/share/automake-1.16/am/tags.am \\
+/share/automake-1.16/am/texi-vers.am \\
+/share/automake-1.16/am/texibuild.am \\
+/share/automake-1.16/am/texinfos.am \\
+/share/automake-1.16/am/yacc.am \\
+/share/automake-1.16/Automake/ChannelDefs.pm \\
+/share/automake-1.16/Automake/Channels.pm \\
+/share/automake-1.16/Automake/Condition.pm \\
+/share/automake-1.16/Automake/Config.pm \\
+/share/automake-1.16/Automake/Configure_ac.pm \\
+/share/automake-1.16/Automake/DisjConditions.pm \\
+/share/automake-1.16/Automake/FileUtils.pm \\
+/share/automake-1.16/Automake/General.pm \\
+/share/automake-1.16/Automake/Getopt.pm \\
+/share/automake-1.16/Automake/Item.pm \\
+/share/automake-1.16/Automake/ItemDef.pm \\
+/share/automake-1.16/Automake/Language.pm \\
+/share/automake-1.16/Automake/Location.pm \\
+/share/automake-1.16/Automake/Options.pm \\
+/share/automake-1.16/Automake/Rule.pm \\
+/share/automake-1.16/Automake/RuleDef.pm \\
+/share/automake-1.16/Automake/VarDef.pm \\
+/share/automake-1.16/Automake/Variable.pm \\
+/share/automake-1.16/Automake/Version.pm \\
+/share/automake-1.16/Automake/Wrap.pm \\
+/share/automake-1.16/Automake/XFile.pm
+EOF
+
+exit

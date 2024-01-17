@@ -1,0 +1,37 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.71; am-1.16)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/cmp $DESTDIR/bin
+install src/diff $DESTDIR/bin
+install src/diff3 $DESTDIR/bin
+install src/sdiff $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/diffutils-build.pc << EOF
+Name: diffutils
+Version: 3.8
+Description: GNU utilities for comparing and merging files
+Requires: $REQUIRES
+
+exec=\\
+/bin/cmp \\
+/bin/diff \\
+/bin/diff3 \\
+/bin/sdiff
+EOF
+
+exit

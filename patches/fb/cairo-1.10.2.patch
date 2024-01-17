@@ -1,0 +1,69 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build fontconfig-build glib-build libpng-build pixman-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.67; am-1.11; lt-2.2.6b)
+libtoolize -c -f; aclocal -I build; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --disable-interpreter --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install util/cairo-trace/cairo-trace $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/cairo
+install -m 644 cairo-version.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo-deprecated.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo-features.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo-ft.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo-pdf.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo-ps.h $DESTDIR/fb/include/cairo
+install -m 644 src/cairo-svg.h $DESTDIR/fb/include/cairo
+install -m 644 util/cairo-gobject/cairo-gobject.h $DESTDIR/fb/include/cairo
+install -d $DESTDIR/fb/lib
+install src/.libs/libcairo.so.2.* $DESTDIR/fb/lib/libcairo.so.2
+ln -sf libcairo.so.2 $DESTDIR/fb/lib/libcairo.so
+install util/cairo-gobject/.libs/libcairo-gobject.so.2.* $DESTDIR/fb/lib/libcairo-gobject.so.2
+ln -sf libcairo-gobject.so.2 $DESTDIR/fb/lib/libcairo-gobject.so
+install -d $DESTDIR/fb/lib/cairo
+install util/cairo-trace/.libs/libcairo-trace.so.0.0.0 $DESTDIR/fb/lib/cairo/libcairo-trace.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 src/cairo.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 src/cairo-gobject.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/cairo-build.pc << EOF
+Name: cairo
+Version: 1.10.2
+Description: Cairo drawing library
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/cairo.h \\
+/fb/include/cairo-deprecated.h \\
+/fb/include/cairo-features.h \\
+/fb/include/cairo-ft.h \\
+/fb/include/cairo-gobject.h \\
+/fb/include/cairo-pdf.h \\
+/fb/include/cairo-ps.h \\
+/fb/include/cairo-svg.h \\
+/fb/include/cairo-version.h \\
+/fb/lib/libcairo.so \\
+/fb/lib/libcairo-gobject.so \\
+/fb/lib/pkgconfig/cairo.pc \\
+/fb/lib/pkgconfig/cairo-gobject.pc
+
+exec=\\
+/fb/bin/cairo-trace \\
+/fb/lib/libcairo.so.2  \\
+/fb/lib/libcairo-gobject.so.2 \\
+/fb/lib/cairo/libcairo-trace.so
+EOF
+
+exit

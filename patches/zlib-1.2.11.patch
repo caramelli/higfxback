@@ -1,0 +1,194 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+./configure --shared --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install minigzipsh $DESTDIR/bin/minigzip
+install -d $DESTDIR/include
+install -m 644 zconf.h $DESTDIR/include
+install -m 644 zlib.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libz.so.1.* $DESTDIR/lib/libz.so.1
+ln -sf libz.so.1 $DESTDIR/lib/libz.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 zlib.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/zlib-build.pc << EOF
+Name: zlib
+Version: 1.2.11
+Description: zlib compression library
+Requires: $REQUIRES
+
+devel=\\
+/include/zconf.h \\
+/include/zlib.h \\
+/lib/libz.so \\
+/lib/pkgconfig/zlib.pc
+
+exec=\\
+/bin/minigzip \\
+/lib/libz.so.1
+EOF
+
+exit
+--- zlib-1.2.11.orig/Makefile.in
++++ zlib-1.2.11/Makefile.in
+@@ -40,7 +40,7 @@
+ ARFLAGS=rc
+ RANLIB=ranlib
+ LDCONFIG=ldconfig
+-LDSHAREDLIBC=-lc
++LDSHAREDLIBC=
+ TAR=tar
+ SHELL=/bin/sh
+ EXE=
+@@ -127,7 +127,7 @@
+ 	./infcover
+ 	gcov inf*.c
+ 
+-libz.a: $(OBJS)
++$(STATICLIB): $(OBJS)
+ 	$(AR) $(ARFLAGS) $@ $(OBJS)
+ 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
+ 
+@@ -278,7 +278,7 @@
+ 	-@mv objs/gzwrite.o $@
+ 
+ 
+-placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
++$(SHAREDLIBV): $(PIC_OBJS)
+ 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+ 	rm -f $(SHAREDLIB) $(SHAREDLIBM)
+ 	ln -s $@ $(SHAREDLIB)
+@@ -304,15 +304,18 @@
+ 	$(CC) $(CFLAGS) -o $@ minigzip64.o $(TEST_LDFLAGS)
+ 
+ install-libs: $(LIBS)
+-	-@if [ ! -d $(DESTDIR)$(exec_prefix)  ]; then mkdir -p $(DESTDIR)$(exec_prefix); fi
+ 	-@if [ ! -d $(DESTDIR)$(libdir)       ]; then mkdir -p $(DESTDIR)$(libdir); fi
+ 	-@if [ ! -d $(DESTDIR)$(sharedlibdir) ]; then mkdir -p $(DESTDIR)$(sharedlibdir); fi
+ 	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
+ 	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
+-	rm -f $(DESTDIR)$(libdir)/$(STATICLIB)
+-	cp $(STATICLIB) $(DESTDIR)$(libdir)
+-	chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)
+-	-@($(RANLIB) $(DESTDIR)$(libdir)/libz.a || true) >/dev/null 2>&1
++	-@if test -n "$(STATICLIB)"; then \
++	  rm -f $(DESTDIR)$(libdir)/$(STATICLIB); \
++	  cp $(STATICLIB) $(DESTDIR)$(libdir); \
++	  echo "cp $(STATICLIB) $(DESTDIR)$(libdir)"; \
++	  chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB); \
++	  echo "chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)"; \
++	  ($(RANLIB) $(DESTDIR)$(libdir)/$(STATICLIB) || true) >/dev/null 2>&1; \
++	fi
+ 	-@if test -n "$(SHAREDLIBV)"; then \
+ 	  rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBV); \
+ 	  cp $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir); \
+@@ -322,7 +325,7 @@
+ 	  rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
+ 	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB); \
+ 	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
+-	  ($(LDCONFIG) || true)  >/dev/null 2>&1; \
++	  ($(LDCONFIG) || true) >/dev/null 2>&1; \
+ 	fi
+ 	rm -f $(DESTDIR)$(man3dir)/zlib.3
+ 	cp $(SRCDIR)zlib.3 $(DESTDIR)$(man3dir)
+@@ -341,9 +344,16 @@
+ 
+ uninstall:
+ 	cd $(DESTDIR)$(includedir) && rm -f zlib.h zconf.h
+-	cd $(DESTDIR)$(libdir) && rm -f libz.a; \
+-	if test -n "$(SHAREDLIBV)" -a -f $(SHAREDLIBV); then \
+-	  rm -f $(SHAREDLIBV) $(SHAREDLIB) $(SHAREDLIBM); \
++	cd $(DESTDIR)$(libdir) && \
++	if test -n "$(STATICLIB)"; then \
++	  if test -f $(STATICLIB); then \
++	    rm -f $(STATICLIB); \
++	  fi; \
++	fi; \
++	if test -n "$(SHAREDLIBV)"; then \
++	  if test -f $(SHAREDLIBV); then \
++	    rm -f $(SHAREDLIBV) $(SHAREDLIB) $(SHAREDLIBM); \
++	  fi; \
+ 	fi
+ 	cd $(DESTDIR)$(man3dir) && rm -f zlib.3
+ 	cd $(DESTDIR)$(pkgconfigdir) && rm -f zlib.pc
+--- zlib-1.2.11.orig/configure
++++ zlib-1.2.11/configure
+@@ -3,6 +3,7 @@
+ #
+ # Normally configure builds both a static and a shared library.
+ # If you want to build just a static library, use: ./configure --static
++# If you want to build just a shared library, use: ./configure --shared
+ #
+ # To impose specific compiler or flags or install directory, use for example:
+ #    prefix=$HOME CC=cc CFLAGS="-O4" ./configure
+@@ -69,7 +70,7 @@
+ 
+ # set defaults before processing command line options
+ LDCONFIG=${LDCONFIG-"ldconfig"}
+-LDSHAREDLIBC="${LDSHAREDLIBC--lc}"
++LDSHAREDLIBC=
+ ARCHS=
+ prefix=${prefix-/usr/local}
+ exec_prefix=${exec_prefix-'${prefix}'}
+@@ -78,6 +79,7 @@
+ includedir=${includedir-'${prefix}/include'}
+ mandir=${mandir-'${prefix}/share/man'}
+ shared_ext='.so'
++static=1
+ shared=1
+ solo=0
+ cover=0
+@@ -125,7 +127,7 @@
+     -e* | --eprefix) exec_prefix="$2"; shift; shift ;;
+     -l* | --libdir) libdir="$2"; shift; shift ;;
+     -i* | --includedir) includedir="$2"; shift; shift ;;
+-    -s* | --shared | --enable-shared) shared=1; shift ;;
++    -s* | --shared | --enable-shared) static=0; shift ;;
+     -t | --static) shared=0; shift ;;
+     --solo) solo=1; shift ;;
+     --cover) cover=1; shift ;;
+@@ -406,6 +408,9 @@
+ extern int getchar();
+ int hello() {return getchar();}
+ EOF
++if test $static -eq 1; then
++  echo Building static library $STATICLIB version $VER with $CC. | tee -a configure.log
++fi
+ if test $shared -eq 1; then
+   echo Checking for shared library support... | tee -a configure.log
+   # we must test in two steps (cc then ld), required at least on SunOS 4.x
+@@ -427,7 +432,10 @@
+   SHAREDLIB=""
+   SHAREDLIBV=""
+   SHAREDLIBM=""
+-  echo Building static library $STATICLIB version $VER with $CC. | tee -a configure.log
++elif test $static -eq 0; then
++  ALL="shared"
++  TEST="all testshared"
++  STATICLIB=""
+ else
+   ALL="static shared"
+   TEST="all teststatic testshared"
+@@ -516,8 +524,6 @@
+ if try $CC -c $CFLAGS -D_LARGEFILE64_SOURCE=1 $test.c; then
+   CFLAGS="${CFLAGS} -D_LARGEFILE64_SOURCE=1"
+   SFLAGS="${SFLAGS} -D_LARGEFILE64_SOURCE=1"
+-  ALL="${ALL} all64"
+-  TEST="${TEST} test64"
+   echo "Checking for off64_t... Yes." | tee -a configure.log
+   echo "Checking for fseeko... Yes." | tee -a configure.log
+ else

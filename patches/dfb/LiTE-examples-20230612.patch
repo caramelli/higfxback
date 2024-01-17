@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lite-build meson-build"
+
+if ! PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/src/lite_animation $DESTDIR/dfb/bin
+install build/src/lite_button $DESTDIR/dfb/bin
+install build/src/lite_check $DESTDIR/dfb/bin
+install build/src/lite_image $DESTDIR/dfb/bin
+install build/src/lite_label $DESTDIR/dfb/bin
+install build/src/lite_list $DESTDIR/dfb/bin
+install build/src/lite_progressbar $DESTDIR/dfb/bin
+install build/src/lite_scrollbar $DESTDIR/dfb/bin
+install build/src/lite_slider $DESTDIR/dfb/bin
+install build/src/lite_textbutton $DESTDIR/dfb/bin
+install build/src/lite_textline $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/share/lite-examples
+install -m 644 data/D.dfiff $DESTDIR/dfb/share/lite-examples
+install -m 644 data/directfb-logo.dfiff $DESTDIR/dfb/share/lite-examples
+install -m 644 data/tuxsprites.dfiff $DESTDIR/dfb/share/lite-examples
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/lite-build.pc << EOF
+Name: LiTE
+Version: 20230612
+Description: A collection of LiTE demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/lite_animation \\
+/dfb/bin/lite_button \\
+/dfb/bin/lite_check \\
+/dfb/bin/lite_image \\
+/dfb/bin/lite_label \\
+/dfb/bin/lite_list \\
+/dfb/bin/lite_progressbar \\
+/dfb/bin/lite_scrollbar \\
+/dfb/bin/lite_slider \\
+/dfb/bin/lite_textbutton \\
+/dfb/bin/lite_textline \\
+/dfb/share/lite-examples/D.dfiff \\
+/dfb/share/lite-examples/directfb-logo.dfiff \\
+/dfb/share/lite-examples/tuxsprites.dfiff
+EOF
+
+exit

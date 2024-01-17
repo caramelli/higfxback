@@ -1,0 +1,147 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build glib-build jpeg-build libpng-build tiff-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.66; am-1.11; lt-2.2.10)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install gdk-pixbuf/.libs/gdk-pixbuf-csource $DESTDIR/fb/bin
+install gdk-pixbuf/.libs/gdk-pixbuf-query-loaders $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-animation.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-core.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-enum-types.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-features.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-io.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-loader.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-simple-anim.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-transform.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixdata.h $DESTDIR/fb/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -d $DESTDIR/fb/lib
+install gdk-pixbuf/.libs/libgdk_pixbuf-2.0.so.0.* $DESTDIR/fb/lib/libgdk_pixbuf-2.0.so.0
+ln -sf libgdk_pixbuf-2.0.so.0 $DESTDIR/fb/lib/libgdk_pixbuf-2.0.so
+install -d $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-ani.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-bmp.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-gif.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-icns.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-ico.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-jpeg.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-png.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-pnm.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-qtif.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-tga.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-tiff.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-xbm.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-xpm.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 gdk-pixbuf-2.0.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/gdk-pixbuf-build.pc << EOF
+Name: gdk-pixbuf
+Version: 2.22.1
+Description: Image loading library
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-animation.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-core.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-enum-types.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-features.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-io.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-loader.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-simple-anim.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-transform.h \\
+/fb/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixdata.h \\
+/fb/lib/libgdk_pixbuf-2.0.so \\
+/fb/lib/pkgconfig/gdk-pixbuf-2.0.pc
+
+exec=\\
+/fb/bin/gdk-pixbuf-csource \\
+/fb/bin/gdk-pixbuf-query-loaders \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-ani.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-bmp.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-gif.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-icns.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-ico.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-jpeg.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-pnm.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-qtif.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-tga.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-tiff.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-xbm.so \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-xpm.so \\
+/fb/lib/libgdk_pixbuf-2.0.so.0
+EOF
+
+exit
+--- gdk-pixbuf-2.22.1.orig/gdk-pixbuf/io-png.c
++++ gdk-pixbuf-2.22.1/gdk-pixbuf/io-png.c
+@@ -183,7 +183,7 @@
+                              error_msg);
+         }
+ 
+-        longjmp (png_save_ptr->jmpbuf, 1);
++        longjmp (png_jmpbuf(png_save_ptr), 1);
+ }
+ 
+ static void
+@@ -287,7 +287,7 @@
+ 		return NULL;
+ 	}
+ 
+-	if (setjmp (png_ptr->jmpbuf)) {
++	if (setjmp (png_jmpbuf(png_ptr))) {
+ 	    	g_free (rows);
+ 
+ 		if (pixbuf)
+@@ -459,7 +459,7 @@
+                 return NULL;
+         }
+         
+-	if (setjmp (lc->png_read_ptr->jmpbuf)) {
++	if (setjmp (png_jmpbuf(lc->png_read_ptr))) {
+ 		if (lc->png_info_ptr)
+ 			png_destroy_read_struct(&lc->png_read_ptr, NULL, NULL);
+                 g_free(lc);
+@@ -531,7 +531,7 @@
+         lc->error = error;
+         
+         /* Invokes our callbacks as needed */
+-	if (setjmp (lc->png_read_ptr->jmpbuf)) {
++	if (setjmp (png_jmpbuf(lc->png_read_ptr))) {
+                 lc->error = NULL;
+ 		return FALSE;
+ 	} else {
+@@ -769,7 +769,7 @@
+                              error_msg);
+         }
+ 
+-        longjmp (png_read_ptr->jmpbuf, 1);
++        longjmp (png_jmpbuf(png_read_ptr), 1);
+ }
+ 
+ static void
+@@ -978,7 +978,7 @@
+ 	       success = FALSE;
+ 	       goto cleanup;
+        }
+-       if (setjmp (png_ptr->jmpbuf)) {
++       if (setjmp (png_jmpbuf(png_ptr))) {
+ 	       success = FALSE;
+ 	       goto cleanup;
+        }

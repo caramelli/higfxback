@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libevdev-build mtdev-build udev-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-libwacom --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 src/libinput.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libinput.so.10.* $DESTDIR/lib/libinput.so.10
+ln -sf libinput.so.10 $DESTDIR/lib/libinput.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/libinput.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libinput-build.pc << EOF
+Name: libinput
+Version: 1.4.3
+Description: Input device library
+Requires: $REQUIRES
+
+devel=\\
+/include/libinput.h \\
+/lib/libinput.so \\
+/lib/pkgconfig/libinput.pc
+
+exec=\\
+/lib/libinput.so.10
+EOF
+
+exit

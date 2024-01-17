@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 render.h $DESTDIR/x11/include/X11/extensions
+install -m 644 renderproto.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 renderproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/renderproto-build.pc << EOF
+Name: renderproto
+Version: 0.11
+Description: Render extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/render.h \\
+/x11/include/X11/extensions/renderproto.h \\
+/x11/lib/pkgconfig/renderproto.pc
+EOF
+
+exit
+--- renderproto-0.11.orig/render.h
++++ renderproto-0.11/render.h
+@@ -26,6 +26,8 @@
+ #ifndef _RENDER_H_
+ #define _RENDER_H_
+ 
++#include <X11/Xdefs.h>
++
+ typedef XID		Glyph;
+ typedef XID		GlyphSet;
+ typedef XID		Picture;

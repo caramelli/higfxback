@@ -1,0 +1,33 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xextproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 xfixesproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 xfixeswire.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 fixesproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/fixesproto-build.pc << EOF
+Name: fixesproto
+Version: 4.1.1
+Description: Fixes extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/xfixesproto.h \\
+/x11/include/X11/extensions/xfixeswire.h \\
+/x11/lib/pkgconfig/fixesproto.pc
+EOF
+
+exit

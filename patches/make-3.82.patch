@@ -1,0 +1,296 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="pkg-config-lite-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+sh ./configure.sh --prefix
+
+# build
+./build.sh
+
+# install
+install -d $DESTDIR/bin
+install make $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/make-build.pc << EOF
+Name: make
+Version: 3.82
+Description: GNU make
+
+devel=\\
+/bin/make
+EOF
+
+exit
+--- make-3.82.orig/config.h.linux-gnu
++++ make-3.82/config.h.linux-gnu
+@@ -0,0 +1,171 @@
++/* config.h -- hand-massaged for GNU/Linux system
++Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
++1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
++2010 Free Software Foundation, Inc.
++
++This file is part of GNU Make.
++
++GNU Make is free software; you can redistribute it and/or modify it under the
++terms of the GNU General Public License as published by the Free Software
++Foundation; either version 3 of the License, or (at your option) any later
++version.
++
++GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License along with
++this program.  If not, see <http://www.gnu.org/licenses/>.  */
++
++/* Define to 1 if translation of program messages to the user's native
++   language is requested. */
++#define ENABLE_NLS 1
++
++/* Use high resolution file timestamps if nonzero. */
++#define FILE_TIMESTAMP_HI_RES 1
++
++/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix). */
++#define HAVE_ALLOCA_H 1
++
++/* Define to 1 if your compiler conforms to the ANSI C standard. */
++#define HAVE_ANSI_COMPILER 1
++
++/* Define to 1 if you have the `atexit' function. */
++#define HAVE_ATEXIT 1
++
++/* Define to 1 if you have the clock_gettime function. */
++#define HAVE_CLOCK_GETTIME 1
++
++/* Define to 1 if you have the declaration of `bsd_signal', and to 0 if you
++   don't. */
++#define HAVE_DECL_BSD_SIGNAL 1
++
++/* Define to 1 if you have the declaration of `sys_siglist', and to 0 if you
++   don't. */
++#define HAVE_DECL_SYS_SIGLIST 1
++
++/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'. */
++#define HAVE_DIRENT_H 1
++
++/* Define to 1 if you have the `dup2' function. */
++#define HAVE_DUP2 1
++
++/* Define to 1 if you have the <fcntl.h> header file. */
++#define HAVE_FCNTL_H 1
++
++/* Define to 1 if you have the `fdopen' function. */
++#define HAVE_FDOPEN 1
++
++/* Define to 1 if you have the `fileno' function. */
++#define HAVE_FILENO 1
++
++/* Define to 1 if you have the `getcwd' function. */
++#define HAVE_GETCWD 1
++
++/* Define to 1 if you have the `getrlimit' function. */
++#define HAVE_GETRLIMIT 1
++
++/* Define to 1 if you have a standard gettimeofday function */
++#define HAVE_GETTIMEOFDAY 1
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the <limits.h> header file. */
++#define HAVE_LIMITS_H 1
++
++/* Define to 1 if you have the <locale.h> header file. */
++#define HAVE_LOCALE_H 1
++
++/* Define to 1 if you have the `mkstemp' function. */
++#define HAVE_MKSTEMP 1
++
++/* Define to 1 if you have the `mktemp' function. */
++#define HAVE_MKTEMP 1
++
++/* Define to 1 if you have the `realpath' function. */
++#define HAVE_REALPATH 1
++
++/* Define to 1 if <signal.h> defines the SA_RESTART constant. */
++#define HAVE_SA_RESTART 1
++
++/* Define to 1 if you have the `setegid' function. */
++#define HAVE_SETEGID 1
++
++/* Define to 1 if you have the `seteuid' function. */
++#define HAVE_SETEUID 1
++
++/* Define to 1 if you have the `setrlimit' function. */
++#define HAVE_SETRLIMIT 1
++
++/* Define to 1 if you have the `setvbuf' function. */
++#define HAVE_SETVBUF 1
++
++/* Define to 1 if you have the <stdarg.h> header file. */
++#define HAVE_STDARG_H 1
++
++/* Define to 1 if you have the `strcasecmp' function. */
++#define HAVE_STRCASECMP 1
++
++/* Define to 1 if you have the `strdup' function. */
++#define HAVE_STRDUP 1
++
++/* Define to 1 if you have the `strerror' function. */
++#define HAVE_STRERROR 1
++
++/* Define to 1 if you have the `strncasecmp' function. */
++#define HAVE_STRNCASECMP 1
++
++/* Define to 1 if you have the `strndup' function. */
++#define HAVE_STRNDUP 1
++
++/* Define to 1 if you have the `strsignal' function. */
++#define HAVE_STRSIGNAL 1
++
++/* Define to 1 if you have the <sys/param.h> header file. */
++#define HAVE_SYS_PARAM_H 1
++
++/* Define to 1 if you have the <sys/resource.h> header file. */
++#define HAVE_SYS_RESOURCE_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Define to 1 if you have the `vprintf' function. */
++#define HAVE_VPRINTF 1
++
++/* Define to 1 if you have the `waitpid' function. */
++#define HAVE_WAITPID 1
++
++/* Build host information. */
++#define MAKE_HOST "linux-gnu"
++
++/* Define to 1 to enable job server support in GNU make. */
++#define MAKE_JOBSERVER 1
++
++/* Define to 1 to enable symbolic link timestamp checking. */
++#define MAKE_SYMLINKS 1
++
++/* Name of package */
++#define PACKAGE "make"
++
++/* Define to the character that separates directories in PATH. */
++#define PATH_SEPARATOR_CHAR ':'
++
++/* Define as the return type of signal handlers (`int' or `void'). */
++#define RETSIGTYPE void
++
++/* Define to the name of the SCCS 'get' command. */
++#define SCCS_GET "get"
++
++/* Define to 1 if you have the ANSI C header files. */
++#define STDC_HEADERS 1
++
++/* Define if struct stat contains a nanoseconds field */
++#define ST_MTIM_NSEC tv_nsec
++
++/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
++#define TIME_WITH_SYS_TIME 1
++
++/* Version number of package */
++#define VERSION "3.82"
+--- make-3.82.orig/configure.sh
++++ make-3.82/configure.sh
+@@ -0,0 +1,90 @@
++#!/bin/sh
++# Shell script to configure GNU Make without relying on `autotools'.
++
++# Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
++# 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
++#
++# This file is part of GNU Make.
++#
++# GNU Make is free software; you can redistribute it and/or modify it under
++# the terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
++# details.
++#
++# You should have received a copy of the GNU General Public License along with
++# this program.  If not, see <http://www.gnu.org/licenses/>.
++
++srcdir=.
++
++CC=${CC-gcc}
++CFLAGS=${CFLAGS:-"-g -O2"}
++CPPFLAGS=$CPPFLAGS
++LDFLAGS=$LDFLAGS
++ALLOCA=$ALLOCA
++LIBS=$LIBS
++LIBINTL=$LIBINTL
++LIBOBJS=$LIBOBJS
++REMOTE=${REMOTE-stub}
++GLOBLIB=$GLOBLIB
++PATH_SEPARATOR=${PATH_SEPARATOR-:}
++OBJEXT=${OBJEXT-o}
++EXEEXT=$EXEEXT
++
++prefix=/usr/local
++exec_prefix='${prefix}'
++
++DEFS=-DHAVE_CONFIG_H
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --srcdir)
++      srcdir=$2
++      shift
++    ;;
++    --prefix)
++      prefix=$2
++      shift
++    ;;
++    --exec-prefix)
++      exec_prefix=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed < $srcdir/build.sh.in "
++s|@configure_input@|build.sh.  Generated from build.sh.in by configure.sh.|
++s|@srcdir@|$srcdir|
++s|@CC@|$CC|
++s|@CFLAGS@|$CFLAGS|
++s|@CPPFLAGS@|$CPPFLAGS|
++s|@LDFLAGS@|$LDFLAGS|
++s|@ALLOCA@|$ALLOCA|
++s|@LIBS@|$LIBS|
++s|@LIBINTL@|$LIBINTL|
++s|@LIBOBJS@|$LIBOBJS|
++s|@REMOTE@|$REMOTE|
++s|@GLOBLIB@|$GLOBLIB|
++s|@PATH_SEPARATOR@|$PATH_SEPARATOR|
++s|@OBJEXT@|$OBJEXT|
++s|@EXEEXT@|$EXEEXT|
++s|@prefix@|$prefix|
++s|@exec_prefix@|$exec_prefix|
++s|@DEFS@|$DEFS|
++" > build.sh
++chmod +x build.sh
++
++cp $srcdir/config.h.linux-gnu config.h

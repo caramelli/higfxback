@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/fonts
+install -m 644 FS.h $DESTDIR/x11/include/X11/fonts
+install -m 644 FSproto.h $DESTDIR/x11/include/X11/fonts
+install -m 644 font.h $DESTDIR/x11/include/X11/fonts
+install -m 644 fontproto.h $DESTDIR/x11/include/X11/fonts
+install -m 644 fontstruct.h $DESTDIR/x11/include/X11/fonts
+install -m 644 fsmasks.h $DESTDIR/x11/include/X11/fonts
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 fontsproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/fontsproto-build.pc << EOF
+Name: fontsproto
+Version: 2.1.0
+Description: Fonts extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/fonts/FS.h \\
+/x11/include/X11/fonts/FSproto.h \\
+/x11/include/X11/fonts/font.h \\
+/x11/include/X11/fonts/fontproto.h \\
+/x11/include/X11/fonts/fontstruct.h \\
+/x11/include/X11/fonts/fsmasks.h \\
+/x11/lib/pkgconfig/fontsproto.pc
+EOF
+
+exit

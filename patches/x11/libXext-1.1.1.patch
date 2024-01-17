@@ -1,0 +1,55 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libx11-build xextproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/dpms.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/extutil.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/shape.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/sync.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/Xdbe.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/Xext.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/Xge.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/XShm.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib
+install src/.libs/libXext.so.6.* $DESTDIR/x11/lib/libXext.so.6
+ln -sf libXext.so.6 $DESTDIR/x11/lib/libXext.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xext.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxext-build.pc << EOF
+Name: libXext
+Version: 1.1.1
+Description: X library for common extensions
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/dpms.h \\
+/x11/include/X11/extensions/extutil.h \\
+/x11/include/X11/extensions/shape.h \\
+/x11/include/X11/extensions/sync.h \\
+/x11/include/X11/extensions/Xdbe.h \\
+/x11/include/X11/extensions/Xext.h \\
+/x11/include/X11/extensions/Xge.h \\
+/x11/include/X11/extensions/XShm.h \\
+/x11/lib/libXext.so \\
+/x11/lib/pkgconfig/xext.pc
+
+exec=\\
+/x11/lib/libXext.so.6
+EOF
+
+exit

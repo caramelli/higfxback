@@ -1,0 +1,80 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build expat-build freetype-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --with-xmldir=/etc/fonts --with-templatedir=/etc/fonts/conf.avail --with-default-fonts=/share/fonts --prefix=
+
+# build
+make
+make fonts.conf
+
+# install
+install -d $DESTDIR/bin
+install fc-cache/.libs/fc-cache $DESTDIR/bin
+install fc-cat/.libs/fc-cat $DESTDIR/bin
+install fc-list/.libs/fc-list $DESTDIR/bin
+install fc-match/.libs/fc-match $DESTDIR/bin
+install fc-pattern/.libs/fc-pattern $DESTDIR/bin
+install fc-query/.libs/fc-query $DESTDIR/bin
+install fc-scan/.libs/fc-scan $DESTDIR/bin
+install fc-validate/.libs/fc-validate $DESTDIR/bin
+install -d $DESTDIR/etc/fonts
+install -m 644 fonts.conf $DESTDIR/etc/fonts
+install -d $DESTDIR/etc/fonts/conf.d
+install -m 644 conf.d/60-latin.conf $DESTDIR/etc/fonts/conf.d
+install -d $DESTDIR/include/fontconfig
+install -m 644 fontconfig/fcfreetype.h $DESTDIR/include/fontconfig
+install -m 644 fontconfig/fcprivate.h $DESTDIR/include/fontconfig
+install -m 644 fontconfig/fontconfig.h $DESTDIR/include/fontconfig
+install -d $DESTDIR/lib
+install src/.libs/libfontconfig.so.1.* $DESTDIR/lib/libfontconfig.so.1
+ln -sf libfontconfig.so.1 $DESTDIR/lib/libfontconfig.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 fontconfig.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/fontconfig-build.pc << EOF
+Name: fontconfig
+Version: 2.11.1
+Description: font configuration library
+Requires: $REQUIRES
+
+devel=\\
+/include/fontconfig/fcfreetype.h \\
+/include/fontconfig/fcprivate.h \\
+/include/fontconfig/fontconfig.h \\
+/lib/libfontconfig.so \\
+/lib/pkgconfig/fontconfig.pc
+
+exec=\\
+/bin/fc-cache \\
+/bin/fc-cat \\
+/bin/fc-list \\
+/bin/fc-match \\
+/bin/fc-pattern \\
+/bin/fc-query \\
+/bin/fc-scan \\
+/bin/fc-validate \\
+/etc/fonts/fonts.conf \\
+/etc/fonts/conf.d/60-latin.conf \\
+/lib/libfontconfig.so.1
+EOF
+
+exit
+--- fontconfig-2.11.1.orig/Makefile.am
++++ fontconfig-2.11.1/Makefile.am
+@@ -21,6 +21,8 @@
+ #  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ #  PERFORMANCE OF THIS SOFTWARE.
+ 
++AUTOMAKE_OPTIONS = -Wno-portability
++
+ SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
+ 	fc-cache fc-cat fc-list fc-match fc-pattern fc-query fc-scan \
+ 	fc-validate conf.d test

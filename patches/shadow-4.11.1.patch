@@ -1,0 +1,224 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-static --disable-shadowgrp --disable-subordinate-ids --without-nscd --without-sssd --sbindir=/bin --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/chage $DESTDIR/bin
+install src/chfn $DESTDIR/bin
+install src/chgpasswd $DESTDIR/bin
+install src/chpasswd $DESTDIR/bin
+install src/chsh $DESTDIR/bin
+install src/expiry $DESTDIR/bin
+install src/faillog $DESTDIR/bin
+install src/gpasswd $DESTDIR/bin
+install src/groupadd $DESTDIR/bin
+install src/groupdel $DESTDIR/bin
+install src/groupmems $DESTDIR/bin
+install src/groupmod $DESTDIR/bin
+install src/groups $DESTDIR/bin
+install src/grpck $DESTDIR/bin
+install src/grpconv $DESTDIR/bin
+install src/grpunconv $DESTDIR/bin
+install src/lastlog $DESTDIR/bin
+install src/login $DESTDIR/bin
+install src/logoutd $DESTDIR/bin
+install src/newgrp $DESTDIR/bin
+ln -sf newgrp $DESTDIR/bin/sg
+install src/newusers $DESTDIR/bin
+install src/nologin $DESTDIR/bin
+install src/passwd $DESTDIR/bin
+install src/pwck $DESTDIR/bin
+install src/pwconv $DESTDIR/bin
+install src/pwunconv $DESTDIR/bin
+install src/su $DESTDIR/bin
+install src/useradd $DESTDIR/bin
+install src/userdel $DESTDIR/bin
+install src/usermod $DESTDIR/bin
+install src/vipw $DESTDIR/bin
+ln -sf vipw $DESTDIR/bin/vigr
+install -d $DESTDIR/etc
+cat > $DESTDIR/etc/login.defs << EOF
+PREVENT_NO_AUTH no
+EOF
+install -d $DESTDIR/include/shadow
+install -m 644 lib/getdef.h $DESTDIR/include/shadow
+install -m 644 lib/pwauth.h $DESTDIR/include/shadow
+install -m 644 lib/shadowlog.h $DESTDIR/include/shadow
+install -d $DESTDIR/lib
+install lib/.libs/libshadow.so.0.* $DESTDIR/lib/libshadow.so.0
+ln -sf libshadow.so.0 $DESTDIR/lib/libshadow.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 lib/shadow.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/shadow-build.pc << EOF
+Name: shadow
+Version: 4.11.1
+Description: Managing user and group accounts with support for shadow password format
+Requires: $REQUIRES
+
+devel=\\
+/include/shadow/getdef.h \\
+/include/shadow/pwauth.h \\
+/include/shadow/shadowlog.h \\
+/lib/libshadow.so \\
+/lib/pkgconfig/shadow.pc
+
+exec=\\
+/bin/chage \\
+/bin/chfn \\
+/bin/chgpasswd \\
+/bin/chpasswd \\
+/bin/chsh \\
+/bin/expiry \\
+/bin/faillog \\
+/bin/gpasswd \\
+/bin/groupadd \\
+/bin/groupdel \\
+/bin/groupmems \\
+/bin/groupmod \\
+/bin/groups \\
+/bin/grpck \\
+/bin/grpconv \\
+/bin/grpunconv \\
+/bin/lastlog \\
+/bin/login \\
+/bin/logoutd \\
+/bin/newgrp \\
+/bin/newusers \\
+/bin/nologin \\
+/bin/passwd \\
+/bin/pwck \\
+/bin/pwconv \\
+/bin/pwunconv \\
+/bin/sg \\
+/bin/su \\
+/bin/useradd \\
+/bin/userdel \\
+/bin/usermod \\
+/bin/vigr \\
+/bin/vipw \\
+/etc/login.defs \\
+/lib/libshadow.so.0
+EOF
+
+exit
+--- shadow-4.11.1.orig/configure.ac
++++ shadow-4.11.1/configure.ac
+@@ -737,6 +737,7 @@
+ 	man/zh_TW/Makefile
+ 	libmisc/Makefile
+ 	lib/Makefile
++	lib/shadow.pc
+ 	libsubid/Makefile
+ 	libsubid/subid.h
+ 	src/Makefile
+--- shadow-4.11.1.orig/lib/Makefile.am
++++ shadow-4.11.1/lib/Makefile.am
+@@ -3,7 +3,7 @@
+ 
+ DEFS =
+ 
+-noinst_LTLIBRARIES = libshadow.la
++lib_LTLIBRARIES = libshadow.la
+ 
+ libshadow_la_CPPFLAGS = $(ECONF_CPPFLAGS)
+ if HAVE_VENDORDIR
+@@ -12,6 +12,8 @@
+ 
+ libshadow_la_CPPFLAGS += -I$(top_srcdir)
+ 
++libshadow_la_LIBADD = $(LIBCRYPT)
++
+ libshadow_la_SOURCES = \
+ 	commonio.c \
+ 	commonio.h \
+@@ -72,6 +74,9 @@
+ libshadow_la_SOURCES += tcbfuncs.c tcbfuncs.h
+ endif
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = shadow.pc
++
+ # These files are unneeded for some reason, listed in
+ # order of appearance:
+ #
+@@ -79,4 +84,5 @@
+ 
+ EXTRA_DIST = \
+ 	.indent.pro \
+-	gshadow_.h
++	gshadow_.h \
++	shadow.pc.in
+--- shadow-4.11.1.orig/lib/nss.c
++++ shadow-4.11.1/lib/nss.c
+@@ -1,3 +1,5 @@
++#ifdef ENABLE_SUBIDS
++
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <dlfcn.h>
+@@ -148,3 +150,5 @@
+ 	nss_init(NULL);
+ 	return subid_nss;
+ }
++
++#endif
+--- shadow-4.11.1.orig/lib/prototypes.h
++++ shadow-4.11.1/lib/prototypes.h
+@@ -241,6 +241,7 @@
+ extern /*@null@*//*@only@*/struct passwd *get_my_pwent (void);
+ 
+ /* nss.c */
++#ifdef ENABLE_SUBIDS
+ #include <libsubid/subid.h>
+ extern void nss_init(char *nsswitch_path);
+ extern bool nss_is_initialized();
+@@ -294,7 +295,7 @@
+ };
+ 
+ extern struct subid_nss_ops *get_subid_nss_handle();
+-
++#endif
+ 
+ /* pam_pass_non_interactive.c */
+ #ifdef USE_PAM
+--- shadow-4.11.1.orig/lib/shadow.pc.in
++++ shadow-4.11.1/lib/shadow.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: @PACKAGE_NAME@
++Description: shadow library
++Version: @PACKAGE_VERSION@
++
++Libs: -L${libdir} -lshadow
++Cflags: -I${includedir}/shadow
+--- shadow-4.11.1.orig/src/Makefile.am
++++ shadow-4.11.1/src/Makefile.am
+@@ -2,8 +2,8 @@
+ EXTRA_DIST = \
+ 	.indent.pro
+ 
+-ubindir = ${prefix}/bin
+-usbindir = ${prefix}/sbin
++ubindir = ${prefix}/`basename ${bindir}`
++usbindir = ${prefix}/`basename ${sbindir}`
+ suidperms = 4755
+ sgidperms = 2755
+ 

@@ -1,0 +1,744 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.14)
+aclocal; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install which $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/which-build.pc << EOF
+Name: which
+Version: 2.21
+Description: A utility to show the full path of commands
+Requires: $REQUIRES
+
+exec=\\
+/bin/which
+EOF
+
+exit
+--- which-2.21.orig/ChangeLog
++++ which-2.21/ChangeLog
+@@ -0,0 +1,679 @@
++2015-03-20  Carlo Wood  <carlo@gnu.org>
++
++	* maintMakefile.in: Fix for 'make release'.
++
++	* Makefile.am: Also remove which.lsm in 'make maintainer-clean'.
++	This is still included in release 2.21.
++
++	* test/whichtest, AUTHORS, Makefile.am, NEWS, bash.c, bash.h, configure.ac, maintMakefile.in, test/commands, which.c, which.texi, which.texinfo:
++	Release of version 2.21.
++
++2014-05-15  Carlo Wood  <carlo@gnu.org>
++
++	* bash.c: Renamed group_member to w_group
++
++2008-03-11  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, configure.ac, tilde/xmalloc.h:
++	* tilde/xmalloc.h, removed unnecessary include of readline/rlstdc.h.
++
++2008-01-18  Carlo Wood  <carlo@gnu.org>
++
++	* maintMakefile.in, index.html.in: 'make release' fixes.
++
++	* NEWS: Release of 2.19
++
++	* bash.c, bash.h, which.c: Upgrade code to bash-3.2.
++
++2008-01-16  Carlo Wood  <carlo@gnu.org>
++
++	* tilde/bashansi.h, tilde/xmalloc.h:
++	Oops, forgot to add those new files.
++
++	* NEWS, bash.c, bash.h, configure.ac, tilde/Makefile.am, tilde/README, tilde/ansi_stdlib.h, tilde/shell.c, tilde/tilde.c, tilde/tilde.h, which.c, which.texinfo:
++	Upgraded tilde directory.
++	Updated NEWS file.
++	Add @dircategory and @direntry to which.texinfo.
++	Lookup home directory in /etc/passwd if HOME is not set.
++
++2008-01-08  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, README.alias:
++	* Fixed the function declaration given in README.alias
++
++	* NEWS, configure.ac, which.c: Update of NEWS file.
++	Added missing include.
++	Don't collapse two leading slashes of a path.
++	Bump version number.
++
++2007-10-14  Carlo Wood  <carlo@gnu.org>
++
++	* COPYING, which.c:
++	Update COPYING to GPLv3, and change license of which.c to version 3.
++
++2007-10-10  Carlo Wood  <carlo@gnu.org>
++
++	* bootstrap: bootstrap was removed.
++
++	* configure.ac, maintMakefile.in: Version bump.
++	Build system improvement and fix (add CW_AUTOMACROS).
++
++	* Makefile.am: Use COPYING instead of LICENSE.
++
++	* NEWS, maintMakefile.in, test/whichtest: Release of 2.17.
++
++2007-10-09  Carlo Wood  <carlo@gnu.org>
++
++	* LICENSE: Use COPYING instead.
++
++	* test/commands, test/whichtest, tilde/Makefile.am, COPYING, Makefile.am, autogen.sh, autogen_versions, configure.ac, maintMakefile.in, which.c:
++	Started using cwautomacros.
++	Fixed minor memory leak.
++	Fixed test to work even if there is a which installed.
++
++2006-02-02  Carlo Wood  <carlo@gnu.org>
++
++	* acinclude.m4, configure.ac, configure.in, maintMakefile.in:
++	Some changes needed for the newer autotools.
++
++	* configure.in: Version bump.
++
++	* which.c: Add support for zsh's 'declare -f' output format.
++
++	* maintMakefile.in: Still work when "." is not in PATH.
++
++	* test/whichtest: There is no need to escape '/' in an awk sub().
++
++	* COPYING, LICENSE, bash.c, getopt.c, getopt.h, getopt1.c, mdate-sh, which.c:
++	Address update in license text.
++
++2004-01-29  Carlo Wood  <carlo@gnu.org>
++
++	* configure.in, which.c: Added support for Tandem OSS.
++
++2003-09-15  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, bash.c, configure.in, test/commands: Release of 2.16.
++	When 'other' permission bits apply, file does NOT need to be readable
++	in order to be executable.
++
++2003-09-12  Carlo Wood  <carlo@gnu.org>
++
++	* index.html.in, maintMakefile.in: make release fixes.
++
++	* rpm/BUILD/.cvsignore:
++	Added this to make sure that a 'cvs update -P' doesn't remove the BUILD
++	directory!
++
++	* NEWS, bash.h, test/commands, which.c, bash.c:
++	Skip files that we cannot execute, like mode 677 that we are owner of.
++
++	* acconfig.h, acinclude.m4, configure.in:
++	Support for automake 1.7.2 and autoconf 2.57.
++
++	* rpm/profile.d/which-2.sh:
++	Use 'function' keyword to declare shell function.
++
++	* rpm/macros: Using GPG now instead of PGP.
++
++	* .cvsignore: Fixed calculation of days since last release.
++
++	* maintMakefile.in: Fixed generation of ChangeLog.
++	Fixed calculation of last delay.
++	Use rpmbuild instead of rpm now (rpm 4.x).
++
++2003-08-16  Carlo Wood  <carlo@gnu.org>
++
++	* .cvsignore: Fix for newer build tools.
++
++	* bootstrap: Support for automake 1.7.
++
++2002-07-26  Carlo Wood  <carlo@gnu.org>
++
++	* maintMakefile.in, rpm/macros, rpm/rpmrc: make release fixes
++
++	* maintMakefile.in: Updated targets to latest version (from libcwd)
++
++	* .cvsignore, NEWS, which.c: Added support for bash 2.0.5b.
++
++	Date: Thu, 25 Jul 2002 11:41:23 +0300
++	From: Antti Sykari  <jsykari@cc.hut.fi>
++	Subject: Bug: 'which --read-functions' (version v2.13) is broken on bash 2.05b
++	To: Carlo Wood  <carlo@gnu.org>
++
++	FYI,
++
++	Bash 2.05b breaks the --read-functions switch 'which'.
++	This happens because 'declare' gives output like:
++
++	[bash 2.05b behavior]
++	fun ()
++	{
++	    echo blah
++	}
++
++	instead of
++
++	[bash 2.05a behavior]
++	declare -f fun ()
++	{·
++	    echo blah
++	}
++
++	So I'd guess that the function process_function in which.c should be
++	changed to recognize the newer syntax.
++
++2002-07-25  Carlo Wood  <carlo@gnu.org>
++
++	* .cvsignore, LICENSE, Makefile.am, NEWS, README.in, acconfig.h, acinclude.m4, bootstrap, config.guess, config.sub, configure.in, install-sh, missing, mkinstalldirs, tilde/ChangeLog, tilde/Makefile.am, tilde/README, tilde/acconfig.h, tilde/acinclude.m4, tilde/configure.in:
++	Upgraded build system for automake 1.5 and autoconf 2.53.
++
++2001-12-04  Carlo Wood  <carlo@gnu.org>
++
++	* mdate-sh: Required file for automake 1.4.
++
++2001-08-17  Carlo Wood  <carlo@gnu.org>
++
++	* configure.in: Bumped version number.
++
++	* which.c: Corrected year in copyright notice.
++
++	* maintMakefile.in: Generation of index.html missed a blank line.
++
++	* index.html.in: Forgot to add a link to the NEWS file.
++
++	* maintMakefile.in: Man page length changed.
++
++	* index.html.in: Name glibc version instead of RedHat version.
++
++	* which.texinfo: Layout bug fix.
++
++	* which.c: Forgot implementation of --skip-functions.
++
++	* rpm/profile.d/which-2.sh, which.c:
++	Implementation of shell function support.
++
++	* which.texinfo: Bugfix on previous commit.
++
++2001-08-16  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, README.alias, maintMakefile.in, test/whichtest, which.texinfo:
++	Work in progress on adding support for shell functions.
++
++	* which-2.spec.in: Forgot to install the info file.
++
++	* which.texinfo:
++	Added remark in BUGS about shell functions not being supported.
++
++	* maintMakefile.in: Bug fix for rpm version 4.
++
++	* rpm/profile.d/which-2.sh:
++	Use a shell function instead of an alias because aliases are not
++	reloaded in subshells.
++
++	* test/commands, test/whichtest: Fixed whichtest.
++
++	* configure.in: Bumped version number.
++
++2001-08-15  Carlo Wood  <carlo@gnu.org>
++
++	* which-2.spec.in: Merged in changes from RedHat
++
++2000-09-12  Carlo Wood  <carlo@gnu.org>
++
++	* which.texinfo: Typo.
++
++	* maintMakefile.in:
++	Install the NEWS file on the website when doing a release.
++
++2000-07-06  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, configure.in, which.texinfo: Minor man page fix.
++	Bumped version number to 2.12.
++
++2000-05-05  Carlo Wood  <carlo@gnu.org>
++
++	* which.lsm.in: Mangle email addresses a bit, anti spam bots.
++
++2000-04-19  Carlo Wood  <carlo@gnu.org>
++
++	* which.c: Added year 2000 to copyright notices.
++
++	* configure.in: Bumped version to 2.11
++
++	* NEWS: Updated for release of 2.11
++
++	* which.texinfo: Added a context index
++
++	* .cvsignore, Makefile.am, maintMakefile.in:
++	Makefile corrections for texinfo file
++
++	* .cvsignore, maintMakefile.in, which.1, which.1.in, which.texinfo:
++	Wrote a texinfo file :/
++
++2000-01-14  Carlo Wood  <carlo@gnu.org>
++
++	* rpm/macros: Using new E-mail address for pgp
++
++	* NEWS: Update for release version 2.10
++
++	* AUTHORS, which.lsm.in: Updated E-mail address again.
++
++	* which-2.spec.in: Started counting at 0 for Source0: ...
++
++	* which-2.spec.in: Changed it into TWO Source: lines.
++
++	* which-2.spec.in: Added a Source line for which-2.{sh.csh}.
++
++1999-12-18  Carlo Wood  <carlo@gnu.org>
++
++	* which.lsm.in: Fixed format of .lsm and E-mail address.
++
++1999-11-08  Carlo Wood  <carlo@gnu.org>
++
++	* tilde/Makefile.am, Makefile.am:
++	Even better order of calling aclocal/autoheader/autoconf/automake...
++
++	Date: Mon, 8 Nov 1999 08:43:06 -0800 (PST)
++	From: Tom Tromey  <tromey@cygnus.com>
++	Subject: Re: automake bug?
++	The right order is this:
++
++	aclocal
++	autoheader
++	autoconf
++	automake
++
++	This will be better documented some day.
++
++	* Makefile.am, configure.in, tilde/Makefile.am: Bumped version to 2.10
++	Fixed the order in which aclocal and automake need to be called.
++
++1999-09-24  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, index.html.in, which.1, which.c:
++	Write output for --help to stdout instead of stderr.
++	Added --help to man page.
++	Updated NEWS files.
++	Added remark on web page that the i386.rpm is only for RedHat 6.0.
++
++	* rpm/SOURCES/.cvsignore: Ignore these files
++
++	* Makefile.am: Add README.alias to the tar!
++
++	* which-2.spec.in:
++	There should not be a reason anymore to include README.alias in the rpm docs.
++
++	* maintMakefile.in:
++	The profile.d scripts are not in the tar, need to copy them seperately
++	to the rpm/SOURCES directory.
++
++	* which-2.spec.in:
++	Don't install as root.root in RPM_BUILD_ROOT, in order to allow to build
++	rpm as non-root.
++
++	* rpm/profile.d/which-2.csh, rpm/profile.d/which-2.sh:
++	Alias scripts for RedHat 6.0 /etc/profile.d
++
++	* which-2.spec.in: Bug fix
++
++	* which-2.spec.in: Added /etc/profile.d for automatic alias inclusion.
++
++	* which.c: Added a `--help' option.
++
++	* configure.in, sys.h: Use getwd(3) when getcwd(3) is not available.
++
++1999-08-25  Carlo Wood  <carlo@gnu.org>
++
++	* which-2.spec.in: Added README.alias.
++
++	* README.alias, configure.in: Bumped version to 2.9
++	Added README.alias.
++
++1999-08-19  Carlo Wood  <carlo@gnu.org>
++
++	* NEWS, which.c:
++	long_option must be a static, or &long_option isn't really constant,
++	giving an error on some compilers when using it as initializer.
++
++1999-08-11  Carlo Wood  <carlo@gnu.org>
++
++	* which-2.spec.in: Typo in comment.
++
++1999-08-07  Carlo Wood  <carlo@gnu.org>
++
++	* tilde/Makefile.am: Should use EXTRA_DIST :/
++
++	* Makefile.am: Wasn't needed here.
++
++	* tilde/Makefile.am: Include aclocal.m4 in the tar.
++
++	* Makefile.am, NEWS, configure.in, maintMakefile.in, which.1:
++	Include aclocal.m4 in the tar.
++	Fix generation of version number in README and which.lsm.
++
++1999-06-13  Carlo Wood  <carlo@gnu.org>
++
++	* maintMakefile.in: Don't install cvslog*rpm in release dir.
++
++	* NEWS, README.in, configure.in, maintMakefile.in, test/commands, test/whichtest, which.1, which.c:
++	Added support for aliases.  Two new options: --read-alias and --skip-alias.
++	Bumped version number to 2.7.
++
++1999-06-12  Carlo Wood  <carlo@gnu.org>
++
++	* tilde/ChangeLog, tilde/Makefile.am, tilde/README, tilde/acconfig.h, tilde/acinclude.m4, tilde/configure.in:
++	Fixed configuration of tilde/ directory.  Thanks to bug report
++	from Nico Kadel-Garcia.
++
++1999-05-28  Carlo Wood  <carlo@gnu.org>
++
++	* maintMakefile.in:
++	Corrected cut&paste error that converted ^H to '^' and 'H'.
++
++	* NEWS: About to release version 2.6.
++
++	* sys.h: Some OS don't define NULL :/
++
++	* acconfig.h, configure.in, which.c:
++	Get rid of the last traces of libreadline
++
++	* .cvsignore, Makefile.am, configure.in, index.html.in, maintMakefile.in, makefile, which.lsm.in:
++	Moved all maintainer targets from `makefile' to Makefile.am.
++	Got rid of the libreadline.a dependency and added libtilde instead.
++
++	* tilde/README: Added some history info to the README file.
++
++	* tilde/.cvsignore, tilde/ChangeLog, tilde/Makefile.am, tilde/README, tilde/ansi_stdlib.h, tilde/configure.in, tilde/shell.c, tilde/tilde.c, tilde/tilde.h:
++	Ported bash-2.03's libtilde, adding automake support.
++
++	* which-2.spec.in: Typo fix
++
++	* which-2.spec.in:
++	Moved maintainer targets from makefile to Makefile.am.
++
++1999-05-20  Carlo Wood  <carlo@gnu.org>
++
++	* makefile:
++	Moved most targets to the "Prototype Makefiles" package.  Started using
++	the "Prototype" maintainers makefile now.
++
++	* configure.in: Bumped version number to 2.6
++
++	* index.html.in, makefile:
++	Removed which.lsm from tar and put it on the webpage instead.
++
++1999-05-18  Carlo Wood  <carlo@gnu.org>
++
++	* test/.cvsignore: Renamed .testreference to .reference.
++
++	* test/whichtest: Typo fix
++
++	* makefile:
++	Added autoheader a second time: it needs to be called before automake
++	to generate config.h.in, but then it doesn't generate the VERSION, so
++	it must be called a second time before calling ./configure.
++
++	* makefile: Added dependency ChangeLog to setup-dist:
++
++	* makefile: Added autoheader to setup-dist:
++
++	* bash.h, sys.h, which.c:
++	Ran the source files that I wrote myself through indent.
++
++	* .cvsignore: Added which.lsm
++
++	* NEWS: Updated NEWS file.
++
++	* makefile: Remove cvslog for the test/ directory.
++
++	* makefile, which.lsm, which.lsm.in:
++	Generate which.lsm from which.lsm.in with @VERSION@ substitution.
++
++	* test/.cvsignore, test/whichtest:
++	Don't use EXAMPLES itself as reference, because it can get removed.
++
++	* Makefile.am:
++	Added a few more (generated) files to the maintainer-clean-local target.
++
++	* .cvsignore: Remove *.tar.gz, that file resides now in rpm/SOURCES.
++
++	* makefile: Put EXAMPLES in the tar :/
++
++	* test/commands, test/whichtest, .cvsignore, EXAMPLES, makefile:
++	Generating the file EXAMPLES now, also using it to perform a self-test.
++
++	* makefile:
++	Do not generate duplicated dates in the %changelog list in which-2.spec.
++
++	* makefile:
++	Run "./configure --prefix=/usr" by default (while generating a 'setup'
++	distribution when Makefile doesn't exist (yet)).
++
++	* makefile: Add which-2.spec to tar instead of which-2.spec.in.
++
++	* .cvsignore: which-2.spec is generated too now.
++
++	* makefile: Commit which-2.spec.in before generating which-2.spec.
++
++	* which-2.spec.in:
++	Appended the old change log of `which-2.0.spec' to (this) %changelog,
++	which is generated from the CVS log of `which-2.0.spec.in'.
++
++	* which-2.spec.in: Typo in appended changelog.
++
++	* which-2.spec, makefile, which-2.spec.in:
++	Generate which-2.spec from which-2.spec.in with automatic VERSION
++	and CHANGELOG substitution.
++
++1999-05-17  Carlo Wood  <carlo@gnu.org>
++
++	* rpm/SOURCES/.cvsignore, rpm/SRPMS/.cvsignore, rpm/RPMS/i386/.cvsignore:
++	Automated generation of rpm files.
++
++	* rpm/macros, rpm/rpmrc:
++	Added the automatic generation of rmp files when doing a release.
++
++	* index.html.in, makefile:
++	Automated tagging CVS repository of releases.  Using tags "V2_<minor version>".
++	Automated generating html version of changelog even more by using these tags now.
++	Added the automatic generation of rmp files when doing a release.
++	Automated updating version(s) in index.html.in and generating list of of
++	change logs in generated index.html.
++
++	* .cvsignore:
++	Added .prevtag, a file used to automatically generate the correct changelog
++	when generating a new release.
++
++	* which-2.spec:
++	Moved assignment of CFLAGS to the configure line, using RPM_OPT_FLAGS now.
++	Corrected Source: line to point to ftp.gnu.org.
++
++	* EXAMPLES, which.c:
++	Changed --version output from 'covered by ...' to 'protected by the GPL'.
++
++1999-05-14  Carlo Wood  <carlo@gnu.org>
++
++	* makefile:
++	Print one more (empty) line at the end of the first page of the man page.
++
++	* EXAMPLES, configure.in, index.html.in, which-2.spec, which.lsm:
++	Bumped version to 2.5
++
++	* .cvsignore: Two more files to ignore.
++
++	* acinclude.m4, configure.in, getopt.c, getopt1.c:
++	Several fixes for problems that showed up on other OS.
++
++	* EXAMPLES, getopt1.c, index.html.in, which-2.spec, which.lsm:
++	Bumped version to 2.4
++
++	* configure.in: getopt.c needs checks for string.h libintl.h.
++
++	* Makefile.am: Ugh, getopt_long() is in getopt1.c...
++
++	* makefile:
++	Need the dependencies, which are in the .deps directory, in the tar too!
++
++1999-05-13  Carlo Wood  <carlo@gnu.org>
++
++	* config.h.in, makefile:
++	Improve automation of cvslog generation (now calculates days since last
++	release).
++	Removed generated file config.h.in from CVS.
++
++	* Makefile.am, configure.in: Added getopt.c to the distribution.
++
++	* getopt.c, getopt.h, which.c: Put getopt.c in the distribution.
++
++1999-05-10  Carlo Wood  <carlo@gnu.org>
++
++	* EXAMPLES, which.1, which.c: Added options -v and -V
++
++	* acconfig.h, config.h.in, configure.in, makefile, sys.h, which.1, which.c:
++	New gnu.org E-mail address.
++	Make which work without libiberty.a and work reasonable without libreadline.
++	Added configure options --disable-readline and --disable-iberty.
++
++	* which.lsm: New gnu.org E-mail address
++
++1999-04-21  Carlo Wood  <carlo@gnu.org>
++
++	* EXAMPLES: Typo fix
++
++1999-04-20  Carlo Wood  <carlo@gnu.org>
++
++	* acinclude.m4, config.h.in, configure.in:
++	Added a test AC_CHECK_STATICLIB to search for static libs.
++	Linking with static libreadline.a again.
++
++	* EXAMPLES, configure.in, index.html.in, which-2.spec, which.lsm:
++	Bumped version to 2.3
++
++	* which.1: Minor fix in the man page
++
++1999-04-18  Carlo Wood  <carlo@gnu.org>
++
++	* index.html.in, makefile:
++	Making change log of version 2.2 available via webpage.
++
++	* makefile:
++	Bug fix: make doesn't do tilde expansion in PATH it seems :/
++
++	* makefile: Do not include index.html in tar.
++
++	* which.1: Documentation update.
++
++	* .cvsignore, ChangeLog, makefile:
++	Generating ChangeLog from the CVS logs now.
++
++	* which.c:
++	Make --skip-tilde also skip output in "." when --show-dot is specified
++	(assuming "." is somewhere in the HOME path of course).
++
++	* which.c:
++	Make --skip-tilde also skip all output that (would) start with a '~'.
++
++	* .cvsignore, Makefile.am, bash.c, config.h.in, configure.in, makefile, sys.h, which.c:
++	Configure and maintenance improvements.
++
++1999-04-17  Carlo Wood  <carlo@gnu.org>
++
++	* .cvsignore, AUTHORS, COPYING, ChangeLog, EXAMPLES, INSTALL, LICENSE.GPL, Makefile, Makefile.am, NEWS, acinclude.m4, bash.c, bash.h, config.guess, config.h.in, config.sub, configure.in, index.html.in, install-sh, makefile, missing, mkinstalldirs, posixstat.h, sys.h, which-2.spec, which.c, which.lsm:
++	Started to use automake and autoconf
++
++1999-04-10  Carlo Wood  <carlo@gnu.org>
++
++	* EXAMPLES: Updated and extended examples.
++
++	* Makefile: Added which-2.*.tar.gz to target `clean'.
++
++	* bash.c: Bumped version of license to GPL version 2.
++
++	* COPYING: Bumped licence to GPL version 2.
++	Renamed the file COPYING to LICENSE.GPL.
++
++	* LICENSE.GPL, which.c: Bumped license to GPL version 2.
++	Renamed the file COPYING to LICENSE.GPL.
++
++	* makefile: Don't put .indent.pro in the tar.
++
++	* index.html.in: Removed link to which-2.0
++
++	* which.1: Updated man page to include -all option.
++
++1999-04-09  Carlo Wood  <carlo@gnu.org>
++
++	* which.lsm: Bumped version number and mentioned --all in description.
++
++	* which-2.0.spec, which-2.spec: Renamed which-2.0.spec to which-2.spec
++
++	* which.c:
++	Only translate current directory to "./" when the directory that caused
++	the match explicitely started with a dot.
++
++	* which.c:
++	Bug fix: --skip-tilde was also skipping directories starting with a dot.
++	Added short options parsing.
++	Added new option --all,-a : Show all executables anywhere in PATH.
++
++	* makefile:
++	New target `cvslog': Generate cvslog*.html files using cvs2html.
++
++	* index.html.in: Added link to release 2.1 and to generated change log.
++
++	* Makefile: Added files to `clean' target.
++
++	* .cvsignore: Ignore all version which-2.*.tar.gz
++	Ignore the generated cvslog*.html
++
++	* which.c:
++	Drastically changed the way a given absolute path is handled:
++	On failure, the shown path will be the given path and the "./"
++	and "~/" translations now also work.
++	Added path_clean_up(), which gets rid of stuff like "//", "/./"
++	and even "dir/../".
++
++	* bash.c, bash.h, which.c:
++	Renamed find_user_command_in_path() to find_command_in_path() and
++	stripped it completely of everything we don't use.
++
++	* which.c: Removed `dot_found_in_search', which we don't use.
++
++	* .indent.pro, which.c: Ran which.c through GNU indent 1.9.2.beta1
++	(see http://www.xs4all.nl/~carlo17/indent/)
++
++	* bash.c, bash.h, which.c:
++	Moved find_user_command_in_path() from bash.c to which.c because I intend
++	to heavily change it.
++
++	* which.c:
++	Security: Don't crash, not even when the current working directory is
++	          longer than PATH_MAX.
++	Bug fix : Use the correct flag (FS_EXEC_ONLY) in find_user_command_in_path().
++	          This causes `which' to also find files with a absolute path.
++
++	* which.1: Fixed a typo in the documentation.
++
++1999-04-06  Carlo Wood  <carlo@gnu.org>
++
++	* index.html.in, which-2.0.spec, which.1:
++	Final changes and release of version 2.0
++
++	* EXAMPLES, which.c: Final bug fix
++
++	* .cvsignore, README, index.html.in, makefile:
++	Auto generate README and index.html
++
++	* EXAMPLES, README, README.in, makefile, which.1, which.c: Improvements
++
++	* makefile: Bug fix
++
++	* Makefile: Fixed install permissions of man page.
++
++	* .cvsignore, COPYING, EXAMPLES, Makefile, README, bash.c, bash.h, makefile, which-2.0.spec, which.1, which.c, which.lsm:
++	Initial import
++
++	* .cvsignore, COPYING, EXAMPLES, Makefile, README, bash.c, bash.h, makefile, which-2.0.spec, which.1, which.c, which.lsm:
++	New file.
++
+--- which-2.21.orig/Makefile.am
++++ which-2.21/Makefile.am
+@@ -1,5 +1,4 @@
+ AUTOMAKE_OPTIONS = no-texinfo.tex
+-ACLOCAL_AMFLAGS=@ACLOCAL_CWFLAGS@
+ 
+ SUBDIRS = tilde .
+ 
+--- which-2.21.orig/configure.ac
++++ which-2.21/configure.ac
+@@ -2,12 +2,9 @@
+ AC_INIT([which], [2.21])
+ AC_CONFIG_SRCDIR(which.c)
+ AM_INIT_AUTOMAKE
+-AM_CONFIG_HEADER(config.h)
++AC_CONFIG_HEADERS(config.h)
+ AM_MAINTAINER_MODE
+ 
+-dnl Because we use cwautomacros.
+-CW_AUTOMACROS
+-
+ which_cv_iberty=yes
+ AC_ARG_ENABLE(iberty,
+   [  --disable-iberty        do not try to find and use the iberty library],
+--- which-2.21.orig/tilde/Makefile.am
++++ which-2.21/tilde/Makefile.am
+@@ -1,4 +1,3 @@
+-ACLOCAL_AMFLAGS=@ACLOCAL_CWFLAGS@
+ AUTOMAKE_OPTIONS = foreign
+ noinst_LIBRARIES = libtilde.a
+ libtilde_a_SOURCES = tilde.c shell.c tilde.h ansi_stdlib.h bashansi.h xmalloc.h

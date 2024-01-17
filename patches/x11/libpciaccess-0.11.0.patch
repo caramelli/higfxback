@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build util-macros-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include
+install -m 644 include/pciaccess.h $DESTDIR/x11/include
+install -d $DESTDIR/x11/lib
+install src/.libs/libpciaccess.so.0.* $DESTDIR/x11/lib/libpciaccess.so.0
+ln -sf libpciaccess.so.0 $DESTDIR/x11/lib/libpciaccess.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 pciaccess.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libpciaccess-build.pc << EOF
+Name: libpciaccess
+Version: 0.11.0
+Description: Generic PCI access library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/pciaccess.h \\
+/x11/lib/libpciaccess.so \\
+/x11/lib/pkgconfig/pciaccess.pc
+
+exec=\\
+/x11/lib/libpciaccess.so.0
+EOF
+
+exit

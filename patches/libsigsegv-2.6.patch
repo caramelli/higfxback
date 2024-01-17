@@ -1,0 +1,85 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.62; am-1.10; lt-2.2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-static --enable-shared --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 src/sigsegv.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libsigsegv.so.0.* $DESTDIR/lib/libsigsegv.so.0
+ln -sf libsigsegv.so.0 $DESTDIR/lib/libsigsegv.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libsigsegv.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libsigsegv-build.pc << EOF
+Name: libsigsegv
+Version: 2.6
+Description: Page fault detection library
+Requires: $REQUIRES
+
+devel=\\
+/include/sigsegv.h \\
+/lib/libsigsegv.so \\
+/lib/pkgconfig/libsigsegv.pc
+
+exec=\\
+/lib/libsigsegv.so.0
+EOF
+
+exit
+--- libsigsegv-2.6.orig/Makefile.am
++++ libsigsegv-2.6/Makefile.am
+@@ -23,6 +23,9 @@
+ 
+ SUBDIRS = src tests
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = libsigsegv.pc
++
+ EXTRA_DIST = ChangeLog.1 PORTING README.woe32 Makefile.msvc config.h.msvc
+ 
+ DISTCLEANFILES = termbold termnorm
+--- libsigsegv-2.6.orig/configure.ac
++++ libsigsegv-2.6/configure.ac
+@@ -18,7 +18,7 @@
+ dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ 
+ AC_PREREQ(2.62)
+-AC_INIT
++AC_INIT([libsigsegv],[2.6])
+ AC_CONFIG_SRCDIR(src/sigsegv.h.in)
+ AC_CONFIG_AUX_DIR([build-aux])
+ 
+@@ -887,6 +887,7 @@
+ 
+ dnl AC_OUTPUT(Makefile)
+ AC_OUTPUT([Makefile
++           libsigsegv.pc
+            src/Makefile src/sigsegv.h
+            tests/Makefile])
+ 
+--- libsigsegv-2.6.orig/libsigsegv.pc.in
++++ libsigsegv-2.6/libsigsegv.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: @PACKAGE_NAME@
++Description: Handles page faults
++Version: @PACKAGE_VERSION@
++
++Libs: -L${libdir} -lsigsegv
++Cflags: -I${includedir}

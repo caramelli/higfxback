@@ -1,0 +1,28 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# build
+make
+
+# install
+install -d $DESTDIR/etc
+install -m 644 protocols $DESTDIR/etc/protocols
+install -m 644 services $DESTDIR/etc/services
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/iana-etc-build.pc << EOF
+Name: iana-etc
+Version: 2.30
+Description: IANA data for network services and protocols
+
+exec=\\
+/etc/protocols \\
+/etc/services
+EOF
+
+exit

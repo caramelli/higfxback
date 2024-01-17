@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build python3-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/libevdev-1.0/libevdev
+install -m 644 libevdev/libevdev.h $DESTDIR/include/libevdev-1.0/libevdev
+install -d $DESTDIR/lib
+install libevdev/.libs/libevdev.so.1.* $DESTDIR/lib/libevdev.so.1
+ln -sf libevdev.so.1 $DESTDIR/lib/libevdev.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libevdev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libevdev-build.pc << EOF
+Name: libevdev
+Version: 0.5
+Description: wrapper library for event device interface
+Requires: $REQUIRES
+
+devel=\\
+/include/libevdev-1.0/libevdev/libevdev.h \\
+/lib/libevdev.so \\
+/lib/pkgconfig/libevdev.pc
+
+exec=\\
+/lib/libevdev.so.1
+EOF
+
+exit

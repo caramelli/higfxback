@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build ncurses-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.71; am-1.16)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/fuser $DESTDIR/bin
+install src/killall $DESTDIR/bin
+install src/peekfd $DESTDIR/bin
+install src/prtstat $DESTDIR/bin
+install src/pslog $DESTDIR/bin
+install src/pstree $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/psmisc-build.pc << EOF
+Name: psmisc
+Version: 23.6
+Description: Miscellaneous utilities regarding running processes
+Requires: $REQUIRES
+
+exec=\\
+/bin/fuser \\
+/bin/killall \\
+/bin/peekfd \\
+/bin/prtstat \\
+/bin/pslog \\
+/bin/pstree
+EOF
+
+exit

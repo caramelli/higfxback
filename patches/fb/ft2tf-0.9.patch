@@ -1,0 +1,27 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="freetype-build make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install ft2tf $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/ft2tf-build.pc << EOF
+Name: ft2tf
+Version: 0.9
+Description: A utility for creating tinyfont files
+Requires: $REQUIRES
+
+devel=\\
+/bin/ft2tf
+EOF
+
+exit

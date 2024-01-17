@@ -1,0 +1,61 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build flex-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.16)
+cd src; rm -f scan-code.c scan-gram.c scan-skel.c; cd -
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/bison $DESTDIR/bin
+install src/yacc $DESTDIR/bin
+install -d $DESTDIR/share/bison
+install -m 644 data/bison.m4 $DESTDIR/share/bison
+install -m 644 data/c.m4 $DESTDIR/share/bison
+install -m 644 data/c-like.m4 $DESTDIR/share/bison
+install -m 644 data/c-skel.m4 $DESTDIR/share/bison
+install -m 644 data/yacc.c $DESTDIR/share/bison
+install -d $DESTDIR/share/bison/m4sugar
+install -m 644 data/m4sugar/foreach.m4 $DESTDIR/share/bison/m4sugar
+install -m 644 data/m4sugar/m4sugar.m4 $DESTDIR/share/bison/m4sugar
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/bison-build.pc << EOF
+Name: bison
+Version: 3.0.5
+Description: GNU Bison
+Requires: $REQUIRES
+
+devel=\\
+/bin/bison \\
+/bin/yacc \\
+/share/bison/bison.m4 \\
+/share/bison/c.m4 \\
+/share/bison/c-like.m4 \\
+/share/bison/c-skel.m4 \\
+/share/bison/yacc.c \\
+/share/bison/m4sugar/foreach.m4 \\
+/share/bison/m4sugar/m4sugar.m4
+EOF
+
+exit
+--- bison-3.0.5.orig/doc/local.mk
++++ bison-3.0.5/doc/local.mk
+@@ -110,7 +110,7 @@
+ 
+ # Depend on configure to get version number changes.
+ if ! CROSS_COMPILING
+-MAN_DEPS = doc/bison.help doc/bison.x $(top_srcdir)/configure
++MAN_DEPS = doc/bison.help doc/bison.x
+ endif
+ 
+ $(top_srcdir)/doc/bison.1: $(MAN_DEPS)

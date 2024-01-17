@@ -1,0 +1,488 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build bigreqsproto-build damageproto-build inputproto-build kbproto-build libmd-build libxau-build libxfont-build libpciaccess-build randrproto-build videoproto-build xcmiscproto-build xkeyboard-config-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-2.2.6b)
+libtoolize -c; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-composite --disable-dri --disable-glx --disable-screensaver --disable-xinerama --disable-xnest --disable-xres --with-xkb-path=/share/X11/xkb --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install hw/vfb/Xvfb $DESTDIR/x11/bin
+install hw/xfree86/Xorg $DESTDIR/x11/bin
+ln -sf Xorg $DESTDIR/x11/bin/X
+install hw/xfree86/utils/cvt/cvt $DESTDIR/x11/bin
+install hw/xfree86/utils/gtf/gtf $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/xorg
+install -m 644 include/bstore.h $DESTDIR/x11/include/xorg
+install -m 644 include/bstorestr.h $DESTDIR/x11/include/xorg
+install -m 644 include/colormap.h $DESTDIR/x11/include/xorg
+install -m 644 include/colormapst.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/compiler.h $DESTDIR/x11/include/xorg
+install -m 644 include/cursor.h $DESTDIR/x11/include/xorg
+install -m 644 include/cursorstr.h $DESTDIR/x11/include/xorg
+install -m 644 miext/damage/damage.h $DESTDIR/x11/include/xorg
+install -m 644 miext/damage/damagestr.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/dixmods/extmod/dgaproc.h $DESTDIR/x11/include/xorg
+install -m 644 include/dix.h $DESTDIR/x11/include/xorg
+install -m 644 include/dixaccess.h $DESTDIR/x11/include/xorg
+install -m 644 include/dixstruct.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/ddc/edid.h $DESTDIR/x11/include/xorg
+install -m 644 include/events.h $DESTDIR/x11/include/xorg
+install -m 644 include/exevents.h $DESTDIR/x11/include/xorg
+install -m 644 include/extension.h $DESTDIR/x11/include/xorg
+install -m 644 include/extinit.h $DESTDIR/x11/include/xorg
+install -m 644 include/extnsionst.h $DESTDIR/x11/include/xorg
+install -m 644 fb/fb.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/fbdevhw/fbdevhw.h $DESTDIR/x11/include/xorg
+install -m 644 fb/fbrop.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/fourcc.h $DESTDIR/x11/include/xorg
+install -m 644 include/gc.h $DESTDIR/x11/include/xorg
+install -m 644 include/gcstruct.h $DESTDIR/x11/include/xorg
+install -m 644 Xext/geext.h $DESTDIR/x11/include/xorg
+install -m 644 include/globals.h $DESTDIR/x11/include/xorg
+install -m 644 render/glyphstr.h $DESTDIR/x11/include/xorg
+install -m 644 include/input.h $DESTDIR/x11/include/xorg
+install -m 644 include/inputstr.h $DESTDIR/x11/include/xorg
+install -m 644 mi/mi.h $DESTDIR/x11/include/xorg
+install -m 644 mi/mibstore.h $DESTDIR/x11/include/xorg
+install -m 644 mi/micmap.h $DESTDIR/x11/include/xorg
+install -m 644 mi/micoord.h $DESTDIR/x11/include/xorg
+install -m 644 mi/migc.h $DESTDIR/x11/include/xorg
+install -m 644 mi/miline.h $DESTDIR/x11/include/xorg
+install -m 644 mi/mipointer.h $DESTDIR/x11/include/xorg
+install -m 644 include/misc.h $DESTDIR/x11/include/xorg
+install -m 644 include/miscstruct.h $DESTDIR/x11/include/xorg
+install -m 644 include/opaque.h $DESTDIR/x11/include/xorg
+install -m 644 include/os.h $DESTDIR/x11/include/xorg
+install -m 644 render/picture.h $DESTDIR/x11/include/xorg
+install -m 644 render/picturestr.h $DESTDIR/x11/include/xorg
+install -m 644 include/pixmap.h $DESTDIR/x11/include/xorg
+install -m 644 include/pixmapstr.h $DESTDIR/x11/include/xorg
+install -m 644 include/privates.h $DESTDIR/x11/include/xorg
+install -m 644 include/property.h $DESTDIR/x11/include/xorg
+install -m 644 include/propertyst.h $DESTDIR/x11/include/xorg
+install -m 644 include/region.h $DESTDIR/x11/include/xorg
+install -m 644 include/regionstr.h $DESTDIR/x11/include/xorg
+install -m 644 include/resource.h $DESTDIR/x11/include/xorg
+install -m 644 include/screenint.h $DESTDIR/x11/include/xorg
+install -m 644 include/scrnintstr.h $DESTDIR/x11/include/xorg
+install -m 644 include/servermd.h $DESTDIR/x11/include/xorg
+install -m 644 miext/shadow/shadow.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/shadowfb/shadowfb.h $DESTDIR/x11/include/xorg
+install -m 644 include/validate.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/vbe/vbe.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/vgahw/vgaHW.h $DESTDIR/x11/include/xorg
+install -m 644 include/window.h $DESTDIR/x11/include/xorg
+install -m 644 include/windowstr.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/xaa/xaa.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/xaa/xaalocal.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/xaa/xaarop.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/ramdac/xf86Cursor.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/ddc/xf86DDC.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86Module.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86Opt.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/os-support/bus/xf86Pci.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86PciInfo.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86Priv.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86Privstr.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86Xinput.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/os-support/xf86_OSlib.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/os-support/xf86_OSproc.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86cmap.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86fbman.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/i2c/xf86i2c.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/int10/xf86int10.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86str.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xf86xv.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xisb.h $DESTDIR/x11/include/xorg
+install -m 644 include/XIstubs.h $DESTDIR/x11/include/xorg
+install -m 644 include/xkbfile.h $DESTDIR/x11/include/xorg
+install -m 644 include/xkbrules.h $DESTDIR/x11/include/xorg
+install -m 644 include/xkbsrv.h $DESTDIR/x11/include/xorg
+install -m 644 include/xkbstr.h $DESTDIR/x11/include/xorg
+install -m 644 include/xorg-server.h $DESTDIR/x11/include/xorg
+install -m 644 hw/xfree86/common/xorgVersion.h $DESTDIR/x11/include/xorg
+install -m 644 include/xserver-properties.h $DESTDIR/x11/include/xorg
+install -m 644 Xext/xvdix.h $DESTDIR/x11/include/xorg
+install -d $DESTDIR/x11/lib/xorg/modules
+install -d $DESTDIR/x11/lib/xorg/modules/extensions
+install hw/xfree86/dixmods/.libs/libfb.so $DESTDIR/x11/lib/xorg/modules/extensions
+install hw/xfree86/dixmods/.libs/libshadow.so $DESTDIR/x11/lib/xorg/modules/extensions
+install hw/xfree86/dixmods/.libs/libdbe.so $DESTDIR/x11/lib/xorg/modules/extensions
+install hw/xfree86/dixmods/extmod/.libs/libextmod.so $DESTDIR/x11/lib/xorg/modules/extensions
+install -d $DESTDIR/x11/lib/xorg/modules/linux
+install hw/xfree86/fbdevhw/.libs/libfbdevhw.so $DESTDIR/x11/lib/xorg/modules/linux
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xorg-server.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/aclocal
+install -m 644 xorg-server.m4 $DESTDIR/x11/share/aclocal
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xorg-server-build.pc << EOF
+Name: xorg-server
+Version: 1.7.7
+Description: X Server
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/xorg/bstore.h \\
+/x11/include/xorg/bstorestr.h \\
+/x11/include/xorg/colormap.h \\
+/x11/include/xorg/colormapst.h \\
+/x11/include/xorg/compiler.h \\
+/x11/include/xorg/cursor.h \\
+/x11/include/xorg/cursorstr.h \\
+/x11/include/xorg/damage.h \\
+/x11/include/xorg/damagestr.h \\
+/x11/include/xorg/dgaproc.h \\
+/x11/include/xorg/dix.h \\
+/x11/include/xorg/dixaccess.h \\
+/x11/include/xorg/dixstruct.h \\
+/x11/include/xorg/edid.h \\
+/x11/include/xorg/events.h \\
+/x11/include/xorg/exevents.h \\
+/x11/include/xorg/extension.h \\
+/x11/include/xorg/extinit.h \\
+/x11/include/xorg/extnsionst.h \\
+/x11/include/xorg/fb.h \\
+/x11/include/xorg/fbdevhw.h \\
+/x11/include/xorg/fbrop.h \\
+/x11/include/xorg/fourcc.h \\
+/x11/include/xorg/gc.h \\
+/x11/include/xorg/gcstruct.h \\
+/x11/include/xorg/geext.h \\
+/x11/include/xorg/globals.h \\
+/x11/include/xorg/glyphstr.h \\
+/x11/include/xorg/input.h \\
+/x11/include/xorg/inputstr.h \\
+/x11/include/xorg/mi.h \\
+/x11/include/xorg/mibstore.h \\
+/x11/include/xorg/micmap.h \\
+/x11/include/xorg/micoord.h \\
+/x11/include/xorg/migc.h \\
+/x11/include/xorg/miline.h \\
+/x11/include/xorg/mipointer.h \\
+/x11/include/xorg/misc.h \\
+/x11/include/xorg/miscstruct.h \\
+/x11/include/xorg/opaque.h \\
+/x11/include/xorg/os.h \\
+/x11/include/xorg/picture.h \\
+/x11/include/xorg/picturestr.h \\
+/x11/include/xorg/pixmap.h \\
+/x11/include/xorg/pixmapstr.h \\
+/x11/include/xorg/privates.h \\
+/x11/include/xorg/property.h \\
+/x11/include/xorg/propertyst.h \\
+/x11/include/xorg/region.h \\
+/x11/include/xorg/regionstr.h \\
+/x11/include/xorg/resource.h \\
+/x11/include/xorg/screenint.h \\
+/x11/include/xorg/scrnintstr.h \\
+/x11/include/xorg/servermd.h \\
+/x11/include/xorg/shadow.h \\
+/x11/include/xorg/shadowfb.h \\
+/x11/include/xorg/validate.h \\
+/x11/include/xorg/vbe.h \\
+/x11/include/xorg/vgaHW.h \\
+/x11/include/xorg/window.h \\
+/x11/include/xorg/windowstr.h \\
+/x11/include/xorg/xaa.h \\
+/x11/include/xorg/xaalocal.h \\
+/x11/include/xorg/xaarop.h \\
+/x11/include/xorg/xf86.h \\
+/x11/include/xorg/xf86Cursor.h \\
+/x11/include/xorg/xf86DDC.h \\
+/x11/include/xorg/xf86Module.h \\
+/x11/include/xorg/xf86Opt.h \\
+/x11/include/xorg/xf86Pci.h \\
+/x11/include/xorg/xf86PciInfo.h \\
+/x11/include/xorg/xf86Priv.h \\
+/x11/include/xorg/xf86Privstr.h \\
+/x11/include/xorg/xf86Xinput.h \\
+/x11/include/xorg/xf86_OSlib.h \\
+/x11/include/xorg/xf86_OSproc.h \\
+/x11/include/xorg/xf86cmap.h \\
+/x11/include/xorg/xf86fbman.h \\
+/x11/include/xorg/xf86i2c.h \\
+/x11/include/xorg/xf86int10.h \\
+/x11/include/xorg/xf86str.h \\
+/x11/include/xorg/xf86xv.h \\
+/x11/include/xorg/xisb.h \\
+/x11/include/xorg/XIstubs.h \\
+/x11/include/xorg/xkbfile.h \\
+/x11/include/xorg/xkbrules.h \\
+/x11/include/xorg/xkbsrv.h \\
+/x11/include/xorg/xkbstr.h \\
+/x11/include/xorg/xorg-server.h \\
+/x11/include/xorg/xorgVersion.h \\
+/x11/include/xorg/xserver-properties.h \\
+/x11/include/xorg/xvdix.h \\
+/x11/lib/pkgconfig/xorg-server.pc \\
+/x11/share/aclocal/xorg-server.m4
+
+exec=\\
+/x11/bin/X \\
+/x11/bin/Xorg \\
+/x11/bin/Xvfb \\
+/x11/bin/cvt \\
+/x11/bin/gtf \\
+/x11/lib/xorg/modules/libfb.so \\
+/x11/lib/xorg/modules/libshadow.so \\
+/x11/lib/xorg/modules/extensions/libdbe.so \\
+/x11/lib/xorg/modules/extensions/libextmod.so \\
+/x11/lib/xorg/modules/linux/libfbdevhw.so
+EOF
+
+exit
+--- xorg-server-1.7.7.orig/Xext/xace.c
++++ xorg-server-1.7.7/Xext/xace.c
+@@ -87,7 +87,18 @@
+  */
+ int XaceHook(int hook, ...)
+ {
+-    pointer calldata;	/* data passed to callback */
++    union {
++	XaceResourceAccessRec res;
++	XaceDeviceAccessRec dev;
++	XaceSendAccessRec send;
++	XaceReceiveAccessRec recv;
++	XaceClientAccessRec client;
++	XaceExtAccessRec ext;
++	XaceServerAccessRec server;
++	XaceScreenAccessRec screen;
++	XaceAuthAvailRec auth;
++	XaceKeyAvailRec key;
++    } u;
+     int *prv = NULL;	/* points to return value from callback */
+     va_list ap;		/* argument list */
+     va_start(ap, hook);
+@@ -99,117 +110,86 @@
+      */
+     switch (hook)
+     {
+-	case XACE_RESOURCE_ACCESS: {
+-	    XaceResourceAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.id = va_arg(ap, XID);
+-	    rec.rtype = va_arg(ap, RESTYPE);
+-	    rec.res = va_arg(ap, pointer);
+-	    rec.ptype = va_arg(ap, RESTYPE);
+-	    rec.parent = va_arg(ap, pointer);
+-	    rec.access_mode = va_arg(ap, Mask);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_DEVICE_ACCESS: {
+-	    XaceDeviceAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.dev = va_arg(ap, DeviceIntPtr);
+-	    rec.access_mode = va_arg(ap, Mask);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_SEND_ACCESS: {
+-	    XaceSendAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.dev = va_arg(ap, DeviceIntPtr);
+-	    rec.pWin = va_arg(ap, WindowPtr);
+-	    rec.events = va_arg(ap, xEventPtr);
+-	    rec.count = va_arg(ap, int);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_RECEIVE_ACCESS: {
+-	    XaceReceiveAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.pWin = va_arg(ap, WindowPtr);
+-	    rec.events = va_arg(ap, xEventPtr);
+-	    rec.count = va_arg(ap, int);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_CLIENT_ACCESS: {
+-	    XaceClientAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.target = va_arg(ap, ClientPtr);
+-	    rec.access_mode = va_arg(ap, Mask);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_EXT_ACCESS: {
+-	    XaceExtAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.ext = va_arg(ap, ExtensionEntry*);
+-	    rec.access_mode = DixGetAttrAccess;
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_SERVER_ACCESS: {
+-	    XaceServerAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.access_mode = va_arg(ap, Mask);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
++	case XACE_RESOURCE_ACCESS:
++	    u.res.client = va_arg(ap, ClientPtr);
++	    u.res.id = va_arg(ap, XID);
++	    u.res.rtype = va_arg(ap, RESTYPE);
++	    u.res.res = va_arg(ap, pointer);
++	    u.res.ptype = va_arg(ap, RESTYPE);
++	    u.res.parent = va_arg(ap, pointer);
++	    u.res.access_mode = va_arg(ap, Mask);
++	    u.res.status = Success; /* default allow */
++	    prv = &u.res.status;
++	    break;
++	case XACE_DEVICE_ACCESS:
++	    u.dev.client = va_arg(ap, ClientPtr);
++	    u.dev.dev = va_arg(ap, DeviceIntPtr);
++	    u.dev.access_mode = va_arg(ap, Mask);
++	    u.dev.status = Success; /* default allow */
++	    prv = &u.dev.status;
++	    break;
++	case XACE_SEND_ACCESS:
++	    u.send.client = va_arg(ap, ClientPtr);
++	    u.send.dev = va_arg(ap, DeviceIntPtr);
++	    u.send.pWin = va_arg(ap, WindowPtr);
++	    u.send.events = va_arg(ap, xEventPtr);
++	    u.send.count = va_arg(ap, int);
++	    u.send.status = Success; /* default allow */
++	    prv = &u.send.status;
++	    break;
++	case XACE_RECEIVE_ACCESS:
++	    u.recv.client = va_arg(ap, ClientPtr);
++	    u.recv.pWin = va_arg(ap, WindowPtr);
++	    u.recv.events = va_arg(ap, xEventPtr);
++	    u.recv.count = va_arg(ap, int);
++	    u.recv.status = Success; /* default allow */
++	    prv = &u.recv.status;
++	    break;
++	case XACE_CLIENT_ACCESS:
++	    u.client.client = va_arg(ap, ClientPtr);
++	    u.client.target = va_arg(ap, ClientPtr);
++	    u.client.access_mode = va_arg(ap, Mask);
++	    u.client.status = Success; /* default allow */
++	    prv = &u.client.status;
++	    break;
++	case XACE_EXT_ACCESS:
++	    u.ext.client = va_arg(ap, ClientPtr);
++	    u.ext.ext = va_arg(ap, ExtensionEntry*);
++	    u.ext.access_mode = DixGetAttrAccess;
++	    u.ext.status = Success; /* default allow */
++	    prv = &u.ext.status;
++	    break;
++	case XACE_SERVER_ACCESS:
++	    u.server.client = va_arg(ap, ClientPtr);
++	    u.server.access_mode = va_arg(ap, Mask);
++	    u.server.status = Success; /* default allow */
++	    prv = &u.server.status;
+ 	    break;
+-	}
+ 	case XACE_SCREEN_ACCESS:
+-	case XACE_SCREENSAVER_ACCESS: {
+-	    XaceScreenAccessRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.screen = va_arg(ap, ScreenPtr);
+-	    rec.access_mode = va_arg(ap, Mask);
+-	    rec.status = Success; /* default allow */
+-	    calldata = &rec;
+-	    prv = &rec.status;
+-	    break;
+-	}
+-	case XACE_AUTH_AVAIL: {
+-	    XaceAuthAvailRec rec;
+-	    rec.client = va_arg(ap, ClientPtr);
+-	    rec.authId = va_arg(ap, XID);
+-	    calldata = &rec;
+-	    break;
+-	}
+-	case XACE_KEY_AVAIL: {
+-	    XaceKeyAvailRec rec;
+-	    rec.event = va_arg(ap, xEventPtr);
+-	    rec.keybd = va_arg(ap, DeviceIntPtr);
+-	    rec.count = va_arg(ap, int);
+-	    calldata = &rec;
++	case XACE_SCREENSAVER_ACCESS:
++	    u.screen.client = va_arg(ap, ClientPtr);
++	    u.screen.screen = va_arg(ap, ScreenPtr);
++	    u.screen.access_mode = va_arg(ap, Mask);
++	    u.screen.status = Success; /* default allow */
++	    prv = &u.screen.status;
++	    break;
++	case XACE_AUTH_AVAIL:
++	    u.auth.client = va_arg(ap, ClientPtr);
++	    u.auth.authId = va_arg(ap, XID);
++	    break;
++	case XACE_KEY_AVAIL:
++	    u.key.event = va_arg(ap, xEventPtr);
++	    u.key.keybd = va_arg(ap, DeviceIntPtr);
++	    u.key.count = va_arg(ap, int);
+ 	    break;
+-	}
+-	default: {
++	default:
+ 	    va_end(ap);
+ 	    return 0;	/* unimplemented hook number */
+-	}
+     }
+     va_end(ap);
+  
+     /* call callbacks and return result, if any. */
+-    CallCallbacks(&XaceHooks[hook], calldata);
++    CallCallbacks(&XaceHooks[hook], &u);
+     return prv ? *prv : Success;
+ }
+ 
+--- xorg-server-1.7.7.orig/configure.ac
++++ xorg-server-1.7.7/configure.ac
+@@ -1135,7 +1135,6 @@
+ 
+ XKB_LIB='$(top_builddir)/xkb/libxkb.la'
+ XKB_STUB_LIB='$(top_builddir)/xkb/libxkbstubs.la'
+-REQUIRED_MODULES="$REQUIRED_MODULES xkbfile"
+ 
+ AC_CHECK_FUNC(strcasecmp, [], AC_DEFINE([NEED_STRCASECMP], 1,
+                                         [Do not have 'strcasecmp'.]))
+@@ -1271,8 +1270,10 @@
+   DIX_LIB='$(top_builddir)/dix/libdix.la'
+   OS_LIB='$(top_builddir)/os/libos.la'
+ fi
++OS_SYS_LIBS="$OS_SYS_LIBS $DLOPEN_LIBS"
+ AC_SUBST([DIX_LIB])
+ AC_SUBST([OS_LIB])
++AC_SUBST([OS_SYS_LIBS])
+ 
+ MAIN_LIB='$(top_builddir)/dix/libmain.la'
+ AC_SUBST([MAIN_LIB])
+--- xorg-server-1.7.7.orig/os/Makefile.am
++++ xorg-server-1.7.7/os/Makefile.am
+@@ -38,6 +38,8 @@
+ libos_la_SOURCES += $(STRLCAT_SRCS)
+ endif
+ 
++libos_la_LIBADD = $(OS_SYS_LIBS)
++
+ EXTRA_DIST = $(SECURERPC_SRCS) $(INTERNALMALLOC_SRCS) \
+      $(XDMCP_SRCS) $(STRLCAT_SRCS)
+ 

@@ -1,0 +1,241 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 ag.h $DESTDIR/x11/include/X11/extensions
+install -m 644 agproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 cup.h $DESTDIR/x11/include/X11/extensions
+install -m 644 cupproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 dbe.h $DESTDIR/x11/include/X11/extensions
+install -m 644 dbeproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 dpmsconst.h $DESTDIR/x11/include/X11/extensions
+install -m 644 dpmsproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 EVI.h $DESTDIR/x11/include/X11/extensions
+install -m 644 EVIproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 ge.h $DESTDIR/x11/include/X11/extensions
+install -m 644 geproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 lbx.h $DESTDIR/x11/include/X11/extensions
+install -m 644 lbxproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 mitmiscconst.h $DESTDIR/x11/include/X11/extensions
+install -m 644 mitmiscproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 multibufconst.h $DESTDIR/x11/include/X11/extensions
+install -m 644 multibufproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 secur.h $DESTDIR/x11/include/X11/extensions
+install -m 644 securproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 shapeconst.h $DESTDIR/x11/include/X11/extensions
+install -m 644 shapeproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 shm.h $DESTDIR/x11/include/X11/extensions
+install -m 644 shmproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 syncconst.h $DESTDIR/x11/include/X11/extensions
+install -m 644 syncproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 xtestconst.h $DESTDIR/x11/include/X11/extensions
+install -m 644 xtestext1const.h $DESTDIR/x11/include/X11/extensions
+install -m 644 xtestext1proto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 xtestproto.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xextproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xextproto-build.pc << EOF
+Name: xextproto
+Version: 7.1.1
+Description: Common X extensions
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/ag.h \\
+/x11/include/X11/extensions/agproto.h \\
+/x11/include/X11/extensions/cup.h \\
+/x11/include/X11/extensions/cupproto.h \\
+/x11/include/X11/extensions/dbe.h \\
+/x11/include/X11/extensions/dbeproto.h \\
+/x11/include/X11/extensions/dpmsconst.h \\
+/x11/include/X11/extensions/dpmsproto.h \\
+/x11/include/X11/extensions/EVI.h \\
+/x11/include/X11/extensions/EVIproto.h \\
+/x11/include/X11/extensions/ge.h \\
+/x11/include/X11/extensions/geproto.h \\
+/x11/include/X11/extensions/lbx.h \\
+/x11/include/X11/extensions/lbxproto.h \\
+/x11/include/X11/extensions/mitmiscconst.h \\
+/x11/include/X11/extensions/mitmiscproto.h \\
+/x11/include/X11/extensions/multibufconst.h \\
+/x11/include/X11/extensions/multibufproto.h \\
+/x11/include/X11/extensions/secur.h \\
+/x11/include/X11/extensions/securproto.h \\
+/x11/include/X11/extensions/shapeconst.h \\
+/x11/include/X11/extensions/shapeproto.h \\
+/x11/include/X11/extensions/shm.h \\
+/x11/include/X11/extensions/shmproto.h \\
+/x11/include/X11/extensions/syncconst.h \\
+/x11/include/X11/extensions/syncproto.h \\
+/x11/include/X11/extensions/xtestconst.h \\
+/x11/include/X11/extensions/xtestext1const.h \\
+/x11/include/X11/extensions/xtestext1proto.h \\
+/x11/include/X11/extensions/xtestproto.h \\
+/x11/lib/pkgconfig/xextproto.pc
+EOF
+
+exit
+--- xextproto-7.1.1.orig/EVIproto.h
++++ xextproto-7.1.1/EVIproto.h
+@@ -24,6 +24,7 @@
+ #ifndef _EVIPROTO_H_
+ #define _EVIPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/EVI.h>
+ 
+ #define X_EVIQueryVersion		0
+--- xextproto-7.1.1.orig/agproto.h
++++ xextproto-7.1.1/agproto.h
+@@ -27,6 +27,7 @@
+ #ifndef _AGPROTO_H_ /* { */
+ #define _AGPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/ag.h>
+ 
+ #define X_XagQueryVersion		0
+--- xextproto-7.1.1.orig/cupproto.h
++++ xextproto-7.1.1/cupproto.h
+@@ -27,6 +27,7 @@
+ #ifndef _XCUPPROTO_H_ /* { */
+ #define _XCUPPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/cup.h>
+ 
+ #define X_XcupQueryVersion			0
+--- xextproto-7.1.1.orig/dbeproto.h
++++ xextproto-7.1.1/dbeproto.h
+@@ -33,6 +33,7 @@
+ #ifndef DBE_PROTO_H
+ #define DBE_PROTO_H
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/dbe.h>
+ 
+ /* Request values used in (S)ProcDbeDispatch() */
+--- xextproto-7.1.1.orig/dpmsproto.h
++++ xextproto-7.1.1/dpmsproto.h
+@@ -29,6 +29,7 @@
+ #ifndef _DPMSPROTO_H_
+ #define _DPMSPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/dpmsconst.h>
+ 
+ #define X_DPMSGetVersion	0
+--- xextproto-7.1.1.orig/lbxproto.h
++++ xextproto-7.1.1/lbxproto.h
+@@ -23,6 +23,8 @@
+ #ifndef _LBXPROTO_H_
+ #define _LBXPROTO_H_
+ 
++#include <X11/X.h>
++#include <X11/Xproto.h>
+ #include <X11/extensions/lbx.h>
+ /*
+  * NOTE:  any changes or additions to the opcodes needs to be reflected
+--- xextproto-7.1.1.orig/mitmiscproto.h
++++ xextproto-7.1.1/mitmiscproto.h
+@@ -29,6 +29,7 @@
+ #ifndef _MITMISCPROTO_H_
+ #define _MITMISCPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/mitmiscconst.h>
+ 
+ #define X_MITSetBugMode			0
+--- xextproto-7.1.1.orig/multibufproto.h
++++ xextproto-7.1.1/multibufproto.h
+@@ -25,6 +25,7 @@
+ #ifndef _MULTIBUFPROTO_H_
+ #define _MULTIBUFPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/multibufconst.h>
+ 
+ /*
+--- xextproto-7.1.1.orig/securproto.h
++++ xextproto-7.1.1/securproto.h
+@@ -27,6 +27,7 @@
+ #ifndef _SECURPROTO_H
+ #define _SECURPROTO_H
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/secur.h>
+ 
+ #define X_SecurityQueryVersion		0
+--- xextproto-7.1.1.orig/shapeproto.h
++++ xextproto-7.1.1/shapeproto.h
+@@ -27,6 +27,7 @@
+ #ifndef _SHAPEPROTO_H_
+ #define _SHAPEPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/shapeconst.h>
+ 
+ /*
+--- xextproto-7.1.1.orig/shmproto.h
++++ xextproto-7.1.1/shmproto.h
+@@ -29,6 +29,7 @@
+ #ifndef _SHMPROTO_H_
+ #define _SHMPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/shm.h>
+ 
+ #define ShmSeg CARD32
+--- xextproto-7.1.1.orig/syncconst.h
++++ xextproto-7.1.1/syncconst.h
+@@ -51,6 +51,8 @@
+ #ifndef _SYNCCONST_H_
+ #define _SYNCCONST_H_
+ 
++#include <X11/Xdefs.h>
++
+ #define SYNC_NAME "SYNC"
+ 
+ #define SYNC_MAJOR_VERSION	3
+--- xextproto-7.1.1.orig/syncproto.h
++++ xextproto-7.1.1/syncproto.h
+@@ -51,6 +51,7 @@
+ #ifndef _SYNCPROTO_H_
+ #define _SYNCPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/syncconst.h>
+ 
+ #define X_SyncInitialize		0
+--- xextproto-7.1.1.orig/xtestext1proto.h
++++ xextproto-7.1.1/xtestext1proto.h
+@@ -52,6 +52,7 @@
+ #ifndef _XTESTEXT1PROTO_H
+ #define _XTESTEXT1PROTO_H 1
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/xtestext1const.h>
+ 
+ /*
+--- xextproto-7.1.1.orig/xtestproto.h
++++ xextproto-7.1.1/xtestproto.h
+@@ -27,6 +27,7 @@
+ #ifndef _XTESTPROTO_H_
+ #define _XTESTPROTO_H_
+ 
++#include <X11/Xmd.h>
+ #include <X11/extensions/xtestconst.h>
+ 
+ #define Window CARD32

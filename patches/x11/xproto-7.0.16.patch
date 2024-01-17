@@ -1,0 +1,71 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build util-macros-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11
+install -m 644 DECkeysym.h $DESTDIR/x11/include/X11
+install -m 644 keysym.h $DESTDIR/x11/include/X11
+install -m 644 keysymdef.h $DESTDIR/x11/include/X11
+install -m 644 Sunkeysym.h $DESTDIR/x11/include/X11
+install -m 644 X.h $DESTDIR/x11/include/X11
+install -m 644 Xalloca.h $DESTDIR/x11/include/X11
+install -m 644 Xarch.h $DESTDIR/x11/include/X11
+install -m 644 Xatom.h $DESTDIR/x11/include/X11
+install -m 644 Xdefs.h $DESTDIR/x11/include/X11
+install -m 644 XF86keysym.h $DESTDIR/x11/include/X11
+install -m 644 Xfuncproto.h $DESTDIR/x11/include/X11
+install -m 644 Xfuncs.h $DESTDIR/x11/include/X11
+install -m 644 Xmd.h $DESTDIR/x11/include/X11
+install -m 644 Xos.h $DESTDIR/x11/include/X11
+install -m 644 Xos_r.h $DESTDIR/x11/include/X11
+install -m 644 Xosdefs.h $DESTDIR/x11/include/X11
+install -m 644 Xpoll.h $DESTDIR/x11/include/X11
+install -m 644 Xproto.h $DESTDIR/x11/include/X11
+install -m 644 Xprotostr.h $DESTDIR/x11/include/X11
+install -m 644 Xthreads.h $DESTDIR/x11/include/X11
+install -m 644 XWDFile.h $DESTDIR/x11/include/X11
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xproto-build.pc << EOF
+Name: xproto
+Version: 7.0.16
+Description: X Window System Core Protocol
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/DECkeysym.h \\
+/x11/include/X11/keysym.h \\
+/x11/include/X11/keysymdef.h \\
+/x11/include/X11/Sunkeysym.h \\
+/x11/include/X11/X.h \\
+/x11/include/X11/Xalloca.h \\
+/x11/include/X11/Xarch.h \\
+/x11/include/X11/Xatom.h \\
+/x11/include/X11/Xdefs.h \\
+/x11/include/X11/XF86keysym.h \\
+/x11/include/X11/Xfuncproto.h \\
+/x11/include/X11/Xfuncs.h \\
+/x11/include/X11/Xmd.h \\
+/x11/include/X11/Xos.h \\
+/x11/include/X11/Xos_r.h \\
+/x11/include/X11/Xosdefs.h \\
+/x11/include/X11/Xpoll.h \\
+/x11/include/X11/Xproto.h \\
+/x11/include/X11/Xprotostr.h \\
+/x11/include/X11/Xthreads.h \\
+/x11/include/X11/XWDFile.h \\
+/x11/lib/pkgconfig/xproto.pc
+EOF
+
+exit

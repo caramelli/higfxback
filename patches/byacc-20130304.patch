@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.52.20121002)
+autoconf; autoheader
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install byacc $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/byacc-build.pc << EOF
+Name: byacc
+Version: 20130304
+Description: Berkeley Yacc
+Requires: $REQUIRES
+
+devel=\\
+/bin/byacc
+EOF
+
+exit
+--- byacc-20130304.orig/makefile.in
++++ byacc-20130304/makefile.in
+@@ -2,7 +2,7 @@
+ #
+ # UNIX template-makefile for Berkeley Yacc
+ 
+-THIS		= yacc
++THIS		= byacc
+ 
+ #### Start of system configuration section. ####
+ 
+@@ -89,7 +89,7 @@
+ 
+ install: all installdirs
+ 	$(INSTALL_PROGRAM) $(THIS)$x $(bindir)/$(actual_bin)
+-	- $(INSTALL_DATA) $(srcdir)/$(THIS).1 $(mandir)/$(actual_man)
++	- $(INSTALL_DATA) $(srcdir)/yacc.1 $(mandir)/$(actual_man)
+ 
+ installdirs:
+ 	mkdir -p $(bindir)

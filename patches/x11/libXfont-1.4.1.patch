@@ -1,0 +1,53 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build fontsproto-build freetype-build libfontenc-build xtrans-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I .; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/bdfint.h $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/bufio.h $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/fntfil.h $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/fntfilio.h $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/fontmisc.h $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/fontxlfd.h $DESTDIR/x11/include/X11/fonts
+install -m 644 include/X11/fonts/pcf.h $DESTDIR/x11/include/X11/fonts
+install -d $DESTDIR/x11/lib
+install src/.libs/libXfont.so.1.* $DESTDIR/x11/lib/libXfont.so.1
+ln -sf libXfont.so.1 $DESTDIR/x11/lib/libXfont.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xfont.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxfont-build.pc << EOF
+Name: libXfont
+Version: 1.4.1
+Description: X font library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/fonts/bdfint.h \\
+/x11/include/X11/fonts/bufio.h \\
+/x11/include/X11/fonts/fntfil.h \\
+/x11/include/X11/fonts/fntfilio.h \\
+/x11/include/X11/fonts/fontmisc.h \\
+/x11/include/X11/fonts/fontxlfd.h \\
+/x11/include/X11/fonts/pcf.h \\
+/x11/lib/libXfont.so \\
+/x11/lib/pkgconfig/xfont.pc
+
+exec=\\
+/x11/lib/libXfont.so.6
+EOF
+
+exit

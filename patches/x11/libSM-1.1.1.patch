@@ -1,0 +1,53 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libice-build util-linux-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/SM
+install -m 644 include/X11/SM/SM.h $DESTDIR/x11/include/X11/SM
+install -m 644 include/X11/SM/SMlib.h $DESTDIR/x11/include/X11/SM
+install -d $DESTDIR/x11/lib
+install src/.libs/libSM.so.6.* $DESTDIR/x11/lib/libSM.so.6
+ln -sf libSM.so.6 $DESTDIR/x11/lib/libSM.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 sm.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libsm-build.pc << EOF
+Name: libSM
+Version: 1.1.1
+Description: Session Management library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/SM/SM.h \\
+/x11/include/X11/SM/SMlib.h \\
+/x11/lib/libSM.so \\
+/x11/lib/pkgconfig/sm.pc
+
+exec=\\
+/x11/lib/libSM.so.6
+EOF
+
+exit
+--- libSM-1.1.1.orig/configure.ac
++++ libSM-1.1.1/configure.ac
+@@ -8,6 +8,7 @@
+         libSM)
+ 
+ AC_CONFIG_SRCDIR([Makefile.am])
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ 
+ AM_MAINTAINER_MODE

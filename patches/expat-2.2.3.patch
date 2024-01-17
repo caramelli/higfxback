@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f -i; aclocal; autoconf; autoheader
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install xmlwf/.libs/xmlwf $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 lib/expat.h $DESTDIR/include
+install -m 644 lib/expat_external.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libexpat.so.1.* $DESTDIR/lib/libexpat.so.1
+ln -sf libexpat.so.1 $DESTDIR/lib/libexpat.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 expat.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+cat > $DESTDIR/share/pkgconfig/expat-build.pc << EOF
+Name: expat
+Version: 2.2.3
+Description: Expat library
+
+devel=\\
+/include/expat.h \\
+/include/expat_external.h \\
+/lib/libexpat.so \\
+/lib/pkgconfig/expat.pc
+
+exec=\\
+/bin/xmlwf \\
+/lib/libexpat.so.1
+EOF
+
+exit

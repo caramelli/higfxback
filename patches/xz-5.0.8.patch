@@ -1,0 +1,128 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.14; lt-2.4.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/lzmainfo/.libs/lzmainfo $DESTDIR/bin
+install src/scripts/xzdiff $DESTDIR/bin
+ln -sf xzdiff $DESTDIR/bin/lzcmp
+ln -sf xzdiff $DESTDIR/bin/lzdiff
+ln -sf xzdiff $DESTDIR/bin/xzcmp
+install src/scripts/xzgrep $DESTDIR/bin
+ln -sf xzgrep $DESTDIR/bin/lzegrep
+ln -sf xzgrep $DESTDIR/bin/lzfgrep
+ln -sf xzgrep $DESTDIR/bin/lzgrep
+ln -sf xzgrep $DESTDIR/bin/xzegrep
+ln -sf xzgrep $DESTDIR/bin/xzfgrep
+install src/scripts/xzless $DESTDIR/bin
+ln -sf xzless $DESTDIR/bin/lzless
+install src/scripts/xzmore $DESTDIR/bin
+ln -sf xzmore $DESTDIR/bin/lzmore
+install src/xz/.libs/xz $DESTDIR/bin
+ln -sf xz $DESTDIR/bin/lzcat
+ln -sf xz $DESTDIR/bin/lzma
+ln -sf xz $DESTDIR/bin/unlzma
+ln -sf xz $DESTDIR/bin/unxz
+ln -sf xz $DESTDIR/bin/xzcat
+install src/xzdec/.libs/lzmadec $DESTDIR/bin
+install src/xzdec/.libs/xzdec $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 src/liblzma/api/lzma.h $DESTDIR/include
+install -d $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/base.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/bcj.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/block.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/check.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/container.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/delta.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/filter.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/hardware.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/index.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/index_hash.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/lzma.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/stream_flags.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/version.h $DESTDIR/include/lzma
+install -m 644 src/liblzma/api/lzma/vli.h $DESTDIR/include/lzma
+install -d $DESTDIR/lib
+install src/liblzma/.libs/liblzma.so.5.* $DESTDIR/lib/liblzma.so.5
+ln -sf liblzma.so.5 $DESTDIR/lib/liblzma.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/liblzma/liblzma.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/xz-build.pc << EOF
+Name: xz
+Version: 5.0.8
+Description: XZ and LZMA compression library
+Requires: $REQUIRES
+
+devel=\\
+/include/lzma.h \\
+/include/lzma/base.h \\
+/include/lzma/bcj.h \\
+/include/lzma/block.h \\
+/include/lzma/check.h \\
+/include/lzma/container.h \\
+/include/lzma/delta.h \\
+/include/lzma/filter.h \\
+/include/lzma/hardware.h \\
+/include/lzma/index.h \\
+/include/lzma/index_hash.h \\
+/include/lzma/lzma.h \\
+/include/lzma/stream_flags.h \\
+/include/lzma/version.h \\
+/include/lzma/vli.h \\
+/lib/liblzma.so \\
+/lib/pkgconfig/liblzma.pc
+
+exec=\\
+/bin/lzcat \\
+/bin/lzcmp \\
+/bin/lzdiff \\
+/bin/lzegrep \\
+/bin/lzfgrep \\
+/bin/lzgrep \\
+/bin/lzless \\
+/bin/lzma \\
+/bin/lzmadec \\
+/bin/lzmainfo \\
+/bin/lzmore \\
+/bin/unlzma \\
+/bin/unxz \\
+/bin/xz \\
+/bin/xzcat \\
+/bin/xzcmp \\
+/bin/xzdec \\
+/bin/xzdiff \\
+/bin/xzegrep \\
+/bin/xzfgrep \\
+/bin/xzgrep \\
+/bin/xzless \\
+/bin/xzmore \\
+/lib/liblzma.so.5
+EOF
+
+exit
+--- xz-5.0.8.orig/configure.ac
++++ xz-5.0.8/configure.ac
+@@ -422,7 +422,7 @@
+ echo
+ echo "Initializing Automake:"
+ 
+-AM_INIT_AUTOMAKE([1.12 foreign tar-v7 filename-length-max=99 serial-tests])
++AM_INIT_AUTOMAKE([1.12 foreign tar-v7 filename-length-max=99 serial-tests -Wno-unsupported])
+ AC_PROG_LN_S
+ 
+ AC_PROG_CC_C99

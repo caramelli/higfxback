@@ -1,0 +1,131 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.68; am-1.11; lt-2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-gudev --disable-hwdb --disable-introspection --disable-keymap --disable-udev_acl --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install udev/mdevd $DESTDIR/bin
+install udev/udevd $DESTDIR/bin
+install udev/udevadm $DESTDIR/bin
+ln -sf udevadm $DESTDIR/bin/mdev
+install -d $DESTDIR/etc/udev
+install -m 644 udev.conf $DESTDIR/etc/udev
+install -d $DESTDIR/etc/udev/rules.d
+cat > $DESTDIR/etc/udev/rules.d/udev.rules << EOF
+SUBSYSTEM=="input", IMPORT{program}="input_id %p"
+EOF
+install -d $DESTDIR/include
+install -m 644 libudev/libudev.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libudev/.libs/libudev.so.0.* $DESTDIR/lib/libudev.so.0
+ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
+install -d $DESTDIR/libexec
+install extras/ata_id/ata_id $DESTDIR/libexec
+install extras/cdrom_id/cdrom_id $DESTDIR/libexec
+install extras/firmware/firmware $DESTDIR/libexec
+install extras/input_id/input_id $DESTDIR/libexec
+install extras/path_id/path_id $DESTDIR/libexec
+install extras/scsi_id/scsi_id $DESTDIR/libexec
+install extras/usb_id/usb_id $DESTDIR/libexec
+install extras/v4l_id/v4l_id $DESTDIR/libexec
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libudev/libudev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+Name: udev
+Version: 171
+Description: Userspace Device management
+Requires: $REQUIRES
+
+devel=\\
+/include/libudev.h \\
+/lib/libudev.so \\
+/lib/pkgconfig/libudev.pc
+
+exec=\\
+/bin/mdevd \\
+/bin/udevd \\
+/bin/udevadm \\
+/etc/udev/udev.conf \\
+/etc/udev/rules.d/udev.rules \\
+/lib/libudev.so.0 \\
+/libexec/ata_id \\
+/libexec/cdrom_id \\
+/libexec/firmware \\
+/libexec/input_id \\
+/libexec/path_id \\
+/libexec/scsi_id \\
+/libexec/usb_id \\
+/libexec/v4l_id
+EOF
+
+exit
+--- udev-171.orig/Makefile.am
++++ udev-171/Makefile.am
+@@ -125,8 +125,7 @@
+ udevconfdir = $(sysconfdir)/udev
+ dist_udevconf_DATA = udev.conf
+ 
+-sharepkgconfigdir = $(datadir)/pkgconfig
+-sharepkgconfig_DATA = udev/udev.pc
++noarch_pkgconfig_DATA = udev/udev.pc
+ 
+ if WITH_SYSTEMD
+ systemdsystemunit_DATA = \
+--- udev-171.orig/configure.ac
++++ udev-171/configure.ac
+@@ -11,6 +11,7 @@
+ GTK_DOC_CHECK(1.10)
+ AC_PREFIX_DEFAULT([/usr])
+ AC_PATH_PROG([XSLTPROC], [xsltproc])
++PKG_NOARCH_INSTALLDIR
+ 
+ AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_ERROR([POSIX RT library not found])])
+ 
+--- udev-171.orig/udev/mdevd
++++ udev-171/udev/mdevd
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++exec udevd -d
+--- udev-171.orig/udev/udevadm.c
++++ udev-171/udev/udevadm.c
+@@ -131,6 +131,7 @@
+ 	static const struct option options[] = {
+ 		{ "debug", no_argument, NULL, 'd' },
+ 		{ "help", no_argument, NULL, 'h' },
++		{ "scan", no_argument, NULL, 's' },
+ 		{ "version", no_argument, NULL, 'V' },
+ 		{}
+ 	};
+@@ -149,7 +150,7 @@
+ 	for (;;) {
+ 		int option;
+ 
+-		option = getopt_long(argc, argv, "+dhV", options, NULL);
++		option = getopt_long(argc, argv, "+dhsV", options, NULL);
+ 		if (option == -1)
+ 			break;
+ 
+@@ -162,6 +163,9 @@
+ 		case 'h':
+ 			rc = help(udev, argc, argv);
+ 			goto out;
++		case 's':
++			rc = run_command(udev, &cmds[1], argc, argv);
++			goto out;
+ 		case 'V':
+ 			rc = version(udev, argc, argv);
+ 			goto out;

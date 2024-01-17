@@ -1,0 +1,49 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+./configure --mandir=/share/man --sbindir=/bin
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install dhcpcd $DESTDIR/bin
+ln -sf dhcpcd $DESTDIR/bin/udhcpc
+install -d $DESTDIR/etc
+install -m 644 dhcpcd.conf $DESTDIR/etc
+install -d $DESTDIR/libexec
+install dhcpcd-run-hooks $DESTDIR/libexec
+install -d $DESTDIR/libexec/dhcpcd-hooks
+install -m 644 dhcpcd-hooks/02-dump $DESTDIR/libexec/dhcpcd-hooks
+install -m 644 dhcpcd-hooks/10-mtu $DESTDIR/libexec/dhcpcd-hooks
+install -m 644 dhcpcd-hooks/20-resolv.conf $DESTDIR/libexec/dhcpcd-hooks
+install -m 644 dhcpcd-hooks/29-lookup-hostname $DESTDIR/libexec/dhcpcd-hooks
+install -m 644 dhcpcd-hooks/30-hostname $DESTDIR/libexec/dhcpcd-hooks
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/dhcpcd-build.pc << EOF
+Name: dhcpcd
+Version: 5.6.8
+Description: DHCP client
+Requires: $REQUIRES
+
+exec=\\
+/bin/dhcpcd \\
+/bin/udhcpc \\
+/etc/dhcpcd.conf \\
+/libexec/dhcpcd-run-hooks \\
+/libexec/dhcpcd-hooks/02-dump \\
+/libexec/dhcpcd-hooks/10-mtu \\
+/libexec/dhcpcd-hooks/20-resolv.conf \\
+/libexec/dhcpcd-hooks/29-lookup-hostname \\
+/libexec/dhcpcd-hooks/30-hostname
+EOF
+
+exit

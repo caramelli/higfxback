@@ -1,0 +1,91 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxmu-build libxpm-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/AsciiSink.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/AsciiSrc.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/AsciiText.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Box.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Cardinals.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Command.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Form.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Label.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/MenuButton.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/MultiSrc.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Paned.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Reports.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Scrollbar.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Simple.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/SimpleMenu.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/SimpleP.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Sme.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/SmeBSB.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/SmeLine.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/StripChart.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Text.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/TextSink.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/TextSrc.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Toggle.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/Viewport.h $DESTDIR/x11/include/X11/Xaw
+install -m 644 include/X11/Xaw/XawInit.h $DESTDIR/x11/include/X11/Xaw
+install -d $DESTDIR/x11/lib
+install src/.libs/libXaw7.so.7.* $DESTDIR/x11/lib/libXaw.so.7
+ln -sf libXaw.so.7 $DESTDIR/x11/lib/libXaw7.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xaw7.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxaw-build.pc << EOF
+Name: libXaw
+Version: 1.0.7
+Description: X Athena Widgets library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Xaw/AsciiSink.h \\
+/x11/include/X11/Xaw/AsciiSrc.h \\
+/x11/include/X11/Xaw/AsciiText.h \\
+/x11/include/X11/Xaw/Box.h \\
+/x11/include/X11/Xaw/Cardinals.h \\
+/x11/include/X11/Xaw/Command.h \\
+/x11/include/X11/Xaw/Form.h \\
+/x11/include/X11/Xaw/Label.h \\
+/x11/include/X11/Xaw/MenuButton.h \\
+/x11/include/X11/Xaw/MultiSrc.h \\
+/x11/include/X11/Xaw/Paned.h \\
+/x11/include/X11/Xaw/Reports.h \\
+/x11/include/X11/Xaw/Scrollbar.h \\
+/x11/include/X11/Xaw/Simple.h \\
+/x11/include/X11/Xaw/SimpleMenu.h \\
+/x11/include/X11/Xaw/SimpleP.h \\
+/x11/include/X11/Xaw/Sme.h \\
+/x11/include/X11/Xaw/SmeBSB.h \\
+/x11/include/X11/Xaw/SmeLine.h \\
+/x11/include/X11/Xaw/StripChart.h \\
+/x11/include/X11/Xaw/Text.h \\
+/x11/include/X11/Xaw/TextSink.h \\
+/x11/include/X11/Xaw/TextSrc.h \\
+/x11/include/X11/Xaw/Toggle.h \\
+/x11/include/X11/Xaw/Viewport.h \\
+/x11/include/X11/Xaw/XawInit.h \\
+/x11/lib/libXaw7.so \\
+/x11/lib/pkgconfig/xaw7.pc
+
+exec=\\
+/x11/lib/libXaw.so.7
+EOF
+
+exit

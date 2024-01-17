@@ -1,0 +1,80 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build bigreqsproto-build inputproto-build kbproto-build libxau-build xcmiscproto-build xtrans-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.65; am-1.11; lt-2.2.6b)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --without-xcb --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11
+install -m 644 include/X11/cursorfont.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/ImUtil.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/XKBlib.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xlib.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/XlibConf.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xlibint.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xlocale.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xregion.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xresource.h $DESTDIR/x11/include/X11
+install -m 644 include/X11/Xutil.h $DESTDIR/x11/include/X11
+install -d $DESTDIR/x11/lib
+install src/.libs/libX11.so.6.* $DESTDIR/x11/lib/libX11.so.6
+ln -sf libX11.so.6 $DESTDIR/x11/lib/libX11.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 x11.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/X11/locale
+echo C/Compose:    C > $DESTDIR/x11/share/X11/locale/compose.dir
+echo C/XLC_LOCALE: C > $DESTDIR/x11/share/X11/locale/locale.dir
+install -d $DESTDIR/x11/share/X11/locale/C
+install -m 644 nls/C/Compose $DESTDIR/x11/share/X11/locale/C
+install -m 644 nls/C/XLC_LOCALE $DESTDIR/x11/share/X11/locale/C
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
+Name: libX11
+Version: 1.3.5
+Description: Core X11 library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/cursorfont.h \\
+/x11/include/X11/ImUtil.h \\
+/x11/include/X11/XKBlib.h \\
+/x11/include/X11/Xlib.h \\
+/x11/include/X11/XlibConf.h \\
+/x11/include/X11/Xlibint.h \\
+/x11/include/X11/Xlocale.h \\
+/x11/include/X11/Xregion.h \\
+/x11/include/X11/Xresource.h \\
+/x11/include/X11/Xutil.h \\
+/x11/lib/libX11.so \\
+/x11/lib/pkgconfig/x11.pc
+
+exec=\\
+/x11/lib/libX11.so.6 \\
+/x11/share/X11/locale/compose.dir \\
+/x11/share/X11/locale/locale.dir \\
+/x11/share/X11/locale/C/Compose \\
+/x11/share/X11/locale/C/XLC_LOCALE
+EOF
+
+exit
+--- libX11-1.3.5.orig/configure.ac
++++ libX11-1.3.5/configure.ac
+@@ -87,7 +87,7 @@
+ # Checks for pkg-config packages
+ 
+ # Always required
+-X11_REQUIRES='xproto >= 7.0.13 xextproto xtrans'
++X11_REQUIRES='xproto >= 7.0.13 xtrans'
+ 
+ PKG_PROG_PKG_CONFIG()
+ 

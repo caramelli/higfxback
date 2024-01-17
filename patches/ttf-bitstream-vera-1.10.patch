@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="pkg-config-lite-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# install
+install -d $DESTDIR/share/fonts/truetype
+install -m 644 Vera.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraBI.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraBd.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraIt.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraMoBI.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraMoBd.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraMoIt.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraMono.ttf $DESTDIR/share/fonts/truetype/VeraMo.ttf
+install -m 644 VeraSe.ttf $DESTDIR/share/fonts/truetype
+install -m 644 VeraSeBd.ttf $DESTDIR/share/fonts/truetype
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/ttf-bitstream-vera-build.pc << EOF
+Name: ttf-bitstream-vera
+Version: 1.10
+Description: Bitstream Vera font
+
+exec=\\
+/share/fonts/truetype/Vera.ttf \\
+/share/fonts/truetype/VeraBI.ttf \\
+/share/fonts/truetype/VeraBd.ttf \\
+/share/fonts/truetype/VeraIt.ttf \\
+/share/fonts/truetype/VeraMo.ttf \\
+/share/fonts/truetype/VeraMoBI.ttf \\
+/share/fonts/truetype/VeraMoBd.ttf \\
+/share/fonts/truetype/VeraMoIt.ttf \\
+/share/fonts/truetype/VeraSe.ttf \\
+/share/fonts/truetype/VeraSeBd.ttf
+EOF
+
+exit

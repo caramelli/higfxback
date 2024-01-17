@@ -1,0 +1,137 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build meson-build"
+
+if ! PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/include/lite
+install -m 644 lite/animation.h $DESTDIR/dfb/include/lite
+install -m 644 lite/box.h $DESTDIR/dfb/include/lite
+install -m 644 lite/button.h $DESTDIR/dfb/include/lite
+install -m 644 lite/check.h $DESTDIR/dfb/include/lite
+install -m 644 lite/cursor.h $DESTDIR/dfb/include/lite
+install -m 644 lite/font.h $DESTDIR/dfb/include/lite
+install -m 644 lite/image.h $DESTDIR/dfb/include/lite
+install -m 644 lite/label.h $DESTDIR/dfb/include/lite
+install -m 644 lite/list.h $DESTDIR/dfb/include/lite
+install -m 644 lite/lite.h $DESTDIR/dfb/include/lite
+install -m 644 lite/progressbar.h $DESTDIR/dfb/include/lite
+install -m 644 lite/scrollbar.h $DESTDIR/dfb/include/lite
+install -m 644 lite/slider.h $DESTDIR/dfb/include/lite
+install -m 644 lite/textbutton.h $DESTDIR/dfb/include/lite
+install -m 644 lite/textline.h $DESTDIR/dfb/include/lite
+install -m 644 lite/theme.h $DESTDIR/dfb/include/lite
+install -m 644 lite/window.h $DESTDIR/dfb/include/lite
+install -d $DESTDIR/dfb/lib
+install build/lite/liblite-0.9.so.1.*[!p] $DESTDIR/dfb/lib/liblite-0.9.so.1
+ln -sf liblite-0.9.so.1 $DESTDIR/dfb/lib/liblite.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/lite.pc $DESTDIR/dfb/lib/pkgconfig
+install -d $DESTDIR/dfb/share/lite
+install -m 644 data/bottom.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/bottomleft.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/bottomright.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_disabled.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_disabled_on.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_hilite.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_hilite_on.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_normal.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_normal_on.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/button_pressed.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/checkbox.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/left.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/progressbar_bg.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/progressbar_fg.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/right.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/scrollbarbox.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/textbuttonbox.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/top.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/topleft.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/topright.dfiff $DESTDIR/dfb/share/lite
+install -m 644 data/Vera.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraBI.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraBd.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraIt.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraMo.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraMoBI.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraMoBd.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraMoIt.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraSe.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/VeraSeBd.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/whitrabt.dgiff $DESTDIR/dfb/share/lite
+install -m 644 data/wincursor.dfiff $DESTDIR/dfb/share/lite
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/lite-build.pc << EOF
+Name: LiTE
+Version: 20230612
+Description: Lightweight Toolkit Enabler
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/lite/animation.h \\
+/dfb/include/lite/box.h \\
+/dfb/include/lite/button.h \\
+/dfb/include/lite/check.h \\
+/dfb/include/lite/cursor.h \\
+/dfb/include/lite/font.h \\
+/dfb/include/lite/image.h \\
+/dfb/include/lite/label.h \\
+/dfb/include/lite/list.h \\
+/dfb/include/lite/lite.h \\
+/dfb/include/lite/progressbar.h \\
+/dfb/include/lite/scrollbar.h \\
+/dfb/include/lite/slider.h \\
+/dfb/include/lite/textbutton.h \\
+/dfb/include/lite/textline.h \\
+/dfb/include/lite/theme.h \\
+/dfb/include/lite/window.h \\
+/dfb/lib/liblite.so \\
+/dfb/lib/pkgconfig/lite.pc
+
+exec=\\
+/dfb/lib/liblite-0.9.so.1 \\
+/dfb/share/lite/bottom.dfiff \\
+/dfb/share/lite/bottomleft.dfiff \\
+/dfb/share/lite/bottomright.dfiff \\
+/dfb/share/lite/button_disabled.dfiff \\
+/dfb/share/lite/button_disabled_on.dfiff \\
+/dfb/share/lite/button_hilite.dfiff \\
+/dfb/share/lite/button_hilite_on.dfiff \\
+/dfb/share/lite/button_normal.dfiff \\
+/dfb/share/lite/button_normal_on.dfiff \\
+/dfb/share/lite/button_pressed.dfiff \\
+/dfb/share/lite/checkbox.dfiff \\
+/dfb/share/lite/left.dfiff \\
+/dfb/share/lite/progressbar_bg.dfiff \\
+/dfb/share/lite/progressbar_fg.dfiff \\
+/dfb/share/lite/right.dfiff \\
+/dfb/share/lite/scrollbarbox.dfiff \\
+/dfb/share/lite/textbuttonbox.dfiff \\
+/dfb/share/lite/top.dfiff \\
+/dfb/share/lite/topleft.dfiff \\
+/dfb/share/lite/topright.dfiff \\
+/dfb/share/lite/Vera.dgiff \\
+/dfb/share/lite/VeraBI.dgiff \\
+/dfb/share/lite/VeraBd.dgiff \\
+/dfb/share/lite/VeraIt.dgiff \\
+/dfb/share/lite/VeraMo.dgiff \\
+/dfb/share/lite/VeraMoBI.dgiff \\
+/dfb/share/lite/VeraMoBd.dgiff \\
+/dfb/share/lite/VeraMoIt.dgiff \\
+/dfb/share/lite/VeraSe.dgiff \\
+/dfb/share/lite/VeraSeBd.dgiff \\
+/dfb/share/lite/whitrabt.dgiff \\
+/dfb/share/lite/wincursor.dfiff
+EOF
+
+exit

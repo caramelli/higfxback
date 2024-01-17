@@ -1,0 +1,107 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build expat-build libffi-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --disable-documentation --disable-dtd-validation --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install wayland-scanner $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include
+install -m 644 cursor/wayland-cursor.h $DESTDIR/wl/include
+install -m 644 egl/wayland-egl.h $DESTDIR/wl/include
+install -m 644 egl/wayland-egl-core.h $DESTDIR/wl/include
+install -m 644 protocol/wayland-client-protocol.h $DESTDIR/wl/include
+install -m 644 protocol/wayland-server-protocol.h $DESTDIR/wl/include
+install -m 644 src/wayland-client.h $DESTDIR/wl/include
+install -m 644 src/wayland-client-core.h $DESTDIR/wl/include
+install -m 644 src/wayland-server.h $DESTDIR/wl/include
+install -m 644 src/wayland-server-core.h $DESTDIR/wl/include
+install -m 644 src/wayland-util.h $DESTDIR/wl/include
+install -m 644 src/wayland-version.h $DESTDIR/wl/include
+install -d $DESTDIR/wl/lib
+install .libs/libwayland-client.so.0.* $DESTDIR/wl/lib/libwayland-client.so.0
+ln -sf libwayland-client.so.0 $DESTDIR/wl/lib/libwayland-client.so
+install .libs/libwayland-cursor.so.0.* $DESTDIR/wl/lib/libwayland-cursor.so.0
+ln -sf libwayland-cursor.so.0 $DESTDIR/wl/lib/libwayland-cursor.so
+install .libs/libwayland-egl.so.1.* $DESTDIR/wl/lib/libwayland-egl.so.1
+ln -sf libwayland-egl.so.0 $DESTDIR/wl/lib/libwayland-egl.so
+install .libs/libwayland-server.so.0.* $DESTDIR/wl/lib/libwayland-server.so.0
+ln -sf libwayland-server.so.0 $DESTDIR/wl/lib/libwayland-server.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 cursor/wayland-cursor.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 egl/wayland-egl.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 src/wayland-client.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 src/wayland-scanner.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 src/wayland-server.pc $DESTDIR/wl/lib/pkgconfig
+install -d $DESTDIR/wl/share/aclocal
+install -m 644 wayland-scanner.m4 $DESTDIR/wl/share/aclocal
+install -d $DESTDIR/wl/share/wayland
+install -m 644 protocol/wayland.xml $DESTDIR/wl/share/wayland
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/wayland-build.pc << EOF
+Name: wayland
+Version: 1.16.0
+Description: Core Wayland library
+Requires: $REQUIRES
+
+devel=\\
+/bin/wayland-scanner \\
+/wl/include/wayland-client.h \\
+/wl/include/wayland-client-core.h \\
+/wl/include/wayland-client-protocol.h \\
+/wl/include/wayland-cursor.h \\
+/wl/include/wayland-egl.h \\
+/wl/include/wayland-egl-core.h \\
+/wl/include/wayland-server.h \\
+/wl/include/wayland-server-core.h \\
+/wl/include/wayland-server-protocol.h \\
+/wl/include/wayland-util.h \\
+/wl/include/wayland-version.h \\
+/wl/lib/libwayland-client.so \\
+/wl/lib/libwayland-cursor.so \\
+/wl/lib/libwayland-egl.so \\
+/wl/lib/libwayland-server.so \\
+/wl/lib/pkgconfig/wayland-client.pc \\
+/wl/lib/pkgconfig/wayland-cursor.pc \\
+/wl/lib/pkgconfig/wayland-egl.pc \\
+/wl/lib/pkgconfig/wayland-scanner.pc \\
+/wl/lib/pkgconfig/wayland-server.pc \\
+/wl/share/aclocal/wayland-scanner.m4 \\
+/wl/share/wayland/wayland.xml
+
+exec=\\
+/wl/lib/libwayland-client.so.0 \\
+/wl/lib/libwayland-cursor.so.0 \\
+/wl/lib/libwayland-egl.so.1 \\
+/wl/lib/libwayland-server.so.0
+EOF
+
+exit
+--- wayland-1.16.0.orig/protocol/wayland.xml
++++ wayland-1.16.0/protocol/wayland.xml
+@@ -1230,6 +1230,14 @@
+       <arg name="class_" type="string" summary="surface class"/>
+     </request>
+ 
++    <request name="set_position">
++      <description summary="set surface position">
++	Set a position for the surface.
++      </description>
++      <arg name="x" type="int"/>
++      <arg name="y" type="int"/>
++    </request>
++ 
+     <event name="ping">
+       <description summary="ping client">
+ 	Ping a client to check if it is receiving events and sending

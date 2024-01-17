@@ -1,0 +1,71 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxext-build libxt-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Atoms.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/CharSet.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Converters.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Drawing.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Editres.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/EditresP.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Error.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/ExtAgent.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Initer.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Misc.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/StdCmap.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/StdSel.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/SysUtil.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/WidgetNode.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/WinUtil.h $DESTDIR/x11/include/X11/Xmu
+install -m 644 include/X11/Xmu/Xmu.h $DESTDIR/x11/include/X11/Xmu
+install -d $DESTDIR/x11/lib
+install src/.libs/libXmu.so.6.* $DESTDIR/x11/lib/libXmu.so.6
+ln -sf libXmu.so.6 $DESTDIR/x11/lib/libXmu.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xmu.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxmu-build.pc << EOF
+Name: libXmu
+Version: 1.0.5
+Description: X miscellaneous utility library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Xmu/Atoms.h \\
+/x11/include/X11/Xmu/CharSet.h \\
+/x11/include/X11/Xmu/Converters.h \\
+/x11/include/X11/Xmu/Drawing.h \\
+/x11/include/X11/Xmu/Editres.h \\
+/x11/include/X11/Xmu/EditresP.h \\
+/x11/include/X11/Xmu/Error.h \\
+/x11/include/X11/Xmu/ExtAgent.h \\
+/x11/include/X11/Xmu/Initer.h \\
+/x11/include/X11/Xmu/Misc.h \\
+/x11/include/X11/Xmu/StdCmap.h \\
+/x11/include/X11/Xmu/StdSel.h \\
+/x11/include/X11/Xmu/SysUtil.h \\
+/x11/include/X11/Xmu/WidgetNode.h \\
+/x11/include/X11/Xmu/WinUtil.h \\
+/x11/include/X11/Xmu/Xmu.h \\
+/x11/lib/libXmu.so \\
+/x11/lib/pkgconfig/xmu.pc
+
+exec=\\
+/x11/lib/libXmu.so.6
+EOF
+
+exit

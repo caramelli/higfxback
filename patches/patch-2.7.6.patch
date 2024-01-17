@@ -1,0 +1,42 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15)
+aclocal; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/patch $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/patch-build.pc << EOF
+Name: patch
+Version: 2.7.6
+Description: GNU patch
+Requires: $REQUIRES
+
+exec=\\
+/bin/patch
+EOF
+
+exit
+--- patch-2.7.6.orig/src/pch.c
++++ patch-2.7.6/src/pch.c
+@@ -241,8 +241,6 @@
+ 	  say (p_base
+ 	       ? "  Ignoring the trailing garbage.\ndone\n"
+ 	       : "  I can't seem to find a patch in there anywhere.\n");
+-	if (! p_base && p_filesize)
+-	  fatal ("Only garbage was found in the patch input.");
+ 	return false;
+     }
+     if (skip_rest_of_patch)

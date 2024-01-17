@@ -1,0 +1,464 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build cairo-build libxkbcommon-build xkeyboard-config-build wayland-protocols-build"
+
+if ! PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=fbdev-backend.so ./configure --disable-drm-compositor --disable-egl --disable-fullscreen-shell --disable-headless-compositor --disable-ivi-shell --disable-wayland-compositor --disable-weston-launch --disable-x11-compositor --disable-xcompose --disable-xwayland --enable-demo-clients-install --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install .libs/weston $DESTDIR/wl/bin
+install weston-clickdot $DESTDIR/wl/bin
+install weston-cliptest $DESTDIR/wl/bin
+install weston-confine $DESTDIR/wl/bin
+install weston-dnd $DESTDIR/wl/bin
+install weston-eventdemo $DESTDIR/wl/bin
+install weston-flower $DESTDIR/wl/bin
+install weston-fullscreen $DESTDIR/wl/bin
+install weston-image $DESTDIR/wl/bin
+install weston-info $DESTDIR/wl/bin
+install weston-presentation-shm $DESTDIR/wl/bin
+install weston-resizor $DESTDIR/wl/bin
+install weston-scaler $DESTDIR/wl/bin
+install weston-simple-damage $DESTDIR/wl/bin
+install weston-simple-shm $DESTDIR/wl/bin
+install weston-smoke $DESTDIR/wl/bin
+install weston-stacking $DESTDIR/wl/bin
+install weston-terminal $DESTDIR/wl/bin
+install -d $DESTDIR/wl/lib
+install .libs/libweston-desktop-5.so.0.0.0 $DESTDIR/wl/lib/libweston-desktop-5.so.0
+install .libs/libweston-5.so.0.0.0 $DESTDIR/wl/lib/libweston-5.so.0
+install -d $DESTDIR/wl/lib/libweston-5
+install .libs/fbdev-backend.so $DESTDIR/wl/lib/libweston-5
+install -d $DESTDIR/wl/lib/weston
+install .libs/desktop-shell.so $DESTDIR/wl/lib/weston
+install -d $DESTDIR/wl/libexec
+install weston-desktop-shell $DESTDIR/wl/libexec
+install weston-keyboard $DESTDIR/wl/libexec
+install -d $DESTDIR/wl/share/weston
+install -m 644 data/icon_window.png $DESTDIR/wl/share/weston
+install -m 644 data/pattern.png $DESTDIR/wl/share/weston
+install -m 644 data/sign_close.png $DESTDIR/wl/share/weston
+install -m 644 data/sign_maximize.png $DESTDIR/wl/share/weston
+install -m 644 data/sign_minimize.png $DESTDIR/wl/share/weston
+install -m 644 data/terminal.png $DESTDIR/wl/share/weston
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+Name: weston
+Version: 5.0.0
+Description: Reference implementation of a Wayland compositor
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/weston \\
+/wl/bin/weston-clickdot \\
+/wl/bin/weston-cliptest \\
+/wl/bin/weston-confine \\
+/wl/bin/weston-dnd \\
+/wl/bin/weston-eventdemo \\
+/wl/bin/weston-flower \\
+/wl/bin/weston-fullscreen \\
+/wl/bin/weston-image \\
+/wl/bin/weston-info \\
+/wl/bin/weston-presentation-shm \\
+/wl/bin/weston-resizor \\
+/wl/bin/weston-scaler \\
+/wl/bin/weston-simple-damage \\
+/wl/bin/weston-simple-shm \\
+/wl/bin/weston-smoke \\
+/wl/bin/weston-stacking \\
+/wl/bin/weston-terminal \\
+/wl/lib/libweston-5.so.0 \\
+/wl/lib/libweston-desktop-5.so.0 \\
+/wl/lib/libweston-5/fbdev-backend.so \\
+/wl/lib/weston/desktop-shell.so \\
+/wl/libexec/weston-desktop-shell \\
+/wl/libexec/weston-keyboard \\
+/wl/share/weston/icon_window.png \\
+/wl/share/weston/pattern.png \\
+/wl/share/weston/sign_close.png \\
+/wl/share/weston/sign_maximize.png \\
+/wl/share/weston/sign_minimize.png \\
+/wl/share/weston/terminal.png
+EOF
+
+exit
+--- weston-5.0.0.orig/Makefile.am
++++ weston-5.0.0/Makefile.am
+@@ -41,7 +41,8 @@
+ 	-I$(top_builddir)/protocol		\
+ 	-DLIBWESTON_MODULEDIR='"$(libweston_moduledir)"' \
+ 	-DLIBEXECDIR='"$(libexecdir)"'		\
+-	-DBINDIR='"$(bindir)"'
++	-DBINDIR='"$(bindir)"'			\
++	-DSYSCONFDIR='"$(sysconfdir)"'
+ 
+ CLEANFILES = weston.ini				\
+ 	ivi-shell/weston.ini			\
+--- weston-5.0.0.orig/clients/terminal.c
++++ weston-5.0.0/clients/terminal.c
+@@ -53,6 +53,8 @@
+ static int option_maximize;
+ static char *option_font;
+ static int option_font_size;
++static int option_columns;
++static int option_rows;
+ static char *option_term;
+ static char *option_shell;
+ 
+@@ -924,7 +926,7 @@
+ 		{1,    1,    1,    1}  /* white */
+ 	},
+ 	0,                             /* black border */
+-	{7, 0, 0, }                    /* bg:black (0), fg:light gray (7)  */
++	{255, 0, 0, }                  /* bg:black (0), fg:white (255) */
+ };
+ 
+ static void
+@@ -2929,6 +2931,7 @@
+ 	terminal->widget = window_frame_create(terminal->window, terminal);
+ 	terminal->title = xstrdup("Wayland Terminal");
+ 	window_set_title(terminal->window, terminal->title);
++	window_set_position(terminal->window, 0, 0);
+ 	widget_set_transparent(terminal->widget, 0);
+ 
+ 	init_state_machine(&terminal->state_machine);
+@@ -3089,7 +3092,7 @@
+ 	else if (option_maximize)
+ 		window_set_maximized(terminal->window, 1);
+ 	else
+-		terminal_resize(terminal, 80, 24);
++		terminal_resize(terminal, option_columns, option_rows);
+ 
+ 	return 0;
+ }
+@@ -3099,6 +3102,8 @@
+ 	{ WESTON_OPTION_BOOLEAN, "maximized", 'm', &option_maximize },
+ 	{ WESTON_OPTION_STRING, "font", 0, &option_font },
+ 	{ WESTON_OPTION_INTEGER, "font-size", 0, &option_font_size },
++	{ WESTON_OPTION_INTEGER, "columns", 0, &option_columns },
++	{ WESTON_OPTION_INTEGER, "rows", 0, &option_rows },
+ 	{ WESTON_OPTION_STRING, "shell", 0, &option_shell },
+ };
+ 
+@@ -3123,6 +3128,8 @@
+ 	s = weston_config_get_section(config, "terminal", NULL, NULL);
+ 	weston_config_section_get_string(s, "font", &option_font, "mono");
+ 	weston_config_section_get_int(s, "font-size", &option_font_size, 14);
++	weston_config_section_get_int(s, "columns", &option_columns, 80);
++	weston_config_section_get_int(s, "rows", &option_rows, 24);
+ 	weston_config_section_get_string(s, "term", &option_term, "xterm");
+ 	weston_config_destroy(config);
+ 
+--- weston-5.0.0.orig/clients/window.c
++++ weston-5.0.0/clients/window.c
+@@ -1297,19 +1297,6 @@
+ 	"0426c94ea35c87780ff01dc239897213"
+ };
+ 
+-static const char *move_draggings[] = {
+-	"dnd-move"
+-};
+-
+-static const char *copy_draggings[] = {
+-	"dnd-copy"
+-};
+-
+-static const char *forbidden_draggings[] = {
+-	"dnd-none",
+-	"dnd-no-drop"
+-};
+-
+ struct cursor_alternatives {
+ 	const char **names;
+ 	size_t count;
+@@ -1329,9 +1316,6 @@
+ 	{xterms, ARRAY_LENGTH(xterms)},
+ 	{hand1s, ARRAY_LENGTH(hand1s)},
+ 	{watches, ARRAY_LENGTH(watches)},
+-	{move_draggings, ARRAY_LENGTH(move_draggings)},
+-	{copy_draggings, ARRAY_LENGTH(copy_draggings)},
+-	{forbidden_draggings, ARRAY_LENGTH(forbidden_draggings)},
+ };
+ 
+ static void
+@@ -4725,6 +4709,12 @@
+ }
+ 
+ void
++window_set_position(struct window *window, int32_t x, int32_t y)
++{
++	zxdg_toplevel_v6_set_position(window->xdg_toplevel, x, y);
++}
++
++void
+ window_set_title(struct window *window, const char *title)
+ {
+ 	free(window->title);
+--- weston-5.0.0.orig/clients/window.h
++++ weston-5.0.0/clients/window.h
+@@ -500,6 +500,9 @@
+ 	struct window *window, window_locked_pointer_motion_handler_t handler);
+ 
+ void
++window_set_position(struct window *window, int32_t x, int32_t y);
++
++void
+ window_set_title(struct window *window, const char *title);
+ 
+ const char *
+--- weston-5.0.0.orig/configure.ac
++++ weston-5.0.0/configure.ac
+@@ -111,14 +111,6 @@
+ 
+ AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
+ 
+-# check for libdrm as a build-time dependency only
+-# libdrm 2.4.30 introduced drm_fourcc.h.
+-PKG_CHECK_MODULES(LIBDRM, [libdrm >= 2.4.68], [], [AC_MSG_ERROR([
+-     libdrm is a hard build-time dependency for libweston core,
+-     but a sufficient version was not found. However, libdrm
+-     is not a runtime dependency unless you have features
+-     enabled that require it.])])
+-
+ COMPOSITOR_MODULES="wayland-server >= $WAYLAND_PREREQ_VERSION pixman-1 >= 0.25.2"
+ 
+ AC_CONFIG_FILES([doc/doxygen/tools.doxygen doc/doxygen/tooldev.doxygen])
+@@ -152,9 +144,11 @@
+ 
+ COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
+ 
+-PKG_CHECK_MODULES(XKBCOMMON_COMPOSE, [xkbcommon >= 0.5.0],
+-                  [AC_DEFINE(HAVE_XKBCOMMON_COMPOSE, 1,
+-	             [Define if xkbcommon is 0.5.0 or newer])],true)
++AC_ARG_ENABLE(xcompose, [  --disable-xcompose],, enable_xcompose=yes)
++if test x$enable_xcompose = xyes; then
++  PKG_CHECK_MODULES(XKBCOMMON_COMPOSE, [xkbcommon >= 0.5.0],
++                    [AC_DEFINE(HAVE_XKBCOMMON_COMPOSE, 1, [Use XCompose])], true)
++fi
+ 
+ AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
+ 	      enable_setuid_install=yes)
+--- weston-5.0.0.orig/desktop-shell/shell.c
++++ weston-5.0.0/desktop-shell/shell.c
+@@ -104,6 +104,7 @@
+ 
+ 	struct desktop_shell *shell;
+ 
++	int32_t pos_x, pos_y;
+ 	int32_t saved_x, saved_y;
+ 	bool saved_position_valid;
+ 	bool saved_rotation_valid;
+@@ -2377,6 +2378,8 @@
+ 	weston_surface_set_label_func(surface, shell_surface_get_label);
+ 
+ 	shsurf->shell = (struct desktop_shell *) shell;
++	shsurf->pos_x = -1;
++	shsurf->pos_y = -1;
+ 	shsurf->unresponsive = 0;
+ 	shsurf->saved_position_valid = false;
+ 	shsurf->saved_rotation_valid = false;
+@@ -2902,6 +2905,20 @@
+ 	shsurf->xwayland.is_set = true;
+ }
+ 
++static void
++desktop_surface_set_position(struct weston_desktop_surface *surface,
++				      int32_t x, int32_t y)
++{
++	struct shell_surface *shsurf =
++		weston_desktop_surface_get_user_data(surface);
++
++	if (!shsurf)
++		return;
++
++	shsurf->pos_x = x;
++	shsurf->pos_y = y;
++}
++
+ static const struct weston_desktop_api shell_desktop_api = {
+ 	.struct_size = sizeof(struct weston_desktop_api),
+ 	.surface_added = desktop_surface_added,
+@@ -2915,6 +2932,7 @@
+ 	.ping_timeout = desktop_surface_ping_timeout,
+ 	.pong = desktop_surface_pong,
+ 	.set_xwayland_position = desktop_surface_set_xwayland_position,
++	.set_position = desktop_surface_set_position,
+ };
+ 
+ /* ************************ *
+@@ -4213,6 +4231,7 @@
+ 	struct weston_output *output, *target_output = NULL;
+ 	struct weston_seat *seat;
+ 	pixman_rectangle32_t area;
++	struct shell_surface *shsurf = get_shell_surface(view->surface);
+ 
+ 	/* As a heuristic place the new window on the same output as the
+ 	 * pointer. Falling back to the output containing 0, 0.
+@@ -4253,11 +4272,15 @@
+ 	range_x = area.width - view->surface->width;
+ 	range_y = area.height - view->surface->height;
+ 
+-	if (range_x > 0)
++	if (range_x > 0 && shsurf->pos_x < 0)
+ 		x += random() % range_x;
++	else
++		x = shsurf->pos_x;
+ 
+-	if (range_y > 0)
++	if (range_y > 0 && shsurf->pos_y < 0)
+ 		y += random() % range_y;
++	else
++		y = shsurf->pos_y;
+ 
+ 	weston_view_set_position(view, x, y);
+ }
+--- weston-5.0.0.orig/libweston/pixel-formats.c
++++ weston-5.0.0/libweston/pixel-formats.c
+@@ -23,6 +23,8 @@
+  * Author: Daniel Stone <daniels@collabora.com>
+  */
+ 
++#ifdef BUILD_DRM_COMPOSITOR
++
+ #include "config.h"
+ 
+ #include <endian.h>
+@@ -428,3 +430,5 @@
+ 
+ 	return height / info->vsub;
+ }
++
++#endif
+--- weston-5.0.0.orig/libweston-desktop/internal.h
++++ weston-5.0.0/libweston-desktop/internal.h
+@@ -86,6 +86,11 @@
+ 					 struct weston_desktop_surface *surface,
+ 					 int32_t x, int32_t y);
+ 
++void
++weston_desktop_api_set_position(struct weston_desktop *desktop,
++					 struct weston_desktop_surface *surface,
++					 int32_t x, int32_t y);
++
+ struct weston_desktop_seat *
+ weston_desktop_seat_from_seat(struct weston_seat *wseat);
+ 
+--- weston-5.0.0.orig/libweston-desktop/libweston-desktop.c
++++ weston-5.0.0/libweston-desktop/libweston-desktop.c
+@@ -242,3 +242,12 @@
+ 		desktop->api.set_xwayland_position(surface, x, y,
+ 						   desktop->user_data);
+ }
++
++void
++weston_desktop_api_set_position(struct weston_desktop *desktop,
++					 struct weston_desktop_surface *surface,
++					 int32_t x, int32_t y)
++{
++	if (desktop->api.set_position != NULL)
++		desktop->api.set_position(surface, x, y);
++}
+--- weston-5.0.0.orig/libweston-desktop/libweston-desktop.h
++++ weston-5.0.0/libweston-desktop/libweston-desktop.h
+@@ -113,6 +113,9 @@
+ 	 */
+ 	void (*set_xwayland_position)(struct weston_desktop_surface *surface,
+ 				      int32_t x, int32_t y, void *user_data);
++
++	void (*set_position)(struct weston_desktop_surface *surface,
++				      int32_t x, int32_t y);
+ };
+ 
+ void
+--- weston-5.0.0.orig/libweston-desktop/wl-shell.c
++++ weston-5.0.0/libweston-desktop/wl-shell.c
+@@ -387,6 +387,19 @@
+ 	weston_desktop_surface_set_app_id(surface, class_);
+ }
+ 
++static void
++weston_desktop_wl_shell_surface_protocol_set_position(struct wl_client *wl_client,
++						   struct wl_resource *resource,
++						   int32_t x, int32_t y)
++{
++	struct weston_desktop_surface *dsurface =
++		wl_resource_get_user_data(resource);
++	struct weston_desktop_wl_shell_surface *surface =
++		weston_desktop_surface_get_implementation_data(dsurface);
++
++	weston_desktop_api_set_position(surface->desktop, dsurface, x, y);
++}
++
+ 
+ static const struct wl_shell_surface_interface weston_desktop_wl_shell_surface_implementation = {
+ 	.pong           = weston_desktop_wl_shell_surface_protocol_pong,
+@@ -399,6 +412,7 @@
+ 	.set_maximized  = weston_desktop_wl_shell_surface_protocol_set_maximized,
+ 	.set_title      = weston_desktop_wl_shell_surface_protocol_set_title,
+ 	.set_class      = weston_desktop_wl_shell_surface_protocol_set_class,
++	.set_position   = weston_desktop_wl_shell_surface_protocol_set_position,
+ };
+ 
+ static const struct weston_desktop_surface_implementation weston_desktop_wl_shell_surface_internal_implementation = {
+--- weston-5.0.0.orig/libweston-desktop/xdg-shell-v6.c
++++ weston-5.0.0/libweston-desktop/xdg-shell-v6.c
+@@ -550,6 +550,19 @@
+ }
+ 
+ static void
++weston_desktop_xdg_toplevel_protocol_set_position(struct wl_client *wl_client,
++						  struct wl_resource *resource,
++						  int32_t x, int32_t y)
++{
++	struct weston_desktop_surface *dsurface =
++		wl_resource_get_user_data(resource);
++	struct weston_desktop_xdg_toplevel *toplevel =
++		weston_desktop_surface_get_implementation_data(dsurface);
++
++	weston_desktop_api_set_position(toplevel->base.desktop, dsurface, x, y);
++}
++
++static void
+ weston_desktop_xdg_toplevel_send_configure(struct weston_desktop_xdg_toplevel *toplevel,
+ 					   struct weston_desktop_xdg_toplevel_configure *configure)
+ {
+@@ -753,6 +766,7 @@
+ 	.set_fullscreen      = weston_desktop_xdg_toplevel_protocol_set_fullscreen,
+ 	.unset_fullscreen    = weston_desktop_xdg_toplevel_protocol_unset_fullscreen,
+ 	.set_minimized       = weston_desktop_xdg_toplevel_protocol_set_minimized,
++	.set_position        = weston_desktop_xdg_toplevel_protocol_set_position,
+ };
+ 
+ static void
+--- weston-5.0.0.orig/shared/cairo-util.c
++++ weston-5.0.0/shared/cairo-util.c
+@@ -391,7 +391,7 @@
+ 	if (t == NULL)
+ 		return NULL;
+ 
+-	t->margin = 32;
++	t->margin = 0;
+ 	t->width = 6;
+ 	t->titlebar_height = 27;
+ 	t->frame_radius = 3;
+--- weston-5.0.0.orig/shared/config-parser.c
++++ weston-5.0.0/shared/config-parser.c
+@@ -97,7 +97,7 @@
+ 
+ 	/* For each $XDG_CONFIG_DIRS: weston/<config_file> */
+ 	if (!config_dirs)
+-		config_dirs = "/etc/xdg";  /* See XDG base dir spec. */
++		config_dirs = SYSCONFDIR"/xdg";  /* See XDG base dir spec. */
+ 
+ 	for (p = config_dirs; *p != '\0'; p = next) {
+ 		next = strchrnul(p, ':');

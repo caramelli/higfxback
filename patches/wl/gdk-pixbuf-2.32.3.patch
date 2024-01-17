@@ -1,0 +1,105 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build glib-build jpeg-build libpng-build tiff-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install gdk-pixbuf/.libs/gdk-pixbuf-csource $DESTDIR/wl/bin
+install gdk-pixbuf/.libs/gdk-pixbuf-pixdata $DESTDIR/wl/bin
+install gdk-pixbuf/.libs/gdk-pixbuf-query-loaders $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-animation.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-autocleanups.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-core.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-enum-types.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-features.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-io.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-loader.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-simple-anim.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixbuf-transform.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -m 644 gdk-pixbuf/gdk-pixdata.h $DESTDIR/wl/include/gdk-pixbuf-2.0/gdk-pixbuf
+install -d $DESTDIR/wl/lib
+install gdk-pixbuf/.libs/libgdk_pixbuf-2.0.so.0.* $DESTDIR/wl/lib/libgdk_pixbuf-2.0.so.0
+ln -sf libgdk_pixbuf-2.0.so.0 $DESTDIR/wl/lib/libgdk_pixbuf-2.0.so
+install -d $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-ani.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-bmp.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-gif.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-icns.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-ico.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-jpeg.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-png.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-pnm.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-qtif.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-tga.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-tiff.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-xbm.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-xpm.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 gdk-pixbuf-2.0.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/gdk-pixbuf-build.pc << EOF
+Name: gdk-pixbuf
+Version: 2.32.3
+Description: Image loading library
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-animation.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-core.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-enum-types.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-features.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-io.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-loader.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-simple-anim.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-transform.h \\
+/wl/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixdata.h \\
+/wl/lib/libgdk_pixbuf-2.0.so \\
+/wl/lib/pkgconfig/gdk-pixbuf-2.0.pc
+
+exec=\\
+/wl/bin/gdk-pixbuf-csource \\
+/wl/bin/gdk-pixbuf-pixdata \\
+/wl/bin/gdk-pixbuf-query-loaders \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-ani.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-bmp.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-gif.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-icns.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-ico.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-jpeg.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-pnm.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-qtif.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-tga.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-tiff.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-xbm.so \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-xpm.so \\
+/wl/lib/libgdk_pixbuf-2.0.so.0
+EOF
+
+exit
+--- gdk-pixbuf-2.32.3.orig/tests/Makefile.am
++++ gdk-pixbuf-2.32.3/tests/Makefile.am
+@@ -114,7 +114,7 @@
+ 	test-common.h			\
+ 	$(NULL)
+ 
+-pixbuf_short_git_write_SOURCES =	\
++pixbuf_short_gif_write_SOURCES =	\
+ 	pixbuf-short-gif-write.c
+ 
+ pixbuf_readonly_to_mutable_SOURCES =	\

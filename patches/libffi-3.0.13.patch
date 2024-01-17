@@ -1,0 +1,142 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.12; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 `./config.guess`/include/ffi.h $DESTDIR/include
+install -m 644 `./config.guess`/include/ffitarget.h $DESTDIR/include
+install -d $DESTDIR/lib
+install `./config.guess`/.libs/libffi.so.6.* $DESTDIR/lib/libffi.so.6
+ln -sf libffi.so.6 $DESTDIR/lib/libffi.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 `./config.guess`/libffi.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libffi-build.pc << EOF
+Name: libffi
+Version: 3.0.13
+Description: Foreign Function Interface library
+Requires: $REQUIRES
+
+devel=\\
+/include/ffi.h \\
+/include/ffitarget.h \\
+/lib/libffi.so \\
+/lib/pkgconfig/libffi.pc
+
+exec=\\
+/lib/libffi.so.6
+EOF
+
+exit
+--- libffi-3.0.13.orig/include/Makefile.am
++++ libffi-3.0.13/include/Makefile.am
+@@ -5,5 +5,5 @@
+ DISTCLEANFILES=ffitarget.h
+ EXTRA_DIST=ffi.h.in ffi_common.h
+ 
+-includesdir = $(libdir)/@PACKAGE_NAME@-@PACKAGE_VERSION@/include
++includesdir = $(includedir)
+ nodist_includes_HEADERS = ffi.h ffitarget.h
+--- libffi-3.0.13.orig/libffi.pc.in
++++ libffi-3.0.13/libffi.pc.in
+@@ -1,7 +1,7 @@
+ prefix=@prefix@
+ exec_prefix=@exec_prefix@
+ libdir=@libdir@
+-includedir=${libdir}/@PACKAGE_NAME@-@PACKAGE_VERSION@/include
++includedir=@includedir@
+ 
+ Name: @PACKAGE_NAME@
+ Description: Library supporting Foreign Function Interfaces
+--- libffi-3.0.13.orig/m4/ax_enable_builddir.m4
++++ libffi-3.0.13/m4/ax_enable_builddir.m4
+@@ -205,9 +205,9 @@
+ 	; BUILD=$x grep "^#### \$\$HOST " Makefile | sed -e 's/.*|//' $x \\\\\\
+ 	; use=$x basename "\$\@" _ALL $x; n=$x echo \$\$BUILD | wc -w $x \\\\\\
+ 	; echo "MAKE \$\$HOST : \$\$n * \$\@"; if test "\$\$n" -eq "0" ; then : \\\\\\
+-	; BUILD=$x grep "^####.*|" Makefile |tail -1| sed -e 's/.*|//' $x ; fi \\\\\\
++	; BUILD=$x grep "^####.*|" Makefile |tail -n 1| sed -e 's/.*|//' $x ; fi \\\\\\
+ 	; test ".\$\$BUILD" = "." && BUILD="." \\\\\\
+-	; test "\$\$use" = "\$\@" && BUILD=$x echo "\$\$BUILD" | tail -1 $x \\\\\\
++	; test "\$\$use" = "\$\@" && BUILD=$x echo "\$\$BUILD" | tail -n 1 $x \\\\\\
+ 	; for i in \$\$BUILD ; do test ".\$\$i" = "." && continue \\\\\\
+ 	; (cd "\$\$i" && test ! -f configure && \$(MAKE) \$\$use) || exit; done
+ dnl special rule add-on: "dist" copies the tarball to $(PUB). (source tree)
+@@ -218,7 +218,7 @@
+ 	; found=$x echo \$\$BUILD | wc -w $x \\\\\\
+ 	; echo "MAKE \$\$HOST : \$\$found \$(PACKAGE)-\$(VERSION).tar.*" \\\\\\
+ 	; if test "\$\$found" -eq "0" ; then : \\\\\\
+-	; BUILD=$x grep "^#### .*|" Makefile |tail -1| sed -e 's/.*|//' $x \\\\\\
++	; BUILD=$x grep "^#### .*|" Makefile |tail -n 1| sed -e 's/.*|//' $x \\\\\\
+ 	; fi ; for i in \$\$BUILD ; do test ".\$\$i" = "." && continue \\\\\\
+ 	; for f in \$\$i/\$(PACKAGE)-\$(VERSION).tar.* \\\\\\
+ 	; do test -f "\$\$f" && mv "\$\$f" \$(PUB). ; done ; break ; done
+@@ -230,7 +230,7 @@
+ 	; found=$x echo \$\$BUILD | wc -w $x \\\\\\
+ 	; echo "MAKE \$\$HOST : \$\$found \$(PACKAGE)-\$(VERSION).*" \\\\\\
+ 	; if test "\$\$found" -eq "0" ; then : \\\\\\
+-	; BUILD=$x grep "^#### .*|" Makefile |tail -1| sed -e 's/.*|//' $x \\\\\\
++	; BUILD=$x grep "^#### .*|" Makefile |tail -n 1| sed -e 's/.*|//' $x \\\\\\
+ 	; fi ; for i in \$\$BUILD ; do test ".\$\$i" = "." && continue \\\\\\
+ 	; for f in \$\$i/\$(PACKAGE)-\$(VERSION).* \\\\\\
+ 	; do test -f "\$\$f" && mv "\$\$f" \$(PUB). ; done ; break ; done
+--- libffi-3.0.13.orig/m4/lt_sys_symbol_uscore.m4
++++ libffi-3.0.13/m4/lt_sys_symbol_uscore.m4
+@@ -0,0 +1,44 @@
++# LT_SYS_SYMBOL_USCORE
++#
++#   Copyright (C) 1999-2006, 2007, 2008, 2011 Free Software Foundation, Inc.
++#   Written by Thomas Tanner, 1999
++#
++# This file is free software; the Free Software Foundation gives
++# unlimited permission to copy and/or distribute it, with or without
++# modifications, as long as this notice is preserved.
++
++AC_DEFUN([LT_SYS_SYMBOL_USCORE],
++[m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
++AC_CACHE_CHECK([for _ prefix in compiled symbols],
++  [lt_cv_sys_symbol_underscore],
++  [lt_cv_sys_symbol_underscore=no
++  cat > conftest.$ac_ext <<_LT_EOF
++void nm_test_func(){}
++int main(){nm_test_func;return 0;}
++_LT_EOF
++  if AC_TRY_EVAL(ac_compile); then
++    # Now try to grab the symbols.
++    ac_nlist=conftest.nm
++    if AC_TRY_EVAL(NM conftest.$ac_objext \| $lt_cv_sys_global_symbol_pipe \> $ac_nlist) && test -s "$ac_nlist"; then
++      # See whether the symbols have a leading underscore.
++      if grep '^. _nm_test_func' "$ac_nlist" >/dev/null; then
++        lt_cv_sys_symbol_underscore=yes
++      else
++        if grep '^. nm_test_func ' "$ac_nlist" >/dev/null; then
++	  :
++        else
++	  echo "configure: cannot find nm_test_func in $ac_nlist" >&AS_MESSAGE_LOG_FD
++        fi
++      fi
++    else
++      echo "configure: cannot run $lt_cv_sys_global_symbol_pipe" >&AS_MESSAGE_LOG_FD
++    fi
++  else
++    echo "configure: failed program was:" >&AS_MESSAGE_LOG_FD
++    cat conftest.c >&AS_MESSAGE_LOG_FD
++  fi
++  rm -rf conftest*
++  ])
++  sys_symbol_underscore=$lt_cv_sys_symbol_underscore
++  AC_SUBST([sys_symbol_underscore])
++])

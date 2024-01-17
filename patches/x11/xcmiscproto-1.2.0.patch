@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xproto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 xcmiscproto.h $DESTDIR/x11/include/X11/extensions
+install -m 644 xcmiscstr.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcmiscproto.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xcmiscproto-build.pc << EOF
+Name: xcmiscproto
+Version: 1.2.0
+Description: XC-Misc extension
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/xcmiscproto.h \\
+/x11/include/X11/extensions/xcmiscstr.h \\
+/x11/lib/pkgconfig/xcmiscproto.pc
+EOF
+
+exit
+--- xcmiscproto-1.2.0.orig/xcmiscproto.h
++++ xcmiscproto-1.2.0/xcmiscproto.h
+@@ -27,6 +27,8 @@
+ #ifndef _XCMISCPROTO_H_
+ #define _XCMISCPROTO_H_
+ 
++#include <X11/Xmd.h>
++
+ #define X_XCMiscGetVersion	0
+ #define X_XCMiscGetXIDRange	1
+ #define X_XCMiscGetXIDList	2

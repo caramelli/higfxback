@@ -1,0 +1,281 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build readline-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --disable-bfs --disable-cramfs --disable-minix --disable-nologin --disable-use-tty-group --without-python --enable-pg --enable-tunelp --enable-write --enable-fs-paths-default=/bin --sbindir=/bin --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install addpart $DESTDIR/bin
+install agetty $DESTDIR/bin
+ln -sf agetty $DESTDIR/bin/getty
+install blkdiscard $DESTDIR/bin
+install blockdev $DESTDIR/bin
+install cal $DESTDIR/bin
+install chcpu $DESTDIR/bin
+install chmem $DESTDIR/bin
+install chrt $DESTDIR/bin
+install col $DESTDIR/bin
+install colcrt $DESTDIR/bin
+install colrm $DESTDIR/bin
+install ctrlaltdel $DESTDIR/bin
+install delpart $DESTDIR/bin
+install dmesg $DESTDIR/bin
+install fallocate $DESTDIR/bin
+install fdformat $DESTDIR/bin
+install flock $DESTDIR/bin
+install fsfreeze $DESTDIR/bin
+install getopt $DESTDIR/bin
+install hexdump $DESTDIR/bin
+install hwclock $DESTDIR/bin
+install ionice $DESTDIR/bin
+install ipcmk $DESTDIR/bin
+install ipcrm $DESTDIR/bin
+install ipcs $DESTDIR/bin
+install isosize $DESTDIR/bin
+install kill $DESTDIR/bin
+install last $DESTDIR/bin
+ln -sf last $DESTDIR/bin/lastb
+install ldattach $DESTDIR/bin
+install logger $DESTDIR/bin
+install look $DESTDIR/bin
+install mcookie $DESTDIR/bin
+install mesg $DESTDIR/bin
+install mkfs $DESTDIR/bin
+install more $DESTDIR/bin
+install namei $DESTDIR/bin
+install pg $DESTDIR/bin
+install pivot_root $DESTDIR/bin
+install raw $DESTDIR/bin
+install readprofile $DESTDIR/bin
+install rename $DESTDIR/bin
+install renice $DESTDIR/bin
+install resizepart $DESTDIR/bin
+install rev $DESTDIR/bin
+install rtcwake $DESTDIR/bin
+install script $DESTDIR/bin
+install scriptreplay $DESTDIR/bin
+install setarch $DESTDIR/bin
+install setsid $DESTDIR/bin
+install setterm $DESTDIR/bin
+install sulogin $DESTDIR/bin
+install switch_root $DESTDIR/bin
+install taskset $DESTDIR/bin
+install tunelp $DESTDIR/bin
+install ul $DESTDIR/bin
+install unshare $DESTDIR/bin
+install utmpdump $DESTDIR/bin
+install wall $DESTDIR/bin
+install whereis $DESTDIR/bin
+install write $DESTDIR/bin
+install .libs/blkid $DESTDIR/bin
+install .libs/cfdisk $DESTDIR/bin
+install .libs/column $DESTDIR/bin
+install .libs/eject $DESTDIR/bin
+install .libs/fdisk $DESTDIR/bin
+install .libs/fincore $DESTDIR/bin
+install .libs/findfs $DESTDIR/bin
+install .libs/findmnt $DESTDIR/bin
+install .libs/fsck $DESTDIR/bin
+install .libs/fstrim $DESTDIR/bin
+install .libs/losetup $DESTDIR/bin
+install .libs/lsblk $DESTDIR/bin
+install .libs/lscpu $DESTDIR/bin
+install .libs/lsipc $DESTDIR/bin
+install .libs/lslocks $DESTDIR/bin
+install .libs/lslogins $DESTDIR/bin
+install .libs/lsmem $DESTDIR/bin
+install .libs/lsns $DESTDIR/bin
+install .libs/mkswap $DESTDIR/bin
+install .libs/mount $DESTDIR/bin
+install .libs/mountpoint $DESTDIR/bin
+install .libs/partx $DESTDIR/bin
+install .libs/rfkill $DESTDIR/bin
+install .libs/sfdisk $DESTDIR/bin
+install .libs/swaplabel $DESTDIR/bin
+install .libs/swapoff $DESTDIR/bin
+install .libs/swapon $DESTDIR/bin
+install .libs/umount $DESTDIR/bin
+install .libs/uuidd $DESTDIR/bin
+install .libs/uuidgen $DESTDIR/bin
+install .libs/uuidparse $DESTDIR/bin
+install .libs/wdctl $DESTDIR/bin
+install .libs/wipefs $DESTDIR/bin
+install .libs/zramctl $DESTDIR/bin
+install -d $DESTDIR/include/blkid
+install -m 644 libblkid/src/blkid.h $DESTDIR/include/blkid
+install -d $DESTDIR/include/libfdisk
+install -m 644 libfdisk/src/libfdisk.h $DESTDIR/include/libfdisk
+install -d $DESTDIR/include/libmount
+install -m 644 libmount/src/libmount.h $DESTDIR/include/libmount
+install -d $DESTDIR/include/libsmartcols
+install -m 644 libsmartcols/src/libsmartcols.h $DESTDIR/include/libsmartcols
+install -d $DESTDIR/include/uuid
+install -m 644 libuuid/src/uuid.h $DESTDIR/include/uuid
+install -d $DESTDIR/lib
+install .libs/libblkid.so.1.* $DESTDIR/lib/libblkid.so.1
+ln -sf libblkid.so.1 $DESTDIR/lib/libblkid.so
+install .libs/libfdisk.so.1.* $DESTDIR/lib/libfdisk.so.1
+ln -sf libfdisk.so.1 $DESTDIR/lib/libfdisk.so
+install .libs/libmount.so.1.* $DESTDIR/lib/libmount.so.1
+ln -sf libmount.so.1 $DESTDIR/lib/libmount.so
+install .libs/libsmartcols.so.1.* $DESTDIR/lib/libsmartcols.so.1
+ln -sf libsmartcols.so.1 $DESTDIR/lib/libsmartcols.so
+install .libs/libuuid.so.1.* $DESTDIR/lib/libuuid.so.1
+ln -sf libuuid.so.1 $DESTDIR/lib/libuuid.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libblkid/blkid.pc $DESTDIR/lib/pkgconfig
+install -m 644 libfdisk/fdisk.pc $DESTDIR/lib/pkgconfig
+install -m 644 libmount/mount.pc $DESTDIR/lib/pkgconfig
+install -m 644 libsmartcols/smartcols.pc $DESTDIR/lib/pkgconfig
+install -m 644 libuuid/uuid.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/util-linux-build.pc << EOF
+Name: util-linux
+Version: 2.32.1
+Description: Miscellaneous system utilities for Linux
+Requires: $REQUIRES
+
+devel=\\
+/include/blkid/blkid.h \\
+/include/libfdisk/libfdisk.h \\
+/include/libmount/libmount.h \\
+/include/libsmartcols/libsmartcols.h \\
+/include/uuid/uuid.h \\
+/lib/libblkid.so \\
+/lib/libfdisk.so \\
+/lib/libmount.so \\
+/lib/libsmartcols.so \\
+/lib/libuuid.so \\
+/lib/pkgconfig/blkid.pc \\
+/lib/pkgconfig/fdisk.pc \\
+/lib/pkgconfig/mount.pc \\
+/lib/pkgconfig/smartcols.pc \\
+/lib/pkgconfig/uuid.pc
+
+exec=\\
+/bin/addpart \\
+/bin/agetty \\
+/bin/blkdiscard \\
+/bin/blkid \\
+/bin/blockdev \\
+/bin/cal \\
+/bin/cfdisk \\
+/bin/chcpu \\
+/bin/chmem \\
+/bin/chrt \\
+/bin/col \\
+/bin/colcrt \\
+/bin/colrm \\
+/bin/column \\
+/bin/ctrlaltdel \\
+/bin/delpart \\
+/bin/dmesg \\
+/bin/eject \\
+/bin/fallocate \\
+/bin/fdformat \\
+/bin/fdisk \\
+/bin/fincore \\
+/bin/findfs \\
+/bin/findmnt \\
+/bin/flock \\
+/bin/fsck \\
+/bin/fsfreeze \\
+/bin/fstrim \\
+/bin/getopt \\
+/bin/getty \\
+/bin/hexdump \\
+/bin/hwclock \\
+/bin/ionice \\
+/bin/ipcmk \\
+/bin/ipcrm \\
+/bin/ipcs \\
+/bin/isosize \\
+/bin/kill \\
+/bin/last \\
+/bin/lastb \\
+/bin/ldattach \\
+/bin/logger \\
+/bin/look \\
+/bin/losetup \\
+/bin/lsblk \\
+/bin/lscpu \\
+/bin/lsipc \\
+/bin/lslocks \\
+/bin/lslogins \\
+/bin/lsmem \\
+/bin/lsns \\
+/bin/mcookie \\
+/bin/mesg \\
+/bin/mkfs \\
+/bin/mkswap \\
+/bin/more \\
+/bin/mount \\
+/bin/mountpoint \\
+/bin/namei \\
+/bin/partx \\
+/bin/pg \\
+/bin/pivot_root \\
+/bin/raw \\
+/bin/readprofile \\
+/bin/rename \\
+/bin/renice \\
+/bin/resizepart \\
+/bin/rev \\
+/bin/rfkill \\
+/bin/rtcwake \\
+/bin/script \\
+/bin/scriptreplay \\
+/bin/setarch \\
+/bin/setsid \\
+/bin/setterm \\
+/bin/sfdisk \\
+/bin/sulogin \\
+/bin/swaplabel \\
+/bin/swapoff \\
+/bin/swapon \\
+/bin/switch_root \\
+/bin/taskset \\
+/bin/tunelp \\
+/bin/ul \\
+/bin/umount \\
+/bin/unshare \\
+/bin/utmpdump \\
+/bin/uuidd \\
+/bin/uuidgen \\
+/bin/uuidparse \\
+/bin/wall \\
+/bin/wdctl \\
+/bin/whereis \\
+/bin/wipefs \\
+/bin/write \\
+/bin/zramctl \\
+/lib/libblkid.so.1 \\
+/lib/libfdisk.so.1 \\
+/lib/libmount.so.1 \\
+/lib/libsmartcols.so.1 \\
+/lib/libuuid.so.1
+EOF
+
+exit
+--- util-linux-2.32.1.orig/configure.ac
++++ util-linux-2.32.1/configure.ac
+@@ -90,7 +90,7 @@
+ usrbin_execdir='${exec_prefix}/bin'
+ AC_SUBST([usrbin_execdir])
+ 
+-usrsbin_execdir='${exec_prefix}/sbin'
++usrsbin_execdir='${exec_prefix}/'`basename $sbindir`
+ AC_SUBST([usrsbin_execdir])
+ 
+ AS_CASE([$libdir],

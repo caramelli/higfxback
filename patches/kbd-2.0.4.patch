@@ -1,0 +1,197 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-vlock --enable-libkeymap --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/.libs/chvt $DESTDIR/bin
+install src/.libs/deallocvt $DESTDIR/bin
+install src/.libs/dumpkeys $DESTDIR/bin
+ln -sf dumpkeys $DESTDIR/bin/dumpkmap
+install src/.libs/fgconsole $DESTDIR/bin
+install src/.libs/getkeycodes $DESTDIR/bin
+install src/.libs/kbd_mode $DESTDIR/bin
+install src/.libs/kbdinfo $DESTDIR/bin
+install src/.libs/kbdrate $DESTDIR/bin
+install src/.libs/loadkeys $DESTDIR/bin
+ln -sf loadkeys $DESTDIR/bin/loadkmap
+install src/.libs/loadunimap $DESTDIR/bin
+install src/.libs/mapscrn $DESTDIR/bin
+install src/.libs/openvt $DESTDIR/bin
+install src/.libs/psfxtable $DESTDIR/bin
+ln -sf psfxtable $DESTDIR/bin/psfaddtable
+ln -sf psfxtable $DESTDIR/bin/psfgettable
+ln -sf psfxtable $DESTDIR/bin/psfstriptable
+install src/.libs/resizecons $DESTDIR/bin
+install src/.libs/setfont $DESTDIR/bin
+install src/.libs/setkeycodes $DESTDIR/bin
+install src/.libs/setleds $DESTDIR/bin
+install src/.libs/setmetamode $DESTDIR/bin
+install src/.libs/setvtrgb $DESTDIR/bin
+install src/.libs/showconsolefont $DESTDIR/bin
+install src/.libs/showkey $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 src/libkeymap/keymap.h $DESTDIR/include
+install -d $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/array.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/charset.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/common.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/context.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/dump.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/findfile.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/kernel.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/kmap.h $DESTDIR/include/keymap
+install -m 644 src/libkeymap/keymap/logging.h $DESTDIR/include/keymap
+install -d $DESTDIR/lib
+install src/libkeymap/.libs/libkeymap.so.0.* $DESTDIR/lib/libkeymap.so.0
+ln -sf libkeymap.so.0 $DESTDIR/lib/libkeymap.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/libkeymap/libkeymap.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/consolefonts
+install -m 644 data/consolefonts/default8x16.psfu $DESTDIR/share/consolefonts
+install -d $DESTDIR/share/keymaps/i386/azerty
+install -m 644 data/keymaps/i386/azerty/fr.map $DESTDIR/share/keymaps/i386/azerty
+install -d $DESTDIR/share/keymaps/i386/include
+install -m 644 data/keymaps/i386/include/azerty-layout.inc $DESTDIR/share/keymaps/i386/include
+install -m 644 data/keymaps/i386/include/compose.inc $DESTDIR/share/keymaps/i386/include
+install -m 644 data/keymaps/i386/include/linux-keys-bare.inc $DESTDIR/share/keymaps/i386/include
+install -m 644 data/keymaps/i386/include/linux-with-alt-and-altgr.inc $DESTDIR/share/keymaps/i386/include
+install -m 644 data/keymaps/i386/include/qwerty-layout.inc $DESTDIR/share/keymaps/i386/include
+install -d $DESTDIR/share/keymaps/i386/qwerty
+install -m 644 data/keymaps/i386/qwerty/uk.map $DESTDIR/share/keymaps/i386/qwerty
+install -d $DESTDIR/share/unimaps
+install -m 644 data/unimaps/lat1u.uni $DESTDIR/share/unimaps
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/kbd-build.pc << EOF
+Name: kbd
+Version: 2.0.4
+Description: keyboard and virtual terminal management utilities
+Requires: $REQUIRES
+
+devel=\\
+/include/keymap.h \\
+/include/keymap/array.h \\
+/include/keymap/charset.h \\
+/include/keymap/common.h \\
+/include/keymap/context.h \\
+/include/keymap/dump.h \\
+/include/keymap/findfile.h \\
+/include/keymap/kernel.h \\
+/include/keymap/kmap.h \\
+/include/keymap/logging.h \\
+/lib/libkeymap.so \\
+/lib/pkgconfig/libkeymap.pc
+
+exec=\\
+/bin/chvt \\
+/bin/deallocvt \\
+/bin/dumpkeys \\
+/bin/dumpkmap \\
+/bin/fgconsole \\
+/bin/getkeycodes \\
+/bin/kbd_mode \\
+/bin/kbdinfo \\
+/bin/kbdrate \\
+/bin/loadkeys \\
+/bin/loadkmap \\
+/bin/loadunimap \\
+/bin/mapscrn \\
+/bin/openvt \\
+/bin/psfaddtable \\
+/bin/psfgettable \\
+/bin/psfstriptable \\
+/bin/psfxtable \\
+/bin/resizecons \\
+/bin/setfont \\
+/bin/setkeycodes \\
+/bin/setleds \\
+/bin/setmetamode \\
+/bin/setvtrgb \\
+/bin/showconsolefont \\
+/bin/showkey \\
+/lib/libkeymap.so.0 \\
+/share/consolefonts/default8x16.psfu \\
+/share/keymaps/i386/azerty/fr.map \\
+/share/keymaps/i386/include/azerty-layout.inc \\
+/share/keymaps/i386/include/compose.inc \\
+/share/keymaps/i386/include/linux-keys-bare.inc \\
+/share/keymaps/i386/include/linux-with-alt-and-altgr.inc \\
+/share/keymaps/i386/include/qwerty-layout.inc \\
+/share/keymaps/i386/qwerty/uk.map \\
+/share/unimaps/lat1u.uni
+EOF
+
+exit
+--- kbd-2.0.4.orig/m4/codeset.m4
++++ kbd-2.0.4/m4/codeset.m4
+@@ -0,0 +1,23 @@
++# codeset.m4 serial AM1 (gettext-0.10.40)
++dnl Copyright (C) 2000-2002 Free Software Foundation, Inc.
++dnl This file is free software, distributed under the terms of the GNU
++dnl General Public License.  As a special exception to the GNU General
++dnl Public License, this file may be distributed as part of a program
++dnl that contains a configuration script generated by Autoconf, under
++dnl the same distribution terms as the rest of that program.
++
++dnl From Bruno Haible.
++
++AC_DEFUN([AM_LANGINFO_CODESET],
++[
++  AC_CACHE_CHECK([for nl_langinfo and CODESET], am_cv_langinfo_codeset,
++    [AC_TRY_LINK([#include <langinfo.h>],
++      [char* cs = nl_langinfo(CODESET);],
++      am_cv_langinfo_codeset=yes,
++      am_cv_langinfo_codeset=no)
++    ])
++  if test $am_cv_langinfo_codeset = yes; then
++    AC_DEFINE(HAVE_LANGINFO_CODESET, 1,
++      [Define if you have <langinfo.h> and nl_langinfo(CODESET).])
++  fi
++])
+--- kbd-2.0.4.orig/m4/lcmessage.m4
++++ kbd-2.0.4/m4/lcmessage.m4
+@@ -0,0 +1,32 @@
++# lcmessage.m4 serial 3 (gettext-0.11.3)
++dnl Copyright (C) 1995-2002 Free Software Foundation, Inc.
++dnl This file is free software, distributed under the terms of the GNU
++dnl General Public License.  As a special exception to the GNU General
++dnl Public License, this file may be distributed as part of a program
++dnl that contains a configuration script generated by Autoconf, under
++dnl the same distribution terms as the rest of that program.
++dnl
++dnl This file can can be used in projects which are not available under
++dnl the GNU General Public License or the GNU Library General Public
++dnl License but which still want to provide support for the GNU gettext
++dnl functionality.
++dnl Please note that the actual code of the GNU gettext library is covered
++dnl by the GNU Library General Public License, and the rest of the GNU
++dnl gettext package package is covered by the GNU General Public License.
++dnl They are *not* in the public domain.
++
++dnl Authors:
++dnl   Ulrich Drepper <drepper@cygnus.com>, 1995.
++
++# Check whether LC_MESSAGES is available in <locale.h>.
++
++AC_DEFUN([AM_LC_MESSAGES],
++[
++  AC_CACHE_CHECK([for LC_MESSAGES], am_cv_val_LC_MESSAGES,
++    [AC_TRY_LINK([#include <locale.h>], [return LC_MESSAGES],
++       am_cv_val_LC_MESSAGES=yes, am_cv_val_LC_MESSAGES=no)])
++  if test $am_cv_val_LC_MESSAGES = yes; then
++    AC_DEFINE(HAVE_LC_MESSAGES, 1,
++      [Define if your <locale.h> file defines LC_MESSAGES.])
++  fi
++])

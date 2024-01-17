@@ -1,0 +1,46 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxext-build libxt-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --without-localedir --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install cxpm/cxpm $DESTDIR/x11/bin
+install sxpm/.libs/sxpm $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/X11
+install -m 644 include/X11/xpm.h $DESTDIR/x11/include/X11
+install -d $DESTDIR/x11/lib
+install src/.libs/libXpm.so.4.* $DESTDIR/x11/lib/libXpm.so.4
+ln -sf libXpm.so.4 $DESTDIR/x11/lib/libXpm.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xpm.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxpm-build.pc << EOF
+Name: libXpm
+Version: 3.5.8
+Description: X Pixmap library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/xpm.h \\
+/x11/lib/libXpm.so \\
+/x11/lib/pkgconfig/xpm.pc
+
+exec=\\
+/x11/bin/cxpm \\
+/x11/bin/sxpm \\
+/x11/lib/libXpm.so.4
+EOF
+
+exit

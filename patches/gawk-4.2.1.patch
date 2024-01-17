@@ -1,0 +1,40 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libsigsegv-build readline-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+cd extension; libtoolize -c -f; aclocal -I ../m4; autoconf; autoheader -f; automake -a -c; cd -
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install gawk $DESTDIR/bin
+ln -sf gawk $DESTDIR/bin/awk
+install -d $DESTDIR/lib/gawk
+install extension/.libs/inplace.so $DESTDIR/lib/gawk
+install -d $DESTDIR/share/awk
+install -m 644 awklib/eg/lib/inplace.awk $DESTDIR/share/awk
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gawk-build.pc << EOF
+Name: gawk
+Version: 4.2.1
+Description: GNU awk
+Requires: $REQUIRES
+
+exec=\\
+/bin/awk \\
+/bin/gawk \\
+/lib/gawk/inplace.so \\
+/share/awk/inplace.awk
+EOF
+
+exit

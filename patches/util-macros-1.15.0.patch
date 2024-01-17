@@ -1,0 +1,53 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.68; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --with-noarch-pkgconfigdir=/lib/pkgconfig --prefix=
+
+# install
+install -d $DESTDIR/share/aclocal
+install -m 644 xorg-macros.m4 $DESTDIR/share/aclocal
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 xorg-macros.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/util-macros-build.pc << EOF
+Name: util-macros
+Version: 1.15.0
+Description: X.Org m4 macros
+Requires: $REQUIRES
+
+devel=\\
+/share/aclocal/xorg-macros.m4 \\
+/lib/pkgconfig/xorg-macros.pc
+EOF
+
+exit
+--- util-macros-1.15.0.orig/Makefile.am
++++ util-macros-1.15.0/Makefile.am
+@@ -29,8 +29,7 @@
+ install-data-hook:
+ 	rm -f $(DESTDIR)$(aclocaldir)/xorgversion.m4
+ 
+-pkgconfigdir = $(datadir)/pkgconfig
+-pkgconfig_DATA = xorg-macros.pc
++noarch_pkgconfig_DATA = xorg-macros.pc
+ 
+ .PHONY: ChangeLog
+ 
+--- util-macros-1.15.0.orig/configure.ac
++++ util-macros-1.15.0/configure.ac
+@@ -29,6 +29,7 @@
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AM_INIT_AUTOMAKE([foreign dist-bzip2])
+ AM_MAINTAINER_MODE
++PKG_NOARCH_INSTALLDIR
+ 
+ # Checks for programs.
+ AC_PROG_INSTALL

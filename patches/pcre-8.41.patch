@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --disable-cpp --enable-unicode-properties --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 pcre.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libpcre.so.1.* $DESTDIR/lib/libpcre.so.1
+ln -sf libpcre.so.1 $DESTDIR/lib/libpcre.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libpcre.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/pcre-build.pc << EOF
+Name: pcre
+Version: 8.41
+Description: Perl Compatible Regular Expression library
+Requires: $REQUIRES
+
+devel=\\
+/include/pcre.h \\
+/lib/libpcre.so \\
+/lib/pkgconfig/libpcre.pc
+
+exec=\\
+/lib/libpcre.so.1
+EOF
+
+exit

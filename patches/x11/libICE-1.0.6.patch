@@ -1,0 +1,59 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build xtrans-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/ICE
+install -m 644 include/X11/ICE/ICE.h $DESTDIR/x11/include/X11/ICE
+install -m 644 include/X11/ICE/ICEconn.h $DESTDIR/x11/include/X11/ICE
+install -m 644 include/X11/ICE/ICElib.h $DESTDIR/x11/include/X11/ICE
+install -m 644 include/X11/ICE/ICEmsg.h $DESTDIR/x11/include/X11/ICE
+install -m 644 include/X11/ICE/ICEproto.h $DESTDIR/x11/include/X11/ICE
+install -d $DESTDIR/x11/lib
+install src/.libs/libICE.so.6.* $DESTDIR/x11/lib/libICE.so.6
+ln -sf libICE.so.6 $DESTDIR/x11/lib/libICE.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 ice.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libice-build.pc << EOF
+Name: libICE
+Version: 1.0.6
+Description: Inter-Client Exchange library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/ICE/ICE.h \\
+/x11/include/X11/ICE/ICEconn.h \\
+/x11/include/X11/ICE/ICElib.h \\
+/x11/include/X11/ICE/ICEmsg.h \\
+/x11/include/X11/ICE/ICEproto.h \\
+/x11/lib/libICE.so \\
+/x11/lib/pkgconfig/ice.pc
+
+exec=\\
+/x11/lib/libICE.so.6
+EOF
+
+exit
+--- libICE-1.0.6.orig/configure.ac
++++ libICE-1.0.6/configure.ac
+@@ -8,6 +8,7 @@
+         libICE)
+ 
+ AC_CONFIG_SRCDIR([Makefile.am])
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ 
+ AM_MAINTAINER_MODE

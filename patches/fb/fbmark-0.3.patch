@@ -1,0 +1,59 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+sh ./Configure --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install fb_mandelbrot $DESTDIR/fb/bin
+install fb_rectangle $DESTDIR/fb/bin
+install fb_sierpinski $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbmark-build.pc << EOF
+Name: fbmark
+Version: 0.3
+Description: Linux Framebuffer Benchmark
+Requires: $REQUIRES
+
+devel=\\
+/bin/fb_mandelbrot \\
+/bin/fb_rectangle \\
+/bin/fb_sierpinski
+EOF
+
+exit
+--- fbmark-0.3.orig/Configure
++++ fbmark-0.3/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile

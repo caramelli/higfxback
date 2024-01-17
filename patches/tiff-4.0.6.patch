@@ -1,0 +1,94 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build zlib-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.4)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --disable-cxx --disable-jpeg --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install tools/.libs/bmp2tiff $DESTDIR/bin
+install tools/.libs/fax2ps $DESTDIR/bin
+install tools/.libs/fax2tiff $DESTDIR/bin
+install tools/.libs/gif2tiff $DESTDIR/bin
+install tools/.libs/pal2rgb $DESTDIR/bin
+install tools/.libs/ppm2tiff $DESTDIR/bin
+install tools/.libs/ras2tiff $DESTDIR/bin
+install tools/.libs/raw2tiff $DESTDIR/bin
+install tools/.libs/rgb2ycbcr $DESTDIR/bin
+install tools/.libs/thumbnail $DESTDIR/bin
+install tools/.libs/tiff2bw $DESTDIR/bin
+install tools/.libs/tiff2pdf $DESTDIR/bin
+install tools/.libs/tiff2ps $DESTDIR/bin
+install tools/.libs/tiff2rgba $DESTDIR/bin
+install tools/.libs/tiffcmp $DESTDIR/bin
+install tools/.libs/tiffcp $DESTDIR/bin
+install tools/.libs/tiffcrop $DESTDIR/bin
+install tools/.libs/tiffdither $DESTDIR/bin
+install tools/.libs/tiffdump $DESTDIR/bin
+install tools/.libs/tiffinfo $DESTDIR/bin
+install tools/.libs/tiffmedian $DESTDIR/bin
+install tools/.libs/tiffset $DESTDIR/bin
+install tools/.libs/tiffsplit $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 libtiff/tiff.h $DESTDIR/include
+install -m 644 libtiff/tiffconf.h $DESTDIR/include
+install -m 644 libtiff/tiffio.h $DESTDIR/include
+install -m 644 libtiff/tiffvers.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libtiff/.libs/libtiff.so.5.* $DESTDIR/lib/libtiff.so.5
+ln -sf libtiff.so.5 $DESTDIR/lib/libtiff.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libtiff-4.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/tiff-build.pc << EOF
+Name: tiff
+Version: 4.0.6
+Description: TIFF library
+Requires: $REQUIRES
+
+devel=\\
+/include/tiff.h \\
+/include/tiffconf.h \\
+/include/tiffio.h \\
+/include/tiffvers.h \\
+/lib/libtiff.so \\
+/lib/pkgconfig/libtiff-4.pc
+
+exec=\\
+/bin/bmp2tiff \\
+/bin/fax2ps \\
+/bin/fax2tiff \\
+/bin/gif2tiff \\
+/bin/pal2rgb \\
+/bin/ppm2tiff \\
+/bin/ras2tiff \\
+/bin/raw2tiff \\
+/bin/rgb2ycbcr \\
+/bin/thumbnail \\
+/bin/tiff2bw \\
+/bin/tiff2pdf \\
+/bin/tiff2ps \\
+/bin/tiff2rgba \\
+/bin/tiffcmp \\
+/bin/tiffcp \\
+/bin/tiffcrop \\
+/bin/tiffdither \\
+/bin/tiffdump \\
+/bin/tiffinfo \\
+/bin/tiffmedian \\
+/bin/tiffset \\
+/bin/tiffsplit \\
+/lib/libtiff.so.5
+EOF
+
+exit

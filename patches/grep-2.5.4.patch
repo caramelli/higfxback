@@ -1,0 +1,45 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.61; am-1.10)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/grep $DESTDIR/bin
+install src/egrep $DESTDIR/bin
+install src/fgrep $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/grep-build.pc << EOF
+Name: grep
+Version: 2.5.4
+Description: GNU grep
+Requires: $REQUIRES
+
+exec=\\
+/bin/grep \\
+/bin/egrep \\
+/bin/fgrep
+EOF
+
+exit
+--- grep-2.5.4.orig/po/Makefile.in.in
++++ grep-2.5.4/po/Makefile.in.in
+@@ -14,6 +14,7 @@
+ 
+ srcdir = @srcdir@
+ top_srcdir = @top_srcdir@
++top_builddir = @top_builddir@
+ VPATH = @srcdir@
+ 
+ prefix = @prefix@

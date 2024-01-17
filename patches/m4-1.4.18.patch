@@ -1,0 +1,222 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure
+sh ./configure.sh --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install a.out $DESTDIR/bin/m4
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/m4-build.pc << EOF
+Name: make
+Version: 1.4.18
+Description: GNU M4
+Requires: $REQUIRES
+
+devel=\\
+/bin/m4
+EOF
+
+exit
+--- m4-1.4.18.orig/configure.sh
++++ m4-1.4.18/configure.sh
+@@ -0,0 +1,189 @@
++#!/bin/sh
++# Shell script to configure GNU M4 without relying on `autotools'.
++
++# Copyright (C) 1991, 1993-1994, 2004-2014, 2016 Free Software
++# Foundation, Inc.
++#
++# This file is part of GNU M4.
++#
++# GNU M4 is free software: you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation, either version 3 of the License, or
++# (at your option) any later version.
++#
++# GNU M4 is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++VERSION=1.4.18
++
++srcdir=.
++
++CC=${CC-gcc}
++CFLAGS=$CFLAGS
++
++prefix=/usr/local
++exec_prefix='${prefix}'
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --srcdir)
++      srcdir=$2
++      shift
++    ;;
++    --prefix)
++      prefix=$2
++      shift
++    ;;
++    --exec-prefix)
++      exec_prefix=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++bindir=`eval echo ${exec_prefix}`/bin
++libdir=`eval echo ${exec_prefix}`/lib
++
++echo '/* lib/configmake.h.  Generated from configure.sh.  */' > configmake.h
++echo "#define PREFIX \"$prefix\"" >> configmake.h
++echo "#define BINDIR \"$bindir\"" >> configmake.h
++echo "#define LIBDIR \"$libdir\"" >> configmake.h
++
++echo '/* lib/config.h.  Generated from configure.sh.  */' > config.h
++echo '#define GNULIB_CLOSE_STREAM 1' >> config.h
++echo '#define GNULIB_FILENAMECAT 1' >> config.h
++echo '#define GNULIB_FOPEN_SAFER 1' >> config.h
++echo '#define HAVE_ALLOCA 1' >> config.h
++echo '#define HAVE_DECL_FERROR_UNLOCKED 1' >> config.h
++echo '#define HAVE_DECL_FPUTS_UNLOCKED 1' >> config.h
++echo '#define HAVE_DECL_FREAD_UNLOCKED 1' >> config.h
++echo '#define HAVE_DECL_FWRITE_UNLOCKED 1' >> config.h
++echo '#define HAVE_DECL_PROGRAM_INVOCATION_NAME 1' >> config.h
++echo '#define HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME 1' >> config.h
++echo '#define HAVE_DECL_SIGALTSTACK 1' >> config.h
++echo '#define HAVE_DECL___FPENDING 1' >> config.h
++echo '#define HAVE_LONG_LONG_INT 1' >> config.h
++echo '#define HAVE_MEMPCPY 1' >> config.h
++echo '#define HAVE_MINMAX_IN_SYS_PARAM_H 1' >> config.h
++echo '#define HAVE_PIPE 1' >> config.h
++echo '#define HAVE_SIGALTSTACK 1' >> config.h
++echo '#define HAVE_STACK_OVERFLOW_HANDLING 1' >> config.h
++echo '#define HAVE_STACK_T 1' >> config.h
++echo '#define HAVE_STDIO_EXT_H 1' >> config.h
++echo '#define HAVE_WORKING_O_NOFOLLOW 1' >> config.h
++echo '#define PACKAGE "m4"' >> config.h
++echo '#define PACKAGE_BUGREPORT "bug-m4@gnu.org"' >> config.h
++echo '#define PACKAGE_NAME "GNU M4"' >> config.h
++echo "#define PACKAGE_STRING \"GNU M4 $VERSION\"" >> config.h
++echo '#define PACKAGE_URL "http://www.gnu.org/software/m4/"' >> config.h
++echo '#define RENAME_OPEN_FILE_WORKS 1' >> config.h
++echo '#define SIGNAL_SAFE_LIST 1' >> config.h
++echo '#define SYSCMD_SHELL "/bin/sh"' >> config.h
++echo '#define USE_UNLOCKED_IO 1' >> config.h
++echo "#define VERSION \"$VERSION\"" >> config.h
++echo '#define O_BINARY 0' >> config.h
++echo '#define _GL_INLINE extern inline __attribute__ ((__gnu_inline__))' >> config.h
++echo '#define _GL_EXTERN_INLINE extern' >> config.h
++cat >> config.h << EOF
++#define _GL_INLINE_HEADER_BEGIN \\
++    _Pragma ("GCC diagnostic push") \\
++    _Pragma ("GCC diagnostic ignored \"-Wmissing-prototypes\"") \\
++    _Pragma ("GCC diagnostic ignored \"-Wmissing-declarations\"") \\
++    _Pragma ("GCC diagnostic ignored \"-Wsuggest-attribute=const\"")
++#define _GL_INLINE_HEADER_END \\
++    _Pragma ("GCC diagnostic pop")
++EOF
++echo '#define restrict __restrict' >> config.h
++echo '#define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))' >> config.h
++
++cat > Makefile << EOF
++# Makefile.  Generated from configure.sh.
++
++VERSION = $VERSION
++
++srcdir = $srcdir
++CC = $CC
++CFLAGS = $CFLAGS
++
++bindir = $bindir
++
++SED = sed
++
++CFLAGS += -I. -I\$(srcdir)/lib -D_GNU_SOURCE -O2 -Wall
++
++OBJECTS = \\
++	\$(srcdir)/lib/basename-lgpl.o \\
++	\$(srcdir)/lib/c-stack.o \\
++	\$(srcdir)/lib/clean-temp.o \\
++	\$(srcdir)/lib/cloexec.o \\
++	\$(srcdir)/lib/close-stream.o \\
++	\$(srcdir)/lib/closein.o \\
++	\$(srcdir)/lib/closeout.o \\
++	\$(srcdir)/lib/dup-safer.o \\
++	\$(srcdir)/lib/execute.o \\
++	\$(srcdir)/lib/exitfail.o \\
++	\$(srcdir)/lib/fatal-signal.o \\
++	\$(srcdir)/lib/fd-safer.o \\
++	\$(srcdir)/lib/filenamecat.o \\
++	\$(srcdir)/lib/filenamecat-lgpl.o \\
++	\$(srcdir)/lib/fopen-safer.o \\
++	\$(srcdir)/lib/freadahead.o \\
++	\$(srcdir)/lib/getprogname.o \\
++	\$(srcdir)/lib/gl_avltree_oset.o \\
++	\$(srcdir)/lib/gl_linkedhash_list.o \\
++	\$(srcdir)/lib/localcharset.o \\
++	\$(srcdir)/lib/malloca.o \\
++	\$(srcdir)/lib/memchr2.o \\
++	\$(srcdir)/lib/mkstemp-safer.o \\
++	\$(srcdir)/lib/pipe-safer.o \\
++	\$(srcdir)/lib/progname.o \\
++	\$(srcdir)/lib/quotearg.o \\
++	\$(srcdir)/lib/spawn-pipe.o \\
++	\$(srcdir)/lib/tmpdir.o \\
++	\$(srcdir)/lib/verror.o \\
++	\$(srcdir)/lib/version-etc.o \\
++	\$(srcdir)/lib/version-etc-fsf.o \\
++	\$(srcdir)/lib/wait-process.o \\
++	\$(srcdir)/lib/xalloc-die.o \\
++	\$(srcdir)/lib/xasprintf.o \\
++	\$(srcdir)/lib/xmalloc.o \\
++	\$(srcdir)/lib/xmalloca.o \\
++	\$(srcdir)/lib/xprintf.o \\
++	\$(srcdir)/lib/xvasprintf.o \\
++	\$(srcdir)/src/m4.o \\
++	\$(srcdir)/src/builtin.o \\
++	\$(srcdir)/src/debug.o \\
++	\$(srcdir)/src/eval.o \\
++	\$(srcdir)/src/format.o \\
++	\$(srcdir)/src/freeze.o \\
++	\$(srcdir)/src/input.o \\
++	\$(srcdir)/src/macro.o \\
++	\$(srcdir)/src/output.o \\
++	\$(srcdir)/src/path.o \\
++	\$(srcdir)/src/symtab.o
++
++a.out: \$(OBJECTS)
++	@echo linking GNU M4 \$(VERSION) \(\`\$(SED) -n '1s/^\([^ ]*\).*/\1/p' \$(srcdir)/ChangeLog\`\)...
++	\$(CC) $^
++
++all: a.out
++
++install: all
++	install -D a.out \$(DESTDIR)\$(bindir)/m4
++
++clean:
++	\$(RM) a.out \$(OBJECTS)
++EOF

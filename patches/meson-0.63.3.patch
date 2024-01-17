@@ -1,0 +1,341 @@
+# This file is part of HiGFXback
+
+REQUIRES="python3-build samurai-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# install
+install -d $DESTDIR/bin
+sed '1s|.*|#!/bin/env python3|' meson.py > $DESTDIR/bin/meson && chmod +x $DESTDIR/bin/meson
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/_pathlib.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/arglist.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/build.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/coredata.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/depfile.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/envconfig.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/environment.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mcompile.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mconf.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mdevenv.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mdist.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mesondata.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mesonmain.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/minit.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/minstall.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mintro.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mlog.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mparser.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/msetup.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/msubprojects.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/mtest.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/munstable_coredata.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/optinterpreter.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/programs.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -m 644 mesonbuild/rewriter.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -m 644 mesonbuild/ast/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -m 644 mesonbuild/ast/interpreter.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -m 644 mesonbuild/ast/introspection.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -m 644 mesonbuild/ast/postprocess.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -m 644 mesonbuild/ast/printer.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -m 644 mesonbuild/ast/visitor.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/ast
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/backend
+install -m 644 mesonbuild/backend/backends.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/backend
+install -m 644 mesonbuild/backend/ninjabackend.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/backend
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/common.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/executor.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/fileapi.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/generator.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/interpreter.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/toolchain.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/traceparser.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -m 644 mesonbuild/cmake/tracetargets.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/cmake
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/c.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/c_function_attributes.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/compilers.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/cpp.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/cs.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/cuda.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/cython.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/d.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/detect.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/fortran.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/java.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/objc.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/objcpp.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/rust.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/swift.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -m 644 mesonbuild/compilers/vala.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/arm.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/ccrx.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/clang.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/clike.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/compcert.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/elbrus.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/emscripten.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/gnu.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/intel.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/islinker.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/pgi.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/ti.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/visualstudio.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -m 644 mesonbuild/compilers/mixins/xc16.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/base.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/boost.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/cmake.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/coarrays.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/configtool.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/cuda.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/detect.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/dev.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/dub.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/factory.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/framework.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/hdf5.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/misc.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/mpi.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/pkgconfig.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/platform.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/qt.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/scalapack.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -m 644 mesonbuild/dependencies/ui.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/compiler.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/dependencyfallbacks.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/interpreter.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/interpreterobjects.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/mesonmain.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -m 644 mesonbuild/interpreter/type_checking.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/array.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/boolean.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/dict.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/integer.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/range.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -m 644 mesonbuild/interpreter/primitives/string.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/_unholder.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/baseobjects.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/decorators.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/disabler.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/exceptions.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/helpers.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/interpreterbase.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -m 644 mesonbuild/interpreterbase/operator.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/linkers
+install -m 644 mesonbuild/linkers/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/linkers
+install -m 644 mesonbuild/linkers/detect.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/linkers
+install -m 644 mesonbuild/linkers/linkers.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/linkers
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib
+install -m 644 mesonbuild/mesonlib/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib
+install -m 644 mesonbuild/mesonlib/platform.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib
+install -m 644 mesonbuild/mesonlib/posix.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib
+install -m 644 mesonbuild/mesonlib/universal.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib
+install -m 644 mesonbuild/mesonlib/vsenv.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/modules
+install -m 644 mesonbuild/modules/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/modules
+install -m 644 mesonbuild/modules/fs.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/modules
+install -m 644 mesonbuild/modules/gnome.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/modules
+install -m 644 mesonbuild/modules/pkgconfig.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/modules
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -m 644 mesonbuild/scripts/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -m 644 mesonbuild/scripts/depfixer.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -m 644 mesonbuild/scripts/env2mfile.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -m 644 mesonbuild/scripts/gettext.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -m 644 mesonbuild/scripts/meson_exe.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -m 644 mesonbuild/scripts/symbolextractor.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/scripts
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/cpptemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/cstemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/ctemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/cudatemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/dlangtemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/fortrantemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/javatemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/mesontemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/objcpptemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/objctemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/rusttemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/samplefactory.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/sampleimpl.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -m 644 mesonbuild/templates/valatemplates.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/templates
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/wrap
+install -m 644 mesonbuild/wrap/__init__.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/wrap
+install -m 644 mesonbuild/wrap/wrap.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/wrap
+install -m 644 mesonbuild/wrap/wraptool.py $DESTDIR/lib/python`pkg-config --modversion python3`/mesonbuild/wrap
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/meson-build.pc << EOF
+Name: meson
+Version: 0.63.3
+Description: Meson build system
+Requires: $REQUIRES
+
+exec=\\
+/bin/meson \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/_pathlib.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/arglist.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/build.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/coredata.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/depfile.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/envconfig.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/environment.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mcompile.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mconf.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mdevenv.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mdist.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesondata.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesonmain.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/minit.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/minstall.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mintro.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mlog.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mparser.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/msetup.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/msubprojects.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mtest.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/munstable_coredata.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/optinterpreter.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/programs.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/rewriter.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/ast/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/ast/interpreter.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/ast/introspection.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/ast/postprocess.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/ast/printer.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/ast/visitor.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/backend/backends.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/backend/ninjabackend.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/common.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/executor.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/fileapi.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/generator.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/interpreter.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/toolchain.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/traceparser.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/cmake/tracetargets.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/c.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/c_function_attributes.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/compilers.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/cpp.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/cs.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/cuda.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/cython.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/d.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/detect.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/fortran.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/java.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/objc.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/objcpp.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/rust.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/swift.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/vala.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/arm.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/ccrx.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/clang.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/clike.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/compcert.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/elbrus.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/emscripten.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/gnu.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/intel.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/islinker.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/pgi.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/ti.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/visualstudio.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/compilers/mixins/xc16.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/base.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/boost.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/cmake.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/coarrays.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/configtool.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/cuda.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/detect.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/dev.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/dub.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/factory.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/framework.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/hdf5.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/misc.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/mpi.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/pkgconfig.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/platform.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/qt.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/scalapack.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/dependencies/ui.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/compiler.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/dependencyfallbacks.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/interpreter.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/interpreterobjects.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/mesonmain.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/type_checking.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/array.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/boolean.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/dict.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/integer.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/range.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreter/primitives/string.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/_unholder.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/baseobjects.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/decorators.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/disabler.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/exceptions.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/helpers.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/interpreterbase.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/interpreterbase/operator.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/linkers/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/linkers/detect.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/linkers/linkers.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib/platform.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib/posix.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib/universal.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/mesonlib/vsenv.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/modules/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/modules/fs.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/modules/gnome.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/modules/pkgconfig.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/scripts/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/scripts/depfixer.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/scripts/env2mfile.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/scripts/gettext.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/scripts/meson_exe.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/scripts/symbolextractor.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/cpptemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/cstemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/ctemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/cudatemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/dlangtemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/fortrantemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/javatemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/mesontemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/objcpptemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/objctemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/rusttemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/samplefactory.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/sampleimpl.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/templates/valatemplates.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/wrap/__init__.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/wrap/wrap.py \\
+/lib/python`pkg-config --modversion python3`/mesonbuild/wrap/wraptool.py
+EOF
+
+exit

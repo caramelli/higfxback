@@ -1,0 +1,105 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build gpm-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.52.20101002)
+autoconf
+./configure --enable-pc-files --with-shared --without-normal --without-debug --without-cxx --without-dlsym --includedir=/include --mandir=/share/man --prefix=
+
+# build
+make
+make -C misc pc-files
+
+# install
+install -d $DESTDIR/bin
+install progs/clear $DESTDIR/bin
+install progs/infocmp $DESTDIR/bin
+install progs/tabs $DESTDIR/bin
+install progs/tic $DESTDIR/bin
+ln -sf tic $DESTDIR/bin/captoinfo
+ln -sf tic $DESTDIR/bin/infotocap
+install progs/toe $DESTDIR/bin
+install progs/tput $DESTDIR/bin
+install progs/tset $DESTDIR/bin
+ln -sf tset $DESTDIR/bin/reset
+install -d $DESTDIR/etc
+install -m 644 misc/terminfo.src $DESTDIR/etc
+install -d $DESTDIR/include
+install -m 644 form/form.h $DESTDIR/include
+install -m 644 include/curses.h $DESTDIR/include
+ln -sf curses.h $DESTDIR/include/ncurses.h
+install -m 644 include/ncurses_dll.h $DESTDIR/include
+install -m 644 include/term.h $DESTDIR/include
+install -m 644 include/termcap.h $DESTDIR/include
+install -m 644 include/unctrl.h $DESTDIR/include
+install -m 644 panel/panel.h $DESTDIR/include
+install -m 644 menu/eti.h $DESTDIR/include
+install -m 644 menu/menu.h $DESTDIR/include
+install -d $DESTDIR/lib
+install lib/libform.so.5.* $DESTDIR/lib/libform.so.5
+ln -sf libform.so.5 $DESTDIR/lib/libform.so
+install lib/libmenu.so.5.* $DESTDIR/lib/libmenu.so.5
+ln -sf libmenu.so.5 $DESTDIR/lib/libmenu.so
+install lib/libncurses.so.5.* $DESTDIR/lib/libncurses.so.5
+ln -sf libncurses.so.5 $DESTDIR/lib/libncurses.so
+install lib/libpanel.so.5.* $DESTDIR/lib/libpanel.so.5
+ln -sf libpanel.so.5 $DESTDIR/lib/libpanel.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 misc/form.pc $DESTDIR/lib/pkgconfig
+install -m 644 misc/menu.pc $DESTDIR/lib/pkgconfig
+install -m 644 misc/ncurses.pc $DESTDIR/lib/pkgconfig
+install -m 644 misc/panel.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/terminfo
+LD_LIBRARY_PATH=$DESTDIR/lib $DESTDIR/bin/tic -x -e linux $DESTDIR/etc/terminfo.src -o $DESTDIR/share/terminfo
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/ncurses-build.pc << EOF
+Name: ncurses
+Version: 5.9
+Description: new curses library
+Requires: $REQUIRES
+
+devel=\\
+/include/curses.h \\
+/include/eti.h \\
+/include/form.h \\
+/include/menu.h \\
+/include/ncurses.h \\
+/include/ncurses_dll.h \\
+/include/panel.h \\
+/include/term.h \\
+/include/termcap.h \\
+/include/unctrl.h \\
+/lib/libform.so \\
+/lib/libmenu.so \\
+/lib/libncurses.so \\
+/lib/libpanel.so \\
+/lib/pkgconfig/form.pc \\
+/lib/pkgconfig/menu.pc \\
+/lib/pkgconfig/ncurses.pc \\
+/lib/pkgconfig/panel.pc
+
+exec=\\
+/bin/captoinfo \\
+/bin/clear \\
+/bin/infocmp \\
+/bin/infotocap \\
+/bin/reset \\
+/bin/tabs \\
+/bin/tic \\
+/bin/toe \\
+/bin/tput \\
+/bin/tset \\
+/etc/terminfo.src \\
+/lib/libform.so.5 \\
+/lib/libmenu.so.5 \\
+/lib/libncurses.so.5 \\
+/lib/libpanel.so.5 \\
+/share/terminfo/l/linux
+EOF
+
+exit

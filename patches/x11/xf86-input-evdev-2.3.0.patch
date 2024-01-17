@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build xorg-server-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/lib/xorg/modules/input
+install src/.libs/evdev_drv.so $DESTDIR/x11/lib/xorg/modules/drivers
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xf86-input-evdev-build.pc << EOF
+Name: xf86-input-evdev
+Version: 2.3.0
+Description: event device input driver for the X server
+Requires: $REQUIRES
+
+exec=\\
+/x11/lib/xorg/modules/input/evdev_drv.so
+EOF
+
+exit
+--- xf86-input-evdev-2.3.0.orig/configure.ac
++++ xf86-input-evdev-2.3.0/configure.ac
+@@ -28,6 +28,7 @@
+ 
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AC_CONFIG_AUX_DIR(.)
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ 
+ AM_MAINTAINER_MODE

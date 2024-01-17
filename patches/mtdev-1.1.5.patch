@@ -1,0 +1,53 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 include/mtdev.h $DESTDIR/include
+install -m 644 include/mtdev-plumbing.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libmtdev.so.1.* $DESTDIR/lib/libmtdev.so.1
+ln -sf libmtdev.so.1 $DESTDIR/lib/libmtdev.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 mtdev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/mtdev-build.pc << EOF
+Name: mtdev
+Version: 1.1.5
+Description: multitouch protocol translation library
+Requires: $REQUIRES
+
+devel=\\
+/include/mtdev.h \\
+/include/mtdev-plumbing.h \\
+/lib/libmtdev.so \\
+/lib/pkgconfig/mtdev.pc
+
+exec=\\
+/lib/libmtdev.so.1
+EOF
+
+exit
+--- mtdev-1.1.5.orig/configure.ac
++++ mtdev-1.1.5/configure.ac
+@@ -7,6 +7,7 @@
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AC_CONFIG_HEADERS([config.h])
+ AC_CONFIG_AUX_DIR([config-aux])
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ # Initialize Automake
+ AM_INIT_AUTOMAKE([foreign dist-bzip2])

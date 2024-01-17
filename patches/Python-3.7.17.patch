@@ -1,0 +1,488 @@
+# This file is part of HiGFXback
+
+REQUIRES="autotools-wrappers-ac-build expat-build zlib-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15)
+aclocal -I m4; autoconf; autoheader
+./configure --enable-shared --with-system-expat --without-ensurepip --prefix=/
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install python $DESTDIR/bin/python3.7m
+ln -sf python3.7m $DESTDIR/bin/python3
+install python $DESTDIR/bin/python3.7m
+install -d $DESTDIR/lib
+install libpython3.7m.so.1.0 $DESTDIR/lib
+ln -sf libpython3.7m.so.1.0 $DESTDIR/lib/libpython3.7m.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 Misc/python.pc $DESTDIR/lib/pkgconfig/python-3.7.pc
+ln -sf python-3.7.pc $DESTDIR/lib/pkgconfig/python3.pc
+install -d $DESTDIR/lib/python3.7
+install -m 644 `cat pybuilddir.txt`/_sysconfigdata_m_linux_`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.py $DESTDIR/lib/python3.7
+install -m 644 Lib/__future__.py $DESTDIR/lib/python3.7
+install -m 644 Lib/_collections_abc.py $DESTDIR/lib/python3.7
+install -m 644 Lib/_compat_pickle.py $DESTDIR/lib/python3.7
+install -m 644 Lib/_compression.py $DESTDIR/lib/python3.7
+install -m 644 Lib/_sitebuiltins.py $DESTDIR/lib/python3.7
+install -m 644 Lib/_weakrefset.py $DESTDIR/lib/python3.7
+install -m 644 Lib/abc.py $DESTDIR/lib/python3.7
+install -m 644 Lib/argparse.py $DESTDIR/lib/python3.7
+install -m 644 Lib/ast.py $DESTDIR/lib/python3.7
+install -m 644 Lib/base64.py $DESTDIR/lib/python3.7
+install -m 644 Lib/bisect.py $DESTDIR/lib/python3.7
+install -m 644 Lib/cProfile.py $DESTDIR/lib/python3.7
+install -m 644 Lib/calendar.py $DESTDIR/lib/python3.7
+install -m 644 Lib/codecs.py $DESTDIR/lib/python3.7
+install -m 644 Lib/configparser.py $DESTDIR/lib/python3.7
+install -m 644 Lib/contextlib.py $DESTDIR/lib/python3.7
+install -m 644 Lib/contextvars.py $DESTDIR/lib/python3.7
+install -m 644 Lib/copy.py $DESTDIR/lib/python3.7
+install -m 644 Lib/copyreg.py $DESTDIR/lib/python3.7
+install -m 644 Lib/dataclasses.py $DESTDIR/lib/python3.7
+install -m 644 Lib/datetime.py $DESTDIR/lib/python3.7
+install -m 644 Lib/dis.py $DESTDIR/lib/python3.7
+install -m 644 Lib/enum.py $DESTDIR/lib/python3.7
+install -m 644 Lib/fnmatch.py $DESTDIR/lib/python3.7
+install -m 644 Lib/functools.py $DESTDIR/lib/python3.7
+install -m 644 Lib/genericpath.py $DESTDIR/lib/python3.7
+install -m 644 Lib/getopt.py $DESTDIR/lib/python3.7
+install -m 644 Lib/gettext.py $DESTDIR/lib/python3.7
+install -m 644 Lib/glob.py $DESTDIR/lib/python3.7
+install -m 644 Lib/gzip.py $DESTDIR/lib/python3.7
+install -m 644 Lib/hashlib.py $DESTDIR/lib/python3.7
+install -m 644 Lib/heapq.py $DESTDIR/lib/python3.7
+install -m 644 Lib/imp.py $DESTDIR/lib/python3.7
+install -m 644 Lib/inspect.py $DESTDIR/lib/python3.7
+install -m 644 Lib/io.py $DESTDIR/lib/python3.7
+install -m 644 Lib/keyword.py $DESTDIR/lib/python3.7
+install -m 644 Lib/linecache.py $DESTDIR/lib/python3.7
+install -m 644 Lib/locale.py $DESTDIR/lib/python3.7
+install -m 644 Lib/ntpath.py $DESTDIR/lib/python3.7
+install -m 644 Lib/numbers.py $DESTDIR/lib/python3.7
+install -m 644 Lib/opcode.py $DESTDIR/lib/python3.7
+install -m 644 Lib/operator.py $DESTDIR/lib/python3.7
+install -m 644 Lib/optparse.py $DESTDIR/lib/python3.7
+install -m 644 Lib/os.py $DESTDIR/lib/python3.7
+install -m 644 Lib/pathlib.py $DESTDIR/lib/python3.7
+install -m 644 Lib/pickle.py $DESTDIR/lib/python3.7
+install -m 644 Lib/pipes.py $DESTDIR/lib/python3.7
+install -m 644 Lib/pkgutil.py $DESTDIR/lib/python3.7
+install -m 644 Lib/platform.py $DESTDIR/lib/python3.7
+install -m 644 Lib/plistlib.py $DESTDIR/lib/python3.7
+install -m 644 Lib/posixpath.py $DESTDIR/lib/python3.7
+install -m 644 Lib/pprint.py $DESTDIR/lib/python3.7
+install -m 644 Lib/profile.py $DESTDIR/lib/python3.7
+install -m 644 Lib/py_compile.py $DESTDIR/lib/python3.7
+install -m 644 Lib/queue.py $DESTDIR/lib/python3.7
+install -m 644 Lib/quopri.py $DESTDIR/lib/python3.7
+install -m 644 Lib/random.py $DESTDIR/lib/python3.7
+install -m 644 Lib/re.py $DESTDIR/lib/python3.7
+install -m 644 Lib/reprlib.py $DESTDIR/lib/python3.7
+install -m 644 Lib/selectors.py $DESTDIR/lib/python3.7
+install -m 644 Lib/shlex.py $DESTDIR/lib/python3.7
+install -m 644 Lib/shutil.py $DESTDIR/lib/python3.7
+install -m 644 Lib/signal.py $DESTDIR/lib/python3.7
+install -m 644 Lib/site.py $DESTDIR/lib/python3.7
+install -m 644 Lib/socket.py $DESTDIR/lib/python3.7
+install -m 644 Lib/sre_compile.py $DESTDIR/lib/python3.7
+install -m 644 Lib/sre_constants.py $DESTDIR/lib/python3.7
+install -m 644 Lib/sre_parse.py $DESTDIR/lib/python3.7
+install -m 644 Lib/stat.py $DESTDIR/lib/python3.7
+install -m 644 Lib/string.py $DESTDIR/lib/python3.7
+install -m 644 Lib/struct.py $DESTDIR/lib/python3.7
+install -m 644 Lib/subprocess.py $DESTDIR/lib/python3.7
+install -m 644 Lib/sysconfig.py $DESTDIR/lib/python3.7
+install -m 644 Lib/tarfile.py $DESTDIR/lib/python3.7
+install -m 644 Lib/tempfile.py $DESTDIR/lib/python3.7
+install -m 644 Lib/textwrap.py $DESTDIR/lib/python3.7
+install -m 644 Lib/threading.py $DESTDIR/lib/python3.7
+install -m 644 Lib/token.py $DESTDIR/lib/python3.7
+install -m 644 Lib/tokenize.py $DESTDIR/lib/python3.7
+install -m 644 Lib/traceback.py $DESTDIR/lib/python3.7
+install -m 644 Lib/types.py $DESTDIR/lib/python3.7
+install -m 644 Lib/typing.py $DESTDIR/lib/python3.7
+install -m 644 Lib/uu.py $DESTDIR/lib/python3.7
+install -m 644 Lib/uuid.py $DESTDIR/lib/python3.7
+install -m 644 Lib/warnings.py $DESTDIR/lib/python3.7
+install -m 644 Lib/weakref.py $DESTDIR/lib/python3.7
+install -m 644 Lib/zipfile.py $DESTDIR/lib/python3.7
+install -d $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/__init__.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/base_events.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/base_futures.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/base_subprocess.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/base_tasks.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/constants.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/coroutines.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/events.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/format_helpers.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/futures.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/locks.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/log.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/protocols.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/queues.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/runners.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/selector_events.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/sslproto.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/streams.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/subprocess.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/tasks.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/transports.py $DESTDIR/lib/python3.7/asyncio
+install -m 644 Lib/asyncio/unix_events.py $DESTDIR/lib/python3.7/asyncio
+install -d $DESTDIR/lib/python3.7/collections
+install -m 644 Lib/collections/__init__.py $DESTDIR/lib/python3.7/collections
+install -m 644 Lib/collections/abc.py $DESTDIR/lib/python3.7/collections
+install -d $DESTDIR/lib/python3.7/concurrent/futures
+install -m 644 Lib/concurrent/futures/__init__.py $DESTDIR/lib/python3.7/concurrent/futures
+install -m 644 Lib/concurrent/futures/_base.py $DESTDIR/lib/python3.7/concurrent/futures
+install -m 644 Lib/concurrent/futures/thread.py $DESTDIR/lib/python3.7/concurrent/futures
+install -d $DESTDIR/lib/python3.7/ctypes
+install -d $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/__init__.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/archive_util.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/cmd.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/config.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/core.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/debug.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/dep_util.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/dir_util.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/dist.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/errors.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/extension.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/fancy_getopt.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/file_util.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/filelist.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/log.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/spawn.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/sysconfig.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/text_file.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/util.py $DESTDIR/lib/python3.7/distutils
+install -m 644 Lib/distutils/version.py $DESTDIR/lib/python3.7/distutils
+install -d $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/bdist.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/build.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/build_py.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/build_scripts.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/install.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/install_data.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/install_lib.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/install_scripts.py $DESTDIR/lib/python3.7/distutils/command
+install -m 644 Lib/distutils/command/sdist.py $DESTDIR/lib/python3.7/distutils/command
+install -d $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/__init__.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/_encoded_words.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/_parseaddr.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/_policybase.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/base64mime.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/charset.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/encoders.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/errors.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/feedparser.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/header.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/iterators.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/message.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/parser.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/quoprimime.py $DESTDIR/lib/python3.7/email
+install -m 644 Lib/email/utils.py $DESTDIR/lib/python3.7/email
+install -d $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/__init__.py $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/aliases.py $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/ascii.py $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/cp437.py $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/latin_1.py $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/unicode_escape.py $DESTDIR/lib/python3.7/encodings
+install -m 644 Lib/encodings/utf_8.py $DESTDIR/lib/python3.7/encodings
+install -d $DESTDIR/lib/python3.7/http
+install -m 644 Lib/http/__init__.py $DESTDIR/lib/python3.7/http
+install -m 644 Lib/http/client.py $DESTDIR/lib/python3.7/http
+install -d $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/__init__.py $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/_bootstrap.py $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/_bootstrap_external.py $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/abc.py $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/machinery.py $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/resources.py $DESTDIR/lib/python3.7/importlib
+install -m 644 Lib/importlib/util.py $DESTDIR/lib/python3.7/importlib
+install -d $DESTDIR/lib/python3.7/json
+install -m 644 Lib/json/__init__.py $DESTDIR/lib/python3.7/json
+install -m 644 Lib/json/decoder.py $DESTDIR/lib/python3.7/json
+install -m 644 Lib/json/encoder.py $DESTDIR/lib/python3.7/json
+install -m 644 Lib/json/scanner.py $DESTDIR/lib/python3.7/json
+install -d $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_blake2.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_contextvars.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_lsprof.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_md5.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_posixsubprocess.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_queue.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_random.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_sha1.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_sha256.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_sha3.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_sha512.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_socket.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_struct.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/array.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/binascii.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/fcntl.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/math.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/pyexpat.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/select.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/unicodedata.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/zlib.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install -d $DESTDIR/lib/python3.7/logging
+install -m 644 Lib/logging/__init__.py $DESTDIR/lib/python3.7/logging
+install -d $DESTDIR/lib/python3.7/multiprocessing
+install -m 644 Lib/multiprocessing/__init__.py $DESTDIR/lib/python3.7/multiprocessing
+install -m 644 Lib/multiprocessing/context.py $DESTDIR/lib/python3.7/multiprocessing
+install -m 644 Lib/multiprocessing/process.py $DESTDIR/lib/python3.7/multiprocessing
+install -m 644 Lib/multiprocessing/reduction.py $DESTDIR/lib/python3.7/multiprocessing
+install -d $DESTDIR/lib/python3.7/urllib
+install -m 644 Lib/urllib/error.py $DESTDIR/lib/python3.7/urllib
+install -m 644 Lib/urllib/parse.py $DESTDIR/lib/python3.7/urllib
+install -m 644 Lib/urllib/request.py $DESTDIR/lib/python3.7/urllib
+install -m 644 Lib/urllib/response.py $DESTDIR/lib/python3.7/urllib
+install -d $DESTDIR/lib/python3.7/xml/etree
+install -m 644 Lib/xml/etree/ElementPath.py $DESTDIR/lib/python3.7/xml/etree
+install -m 644 Lib/xml/etree/ElementTree.py $DESTDIR/lib/python3.7/xml/etree
+install -m 644 Lib/xml/etree/__init__.py $DESTDIR/lib/python3.7/xml/etree
+install -d $DESTDIR/lib/python3.7/xml/parsers
+install -m 644 Lib/xml/parsers/expat.py $DESTDIR/lib/python3.7/xml/parsers
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/python3-build.pc << EOF
+Name: Python programming language
+Version: 3.7.17
+Description: Python
+Requires: $REQUIRES
+
+devel=\\
+/lib/pkgconfig/python-3.7.pc \\
+/lib/pkgconfig/python3.pc
+
+exec=\\
+/bin/python3 \\
+/bin/python3.7m \\
+/lib/libpython3.7m.so.1.0 \\
+/lib/python3.7/__future__.py \\
+/lib/python3.7/_collections_abc.py \\
+/lib/python3.7/_compat_pickle.py \\
+/lib/python3.7/_compression.py \\
+/lib/python3.7/_sitebuiltins.py \\
+/lib/python3.7/_sysconfigdata_m_linux_`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.py \\
+/lib/python3.7/_weakrefset.py \\
+/lib/python3.7/abc.py \\
+/lib/python3.7/argparse.py \\
+/lib/python3.7/ast.py \\
+/lib/python3.7/base64.py \\
+/lib/python3.7/bisect.py \\
+/lib/python3.7/cProfile.py \\
+/lib/python3.7/calendar.py \\
+/lib/python3.7/codecs.py \\
+/lib/python3.7/configparser.py \\
+/lib/python3.7/contextlib.py \\
+/lib/python3.7/contextvars.py \\
+/lib/python3.7/copy.py \\
+/lib/python3.7/copyreg.py \\
+/lib/python3.7/dataclasses.py \\
+/lib/python3.7/datetime.py \\
+/lib/python3.7/dis.py \\
+/lib/python3.7/enum.py \\
+/lib/python3.7/fnmatch.py \\
+/lib/python3.7/functools.py \\
+/lib/python3.7/genericpath.py \\
+/lib/python3.7/getopt.py \\
+/lib/python3.7/gettext.py \\
+/lib/python3.7/glob.py \\
+/lib/python3.7/gzip.py \\
+/lib/python3.7/hashlib.py \\
+/lib/python3.7/heapq.py \\
+/lib/python3.7/imp.py \\
+/lib/python3.7/inspect.py \\
+/lib/python3.7/io.py \\
+/lib/python3.7/keyword.py \\
+/lib/python3.7/linecache.py \\
+/lib/python3.7/locale.py \\
+/lib/python3.7/ntpath.py \\
+/lib/python3.7/numbers.py \\
+/lib/python3.7/opcode.py \\
+/lib/python3.7/operator.py \\
+/lib/python3.7/optparse.py \\
+/lib/python3.7/os.py \\
+/lib/python3.7/pathlib.py \\
+/lib/python3.7/pickle.py \\
+/lib/python3.7/pipes.py \\
+/lib/python3.7/pkgutil.py \\
+/lib/python3.7/platform.py \\
+/lib/python3.7/plistlib.py \\
+/lib/python3.7/posixpath.py \\
+/lib/python3.7/pprint.py \\
+/lib/python3.7/profile.py \\
+/lib/python3.7/py_compile.py \\
+/lib/python3.7/queue.py \\
+/lib/python3.7/quopri.py \\
+/lib/python3.7/random.py \\
+/lib/python3.7/re.py \\
+/lib/python3.7/reprlib.py \\
+/lib/python3.7/selectors.py \\
+/lib/python3.7/shlex.py \\
+/lib/python3.7/shutil.py \\
+/lib/python3.7/signal.py \\
+/lib/python3.7/site.py \\
+/lib/python3.7/socket.py \\
+/lib/python3.7/sre_compile.py \\
+/lib/python3.7/sre_constants.py \\
+/lib/python3.7/sre_parse.py \\
+/lib/python3.7/stat.py \\
+/lib/python3.7/string.py \\
+/lib/python3.7/struct.py \\
+/lib/python3.7/subprocess.py \\
+/lib/python3.7/sysconfig.py \\
+/lib/python3.7/tarfile.py \\
+/lib/python3.7/tempfile.py \\
+/lib/python3.7/textwrap.py \\
+/lib/python3.7/threading.py \\
+/lib/python3.7/token.py \\
+/lib/python3.7/tokenize.py \\
+/lib/python3.7/traceback.py \\
+/lib/python3.7/types.py \\
+/lib/python3.7/typing.py \\
+/lib/python3.7/uu.py \\
+/lib/python3.7/uuid.py \\
+/lib/python3.7/warnings.py \\
+/lib/python3.7/weakref.py \\
+/lib/python3.7/zipfile.py \\
+/lib/python3.7/asyncio/__init__.py \\
+/lib/python3.7/asyncio/base_events.py \\
+/lib/python3.7/asyncio/base_futures.py \\
+/lib/python3.7/asyncio/base_subprocess.py \\
+/lib/python3.7/asyncio/base_tasks.py \\
+/lib/python3.7/asyncio/constants.py \\
+/lib/python3.7/asyncio/coroutines.py \\
+/lib/python3.7/asyncio/events.py \\
+/lib/python3.7/asyncio/format_helpers.py \\
+/lib/python3.7/asyncio/futures.py \\
+/lib/python3.7/asyncio/locks.py \\
+/lib/python3.7/asyncio/log.py \\
+/lib/python3.7/asyncio/protocols.py \\
+/lib/python3.7/asyncio/queues.py \\
+/lib/python3.7/asyncio/runners.py \\
+/lib/python3.7/asyncio/selector_events.py \\
+/lib/python3.7/asyncio/sslproto.py \\
+/lib/python3.7/asyncio/streams.py \\
+/lib/python3.7/asyncio/subprocess.py \\
+/lib/python3.7/asyncio/tasks.py \\
+/lib/python3.7/asyncio/transports.py \\
+/lib/python3.7/asyncio/unix_events.py \\
+/lib/python3.7/collections/__init__.py \\
+/lib/python3.7/collections/abc.py \\
+/lib/python3.7/concurrent/futures/__init__.py \\
+/lib/python3.7/concurrent/futures/_base.py \\
+/lib/python3.7/concurrent/futures/thread.py \\
+/lib/python3.7/distutils/__init__.py \\
+/lib/python3.7/distutils/archive_util.py \\
+/lib/python3.7/distutils/cmd.py \\
+/lib/python3.7/distutils/config.py \\
+/lib/python3.7/distutils/core.py \\
+/lib/python3.7/distutils/debug.py \\
+/lib/python3.7/distutils/dep_util.py \\
+/lib/python3.7/distutils/dir_util.py \\
+/lib/python3.7/distutils/dist.py \\
+/lib/python3.7/distutils/errors.py \\
+/lib/python3.7/distutils/extension.py \\
+/lib/python3.7/distutils/fancy_getopt.py \\
+/lib/python3.7/distutils/file_util.py \\
+/lib/python3.7/distutils/filelist.py \\
+/lib/python3.7/distutils/log.py \\
+/lib/python3.7/distutils/spawn.py \\
+/lib/python3.7/distutils/sysconfig.py \\
+/lib/python3.7/distutils/text_file.py \\
+/lib/python3.7/distutils/util.py \\
+/lib/python3.7/distutils/version.py \\
+/lib/python3.7/distutils/command/bdist.py \\
+/lib/python3.7/distutils/command/build.py \\
+/lib/python3.7/distutils/command/build_py.py \\
+/lib/python3.7/distutils/command/build_scripts.py \\
+/lib/python3.7/distutils/command/install.py \\
+/lib/python3.7/distutils/command/install_data.py \\
+/lib/python3.7/distutils/command/install_lib.py \\
+/lib/python3.7/distutils/command/install_scripts.py \\
+/lib/python3.7/distutils/command/sdist.py \\
+/lib/python3.7/email/__init__.py \\
+/lib/python3.7/email/_encoded_words.py \\
+/lib/python3.7/email/_parseaddr.py \\
+/lib/python3.7/email/_policybase.py \\
+/lib/python3.7/email/base64mime.py \\
+/lib/python3.7/email/charset.py \\
+/lib/python3.7/email/encoders.py \\
+/lib/python3.7/email/errors.py \\
+/lib/python3.7/email/feedparser.py \\
+/lib/python3.7/email/header.py \\
+/lib/python3.7/email/iterators.py \\
+/lib/python3.7/email/message.py \\
+/lib/python3.7/email/parser.py \\
+/lib/python3.7/email/quoprimime.py \\
+/lib/python3.7/email/utils.py \\
+/lib/python3.7/encodings/__init__.py \\
+/lib/python3.7/encodings/aliases.py \\
+/lib/python3.7/encodings/ascii.py \\
+/lib/python3.7/encodings/cp437.py \\
+/lib/python3.7/encodings/latin_1.py \\
+/lib/python3.7/encodings/unicode_escape.py \\
+/lib/python3.7/encodings/utf_8.py \\
+/lib/python3.7/http/__init__.py \\
+/lib/python3.7/http/client.py \\
+/lib/python3.7/importlib/__init__.py \\
+/lib/python3.7/importlib/_bootstrap.py \\
+/lib/python3.7/importlib/_bootstrap_external.py \\
+/lib/python3.7/importlib/abc.py \\
+/lib/python3.7/importlib/machinery.py \\
+/lib/python3.7/importlib/resources.py \\
+/lib/python3.7/importlib/util.py \\
+/lib/python3.7/json/__init__.py \\
+/lib/python3.7/json/decoder.py \\
+/lib/python3.7/json/encoder.py \\
+/lib/python3.7/json/scanner.py \\
+/lib/python3.7/lib-dynload/_blake2.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_contextvars.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_lsprof.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_md5.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_posixsubprocess.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_queue.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_random.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_sha1.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_sha256.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_sha3.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_sha512.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_socket.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_struct.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/array.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/binascii.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/fcntl.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/math.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/pyexpat.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/select.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/unicodedata.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/zlib.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/logging/__init__.py \\
+/lib/python3.7/multiprocessing/__init__.py \\
+/lib/python3.7/multiprocessing/context.py \\
+/lib/python3.7/multiprocessing/process.py \\
+/lib/python3.7/multiprocessing/reduction.py \\
+/lib/python3.7/urllib/error.py \\
+/lib/python3.7/urllib/parse.py \\
+/lib/python3.7/urllib/request.py \\
+/lib/python3.7/urllib/response.py \\
+/lib/python3.7/xml/etree/ElementPath.py \\
+/lib/python3.7/xml/etree/ElementTree.py \\
+/lib/python3.7/xml/etree/__init__.py \\
+/lib/python3.7/xml/parsers/expat.py
+EOF
+
+exit

@@ -1,0 +1,47 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libx11-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/XKBbells.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/XKBconfig.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/XKBfile.h $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/XKBrules.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib
+install src/.libs/libxkbfile.so.1.* $DESTDIR/x11/lib/libxkbfile.so.1
+ln -sf libxkbfile.so.1 $DESTDIR/x11/lib/libxkbfile.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xkbfile.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxkbfile-build.pc << EOF
+Name: libxkbfile
+Version: 1.0.6
+Description: X keyboard file manipulation library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/XKBbells.h \\
+/x11/include/X11/extensions/XKBconfig.h \\
+/x11/include/X11/extensions/XKBfile.h \\
+/x11/include/X11/extensions/XKBrules.h \\
+/x11/lib/libxkbfile.so \\
+/x11/lib/pkgconfig/xkbfile.pc
+
+exec=\\
+/x11/lib/libxkbfile.so.1
+EOF
+
+exit

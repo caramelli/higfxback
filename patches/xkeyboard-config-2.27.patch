@@ -1,0 +1,244 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build util-macros-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.16)
+aclocal -I m4; autoconf; automake -a -c
+./configure --disable-runtime-deps --with-noarch-pkgconfigdir=/lib/pkgconfig --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 xkeyboard-config.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/accessx $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/basic $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/caps $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/complete $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/iso9995 $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/ledcaps $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/lednum $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/ledscroll $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/level5 $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/misc $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/mousekeys $DESTDIR/share/X11/xkb/compat
+install -m 644 compat/xfree86 $DESTDIR/share/X11/xkb/compat
+install -d $DESTDIR/share/X11/xkb/geometry
+install -m 644 geometry/pc $DESTDIR/share/X11/xkb/geometry
+install -d $DESTDIR/share/X11/xkb/keycodes
+install -m 644 keycodes/aliases $DESTDIR/share/X11/xkb/keycodes
+install -m 644 keycodes/evdev $DESTDIR/share/X11/xkb/keycodes
+install -m 644 keycodes/xfree86 $DESTDIR/share/X11/xkb/keycodes
+install -d $DESTDIR/share/X11/xkb/rules
+install -m 644 rules/base $DESTDIR/share/X11/xkb/rules
+install -m 644 rules/evdev $DESTDIR/share/X11/xkb/rules
+install -d $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/altwin $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/fr $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/inet $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/keypad $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/latin $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/level3 $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/pc $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/srvr_ctrl $DESTDIR/share/X11/xkb/symbols
+install -m 644 symbols/us $DESTDIR/share/X11/xkb/symbols
+install -d $DESTDIR/share/X11/xkb/types
+install -m 644 types/basic $DESTDIR/share/X11/xkb/types
+install -m 644 types/complete $DESTDIR/share/X11/xkb/types
+install -m 644 types/extra $DESTDIR/share/X11/xkb/types
+install -m 644 types/iso9995 $DESTDIR/share/X11/xkb/types
+install -m 644 types/level5 $DESTDIR/share/X11/xkb/types
+install -m 644 types/mousekeys $DESTDIR/share/X11/xkb/types
+install -m 644 types/numpad $DESTDIR/share/X11/xkb/types
+install -m 644 types/pc $DESTDIR/share/X11/xkb/types
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/xkeyboard-config-build.pc << EOF
+Name: xkeyboard-config
+Version: 2.27
+Description: X keyboard configuration data
+Requires: $REQUIRES
+
+devel=\\
+/lib/pkgconfig/xkeyboard-config.pc
+
+exec=\\
+/share/X11/xkb/compat/accessx \\
+/share/X11/xkb/compat/basic \\
+/share/X11/xkb/compat/caps \\
+/share/X11/xkb/compat/complete \\
+/share/X11/xkb/compat/iso9995 \\
+/share/X11/xkb/compat/ledcaps \\
+/share/X11/xkb/compat/lednum \\
+/share/X11/xkb/compat/ledscroll \\
+/share/X11/xkb/compat/level5 \\
+/share/X11/xkb/compat/misc \\
+/share/X11/xkb/compat/mousekeys \\
+/share/X11/xkb/compat/xfree86 \\
+/share/X11/xkb/geometry/pc \\
+/share/X11/xkb/keycodes/aliases \\
+/share/X11/xkb/keycodes/evdev \\
+/share/X11/xkb/keycodes/xfree86 \\
+/share/X11/xkb/rules/base \\
+/share/X11/xkb/rules/evdev \\
+/share/X11/xkb/symbols/altwin \\
+/share/X11/xkb/symbols/fr \\
+/share/X11/xkb/symbols/inet \\
+/share/X11/xkb/symbols/keypad \\
+/share/X11/xkb/symbols/latin \\
+/share/X11/xkb/symbols/level3 \\
+/share/X11/xkb/symbols/pc \\
+/share/X11/xkb/symbols/srvr_ctrl \\
+/share/X11/xkb/symbols/us \\
+/share/X11/xkb/types/basic \\
+/share/X11/xkb/types/complete \\
+/share/X11/xkb/types/extra \\
+/share/X11/xkb/types/iso9995 \\
+/share/X11/xkb/types/level5 \\
+/share/X11/xkb/types/mousekeys \\
+/share/X11/xkb/types/numpad \\
+/share/X11/xkb/types/pc
+EOF
+
+exit
+--- xkeyboard-config-2.27.orig/Makefile.am
++++ xkeyboard-config-2.27/Makefile.am
+@@ -2,8 +2,7 @@
+ 
+ SUBDIRS = compat geometry keycodes po rules symbols types docs man
+ 
+-pkgconfigdir = $(datadir)/pkgconfig
+-pkgconfig_DATA = xkeyboard-config.pc
++noarch_pkgconfig_DATA = xkeyboard-config.pc
+ 
+ EXTRA_DIST=config.rpath COPYING README \
+        autogen.sh \
+--- xkeyboard-config-2.27.orig/compat/xfree86
++++ xkeyboard-config-2.27/compat/xfree86
+@@ -41,11 +41,11 @@
+         action = SwitchScreen(Screen=12, !SameServer);
+     };
+ 
+-    interpret XF86LogGrabInfo {
+-        action = Private(type=0x86, data="PrGrbs");
++    interpret XF86_Ungrab {
++        action = Private(type=0x86, data="Ungrab");
+     };
+-    interpret XF86LogWindowTree {
+-        action = Private(type=0x86, data="PrWins");
++    interpret XF86_ClearGrab {
++        action = Private(type=0x86, data="ClsGrb");
+     };
+ 
+     interpret XF86_Next_VMode {
+--- xkeyboard-config-2.27.orig/configure.ac
++++ xkeyboard-config-2.27/configure.ac
+@@ -1,6 +1,7 @@
+ AC_INIT(xkeyboard-config, 2.27)
+ AC_CONFIG_SRCDIR(rules/base.xml)
+ AM_INIT_AUTOMAKE([foreign dist-bzip2])
++PKG_NOARCH_INSTALLDIR
+ 
+ # Require X.Org macros 1.12 or later for XORG_WITH_XSLTPROC
+ m4_ifndef([XORG_MACROS_VERSION],
+--- xkeyboard-config-2.27.orig/keycodes/evdev
++++ xkeyboard-config-2.27/keycodes/evdev
+@@ -284,10 +284,6 @@
+ 	<I254> = 254;	// #define KEY_WWAN                246
+ 	<I255> = 255;	// #define KEY_RFKILL              247
+ 
+-	<I372> = 372;   // #define KEY_FAVORITES           364
+-	<I382> = 382;   // #define KEY_KEYBOARD            374
+-	<I569> = 569;   // #define KEY_ROTATE_LOCK_TOGGLE  561
+-
+ 	// Fake keycodes for virtual keys
+ 	<LVL3> =   92;
+ 	<MDSW> =   203;
+--- xkeyboard-config-2.27.orig/symbols/fr
++++ xkeyboard-config-2.27/symbols/fr
+@@ -486,7 +486,7 @@
+     key <AE09> { type[group1] = "FOUR_LEVEL_SEMIALPHABETIC", [           slash,            9,       division,        onehalf ] }; // / 9 ÷ ½
+     key <AE10> { type[group1] = "FOUR_LEVEL_SEMIALPHABETIC", [        asterisk,            0,       multiply,  threequarters ] }; // * 0 × ¾
+     key <AE11> { [           equal,       degree,       notequal,        minutes ] }; // = ° ≠ ′
+-    key <AE12> { [         percent,        grave,       permille,        seconds ] }; // % ` ‰ ″
++    key <AE12> { [         percent,        grave,          U2030,        seconds ] }; // % ` ‰ ″
+ 
+     // Second row
+     key <AD01> { [               b,            B,            bar,      brokenbar ] }; // b B | ¦
+@@ -525,7 +525,7 @@
+     key <AB05> { [               k,            K,     asciitilde                 ] }; // k K ~
+     key <AB06> { [      apostrophe,     question,   questiondown,      dead_hook ] }; // ' ? ¿ ̉
+     key <AB07> { [               q,            Q, dead_abovering,  dead_belowdot ] }; // q Q ˚ ̣
+-    key <AB08> { [               g,            G,     dead_greek                 ] }; // g G µ
++    key <AB08> { [               g,            G,             mu                 ] }; // g G µ
+     key <AB09> { [               h,            H,         dagger,   doubledagger ] }; // h H † ‡
+     key <AB10> { [               f,            F,    dead_ogonek,    ordfeminine ] }; // f F ̨ ª
+ 
+--- xkeyboard-config-2.27.orig/symbols/inet
++++ xkeyboard-config-2.27/symbols/inet
+@@ -114,10 +114,6 @@
+     key <HNGL>   {      [ Hangul                ]       };
+     key <HJCV>   {      [ Hangul_Hanja          ]       };
+     key <FK21>   {      [ XF86TouchpadToggle    ]       };
+-    key <FK22>   {      [ XF86TouchpadOn        ]       };
+-    key <FK23>   {      [ XF86TouchpadOff       ]       };
+-
+-    key <FK20>   {      [ XF86AudioMicMute      ]       };
+ 
+ //  key <I120>   {      [ ]       }; // KEY_MACRO
+     key <I126>   {      [ plusminus             ]       };
+@@ -184,7 +180,7 @@
+     key <I218>   {      [ Print                 ]       };
+ //  key <I219>   {      [ ]       }; // KEY_HP
+     key <I220>   {      [ XF86WebCam            ]       };
+-    key <I221>   {      [ XF86AudioPreset       ]       };
++//  key <I221>   {      [ ]       }; // KEY_SOUND
+ //  key <I222>   {      [ ]       }; // KEY_QUESTION
+     key <I223>   {      [ XF86Mail              ]       };
+     key <I224>   {      [ XF86Messenger         ]       }; // KEY_CHAT
+@@ -212,15 +208,13 @@
+     key <I246>   {      [ XF86WLAN              ]       };
+ //  key <I249>   {      [ ]       }; // KEY_VIDEO_NEXT  --  drive next video source
+ //  key <I250>   {      [ ]       }; // KEY_VIDEO_PREV  --  drive previous video source
+-    key <I251>   {      [ XF86MonBrightnessCycle ]      }; // KEY_BRIGHTNESS_CYCLE  --  bright up, max++ == min
++//  key <I251>   {      [ ]       }; // KEY_BRIGHTNESS_CYCLE  --  bright up, max++ == min
+ //  key <I252>   {      [ ]       }; // KEY_BRIGHTNESS_ZERO  --  brightness off
+ //  key <I253>   {      [ ]       }; // KEY_DISPLAY_OFF  --  turn off display
+-    key <I254>   {      [ XF86WWAN              ]       }; // KEY_WWAN
+-    key <I255>   {      [ XF86RFKill            ]       }; // KEY_RFKILL
++//  key <I254>   {      [ ]       }; // KEY_WIMAX
++    key <I255>   {      [ XF86Hibernate         ]       }; // KEY_HIBERNATE
+ 
+     key <I372>  {       [ XF86Favorites          ]       };
+-    key <I382>  {       [ XF86Keyboard           ]       };
+-    key <I569>  {       [ XF86RotationLockToggle ]       };
+ 
+     key <FK13>   {      [ XF86Tools         ]       };
+     key <FK14>   {      [ XF86Launch5       ]       };
+--- xkeyboard-config-2.27.orig/symbols/srvr_ctrl
++++ xkeyboard-config-2.27/symbols/srvr_ctrl
+@@ -93,18 +93,3 @@
+     key <KPSU> { [ KP_Subtract,	KP_Subtract	] };
+     key <KPAD> { [ KP_Add,	KP_Add		] };
+ };
+-
+-partial function_keys
+-xkb_symbols "grab_debug" {
+-
+-    key <FK11> {
+-	type="CTRL+ALT",
+-	symbols[Group1]= [ F11, F11, F11, F11, XF86LogGrabInfo ]
+-    };
+-
+-    key <FK12> {
+-	type="CTRL+ALT",
+-	symbols[Group1]= [ F12, F12, F12, F12, XF86LogWindowTree ]
+-    };
+-
+-};
