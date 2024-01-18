@@ -1,0 +1,29 @@
+#!/bin/sh
+
+killall -9 dfbterm fbpad weston Xorg 2> /dev/null
+
+install -d -m 700 /wl/var/xdg
+
+if [ ! -f /wl/etc/xdg/weston/weston.ini ]; then
+  install -d /wl/etc/xdg/weston
+  cat > /wl/etc/xdg/weston/weston.ini << EOF
+[core]
+backend=fbdev-backend.so
+[shell]
+panel-position=none
+EOF
+fi
+
+export PATH=/bin:/wl/bin
+export XDG_RUNTIME_DIR=/wl/var/xdg
+
+weston --tty=7 &
+sleep 1
+
+read WIDTH HEIGHT << EOF
+`weston-info | grep -A1 mode: | tail -n 1 | sed -n 's/.*width: \([0-9]*\) px, height: \([0-9]*\) px.*/\1 \2/p'`
+EOF
+WIDTH=$((WIDTH * 80 / 800))
+HEIGHT=$((HEIGHT * 24 / 600))
+
+weston-terminal --columns $WIDTH --rows $HEIGHT &

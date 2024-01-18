@@ -1,0 +1,19 @@
+#!/bin/sh
+
+killall -9 dfbterm fbpad weston Xorg 2> /dev/null
+
+clear
+
+if [ ! -f /fb/share/fbpad/regular.tf ]; then
+  ft2tf /share/fonts/truetype/VeraMo.ttf:5.5 > /fb/share/fbpad/regular.tf
+fi
+
+export PATH=/bin:/fb/bin
+
+IFS=x read WIDTH HEIGHT << EOF
+`fbset | grep ^mode | grep -oE [0-9]+x[0-9]+`
+EOF
+WIDTH=$((WIDTH * 720 / 800))
+HEIGHT=$((HEIGHT * 432 / 600))
+
+FBPAD_SIZE=${WIDTH}x${HEIGHT} fbpad

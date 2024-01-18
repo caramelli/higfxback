@@ -1,0 +1,21 @@
+#!/bin/sh
+
+killall -9 dfbterm fbpad weston Xorg 2> /dev/null
+
+if [ ! -f /dfb/etc/directfbrc ]; then
+  install -d /dfb/etc
+  cat > /dfb/etc/directfbrc << EOF
+system=fbdev
+bg-color=c0b090
+EOF
+fi
+
+export PATH=/bin:/dfb/bin
+
+IFS=x read WIDTH HEIGHT << EOF
+`dfbinfo 2> /dev/null | grep -A1 Modes | tail -n 1 | grep -oE [0-9]+x[0-9]+`
+EOF
+WIDTH=$((WIDTH * 80 / 800))
+HEIGHT=$((HEIGHT * 24 / 600))
+
+dfbterm --fontsize=18 --size=${WIDTH}x${HEIGHT} --position=-5,-1 &

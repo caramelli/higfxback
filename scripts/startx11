@@ -1,0 +1,43 @@
+#!/bin/sh
+
+killall -9 dfbterm fbpad weston Xorg 2> /dev/null
+
+install -d /x11/var/log
+
+if [ ! -f /x11/etc/X11/xorg.conf ]; then
+  install -d /x11/etc/X11
+  cat > /x11/etc/X11/xorg.conf << EOF
+Section "Device"
+  Identifier "fb0"
+  Driver     "fbdev"
+EndSection
+
+Section "InputDevice"
+  Identifier "keyboard"
+  Driver     "evdev"
+  Option     "Device" "/dev/input/event0"
+EndSection
+
+Section "InputDevice"
+  Identifier "pointer"
+  Driver     "evdev"
+  Option     "Device" "/dev/input/event1"
+EndSection
+EOF
+fi
+
+export PATH=/bin:/x11/bin
+export DISPLAY=:0
+
+Xorg -retro -keyboard keyboard -pointer pointer &
+sleep 1
+twm &
+sleep 1
+
+IFS=x read WIDTH HEIGHT << EOF
+`xdpyinfo | grep dimensions | grep -oE [0-9]+x[0-9]+`
+EOF
+WIDTH=$((WIDTH * 80 / 800))
+HEIGHT=$((HEIGHT * 24 / 600))
+
+xterm -rv -fa vera -fs 11 -geometry ${WIDTH}x${HEIGHT}+0+0 &
