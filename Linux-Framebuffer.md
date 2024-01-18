@@ -43,7 +43,7 @@ Components running on _Linux Framebuffer_ graphics backend just use the _Linux F
 
 If the current graphics backend used on **HiGFXback** is not _Linux Framebuffer_, switch on it with `startfb` command.
 
-<p align="center"><img src="fb.png"></p>
+<p align="center"><img src="diagrams/fb.png"></p>
 
 Components running on _Linux Framebuffer_ graphics backend directly handle keyboard and mouse input events with one of the following input driver interface available on **HiGFXback**:
 
@@ -62,7 +62,7 @@ Note that input driver interfaces used for mouse input events are also accessibl
 When starting on _Linux Framebuffer_ graphics backend, _**fbpad**_ terminal emulator is displayed.
 System informations about _Linux Framebuffer_ settings can be get with _**fbset**_.
 
-![](fbpad.png)
+![](screenshots/fbpad.png)
 
 [Back to Top](#contents)
 
@@ -72,7 +72,7 @@ System informations about _Linux Framebuffer_ settings can be get with _**fbset*
 
 Programs running on _Linux Framebuffer_ graphics backend are available as examples, tests or benchmarks.
 
-![](fb-test-app-fbmark.png)
+![](screenshots/fb-test-app-fbmark.png)
 
 [Back to Top](#contents)
 
@@ -82,7 +82,7 @@ Programs running on _Linux Framebuffer_ graphics backend are available as exampl
 
 Programs are available for testing keyboard input interfaces used by components running on _Linux Framebuffer_ graphics backend.
 
-![](showkey-input-events.png)
+![](screenshots/showkey-input-events.png)
 
 [Back to Top](#contents)
 
@@ -92,7 +92,7 @@ Programs are available for testing keyboard input interfaces used by components 
 
 Programs are available for testing mouse input interfaces used by components running on _Linux Framebuffer_ graphics backend.
 
-![](test-mouse-input-events.png)
+![](screenshots/test-mouse-input-events.png)
 
 [Back to Top](#contents)
 
@@ -109,11 +109,11 @@ On **HiGFXback**, _FBDev WSI_ interfaces (Window System Integration for _Linux F
 
 But depending on the platform, specific ICD can be used.
 
-<p align="center"><img src="fb-vulkan.png"></p>
+<p align="center"><img src="diagrams/fb-vulkan.png"></p>
 
 _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-![](vulkan-linux-framebuffer.png)
+![](screenshots/vulkan-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -139,11 +139,11 @@ On **HiGFXback**, _GLFBDev_ interfaces (_OpenGL_ extension for _Linux Framebuffe
 
 But depending on the platform, specific implementation can be used.
 
-<p align="center"><img src="fb-glfbdev.png"></p>
+<p align="center"><img src="diagrams/fb-glfbdev.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](glfbdev.png)
+![](screenshots/glfbdev.png)
 
 [Back to Top](#contents)
 
@@ -158,11 +158,11 @@ On **HiGFXback**, EGL for _Linux Framebuffer_ interfaces are used with one of th
 
 But depending on the platform, specific implementation can be used.
 
-<p align="center"><img src="fb-egl.png"></p>
+<p align="center"><img src="diagrams/fb-egl.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](egl-linux-framebuffer.png)
+![](screenshots/egl-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -176,11 +176,11 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 On **HiGFXback**, _Cairo_ interfaces for _Linux Framebuffer_ graphics backend are provided by _**libcairo.so** library_.
 
-<p align="center"><img src="fb-cairo-fbdev.png"></p>
+<p align="center"><img src="diagrams/fb-cairo-fbdev.png"></p>
 
 _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
-![](cairo-linux-framebuffer.png)
+![](screenshots/cairo-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -190,11 +190,11 @@ _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
 On **HiGFXback**, _Evas_ interfaces for _Linux Framebuffer_ graphics backend are provided by _**libevas.so** library_.
 
-<p align="center"><img src="fb-evas-fbdev.png"></p>
+<p align="center"><img src="diagrams/fb-evas-fbdev.png"></p>
 
 _**expedite**_ program is available as examples, tests or benchmarks.
 
-![](evas-linux-framebuffer.png)
+![](screenshots/evas-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -210,7 +210,7 @@ On **HiGFXback**, _FFmpeg_ interfaces for _Linux Framebuffer_ graphics backend a
 
 _**ffmpeg**_ program is available as example.
 
-![](ffmpeg-linux-framebuffer.png)
+![](screenshots/ffmpeg-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -227,11 +227,11 @@ and rely on _**libgstfbdevsink.so** plugin_ for output.
 
 _**gst-launch-0.10**_ program is available as example on _GStreamer 0.10_.
 
-![](gstreamer-0.10-linux-framebuffer.png)
+![](screenshots/gstreamer-0.10-linux-framebuffer.png)
 
 _**gst-launch-1.0**_ program is available as example on _GStreamer 1_.
 
-![](gstreamer-1.0-linux-framebuffer.png)
+![](screenshots/gstreamer-1.0-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -243,7 +243,7 @@ On **HiGFXback**, _Xine_ interfaces for _Linux Framebuffer_ graphics backend are
 
 _**xine-ui**_ program is available as example.
 
-![](xine-linux-framebuffer.png)
+![](screenshots/xine-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -255,7 +255,7 @@ On **HiGFXback**, _VLC_ interfaces for _Linux Framebuffer_ graphics backend are 
 
 _**vlc**_ program is available as example.
 
-![](vlc-linux-framebuffer.png)
+![](screenshots/vlc-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -267,25 +267,25 @@ _**vlc**_ program is available as example.
 
 ### Fbi, FIM
 
-![](fbi-fim.png)
+![](screenshots/fbi-fim.png)
 
 <a name="fbpdf"></a>
 
 ### Fbpdf
 
-![](fbpdf.png)
+![](screenshots/fbpdf.png)
 
 <a name="netsurf-links"></a>
 
 ### NetSurf, Links
 
-![](netsurf-links-linux-framebuffer.png)
+![](screenshots/netsurf-links-linux-framebuffer.png)
 
 <a name="fbff-mplayer"></a>
 
 ### Fbff, MPlayer
 
-![](fbff-mplayer-linux-framebuffer.png)
+![](screenshots/fbff-mplayer-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -302,13 +302,13 @@ On **HiGFXback**, _GLUT (openGL Utility Toolkit)_ interfaces running on _Linux F
 * _MesaGLUT_ with _**libglut.so `->` libmesaglut.so** library_
 * _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
 
-<p align="center"><img src="fb-glut.png"></p>
+<p align="center"><img src="diagrams/fb-glut.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used internally by _GLUT_ implementations instead of _GLFBDev_ interfaces.
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](glut-linux-framebuffer.png)
+![](screenshots/glut-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -318,13 +318,13 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 On **HiGFXback**, _SDL (Simple Directmedia Layer)_ interfaces running on _Linux Framebuffer_ graphics backend are provided by _**libSDL.so** library_.
 
-<p align="center"><img src="fb-sdl.png"></p>
+<p align="center"><img src="diagrams/fb-sdl.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used internally by _SDL_ instead of _GLFBDev_ interfaces.
 
 _**SDL-test**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](sdl-linux-framebuffer.png)
+![](screenshots/sdl-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -341,23 +341,23 @@ Web rendering can then rely on _WebKitGTK+_, a port of the WebKit browser engine
 
 On **HiGFXback**, _GTK+_ interfaces running on _Linux Framebuffer_ graphics backend are provided by _**libgtk-2.0.so** and **libgtkgl-2.0.so** libraries_.
 
-<p align="center"><img src="fb-gtk.png"></p>
+<p align="center"><img src="diagrams/fb-gtk.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used internally by _GTK+_ instead of _GLFBDev_ interfaces.
 
 _**gtk-demo**_, _**gtk-tests**_, _**gtkperf**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](gtk-linux-framebuffer.png)
+![](screenshots/gtk-linux-framebuffer.png)
 
 On **HiGFXback**, _WebKitGTK+_ interfaces for _GTK+_ with _Linux Framebuffer_ graphics backend are provided by _**libwebkitgtk-2.0.so** library_.
 
-<p align="center"><img src="fb-webkitgtk.png"></p>
+<p align="center"><img src="diagrams/fb-webkitgtk.png"></p>
 
 For _WebGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used instead of _GLFBDev_ interfaces.
 
 _**GtkLauncher**_ program is available as example.
 
-![](webkitgtk-linux-framebuffer.png)
+![](screenshots/webkitgtk-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -370,23 +370,23 @@ Web rendering can then rely on _QtWebKit_, a port of the WebKit browser engine f
 
 On **HiGFXback**, _Qt_ interfaces running on _Linux Framebuffer_ graphics backend are provided by _**libQtGui.so** and **libQtOpenGL.so** libraries_.
 
-<p align="center"><img src="fb-qt.png"></p>
+<p align="center"><img src="diagrams/fb-qt.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used internally by _Qt_ instead of _GLFBDev_ interfaces.
 
 _**qtdemo**_, _**qt-examples**_, _**qtperf**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](qt-linux-framebuffer.png)
+![](screenshots/qt-linux-framebuffer.png)
 
 On **HiGFXback**, _QtWebKit_ interfaces for _Qt_ with _Linux Framebuffer_ graphics backend are provided by _**libQtWebKit.so** library_.
 
-<p align="center"><img src="fb-qtwebkit.png"></p>
+<p align="center"><img src="diagrams/fb-qtwebkit.png"></p>
 
 For _WebGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used instead of _GLFBDev_ interfaces.
 
 _**QtTestBrowser**_ program is available as example.
 
-![](qtwebkit-linux-framebuffer.png)
+![](screenshots/qtwebkit-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -398,13 +398,13 @@ Graphical user interfaces can rely on _EFL_ (Enlightenment Foundation Libraries)
 
 On **HiGFXback**, _EFL_ with _Elementary_ interfaces running on _Linux Framebuffer_ graphics backend are provided by _**libelementary.so** library_.
 
-<p align="center"><img src="fb-efl.png"></p>
+<p align="center"><img src="diagrams/fb-efl.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for Linux Framebuffer_ interfaces can also be used internally by _EFL_ with _Elementary_ instead of _GLFBDev_ interfaces.
 
 _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](efl-elementary-linux-framebuffer.png)
+![](screenshots/efl-elementary-linux-framebuffer.png)
 
 [Back to Top](#contents)
 
@@ -414,38 +414,38 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 | | |
 --|--
-![](ffplay.png) | _**ffplay**_ multimedia player
+![](diagrams/ffplay.png) | _**ffplay**_ multimedia player
 
-![](ffplay-linux-framebuffer.png)
-
-| | |
---|--
-![](qemu.png) | _**qemu**_ machine emulator
-
-![](qemu-linux-framebuffer.png)
+![](screenshots/ffplay-linux-framebuffer.png)
 
 | | |
 --|--
-![](midori.png) | _**midori**_ web browser
+![](diagrams/qemu.png) | _**qemu**_ machine emulator
 
-![](midori-linux-framebuffer.png)
-
-| | |
---|--
-![](qupzilla.png) | _**qupzilla**_ web browser
-
-![](qupzilla-linux-framebuffer.png)
+![](screenshots/qemu-linux-framebuffer.png)
 
 | | |
 --|--
-![](billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+![](diagrams/midori.png) | _**midori**_ web browser
 
-![](billardgl-gtktetris-pinball-linux-framebuffer.png)
+![](screenshots/midori-linux-framebuffer.png)
 
 | | |
 --|--
-![](chocolate-doom.png) | _**chocolate-doom**_ game engine
+![](diagrams/qupzilla.png) | _**qupzilla**_ web browser
 
-![](chocolate-doom-linux-framebuffer.png)
+![](screenshots/qupzilla-linux-framebuffer.png)
+
+| | |
+--|--
+![](diagrams/billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+
+![](screenshots/billardgl-gtktetris-pinball-linux-framebuffer.png)
+
+| | |
+--|--
+![](diagrams/chocolate-doom.png) | _**chocolate-doom**_ game engine
+
+![](screenshots/chocolate-doom-linux-framebuffer.png)
 
 [Back to Top](#contents)

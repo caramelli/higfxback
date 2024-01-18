@@ -27,7 +27,7 @@ Components running on _KMS/DRM_ graphics backend just use the _DRM_ (Direct Rend
 
 If the current graphics backend used on **HiGFXback** is not _KMS/DRM_, switch on it with `startdrm` command.
 
-<p align="center"><img src="drm.png"></p>
+<p align="center"><img src="diagrams/drm.png"></p>
 
 Components running on _KMS/DRM_ graphics backend directly handle keyboard and mouse input events with the _event device_ input driver interface (`/dev/input/event0` and `/dev/input/event1`) available on **HiGFXback**.
 
@@ -42,7 +42,7 @@ Note that _event device_ input driver interface is also accessible through the _
 When starting on _KMS/DRM_ graphics backend, _**kmscon**_ terminal emulator is displayed.
 System informations about _KMS/DRM_ settings can be get with _**modetest**_.
 
-![](kmscon.png)
+![](screenshots/kmscon.png)
 
 [Back to Top](#contents)
 
@@ -57,7 +57,7 @@ $ modetest -s 23:1024x768
 $ modeset
 ```
 
-![](drm-tests-drm-howto.png)
+![](screenshots/drm-tests-drm-howto.png)
 
 [Back to Top](#contents)
 
@@ -67,7 +67,7 @@ $ modeset
 
 Programs are available for testing _event device_ input interfaces used by components running on _KMS/DRM_ graphics backend.
 
-![](evtest-libevdev-events.png)
+![](screenshots/evtest-libevdev-events.png)
 
 [Back to Top](#contents)
 
@@ -84,7 +84,7 @@ On **HiGFXback**, _Direct-to-Display WSI_ interfaces (Window System Integration 
 
 But depending on the platform, specific ICD can be used.
 
-<p align="center"><img src="drm-vulkan.png"></p>
+<p align="center"><img src="diagrams/drm-vulkan.png"></p>
 
 _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
@@ -95,7 +95,7 @@ $ vkcube2 -m khr -k 0:0:0
 $ yagears2-vk -w vk-d2d
 ```
 
-![](vulkan-kms-drm.png)
+![](screenshots/vulkan-kms-drm.png)
 
 [Back to Top](#contents)
 
@@ -117,7 +117,7 @@ On **HiGFXback**, _EGL for KMS/DRM_ interfaces are used with one of the followin
 
 But depending on the platform, specific implementation can be used.
 
-<p align="center"><img src="drm-egl.png"></p>
+<p align="center"><img src="diagrams/drm-egl.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
@@ -128,7 +128,7 @@ $ yagears -b egl-drm -e glesv1_cm
 $ yagears -b egl-drm -e glesv2
 ```
 
-![](egl-kms-drm.png)
+![](screenshots/egl-kms-drm.png)
 
 [Back to Top](#contents)
 
@@ -149,7 +149,7 @@ $ ffmpeg -loglevel quiet -re -i big_buck_bunny_480p_stereo.avi -s 854x480 -pix_f
 $ ffmpeg -loglevel quiet -loop 1 -i ffmpeg-logo.png -s 808:216 -pix_fmt bgr0 -f kmsdumb /dev/dri/card0
 ```
 
-![](ffmpeg-kms-drm.png)
+![](screenshots/ffmpeg-kms-drm.png)
 
 [Back to Top](#contents)
 
@@ -166,7 +166,7 @@ $ gst-launch-1.0 -q filesrc location=big_buck_bunny_480p_stereo.avi ! decodebin 
 $ gst-launch-1.0 -q filesrc location=gstreamer-logo.jpg ! decodebin ! videoconvert ! imagefreeze ! videobox autocrop=true ! kmssink
 ```
 
-![](gstreamer-1.0-kms-drm.png)
+![](screenshots/gstreamer-1.0-kms-drm.png)
 
 [Back to Top](#contents)
 
@@ -183,7 +183,7 @@ $ kmsi tux.jpg
 $ kmsi gnu.png
 ```
 
-![](kmsi.png)
+![](screenshots/kmsi.png)
 
 <a name="kmspdf"></a>
 
@@ -194,7 +194,7 @@ $ kmspdf -r poppler vulkan11-reference-guide.pdf
 $ kmspdf -r mupdf opengles20-reference-card.pdf
 ```
 
-![](kmspdf.png)
+![](screenshots/kmspdf.png)
 
 <a name="mpv"></a>
 
@@ -204,7 +204,7 @@ $ kmspdf -r mupdf opengles20-reference-card.pdf
 $ mpv -quiet -vo=drm 02_gran_dillama_1080p.mp4
 ```
 
-![](mpv-kms-drm.png)
+![](screenshots/mpv-kms-drm.png)
 
 [Back to Top](#contents)
 
@@ -214,7 +214,7 @@ $ mpv -quiet -vo=drm 02_gran_dillama_1080p.mp4
 
 On **HiGFXback**, _SDL (Simple Directmedia Layer)_ interfaces running on _KMS/DRM_ graphics backend are provided by _**libSDL2.so** library_.
 
-<p align="center"><img src="drm-sdl.png"></p>
+<p align="center"><img src="diagrams/drm-sdl.png"></p>
 
 _**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
@@ -227,6 +227,6 @@ $ /drm/share/SDL2/test/testvulkan
 $ yagears2-vk-gui -t sdl
 ```
 
-![](sdl2-kms-drm.png)
+![](screenshots/sdl2-kms-drm.png)
 
 [Back to Top](#contents)

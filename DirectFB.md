@@ -48,7 +48,7 @@ If the current graphics backend used on **HiGFXback** is not _DirectFB_, switch 
 
 But depending on the platform, it's possible to use specific graphics driver interfaces based on the _**libdirectfb.so** system module_ architecture. If available on the platform, hardware accelerated graphic rendering can also be achieved based on the _**libdirectfb.so** gfxdriver module_ architecture.
 
-<p align="center"><img src="dfb.png"></p>
+<p align="center"><img src="diagrams/dfb.png"></p>
 
 When starting on _DirectFB_ graphics backend with `startdfb` command, select one of the following input driver interface available on **HiGFXback** and used by _**libdirectfb.so** library_ for managing the keyboard:
 
@@ -69,7 +69,7 @@ But depending on the input peripheral, it's possible to use specific input drive
 When starting on _DirectFB_ graphics backend, _**dfbterm**_ terminal emulator is displayed.
 System informations about _DirectFB_ settings can be get with _**dfbinfo**_.
 
-![](dfbterm.png)
+![](screenshots/dfbterm.png)
 
 [Back to Top](#contents)
 
@@ -79,7 +79,7 @@ System informations about _DirectFB_ settings can be get with _**dfbinfo**_.
 
 Programs running on _DirectFB_ graphics backend are available as examples, tests or benchmarks.
 
-![](directfb-examples.png)
+![](screenshots/directfb-examples.png)
 
 [Back to Top](#contents)
 
@@ -89,15 +89,15 @@ Programs running on _DirectFB_ graphics backend are available as examples, tests
 
 On **HiGFXback**, _LiTE_ interfaces are provided by _**liblite.so** library_ and _ilixi_ interfaces are provided by _**libilixi.so** library_.
 
-<p align="center"><img src="lite-ilixi.png"></p>
+<p align="center"><img src="diagrams/lite-ilixi.png"></p>
 
 _**LiTE-examples**_ programs are available as examples.
 
-![](lite-examples.png)
+![](screenshots/lite-examples.png)
 
 _**ilixi-apps**_ programs are available as examples.
 
-![](ilixi-apps.png)
+![](screenshots/ilixi-apps.png)
 
 [Back to Top](#contents)
 
@@ -114,11 +114,11 @@ On **HiGFXback**, _DirectFB WSI_ interfaces (Window System Integration for _Dire
 
 But depending on the platform, specific ICD can be used.
 
-<p align="center"><img src="dfb-vulkan.png"></p>
+<p align="center"><img src="diagrams/dfb-vulkan.png"></p>
 
 _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-![](vulkan-directfb.png)
+![](screenshots/vulkan-directfb.png)
 
 [Back to Top](#contents)
 
@@ -144,11 +144,11 @@ On **HiGFXback**, _DirectFBGL_ interfaces (_OpenGL_ extension for _DirectFB_) ar
 
 But depending on the platform, specific implementation can be used.
 
-<p align="center"><img src="dfb-directfbgl.png"></p>
+<p align="center"><img src="diagrams/dfb-directfbgl.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](directfbgl.png)
+![](screenshots/directfbgl.png)
 
 [Back to Top](#contents)
 
@@ -163,11 +163,11 @@ On **HiGFXback**, _EGL for DirectFB_ interfaces are used with one of the followi
 
 But depending on the platform, specific implementation can be used.
 
-<p align="center"><img src="dfb-egl.png"></p>
+<p align="center"><img src="diagrams/dfb-egl.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](egl-directfb.png)
+![](screenshots/egl-directfb.png)
 
 [Back to Top](#contents)
 
@@ -181,11 +181,11 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 On **HiGFXback**, _Cairo_ interfaces for _DirectFB_ graphics backend are provided by _**libcairo.so** library_.
 
-<p align="center"><img src="dfb-cairo-directfb.png"></p>
+<p align="center"><img src="diagrams/dfb-cairo-directfb.png"></p>
 
 _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
-![](cairo-directfb.png)
+![](screenshots/cairo-directfb.png)
 
 [Back to Top](#contents)
 
@@ -195,11 +195,11 @@ _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
 On **HiGFXback**, _Evas_ interfaces for _DirectFB_ graphics backend are provided by _**libevas.so** library_.
 
-<p align="center"><img src="dfb-evas-directfb.png"></p>
+<p align="center"><img src="diagrams/dfb-evas-directfb.png"></p>
 
 _**expedite**_ program is available as examples, tests or benchmarks.
 
-![](evas-directfb.png)
+![](screenshots/evas-directfb.png)
 
 [Back to Top](#contents)
 
@@ -215,7 +215,7 @@ On **HiGFXback**, _FFmpeg_ interfaces for _DirectFB_ graphics backend are provid
 
 _**ffmpeg**_ program is available as example.
 
-![](ffmpeg-directfb.png)
+![](screenshots/ffmpeg-directfb.png)
 
 [Back to Top](#contents)
 
@@ -232,11 +232,11 @@ and rely on _**libgstdfbvideosink.so** plugin_ for output.
 
 _**gst-launch-0.10**_ program is available as example on _GStreamer 0.10_.
 
-![](gstreamer-0.10-directfb.png)
+![](screenshots/gstreamer-0.10-directfb.png)
 
 _**gst-launch-1.0**_ program is available as example on _GStreamer 1_.
 
-![](gstreamer-1.0-directfb.png)
+![](screenshots/gstreamer-1.0-directfb.png)
 
 [Back to Top](#contents)
 
@@ -248,7 +248,7 @@ On **HiGFXback**, _Xine_ interfaces for _DirectFB_ graphics backend are provided
 
 _**xine-ui**_ program is available as example.
 
-![](xine-directfb.png)
+![](screenshots/xine-directfb.png)
 
 [Back to Top](#contents)
 
@@ -260,11 +260,11 @@ On **HiGFXback**, _DirectFBImageProvider_ and _DirectFBVideoProvider_ interfaces
 
 _**df_image_sample**_ program is available as example.
 
-![](directfbimageprovider.png)
+![](screenshots/directfbimageprovider.png)
 
 _**df_video_sample**_ program is available as example.
 
-![](directfbvideoprovider.png)
+![](screenshots/directfbvideoprovider.png)
 
 [Back to Top](#contents)
 
@@ -276,25 +276,25 @@ _**df_video_sample**_ program is available as example.
 
 ### DFBView
 
-![](dfbview.png)
+![](screenshots/dfbview.png)
 
 <a name="projektor"></a>
 
 ### Projektor
 
-![](projektor.png)
+![](screenshots/projektor.png)
 
 <a name="netsurf-links"></a>
 
 ### NetSurf, Links
 
-![](netsurf-links-directfb.png)
+![](screenshots/netsurf-links-directfb.png)
 
 <a name="dfbsee-ilixi_player-mplayer"></a>
 
 ### DFBSee, ilixi_player, MPlayer
 
-![](dfbsee-ilixi_player-mplayer-directfb.png)
+![](screenshots/dfbsee-ilixi_player-mplayer-directfb.png)
 
 [Back to Top](#contents)
 
@@ -311,13 +311,13 @@ On **HiGFXback**, _GLUT (openGL Utility Toolkit)_ interfaces running on _DirectF
 * _MesaGLUT_ with _**libglut.so `->` libmesaglut.so** library_
 * _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
 
-<p align="center"><img src="dfb-glut.png"></p>
+<p align="center"><img src="diagrams/dfb-glut.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _GLUT_ implementations instead of _DirectFBGL_ interfaces.
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](glut-directfb.png)
+![](screenshots/glut-directfb.png)
 
 [Back to Top](#contents)
 
@@ -330,17 +330,17 @@ On **HiGFXback**, _SDL (Simple Directmedia Layer)_ interfaces running on _Direct
 * _**libSDL.so** library_ on _SDL 1_
 * _**libSDL2.so** library_ on _SDL 2_
 
-<p align="center"><img src="dfb-sdl.png"></p>
+<p align="center"><img src="diagrams/dfb-sdl.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _SDL_ instead of _DirectFBGL_ interfaces.
 
 _**SDL-test**_ and _**yagears**_ programs are available as examples, tests or benchmarks on _SDL 1_.
 
-![](sdl-directfb.png)
+![](screenshots/sdl-directfb.png)
 
 _**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or benchmarks on _SDL 2_.
 
-![](sdl2-directfb.png)
+![](screenshots/sdl2-directfb.png)
 
 [Back to Top](#contents)
 
@@ -360,26 +360,26 @@ On **HiGFXback**, _GTK+_ interfaces running on _DirectFB_ graphics backend are p
 * _**libgtk-2.0.so**, **libgtkgl-2.0.so** libraries_ on _GTK+ 2_
 * _**libgtk-3.0.so**, **libgtkgl-3.0.so** libraries_ on _GTK+ 3_
 
-<p align="center"><img src="dfb-gtk.png"></p>
+<p align="center"><img src="diagrams/dfb-gtk.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _GTK+_ instead of _DirectFBGL_ interfaces.
 
 _**gtk-demo**_, _**gtk-tests**_, _**gtkperf**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](gtk-directfb.png)
+![](screenshots/gtk-directfb.png)
 
 On **HiGFXback**, _WebKitGTK+_ interfaces for _GTK+_ with _DirectFB_ graphics backend are provided by:
 
 * _**libwebkitgtk-2.0.so** library_ on _GTK+ 2_
 * _**libwebkitgtk-3.0.so** library_ on _GTK+ 3_
 
-<p align="center"><img src="dfb-webkitgtk.png"></p>
+<p align="center"><img src="diagrams/dfb-webkitgtk.png"></p>
 
 For _WebGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used instead of _DirectFBGL_ interfaces.
 
 _**GtkLauncher**_ program is available as example.
 
-![](webkitgtk-directfb.png)
+![](screenshots/webkitgtk-directfb.png)
 
 [Back to Top](#contents)
 
@@ -395,26 +395,26 @@ On **HiGFXback**, _Qt_ interfaces running on _DirectFB_ graphics backend are pro
 * _**libQtGui.so** and **libQtOpenGL.so** libraries_ on _Qt 4_
 * _**libQt5Gui.so** and **libQt5OpenGL.so** libraries_ on _Qt 5_
 
-<p align="center"><img src="dfb-qt.png"></p>
+<p align="center"><img src="diagrams/dfb-qt.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _Qt_ instead of _DirectFBGL_ interfaces.
 
 _**qtdemo**_, _**qt-examples**_, _**qtperf**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](qt-directfb.png)
+![](screenshots/qt-directfb.png)
 
 On **HiGFXback**, _QtWebKit_ interfaces for _Qt_ with _DirectFB_ graphics backend are provided by:
 
 * _**libQtWebKit.so** library_ on _Qt 4_
 * _**libQt5WebKit.so** library_ on _Qt 5_
 
-<p align="center"><img src="dfb-qtwebkit.png"></p>
+<p align="center"><img src="diagrams/dfb-qtwebkit.png"></p>
 
 For _WebGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used instead of _DirectFBGL_ interfaces.
 
 _**QtTestBrowser**_ program is available as example.
 
-![](qtwebkit-directfb.png)
+![](screenshots/qtwebkit-directfb.png)
 
 [Back to Top](#contents)
 
@@ -426,7 +426,7 @@ Graphical user interfaces can rely on _EFL_ (Enlightenment Foundation Libraries)
 
 On **HiGFXback**, _EFL_ with _Elementary_ interfaces running on _DirectFB_ graphics backend are provided by _**libelementary.so** library_.
 
-<p align="center"><img src="dfb-efl.png"></p>
+<p align="center"><img src="diagrams/dfb-efl.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _EFL_ with _Elementary_ instead of _DirectFBGL_ interfaces.
 
@@ -442,13 +442,13 @@ Graphical user interfaces can rely on _FLTK_ (Fast Light Tool Kit) using the por
 
 On **HiGFXback**, _FLTK_ interfaces running on _DirectFB_ graphics backend are provided by _**libfltk.so** and **libfltk_gl.so** libraries_.
 
-<p align="center"><img src="dfb-fltk.png"></p>
+<p align="center"><img src="diagrams/dfb-fltk.png"></p>
 
 For _OpenGL_ rendering, note that _EGL for DirectFB_ interfaces can also be used internally by _FLTK_ instead of _DirectFBGL_ interfaces.
 
 _**fltk-test**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](fltk-directfb.png)
+![](screenshots/fltk-directfb.png)
 
 [Back to Top](#contents)
 
@@ -458,38 +458,38 @@ _**fltk-test**_ and _**yagears**_ programs are available as examples, tests or b
 
 | | |
 --|--
-![](ffplay.png) | _**ffplay**_ multimedia player
+![](diagrams/ffplay.png) | _**ffplay**_ multimedia player
 
-![](ffplay-directfb.png)
-
-| | |
---|--
-![](qemu.png) | _**qemu**_ machine emulator
-
-![](qemu-directfb.png)
+![](screenshots/ffplay-directfb.png)
 
 | | |
 --|--
-![](midori.png) | _**midori**_ web browser
+![](diagrams/qemu.png) | _**qemu**_ machine emulator
 
-![](midori-directfb.png)
-
-| | |
---|--
-![](qupzilla.png) | _**qupzilla**_ web browser
-
-![](qupzilla-directfb.png)
+![](screenshots/qemu-directfb.png)
 
 | | |
 --|--
-![](billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+![](diagrams/midori.png) | _**midori**_ web browser
 
-![](billardgl-gtktetris-pinball-directfb.png)
+![](screenshots/midori-directfb.png)
 
 | | |
 --|--
-![](chocolate-doom.png) | _**chocolate-doom**_ game engine
+![](diagrams/qupzilla.png) | _**qupzilla**_ web browser
 
-![](chocolate-doom-directfb.png)
+![](screenshots/qupzilla-directfb.png)
+
+| | |
+--|--
+![](diagrams/billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+
+![](screenshots/billardgl-gtktetris-pinball-directfb.png)
+
+| | |
+--|--
+![](diagrams/chocolate-doom.png) | _**chocolate-doom**_ game engine
+
+![](screenshots/chocolate-doom-directfb.png)
 
 [Back to Top](#contents)

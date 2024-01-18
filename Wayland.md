@@ -43,7 +43,7 @@ If the current graphics backend used on **HiGFXback** is not _Wayland_, switch o
 
 But depending on the platform, it's possible to use specific graphics driver interfaces based on the _**weston** backend module_ architecture.
 
-<p align="center"><img src="wl.png"></p>
+<p align="center"><img src="diagrams/wl.png"></p>
 
 Keyboard and mouse are managed by _**weston**_ with _**libinput.so** library_ which provides a generic input abstraction layer of the _event device_ input driver interface (`/dev/input/event0` and `/dev/input/event1`) available on **HiGFXback**.
 
@@ -54,7 +54,7 @@ Keyboard and mouse are managed by _**weston**_ with _**libinput.so** library_ wh
 When starting on _Wayland_ graphics backend, _**weston-terminal**_ terminal emulator is displayed.
 System informations about _Wayland_ settings can be get with _**weston-info**_.
 
-![](weston-terminal.png)
+![](screenshots/weston-terminal.png)
 
 [Back to Top](#contents)
 
@@ -64,7 +64,7 @@ System informations about _Wayland_ settings can be get with _**weston-info**_.
 
 Programs running on _Wayland_ graphics backend are available as examples, tests or benchmarks.
 
-![](weston-clients.png)
+![](screenshots/weston-clients.png)
 
 [Back to Top](#contents)
 
@@ -81,11 +81,11 @@ On **HiGFXback**, _Wayland WSI_ interfaces (Window System Integration for _Wayla
 
 But depending on the platform, specific ICD can be used.
 
-<p align="center"><img src="wl-vulkan.png"></p>
+<p align="center"><img src="diagrams/wl-vulkan.png"></p>
 
 _**Vulkan-Tools**_, _**Vulkan-Examples**_, _**vkcube2**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-![](vulkan-wayland.png)
+![](screenshots/vulkan-wayland.png)
 
 [Back to Top](#contents)
 
@@ -107,11 +107,11 @@ On **HiGFXback**, _EGL for Wayland_ interfaces are used with one of the followin
 
 But depending on the platform, specific implementation can be used.
 
-<p align="center"><img src="wl-egl.png"></p>
+<p align="center"><img src="diagrams/wl-egl.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](egl-wayland.png)
+![](screenshots/egl-wayland.png)
 
 [Back to Top](#contents)
 
@@ -125,11 +125,11 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 On **HiGFXback**, _Cairo_ interfaces for _Wayland_ graphics backend are provided by _**libcairo.so** library_.
 
-<p align="center"><img src="wl-cairo-wayland-shm.png"></p>
+<p align="center"><img src="diagrams/wl-cairo-wayland-shm.png"></p>
 
 _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
-![](cairo-wayland.png)
+![](screenshots/cairo-wayland.png)
 
 [Back to Top](#contents)
 
@@ -139,11 +139,11 @@ _**cairo-demos**_ programs are available as examples, tests or benchmarks.
 
 On **HiGFXback**, _Evas_ interfaces for _Wayland_ graphics backend are provided by _**libevas.so** library_.
 
-<p align="center"><img src="wl-evas-wayland-shm.png"></p>
+<p align="center"><img src="diagrams/wl-evas-wayland-shm.png"></p>
 
 _**expedite**_ program is available as examples, tests or benchmarks.
 
-![](evas-wayland.png)
+![](screenshots/evas-wayland.png)
 
 [Back to Top](#contents)
 
@@ -159,7 +159,7 @@ On **HiGFXback**, _FFmpeg_ interfaces for _Wayland_ graphics backend are provide
 
 _**ffmpeg**_ program is available as example.
 
-![](ffmpeg-wayland.png)
+![](screenshots/ffmpeg-wayland.png)
 
 [Back to Top](#contents)
 
@@ -171,7 +171,7 @@ On **HiGFXback**, _GStreamer_ interfaces for _Wayland_ graphics backend are prov
 
 _**gst-launch-1.0**_ program is available as example.
 
-![](gstreamer-1.0-wayland.png)
+![](screenshots/gstreamer-1.0-wayland.png)
 
 [Back to Top](#contents)
 
@@ -183,25 +183,25 @@ _**gst-launch-1.0**_ program is available as example.
 
 ### weston-image
 
-![](weston-image.png)
+![](screenshots/weston-image.png)
 
 <a name="weston-view"></a>
 
 ### weston-view
 
-![](weston-view.png)
+![](screenshots/weston-view.png)
 
 <a name="netsurf"></a>
 
 ### NetSurf
 
-![](netsurf-wayland.png)
+![](screenshots/netsurf-wayland.png)
 
 <a name="mpv"></a>
 
 ### mpv
 
-![](mpv-wayland.png)
+![](screenshots/mpv-wayland.png)
 
 [Back to Top](#contents)
 
@@ -218,11 +218,11 @@ On **HiGFXback**, _GLUT (openGL Utility Toolkit)_ interfaces running on _Wayland
 * _FreeGLUT_ with _**libglut.so `->` libfreeglut.so** library_
 * _TinyGLUT_ with _**libglut.so `->` libtinyglut.so** library_
 
-<p align="center"><img src="wl-glut.png"></p>
+<p align="center"><img src="diagrams/wl-glut.png"></p>
 
 _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](glut-wayland.png)
+![](screenshots/glut-wayland.png)
 
 [Back to Top](#contents)
 
@@ -232,11 +232,11 @@ _**mesa-demos**_ and _**yagears**_ programs are available as examples, tests or 
 
 On **HiGFXback**, _SDL (Simple Directmedia Layer)_ interfaces running on _Wayland_ graphics backend are provided by _**libSDL2.so** library_.
 
-<p align="center"><img src="wl-sdl.png"></p>
+<p align="center"><img src="diagrams/wl-sdl.png"></p>
 
 _**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-![](sdl2-wayland.png)
+![](screenshots/sdl2-wayland.png)
 
 [Back to Top](#contents)
 
@@ -246,11 +246,11 @@ _**SDL2-test**_ and _**yagears2**_ programs are available as examples, tests or 
 
 On **HiGFXback**, _GLFW (Graphics Library FrameWork)_ interfaces running on _Wayland_ graphics backend are provided by _**libglfw.so** library_.
 
-<p align="center"><img src="wl-glfw.png"></p>
+<p align="center"><img src="diagrams/wl-glfw.png"></p>
 
 _**GLFW-examples**_ and _**yagears2**_ programs are available as examples, tests or benchmarks.
 
-![](glfw-wayland.png)
+![](screenshots/glfw-wayland.png)
 
 [Back to Top](#contents)
 
@@ -267,19 +267,19 @@ Web rendering can then rely on _WebKitGTK+_, a port of the WebKit browser engine
 
 On **HiGFXback**, _GTK+_ interfaces running on _Wayland_ graphics backend are provided by _**libgtk-3.0.so** library_ (which also integrates OpenGL rendering interfaces).
 
-<p align="center"><img src="wl-gtk.png"></p>
+<p align="center"><img src="diagrams/wl-gtk.png"></p>
 
 _**gtk-demo**_, _**gtk-tests**_, _**gtkperf**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](gtk-wayland.png)
+![](screenshots/gtk-wayland.png)
 
 On **HiGFXback**, _WebKitGTK+_ interfaces for _GTK+_ with _Wayland_ graphics backend are provided by _**libwebkitgtk-3.0.so** library_.
 
-<p align="center"><img src="wl-webkitgtk.png"></p>
+<p align="center"><img src="diagrams/wl-webkitgtk.png"></p>
 
 _**GtkLauncher**_ program is available as example.
 
-![](webkitgtk-wayland.png)
+![](screenshots/webkitgtk-wayland.png)
 
 [Back to Top](#contents)
 
@@ -292,19 +292,19 @@ Web rendering can then rely on _QtWebKit_, a port of the WebKit browser engine f
 
 On **HiGFXback**, _Qt_ interfaces running on _Wayland_ graphics backend are provided by _**libQt5Gui.so** and **libQt5OpenGL.so** libraries_.
 
-<p align="center"><img src="wl-qt.png"></p>
+<p align="center"><img src="diagrams/wl-qt.png"></p>
 
 _**qtdemo**_, _**qt-examples**_, _**qtperf**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](qt-wayland.png)
+![](screenshots/qt-wayland.png)
 
 On **HiGFXback**, _QtWebKit_ interfaces for _Qt_ with _Wayland_ graphics backend are provided by _**libQt5WebKit.so** library_.
 
-<p align="center"><img src="wl-qtwebkit.png"></p>
+<p align="center"><img src="diagrams/wl-qtwebkit.png"></p>
 
 _**QtTestBrowser**_ program is available as example.
 
-![](qtwebkit-wayland.png)
+![](screenshots/qtwebkit-wayland.png)
 
 [Back to Top](#contents)
 
@@ -316,11 +316,11 @@ Graphical user interfaces can rely on _EFL_ (Enlightenment Foundation Libraries)
 
 On **HiGFXback**, _EFL_ with _Elementary_ interfaces running on _Wayland_ graphics backend are provided by _**libelementary.so** library_.
 
-<p align="center"><img src="wl-efl.png"></p>
+<p align="center"><img src="diagrams/wl-efl.png"></p>
 
 _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are available as examples, tests or benchmarks.
 
-![](efl-elementary-wayland.png)
+![](screenshots/efl-elementary-wayland.png)
 
 [Back to Top](#contents)
 
@@ -330,38 +330,38 @@ _**elementary-test**_, _**elementary-examples**_ and _**yagears**_ programs are 
 
 | | |
 --|--
-![](ffplay.png) | _**ffplay**_ multimedia player
+![](diagrams/ffplay.png) | _**ffplay**_ multimedia player
 
-![](ffplay-wayland.png)
-
-| | |
---|--
-![](qemu.png) | _**qemu**_ machine emulator
-
-![](qemu-wayland.png)
+![](screenshots/ffplay-wayland.png)
 
 | | |
 --|--
-![](midori.png) | _**midori**_ web browser
+![](diagrams/qemu.png) | _**qemu**_ machine emulator
 
-![](midori-wayland.png)
-
-| | |
---|--
-![](qupzilla.png) | _**qupzilla**_ web browser
-
-![](qupzilla-wayland.png)
+![](screenshots/qemu-wayland.png)
 
 | | |
 --|--
-![](billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+![](diagrams/midori.png) | _**midori**_ web browser
 
-![](billardgl-gtktetris-pinball-wayland.png)
+![](screenshots/midori-wayland.png)
 
 | | |
 --|--
-![](chocolate-doom.png) | _**chocolate-doom**_ game engine
+![](diagrams/qupzilla.png) | _**qupzilla**_ web browser
 
-![](chocolate-doom-wayland.png)
+![](screenshots/qupzilla-wayland.png)
+
+| | |
+--|--
+![](diagrams/billardgl-gtktetris-pinball.png) | _**BillardGL, gtktetris, pinball**_ games
+
+![](screenshots/billardgl-gtktetris-pinball-wayland.png)
+
+| | |
+--|--
+![](diagrams/chocolate-doom.png) | _**chocolate-doom**_ game engine
+
+![](screenshots/chocolate-doom-wayland.png)
 
 [Back to Top](#contents)
