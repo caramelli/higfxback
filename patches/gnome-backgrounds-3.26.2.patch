@@ -1,0 +1,85 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15)
+aclocal -I m4; autoconf; automake -a -c
+./configure --disable-nls --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Bokeh_Tails.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Chmiri.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Dark_Ivy.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Fabric.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Flowerbed.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Godafoss_Iceland.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Icescape.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Mirror.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Road.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Sandstone.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Stones.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Terraform-green.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Waterfalls.jpg $DESTDIR/share/backgrounds/gnome
+install -m 644 backgrounds/Waves.jpg $DESTDIR/share/backgrounds/gnome
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gnome-backgrounds-build.pc << EOF
+Name: gnome-backgrounds
+Version: 3.26.2
+Description: GNOME background images
+Requires: $REQUIRES
+
+exec=\\
+/share/backgrounds/gnome/Bokeh_Tails.jpg \\
+/share/backgrounds/gnome/Chmiri.jpg \\
+/share/backgrounds/gnome/Dark_Ivy.jpg \\
+/share/backgrounds/gnome/Fabric.jpg \\
+/share/backgrounds/gnome/Flowerbed.jpg \\
+/share/backgrounds/gnome/Godafoss_Iceland.jpg \\
+/share/backgrounds/gnome/Icescape.jpg \\
+/share/backgrounds/gnome/Mirror.jpg \\
+/share/backgrounds/gnome/Road.jpg \\
+/share/backgrounds/gnome/Sandstone.jpg \\
+/share/backgrounds/gnome/Stones.jpg \\
+/share/backgrounds/gnome/Terraform-green.jpg \\
+/share/backgrounds/gnome/Waterfalls.jpg \\
+/share/backgrounds/gnome/Waves.jpg
+EOF
+
+exit
+--- gnome-backgrounds-3.26.2.orig/backgrounds/Makefile.am
++++ gnome-backgrounds-3.26.2/backgrounds/Makefile.am
+@@ -26,9 +26,14 @@
+ metadatadir = $(datadir)/gnome-background-properties
+ metadata_DATA = $(metadata_in_files:.xml.in=.xml)
+ 
++if USE_NLS
+ %.xml: %.xml.in Makefile
+ 	$(AM_V_GEN) GETTEXTDATADIRS=$(top_srcdir) \
+                     $(MSGFMT) --xml --template $< -d $(top_srcdir)/po -o $@
++else
++%.xml: %.xml.in Makefile
++	cp $< $@
++endif
+ 
+ noinst_DATA = gnome-backgrounds.xml.in adwaita.xml.in
+ CLEANFILES = gnome-backgrounds.xml gnome-backgrounds.xml.in adwaita.xml adwaita.xml.in adwaita-timed.xml
+--- gnome-backgrounds-3.26.2.orig/configure.ac
++++ gnome-backgrounds-3.26.2/configure.ac
+@@ -16,7 +16,7 @@
+ 
+ AM_GNU_GETTEXT_VERSION([0.19.8])
+ AM_GNU_GETTEXT([external])
+-
++AM_CONDITIONAL([USE_NLS], [test "x${USE_NLS}" = "xyes"])
+ 
+ AC_CONFIG_FILES([
+ Makefile

@@ -67,3 +67,34 @@ exec=\\
 EOF
 
 exit
+--- cairo-1.10.2.orig/src/cairo-image-surface.c
++++ cairo-1.10.2/src/cairo-image-surface.c
+@@ -297,7 +297,7 @@
+ 	ret = PIXMAN_a8;
+ 	break;
+     case CAIRO_FORMAT_RGB24:
+-	ret = PIXMAN_x8r8g8b8;
++	ret = PIXMAN_r8g8b8;
+ 	break;
+     case CAIRO_FORMAT_RGB16_565:
+ 	ret = PIXMAN_r5g6b5;
+@@ -684,7 +684,7 @@
+     case CAIRO_FORMAT_ARGB32:
+ 	return 32;
+     case CAIRO_FORMAT_RGB24:
+-	return 32;
++	return 24;
+     case CAIRO_FORMAT_RGB16_565:
+ 	return 16;
+     case CAIRO_FORMAT_A8:
+--- cairo-1.10.2.orig/src/cairo-png.c
++++ cairo-1.10.2/src/cairo-png.c
+@@ -628,7 +628,7 @@
+ 	    break;
+ 
+ 	case PNG_COLOR_TYPE_RGB:
+-	    format = CAIRO_FORMAT_RGB24;
++	    format = CAIRO_FORMAT_ARGB32;
+ 	    png_set_read_user_transform_fn (png, convert_bytes_to_data);
+ 	    break;
+     }

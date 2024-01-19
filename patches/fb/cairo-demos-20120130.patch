@@ -1,0 +1,566 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cairo-build gdk-pixbuf-build gnome-backgrounds-build make-build"
+
+if ! PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# build
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib DEFINES=-DBACKGROUNDDIR="\\\"/share/backgrounds\\\" -DDEMOSDATADIR=\\\"/fb/share/cairo-demos\\\"" make
+
+# install
+install -d $DESTDIR/fb/bin
+install chart-demo $DESTDIR/fb/bin
+install fish-demo $DESTDIR/fb/bin
+install flowers-demo $DESTDIR/fb/bin
+install gears-demo $DESTDIR/fb/bin
+install gradient-demo $DESTDIR/fb/bin
+install slideshow-demo $DESTDIR/fb/bin
+install spinner-demo $DESTDIR/fb/bin
+install spiral-demo $DESTDIR/fb/bin
+install tiger-demo $DESTDIR/fb/bin
+install -d $DESTDIR/fb/share/cairo-demos
+install -m 644 fishbg.png $DESTDIR/fb/share/cairo-demos
+install -m 644 fishstrip.png $DESTDIR/fb/share/cairo-demos
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/cairo-demos-build.pc << EOF
+Name: cairo-demos
+Version: 20120130
+Description: A collection of Cairo demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/chart-demo \\
+/fb/bin/fish-demo \\
+/fb/bin/flowers-demo \\
+/fb/bin/gears-demo \\
+/fb/bin/gradient-demo \\
+/fb/bin/slideshow-demo \\
+/fb/bin/spinner-demo \\
+/fb/bin/spiral-demo \\
+/fb/bin/tiger-demo \\
+/fb/share/cairo-demos/fishbg.png \\
+/fb/share/cairo-demos/fishstrip.png
+EOF
+
+exit
+--- cairo-demos-20120130.orig/Makefile
++++ cairo-demos-20120130/Makefile
+@@ -1,6 +1,13 @@
+-SOURCES:=demo.c xlib.c ximage.c
+-REQUIRES:=cairo-xlib xext gdk-pixbuf-2.0
+-DEFINES:=-DHAVE_XLIB=1 -DHAVE_XIMAGE=1
++SOURCES:=demo.c
++REQUIRES:=cairo gdk-pixbuf-2.0
++
++FBDEV:=1
++ifneq ($(FBDEV),0)
++DEFINES+=-DHAVE_FBDEV=1
++SOURCES+=fbdev.c
++else
++DEFINES+=-DHAVE_FBDEV=0
++endif
+ 
+ DRM:=0
+ ifneq ($(DRM),0)
+@@ -11,6 +18,15 @@
+ DEFINES+=-DHAVE_DRM=0
+ endif
+ 
++XLIB:=$(shell pkg-config --exists cairo-xlib && echo 1 || echo 0)
++ifneq ($(XLIB),0)
++DEFINES+=-DHAVE_XLIB=1 -DHAVE_XIMAGE=1
++SOURCES+=xlib.c ximage.c
++REQUIRES+=cairo-xlib xext
++else
++DEFINES+=-DHAVE_XLIB=0 -DHAVE_XIMAGE=0
++endif
++
+ XCB:=$(shell pkg-config --exists cairo-xcb && echo 1 || echo 0)
+ ifneq ($(XCB),0)
+ DEFINES+=-DHAVE_XCB=1
+@@ -49,27 +65,27 @@
+ LIBS:=$(shell pkg-config --libs $(REQUIRES))
+ 
+ spinner-demo: spinner-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ spiral-demo: spiral-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ slideshow-demo: slideshow-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ slideshow-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ slideshow-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ poppler-demo: poppler-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ poppler-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ poppler-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ tiger-demo: tiger-demo.c $(SOURCES) demo.h Makefile tiger.inc
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ tiger-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ tiger-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ fish-demo: fish-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ fish2-demo: fish2-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish2-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish2-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ flowers-demo: flowers-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ flowers-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ flowers-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ gears-demo: gears-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ gears-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ gears-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ gradient-demo: gradient-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ gradient-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ gradient-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ chart-demo: chart-demo.c $(SOURCES) demo.h Makefile
+-	$(CC) $(DEFINES) $(CFLAGS) -o $@ chart-demo.c $(SOURCES) $(LIBS)
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ chart-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
+ clean:
+ 	rm -f *-demo
+ 
+--- cairo-demos-20120130.orig/chart-demo.c
++++ cairo-demos-20120130/chart-demo.c
+@@ -243,7 +243,7 @@
+ 		for (n = 0; n < 5; n++)
+ 			chart_update(&c[n]);
+ 
+-		if (benchmark < 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20120130.orig/demo.c
++++ cairo-demos-20120130/demo.c
+@@ -52,12 +52,14 @@
+ {
+ 	if (strcmp (str, "none") == 0)
+ 		return CAIRO_ANTIALIAS_NONE;
++#if CAIRO_VERSION > CAIRO_VERSION_ENCODE(1,11,3)
+ 	else if (strcmp (str, "fast") == 0)
+ 		return CAIRO_ANTIALIAS_FAST;
+ 	else if (strcmp (str, "good") == 0)
+ 		return CAIRO_ANTIALIAS_GOOD;
+ 	else if (strcmp (str, "best") == 0)
+ 		return CAIRO_ANTIALIAS_BEST;
++#endif
+ 	else
+ 		return CAIRO_ANTIALIAS_DEFAULT;
+ }
+@@ -85,6 +87,7 @@
+     struct device *device = 0;
+     enum {
+ 	AUTO,
++	FBDEV,
+ 	XLIB,
+ 	XIMAGE,
+ 	XCB,
+@@ -95,7 +98,9 @@
+     int n;
+ 
+     for (n = 1; n < argc; n++) {
+-	if (strcmp (argv[n], "--xlib") == 0) {
++	if (strcmp (argv[n], "--fbdev") == 0) {
++	    backend = FBDEV;
++	} else if (strcmp (argv[n], "--xlib") == 0) {
+ 	    backend = XLIB;
+ 	} else if (strcmp (argv[n], "--xcb") == 0) {
+ 	    backend = XCB;
+@@ -111,6 +116,8 @@
+     }
+ 
+     if (backend == AUTO) {
++	if (device == 0 && HAVE_FBDEV)
++	    device = fbdev_open (argc, argv);
+ 	if (device == 0 && HAVE_DRM)
+ 	    device = drm_open (argc, argv);
+ 	if (device == 0 && HAVE_XCB)
+@@ -125,6 +132,9 @@
+ 	    device = ximage_open (argc, argv);
+     } else switch (backend) {
+     case AUTO:
++    case FBDEV:
++	device = fbdev_open (argc, argv);
++	break;
+     case XLIB:
+ 	device = xlib_open (argc, argv);
+ 	break;
+@@ -141,9 +151,7 @@
+ 	device = cogl_open (argc, argv);
+ 	break;
+     case DRM:
+-#if HAVE_DRM
+ 	device = drm_open (argc, argv);
+-#endif
+ 	break;
+     }
+ 
+@@ -152,7 +160,10 @@
+ 	exit(1);
+     }
+ 
+-    printf("Using backend \"%s\"\n", device->name);
++    if (!getenv("CAIRO_DEMOS_QUIET")) {
++	printf("Using backend \"%s\"\n", device->name);
++    }
++
+     return device;
+ }
+ 
+@@ -200,7 +211,7 @@
+ 				q[3] = p[2];
+ #endif
+ 				p += 3;
+-				q += 4;
++				q += 3;
+ 			}
+ 		} else {
+ 			guchar *end = p + 4 * width;
+--- cairo-demos-20120130.orig/demo.h
++++ cairo-demos-20120130/demo.h
+@@ -78,6 +78,12 @@
+ static inline struct device *drm_open (int argc, char **argv) { return 0; }
+ #endif
+ 
++#if HAVE_FBDEV
++struct device *fbdev_open (int argc, char **argv);
++#else
++static inline struct device *fbdev_open (int argc, char **argv) { return 0; }
++#endif
++
+ cairo_surface_t *
+ _cairo_image_surface_create_from_pixbuf(const GdkPixbuf *pixbuf);
+ 
+--- cairo-demos-20120130.orig/fbdev.c
++++ cairo-demos-20120130/fbdev.c
+@@ -0,0 +1,110 @@
++#include <cairo.h>
++
++#include "demo.h"
++
++#include <fcntl.h>
++#include <stdlib.h>
++#include <string.h>
++#include <linux/fb.h>
++#include <sys/ioctl.h>
++#include <sys/mman.h>
++
++struct fbdev_device {
++    struct device base;
++    struct framebuffer fb;
++
++    int double_buffered;
++};
++
++static void
++destroy (struct framebuffer *fb)
++{
++}
++
++static void
++show (struct framebuffer *fb)
++{
++    struct fbdev_device *device = (struct fbdev_device *) fb->device;
++    cairo_t *cr;
++
++    if (device->double_buffered) {
++        cr = cairo_create (device->base.scanout);
++        cairo_set_source_surface (cr, fb->surface, 0, 0);
++        cairo_paint (cr);
++        cairo_destroy (cr);
++    }
++}
++
++static struct framebuffer *
++get_fb (struct device *abstract_device)
++{
++    struct fbdev_device *device = (struct fbdev_device *) abstract_device;
++    return &device->fb;
++}
++
++struct device *
++fbdev_open (int argc, char **argv)
++{
++    struct fbdev_device *device;
++    int fd;
++    struct fb_var_screeninfo info;
++    unsigned char *data;
++    cairo_format_t format;
++    int i, x = 0, y = 0;
++
++    device = malloc(sizeof (struct fbdev_device));
++    device->base.name = "fbdev";
++    device->base.get_framebuffer = get_fb;
++
++    fd = open("/dev/fb0", O_RDWR);
++    ioctl (fd, FBIOGET_VSCREENINFO, &info);
++
++    device->base.width = info.xres;
++    device->base.height = info.yres;
++    device_get_size (argc, argv, &device->base.width, &device->base.height);
++
++    device->double_buffered = 1;
++    for (i = 1; i < argc; i++) {
++        if (strncmp (argv[i], "--position=", 11) == 0) {
++            sscanf (argv[i]+11, "%dx%d", &x, &y);
++        } else if (strcmp (argv[i], "--position") == 0) {
++            if (i + 1 < argc) sscanf (argv[++i], "%dx%d", &x, &y);
++        } else if (strcmp (argv[i], "--single") == 0) {
++            device->double_buffered = 0;
++        }
++    }
++
++    data = mmap (NULL,
++                 info.xres * info.yres * info.bits_per_pixel / 8,
++                 PROT_WRITE,
++                 MAP_SHARED,
++                 fd,
++                 0);
++
++    data = data + y * info.xres * info.bits_per_pixel / 8 + x * info.bits_per_pixel / 8;
++
++    if (info.bits_per_pixel == 24)
++        format = CAIRO_FORMAT_RGB24;
++    else
++        format = CAIRO_FORMAT_ARGB32;
++
++    device->base.scanout = cairo_image_surface_create_for_data (data,
++                                                                format,
++                                                                device->base.width,
++                                                                device->base.height,
++                                                                info.xres * info.bits_per_pixel / 8);
++
++    device->fb.device = &device->base;
++    if (device->double_buffered) {
++        device->fb.surface = cairo_surface_create_similar (device->base.scanout,
++                                                           CAIRO_CONTENT_COLOR,
++                                                           device->base.width,
++                                                           device->base.height);
++    } else {
++        device->fb.surface = cairo_surface_reference (device->base.scanout);
++    }
++    device->fb.show = show;
++    device->fb.destroy = destroy;
++
++    return &device->base;
++}
+--- cairo-demos-20120130.orig/fish-demo.c
++++ cairo-demos-20120130/fish-demo.c
+@@ -22,7 +22,7 @@
+ 	double sf;
+ 	cairo_t *cr;
+ 
+-	image = cairo_image_surface_create_from_png("fishbg.png");
++	image = cairo_image_surface_create_from_png(DEMOSDATADIR"/fishbg.png");
+ 
+ 	height = cairo_image_surface_get_height(image);
+ 	width = cairo_image_surface_get_width(image);
+@@ -57,7 +57,7 @@
+ 	int width, height, x, y;
+ 	cairo_t *cr;
+ 
+-	image = cairo_image_surface_create_from_png("fishstrip.png");
++	image = cairo_image_surface_create_from_png(DEMOSDATADIR"/fishstrip.png");
+ 	width = cairo_image_surface_get_width(image);
+ 	height = cairo_image_surface_get_height(image);
+ 	surface = cairo_surface_create_similar(device->scanout,
+@@ -241,7 +241,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20120130.orig/flowers-demo.c
++++ cairo-demos-20120130/flowers-demo.c
+@@ -411,7 +411,7 @@
+ 
+ 		flowers_update(device->width, device->height);
+ 
+-		if (benchmark < 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20120130.orig/gears-demo.c
++++ cairo-demos-20120130/gears-demo.c
+@@ -261,7 +261,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20120130.orig/gradient-demo.c
++++ cairo-demos-20120130/gradient-demo.c
+@@ -200,7 +200,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20120130.orig/slideshow-demo.c
++++ cairo-demos-20120130/slideshow-demo.c
+@@ -142,7 +142,7 @@
+ 	}
+ 	closedir(dir);
+ 
+-	if (count)
++	if (count && !getenv("CAIRO_DEMOS_QUIET"))
+ 		printf("Loaded %d images from %s\n", count, path);
+ }
+ 
+@@ -196,11 +196,13 @@
+ 		}
+ 	}
+ 	if (num_sources == 0)
+-		load_sources("/usr/share/backgrounds", device,
++		load_sources(BACKGROUNDDIR, device,
+ 			     device->get_framebuffer(device)->surface);
+ 
+-	printf("Loaded %d images, %ld/%ld pixels in total\n",
+-	       num_sources, (long)out_pixels, (long)in_pixels);
++	if (!getenv("CAIRO_DEMOS_QUIET"))
++		printf("Loaded %d images, %ld/%ld pixels in total\n",
++		       num_sources, (long)out_pixels, (long)in_pixels);
++
+ 	if (num_sources == 0)
+ 		return 0;
+ 
+@@ -263,7 +265,7 @@
+ 		frames++;
+ 		delta = now.tv_sec - last_tty.tv_sec;
+ 		delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+-		if (delta >  5) {
++		if (delta >  5 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			printf("%.2f fps\n", frames/delta);
+ 			last_tty = now;
+ 			frames = 0;
+--- cairo-demos-20120130.orig/spinner-demo.c
++++ cairo-demos-20120130/spinner-demo.c
+@@ -149,7 +149,7 @@
+ 	}
+ 	closedir(dir);
+ 
+-	if (count)
++	if (count && !getenv("CAIRO_DEMOS_QUIET"))
+ 		printf("Loaded %d images from %s\n", count, path);
+ }
+ 
+@@ -199,11 +199,13 @@
+ 		}
+ 	}
+ 	if (num_sources == 0)
+-		load_sources("/usr/share/backgrounds", device,
++		load_sources(BACKGROUNDDIR, device,
+ 			     device->get_framebuffer(device)->surface);
+ 
+-	printf("Loaded %d images, %ld/%ld pixels in total\n",
+-	       num_sources, (long)out_pixels, (long)in_pixels);
++	if (!getenv("CAIRO_DEMOS_QUIET"))
++		printf("Loaded %d images, %ld/%ld pixels in total\n",
++		       num_sources, (long)out_pixels, (long)in_pixels);
++
+ 	if (num_sources == 0)
+ 		return 0;
+ 
+@@ -250,7 +252,7 @@
+ 		frames++;
+ 		delta = now.tv_sec - last_tty.tv_sec;
+ 		delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+-		if (delta >  5) {
++		if (delta >  5 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			printf("%.2f fps\n", frames/delta);
+ 			last_tty = now;
+ 			frames = 0;
+--- cairo-demos-20120130.orig/spiral-demo.c
++++ cairo-demos-20120130/spiral-demo.c
+@@ -124,7 +124,7 @@
+ 	}
+ 	closedir(dir);
+ 
+-	if (count)
++	if (count && !getenv("CAIRO_DEMOS_QUIET"))
+ 		printf("Loaded %d images from %s\n", count, path);
+ }
+ 
+@@ -144,7 +144,7 @@
+ int main(int argc, char **argv)
+ {
+ 	struct device *device;
+-	const char *path = "/usr/share/backgrounds";
++	const char *path = BACKGROUNDDIR;
+ 	float sincos_lut[360];
+ 	struct timeval start, last_tty, last_fps, now;
+ 	int theta, frames, n;
+@@ -181,8 +181,10 @@
+ 	}
+ 
+ 	load_sources(path, device->get_framebuffer(device)->surface);
+-	printf("Loaded %d images, %ld/%ld pixels in total from %s\n",
+-	       num_sources, (long)out_pixels, (long)in_pixels, path);
++
++	if (!getenv("CAIRO_DEMOS_QUIET"))
++		printf("Loaded %d images, %ld/%ld pixels in total from %s\n",
++		       num_sources, (long)out_pixels, (long)in_pixels, path);
+ 
+ 	gettimeofday(&start, 0); now = last_tty = last_fps = start;
+ 	frames = 0;
+@@ -203,7 +205,6 @@
+ 
+ 		rotation = floor(50*delta);
+ 
+-		cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+ 		cairo_paint(cr);
+ 
+ 		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+@@ -299,7 +300,7 @@
+ 		frames++;
+ 		delta = now.tv_sec - last_tty.tv_sec;
+ 		delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+-		if (delta >  5) {
++		if (delta >  5 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			printf("%.2f fps\n", frames/delta);
+ 			last_tty = now;
+ 			frames = 0;
+--- cairo-demos-20120130.orig/tiger-demo.c
++++ cairo-demos-20120130/tiger-demo.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include <cairo.h>
++#include <stdlib.h>
+ #include <sys/time.h>
+ 
+ #include "demo.h"
+@@ -78,7 +79,9 @@
+ {
+ 	switch (antialias) {
+ 	case CAIRO_ANTIALIAS_NONE: return "none";
++#if CAIRO_VERSION > CAIRO_VERSION_ENCODE(1,11,3)
+ 	case CAIRO_ANTIALIAS_FAST: return "fast";
++#endif
+ 	case CAIRO_ANTIALIAS_GRAY: return "gray";
+ 	case CAIRO_ANTIALIAS_SUBPIXEL: return "subpixel";
+ 	default: return "best";
+@@ -127,10 +130,10 @@
+ 		fb->destroy (fb);
+ 
+ 		++frame;
+-		if (frame % 256 == 0)
++		if (frame % 192 == 0)
+ 			factor = 1./factor;
+ 
+-		if (benchmark < 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
