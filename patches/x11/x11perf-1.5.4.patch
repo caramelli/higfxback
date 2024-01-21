@@ -1,0 +1,156 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxft-build libxmu-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.68; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install x11perf $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/x11perf-build.pc << EOF
+Name: x11perf
+Version: 1.5.4
+Description: X server performance benchmarker
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/x11perf
+EOF
+
+exit
+--- x11perf-1.5.4.orig/x11perf.c
++++ x11perf-1.5.4/x11perf.c
+@@ -150,6 +150,8 @@
+ #define MAXCLIP     (sizeof(ws) / sizeof(ws[0]))
+ static Window clipWindows[MAXCLIP];
+ static Colormap cmap;
++static int width = WIDTH;
++static int height = HEIGHT;
+ static int depth = -1;  /* -1 means use default depth */
+ static int vclass = -1; /* -1 means use CopyFromParent */
+ 
+@@ -494,6 +496,8 @@
+ "    -ddbg                     the background color to use for DoubleDash",
+ "    -rop <rop0 rop1 ...>      use the given rops to draw (default = GXcopy)",
+ "    -pm <pm0 pm1 ...>         use the given planemasks to draw (default = ~0)",
++"    -width <width>            the width to use (default = 600)",
++"    -height <height>          the height to use (default = 600)",
+ "    -depth <depth>            use a visual with <depth> planes per pixel",
+ "    -vclass <class>           the visual class to use (default = root)",
+ "    -reps <n>                 fix the rep count (default = auto scale)",
+@@ -598,9 +602,10 @@
+     xswa.save_under = xp->save_under;
+     w = XCreateWindow(xp->d, DefaultRootWindow(xp->d), x, y, width, height, 1,
+         xp->vinfo.depth, CopyFromParent, xp->vinfo.visual,
+-	CWBackPixel | CWBorderPixel | CWColormap | CWOverrideRedirect 
++	CWBackPixel | CWBorderPixel | CWColormap
+ 	| CWBackingStore | CWSaveUnder, &xswa);
+     XMapWindow (xp->d, w);
++    XMoveWindow(xp->d, w, x, y);
+     return w;
+ }
+ 
+@@ -1046,6 +1051,20 @@
+ 	    fixedReps = atoi (argv[i]);
+ 	    if (fixedReps <= 0)
+ 		usage ();
++        } else if (strcmp(argv[i], "-width") == 0) {
++	    i++;
++	    if (argc <= i)
++                usage ();
++            width = atoi(argv[i]);
++            if (width <= 0)
++		usage ();
++        } else if (strcmp(argv[i], "-height") == 0) {
++	    i++;
++	    if (argc <= i)
++                usage ();
++            height = atoi(argv[i]);
++            if (height <= 0)
++		usage ();
+         } else if (strcmp(argv[i], "-depth") == 0) {
+ 	    i++;
+ 	    if (argc <= i)
+@@ -1244,19 +1263,20 @@
+ 	}
+     }
+     xparms.cmap = cmap;
+-    
+-    printf("x11perf - X11 performance program, version %s\n",
+-	   xparms.version & VERSION1_5 ? "1.5" :
+-	   xparms.version & VERSION1_4 ? "1.4" :
+-	   xparms.version & VERSION1_3 ? "1.3" :
+-	   "1.2"
+-	   );
+-    XmuGetHostname(hostname, 100);
+-    printf ("%s server version %d on %s\nfrom %s\n",
+-	    ServerVendor (xparms.d), VendorRelease (xparms.d),
+-	    DisplayString (xparms.d), hostname);
+-    PrintTime ();
+ 
++    if (!getenv("X11PERF_QUIET")) {
++	printf("x11perf - X11 performance program, version %s\n",
++	       xparms.version & VERSION1_5 ? "1.5" :
++	       xparms.version & VERSION1_4 ? "1.4" :
++	       xparms.version & VERSION1_3 ? "1.3" :
++	       "1.2");
++	XmuGetHostname(hostname, 100);
++	printf("%s server version %d on %s\nfrom %s\n",
++	       ServerVendor (xparms.d), VendorRelease (xparms.d),
++	       DisplayString (xparms.d), hostname);
++	PrintTime ();
++    }
++    
+     /* Force screen out of screen-saver mode, grab current data, and set
+        time to blank to 8 hours.  We should just be able to turn the screen-
+        saver off, but this causes problems on some servers.  We also reset
+@@ -1291,19 +1311,21 @@
+     xparms.ddbackground =
+ 	AllocateColor(xparms.d, ddbackground, WhitePixel(xparms.d, screen));
+     window_x = 2;
+-    if (DisplayWidth(xparms.d, screen) < WIDTH + window_x + 1)
++    if (DisplayWidth(xparms.d, screen) < width + window_x + 1)
+ 	window_x = -1;
+     window_y = 2;
+-    if (DisplayHeight(xparms.d, screen) < HEIGHT + window_y + 1)
++    if (DisplayHeight(xparms.d, screen) < height + window_y + 1)
+ 	window_y = -1;
+-    xparms.w = CreatePerfWindow(&xparms, window_x, window_y, WIDTH, HEIGHT);
+-    HSx = WIDTH-1;
+-    if (window_x + 1 + WIDTH > DisplayWidth(xparms.d, screen))
++    xparms.w = CreatePerfWindow(&xparms, window_x, window_y, width, height);
++    XChangeProperty(xparms.d, xparms.w, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (unsigned char *)"x11perf", 7);
++    HSx = width-1;
++    if (window_x + 1 + width > DisplayWidth(xparms.d, screen))
+ 	HSx = DisplayWidth(xparms.d, screen) - (1 + window_x + 1);
+-    HSy = HEIGHT-1;
+-    if (window_y + 1 + HEIGHT > DisplayHeight(xparms.d, screen))
++    HSy = height-1;
++    if (window_y + 1 + height > DisplayHeight(xparms.d, screen))
+ 	HSy = DisplayHeight(xparms.d, screen) - (1 + window_y + 1);
+-    status = CreatePerfWindow(&xparms, window_x, HEIGHT+5, WIDTH, 20);
++    status = CreatePerfWindow(&xparms, window_x, height+5, width, 20);
++    XChangeProperty(xparms.d, status, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (unsigned char *)"x11perf status", 14);
+     tgcv.foreground = 
+ 	AllocateColor(xparms.d, "black", BlackPixel(xparms.d, screen));
+     tgcv.background = 
+@@ -1319,7 +1341,7 @@
+        software cursor machines it will slow graphics performance.  On
+        all current MIT-derived servers it will slow window 
+        creation/configuration performance. */
+-    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH+32, 20+32);
++    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, width+32, 20+32);
+ 
+     /* Figure out how long to call HardwareSync, so we can adjust for that
+        in our total elapsed time */

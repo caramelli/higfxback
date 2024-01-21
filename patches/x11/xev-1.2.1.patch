@@ -1,0 +1,53 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxrandr-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.68; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install xev $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xev-build.pc << EOF
+Name: xev
+Version: 1.2.1
+Description: X event monitor
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/xev
+EOF
+
+exit
+--- xev-1.2.1.orig/configure.ac
++++ xev-1.2.1/configure.ac
+@@ -39,7 +39,7 @@
+ XORG_DEFAULT_OPTIONS
+ 
+ # Checks for pkg-config packages
+-PKG_CHECK_MODULES(XEV, [xrandr >= 1.2 x11 xproto >= 7.0.17])
++PKG_CHECK_MODULES(XEV, [xrandr >= 1.2 x11 xproto >= 7.0.16])
+ 
+ AC_CONFIG_FILES([
+ 	Makefile
+--- xev-1.2.1.orig/xev.c
++++ xev-1.2.1/xev.c
+@@ -84,7 +84,7 @@
+     NUM_EVENT_MASKS
+ };
+ 
+-static void usage (void) _X_NORETURN;
++static void usage (void) __attribute__((__noreturn__));
+ 
+ static void
+ prologue (XEvent *eventp, const char *event_name)
