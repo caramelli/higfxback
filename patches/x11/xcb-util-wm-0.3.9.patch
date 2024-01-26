@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxcb-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/xcb
+install -m 644 icccm/xcb_icccm.h $DESTDIR/x11/include/xcb
+install -d $DESTDIR/x11/lib
+install icccm/.libs/libxcb-icccm.so.4.* $DESTDIR/x11/lib/libxcb-icccm.so.4
+ln -sf libxcb-icccm.so.4 $DESTDIR/x11/lib/libxcb-icccm.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 icccm/xcb-icccm.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xcb-util-wm-build.pc << EOF
+Name: xcb-util-wm
+Version: 0.3.9
+Description: XCB client and window-manager helpers
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/xcb/xcb_icccm.h \\
+/x11/lib/libxcb-icccm.so \\
+/x11/lib/pkgconfig/xcb-icccm.pc
+
+exec=\\
+/x11/lib/libxcb-icccm.so.4
+EOF
+
+exit

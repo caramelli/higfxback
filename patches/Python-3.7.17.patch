@@ -1,6 +1,6 @@
 # This file is part of HiGFXback
 
-REQUIRES="autotools-wrappers-ac-build expat-build zlib-build"
+REQUIRES="autotools-wrappers-am-build expat-build zlib-build"
 
 if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
 
@@ -15,7 +15,6 @@ make
 install -d $DESTDIR/bin
 install python $DESTDIR/bin/python3.7m
 ln -sf python3.7m $DESTDIR/bin/python3
-install python $DESTDIR/bin/python3.7m
 install -d $DESTDIR/lib
 install libpython3.7m.so.1.0 $DESTDIR/lib
 ln -sf libpython3.7m.so.1.0 $DESTDIR/lib/libpython3.7m.so
@@ -214,27 +213,27 @@ install -m 644 Lib/json/decoder.py $DESTDIR/lib/python3.7/json
 install -m 644 Lib/json/encoder.py $DESTDIR/lib/python3.7/json
 install -m 644 Lib/json/scanner.py $DESTDIR/lib/python3.7/json
 install -d $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_blake2.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_contextvars.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_lsprof.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_md5.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_posixsubprocess.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_queue.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_random.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_sha1.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_sha256.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_sha3.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_sha512.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_socket.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/_struct.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/array.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/binascii.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/fcntl.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/math.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/pyexpat.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/select.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/unicodedata.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
-install `cat pybuilddir.txt`/zlib.cpython-37m-`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.so $DESTDIR/lib/python3.7/lib-dynload
+install `cat pybuilddir.txt`/_blake2.* $DESTDIR/lib/python3.7/lib-dynload/_blake2.so
+install `cat pybuilddir.txt`/_contextvars.* $DESTDIR/lib/python3.7/lib-dynload/_contextvars.so
+install `cat pybuilddir.txt`/_lsprof.* $DESTDIR/lib/python3.7/lib-dynload/_lsprof.so
+install `cat pybuilddir.txt`/_md5.* $DESTDIR/lib/python3.7/lib-dynload/_md5.so
+install `cat pybuilddir.txt`/_posixsubprocess.* $DESTDIR/lib/python3.7/lib-dynload/_posixsubprocess.so
+install `cat pybuilddir.txt`/_queue.* $DESTDIR/lib/python3.7/lib-dynload/_queue.so
+install `cat pybuilddir.txt`/_random.* $DESTDIR/lib/python3.7/lib-dynload/_random.so
+install `cat pybuilddir.txt`/_sha1.* $DESTDIR/lib/python3.7/lib-dynload/_sha1.so
+install `cat pybuilddir.txt`/_sha256.* $DESTDIR/lib/python3.7/lib-dynload/_sha256.so
+install `cat pybuilddir.txt`/_sha3.* $DESTDIR/lib/python3.7/lib-dynload/_sha3.so
+install `cat pybuilddir.txt`/_sha512.* $DESTDIR/lib/python3.7/lib-dynload/_sha512.so
+install `cat pybuilddir.txt`/_socket.* $DESTDIR/lib/python3.7/lib-dynload/_socket.so
+install `cat pybuilddir.txt`/_struct.* $DESTDIR/lib/python3.7/lib-dynload/_struct.so
+install `cat pybuilddir.txt`/array.* $DESTDIR/lib/python3.7/lib-dynload/array.so
+install `cat pybuilddir.txt`/binascii.* $DESTDIR/lib/python3.7/lib-dynload/binascii.so
+install `cat pybuilddir.txt`/fcntl.* $DESTDIR/lib/python3.7/lib-dynload/fcntl.so
+install `cat pybuilddir.txt`/math.* $DESTDIR/lib/python3.7/lib-dynload/math.so
+install `cat pybuilddir.txt`/pyexpat.* $DESTDIR/lib/python3.7/lib-dynload/pyexpat.so
+install `cat pybuilddir.txt`/select.* $DESTDIR/lib/python3.7/lib-dynload/select.so
+install `cat pybuilddir.txt`/unicodedata.* $DESTDIR/lib/python3.7/lib-dynload/unicodedata.so
+install `cat pybuilddir.txt`/zlib.* $DESTDIR/lib/python3.7/lib-dynload/zlib.so
 install -d $DESTDIR/lib/python3.7/logging
 install -m 644 Lib/logging/__init__.py $DESTDIR/lib/python3.7/logging
 install -d $DESTDIR/lib/python3.7/multiprocessing
@@ -248,9 +247,9 @@ install -m 644 Lib/urllib/parse.py $DESTDIR/lib/python3.7/urllib
 install -m 644 Lib/urllib/request.py $DESTDIR/lib/python3.7/urllib
 install -m 644 Lib/urllib/response.py $DESTDIR/lib/python3.7/urllib
 install -d $DESTDIR/lib/python3.7/xml/etree
+install -m 644 Lib/xml/etree/__init__.py $DESTDIR/lib/python3.7/xml/etree
 install -m 644 Lib/xml/etree/ElementPath.py $DESTDIR/lib/python3.7/xml/etree
 install -m 644 Lib/xml/etree/ElementTree.py $DESTDIR/lib/python3.7/xml/etree
-install -m 644 Lib/xml/etree/__init__.py $DESTDIR/lib/python3.7/xml/etree
 install -d $DESTDIR/lib/python3.7/xml/parsers
 install -m 644 Lib/xml/parsers/expat.py $DESTDIR/lib/python3.7/xml/parsers
 
@@ -263,6 +262,7 @@ Description: Python
 Requires: $REQUIRES
 
 devel=\\
+/lib/libpython3.7m.so \\
 /lib/pkgconfig/python-3.7.pc \\
 /lib/pkgconfig/python3.pc
 
@@ -449,27 +449,27 @@ exec=\\
 /lib/python3.7/json/decoder.py \\
 /lib/python3.7/json/encoder.py \\
 /lib/python3.7/json/scanner.py \\
-/lib/python3.7/lib-dynload/_blake2.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_contextvars.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_lsprof.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_md5.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_posixsubprocess.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_queue.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_random.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_sha1.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_sha256.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_sha3.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_sha512.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_socket.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/_struct.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/array.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/binascii.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/fcntl.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/math.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/pyexpat.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/select.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/unicodedata.cpython-37m-x86_64-linux-gnu.so \\
-/lib/python3.7/lib-dynload/zlib.cpython-37m-x86_64-linux-gnu.so \\
+/lib/python3.7/lib-dynload/_blake2.so \\
+/lib/python3.7/lib-dynload/_contextvars.so \\
+/lib/python3.7/lib-dynload/_lsprof.so \\
+/lib/python3.7/lib-dynload/_md5.so \\
+/lib/python3.7/lib-dynload/_posixsubprocess.so \\
+/lib/python3.7/lib-dynload/_queue.so \\
+/lib/python3.7/lib-dynload/_random.so \\
+/lib/python3.7/lib-dynload/_sha1.so \\
+/lib/python3.7/lib-dynload/_sha256.so \\
+/lib/python3.7/lib-dynload/_sha3.so \\
+/lib/python3.7/lib-dynload/_sha512.so \\
+/lib/python3.7/lib-dynload/_socket.so \\
+/lib/python3.7/lib-dynload/_struct.so \\
+/lib/python3.7/lib-dynload/array.so \\
+/lib/python3.7/lib-dynload/binascii.so \\
+/lib/python3.7/lib-dynload/fcntl.so \\
+/lib/python3.7/lib-dynload/math.so \\
+/lib/python3.7/lib-dynload/pyexpat.so \\
+/lib/python3.7/lib-dynload/select.so \\
+/lib/python3.7/lib-dynload/unicodedata.so \\
+/lib/python3.7/lib-dynload/zlib.so \\
 /lib/python3.7/logging/__init__.py \\
 /lib/python3.7/multiprocessing/__init__.py \\
 /lib/python3.7/multiprocessing/context.py \\
@@ -479,9 +479,9 @@ exec=\\
 /lib/python3.7/urllib/parse.py \\
 /lib/python3.7/urllib/request.py \\
 /lib/python3.7/urllib/response.py \\
+/lib/python3.7/xml/etree/__init__.py \\
 /lib/python3.7/xml/etree/ElementPath.py \\
 /lib/python3.7/xml/etree/ElementTree.py \\
-/lib/python3.7/xml/etree/__init__.py \\
 /lib/python3.7/xml/parsers/expat.py
 EOF
 

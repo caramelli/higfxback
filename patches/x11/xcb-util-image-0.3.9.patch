@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build xcb-util-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/xcb
+install -m 644 image/xcb_image.h $DESTDIR/x11/include/xcb
+install -d $DESTDIR/x11/lib
+install image/.libs/libxcb-image.so.0.* $DESTDIR/x11/lib/libxcb-image.so.0
+ln -sf libxcb-image.so.0 $DESTDIR/x11/lib/libxcb-image.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 image/xcb-image.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xcb-util-image-build.pc << EOF
+Name: xcb-util-image
+Version: 0.3.9
+Description: XCB image library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/xcb/xcb_image.h \\
+/x11/lib/libxcb-image.so \\
+/x11/lib/pkgconfig/xcb-image.pc
+
+exec=\\
+/x11/lib/libxcb-image.so.0
+EOF
+
+exit

@@ -1,0 +1,704 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xcb-util-image-build xcb-util-keysyms-build xcb-util-wm-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.13)
+aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install hypnomoire $DESTDIR/x11/bin
+install rendertest $DESTDIR/x11/bin
+install xcb-test $DESTDIR/x11/bin
+install xcbdpyinfo $DESTDIR/x11/bin
+install xcbrandr $DESTDIR/x11/bin
+install app/xte/xte $DESTDIR/x11/bin
+install neko/xcbneko $DESTDIR/x11/bin
+install tests/flames $DESTDIR/x11/bin
+install tests/julia $DESTDIR/x11/bin
+install tests/lissajoux $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xcb-demo-build.pc << EOF
+Name: xcb-demo
+Version: 20170513
+Description: A collection of XCB demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/flames \\
+/x11/bin/hypnomoire \\
+/x11/bin/julia \\
+/x11/bin/lissajoux \\
+/x11/bin/rendertest \\
+/x11/bin/xcb-test \\
+/x11/bin/xcbdpyinfo \\
+/x11/bin/xcbneko \\
+/x11/bin/xcbrandr \\
+/x11/bin/xte
+EOF
+
+exit
+--- xcb-demo-20170513.orig/Makefile.am
++++ xcb-demo-20170513/Makefile.am
+@@ -1,42 +1,56 @@
+ 
+ MAINTAINERCLEANFILES = Makefile.in
+ 
+-SUBDIRS = tests
++SUBDIRS = app/xte neko tests
+ 
+ EXTRA_DIST = autogen.sh README
+ 
+-AM_CPPFLAGS = $(XCB_CFLAGS)
+-LDADD = $(XCB_LIBS)
+-
+-bin_PROGRAMS = dpms hypnomoire rendertest xcb-test xcbrandr xcbxf86dri \
+-               xcbxvinfo xcbdpyinfo
++bin_PROGRAMS = xcbdpyinfo
++xcbdpyinfo_CFLAGS = $(XCB_CFLAGS)
++xcbdpyinfo_LDADD = $(XCB_LIBS)
++xcbdpyinfo_SOURCES = xcbdpyinfo.c
+ 
++bin_PROGRAMS += hypnomoire
+ hypnomoire_CFLAGS = $(XCBAUX_CFLAGS)
+ hypnomoire_LDADD = $(XCBAUX_LIBS) -lm -lpthread
+ hypnomoire_SOURCES = hypnomoire.c reply_formats.c reply_formats.h
+ 
+-xcbdpyinfo_SOURCES = xcbdpyinfo.c
+-
++bin_PROGRAMS += xcb-test
+ xcb_test_CFLAGS = $(XCBAUX_CFLAGS)
+ xcb_test_LDADD = $(XCBAUX_LIBS) -lpthread
+ xcb_test_SOURCES = xcb-test.c reply_formats.c reply_formats.h
+ 
++if HAVE_DPMS
++bin_PROGRAMS += dpms
+ dpms_CFLAGS = $(XCBDPMS_CFLAGS)
+-dpms_LDADD = $(XCBDPMS_LIBS) $(XCB_LIBS)
++dpms_LDADD = $(XCBDPMS_LIBS)
+ dpms_SOURCES = dpms.c
++endif
+ 
++if HAVE_RENDER
++bin_PROGRAMS += rendertest
+ rendertest_CFLAGS = $(XCBAUX_CFLAGS) $(XCBRENDER_CFLAGS)
+ rendertest_LDADD = $(XCBAUX_LIBS) $(XCBRENDER_LIBS)
+ rendertest_SOURCES = rendertest.c
++endif
+ 
++if HAVE_RANDR
++bin_PROGRAMS += xcbrandr
+ xcbrandr_CFLAGS = $(XCBAUX_CFLAGS) $(XCBRANDR_CFLAGS)
+ xcbrandr_LDADD = $(XCBAUX_LIBS) $(XCBRANDR_LIBS)
+ xcbrandr_SOURCES = xcbrandr.c
++endif
+ 
++if HAVE_XF86DRI
++bin_PROGRAMS += xcbxf86dri
+ xcbxf86dri_CFLAGS = $(XCBXF86DRI_CFLAGS)
+-xcbxf86dri_LDADD = $(XCBXF86DRI_LIBS) $(XCB_LIBS)
++xcbxf86dri_LDADD = $(XCBXF86DRI_LIBS)
+ xcbxf86dri_SOURCES = xcbxf86dri.c
++endif
+ 
++if HAVE_XV
++bin_PROGRAMS += xcbxvinfo
+ xcbxvinfo_CFLAGS = $(XCBXV_CFLAGS)
+-xcbxvinfo_LDADD = $(XCBXV_LIBS) $(XCB_LIBS)
++xcbxvinfo_LDADD = $(XCBXV_LIBS)
+ xcbxvinfo_SOURCES = xcbxvinfo.c
++endif
+--- xcb-demo-20170513.orig/app/xte/.gitignore
++++ xcb-demo-20170513/app/xte/.gitignore
+@@ -1,2 +1,4 @@
+ xte
+-!Makefile
++Makefile
++Makefile.in
++*.o
+--- xcb-demo-20170513.orig/app/xte/Makefile
++++ xcb-demo-20170513/app/xte/Makefile
+@@ -1,6 +0,0 @@
+-pkgs = xcb xcb-keysyms xcb-xtest
+-CFLAGS = `pkg-config --cflags $(pkgs)` -g -Wall -Wpointer-arith -Wstrict-prototypes
+-LIBS = `pkg-config --libs $(pkgs)`
+-
+-xte:	xte.c
+-	$(CC) $(CFLAGS) xte.c $(LIBS) -o xte
+--- xcb-demo-20170513.orig/app/xte/Makefile.am
++++ xcb-demo-20170513/app/xte/Makefile.am
+@@ -0,0 +1,9 @@
++
++MAINTAINERCLEANFILES = Makefile.in
++
++if HAVE_XTEST
++bin_PROGRAMS = xte
++xte_CFLAGS = $(XCBKEYSYMS_CFLAGS) $(XCBXTEST_CFLAGS)
++xte_LDADD = $(XCBKEYSYMS_LIBS) $(XCBXTEST_LIBS)
++xte_SOURCES = xte.c
++endif
+--- xcb-demo-20170513.orig/app/xte/xte.c
++++ xcb-demo-20170513/app/xte/xte.c
+@@ -40,15 +40,13 @@
+ /*#include "kbd.h"*/
+ #define KBDMAP "us"
+ 
+-/* TODO: this is normally defined in configure.in */
+-#define VERSION "0.97"
+-
+ #define XK_Shift_L                       0xffe1  /* Left shift */
+ 
+ xcb_key_symbols_t *syms = NULL;
+ 
+ uint8_t thing_to_keycode( xcb_connection_t *c, char *thing ) {
+-  xcb_keycode_t kc;
++  xcb_keycode_t *keycodes;
++  uint8_t kc;
+   xcb_keysym_t ks;
+   
+ #if 0   /* There is no XCB equivalent to XStringToKeysym */
+@@ -62,7 +60,9 @@
+   ks = (uint8_t)thing[0];
+ #endif  
+ 
+-  kc = xcb_key_symbols_get_keycode( syms, ks );
++  keycodes = xcb_key_symbols_get_keycode( syms, ks );
++  kc = keycodes[0];
++  free( keycodes );
+ 
+   dmsg( 1, "String '%s' maps to keysym '%d'\n", thing, ks );
+   dmsg( 1, "String '%s' maps to keycode '%d'\n", thing, kc );
+@@ -93,6 +93,7 @@
+ 
+ void send_key( xcb_connection_t *c, char *thing ) {
+   static xcb_keysym_t shift = { XK_Shift_L };
++  xcb_keycode_t *keycodes;
+   uint8_t code, wrap_code = 0;
+ 
+   dmsg( 1, "Sending key '%s'\n", thing );
+@@ -115,10 +116,11 @@
+ /*const char *low = "`1234567890-=[]\\;',./";*/
+   const char *cap = "~!@#$%^&*()_+{}|:\"<>?";
+   
+-  if (thing[0] >= 'A' && thing[0] <= 'Z')
+-    wrap_code = xcb_key_symbols_get_keycode( syms, shift );
+-  else if (strchr(cap, thing[0]) != NULL)
+-    wrap_code = xcb_key_symbols_get_keycode( syms, shift );
++  if ((thing[0] >= 'A' && thing[0] <= 'Z') || (strchr(cap, thing[0]) != NULL)) {
++    keycodes = xcb_key_symbols_get_keycode( syms, shift );
++    wrap_code = keycodes[0];
++    free( keycodes );
++  }
+ #endif
+   code = thing_to_keycode( c, thing );
+ 
+@@ -199,19 +201,32 @@
+   /* in the absence of XStringToKeysym, allow sending hex syms directly */
+   }else if( IS_CMD( cmd, "sym " ) ) {
+     xcb_keysym_t sym;
+-    xcb_keycode_t code;
+-    sscanf( str, "sym %x", &sym );
+-    code = xcb_key_symbols_get_keycode( syms, sym );
++    xcb_keycode_t *keycodes;
++    uint8_t code;
++    sscanf( cmd, "sym %x", &sym );
++    keycodes = xcb_key_symbols_get_keycode( syms, sym );
++    code = keycodes[0];
++    free( keycodes );
+     fake_input( c, XCB_KEY_PRESS, code );
+     fake_input( c, XCB_KEY_RELEASE, code );
+   }else if( IS_CMD( cmd, "symdown " ) ) {
+     xcb_keysym_t sym;
++    xcb_keycode_t *keycodes;
++    uint8_t code;
+     sscanf( str, "symdown %x", &sym );
+-    fake_input( c, XCB_KEY_PRESS, xcb_key_symbols_get_keycode( syms, sym ) );
++    keycodes = xcb_key_symbols_get_keycode( syms, sym );
++    code = keycodes[0];
++    free( keycodes );
++    fake_input( c, XCB_KEY_PRESS, code);
+   }else if( IS_CMD( cmd, "symup " ) ) {
+     xcb_keysym_t sym;
++    xcb_keycode_t *keycodes;
++    uint8_t code;
+     sscanf( str, "symup %x", &sym );
+-    fake_input( c, XCB_KEY_RELEASE, xcb_key_symbols_get_keycode( syms, sym ) );
++    keycodes = xcb_key_symbols_get_keycode( syms, sym );
++    code = keycodes[0];
++    free( keycodes );
++    fake_input( c, XCB_KEY_RELEASE, code);
+   }else{
+     fprintf( stderr, "Unknown command '%s'\n", cmd );
+   }
+--- xcb-demo-20170513.orig/configure.ac
++++ xcb-demo-20170513/configure.ac
+@@ -2,7 +2,6 @@
+ AC_INIT([xcb-demo],0.1,[xcb@lists.freedesktop.org])
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AM_INIT_AUTOMAKE([foreign dist-bzip2])
+-AM_CONFIG_HEADER(config.h)
+ 
+ AC_PROG_CC
+ dnl AC_PROG_INSTALL
+@@ -14,11 +13,24 @@
+ PKG_CHECK_MODULES(XCBAUX, xcb-aux >= 0.3.0)
+ PKG_CHECK_MODULES(XCBIMAGE, xcb-image >= 0.3.0)
+ PKG_CHECK_MODULES(XCBICCCM, xcb-icccm >= 0.3.0)
+-PKG_CHECK_MODULES(XCBATOM, xcb-atom > 0.3.0)
+-PKG_CHECK_MODULES(XCBDPMS, xcb-dpms)
+-PKG_CHECK_MODULES(XCBRENDER, xcb-render)
+-PKG_CHECK_MODULES(XCBRANDR, xcb-randr)
+-PKG_CHECK_MODULES(XCBXF86DRI, xcb-xf86dri)
+-PKG_CHECK_MODULES(XCBXV, xcb-xv)
++PKG_CHECK_MODULES(XCBKEYSYMS, xcb-keysyms >= 0.3.0)
+ 
+-AC_OUTPUT([Makefile tests/Makefile])
++PKG_CHECK_MODULES(XCBDPMS, xcb-dpms, have_dpms=yes, have_dpms=no)
++AM_CONDITIONAL(HAVE_DPMS, test x$have_dpms = xyes)
++
++PKG_CHECK_MODULES(XCBRENDER, xcb-render, have_render=yes, have_render=no)
++AM_CONDITIONAL(HAVE_RENDER, test x$have_render = xyes)
++
++PKG_CHECK_MODULES(XCBRANDR, xcb-randr, have_randr=yes, have_randr=no)
++AM_CONDITIONAL(HAVE_RANDR, test x$have_randr = xyes)
++
++PKG_CHECK_MODULES(XCBXF86DRI, xcb-xf86dri, have_xf86dri=yes, have_xf86dri=no)
++AM_CONDITIONAL(HAVE_XF86DRI, test x$have_xf86dri = xyes)
++
++PKG_CHECK_MODULES(XCBXV, xcb-xv, have_xv=yes, have_xv=no)
++AM_CONDITIONAL(HAVE_XV, test x$have_xv = xyes)
++
++PKG_CHECK_MODULES(XCBXTEST, xcb-xtest, have_xtest=yes, have_xtest=no)
++AM_CONDITIONAL(HAVE_XTEST, test x$have_xtest = xyes)
++
++AC_OUTPUT([Makefile app/xte/Makefile neko/Makefile tests/Makefile])
+--- xcb-demo-20170513.orig/hypnomoire.c
++++ xcb-demo-20170513/hypnomoire.c
+@@ -84,7 +84,7 @@
+ 	xcb_create_gc(c, black, rootwin, mask, values);
+ 
+ 	for(i = 1; i < WINS; ++i)
+-		pthread_create(&thr, 0, run, (void*)i);
++		pthread_create(&thr, 0, run, (void*)(long)i);
+ 	run((void*)0);
+ 
+ 	exit(0);
+@@ -93,7 +93,7 @@
+ 
+ void *run(void *param)
+ {
+-	int idx = (int)param;
++	int idx = (long)param;
+ 
+ 	int xo, yo;
+ 	double r, theta = 0;
+--- xcb-demo-20170513.orig/neko/.gitignore
++++ xcb-demo-20170513/neko/.gitignore
+@@ -1,2 +1,4 @@
+ xcbneko
+-!Makefile
++Makefile
++Makefile.in
++*.o
+--- xcb-demo-20170513.orig/neko/Makefile
++++ xcb-demo-20170513/neko/Makefile
+@@ -1,6 +0,0 @@
+-pkgs = xcb xcb-aux xcb-icccm xcb-atom xcb-keysyms
+-CFLAGS = `pkg-config --cflags $(pkgs)` -g -Wall -Wpointer-arith -Wstrict-prototypes
+-LIBS = `pkg-config --libs $(pkgs)` -lm
+-
+-xcbneko:	xcbneko.c
+-	$(CC) $(CFLAGS) xcbneko.c $(LIBS) -o xcbneko
+--- xcb-demo-20170513.orig/neko/Makefile.am
++++ xcb-demo-20170513/neko/Makefile.am
+@@ -0,0 +1,7 @@
++
++MAINTAINERCLEANFILES = Makefile.in
++
++bin_PROGRAMS = xcbneko
++xcbneko_CFLAGS = $(XCBAUX_CFLAGS) $(XCBICCCM_CFLAGS) $(XCBKEYSYMS_CFLAGS)
++xcbneko_LDADD = $(XCBAUX_LIBS) $(XCBICCCM_LIBS) $(XCBKEYSYMS_LIBS) -lm
++xcbneko_SOURCES = xcbneko.c
+--- xcb-demo-20170513.orig/neko/xcbneko.c
++++ xcb-demo-20170513/neko/xcbneko.c
+@@ -16,22 +16,14 @@
+  *
+  *--------------------------------------------------------------*/
+ 
+-#if USING_XLIB
+-#include <X11/Xlib.h>
+-#include <X11/Xutil.h>
+-#include <X11/keysym.h>
+-#else
+ #include <xcb/xcb.h>
+-/*#include <xcb/xcb_image.h>*/
+-#include <xcb/xcb_aux.h>		/* xcb_aux_get_screen_t */
++#include <xcb/xcb_event.h>
++#include <xcb/xcb_aux.h>		/* xcb_aux_get_screen */
+ #include <xcb/xcb_icccm.h>
+-#include <xcb/xcb_atom.h>		/* STRING atom */
+ #include <xcb/xcb_keysyms.h>
+ 
+ typedef enum { False, True } Bool;
+ 
+-#endif
+-
+ #include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
+@@ -147,6 +139,7 @@
+ xcb_window_t         theWindow;
+ xcb_cursor_t         theCursor;
+ xcb_key_symbols_t	*theKeySyms;
++xcb_atom_t wmprotocolsAtom;
+ xcb_atom_t deleteWindowAtom;
+ 
+ static unsigned int  WindowWidth;
+@@ -555,8 +548,8 @@
+ 
+   WindowPointX = DEFAULT_WIN_X;
+   WindowPointY = DEFAULT_WIN_Y;
+-  WindowWidth  = WINDOW_WIDTH;
+-  WindowHeight = WINDOW_HEIGHT;
++  WindowWidth  = getenv("WINDOW_WIDTH") ? atoi(getenv("WINDOW_WIDTH")) : WINDOW_WIDTH;
++  WindowHeight = getenv("WINDOW_HEIGHT") ? atoi(getenv("WINDOW_HEIGHT")) : WINDOW_WIDTH;
+ 
+ #ifdef TODO  
+   int			GeometryStatus;
+@@ -680,37 +673,38 @@
+ 
+ 	/* new: obey the window-delete protocol, look for XCB_CLIENT_MESSAGE */
+ 	deleteWindowAtom = GetAtom(xc, "WM_DELETE_WINDOW");
+-	xcb_set_wm_protocols( xc, theWindow, 1, &deleteWindowAtom );
++	wmprotocolsAtom = GetAtom(xc, "WM_PROTOCOLS");
++	xcb_icccm_set_wm_protocols( xc, theWindow, wmprotocolsAtom, 1, &deleteWindowAtom );
+ 
+ 	theIconPixmap = CreateBitmapFromData( xc, theWindow,
+ 										  icon_bits, icon_width, icon_height );
+ 
+-	xcb_wm_hints_t *theWMHints = xcb_alloc_wm_hints();
++	xcb_icccm_wm_hints_t *theWMHints = calloc(1, sizeof(xcb_icccm_wm_hints_t));
+ 
+-	xcb_wm_hints_set_icon_pixmap( theWMHints, theIconPixmap );
++	xcb_icccm_wm_hints_set_icon_pixmap( theWMHints, theIconPixmap );
+ 
+ 	if ( iconicState )
+-	  xcb_wm_hints_set_iconic( theWMHints );
++	  xcb_icccm_wm_hints_set_iconic( theWMHints );
+ 	else
+-	  xcb_wm_hints_set_normal( theWMHints );
++	  xcb_icccm_wm_hints_set_normal( theWMHints );
+ 	
+-	xcb_set_wm_hints( xc, theWindow, theWMHints);
++	xcb_icccm_set_wm_hints( xc, theWindow, theWMHints);
+ 	
+ 	free( theWMHints );
+ 
+ 	/* why hide the structure? */
+-	xcb_size_hints_t *theSizeHints = xcb_alloc_size_hints();
++	xcb_size_hints_t *theSizeHints = calloc(1, sizeof(xcb_size_hints_t));
+ 
+ 	/* need enum for second param (user specified) */
+-	xcb_size_hints_set_position(theSizeHints, 0, WindowPointX, WindowPointY);
+-	xcb_size_hints_set_size(theSizeHints, 0, WindowWidth, WindowHeight);
++	xcb_icccm_size_hints_set_position(theSizeHints, 0, WindowPointX, WindowPointY);
++	xcb_icccm_size_hints_set_size(theSizeHints, 0, WindowWidth, WindowHeight);
+ 
+-	xcb_set_wm_normal_hints(xc, theWindow, theSizeHints);
++	xcb_icccm_set_wm_normal_hints(xc, theWindow, theSizeHints);
+ 
+-	xcb_free_size_hints(theSizeHints);
++	free(theSizeHints);
+ 
+-	xcb_set_wm_name( xc, theWindow, STRING, strlen(theTitle), theTitle );
+-	xcb_set_wm_icon_name( xc, theWindow, STRING, strlen(theTitle), theTitle );
++	xcb_icccm_set_wm_name( xc, theWindow, XCB_ATOM_STRING, 8, strlen(theTitle), theTitle );
++	xcb_icccm_set_wm_icon_name( xc, theWindow, XCB_ATOM_STRING, 8, strlen(theTitle), theTitle );
+ 
+ 	xcb_map_window( xc, theWindow );
+ 
+--- xcb-demo-20170513.orig/rendertest.c
++++ xcb-demo-20170513/rendertest.c
+@@ -524,28 +524,34 @@
+     version_cookie = xcb_render_query_version(c, (uint32_t)0, (uint32_t)3);
+     version_reply = xcb_render_query_version_reply(c, version_cookie, 0);
+ 
+-    print_version_info(version_reply);
++    if(!getenv("RENDERTEST_QUIET"))
++    {
++        print_version_info(version_reply);
++    }
+     
+     formats_cookie = xcb_render_query_pict_formats(c);
+     formats_reply = xcb_render_query_pict_formats_reply(c, formats_cookie, 0);
+ 
+     draw_window(c, formats_reply);
+     
+-    print_formats_info(formats_reply);
+-   
+-    forminfo_query.id = 0;
+-    forminfo_query.type = XCB_RENDER_PICT_TYPE_DIRECT;
+-    forminfo_query.depth = 8;
+-    forminfo_query.direct.red_mask = 0;
+-    forminfo_query.direct.green_mask = 0;
+-    forminfo_query.direct.blue_mask = 0;
+-    forminfo_query.direct.alpha_mask = 255;
+-    
+-    forminfo_result = get_pictforminfo(formats_reply, &forminfo_query);
+-    fprintf(stdout, "\n***** found PICTFORMAT:  %d *****\n",
+-            forminfo_result->id);
+-    rootformat = get_pictformat_from_visual(formats_reply, root->root_visual);
+-    fprintf(stdout, "\n***** found root PICTFORMAT:   %d *****\n", rootformat);
++    if(!getenv("RENDERTEST_QUIET"))
++    {
++        print_formats_info(formats_reply);
++
++        forminfo_query.id = 0;
++        forminfo_query.type = XCB_RENDER_PICT_TYPE_DIRECT;
++        forminfo_query.depth = 8;
++        forminfo_query.direct.red_mask = 0;
++        forminfo_query.direct.green_mask = 0;
++        forminfo_query.direct.blue_mask = 0;
++        forminfo_query.direct.alpha_mask = 255;
++
++        forminfo_result = get_pictforminfo(formats_reply, &forminfo_query);
++        fprintf(stdout, "\n***** found PICTFORMAT:  %d *****\n",
++                forminfo_result->id);
++        rootformat = get_pictformat_from_visual(formats_reply, root->root_visual);
++        fprintf(stdout, "\n***** found root PICTFORMAT:   %d *****\n", rootformat);
++    }
+    
+ #if 0
+     draw_window(c, formats_reply);
+--- xcb-demo-20170513.orig/tests/Makefile.am
++++ xcb-demo-20170513/tests/Makefile.am
+@@ -5,12 +5,12 @@
+ 
+ bin_PROGRAMS = julia lissajoux flames
+ 
+-julia_LDADD = $(XCBAUX_LIBS) $(XCBIMAGE_LIBS) $(XCBICCCM_LIBS) $(XCBATOM_LIBS)
++julia_LDADD = $(XCBAUX_LIBS) $(XCBIMAGE_LIBS) $(XCBICCCM_LIBS)
+ julia_SOURCES = julia.c julia.h
+ 
+ lissajoux_LDADD = $(XCBAUX_LIBS) $(XCBIMAGE_LIBS) -lm
+ lissajoux_SOURCES = lissajoux.c lissajoux.h
+ 
+ flames_CFLAGS = -O3
+-flames_LDADD = $(XCBAUX_LIBS) $(XCBIMAGE_LIBS) $(XCBICCCM_LIBS) $(XCBATOM_LIBS)
++flames_LDADD = $(XCBAUX_LIBS) $(XCBIMAGE_LIBS) $(XCBICCCM_LIBS)
+ flames_SOURCES = flames.c
+--- xcb-demo-20170513.orig/tests/flames.c
++++ xcb-demo-20170513/tests/flames.c
+@@ -31,7 +31,6 @@
+ #include <xcb/shm.h>
+ #include <xcb/xcb_aux.h>
+ #include <xcb/xcb_image.h>
+-#include <xcb/xcb_atom.h>
+ #include <xcb/xcb_event.h>
+ 
+ /* Needed for xcb_icccm_set_wm_protocols() */
+--- xcb-demo-20170513.orig/tests/julia.c
++++ xcb-demo-20170513/tests/julia.c
+@@ -8,7 +8,6 @@
+ #include <xcb/shm.h>
+ #include <xcb/xcb_aux.h>
+ #include <xcb/xcb_image.h>
+-#include <xcb/xcb_atom.h>
+ #include <xcb/xcb_event.h>
+ 
+ #define XCB_ALL_PLANES ~0
+@@ -21,6 +20,9 @@
+ #define W_W 640
+ #define W_H 480
+ 
++uint16_t window_width;
++uint16_t window_height;
++
+ /* Parameters of the fractal */
+ 
+ /* double cr = -0.7927; */
+@@ -94,7 +96,7 @@
+   int       i, j;
+   
+   datap->image = xcb_image_get (datap->conn, datap->draw,
+-		       0, 0, W_W, W_H,
++		       0, 0, window_width, window_height,
+ 		       XCB_ALL_PLANES, datap->format);
+   
+   assert(datap->image);
+@@ -139,8 +141,11 @@
+   uint32_t           mask;
+   uint32_t           valgc[2];
+   uint32_t           valwin[3];
+-  xcb_rectangle_t     rect_coord = { 0, 0, W_W, W_H};
++  xcb_rectangle_t     rect_coord;
+   int              screen_num;
++
++  window_width = getenv("W_W") ? atoi(getenv("W_W")) : W_W;
++  window_height = getenv("W_H") ? atoi(getenv("W_H")) : W_H;
+   
+   data.conn = xcb_connect (0, &screen_num);
+   screen = xcb_aux_get_screen (data.conn, screen_num);
+@@ -168,7 +173,7 @@
+   xcb_create_window (data.conn, 0,
+ 		   data.draw,
+ 		   screen->root,
+-		   0, 0, W_W, W_H,
++		   0, 0, window_width, window_height,
+ 		   10,
+ 		   XCB_WINDOW_CLASS_INPUT_OUTPUT,
+ 		   screen->root_visual,
+@@ -178,7 +183,11 @@
+   rect = xcb_generate_id (data.conn);
+   xcb_create_pixmap (data.conn, data.depth,
+ 		   rect, data.draw,
+-		   W_W, W_H);
++		   window_width, window_height);
++  rect_coord.x = 0;
++  rect_coord.y = 0;
++  rect_coord.width = window_width;
++  rect_coord.height = window_height;
+   xcb_poly_fill_rectangle(data.conn, rect, bgcolor, 1, &rect_coord);
+ 
+   xcb_map_window (data.conn, data.draw);
+@@ -215,7 +224,7 @@
+ 	    case XCB_EXPOSE:
+ 	      {
+ 	        xcb_copy_area(data.conn, rect, data.draw, bgcolor,
+-				0, 0, 0, 0, W_W, W_H);
++				0, 0, 0, 0, window_width, window_height);
+ 	        draw_julia (&data);
+ 	        xcb_flush (data.conn);
+ 	        break;
+--- xcb-demo-20170513.orig/tests/lissajoux.c
++++ xcb-demo-20170513/tests/lissajoux.c
+@@ -23,6 +23,7 @@
+ int    loop_count;
+ double t_previous;
+ double t;
++double t_benchmark;
+ int    do_shm = 0;
+ 
+ double tab_cos[3600];
+@@ -111,7 +112,7 @@
+   loop_count++;
+   t = get_time () - time_start;
+ 
+-  if (t <= 2.0)
++  if (t <= t_benchmark)
+     {
+       draw_lissajoux (datap);
+     }
+@@ -120,8 +121,9 @@
+       printf("FRAME COUNT..: %i frames\n", loop_count);
+       printf("TIME.........: %3.3f seconds\n", t);
+       printf("AVERAGE FPS..: %3.3f fps\n", (double)loop_count / t);
+-      xcb_disconnect (datap->conn);
+-      exit(0);
++      time_start = get_time ();
++      t_previous = t = 0.0;
++      loop_count = 0;
+     }
+ }
+ 
+@@ -262,7 +264,9 @@
+ 
+   time_start = get_time ();
+   t_previous = 0.0;
+-  while (1)
++  t_benchmark = getenv("BENCHMARK") ? atof(getenv("BENCHMARK")) : 2.0;
++  int finished = 0;
++  while (!finished)
+     {
+       e = xcb_poll_for_event(data.conn);
+       if (e)
+@@ -273,6 +277,9 @@
+ 	      xcb_copy_area(data.conn, rect, data.draw, bgcolor,
+ 		          0, 0, 0, 0, W_W, W_H);
+ 	      break;
++	    case XCB_BUTTON_RELEASE:
++	      finished = 1;
++	      break;
+ 	    }
+ 	  free (e);
+         }
+@@ -280,5 +287,6 @@
+       xcb_flush (data.conn);
+       t_previous = t;
+     }
+-  /*NOTREACHED*/
++
++  xcb_disconnect (data.conn);
+ }
+--- xcb-demo-20170513.orig/xcb-test.c
++++ xcb-demo-20170513/xcb-test.c
+@@ -4,16 +4,22 @@
+  * for licensing information.
+  */
+ 
+-#define TEST_GET_WINDOW_ATTRIBUTES
+-#define TEST_GET_GEOMETRY
+-#define TEST_QUERY_TREE
+-#undef TEST_THREADS
+-#define VERBOSE
+-#undef SUPERVERBOSE
+-#define TEST_ICCCM
++//#define TEST_GET_WINDOW_ATTRIBUTES
++//#define TEST_GET_GEOMETRY
++//#define TEST_QUERY_TREE
++//#define TEST_THREADS
++//#define TEST_ICCCM
++
++#ifdef TEST_QUERY_TREE
++#define SUPERVERBOSE
++#endif
+ 
+ #ifdef TEST_THREADS
+ #include <pthread.h>
++#define VERBOSE
++# ifdef VERBOSE
++# include <stdio.h>
++# endif
+ #endif
+ 
+ #ifdef TEST_ICCCM
+@@ -26,10 +32,6 @@
+ #include <xcb/xcb_aux.h>
+ #include "reply_formats.h"
+ 
+-#ifdef VERBOSE
+-#include <stdio.h>
+-#endif
+-
+ void try_events(xcb_connection_t *c);
+ void wait_events(xcb_connection_t *c);
+ 
+@@ -93,7 +95,9 @@
+     values[3] = 0;
+ 
+     mask |= XCB_CW_EVENT_MASK;
+-    values[4] = XCB_EVENT_MASK_BUTTON_RELEASE
++    values[4] = XCB_EVENT_MASK_POINTER_MOTION
++        | XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_BUTTON_PRESS
++        | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE
+         | XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+         | XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW;
+ 
+@@ -219,8 +223,6 @@
+     if(!formatEvent(e))
+         return 0;
+ 
+-    if(e->response_type == XCB_BUTTON_RELEASE)
+-        ret = 0; /* They clicked, therefore, we're done. */
+     free(e);
+     return ret;
+ }

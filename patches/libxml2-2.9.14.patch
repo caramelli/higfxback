@@ -1,0 +1,128 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build xz-build zlib-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install .libs/xmlcatalog $DESTDIR/bin
+install .libs/xmllint $DESTDIR/bin
+install -d $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/c14n.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/catalog.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/chvalid.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/debugXML.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/dict.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/encoding.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/entities.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/globals.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/hash.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/HTMLparser.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/HTMLtree.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/list.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/nanoftp.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/nanohttp.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/parser.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/parserInternals.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/relaxng.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/SAX.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/SAX2.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/schematron.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/threads.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/tree.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/uri.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/valid.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xinclude.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xlink.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlIO.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlautomata.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlerror.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlexports.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlmemory.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlmodule.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlreader.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlregexp.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlsave.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlschemas.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlstring.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlversion.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xmlwriter.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xpath.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xpathInternals.h $DESTDIR/include/libxml2/libxml
+install -m 644 include/libxml/xpointer.h $DESTDIR/include/libxml2/libxml
+install -d $DESTDIR/lib
+install .libs/libxml2.so.2.* $DESTDIR/lib/libxml2.so.2
+ln -sf libxml2.so.2 $DESTDIR/lib/libxml2.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libxml-2.0.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libxml2-build.pc << EOF
+Name: libxml2
+Version: 2.9.14
+Description: eXtensible Markup Language library
+Requires: $REQUIRES
+
+devel=\\
+/include/libxml2/libxml/c14n.h \\
+/include/libxml2/libxml/catalog.h \\
+/include/libxml2/libxml/chvalid.h \\
+/include/libxml2/libxml/debugXML.h \\
+/include/libxml2/libxml/dict.h \\
+/include/libxml2/libxml/encoding.h \\
+/include/libxml2/libxml/entities.h \\
+/include/libxml2/libxml/globals.h \\
+/include/libxml2/libxml/hash.h \\
+/include/libxml2/libxml/HTMLparser.h \\
+/include/libxml2/libxml/HTMLtree.h \\
+/include/libxml2/libxml/list.h \\
+/include/libxml2/libxml/nanoftp.h \\
+/include/libxml2/libxml/nanohttp.h \\
+/include/libxml2/libxml/parser.h \\
+/include/libxml2/libxml/parserInternals.h \\
+/include/libxml2/libxml/relaxng.h \\
+/include/libxml2/libxml/SAX.h \\
+/include/libxml2/libxml/SAX2.h \\
+/include/libxml2/libxml/schematron.h \\
+/include/libxml2/libxml/threads.h \\
+/include/libxml2/libxml/tree.h \\
+/include/libxml2/libxml/uri.h \\
+/include/libxml2/libxml/valid.h \\
+/include/libxml2/libxml/xinclude.h \\
+/include/libxml2/libxml/xlink.h \\
+/include/libxml2/libxml/xmlIO.h \\
+/include/libxml2/libxml/xmlautomata.h \\
+/include/libxml2/libxml/xmlerror.h \\
+/include/libxml2/libxml/xmlexports.h \\
+/include/libxml2/libxml/xmlmemory.h \\
+/include/libxml2/libxml/xmlmodule.h \\
+/include/libxml2/libxml/xmlreader.h \\
+/include/libxml2/libxml/xmlregexp.h \\
+/include/libxml2/libxml/xmlsave.h \\
+/include/libxml2/libxml/xmlschemas.h \\
+/include/libxml2/libxml/xmlstring.h \\
+/include/libxml2/libxml/xmlversion.h \\
+/include/libxml2/libxml/xmlwriter.h \\
+/include/libxml2/libxml/xpath.h \\
+/include/libxml2/libxml/xpathInternals.h \\
+/include/libxml2/libxml/xpointer.h \\
+/lib/libxml2.so \\
+/lib/pkgconfig/libxml-2.0.pc
+
+exec=\\
+/bin/xmlcatalog \\
+/bin/xmllint \\
+/lib/libxml2.so.2
+EOF
+
+exit

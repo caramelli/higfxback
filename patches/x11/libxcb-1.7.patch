@@ -1,0 +1,94 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxau-build libxslt-build xcb-proto-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.67; am-1.11; lt-2.2.6b)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --disable-composite --disable-damage --disable-dpms --disable-dri2 --disable-glx --disable-record --disable-resource --disable-screensaver --disable-shape --disable-sync --disable-xevie --disable-xfixes --disable-xfree86-dri --disable-xinerama --disable-xprint --disable-xv --disable-xvmc --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/xcb
+install -m 644 src/randr.h $DESTDIR/x11/include/xcb
+install -m 644 src/render.h $DESTDIR/x11/include/xcb
+install -m 644 src/shm.h $DESTDIR/x11/include/xcb
+install -m 644 src/xcb.h $DESTDIR/x11/include/xcb
+install -m 644 src/xproto.h $DESTDIR/x11/include/xcb
+install -m 644 src/xtest.h $DESTDIR/x11/include/xcb
+install -d $DESTDIR/x11/lib
+install src/.libs/libxcb.so.1.* $DESTDIR/x11/lib/libxcb.so.1
+ln -sf libxcb.so.1 $DESTDIR/x11/lib/libxcb.so
+install src/.libs/libxcb-randr.so.0.* $DESTDIR/x11/lib/libxcb-randr.so.0
+ln -sf libxcb-randr.so.0 $DESTDIR/x11/lib/libxcb-randr.so
+install src/.libs/libxcb-render.so.0.* $DESTDIR/x11/lib/libxcb-render.so.0
+ln -sf libxcb-render.so.0 $DESTDIR/x11/lib/libxcb-render.so
+install src/.libs/libxcb-shm.so.0.* $DESTDIR/x11/lib/libxcb-shm.so.0
+ln -sf libxcb-shm.so.0 $DESTDIR/x11/lib/libxcb-shm.so
+install src/.libs/libxcb-xtest.so.0.* $DESTDIR/x11/lib/libxcb-xtest.so.0
+ln -sf libxcb-xtest.so.0 $DESTDIR/x11/lib/libxcb-xtest.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-randr.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-render.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-shm.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-xtest.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxcb-build.pc << EOF
+Name: libxcb
+Version: 1.7
+Description: X C-language Binding library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/xcb/randr.h \\
+/x11/include/xcb/render.h \\
+/x11/include/xcb/shm.h \\
+/x11/include/xcb/xcb.h \\
+/x11/include/xcb/xproto.h \\
+/x11/include/xcb/xtest.h \\
+/x11/lib/libxcb.so \\
+/x11/lib/libxcb-randr.so \\
+/x11/lib/libxcb-render.so \\
+/x11/lib/libxcb-shm.so \\
+/x11/lib/libxcb-xtest.so \\
+/x11/lib/pkgconfig/xcb.pc \\
+/x11/lib/pkgconfig/xcb-randr.pc \\
+/x11/lib/pkgconfig/xcb-render.pc \\
+/x11/lib/pkgconfig/xcb-shm.pc \\
+/x11/lib/pkgconfig/xcb-xtest.pc
+
+exec=\\
+/x11/lib/libxcb.so.1 \\
+/x11/lib/libxcb-randr.so.0 \\
+/x11/lib/libxcb-render.so.0 \\
+/x11/lib/libxcb-shm.so.0 \\
+/x11/lib/libxcb-xtest.so.0
+EOF
+
+exit
+--- libxcb-1.7.orig/configure.ac
++++ libxcb-1.7/configure.ac
+@@ -6,6 +6,7 @@
+         1.7,
+         [xcb@lists.freedesktop.org])
+ AC_CONFIG_SRCDIR([xcb.pc.in])
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([foreign dist-bzip2])
+ 
+ AM_PATH_PYTHON([2.5])
+@@ -33,7 +34,7 @@
+ 
+ # Checks for pkg-config packages
+ PKG_CHECK_MODULES(XCBPROTO, xcb-proto >= 1.6)
+-NEEDED="pthread-stubs xau >= 0.99.2"
++NEEDED="xau >= 0.99.2"
+ PKG_CHECK_MODULES(NEEDED, $NEEDED)
+ 
+ have_xdmcp="no"

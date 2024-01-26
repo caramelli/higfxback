@@ -1,0 +1,142 @@
+# This file is part of HiGFXback
+
+REQUIRES="autotools-wrappers-ac-build expat-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69)
+autoconf; autoheader
+./configure --enable-shared --with-system-expat --prefix=/
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install python $DESTDIR/bin/python2.7
+ln -sf python2.7 $DESTDIR/bin/python2
+install -d $DESTDIR/lib
+install libpython2.7.so.1.0 $DESTDIR/lib
+ln -sf libpython2.7.so.1.0 $DESTDIR/lib/libpython2.7.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 Misc/python.pc $DESTDIR/lib/pkgconfig/python-2.7.pc
+ln -sf python-2.7.pc $DESTDIR/lib/pkgconfig/python2.pc
+install -d $DESTDIR/lib/python2.7
+install -m 644 `cat pybuilddir.txt`/_sysconfigdata.py $DESTDIR/lib/python2.7
+install -m 644 Lib/__future__.py $DESTDIR/lib/python2.7
+install -m 644 Lib/_weakrefset.py $DESTDIR/lib/python2.7
+install -m 644 Lib/_abcoll.py $DESTDIR/lib/python2.7
+install -m 644 Lib/abc.py $DESTDIR/lib/python2.7
+install -m 644 Lib/argparse.py $DESTDIR/lib/python2.7
+install -m 644 Lib/codecs.py $DESTDIR/lib/python2.7
+install -m 644 Lib/collections.py $DESTDIR/lib/python2.7
+install -m 644 Lib/copy.py $DESTDIR/lib/python2.7
+install -m 644 Lib/copy_reg.py $DESTDIR/lib/python2.7
+install -m 644 Lib/functools.py $DESTDIR/lib/python2.7
+install -m 644 Lib/genericpath.py $DESTDIR/lib/python2.7
+install -m 644 Lib/getopt.py $DESTDIR/lib/python2.7
+install -m 644 Lib/gettext.py $DESTDIR/lib/python2.7
+install -m 644 Lib/heapq.py $DESTDIR/lib/python2.7
+install -m 644 Lib/keyword.py $DESTDIR/lib/python2.7
+install -m 644 Lib/linecache.py $DESTDIR/lib/python2.7
+install -m 644 Lib/locale.py $DESTDIR/lib/python2.7
+install -m 644 Lib/os.py $DESTDIR/lib/python2.7
+install -m 644 Lib/posixpath.py $DESTDIR/lib/python2.7
+install -m 644 Lib/py_compile.py $DESTDIR/lib/python2.7
+install -m 644 Lib/re.py $DESTDIR/lib/python2.7
+install -m 644 Lib/site.py $DESTDIR/lib/python2.7
+install -m 644 Lib/sre_compile.py $DESTDIR/lib/python2.7
+install -m 644 Lib/sre_constants.py $DESTDIR/lib/python2.7
+install -m 644 Lib/sre_parse.py $DESTDIR/lib/python2.7
+install -m 644 Lib/stat.py $DESTDIR/lib/python2.7
+install -m 644 Lib/string.py $DESTDIR/lib/python2.7
+install -m 644 Lib/struct.py $DESTDIR/lib/python2.7
+install -m 644 Lib/sysconfig.py $DESTDIR/lib/python2.7
+install -m 644 Lib/textwrap.py $DESTDIR/lib/python2.7
+install -m 644 Lib/traceback.py $DESTDIR/lib/python2.7
+install -m 644 Lib/types.py $DESTDIR/lib/python2.7
+install -m 644 Lib/UserDict.py $DESTDIR/lib/python2.7
+install -m 644 Lib/warnings.py $DESTDIR/lib/python2.7
+install -m 644 Lib/weakref.py $DESTDIR/lib/python2.7
+install -d $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/_collections.so $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/_elementtree.so $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/_functools.so $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/_struct.so $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/itertools.so $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/operator.so $DESTDIR/lib/python2.7/lib-dynload
+install `cat pybuilddir.txt`/pyexpat.so $DESTDIR/lib/python2.7/lib-dynload
+install -d $DESTDIR/lib/python2.7/xml
+install -m 644 Lib/xml/__init__.py $DESTDIR/lib/python2.7/xml
+install -d $DESTDIR/lib/python2.7/xml/etree
+install -m 644 Lib/xml/etree/__init__.py $DESTDIR/lib/python2.7/xml/etree
+install -m 644 Lib/xml/etree/cElementTree.py $DESTDIR/lib/python2.7/xml/etree
+install -m 644 Lib/xml/etree/ElementTree.py $DESTDIR/lib/python2.7/xml/etree
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/python2-build.pc << EOF
+Name: Python programming language
+Version: 2.7.18
+Description: Python
+Requires: $REQUIRES
+
+devel=\\
+/lib/libpython2.7.so \\
+/lib/pkgconfig/python-2.7.pc \\
+/lib/pkgconfig/python2.pc
+
+exec=\\
+/bin/python2 \\
+/bin/python2.7 \\
+/lib/libpython2.7.so.1.0 \\
+/lib/python2.7/__future__.py \\
+/lib/python2.7/_abcoll.py \\
+/lib/python2.7/_sysconfigdata.py \\
+/lib/python2.7/_weakrefset.py \\
+/lib/python2.7/abc.py \\
+/lib/python2.7/argparse.py \\
+/lib/python2.7/codecs.py \\
+/lib/python2.7/collections.py \\
+/lib/python2.7/copy.py \\
+/lib/python2.7/copy_reg.py \\
+/lib/python2.7/functools.py \\
+/lib/python2.7/genericpath.py \\
+/lib/python2.7/getopt.py \\
+/lib/python2.7/gettext.py \\
+/lib/python2.7/heapq.py \\
+/lib/python2.7/keyword.py \\
+/lib/python2.7/linecache.py \\
+/lib/python2.7/locale.py \\
+/lib/python2.7/os.py \\
+/lib/python2.7/posixpath.py \\
+/lib/python2.7/py_compile.py \\
+/lib/python2.7/re.py \\
+/lib/python2.7/site.py \\
+/lib/python2.7/sre_compile.py \\
+/lib/python2.7/sre_constants.py \\
+/lib/python2.7/sre_parse.py \\
+/lib/python2.7/stat.py \\
+/lib/python2.7/string.py \\
+/lib/python2.7/struct.py \\
+/lib/python2.7/sysconfig.py \\
+/lib/python2.7/textwrap.py \\
+/lib/python2.7/traceback.py \\
+/lib/python2.7/types.py \\
+/lib/python2.7/UserDict.py \\
+/lib/python2.7/warnings.py \\
+/lib/python2.7/weakref.py \\
+/lib/python2.7/lib-dynload/_collections.so \\
+/lib/python2.7/lib-dynload/_elementtree.so \\
+/lib/python2.7/lib-dynload/_functools.so \\
+/lib/python2.7/lib-dynload/_struct.so \\
+/lib/python2.7/lib-dynload/itertools.so \\
+/lib/python2.7/lib-dynload/operator.so \\
+/lib/python2.7/lib-dynload/pyexpat.so \\
+/lib/python2.7/xml/__init__.py \\
+/lib/python2.7/xml/etree/__init__.py \\
+/lib/python2.7/xml/etree/cElementTree.py \\
+/lib/python2.7/xml/etree/ElementTree.py
+EOF
+
+exit

@@ -1,0 +1,96 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build python2-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.65; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=/x11
+
+# install
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-proto.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -m 644 xcbgen/__init__.py $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -m 644 xcbgen/error.py $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -m 644 xcbgen/expr.py $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -m 644 xcbgen/matcher.py $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -m 644 xcbgen/state.py $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -m 644 xcbgen/xtypes.py $DESTDIR/x11/lib/python2.7/site-packages/xcbgen
+install -d $DESTDIR/x11/share/xcb
+install -m 644 src/bigreq.xml $DESTDIR/x11/share/xcb
+install -m 644 src/composite.xml $DESTDIR/x11/share/xcb
+install -m 644 src/damage.xml $DESTDIR/x11/share/xcb
+install -m 644 src/dpms.xml $DESTDIR/x11/share/xcb
+install -m 644 src/dri2.xml $DESTDIR/x11/share/xcb
+install -m 644 src/glx.xml $DESTDIR/x11/share/xcb
+install -m 644 src/randr.xml $DESTDIR/x11/share/xcb
+install -m 644 src/record.xml $DESTDIR/x11/share/xcb
+install -m 644 src/render.xml $DESTDIR/x11/share/xcb
+install -m 644 src/res.xml $DESTDIR/x11/share/xcb
+install -m 644 src/screensaver.xml $DESTDIR/x11/share/xcb
+install -m 644 src/shape.xml $DESTDIR/x11/share/xcb
+install -m 644 src/shm.xml $DESTDIR/x11/share/xcb
+install -m 644 src/sync.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xc_misc.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xevie.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xf86dri.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xfixes.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xinerama.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xinput.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xprint.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xproto.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xselinux.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xtest.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xv.xml $DESTDIR/x11/share/xcb
+install -m 644 src/xvmc.xml $DESTDIR/x11/share/xcb
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xcb-proto-build.pc << EOF
+Name: xcb-proto
+Version: 1.6
+Description: X C-language Binding Protocol
+Requires: $REQUIRES
+
+devel=\\
+/x11/lib/pkgconfig/xcb-proto.pc \\
+/x11/lib/python2.7/site-packages/xcbgen/__init__.py \\
+/x11/lib/python2.7/site-packages/xcbgen/error.py \\
+/x11/lib/python2.7/site-packages/xcbgen/expr.py \\
+/x11/lib/python2.7/site-packages/xcbgen/matcher.py \\
+/x11/lib/python2.7/site-packages/xcbgen/state.py \\
+/x11/lib/python2.7/site-packages/xcbgen/xtypes.py \\
+/x11/share/xcb/bigreq.xml \\
+/x11/share/xcb/composite.xml \\
+/x11/share/xcb/damage.xml \\
+/x11/share/xcb/dpms.xml \\
+/x11/share/xcb/dri2.xml \\
+/x11/share/xcb/glx.xml \\
+/x11/share/xcb/randr.xml \\
+/x11/share/xcb/record.xml \\
+/x11/share/xcb/render.xml \\
+/x11/share/xcb/res.xml \\
+/x11/share/xcb/screensaver.xml \\
+/x11/share/xcb/shape.xml \\
+/x11/share/xcb/shm.xml \\
+/x11/share/xcb/sync.xml \\
+/x11/share/xcb/xc_misc.xml \\
+/x11/share/xcb/xcb.xsd \\
+/x11/share/xcb/xevie.xml \\
+/x11/share/xcb/xf86dri.xml \\
+/x11/share/xcb/xfixes.xml \\
+/x11/share/xcb/xinerama.xml \\
+/x11/share/xcb/xinput.xml \\
+/x11/share/xcb/xprint.xml \\
+/x11/share/xcb/xproto.xml \\
+/x11/share/xcb/xselinux.xml \\
+/x11/share/xcb/xtest.xml \\
+/x11/share/xcb/xv.xml \\
+/x11/share/xcb/xvmc.xml
+
+EOF
+
+exit

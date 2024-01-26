@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxcb-build"
+
+if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/xcb
+install -m 644 keysyms/xcb_keysyms.h $DESTDIR/x11/include/xcb
+install -d $DESTDIR/x11/lib
+install keysyms/.libs/libxcb-keysyms.so.1.* $DESTDIR/x11/lib/libxcb-keysyms.so.1
+ln -sf libxcb-keysyms.so.1 $DESTDIR/x11/lib/libxcb-keysyms.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 keysyms/xcb-keysyms.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xcb-util-keysyms-build.pc << EOF
+Name: xcb-util-keysyms
+Version: 0.3.9
+Description: XCB keysyms library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/xcb/xcb_keysyms.h \\
+/x11/lib/libxcb-keysyms.so \\
+/x11/lib/pkgconfig/xcb-keysyms.pc
+
+exec=\\
+/x11/lib/libxcb-keysyms.so.1
+EOF
+
+exit

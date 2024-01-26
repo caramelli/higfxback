@@ -1,0 +1,97 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxml2-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install xsltproc/.libs/xsltproc $DESTDIR/bin
+install -d $DESTDIR/include/libexslt
+install -m 644 libexslt/exslt.h $DESTDIR/include/libexslt
+install -m 644 libexslt/exsltconfig.h $DESTDIR/include/libexslt
+install -m 644 libexslt/exsltexports.h $DESTDIR/include/libexslt
+install -d $DESTDIR/include/libxslt
+install -m 644 libxslt/documents.h $DESTDIR/include/libxslt
+install -m 644 libxslt/extensions.h $DESTDIR/include/libxslt
+install -m 644 libxslt/extra.h $DESTDIR/include/libxslt
+install -m 644 libxslt/functions.h $DESTDIR/include/libxslt
+install -m 644 libxslt/imports.h $DESTDIR/include/libxslt
+install -m 644 libxslt/numbersInternals.h $DESTDIR/include/libxslt
+install -m 644 libxslt/security.h $DESTDIR/include/libxslt
+install -m 644 libxslt/templates.h $DESTDIR/include/libxslt
+install -m 644 libxslt/transform.h $DESTDIR/include/libxslt
+install -m 644 libxslt/variables.h $DESTDIR/include/libxslt
+install -m 644 libxslt/xslt.h $DESTDIR/include/libxslt
+install -m 644 libxslt/xsltInternals.h $DESTDIR/include/libxslt
+install -m 644 libxslt/xsltconfig.h $DESTDIR/include/libxslt
+install -m 644 libxslt/xsltexports.h $DESTDIR/include/libxslt
+install -m 644 libxslt/xsltlocale.h $DESTDIR/include/libxslt
+install -m 644 libxslt/xsltutils.h $DESTDIR/include/libxslt
+install -d $DESTDIR/lib
+install libexslt/.libs/libexslt.so.0.* $DESTDIR/lib/libexslt.so.0
+ln -sf libexslt.so.0 $DESTDIR/lib/libexslt.so
+install libxslt/.libs/libxslt.so.1.* $DESTDIR/lib/libxslt.so.1
+ln -sf libxslt.so.1 $DESTDIR/lib/libxslt.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libexslt.pc $DESTDIR/lib/pkgconfig
+install -m 644 libxslt.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libxslt-build.pc << EOF
+Name: libxslt
+Version: 1.1.32
+Description: eXtensible Stylesheet Language Transformations library
+Requires: $REQUIRES
+
+devel=\\
+/include/libexslt/exslt.h \\
+/include/libexslt/exsltconfig.h \\
+/include/libexslt/exsltexports.h \\
+/include/libxslt/documents.h \\
+/include/libxslt/extensions.h \\
+/include/libxslt/extra.h \\
+/include/libxslt/functions.h \\
+/include/libxslt/imports.h \\
+/include/libxslt/numbersInternals.h \\
+/include/libxslt/security.h \\
+/include/libxslt/templates.h \\
+/include/libxslt/transform.h \\
+/include/libxslt/variables.h \\
+/include/libxslt/xslt.h \\
+/include/libxslt/xsltInternals.h \\
+/include/libxslt/xsltconfig.h \\
+/include/libxslt/xsltexports.h \\
+/include/libxslt/xsltlocale.h \\
+/include/libxslt/xsltutils.h \\
+/lib/libexslt.so \\
+/lib/libxslt.so \\
+/lib/pkgconfig/libexslt.pc \\
+/lib/pkgconfig/libxslt.pc
+
+exec=\\
+/bin/xsltproc \\
+/lib/libexslt.so.0 \\
+/lib/libxslt.so.1
+EOF
+
+exit
+--- libxslt-1.1.32.orig/configure.ac
++++ libxslt-1.1.32/configure.ac
+@@ -8,6 +8,7 @@
+ AC_INIT([libxslt], [MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
+ AC_CONFIG_SRCDIR([libxslt/xslt.c])
+ AC_CONFIG_HEADERS(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ AC_CANONICAL_HOST
+ AC_USE_SYSTEM_EXTENSIONS
+ 
