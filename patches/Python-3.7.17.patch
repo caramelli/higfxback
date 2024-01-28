@@ -2,7 +2,7 @@
 
 REQUIRES="autotools-wrappers-am-build expat-build zlib-build"
 
-if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15)
 aclocal -I m4; autoconf; autoheader

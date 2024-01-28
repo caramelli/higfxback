@@ -3,7 +3,7 @@
 # requires
 REQUIRES="autotools-wrappers-am-build"
 
-if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16)
 aclocal -I m4; autoconf; autoheader -f; automake -a -c

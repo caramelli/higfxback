@@ -3,7 +3,7 @@
 # requires
 REQUIRES="autotools-wrappers-lt-build"
 
-if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14; lt-2.4.4)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c

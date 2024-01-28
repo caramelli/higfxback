@@ -3,7 +3,7 @@
 # requires
 REQUIRES="meson-build"
 
-if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 sed -i '1s|.*|#!/bin/env python3|' src/core/fluxcomp.py

@@ -3,7 +3,7 @@
 # requires
 REQUIRES="lite-build meson-build"
 
-if ! PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build

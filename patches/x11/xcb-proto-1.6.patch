@@ -3,7 +3,7 @@
 # requires
 REQUIRES="autotools-wrappers-am-build python2-build"
 
-if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.65; am-1.11)
 aclocal; autoconf; automake -a -c

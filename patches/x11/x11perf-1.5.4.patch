@@ -3,7 +3,7 @@
 # requires
 REQUIRES="autotools-wrappers-am-build libxft-build libxmu-build"
 
-if ! PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68; am-1.11)
 aclocal; autoconf; autoheader; automake -a -c
