@@ -501,7 +501,16 @@ exit
  	float sincos_lut[360];
  	struct timeval start, last_tty, last_fps, now;
  	int theta, frames, n;
-@@ -181,8 +181,10 @@
+@@ -160,6 +160,8 @@
+ 		if (strcmp (argv[n], "--images") == 0) {
+ 			path = argv[n+1];
+ 			n++;
++	    } else if (strcmp (argv[n], "--prescale") == 0) {
++		prescale = 1;
+ 	    } else if (strcmp (argv[n], "--hide-path") == 0) {
+ 		show_path = 0;
+ 	    } else if (strcmp (argv[n], "--hide-outline") == 0) {
+@@ -181,8 +183,10 @@
  	}
  
  	load_sources(path, device->get_framebuffer(device)->surface);
@@ -514,7 +523,7 @@ exit
  
  	gettimeofday(&start, 0); now = last_tty = last_fps = start;
  	frames = 0;
-@@ -203,7 +205,6 @@
+@@ -203,7 +207,6 @@
  
  		rotation = floor(50*delta);
  
@@ -522,7 +531,7 @@ exit
  		cairo_paint(cr);
  
  		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-@@ -299,7 +300,7 @@
+@@ -299,7 +302,7 @@
  		frames++;
  		delta = now.tv_sec - last_tty.tv_sec;
  		delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
