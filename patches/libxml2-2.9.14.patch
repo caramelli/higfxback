@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build xz-build zlib-build"
+REQUIRES="autotools-wrappers-lt-build python2-build python3-build xz-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -11,6 +11,7 @@ libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
 
 # build
 make
+cd python; ./build.sh; cd -
 
 # install
 install -d $DESTDIR/bin
@@ -64,6 +65,12 @@ install .libs/libxml2.so.2.* $DESTDIR/lib/libxml2.so.2
 ln -sf libxml2.so.2 $DESTDIR/lib/libxml2.so
 install -d $DESTDIR/lib/pkgconfig
 install -m 644 libxml-2.0.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/lib/python`pkg-config --modversion python2`/site-packages
+install -m 644 python/python2/libxml2.py $DESTDIR/lib/python`pkg-config --modversion python2`/site-packages
+install python/python2/libxml2mod.so $DESTDIR/lib/python`pkg-config --modversion python2`/site-packages
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`/site-packages
+install -m 644 python/python3/libxml2.py $DESTDIR/lib/python`pkg-config --modversion python3`/site-packages
+install python/python3/libxml2mod.so $DESTDIR/lib/python`pkg-config --modversion python3`/site-packages
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -122,7 +129,42 @@ devel=\\
 exec=\\
 /bin/xmlcatalog \\
 /bin/xmllint \\
-/lib/libxml2.so.2
+/lib/libxml2.so.2 \\
+/lib/python`pkg-config --modversion python2`/site-packages/libxml2.py \\
+/lib/python`pkg-config --modversion python2`/site-packages/libxml2mod.so \\
+/lib/python`pkg-config --modversion python3`/site-packages/libxml2.py \\
+/lib/python`pkg-config --modversion python3`/site-packages/libxml2mod.so
 EOF
 
 exit
+--- libxml2-2.9.14.orig/configure.ac
++++ libxml2-2.9.14/configure.ac
+@@ -1705,4 +1705,7 @@
+ AC_CONFIG_FILES([xml2-config], [chmod +x xml2-config])
+ AC_OUTPUT
+ 
++./config.status --file python/build.sh
++chmod +x python/build.sh
++
+ echo Done configuring
+--- libxml2-2.9.14.orig/python/build.sh.in
++++ libxml2-2.9.14/python/build.sh.in
+@@ -0,0 +1,18 @@
++top_builddir='@top_builddir@'
++srcdir='@srcdir@'
++top_srcdir='@top_srcdir@'
++CC='@CC@'
++
++if pkg-config --exists python2; then
++  python2 $srcdir/generator.py
++  mkdir -p python2
++  cat $srcdir/libxml.py libxml2class.py > python2/libxml2.py
++  $CC -fPIC -shared -Wl,--no-undefined -I$srcdir -I$top_srcdir/include $srcdir/libxml.c $srcdir/types.c libxml2-py.c -o python2/libxml2mod.so `pkg-config --cflags --libs python2` -L$top_builddir/.libs -lxml2
++fi
++
++if pkg-config --exists python3; then
++  python3 $srcdir/generator.py
++  mkdir -p python3
++  cat $srcdir/libxml.py libxml2class.py > python3/libxml2.py
++  $CC -fPIC -shared -Wl,--no-undefined -I$srcdir -I$top_srcdir/include $srcdir/libxml.c $srcdir/types.c libxml2-py.c -o python3/libxml2mod.so `pkg-config --cflags --libs python3` -L$top_builddir/.libs -lxml2
++fi
