@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gmp-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 src/mpfr.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libmpfr.so.6.* $DESTDIR/lib/libmpfr.so.6
+ln -sf libmpfr.so.6 $DESTDIR/lib/libmpfr.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 mpfr.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/mpfr-build.pc << EOF
+Name: mpfr
+Version: 4.1.1
+Description: Multiple Precision Floating-point Reliable library
+Requires: $REQUIRES
+
+devel=\\
+/include/mpfr.h \\
+/lib/libmpfr.so \\
+/lib/pkgconfig/mpfr.pc
+
+exec=\\
+/lib/libmpfr.so.6
+EOF
+
+exit

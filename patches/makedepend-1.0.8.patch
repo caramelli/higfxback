@@ -1,0 +1,103 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build util-macros-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16)
+aclocal; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install makedepend $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/makedepend-build.pc << EOF
+Name: makedepend
+Version: 1.0.8
+Description: Utility to parse C source files to make dependency lists for Makefiles
+Requires: $REQUIRES
+
+exec=\\
+/bin/makedepend
+EOF
+
+exit
+--- makedepend-1.0.8.orig/Makefile.am
++++ makedepend-1.0.8/Makefile.am
+@@ -12,7 +12,6 @@
+                      imakemdep.h
+ 
+ AM_CPPFLAGS = -DOBJSUFFIX=\".${OBJEXT}\" -DINCLUDEDIR=\"/usr/include\"
+-AM_CPPFLAGS += $(X_CFLAGS)
+ AM_CFLAGS = $(CWARNFLAGS)
+ 
+ EXTRA_DIST = autogen.sh makedepend.man README.md
+--- makedepend-1.0.8.orig/configure.ac
++++ makedepend-1.0.8/configure.ac
+@@ -26,8 +26,5 @@
+ dnl Use 64-bit file operations on 32-bit systems that support them
+ AC_SYS_LARGEFILE
+ 
+-dnl Check for pkg-config packages
+-PKG_CHECK_MODULES(X, [xproto >= 7.0.17])
+-
+ AC_CONFIG_FILES([Makefile])
+ AC_OUTPUT
+--- makedepend-1.0.8.orig/def.h
++++ makedepend-1.0.8/def.h
+@@ -28,8 +28,6 @@
+ # include "makedepend-config.h"
+ #endif
+ 
+-#include <X11/Xos.h>
+-#include <X11/Xfuncproto.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -38,6 +36,29 @@
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ 
++#ifndef __has_attribute
++# define __has_attribute(x) 0
++#endif
++
++#ifndef _X_ATTRIBUTE_PRINTF
++#if __has_attribute(__format__) \
++    || defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 203)
++# define _X_ATTRIBUTE_PRINTF(x,y) __attribute__((__format__(__printf__,x,y)))
++#else
++# define _X_ATTRIBUTE_PRINTF(x,y)
++#endif
++#endif
++
++#ifndef _X_NORETURN
++#if __has_attribute(noreturn) \
++    || (defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 205)) \
++    || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
++# define _X_NORETURN __attribute((noreturn))
++#else
++# define _X_NORETURN
++#endif
++#endif
++
+ #define MAXDEFINES	512
+ #define MAXFILES	2048
+ #define MAXINCFILES	128	/* "-include" files */
+--- makedepend-1.0.8.orig/main.c
++++ makedepend-1.0.8/main.c
+@@ -44,6 +44,7 @@
+ #endif
+ 
+ #include <stdarg.h>
++#include <unistd.h>
+ 
+ #ifdef __sun
+ # include <sys/utsname.h>

@@ -1,0 +1,445 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build bison-build gcc-g++-build libxml2-build makedepend-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.68; am-1.11)
+aclocal; autoconf
+./configure --disable-glu --disable-glw --with-gallium-drivers=swrast --with-driver=fbdev --with-egl-platforms=fbdev --enable-gallium-egl --enable-gles1 --enable-gles2 --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/lib
+install lib/libEGL.so.1.* $DESTDIR/fb/lib/libmesaEGL.so.1
+install lib/libGL.so.1.* $DESTDIR/fb/lib/libmesaGL.so.1
+install lib/libGLESv1_CM.so.1.* $DESTDIR/fb/lib/libmesaGLESv1_CM.so.1
+install lib/libGLESv2.so.2.* $DESTDIR/fb/lib/libmesaGLESv2.so.2
+install lib/libglapi.so.0.* $DESTDIR/fb/lib/libglapi.so
+install -d $DESTDIR/fb/lib/egl
+install lib/egl/egl_gallium.so $DESTDIR/fb/lib/egl
+install lib/egl/st_GL.so $DESTDIR/fb/lib/egl
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/mesa-build.pc << EOF
+Name: Mesa
+Version: 7.11.2
+Description: Mesa implementation of Khronos specifications
+Requires: $REQUIRES
+
+devel=\\
+
+exec=\\
+EOF
+
+exit
+--- Mesa-7.11.2.orig/bin/mklib
++++ Mesa-7.11.2/bin/mklib
+@@ -333,7 +333,7 @@
+ 	    # Check if objects are 32-bit and we're running in 64-bit
+ 	    # environment.  If so, pass -m32 flag to linker.
+ 	    set ${OBJECTS}
+-	    ABI32=`file $1 | grep 32-bit`
++	    ABI32=`readelf -h $1 | grep ELF32`
+ 	    if [ "${ABI32}" -a `uname -m` = "x86_64" ] ; then
+ 		OPTS="-m32 ${OPTS}"
+ 	    fi
+@@ -390,7 +390,7 @@
+ 	    # Check if objects are 32-bit and we're running in 64-bit
+ 	    # environment.  If so, pass -m32 flag to linker.
+ 	    set ${OBJECTS}
+-	    ABI32=`file $1 | grep 32-bit`
++	    ABI32=`readelf -h $1 | grep ELF32`
+ 	    if [ "${ABI32}" -a `uname -m` = "x86_64" ] ; then
+ 		OPTS="-m32 ${OPTS}"
+ 	    fi
+--- Mesa-7.11.2.orig/configure.ac
++++ Mesa-7.11.2/configure.ac
+@@ -625,8 +625,7 @@
+ AC_SUBST([SHARED_GLAPI])
+ 
+ dnl
+-dnl Driver configuration. Options are xlib, dri and osmesa right now.
+-dnl More later: fbdev, ...
++dnl Driver configuration. Options are fbdev, xlib, dri and osmesa right now.
+ dnl
+ default_driver="xlib"
+ 
+@@ -649,12 +648,12 @@
+ 
+ AC_ARG_WITH([driver],
+     [AS_HELP_STRING([--with-driver=DRIVER],
+-        [driver for Mesa: xlib,dri,osmesa @<:@default=dri when available, or xlib@:>@])],
++        [driver for Mesa: fbdev,xlib,dri,osmesa @<:@default=dri when available, or xlib@:>@])],
+     [mesa_driver="$withval"],
+     [mesa_driver="$default_driver"])
+ dnl Check for valid option
+ case "x$mesa_driver" in
+-xxlib|xdri|xosmesa)
++xfbdev|xxlib|xdri|xosmesa)
+     if test "x$enable_opengl" = xno; then
+         AC_MSG_ERROR([Driver '$mesa_driver' requires OpenGL enabled])
+     fi
+@@ -711,6 +710,9 @@
+ esac
+ 
+ case "$mesa_driver" in
++fbdev)
++    DRIVER_DIRS="fbdev"
++    ;;
+ xlib)
+     DRIVER_DIRS="x11"
+     GALLIUM_WINSYS_DIRS="$GALLIUM_WINSYS_DIRS sw/xlib"
+@@ -820,6 +822,9 @@
+ dnl libGL configuration per driver
+ dnl
+ case "$mesa_driver" in
++fbdev)
++    GL_LIB_DEPS="-lpthread $DLOPEN_LIBS"
++    ;;
+ xlib)
+     if test "$x11_pkgconfig" = yes; then
+         PKG_CHECK_MODULES([XLIBGL], [x11 xext])
+@@ -959,6 +964,10 @@
+ 
+ AC_SUBST([HAVE_XF86VIDMODE])
+ 
++if test "$mesa_driver" = fbdev; then
++    DEFINES="$DEFINES -DUSE_GLFBDEV_DRIVER"
++fi
++
+ dnl
+ dnl More X11 setup
+ dnl
+@@ -1635,7 +1644,7 @@
+ AC_ARG_WITH([egl-platforms],
+     [AS_HELP_STRING([--with-egl-platforms@<:@=DIRS...@:>@],
+         [comma delimited native platforms libEGL supports, e.g.
+-        "x11,drm" @<:@default=auto@:>@])],
++        "fbdev,x11,drm" @<:@default=auto@:>@])],
+     [with_egl_platforms="$withval"],
+     [with_egl_platforms=yes])
+ 
+--- Mesa-7.11.2.orig/include/GL/glfbdev.h
++++ Mesa-7.11.2/include/GL/glfbdev.h
+@@ -26,13 +26,13 @@
+ #ifndef GLFBDEV_H
+ #define GLFBDEV_H
+ 
+-
+-/* for size_t */
+-#include <stdlib.h>
+-
+-/* avoid including linux/fb.h */
+-struct fb_fix_screeninfo;
+-struct fb_var_screeninfo;
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <fcntl.h>
++#include <linux/fb.h>
++#include <sys/mman.h>
+ 
+ 
+ /* public types */
+@@ -58,6 +58,7 @@
+ /* For glFBDevGetString */
+ #define GLFBDEV_VERSION         200
+ #define GLFBDEV_VENDOR          201
++#define GLFBDEV_EXTENSIONS      202
+ 
+ 
+ /* Misc functions */
+@@ -149,4 +150,20 @@
+                     GLFBDevBufferPtr readBuffer );
+ 
+ 
++
++/*
++ * GLFBDEV_EXT_set_window
++ */
++#ifndef GLFBDEV_EXT_set_window
++#define GLFBDEV_EXT_set_window 1
++
++extern void
++glFBDevSetWindow( GLFBDevBufferPtr buffer, void *window );
++
++#endif /* GLFBDEV_EXT_set_window */
++
++#ifdef __cplusplus
++}
++#endif
++
+ #endif /* GLFBDEV_H */
+--- Mesa-7.11.2.orig/src/egl/main/Makefile
++++ Mesa-7.11.2/src/egl/main/Makefile
+@@ -71,6 +71,9 @@
+ ifneq ($(findstring wayland, $(EGL_PLATFORMS)),)
+ LOCAL_LIBS += $(TOP)/src/egl/wayland/wayland-drm/libwayland-drm.a
+ endif
++ifneq ($(findstring fbdev, $(EGL_PLATFORMS)),)
++LOCAL_CFLAGS += -DMESA_EGL_NO_X11_HEADERS
++endif
+ 
+ ifeq ($(filter glx, $(EGL_DRIVERS_DIRS)),glx)
+ LOCAL_CFLAGS += -D_EGL_BUILT_IN_DRIVER_GLX
+--- Mesa-7.11.2.orig/src/gallium/state_trackers/egl/Makefile
++++ Mesa-7.11.2/src/gallium/state_trackers/egl/Makefile
+@@ -67,6 +67,7 @@
+ ifneq ($(findstring fbdev, $(EGL_PLATFORMS)),)
+ EGL_OBJECTS += $(fbdev_OBJECTS)
+ EGL_CPPFLAGS += -DHAVE_FBDEV_BACKEND
++DEFINES += -DMESA_EGL_NO_X11_HEADERS
+ endif
+ 
+ ##### TARGETS #####
+--- Mesa-7.11.2.orig/src/gallium/state_trackers/egl/fbdev/native_fbdev.c
++++ Mesa-7.11.2/src/gallium/state_trackers/egl/fbdev/native_fbdev.c
+@@ -253,10 +253,6 @@
+    struct fbdev_surface *fbsurf;
+    struct fb_var_screeninfo vinfo;
+ 
+-   /* there is only one native window: NULL */
+-   if (win)
+-      return NULL;
+-
+    fbsurf = CALLOC_STRUCT(fbdev_surface);
+    if (!fbsurf)
+       return NULL;
+--- Mesa-7.11.2.orig/src/gallium/targets/egl-static/Makefile
++++ Mesa-7.11.2/src/gallium/targets/egl-static/Makefile
+@@ -61,6 +61,7 @@
+ egl_SYS += $(LIBDRM_LIB) -lgbm
+ endif
+ ifneq ($(findstring fbdev, $(EGL_PLATFORMS)),)
++egl_CPPFLAGS += -DMESA_EGL_NO_X11_HEADERS
+ egl_LIBS += $(TOP)/src/gallium/winsys/sw/fbdev/libfbdev.a
+ endif
+ 
+--- Mesa-7.11.2.orig/src/mesa/drivers/fbdev/Makefile
++++ Mesa-7.11.2/src/mesa/drivers/fbdev/Makefile
+@@ -5,6 +5,11 @@
+ include $(TOP)/configs/current
+ 
+ 
++GL_MAJOR = 1
++GL_MINOR = 5
++GL_TINY = 0$(MESA_MAJOR)$(MESA_MINOR)0$(MESA_TINY)
++
++
+ SOURCES = glfbdev.c
+ 
+ OBJECTS = $(SOURCES:.c=.o)
+@@ -26,10 +31,10 @@
+ 
+ 
+ $(TOP)/$(LIB_DIR)/$(GL_LIB_NAME): $(CORE_MESA) $(OBJECTS)
+-	@ $(MKLIB) -o $(GL_LIB) -linker '$(CC)' -ldflags '$(LDFLAGS)' \
+-		-major $(MESA_MAJOR) -minor $(MESA_MINOR) -patch $(MESA_TINY) \
++	@ $(MKLIB) -o $(GL_LIB) -linker '$(CXX)' -ldflags '$(LDFLAGS)' \
++		-major $(GL_MAJOR) -minor $(GL_MINOR) -patch $(GL_TINY) \
+ 		-install $(TOP)/$(LIB_DIR) $(MKLIB_OPTIONS) \
+-		$(CORE_MESA) $(OBJECTS) $(GL_LIB_DEPS)
++		$(OBJECTS) $(CORE_MESA) $(GL_LIB_DEPS)
+ 
+ 
+ clean:
+--- Mesa-7.11.2.orig/src/mesa/drivers/fbdev/glfbdev.c
++++ Mesa-7.11.2/src/mesa/drivers/fbdev/glfbdev.c
+@@ -272,7 +272,7 @@
+ /**********************************************************************/
+ 
+ 
+-const char *
++const char PUBLIC *
+ glFBDevGetString( int str )
+ {
+    switch (str) {
+@@ -280,13 +280,15 @@
+       return "Mesa Project";
+    case GLFBDEV_VERSION:
+       return "1.0.1";
++   case GLFBDEV_EXTENSIONS:
++      return "GLFBDEV_EXT_set_window";
+    default:
+       return NULL;
+    }
+ }
+ 
+ 
+-GLFBDevProc
++GLFBDevProc PUBLIC
+ glFBDevGetProcAddress( const char *procName )
+ {
+    struct name_address {
+@@ -310,6 +312,7 @@
+       { "glFBDevGetContextAttrib", (GLFBDevProc) glFBDevGetContextAttrib },
+       { "glFBDevGetCurrentContext", (GLFBDevProc) glFBDevGetCurrentContext },
+       { "glFBDevMakeCurrent", (GLFBDevProc) glFBDevMakeCurrent },
++      { "glFBDevSetWindow", (GLFBDevProc) glFBDevSetWindow },
+       { NULL, NULL }
+    };
+    const struct name_address *entry;
+@@ -322,7 +325,7 @@
+ }
+ 
+ 
+-GLFBDevVisualPtr
++GLFBDevVisualPtr PUBLIC
+ glFBDevCreateVisual( const struct fb_fix_screeninfo *fixInfo,
+                      const struct fb_var_screeninfo *varInfo,
+                      const int *attribs )
+@@ -384,6 +387,9 @@
+    greenBits = varInfo->green.length;
+    blueBits  = varInfo->blue.length;
+    alphaBits = varInfo->transp.length;
++   if (depthBits == 1) {
++      depthBits = varInfo->bits_per_pixel;
++   }
+ 
+    if (fixInfo->visual == FB_VISUAL_TRUECOLOR ||
+        fixInfo->visual == FB_VISUAL_DIRECTCOLOR) {
+@@ -433,7 +439,7 @@
+ }
+ 
+ 
+-void
++void PUBLIC
+ glFBDevDestroyVisual( GLFBDevVisualPtr visual )
+ {
+    if (visual)
+@@ -441,13 +447,15 @@
+ }
+ 
+ 
+-int
++int PUBLIC
+ glFBDevGetVisualAttrib( const GLFBDevVisualPtr visual, int attrib)
+ {
+-   /* XXX unfinished */
+-   (void) visual;
+-   (void) attrib;
+-   return -1;
++   switch (attrib) {
++      case GLFBDEV_DEPTH_SIZE:
++         return visual->glvisual.depthBits;
++      default:
++         return -1;
++   }
+ }
+ 
+ 
+@@ -547,7 +555,7 @@
+    return rb;
+ }
+ 
+-GLFBDevBufferPtr
++GLFBDevBufferPtr PUBLIC
+ glFBDevCreateBuffer( const struct fb_fix_screeninfo *fixInfo,
+                      const struct fb_var_screeninfo *varInfo,
+                      const GLFBDevVisualPtr visual,
+@@ -629,7 +637,7 @@
+ }
+ 
+ 
+-void
++void PUBLIC
+ glFBDevDestroyBuffer( GLFBDevBufferPtr buffer )
+ {
+    if (buffer) {
+@@ -647,7 +655,7 @@
+ }
+ 
+ 
+-int
++int PUBLIC
+ glFBDevGetBufferAttrib( const GLFBDevBufferPtr buffer, int attrib)
+ {
+    (void) buffer;
+@@ -656,7 +664,7 @@
+ }
+ 
+ 
+-GLFBDevBufferPtr
++GLFBDevBufferPtr PUBLIC
+ glFBDevGetCurrentDrawBuffer( void )
+ {
+    GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
+@@ -667,7 +675,7 @@
+ }
+ 
+ 
+-GLFBDevBufferPtr
++GLFBDevBufferPtr PUBLIC
+ glFBDevGetCurrentReadBuffer( void )
+ {
+    GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
+@@ -678,7 +686,7 @@
+ }
+ 
+ 
+-void
++void PUBLIC
+ glFBDevSwapBuffers( GLFBDevBufferPtr buffer )
+ {
+    GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
+@@ -702,7 +710,7 @@
+ }
+ 
+ 
+-GLFBDevContextPtr
++GLFBDevContextPtr PUBLIC
+ glFBDevCreateContext( const GLFBDevVisualPtr visual, GLFBDevContextPtr share )
+ {
+    GLFBDevContextPtr ctx;
+@@ -756,7 +764,7 @@
+ }
+ 
+ 
+-void
++void PUBLIC
+ glFBDevDestroyContext( GLFBDevContextPtr context )
+ {
+    GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
+@@ -779,7 +787,7 @@
+ }
+ 
+ 
+-int
++int PUBLIC
+ glFBDevGetContextAttrib( const GLFBDevContextPtr context, int attrib)
+ {
+    (void) context;
+@@ -788,7 +796,7 @@
+ }
+ 
+ 
+-GLFBDevContextPtr
++GLFBDevContextPtr PUBLIC
+ glFBDevGetCurrentContext( void )
+ {
+    GET_CURRENT_CONTEXT(ctx);
+@@ -796,7 +804,7 @@
+ }
+ 
+ 
+-int
++int PUBLIC
+ glFBDevMakeCurrent( GLFBDevContextPtr context,
+                     GLFBDevBufferPtr drawBuffer,
+                     GLFBDevBufferPtr readBuffer )
+@@ -825,4 +833,9 @@
+    return 1;
+ }
+ 
++void PUBLIC
++glFBDevSetWindow( GLFBDevBufferPtr buffer, void *window )
++{
++}
++
+ #endif /* USE_GLFBDEV_DRIVER */

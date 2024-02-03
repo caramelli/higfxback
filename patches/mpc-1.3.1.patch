@@ -1,0 +1,49 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build mpfr-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 src/mpc.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libmpc.so.3.* $DESTDIR/lib/libmpc.so.3
+ln -sf libmpc.so.3 $DESTDIR/lib/libmpc.so
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/mpc-build.pc << EOF
+Name: mpc
+Version: 1.3.1
+Description: Multiple Precision Complex floating-point library
+Requires: $REQUIRES
+
+devel=\\
+/include/mpc.h \\
+/lib/libmpc.so
+
+exec=\\
+/lib/libmpc.so.3
+EOF
+
+exit
+--- mpc-1.3.1.orig/m4/mpc.m4
++++ mpc-1.3.1/m4/mpc.m4
+@@ -178,7 +178,7 @@
+       AC_CHECK_PROG([HASGIT], [git], [yes], [no])
+       AS_IF([test "x$HASGIT" = "xyes"], [
+          AC_MSG_CHECKING([for current git version])
+-         GITVERSION=esyscmd([git rev-parse --short HEAD])
++         GITVERSION=esyscmd([git rev-parse --short HEAD 2> /dev/null])
+          AC_SUBST([GITVERSION])
+          AC_MSG_RESULT([$GITVERSION])
+       ])
