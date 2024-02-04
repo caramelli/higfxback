@@ -31,9 +31,14 @@ Version: 7.11.2
 Description: Mesa implementation of Khronos specifications
 Requires: $REQUIRES
 
-devel=\\
-
 exec=\\
+/fb/lib/libmesaEGL.so.1 \\
+/fb/lib/libmesaGL.so.1 \\
+/fb/lib/libmesaGLESv1_CM.so.1 \\
+/fb/lib/libmesaGLESv2.so.2 \\
+/fb/lib/libglapi.so \\
+/fb/lib/egl/egl_gallium.so \\
+/fb/lib/egl/st_GL.so
 EOF
 
 exit
@@ -161,15 +166,15 @@ exit
  
 +
 +/*
-+ * GLFBDEV_EXT_set_window
++ * GLFBDEV_set_window
 + */
-+#ifndef GLFBDEV_EXT_set_window
-+#define GLFBDEV_EXT_set_window 1
++#ifndef GLFBDEV_set_window
++#define GLFBDEV_set_window 1
 +
 +extern void
 +glFBDevSetWindow( GLFBDevBufferPtr buffer, void *window );
 +
-+#endif /* GLFBDEV_EXT_set_window */
++#endif /* GLFBDEV_set_window */
 +
 +#ifdef __cplusplus
 +}
@@ -265,7 +270,7 @@ exit
     case GLFBDEV_VERSION:
        return "1.0.1";
 +   case GLFBDEV_EXTENSIONS:
-+      return "GLFBDEV_EXT_set_window";
++      return "GLFBDEV_set_window";
     default:
        return NULL;
     }

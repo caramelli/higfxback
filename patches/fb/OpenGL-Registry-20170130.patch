@@ -1,0 +1,192 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build egl-registry-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C xml
+
+# install
+install -d $DESTDIR/fb/include/GL
+install -m 644 api/GL/gl.h $DESTDIR/fb/include/GL
+install -m 644 api/GL/glext.h $DESTDIR/fb/include/GL
+install -m 644 api/GL/glfbdev.h $DESTDIR/fb/include/GL
+install -d $DESTDIR/fb/include/GLES
+install -m 644 api/GLES/gl.h $DESTDIR/fb/include/GLES
+install -m 644 api/GLES/glext.h $DESTDIR/fb/include/GLES
+install -m 644 api/GLES/glplatform.h $DESTDIR/fb/include/GLES
+install -d $DESTDIR/fb/include/GLES2
+install -m 644 api/GLES2/gl2.h $DESTDIR/fb/include/GLES2
+install -m 644 api/GLES2/gl2ext.h $DESTDIR/fb/include/GLES2
+install -m 644 api/GLES2/gl2platform.h $DESTDIR/fb/include/GLES2
+install -d $DESTDIR/fb/include/GLES3
+install -m 644 api/GLES3/gl3.h $DESTDIR/fb/include/GLES3
+install -m 644 api/GLES3/gl3platform.h $DESTDIR/fb/include/GLES3
+install -d $DESTDIR/fb/share/opengl/registry
+install -m 644 xml/gl.xml $DESTDIR/fb/share/opengl/registry
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/opengl-registry-build.pc << EOF
+Name: opengl-registry
+Version: 20170130
+Description: OpenGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/GL/gl.h \\
+/fb/include/GL/glext.h \\
+/fb/include/GL/glfbdev.h \\
+/fb/include/GLES/gl.h \\
+/fb/include/GLES/glext.h \\
+/fb/include/GLES/glplatform.h \\
+/fb/include/GLES2/gl2.h \\
+/fb/include/GLES2/gl2ext.h \\
+/fb/include/GLES2/gl2platform.h \\
+/fb/include/GLES3/gl3.h \\
+/fb/include/GLES3/gl3platform.h \\
+/fb/share/opengl/registry/gl.xml
+EOF
+
+exit
+--- OpenGL-Registry-20170130.orig/api/GL/glfbdev.h
++++ OpenGL-Registry-20170130/api/GL/glfbdev.h
+@@ -0,0 +1,79 @@
++#ifndef __glfbdev_h_
++#define __glfbdev_h_ 1
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/*
++** Copyright (c) 2013-2017 The Khronos Group Inc.
++**
++** Permission is hereby granted, free of charge, to any person obtaining a
++** copy of this software and/or associated documentation files (the
++** "Materials"), to deal in the Materials without restriction, including
++** without limitation the rights to use, copy, modify, merge, publish,
++** distribute, sublicense, and/or sell copies of the Materials, and to
++** permit persons to whom the Materials are furnished to do so, subject to
++** the following conditions:
++**
++** The above copyright notice and this permission notice shall be included
++** in all copies or substantial portions of the Materials.
++**
++** THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
++** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
++** MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
++*/
++
++#include <fcntl.h>
++#include <linux/fb.h>
++#include <sys/mman.h>
++
++#ifndef GLFBDEV_VERSION_1_0
++#define GLFBDEV_VERSION_1_0 1
++typedef struct GLFBDevVisualRec *GLFBDevVisualPtr;
++typedef struct GLFBDevBufferRec *GLFBDevBufferPtr;
++typedef struct GLFBDevContextRec *GLFBDevContextPtr;
++#define GLFBDEV_DOUBLE_BUFFER   100
++#define GLFBDEV_COLOR_INDEX     101
++#define GLFBDEV_DEPTH_SIZE      102
++#define GLFBDEV_STENCIL_SIZE    103
++#define GLFBDEV_ACCUM_SIZE      104
++#define GLFBDEV_LEVEL           105
++#define GLFBDEV_MULTISAMPLE     106
++#define GLFBDEV_NONE              0
++#define GLFBDEV_VERSION         200
++#define GLFBDEV_VENDOR          201
++#define GLFBDEV_EXTENSIONS      202
++const char *glFBDevGetString (int str);
++typedef void ( *GLFBDevProc)(void);
++GLFBDevProc glFBDevGetProcAddress (const char *procName);
++GLFBDevVisualPtr glFBDevCreateVisual (const struct fb_fix_screeninfo *fixInfo, const struct fb_var_screeninfo *varInfo, const int *attribs);
++void glFBDevDestroyVisual (GLFBDevVisualPtr visual);
++int glFBDevGetVisualAttrib (const GLFBDevVisualPtr visual, int attrib);
++GLFBDevBufferPtr glFBDevCreateBuffer (const struct fb_fix_screeninfo *fixInfo, const struct fb_var_screeninfo *varInfo, const GLFBDevVisualPtr visual, void *frontBuffer, void *backBuffer, size_t size);
++void glFBDevDestroyBuffer (GLFBDevBufferPtr buffer);
++int glFBDevGetBufferAttrib (const GLFBDevBufferPtr buffer, int attrib);
++GLFBDevBufferPtr glFBDevGetCurrentDrawBuffer (void);
++GLFBDevBufferPtr glFBDevGetCurrentReadBuffer (void);
++void glFBDevSwapBuffers (GLFBDevBufferPtr buffer);
++GLFBDevContextPtr glFBDevCreateContext (const GLFBDevVisualPtr visual, GLFBDevContextPtr share);
++void glFBDevDestroyContext (GLFBDevContextPtr context);
++int glFBDevGetContextAttrib (const GLFBDevContextPtr context, int attrib);
++GLFBDevContextPtr glFBDevGetCurrentContext (void);
++int glFBDevMakeCurrent (GLFBDevContextPtr context, GLFBDevBufferPtr drawBuffer, GLFBDevBufferPtr readBuffer);
++#endif /* GLFBDEV_VERSION_1_0 */
++
++#ifndef GLFBDEV_set_window
++#define GLFBDEV_set_window 1
++void glFBDevSetWindow (GLFBDevBufferPtr buffer, void *window);
++#endif /* GLFBDEV_set_window */
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+--- OpenGL-Registry-20170130.orig/xml/Makefile
++++ OpenGL-Registry-20170130/xml/Makefile
+@@ -17,14 +17,15 @@
+ 
+ PYFILES = genheaders.py reg.py
+ GENOPTS =
+-GENHEADERS = genheaders.py $(GENOPTS)
++GENHEADERS = python3 ./genheaders.py $(GENOPTS)
+ 
+ # Generate all headers for GL / GLES / WGL / GLX
+ # Different headers depend on different XML registry files
+ 
+ API	   = ../api
+-GLHEADERS  = $(API)/GL/glext.h \
+-	     $(API)/GL/glcorearb.h \
++GLHEADERS  = \
++	     $(API)/GL/gl.h \
++	     $(API)/GL/glext.h \
+ 	     $(API)/GLES/gl.h \
+ 	     $(API)/GLES/glext.h \
+ 	     $(API)/GLES2/gl2.h \
+--- OpenGL-Registry-20170130.orig/xml/genheaders.py
++++ OpenGL-Registry-20170130/xml/genheaders.py
+@@ -121,6 +121,7 @@
+ 
+ allVersions       = allExtensions = '.*'
+ noVersions        = noExtensions = None
++glthrough21Pat    = '1|2\.[0-9]'
+ gl12andLaterPat   = '1\.[2-9]|[234]\.[0-9]'
+ gles2onlyPat      = '2\.[0-9]'
+ gles2through30Pat = '2\.[0-9]|3\.0'
+@@ -269,6 +270,25 @@
+ protectProto = protect
+ 
+ buildList = [
++    # GL compatibility profile - GL/gl.h
++    CGeneratorOptions(
++        filename          = '../api/GL/gl.h',
++        apiname           = 'gl',
++        profile           = 'compatibility',
++        versions          = allVersions,
++        emitversions      = glthrough21Pat,
++        defaultExtensions = None,
++        addExtensions     = None,
++        removeExtensions  = None,
++        prefixText        = prefixStrings + glExtPlatformStrings + genDateCommentString,
++        genFuncPointers   = True,
++        protectFile       = protectFile,
++        protectFeature    = protectFeature,
++        protectProto      = False,
++        protectProtoStr   = 'GL_GLEXT_PROTOTYPES',
++        apicall           = 'GLAPI ',
++        apientry          = 'APIENTRY ',
++        apientryp         = 'APIENTRYP '),
+     # GL API 1.2+ + extensions - GL/glext.h
+     CGeneratorOptions(
+         filename          = '../api/GL/glext.h',

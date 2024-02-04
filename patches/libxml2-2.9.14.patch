@@ -65,12 +65,12 @@ install .libs/libxml2.so.2.* $DESTDIR/lib/libxml2.so.2
 ln -sf libxml2.so.2 $DESTDIR/lib/libxml2.so
 install -d $DESTDIR/lib/pkgconfig
 install -m 644 libxml-2.0.pc $DESTDIR/lib/pkgconfig
-install -d $DESTDIR/lib/python`pkg-config --modversion python2`/site-packages
-install -m 644 python/python2/libxml2.py $DESTDIR/lib/python`pkg-config --modversion python2`/site-packages
-install python/python2/libxml2mod.so $DESTDIR/lib/python`pkg-config --modversion python2`/site-packages
-install -d $DESTDIR/lib/python`pkg-config --modversion python3`/site-packages
-install -m 644 python/python3/libxml2.py $DESTDIR/lib/python`pkg-config --modversion python3`/site-packages
-install python/python3/libxml2mod.so $DESTDIR/lib/python`pkg-config --modversion python3`/site-packages
+install -d $DESTDIR/lib/python`pkg-config --modversion python2`
+install -m 644 python/python2/libxml2.py $DESTDIR/lib/python`pkg-config --modversion python2`
+install python/python2/libxml2mod.so $DESTDIR/lib/python`pkg-config --modversion python2`
+install -d $DESTDIR/lib/python`pkg-config --modversion python3`
+install -m 644 python/python3/libxml2.py $DESTDIR/lib/python`pkg-config --modversion python3`
+install python/python3/libxml2mod.so $DESTDIR/lib/python`pkg-config --modversion python3`
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -130,10 +130,10 @@ exec=\\
 /bin/xmlcatalog \\
 /bin/xmllint \\
 /lib/libxml2.so.2 \\
-/lib/python`pkg-config --modversion python2`/site-packages/libxml2.py \\
-/lib/python`pkg-config --modversion python2`/site-packages/libxml2mod.so \\
-/lib/python`pkg-config --modversion python3`/site-packages/libxml2.py \\
-/lib/python`pkg-config --modversion python3`/site-packages/libxml2mod.so
+/lib/python`pkg-config --modversion python2`/libxml2.py \\
+/lib/python`pkg-config --modversion python2`/libxml2mod.so \\
+/lib/python`pkg-config --modversion python3`/libxml2.py \\
+/lib/python`pkg-config --modversion python3`/libxml2mod.so
 EOF
 
 exit
@@ -149,7 +149,9 @@ exit
  echo Done configuring
 --- libxml2-2.9.14.orig/python/build.sh.in
 +++ libxml2-2.9.14/python/build.sh.in
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,20 @@
++#!/bin/sh
++
 +top_builddir='@top_builddir@'
 +srcdir='@srcdir@'
 +top_srcdir='@top_srcdir@'

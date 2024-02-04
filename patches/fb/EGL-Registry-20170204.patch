@@ -1,0 +1,65 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build lxml-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C api
+
+# install
+install -d $DESTDIR/fb/include/EGL
+install -m 644 api/EGL/egl.h $DESTDIR/fb/include/EGL
+install -m 644 api/EGL/eglext.h $DESTDIR/fb/include/EGL
+install -m 644 api/EGL/eglplatform.h $DESTDIR/fb/include/EGL
+install -d $DESTDIR/fb/include/KHR
+install -m 644 api/KHR/khrplatform.h $DESTDIR/fb/include/KHR
+install -d $DESTDIR/fb/share/egl/registry
+install -m 644 api/egl.xml $DESTDIR/fb/share/egl/registry
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/egl-registry-build.pc << EOF
+Name: egl-registry
+Version: 20170204
+Description: EGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/EGL/egl.h \\
+/fb/include/EGL/eglext.h \\
+/fb/include/EGL/eglplatform.h \\
+/fb/include/KHR/khrplatform.h \\
+/fb/share/egl/registry/egl.xml
+EOF
+
+exit
+--- EGL-Registry-20170204.orig/api/EGL/eglplatform.h
++++ EGL-Registry-20170204/api/EGL/eglplatform.h
+@@ -66,8 +66,13 @@
+  * portability of applications using EGL running on different EGL
+  * implementations.
+  */
++#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
+ 
+-#if defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
++typedef void *EGLNativeDisplayType;
++typedef void *EGLNativePixmapType;
++typedef void *EGLNativeWindowType;
++
++#elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
+ #ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN 1
+ #endif
+--- EGL-Registry-20170204.orig/api/Makefile
++++ EGL-Registry-20170204/api/Makefile
+@@ -16,7 +16,7 @@
+ EGLHEADERS = EGL/egl.h EGL/eglext.h
+ 
+ # Generation tools
+-PYTHON = python
++PYTHON = python3
+ PYFILES = genheaders.py reg.py
+ REGISTRY = egl.xml
+ GENOPTS =
