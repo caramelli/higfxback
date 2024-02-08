@@ -1,0 +1,139 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build cairo-build gcc-g++-build glib-build jpeg-build openjpeg-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.64; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-static --disable-abiword-output --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install utils/.libs/pdffonts $DESTDIR/dfb/bin
+install utils/.libs/pdfimages $DESTDIR/dfb/bin
+install utils/.libs/pdfinfo $DESTDIR/dfb/bin
+install utils/.libs/pdftohtml $DESTDIR/dfb/bin
+install utils/.libs/pdftoppm $DESTDIR/dfb/bin
+install utils/.libs/pdftops $DESTDIR/dfb/bin
+install utils/.libs/pdftotext $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-action.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-annot.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-attachment.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-date.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-document.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-enums.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-features.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-form-field.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-layer.h $DESTDIR/dfb/include/poppler/glib
+install -m 644 glib/poppler-page.h $DESTDIR/dfb/include/poppler/glib
+install -d $DESTDIR/dfb/lib
+install poppler/.libs/libpoppler.so.5.* $DESTDIR/dfb/lib/libpoppler.so.5
+ln -sf libpoppler.so.5 $DESTDIR/dfb/lib/libpoppler.so
+install glib/.libs/libpoppler-glib.so.4.* $DESTDIR/dfb/lib/libpoppler-glib.so.4
+ln -sf libpoppler-glib.so.4 $DESTDIR/dfb/lib/libpoppler-glib.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 poppler.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 poppler-glib.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/poppler-build.pc << EOF
+Name: poppler
+Version: 0.12.4
+Description: Xpdf-based rendering library and PDF document manipulation utilities
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/poppler/glib/poppler.h \\
+/dfb/include/poppler/glib/poppler-action.h \\
+/dfb/include/poppler/glib/poppler-annot.h \\
+/dfb/include/poppler/glib/poppler-attachment.h \\
+/dfb/include/poppler/glib/poppler-date.h \\
+/dfb/include/poppler/glib/poppler-document.h \\
+/dfb/include/poppler/glib/poppler-enums.h \\
+/dfb/include/poppler/glib/poppler-features.h \\
+/dfb/include/poppler/glib/poppler-form-field.h \\
+/dfb/include/poppler/glib/poppler-layer.h \\
+/dfb/include/poppler/glib/poppler-page.h \\
+/dfb/lib/libpoppler.so \\
+/dfb/lib/libpoppler-glib.so \\
+/dfb/lib/pkgconfig/poppler.pc \\
+/dfb/lib/pkgconfig/poppler-glib.pc
+
+exec=\\
+/dfb/bin/pdffonts \\
+/dfb/bin/pdfimages \\
+/dfb/bin/pdfinfo \\
+/dfb/bin/pdftohtml \\
+/dfb/bin/pdftoppm \\
+/dfb/bin/pdftops \\
+/dfb/bin/pdftotext \\
+/dfb/lib/libpoppler.so.5 \\
+/dfb/lib/libpoppler-glib.so.4
+EOF
+
+exit
+--- poppler-0.12.4.orig/configure.ac
++++ poppler-0.12.4/configure.ac
+@@ -357,18 +357,21 @@
+     enable_gdk=yes
+   fi
+   if test x$enable_gdk = xyes; then
++    GDK_REQ="gdk-2.0 gdk-pixbuf-2.0"
+     AC_DEFINE(POPPLER_WITH_GDK,[1], [Have GDK])
+     GDK_FEATURE="#define POPPLER_WITH_GDK 1"
+     POPPLER_GLIB_DISABLE_DEPRECATED="$POPPLER_GLIB_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED"
+     POPPLER_GLIB_DISABLE_SINGLE_INCLUDES="$POPPLER_GLIB_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
+   else
+     GDK_FEATURE=""
++    GDK_REQ=""
+   fi
+ fi
+ AM_CONDITIONAL(BUILD_WITH_GDK, test x$enable_gdk = xyes)
+ AC_SUBST(GDK_CFLAGS)
+ AC_SUBST(GDK_LIBS)
+ AC_SUBST(GDK_FEATURE)
++AC_SUBST(GDK_REQ)
+ 
+ AC_SUBST(POPPLER_GLIB_DISABLE_DEPRECATED)
+ AC_SUBST(POPPLER_GLIB_DISABLE_SINGLE_INCLUDES)
+--- poppler-0.12.4.orig/goo/PNGWriter.cc
++++ poppler-0.12.4/goo/PNGWriter.cc
+@@ -14,6 +14,8 @@
+ 
+ #ifdef ENABLE_LIBPNG
+ 
++#include <zlib.h>
++
+ #include "poppler/Error.h"
+ 
+ PNGWriter::PNGWriter()
+--- poppler-0.12.4.orig/m4/libpng.m4
++++ poppler-0.12.4/m4/libpng.m4
+@@ -68,7 +68,7 @@
+ 
+ dnl then search the headers (can't use simply AC_TRY_xxx, as png.h
+ dnl requires system dependent includes loaded before it)
+-png_incdirs="`eval echo $includedir` /usr/include /usr/local/include "
++png_incdirs="`eval echo $includedir` /include /usr/include /usr/local/include "
+ AC_FIND_FILE(png.h, $png_incdirs, png_incdir)
+ test "x$png_incdir" = xNO && png_incdir=
+ 
+--- poppler-0.12.4.orig/poppler-glib.pc.in
++++ poppler-0.12.4/poppler-glib.pc.in
+@@ -6,7 +6,7 @@
+ Name: poppler-glib
+ Description: GLib wrapper for poppler
+ Version: @VERSION@
+-Requires: @PC_REQUIRES@ gobject-2.0 gdk-2.0 gdk-pixbuf-2.0 @CAIRO_REQ@
++Requires: @PC_REQUIRES@ gobject-2.0 @CAIRO_REQ@ @GDK_REQ@
+ @PC_REQUIRES_PRIVATE@
+ 
+ Libs: -L${libdir} -lpoppler-glib

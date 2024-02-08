@@ -1,0 +1,74 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gcc-g++-build jpeg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.68; lt-2.4.2)
+libtoolize -c -f -i; autoconf
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install tools/.libs/bzz $DESTDIR/bin
+install tools/.libs/c44 $DESTDIR/bin
+install tools/.libs/cjb2 $DESTDIR/bin
+install tools/.libs/cpaldjvu $DESTDIR/bin
+install tools/.libs/csepdjvu $DESTDIR/bin
+install tools/.libs/ddjvu $DESTDIR/bin
+install tools/.libs/djvm $DESTDIR/bin
+install tools/.libs/djvmcvt $DESTDIR/bin
+install tools/.libs/djvudump $DESTDIR/bin
+install tools/.libs/djvuextract $DESTDIR/bin
+install tools/.libs/djvumake $DESTDIR/bin
+install tools/.libs/djvups $DESTDIR/bin
+install tools/.libs/djvused $DESTDIR/bin
+install tools/.libs/djvutxt $DESTDIR/bin
+install xmltools/.libs/djvutoxml $DESTDIR/bin
+install xmltools/.libs/djvuxmlparser $DESTDIR/bin
+install -d $DESTDIR/include/libdjvu
+install -m 644 libdjvu/ddjvuapi.h $DESTDIR/include/libdjvu
+install -d $DESTDIR/lib
+install libdjvu/.libs/libdjvulibre.so.21.* $DESTDIR/lib/libdjvulibre.so.21
+ln -sf libdjvulibre.so.21 $DESTDIR/lib/libdjvulibre.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libdjvu/ddjvuapi.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/djvulibre-build.pc << EOF
+Name: djvulibre
+Version: 3.5.25.4
+Description: library and utilities to manipulate DjVu documents
+Requires: $REQUIRES
+
+devel=\\
+/include/libdjvu/ddjvuapi.h \\
+/lib/libdjvulibre.so \\
+/lib/pkgconfig/ddjvuapi.pc
+
+exec=\\
+/bin/bzz \\
+/bin/c44 \\
+/bin/cjb2 \\
+/bin/cpaldjvu \\
+/bin/csepdjvu \\
+/bin/ddjvu \\
+/bin/djvm \\
+/bin/djvmcvt \\
+/bin/djvudump \\
+/bin/djvuextract \\
+/bin/djvumake \\
+/bin/djvups \\
+/bin/djvused \\
+/bin/djvutoxml \\
+/bin/djvutxt \\
+/bin/djvuxmlparser \\
+/lib/libdjvulibre.so.21
+EOF
+
+exit

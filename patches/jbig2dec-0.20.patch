@@ -1,0 +1,55 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+JBIG2MAJOR=$(grep "define JBIG2_VERSION_MAJOR" jbig2.h | sed -e "s/.*(\([0-9]*\))/\1/")
+JBIG2MINOR=$(grep "define JBIG2_VERSION_MINOR" jbig2.h | sed -e "s/.*(\([0-9][0-9]\))/\1/")
+sed -e "s/^\(AC_INIT[^,]*,\)[^,]*\(,.*\)$/\1 [$JBIG2MAJOR.$JBIG2MINOR]\2/" configure.ac.in > configure.ac
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 jbig2.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libjbig2dec.so.0.* $DESTDIR/lib/libjbig2dec.so.0
+ln -sf libjbig2dec.so.0 $DESTDIR/lib/libjbig2dec.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 jbig2dec.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/jbig2dec-build.pc << EOF
+Name: jbig2dec
+Version: 0.20
+Description: JBIG2 decoder library
+Requires: $REQUIRES
+
+devel=\\
+/include/jbig2.h \\
+/lib/libjbig2dec.so \\
+/lib/pkgconfig/jbig2dec.pc
+
+exec=\\
+/lib/libjbig2dec.so.0
+EOF
+
+exit
+--- jbig2dec-0.20.orig/configure.ac.in
++++ jbig2dec-0.20/configure.ac.in
+@@ -6,7 +6,7 @@
+ 
+ AM_SILENT_RULES([yes])
+ AM_INIT_AUTOMAKE([-Wall])
+-AM_CONFIG_HEADER(config.h)
++AC_CONFIG_HEADER(config.h)
+ 
+ dnl Library versioning - Adapted from the libtool info page
+ dnl

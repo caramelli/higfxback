@@ -6,16 +6,16 @@ REQUIRES="autotools-wrappers-lt-build fontconfig-build glib-build libpng-build p
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
-  CAIRO_XCB=1
+  XCB=1
   REQUIRES="$REQUIRES libxcb-build"
 fi
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxext-build libxrender-build; then
-  CAIRO_XLIB=1
+  XLIB=1
   REQUIRES="$REQUIRES libxext-build libxrender-build"
 fi
 
-test $CAIRO_XLIB || test $CAIRO_XCB || { echo Xlib or XCB packages required; exit 1; }
+test $XLIB || test $XCB || { echo Xlib or XCB packages required; exit 1; }
 
 # configure (ac-2.68; am-1.11; lt-2.4.2)
 libtoolize -c -f; aclocal -I build; autoconf; autoheader -f; automake -a -c
@@ -36,9 +36,9 @@ install -m 644 src/cairo-ft.h $DESTDIR/x11/include/cairo
 install -m 644 src/cairo-pdf.h $DESTDIR/x11/include/cairo
 install -m 644 src/cairo-ps.h $DESTDIR/x11/include/cairo
 install -m 644 src/cairo-svg.h $DESTDIR/x11/include/cairo
-test $CAIRO_XCB && install -m 644 src/cairo-xcb.h $DESTDIR/x11/include/cairo
-test $CAIRO_XLIB && install -m 644 src/cairo-xlib.h $DESTDIR/x11/include/cairo
-test $CAIRO_XLIB && install -m 644 src/cairo-xlib-xrender.h $DESTDIR/x11/include/cairo
+test $XCB && install -m 644 src/cairo-xcb.h $DESTDIR/x11/include/cairo
+test $XLIB && install -m 644 src/cairo-xlib.h $DESTDIR/x11/include/cairo
+test $XLIB && install -m 644 src/cairo-xlib-xrender.h $DESTDIR/x11/include/cairo
 install -m 644 util/cairo-gobject/cairo-gobject.h $DESTDIR/x11/include/cairo
 install -d $DESTDIR/x11/lib
 install src/.libs/libcairo.so.2.* $DESTDIR/x11/lib/libcairo.so.2
@@ -50,9 +50,9 @@ install util/cairo-trace/.libs/libcairo-trace.so.0.0.0 $DESTDIR/x11/lib/cairo/li
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 src/cairo.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 src/cairo-gobject.pc $DESTDIR/x11/lib/pkgconfig
-test $CAIRO_XCB && install -m 644 src/cairo-xcb.pc $DESTDIR/x11/lib/pkgconfig
-test $CAIRO_XLIB && install -m 644 src/cairo-xlib.pc $DESTDIR/x11/lib/pkgconfig
-test $CAIRO_XLIB && install -m 644 src/cairo-xlib-xrender.pc $DESTDIR/x11/lib/pkgconfig
+test $XCB && install -m 644 src/cairo-xcb.pc $DESTDIR/x11/lib/pkgconfig
+test $XLIB && install -m 644 src/cairo-xlib.pc $DESTDIR/x11/lib/pkgconfig
+test $XLIB && install -m 644 src/cairo-xlib-xrender.pc $DESTDIR/x11/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -73,18 +73,18 @@ devel=\\
 /x11/include/cairo-svg.h \\
 /x11/include/cairo-svg.h \\
 EOF
-test $CAIRO_XCB && echo /x11/include/cairo-xcb.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $CAIRO_XLIB && echo /x11/include/cairo-xlib.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $CAIRO_XLIB && echo /x11/include/cairo-xlib-xrender.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XCB && echo /x11/include/cairo-xcb.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XLIB && echo /x11/include/cairo-xlib.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XLIB && echo /x11/include/cairo-xlib-xrender.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
 cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
 /x11/lib/libcairo.so \\
 /x11/lib/libcairo-gobject.so \\
 /x11/lib/pkgconfig/cairo.pc \\
 /x11/lib/pkgconfig/cairo-gobject.pc \\
 EOF
-test $CAIRO_XCB && echo /x11/lib/pkgconfig/cairo-xcb.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $CAIRO_XLIB && echo /x11/lib/pkgconfig/cairo-xlib.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $CAIRO_XLIB && echo /x11/lib/pkgconfig/cairo-xlib-xrender.pc >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XCB && echo /x11/lib/pkgconfig/cairo-xcb.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XLIB && echo /x11/lib/pkgconfig/cairo-xlib.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XLIB && echo /x11/lib/pkgconfig/cairo-xlib-xrender.pc >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
 cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
 
 exec=\\

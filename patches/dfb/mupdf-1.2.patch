@@ -1,0 +1,223 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="freetype-build jbig2dec-build jpeg-build make-build openjpeg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -rf thirdparty
+LDFLAGS=-Wl,-rpath,/dfb/lib sh ./Configure --disable-static --disable-x11 --prefix /dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/*/mudraw $DESTDIR/dfb/bin
+install build/*/mutool $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include
+install -m 644 fitz/fitz.h $DESTDIR/dfb/include
+install -m 644 fitz/memento.h $DESTDIR/dfb/include
+install -d $DESTDIR/dfb/lib
+install build/*/libfitz.so.1 $DESTDIR/dfb/lib
+ln -sf libfitz.so.1 $DESTDIR/dfb/lib/libfitz.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 debian/mupdf.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/mupdf-build.pc << EOF
+Name: mupdf
+Version: 1.2
+Description: PDF rendering library and document manipulation tools
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/fitz.h \\
+/dfb/include/memento.h \\
+/dfb/lib/libfitz.so \\
+/dfb/lib/pkgconfig/mupdf.pc
+
+exec=\\
+/dfb/bin/mudraw \\
+/dfb/bin/mutool \\
+/dfb/lib/libfitz.so.1
+EOF
+
+exit
+--- mupdf-1.2.orig/Configure
++++ mupdf-1.2/Configure
+@@ -0,0 +1,45 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++NOSTATIC=0
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      NOSTATIC=1
++    ;;
++    --disable-x11)
++      NOX11=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++if test -z $LDFLAGS; then
++  sed -i "s|LINK_CMD =.*|LINK_CMD = \$(QUIET_LINK) \$(CC) \$(LDFLAGS) -o \$@ $^|" Makefile
++else
++  sed -i "s|LINK_CMD =.*|LINK_CMD = \$(QUIET_LINK) \$(CC) \$(LDFLAGS) $LDFLAGS -o \$@ $^|" Makefile
++fi
++
++sed -i "/^prefix ?=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makerules
++
++if test -z $NOX11; then
++  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n{$0="X11_LIBS := -lX11 -lXext"} 1' Makerules
++else
++  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n{$0="NOX11=yes"} 1' Makerules
++fi
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" debian/mupdf.pc
+--- mupdf-1.2.orig/Makefile
++++ mupdf-1.2/Makefile
+@@ -19,6 +19,11 @@
+ include Makerules
+ include Makethird
+ 
++ifeq "$(NOX11)" ""
++CFLAGS += `pkg-config --cflags-only-I xext`
++LDFLAGS += `pkg-config --libs-only-L xext`
++endif
++
+ THIRD_LIBS := $(FREETYPE_LIB)
+ THIRD_LIBS += $(JBIG2DEC_LIB)
+ THIRD_LIBS += $(JPEG_LIB)
+@@ -37,7 +42,7 @@
+ CC_CMD = $(QUIET_CC) $(CC) $(CFLAGS) -o $@ -c $<
+ CXX_CMD = $(QUIET_CXX) $(CXX) $(CFLAGS) -o $@ -c $<
+ AR_CMD = $(QUIET_AR) $(AR) cr $@ $^
+-LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
++LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^
+ LINK_V8_CMD = $(QUIET_LINK) $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS_V8)
+ MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
+ 
+@@ -55,6 +60,10 @@
+ 	$(AR_CMD)
+ 	$(RANLIB_CMD)
+ 
++$(OUT)/libfitz.so.1 :
++	$(LINK_CMD) -shared -Wl,-soname,libfitz.so.1 $(THIRD_LIBS) $(LIBS)
++	ln -sf libfitz.so.1 $(OUT)/libfitz.so
++
+ $(OUT)/% : $(OUT)/%.o
+ 	$(LINK_CMD)
+ 
+@@ -79,7 +88,11 @@
+ 
+ # --- Fitz, MuPDF, MuXPS and MuCBZ library ---
+ 
++ifeq "$(NOSTATIC)" "1"
++FITZ_LIB := $(OUT)/libfitz.so.1
++else
+ FITZ_LIB := $(OUT)/libfitz.a
++endif
+ FITZ_V8_LIB := $(OUT)/libfitzv8.a
+ 
+ FITZ_SRC := $(notdir $(wildcard fitz/*.c draw/*.c))
+@@ -162,16 +175,31 @@
+ # --- Tools and Apps ---
+ 
+ MUDRAW := $(addprefix $(OUT)/, mudraw)
+-$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS)
++ifeq "$(NOSTATIC)" "1"
++$(MUDRAW) : $(OUT)/mudraw.o
++	$(LINK_CMD) -L$(OUT) -lfitz
++else
++$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
++endif
+ 
+ MUTOOL := $(addprefix $(OUT)/, mutool)
+-$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS)
++ifeq "$(NOSTATIC)" "1"
++$(MUTOOL) : $(addprefix $(OUT)/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
++	$(LINK_CMD) -L$(OUT) -lfitz
++else
++$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
++endif
+ 
+ ifeq "$(NOX11)" ""
+ MUVIEW := $(OUT)/mupdf
+-$(MUVIEW) : $(FITZ_LIB) $(THIRD_LIBS)
++ifeq "$(NOSTATIC)" "1"
++$(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
++	$(LINK_CMD) $(X11_LIBS) -L$(OUT) -lfitz
++else
++$(MUVIEW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
+ $(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
+ 	$(LINK_CMD) $(X11_LIBS)
++endif
+ 
+ MUVIEW_V8 := $(OUT)/mupdf-v8
+ $(MUVIEW_V8) : $(FITZ_V8_LIB) $(THIRD_LIBS)
+@@ -211,8 +239,11 @@
+ install: $(FITZ_LIB) $(MUVIEW) $(MUDRAW) $(MUTOOL)
+ 	install -d $(DESTDIR)$(bindir) $(DESTDIR)$(libdir) $(DESTDIR)$(incdir) $(DESTDIR)$(mandir)/man1
+ 	install $(FITZ_LIB) $(DESTDIR)$(libdir)
++	if [ -f $(DESTDIR)$(libdir)/libfitz.so.1 ]; then \
++		ln -sf libfitz.so.1 $(DESTDIR)$(libdir)/libfitz.so; \
++	fi
+ 	install fitz/memento.h fitz/fitz.h pdf/mupdf.h xps/muxps.h cbz/mucbz.h $(DESTDIR)$(incdir)
+-	install $(MUVIEW) $(MUDRAW) $(MUBUSY) $(DESTDIR)$(bindir)
++	install $(MUVIEW) $(MUDRAW) $(MUTOOL) $(DESTDIR)$(bindir)
+ 	install $(wildcard apps/man/*.1) $(DESTDIR)$(mandir)/man1
+ 
+ # --- Clean and Default ---
+--- mupdf-1.2.orig/Makerules
++++ mupdf-1.2/Makerules
+@@ -3,7 +3,12 @@
+ OS ?= $(shell uname)
+ OS := $(OS:MINGW%=MINGW)
+ 
++NOSTATIC ?= 0
++
+ CFLAGS += -Wall
++ifeq "$(NOSTATIC)" "1"
++CFLAGS += -fPIC
++endif
+ 
+ ifeq "$(build)" "debug"
+ CFLAGS += -pipe -g -DDEBUG
+--- mupdf-1.2.orig/debian/mupdf.pc
++++ mupdf-1.2/debian/mupdf.pc
+@@ -1,4 +1,4 @@
+-prefix=/usr
++prefix=/usr/local
+ exec_prefix=${prefix}
+ libdir=${exec_prefix}/lib
+ includedir=${prefix}/include
+@@ -6,7 +6,7 @@
+ Name: mupdf
+ Description: Library for rendering PDF documents
+ Requires.private: freetype2
+-Version: 0.5.0
+-Libs: -L${libdir} -lmupdf
++Version: 1.2
++Libs: -L${libdir} -lfitz
+ Libs.private: -lopenjpeg -ljbig2dec -ljpeg -lz -lm
+ Cflags: -I${includedir}
