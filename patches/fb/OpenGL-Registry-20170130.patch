@@ -156,6 +156,19 @@ exit
  	     $(API)/GLES2/gl2.h \
 --- OpenGL-Registry-20170130.orig/xml/genheaders.py
 +++ OpenGL-Registry-20170130/xml/genheaders.py
+@@ -75,10 +75,10 @@
+ startTime = None
+ def startTimer():
+     global startTime
+-    startTime = time.clock()
++    startTime = time.process_time()
+ def endTimer(msg):
+     global startTime
+-    endTime = time.clock()
++    endTime = time.process_time()
+     if (timeit):
+         write(msg, endTime - startTime)
+         startTime = None
 @@ -121,6 +121,7 @@
  
  allVersions       = allExtensions = '.*'

@@ -12,7 +12,7 @@ freetype_minor=`sed -n 's/^#define  *FREETYPE_MINOR  *\([^ ][^ ]*\).*$/.\1/p' ..
 freetype_patch=`sed -n 's/^#define  *FREETYPE_PATCH  *\([^ ][^ ]*\).*$/.\1/p' ../../include/freetype/freetype.h` && \
 sed -e "s;@VERSION@;$freetype_major$freetype_minor$freetype_patch;" < configure.raw > configure.ac; \
 cd -
-cd builds/unix; libtoolize -c -i; aclocal; autoconf; cd -
+cd builds/unix; libtoolize -c -f -i; aclocal; autoconf; cd -
 ./configure --disable-static --prefix=
 
 # build

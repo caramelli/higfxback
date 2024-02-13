@@ -1,0 +1,481 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build ncurses-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_RTTI=ON -DLLVM_LINK_LLVM_DYLIB=ON -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_INSTALL_PREFIX= -B build
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/bin/llvm-config $DESTDIR/bin
+install -d $DESTDIR/include/llvm
+install -m 644 include/llvm/Pass.h $DESTDIR/include/llvm
+install -m 644 include/llvm/PassAnalysisSupport.h $DESTDIR/include/llvm
+install -m 644 include/llvm/PassInfo.h $DESTDIR/include/llvm
+install -m 644 include/llvm/PassRegistry.h $DESTDIR/include/llvm
+install -m 644 include/llvm/PassSupport.h $DESTDIR/include/llvm
+install -d $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/Any.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/APFloat.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/APInt.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ArrayRef.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/bit.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/BitmaskEnum.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/BitVector.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/DenseMap.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/DenseMapInfo.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/DenseSet.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/DepthFirstIterator.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/EpochTracker.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/FoldingSet.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/FunctionExtras.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/GraphTraits.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/Hashing.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ilist.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ilist_base.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ilist_iterator.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ilist_node.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ilist_node_base.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/ilist_node_options.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/iterator.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/iterator_range.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/MapVector.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/None.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/Optional.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/PointerEmbeddedInt.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/PointerIntPair.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/PointerSumType.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/PointerUnion.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/PostOrderIterator.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/SetVector.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/simple_ilist.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/SmallPtrSet.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/SmallString.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/SmallVector.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/STLExtras.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/StringExtras.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/StringMap.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/StringRef.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/StringSwitch.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/TinyPtrVector.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/Triple.h $DESTDIR/include/llvm/ADT
+install -m 644 include/llvm/ADT/Twine.h $DESTDIR/include/llvm/ADT
+install -d $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/AliasAnalysis.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/InstructionPrecedenceTracking.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/MemoryDependenceAnalysis.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/MemoryLocation.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/OrderedBasicBlock.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/OrderedInstructions.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/TargetLibraryInfo.def $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/TargetLibraryInfo.h $DESTDIR/include/llvm/Analysis
+install -d $DESTDIR/include/llvm/BinaryFormat
+install -m 644 include/llvm/BinaryFormat/Dwarf.def $DESTDIR/include/llvm/BinaryFormat
+install -m 644 include/llvm/BinaryFormat/Magic.h $DESTDIR/include/llvm/BinaryFormat
+install -d $DESTDIR/include/llvm/Config
+install -m 644 build/include/llvm/Config/abi-breaking.h $DESTDIR/include/llvm/Config
+install -m 644 build/include/llvm/Config/AsmParsers.def $DESTDIR/include/llvm/Config
+install -m 644 build/include/llvm/Config/AsmPrinters.def $DESTDIR/include/llvm/Config
+install -m 644 build/include/llvm/Config/Disassemblers.def $DESTDIR/include/llvm/Config
+install -m 644 build/include/llvm/Config/llvm-config.h $DESTDIR/include/llvm/Config
+install -m 644 build/include/llvm/Config/Targets.def $DESTDIR/include/llvm/Config
+install -d $DESTDIR/include/llvm/DebugInfo
+install -m 644 include/llvm/DebugInfo/DIContext.h $DESTDIR/include/llvm/DebugInfo
+install -d $DESTDIR/include/llvm/ExecutionEngine
+install -m 644 include/llvm/ExecutionEngine/ExecutionEngine.h $DESTDIR/include/llvm/ExecutionEngine
+install -m 644 include/llvm/ExecutionEngine/JITSymbol.h $DESTDIR/include/llvm/ExecutionEngine
+install -m 644 include/llvm/ExecutionEngine/OrcV1Deprecation.h $DESTDIR/include/llvm/ExecutionEngine
+install -m 644 include/llvm/ExecutionEngine/SectionMemoryManager.h $DESTDIR/include/llvm/ExecutionEngine
+install -m 644 include/llvm/ExecutionEngine/RTDyldMemoryManager.h $DESTDIR/include/llvm/ExecutionEngine
+install -m 644 include/llvm/ExecutionEngine/RuntimeDyld.h $DESTDIR/include/llvm/ExecutionEngine
+install -d $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/CompileUtils.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/Core.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/IRCompileLayer.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/Layer.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/Legacy.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/SymbolStringPool.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/ThreadSafeModule.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -d $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Argument.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Attributes.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/BasicBlock.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/CallingConv.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/CallSite.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/CFG.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Comdat.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Constant.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Constants.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/ConstantFolder.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/ConstrainedOps.def $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/DataLayout.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/DebugLoc.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/DerivedTypes.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/DiagnosticHandler.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Dominators.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/FixedMetadataKinds.def $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/FPEnv.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Function.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/GlobalAlias.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/GlobalIFunc.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/GlobalIndirectSymbol.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/GlobalObject.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/GlobalValue.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/GlobalVariable.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/InstrTypes.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Instruction.def $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Instruction.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Instructions.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/IntrinsicInst.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Intrinsics.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/IRBuilder.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/LegacyPassManager.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/LLVMContext.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Mangler.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Metadata.def $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Metadata.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Module.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Operator.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/OperandTraits.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/PassInstrumentation.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/PassManager.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/PassManagerInternal.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/PredIteratorCache.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/ProfileSummary.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/SymbolTableListTraits.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/TrackingMDRef.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Type.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Use.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/User.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Value.def $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Value.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/ValueHandle.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/Verifier.h $DESTDIR/include/llvm/IR
+install -m 644 build/include/llvm/IR/Attributes.inc $DESTDIR/include/llvm/IR
+install -m 644 build/include/llvm/IR/IntrinsicEnums.inc $DESTDIR/include/llvm/IR
+install -m 644 build/include/llvm/IR/IntrinsicsX86.h $DESTDIR/include/llvm/IR
+install -d $DESTDIR/include/llvm/MC
+install -m 644 include/llvm/MC/MCTargetOptions.h $DESTDIR/include/llvm/MC
+install -m 644 include/llvm/MC/SubtargetFeature.h $DESTDIR/include/llvm/MC
+install -d $DESTDIR/include/llvm/Object
+install -m 644 include/llvm/Object/Binary.h $DESTDIR/include/llvm/Object
+install -m 644 include/llvm/Object/Error.h $DESTDIR/include/llvm/Object
+install -m 644 include/llvm/Object/ObjectFile.h $DESTDIR/include/llvm/Object
+install -m 644 include/llvm/Object/SymbolicFile.h $DESTDIR/include/llvm/Object
+install -d $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Alignment.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/AlignOf.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Allocator.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/AtomicOrdering.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Casting.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/CBindingWrapping.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/CFGUpdate.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Chrono.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/CodeGen.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Compiler.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/DataTypes.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Debug.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Endian.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Error.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/ErrorOr.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/ErrorHandling.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/FileSystem.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Format.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/FormatProviders.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/FormatVariadicDetails.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/GenericDomTree.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Host.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/MathExtras.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/MD5.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/MemAlloc.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Memory.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/MemoryBuffer.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Mutex.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/NativeFormatting.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/PointerLikeTypeTraits.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/raw_ostream.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/ReverseIteration.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/RWMutex.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/SwapByteOrder.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/TargetSelect.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/Threading.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/type_traits.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/TypeName.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/TypeSize.h $DESTDIR/include/llvm/Support
+install -d $DESTDIR/include/llvm/Target
+install -m 644 include/llvm/Target/TargetMachine.h $DESTDIR/include/llvm/Target
+install -m 644 include/llvm/Target/TargetOptions.h $DESTDIR/include/llvm/Target
+install -d $DESTDIR/include/llvm/Transforms
+install -m 644 include/llvm/Transforms/Scalar.h $DESTDIR/include/llvm/Transforms
+install -d $DESTDIR/include/llvm/Transforms/InstCombine
+install -m 644 include/llvm/Transforms/InstCombine/InstCombine.h $DESTDIR/include/llvm/Transforms/InstCombine
+install -m 644 include/llvm/Transforms/InstCombine/InstCombineWorklist.h $DESTDIR/include/llvm/Transforms/InstCombine
+install -d $DESTDIR/include/llvm/Transforms/Scalar
+install -m 644 include/llvm/Transforms/Scalar/GVN.h $DESTDIR/include/llvm/Transforms/Scalar
+install -d $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/DataTypes.h $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/Error.h $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/ExecutionEngine.h $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/ExternC.h $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/Target.h $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/TargetMachine.h $DESTDIR/include/llvm-c
+install -m 644 include/llvm-c/Types.h $DESTDIR/include/llvm-c
+install -d $DESTDIR/lib
+install build/lib/libLLVM-10.so.1 $DESTDIR/lib
+ln -sf libLLVM-10.so.1 $DESTDIR/lib/libLLVM-10.so
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/llvm-build.pc << EOF
+Name: llvm
+Version: 10.0.1
+Description: Compiler infrastructure
+Requires: $REQUIRES
+
+devel=\\
+/bin/llvm-config \\
+/include/llvm/Pass.h \\
+/include/llvm/PassAnalysisSupport.h \\
+/include/llvm/PassInfo.h \\
+/include/llvm/PassRegistry.h \\
+/include/llvm/PassSupport.h \\
+/include/llvm/ADT/Any.h \\
+/include/llvm/ADT/APFloat.h \\
+/include/llvm/ADT/APInt.h \\
+/include/llvm/ADT/ArrayRef.h \\
+/include/llvm/ADT/bit.h \\
+/include/llvm/ADT/BitmaskEnum.h \\
+/include/llvm/ADT/BitVector.h \\
+/include/llvm/ADT/DenseMap.h \\
+/include/llvm/ADT/DenseMapInfo.h \\
+/include/llvm/ADT/DenseSet.h \\
+/include/llvm/ADT/DepthFirstIterator.h \\
+/include/llvm/ADT/EpochTracker.h \\
+/include/llvm/ADT/FoldingSet.h \\
+/include/llvm/ADT/FunctionExtras.h \\
+/include/llvm/ADT/GraphTraits.h \\
+/include/llvm/ADT/Hashing.h \\
+/include/llvm/ADT/ilist.h \\
+/include/llvm/ADT/ilist_base.h \\
+/include/llvm/ADT/ilist_iterator.h \\
+/include/llvm/ADT/ilist_node.h \\
+/include/llvm/ADT/ilist_node_base.h \\
+/include/llvm/ADT/ilist_node_options.h \\
+/include/llvm/ADT/iterator.h \\
+/include/llvm/ADT/iterator_range.h \\
+/include/llvm/ADT/MapVector.h \\
+/include/llvm/ADT/None.h \\
+/include/llvm/ADT/Optional.h \\
+/include/llvm/ADT/PointerEmbeddedInt.h \\
+/include/llvm/ADT/PointerIntPair.h \\
+/include/llvm/ADT/PointerSumType.h \\
+/include/llvm/ADT/PointerUnion.h \\
+/include/llvm/ADT/PostOrderIterator.h \\
+/include/llvm/ADT/SetVector.h \\
+/include/llvm/ADT/simple_ilist.h \\
+/include/llvm/ADT/SmallPtrSet.h \\
+/include/llvm/ADT/SmallString.h \\
+/include/llvm/ADT/SmallVector.h \\
+/include/llvm/ADT/STLExtras.h \\
+/include/llvm/ADT/StringExtras.h \\
+/include/llvm/ADT/StringMap.h \\
+/include/llvm/ADT/StringRef.h \\
+/include/llvm/ADT/StringSwitch.h \\
+/include/llvm/ADT/TinyPtrVector.h \\
+/include/llvm/ADT/Triple.h \\
+/include/llvm/ADT/Twine.h \\
+/include/llvm/Analysis/AliasAnalysis.h \\
+/include/llvm/Analysis/InstructionPrecedenceTracking.h \\
+/include/llvm/Analysis/MemoryDependenceAnalysis.h \\
+/include/llvm/Analysis/MemoryLocation.h \\
+/include/llvm/Analysis/OrderedBasicBlock.h \\
+/include/llvm/Analysis/OrderedInstructions.h \\
+/include/llvm/Analysis/TargetLibraryInfo.def \\
+/include/llvm/Analysis/TargetLibraryInfo.h \\
+/include/llvm/BinaryFormat/Dwarf.def \\
+/include/llvm/BinaryFormat/Magic.h \\
+/include/llvm/Config/abi-breaking.h \\
+/include/llvm/Config/AsmParsers.def \\
+/include/llvm/Config/AsmPrinters.def \\
+/include/llvm/Config/Disassemblers.def \\
+/include/llvm/Config/llvm-config.h \\
+/include/llvm/Config/Targets.def \\
+/include/llvm/DebugInfo/DIContext.h \\
+/include/llvm/ExecutionEngine/ExecutionEngine.h \\
+/include/llvm/ExecutionEngine/JITSymbol.h \\
+/include/llvm/ExecutionEngine/OrcV1Deprecation.h \\
+/include/llvm/ExecutionEngine/SectionMemoryManager.h \\
+/include/llvm/ExecutionEngine/RTDyldMemoryManager.h \\
+/include/llvm/ExecutionEngine/RuntimeDyld.h \\
+/include/llvm/ExecutionEngine/Orc/CompileUtils.h \\
+/include/llvm/ExecutionEngine/Orc/Core.h \\
+/include/llvm/ExecutionEngine/Orc/IRCompileLayer.h \\
+/include/llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h \\
+/include/llvm/ExecutionEngine/Orc/Layer.h \\
+/include/llvm/ExecutionEngine/Orc/Legacy.h \\
+/include/llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h \\
+/include/llvm/ExecutionEngine/Orc/SymbolStringPool.h \\
+/include/llvm/ExecutionEngine/Orc/ThreadSafeModule.h \\
+/include/llvm/IR/Argument.h \\
+/include/llvm/IR/Attributes.h \\
+/include/llvm/IR/BasicBlock.h \\
+/include/llvm/IR/CallingConv.h \\
+/include/llvm/IR/CallSite.h \\
+/include/llvm/IR/CFG.h \\
+/include/llvm/IR/Comdat.h \\
+/include/llvm/IR/Constant.h \\
+/include/llvm/IR/Constants.h \\
+/include/llvm/IR/ConstantFolder.h \\
+/include/llvm/IR/ConstrainedOps.def \\
+/include/llvm/IR/DataLayout.h \\
+/include/llvm/IR/DebugLoc.h \\
+/include/llvm/IR/DerivedTypes.h \\
+/include/llvm/IR/DiagnosticHandler.h \\
+/include/llvm/IR/Dominators.h \\
+/include/llvm/IR/FixedMetadataKinds.def \\
+/include/llvm/IR/FPEnv.h \\
+/include/llvm/IR/Function.h \\
+/include/llvm/IR/GlobalAlias.h \\
+/include/llvm/IR/GlobalIFunc.h \\
+/include/llvm/IR/GlobalIndirectSymbol.h \\
+/include/llvm/IR/GlobalObject.h \\
+/include/llvm/IR/GlobalValue.h \\
+/include/llvm/IR/GlobalVariable.h \\
+/include/llvm/IR/InstrTypes.h \\
+/include/llvm/IR/Instruction.def \\
+/include/llvm/IR/Instruction.h \\
+/include/llvm/IR/Instructions.h \\
+/include/llvm/IR/IntrinsicInst.h \\
+/include/llvm/IR/Intrinsics.h \\
+/include/llvm/IR/IRBuilder.h \\
+/include/llvm/IR/LegacyPassManager.h \\
+/include/llvm/IR/LLVMContext.h \\
+/include/llvm/IR/Mangler.h \\
+/include/llvm/IR/Metadata.def \\
+/include/llvm/IR/Metadata.h \\
+/include/llvm/IR/Module.h \\
+/include/llvm/IR/Operator.h \\
+/include/llvm/IR/OperandTraits.h \\
+/include/llvm/IR/PassInstrumentation.h \\
+/include/llvm/IR/PassManager.h \\
+/include/llvm/IR/PassManagerInternal.h \\
+/include/llvm/IR/PredIteratorCache.h \\
+/include/llvm/IR/ProfileSummary.h \\
+/include/llvm/IR/SymbolTableListTraits.h \\
+/include/llvm/IR/TrackingMDRef.h \\
+/include/llvm/IR/Type.h \\
+/include/llvm/IR/Use.h \\
+/include/llvm/IR/User.h \\
+/include/llvm/IR/Value.def \\
+/include/llvm/IR/Value.h \\
+/include/llvm/IR/ValueHandle.h \\
+/include/llvm/IR/Verifier.h \\
+/include/llvm/IR/Attributes.inc \\
+/include/llvm/IR/IntrinsicEnums.inc \\
+/include/llvm/IR/IntrinsicsX86.h \\
+/include/llvm/MC/MCTargetOptions.h \\
+/include/llvm/MC/SubtargetFeature.h \\
+/include/llvm/Object/Binary.h \\
+/include/llvm/Object/Error.h \\
+/include/llvm/Object/ObjectFile.h \\
+/include/llvm/Object/SymbolicFile.h \\
+/include/llvm/Support/Alignment.h \\
+/include/llvm/Support/AlignOf.h \\
+/include/llvm/Support/Allocator.h \\
+/include/llvm/Support/AtomicOrdering.h \\
+/include/llvm/Support/Casting.h \\
+/include/llvm/Support/CBindingWrapping.h \\
+/include/llvm/Support/CFGUpdate.h \\
+/include/llvm/Support/Chrono.h \\
+/include/llvm/Support/CodeGen.h \\
+/include/llvm/Support/Compiler.h \\
+/include/llvm/Support/DataTypes.h \\
+/include/llvm/Support/Debug.h \\
+/include/llvm/Support/Endian.h \\
+/include/llvm/Support/Error.h \\
+/include/llvm/Support/ErrorOr.h \\
+/include/llvm/Support/ErrorHandling.h \\
+/include/llvm/Support/FileSystem.h \\
+/include/llvm/Support/Format.h \\
+/include/llvm/Support/FormatProviders.h \\
+/include/llvm/Support/FormatVariadicDetails.h \\
+/include/llvm/Support/GenericDomTree.h \\
+/include/llvm/Support/Host.h \\
+/include/llvm/Support/MathExtras.h \\
+/include/llvm/Support/MD5.h \\
+/include/llvm/Support/MemAlloc.h \\
+/include/llvm/Support/Memory.h \\
+/include/llvm/Support/MemoryBuffer.h \\
+/include/llvm/Support/Mutex.h \\
+/include/llvm/Support/NativeFormatting.h \\
+/include/llvm/Support/PointerLikeTypeTraits.h \\
+/include/llvm/Support/raw_ostream.h \\
+/include/llvm/Support/ReverseIteration.h \\
+/include/llvm/Support/RWMutex.h \\
+/include/llvm/Support/SwapByteOrder.h \\
+/include/llvm/Support/TargetSelect.h \\
+/include/llvm/Support/Threading.h \\
+/include/llvm/Support/type_traits.h \\
+/include/llvm/Support/TypeName.h \\
+/include/llvm/Support/TypeSize.h \\
+/include/llvm/Target/TargetMachine.h \\
+/include/llvm/Target/TargetOptions.h \\
+/include/llvm/Transforms/Scalar.h \\
+/include/llvm/Transforms/InstCombine/InstCombine.h \\
+/include/llvm/Transforms/InstCombine/InstCombineWorklist.h \\
+/include/llvm/Transforms/Scalar/GVN.h \\
+/include/llvm-c/DataTypes.h \\
+/include/llvm-c/Error.h \\
+/include/llvm-c/ExecutionEngine.h \\
+/include/llvm-c/ExternC.h \\
+/include/llvm-c/Target.h \\
+/include/llvm-c/TargetMachine.h \\
+/include/llvm-c/Types.h \\
+/lib/libLLVM-10.so
+
+exec=\\
+/lib/libLLVM-10.so.1
+EOF
+
+exit
+--- llvm-10.0.1.orig/CMakeLists.txt
++++ llvm-10.0.1/CMakeLists.txt
+@@ -647,17 +647,8 @@
+ 
+ include(HandleLLVMOptions)
+ 
+-include(FindPythonInterp)
+-if( NOT PYTHONINTERP_FOUND )
+-  message(FATAL_ERROR
+-"Unable to find Python interpreter, required for builds and testing.
+-
+-Please install Python or specify the PYTHON_EXECUTABLE CMake variable.")
+-endif()
+-
+-if( ${PYTHON_VERSION_STRING} VERSION_LESS 2.7 )
+-  message(FATAL_ERROR "Python 2.7 or newer is required")
+-endif()
++find_package(Python3 REQUIRED COMPONENTS Interpreter)
++set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+ 
+ ######
+ # LLVMBuild Integration
+--- llvm-10.0.1.orig/tools/llvm-shlib/CMakeLists.txt
++++ llvm-10.0.1/tools/llvm-shlib/CMakeLists.txt
+@@ -60,6 +60,8 @@
+     set_property(TARGET LLVM APPEND_STRING PROPERTY
+                 LINK_FLAGS
+                 " -compatibility_version 1 -current_version ${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}")
++  else()
++    set_target_properties(LLVM PROPERTIES SOVERSION 1)
+   endif()
+ 
+   if(TARGET libLLVMExports)

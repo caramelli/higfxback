@@ -1,0 +1,50 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build bzip2-build expat-build xz-build zlib-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I build/autoconf; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --without-xml2 --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install .libs/bsdcat $DESTDIR/bin
+install .libs/bsdcpio $DESTDIR/bin
+install .libs/bsdtar $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 libarchive/archive.h $DESTDIR/include
+install -m 644 libarchive/archive_entry.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libarchive.so.13.* $DESTDIR/lib/libarchive.so.13
+ln -sf libarchive.so.13 $DESTDIR/lib/libarchive.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/pkgconfig/libarchive.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libarchive-build.pc << EOF
+Name: libarchive
+Version: 3.3.3
+Description: Multi-format archive and compression library
+Requires: $REQUIRES
+
+devel=\\
+/include/archive.h \\
+/include/archive_entry.h \\
+/lib/libarchive.so \\
+/lib/pkgconfig/libarchive.pc
+
+exec=\\
+/bin/bsdcat \\
+/bin/bsdcpio \\
+/bin/bsdtar \\
+/lib/libarchive.so.13
+EOF
+
+exit

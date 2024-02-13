@@ -9,41 +9,41 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 make -C api
 
 # install
-install -d $DESTDIR/fb/include/EGL
-install -m 644 api/EGL/egl.h $DESTDIR/fb/include/EGL
-install -m 644 api/EGL/eglext.h $DESTDIR/fb/include/EGL
-install -m 644 api/EGL/eglplatform.h $DESTDIR/fb/include/EGL
-install -d $DESTDIR/fb/include/KHR
-install -m 644 api/KHR/khrplatform.h $DESTDIR/fb/include/KHR
-install -d $DESTDIR/fb/share/egl/registry
-install -m 644 api/egl.xml $DESTDIR/fb/share/egl/registry
+install -d $DESTDIR/dfb/include/EGL
+install -m 644 api/EGL/egl.h $DESTDIR/dfb/include/EGL
+install -m 644 api/EGL/eglext.h $DESTDIR/dfb/include/EGL
+install -m 644 api/EGL/eglplatform.h $DESTDIR/dfb/include/EGL
+install -d $DESTDIR/dfb/include/KHR
+install -m 644 api/KHR/khrplatform.h $DESTDIR/dfb/include/KHR
+install -d $DESTDIR/dfb/share/egl/registry
+install -m 644 api/egl.xml $DESTDIR/dfb/share/egl/registry
 
 # build.pc
-install -d $DESTDIR/fb/share/pkgconfig
-cat > $DESTDIR/fb/share/pkgconfig/egl-registry-build.pc << EOF
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/egl-registry-build.pc << EOF
 Name: egl-registry
-Version: 20170204
+Version: 20180609
 Description: EGL API Registry
 Requires: $REQUIRES
 
 devel=\\
-/fb/include/EGL/egl.h \\
-/fb/include/EGL/eglext.h \\
-/fb/include/EGL/eglplatform.h \\
-/fb/include/KHR/khrplatform.h \\
-/fb/share/egl/registry/egl.xml
+/dfb/include/EGL/egl.h \\
+/dfb/include/EGL/eglext.h \\
+/dfb/include/EGL/eglplatform.h \\
+/dfb/include/KHR/khrplatform.h \\
+/dfb/share/egl/registry/egl.xml
 EOF
 
 exit
---- EGL-Registry-20170204.orig/api/EGL/eglplatform.h
-+++ EGL-Registry-20170204/api/EGL/eglplatform.h
-@@ -66,8 +66,13 @@
-  * portability of applications using EGL running on different EGL
+--- EGL-Registry-20180609.orig/api/EGL/eglplatform.h
++++ EGL-Registry-20180609/api/EGL/eglplatform.h
+@@ -67,7 +67,13 @@
   * implementations.
   */
-+#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
  
 -#if defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
++#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
++
 +typedef void *EGLNativeDisplayType;
 +typedef void *EGLNativePixmapType;
 +typedef void *EGLNativeWindowType;
@@ -52,8 +52,8 @@ exit
  #ifndef WIN32_LEAN_AND_MEAN
  #define WIN32_LEAN_AND_MEAN 1
  #endif
---- EGL-Registry-20170204.orig/api/Makefile
-+++ EGL-Registry-20170204/api/Makefile
+--- EGL-Registry-20180609.orig/api/Makefile
++++ EGL-Registry-20180609/api/Makefile
 @@ -16,7 +16,7 @@
  EGLHEADERS = EGL/egl.h EGL/eglext.h
  
@@ -63,8 +63,8 @@ exit
  PYFILES = genheaders.py reg.py
  REGISTRY = egl.xml
  GENOPTS =
---- EGL-Registry-20170204.orig/api/genheaders.py
-+++ EGL-Registry-20170204/api/genheaders.py
+--- EGL-Registry-20180609.orig/api/genheaders.py
++++ EGL-Registry-20180609/api/genheaders.py
 @@ -75,10 +75,10 @@
  startTime = None
  def startTimer():

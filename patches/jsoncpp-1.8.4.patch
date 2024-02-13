@@ -1,0 +1,54 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build meson-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+meson setup --prefix=/ build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/include/json
+install -m 644 include/json/config.h $DESTDIR/include/json
+install -m 644 include/json/features.h $DESTDIR/include/json
+install -m 644 include/json/forwards.h $DESTDIR/include/json
+install -m 644 include/json/json.h $DESTDIR/include/json
+install -m 644 include/json/reader.h $DESTDIR/include/json
+install -m 644 include/json/value.h $DESTDIR/include/json
+install -m 644 include/json/version.h $DESTDIR/include/json
+install -m 644 include/json/writer.h $DESTDIR/include/json
+install -d $DESTDIR/lib
+install build/libjsoncpp.so.20 $DESTDIR/lib
+ln -sf libjsoncpp.so.20 $DESTDIR/lib/libjsoncpp.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/meson-private/jsoncpp.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/jsoncpp-build.pc << EOF
+Name: jsoncpp
+Version: 1.8.4
+Description: C++ library for interacting with JSON
+Requires: $REQUIRES
+
+devel=\\
+/include/json/config.h \\
+/include/json/features.h \\
+/include/json/forwards.h \\
+/include/json/json.h \\
+/include/json/reader.h \\
+/include/json/value.h \\
+/include/json/version.h \\
+/include/json/writer.h \\
+/lib/libjsoncpp.so \\
+/lib/pkgconfig/jsoncpp.pc
+
+exec=\\
+/lib/libjsoncpp.so.20
+EOF
+
+exit

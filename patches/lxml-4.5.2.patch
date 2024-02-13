@@ -9,10 +9,10 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 make -C src/lxml
 
 # install
-install -d $DESTDIR/lib/python`pkg-config --modversion python3`/lxml
-install -m 644 src/lxml/_elementpath.py $DESTDIR/lib/python`pkg-config --modversion python3`/lxml
-install src/lxml/_elementpath.so $DESTDIR/lib/python`pkg-config --modversion python3`/lxml
-install src/lxml/etree.so $DESTDIR/lib/python`pkg-config --modversion python3`/lxml
+install -d $DESTDIR/lib/python3/lxml
+install -m 644 src/lxml/_elementpath.py $DESTDIR/lib/python3/lxml
+install src/lxml/_elementpath.so $DESTDIR/lib/python3/lxml
+install src/lxml/etree.so $DESTDIR/lib/python3/lxml
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -23,9 +23,9 @@ Description: Pythonic XML processing library
 Requires: $REQUIRES
 
 exec=\\
-/lib/python`pkg-config --modversion python3`/_elementpath.py \\
-/lib/python`pkg-config --modversion python3`/_elementpath.so \\
-/lib/python`pkg-config --modversion python3`/etree.so
+/lib/python3/_elementpath.py \\
+/lib/python3/_elementpath.so \\
+/lib/python3/etree.so
 EOF
 
 exit

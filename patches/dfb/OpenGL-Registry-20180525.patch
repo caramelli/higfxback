@@ -1,0 +1,123 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build egl-registry-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C xml
+
+# install
+install -d $DESTDIR/dfb/include/GL
+install -m 644 api/GL/gl.h $DESTDIR/dfb/include/GL
+install -m 644 api/GL/glext.h $DESTDIR/dfb/include/GL
+install -d $DESTDIR/dfb/include/GLES
+install -m 644 api/GLES/gl.h $DESTDIR/dfb/include/GLES
+install -m 644 api/GLES/glext.h $DESTDIR/dfb/include/GLES
+install -m 644 api/GLES/glplatform.h $DESTDIR/dfb/include/GLES
+install -d $DESTDIR/dfb/include/GLES2
+install -m 644 api/GLES2/gl2.h $DESTDIR/dfb/include/GLES2
+install -m 644 api/GLES2/gl2ext.h $DESTDIR/dfb/include/GLES2
+install -m 644 api/GLES2/gl2platform.h $DESTDIR/dfb/include/GLES2
+install -d $DESTDIR/dfb/include/GLES3
+install -m 644 api/GLES3/gl3.h $DESTDIR/dfb/include/GLES3
+install -m 644 api/GLES3/gl3platform.h $DESTDIR/dfb/include/GLES3
+install -d $DESTDIR/dfb/share/opengl/registry
+install -m 644 xml/gl.xml $DESTDIR/dfb/share/opengl/registry
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/opengl-registry-build.pc << EOF
+Name: opengl-registry
+Version: 20180525
+Description: OpenGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/GL/gl.h \\
+/dfb/include/GL/glext.h \\
+/dfb/include/GLES/gl.h \\
+/dfb/include/GLES/glext.h \\
+/dfb/include/GLES/glplatform.h \\
+/dfb/include/GLES2/gl2.h \\
+/dfb/include/GLES2/gl2ext.h \\
+/dfb/include/GLES2/gl2platform.h \\
+/dfb/include/GLES3/gl3.h \\
+/dfb/include/GLES3/gl3platform.h \\
+/dfb/share/opengl/registry/gl.xml
+EOF
+
+exit
+--- OpenGL-Registry-20180525.orig/xml/Makefile
++++ OpenGL-Registry-20180525/xml/Makefile
+@@ -17,7 +17,7 @@
+ 
+ PYFILES = genheaders.py reg.py
+ GENOPTS =
+-GENHEADERS = ./genheaders.py $(GENOPTS)
++GENHEADERS = python3 ./genheaders.py $(GENOPTS)
+ 
+ # Generate all headers for GL / GLES / WGL / GLX
+ # Different headers depend on different XML registry files
+@@ -30,8 +30,9 @@
+ # platform-specific versions of these headers, where appropriate.
+ 
+ API	   = ../api
+-GLHEADERS  = $(API)/GL/glext.h \
+-	     $(API)/GL/glcorearb.h \
++GLHEADERS  = \
++	     $(API)/GL/gl.h \
++	     $(API)/GL/glext.h \
+ 	     $(API)/GLES/gl.h \
+ 	     $(API)/GLES/glext.h \
+ 	     $(API)/GLES2/gl2.h \
+--- OpenGL-Registry-20180525.orig/xml/genheaders.py
++++ OpenGL-Registry-20180525/xml/genheaders.py
+@@ -75,10 +75,10 @@
+ startTime = None
+ def startTimer():
+     global startTime
+-    startTime = time.clock()
++    startTime = time.process_time()
+ def endTimer(msg):
+     global startTime
+-    endTime = time.clock()
++    endTime = time.process_time()
+     if (timeit):
+         write(msg, endTime - startTime)
+         startTime = None
+@@ -121,6 +121,7 @@
+ 
+ allVersions       = allExtensions = '.*'
+ noVersions        = noExtensions = None
++glthrough21Pat    = '1|2\.[0-9]|3\.0'
+ gl12andLaterPat   = '1\.[2-9]|[234]\.[0-9]'
+ gles2onlyPat      = '2\.[0-9]'
+ gles2through30Pat = '2\.[0-9]|3\.0'
+@@ -269,6 +270,25 @@
+ protectProto = protect
+ 
+ buildList = [
++    # GL compatibility profile - GL/gl.h
++    CGeneratorOptions(
++        filename          = '../api/GL/gl.h',
++        apiname           = 'gl',
++        profile           = 'compatibility',
++        versions          = allVersions,
++        emitversions      = glthrough21Pat,
++        defaultExtensions = None,
++        addExtensions     = None,
++        removeExtensions  = None,
++        prefixText        = prefixStrings + glExtPlatformStrings + genDateCommentString,
++        genFuncPointers   = True,
++        protectFile       = protectFile,
++        protectFeature    = protectFeature,
++        protectProto      = False,
++        protectProtoStr   = 'GL_GLEXT_PROTOTYPES',
++        apicall           = 'GLAPI ',
++        apientry          = 'APIENTRY ',
++        apientryp         = 'APIENTRYP '),
+     # GL API 1.2+ + extensions - GL/glext.h
+     CGeneratorOptions(
+         filename          = '../api/GL/glext.h',

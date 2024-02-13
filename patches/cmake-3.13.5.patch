@@ -1,0 +1,358 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="curl-build gcc-g++-build jsoncpp-build libarchive-build libuv-build rhash-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -rf cmbzip2 cmcurl cmexpat cmjsoncpp cmlibarchive cmliblzma cmlibrhash cmlibuv cmzlib
+./configure --system-libs --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install bin/cmake $DESTDIR/bin
+install bin/cpack $DESTDIR/bin
+install bin/ctest $DESTDIR/bin
+install -d $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/AddFileDependencies.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/BasicConfigVersion-SameMajorVersion.cmake.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMake.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeASMCompiler.cmake.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeASMInformation.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCCompiler.cmake.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCCompilerABI.c $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCCompilerId.c.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCInformation.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCXXCompiler.cmake.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCXXCompilerABI.cpp $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCXXCompilerId.cpp.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCXXInformation.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCheckCompilerFlagCommonPatterns.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCommonLanguageInclude.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCompilerABI.h $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeCompilerIdDetection.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeConfigurableFile.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineASMCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineCCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineCXXCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineCompileFeatures.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineCompilerABI.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineCompilerId.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDetermineSystem.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeFindBinUtils.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeGenericSystem.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeInitializeConfigs.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeLanguageInformation.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakePackageConfigHelpers.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeParseArguments.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeParseImplicitLinkInfo.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakePlatformId.h.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakePushCheckState.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeSystem.cmake.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeSystemSpecificInformation.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeSystemSpecificInitialize.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeTestASMCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeTestCCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeTestCXXCompiler.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeTestCompilerCommon.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeUnixFindMake.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CPack.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CPackComponent.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckCCompilerFlag.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckCSourceCompiles.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckCXXCompilerFlag.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckCXXSourceCompiles.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckCXXSourceRuns.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckFunctionExists.c $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckFunctionExists.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckIncludeFile.c.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckIncludeFile.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckLibraryExists.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckStructHasMember.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckSymbolExists.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/ExternalProject.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindBacktrace.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindGit.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindPackageHandleStandardArgs.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindPackageMessage.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindPkgConfig.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindPython3.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/FindThreads.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/WriteBasicConfigVersionFile.cmake $DESTDIR/share/cmake-3/Modules
+install -d $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/ADSP-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/ARMCC-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/AppleClang-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Borland-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Bruce-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/CMakeCommonCompilerMacros.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Clang-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Clang-DetermineCompilerInternal.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Comeau-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Compaq-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Cray-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Embarcadero-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Fujitsu-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/GNU-ASM.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/GNU-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/GNU-C.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/GNU-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/GNU.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/HP-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/HP-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/IAR-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Intel-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/MIPSpro-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/MSVC-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/OpenWatcom-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/PGI-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/PathScale-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/SCO-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/SDCC-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/SunPro-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/TI-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/TinyCC-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/VisualAge-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/Watcom-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/XL-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/XL-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/zOS-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/zOS-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -d $DESTDIR/share/cmake-3/Modules/FindPython
+install -m 644 Modules/FindPython/Support.cmake $DESTDIR/share/cmake-3/Modules/FindPython
+install -d $DESTDIR/share/cmake-3/Modules/Internal
+install -m 644 Modules/Internal/FeatureTesting.cmake $DESTDIR/share/cmake-3/Modules/Internal
+install -d $DESTDIR/share/cmake-3/Modules/Platform
+install -m 644 Modules/Platform/Linux.cmake $DESTDIR/share/cmake-3/Modules/Platform
+install -m 644 Modules/Platform/UnixPaths.cmake $DESTDIR/share/cmake-3/Modules/Platform
+install -d $DESTDIR/share/cmake-3/Templates
+install -m 644 Templates/CPack.GenericDescription.txt $DESTDIR/share/cmake-3/Templates
+install -m 644 Templates/CPack.GenericWelcome.txt $DESTDIR/share/cmake-3/Templates
+install -m 644 Templates/CPackConfig.cmake.in $DESTDIR/share/cmake-3/Templates
+ln -sf cmake-3 $DESTDIR/share/cmake-3.13
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/cmake3-build.pc << EOF
+Name: cmake
+Version: 3.13.5
+Description: CMake build system
+Requires: $REQUIRES
+
+devel=\\
+/bin/cmake \\
+/bin/cpack \\
+/bin/ctest \\
+/share/cmake-3/Templates/CPack.GenericDescription.txt \\
+/share/cmake-3/Templates/CPack.GenericWelcome.txt \\
+/share/cmake-3/Templates/CPackConfig.cmake.in \\
+/share/cmake-3/Modules/AddFileDependencies.cmake \\
+/share/cmake-3/Modules/BasicConfigVersion-SameMajorVersion.cmake.in \\
+/share/cmake-3/Modules/CMake.cmake \\
+/share/cmake-3/Modules/CMakeASMCompiler.cmake.in \\
+/share/cmake-3/Modules/CMakeASMInformation.cmake \\
+/share/cmake-3/Modules/CMakeCCompiler.cmake.in \\
+/share/cmake-3/Modules/CMakeCCompilerABI.c \\
+/share/cmake-3/Modules/CMakeCCompilerId.c.in \\
+/share/cmake-3/Modules/CMakeCInformation.cmake \\
+/share/cmake-3/Modules/CMakeCXXCompiler.cmake.in \\
+/share/cmake-3/Modules/CMakeCXXCompilerABI.cpp \\
+/share/cmake-3/Modules/CMakeCXXCompilerId.cpp.in \\
+/share/cmake-3/Modules/CMakeCXXInformation.cmake \\
+/share/cmake-3/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake \\
+/share/cmake-3/Modules/CMakeCommonLanguageInclude.cmake \\
+/share/cmake-3/Modules/CMakeCompilerABI.h \\
+/share/cmake-3/Modules/CMakeCompilerIdDetection.cmake \\
+/share/cmake-3/Modules/CMakeConfigurableFile.in \\
+/share/cmake-3/Modules/CMakeDetermineASMCompiler.cmake \\
+/share/cmake-3/Modules/CMakeDetermineCCompiler.cmake \\
+/share/cmake-3/Modules/CMakeDetermineCXXCompiler.cmake \\
+/share/cmake-3/Modules/CMakeDetermineCompileFeatures.cmake \\
+/share/cmake-3/Modules/CMakeDetermineCompiler.cmake \\
+/share/cmake-3/Modules/CMakeDetermineCompilerABI.cmake \\
+/share/cmake-3/Modules/CMakeDetermineCompilerId.cmake \\
+/share/cmake-3/Modules/CMakeDetermineSystem.cmake \\
+/share/cmake-3/Modules/CMakeFindBinUtils.cmake \\
+/share/cmake-3/Modules/CMakeGenericSystem.cmake \\
+/share/cmake-3/Modules/CMakeInitializeConfigs.cmake \\
+/share/cmake-3/Modules/CMakeLanguageInformation.cmake \\
+/share/cmake-3/Modules/CMakePackageConfigHelpers.cmake \\
+/share/cmake-3/Modules/CMakeParseArguments.cmake \\
+/share/cmake-3/Modules/CMakeParseImplicitLinkInfo.cmake \\
+/share/cmake-3/Modules/CMakePlatformId.h.in \\
+/share/cmake-3/Modules/CMakePushCheckState.cmake \\
+/share/cmake-3/Modules/CMakeSystem.cmake.in \\
+/share/cmake-3/Modules/CMakeSystemSpecificInformation.cmake \\
+/share/cmake-3/Modules/CMakeSystemSpecificInitialize.cmake \\
+/share/cmake-3/Modules/CMakeTestASMCompiler.cmake \\
+/share/cmake-3/Modules/CMakeTestCCompiler.cmake \\
+/share/cmake-3/Modules/CMakeTestCXXCompiler.cmake \\
+/share/cmake-3/Modules/CMakeTestCompilerCommon.cmake \\
+/share/cmake-3/Modules/CMakeUnixFindMake.cmake \\
+/share/cmake-3/Modules/CPack.cmake \\
+/share/cmake-3/Modules/CPackComponent.cmake \\
+/share/cmake-3/Modules/CheckCCompilerFlag.cmake \\
+/share/cmake-3/Modules/CheckCSourceCompiles.cmake \\
+/share/cmake-3/Modules/CheckCXXCompilerFlag.cmake \\
+/share/cmake-3/Modules/CheckCXXSourceCompiles.cmake \\
+/share/cmake-3/Modules/CheckCXXSourceRuns.cmake \\
+/share/cmake-3/Modules/CheckFunctionExists.c \\
+/share/cmake-3/Modules/CheckFunctionExists.cmake \\
+/share/cmake-3/Modules/CheckIncludeFile.c.in \\
+/share/cmake-3/Modules/CheckIncludeFile.cmake \\
+/share/cmake-3/Modules/CheckLibraryExists.cmake \\
+/share/cmake-3/Modules/CheckStructHasMember.cmake \\
+/share/cmake-3/Modules/CheckSymbolExists.cmake \\
+/share/cmake-3/Modules/ExternalProject.cmake \\
+/share/cmake-3/Modules/FindBacktrace.cmake \\
+/share/cmake-3/Modules/FindGit.cmake \\
+/share/cmake-3/Modules/FindPackageHandleStandardArgs.cmake \\
+/share/cmake-3/Modules/FindPackageMessage.cmake \\
+/share/cmake-3/Modules/FindPkgConfig.cmake \\
+/share/cmake-3/Modules/FindPython3.cmake \\
+/share/cmake-3/Modules/FindThreads.cmake \\
+/share/cmake-3/Modules/WriteBasicConfigVersionFile.cmake \\
+/share/cmake-3/Modules/Compiler/ADSP-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/ARMCC-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/AppleClang-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Borland-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Bruce-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/CMakeCommonCompilerMacros.cmake \\
+/share/cmake-3/Modules/Compiler/Clang-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Clang-DetermineCompilerInternal.cmake \\
+/share/cmake-3/Modules/Compiler/Comeau-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Compaq-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Cray-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Embarcadero-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Fujitsu-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/GNU-ASM.cmake \\
+/share/cmake-3/Modules/Compiler/GNU-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/GNU-C.cmake \\
+/share/cmake-3/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/GNU.cmake \\
+/share/cmake-3/Modules/Compiler/HP-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/HP-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/IAR-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake \\
+/share/cmake-3/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake \\
+/share/cmake-3/Modules/Compiler/Intel-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/MIPSpro-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/MSVC-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/PGI-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/PathScale-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/SCO-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/SDCC-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/SunPro-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/TI-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/Watcom-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/XL-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/XL-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/zOS-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/FindPython/Support.cmake \\
+/share/cmake-3/Modules/Internal/FeatureTesting.cmake \\
+/share/cmake-3/Modules/Platform/Linux.cmake \\
+/share/cmake-3/Modules/Platform/UnixPaths.cmake \\
+/share/cmake-3.13
+EOF
+
+exit
+--- cmake-3.13.5.orig/Modules/Compiler/GNU.cmake
++++ cmake-3.13.5/Modules/Compiler/GNU.cmake
+@@ -47,9 +47,6 @@
+   string(APPEND CMAKE_${lang}_FLAGS_RELWITHDEBINFO_INIT " -O2 -g -DNDEBUG")
+   set(CMAKE_${lang}_CREATE_PREPROCESSED_SOURCE "<CMAKE_${lang}_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -E <SOURCE> > <PREPROCESSED_SOURCE>")
+   set(CMAKE_${lang}_CREATE_ASSEMBLY_SOURCE "<CMAKE_${lang}_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -S <SOURCE> -o <ASSEMBLY_SOURCE>")
+-  if(NOT APPLE OR NOT CMAKE_${lang}_COMPILER_VERSION VERSION_LESS 4) # work around #4462
+-    set(CMAKE_INCLUDE_SYSTEM_FLAG_${lang} "-isystem ")
+-  endif()
+ 
+   set(_CMAKE_${lang}_IPO_SUPPORTED_BY_CMAKE YES)
+   set(_CMAKE_${lang}_IPO_MAY_BE_SUPPORTED_BY_COMPILER NO)
+--- cmake-3.13.5.orig/Source/cm_get_date.c
++++ cmake-3.13.5/Source/cm_get_date.c
+@@ -4,4 +4,6 @@
+ 
+ #define __archive_get_date cm_get_date
+ 
++#ifndef CMAKE_USE_SYSTEM_LIBARCHIVE
+ #include "../Utilities/cmlibarchive/libarchive/archive_getdate.c"
++#endif
+--- cmake-3.13.5.orig/Source/cm_get_date.h
++++ cmake-3.13.5/Source/cm_get_date.h
+@@ -3,14 +3,20 @@
+ #ifndef cm_get_date_h
+ #define cm_get_date_h
+ 
++#include "cmThirdParty.h"
+ #include <time.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+ 
++#ifdef CMAKE_USE_SYSTEM_LIBARCHIVE
++time_t __archive_get_date(time_t now, const char *);
++#define cm_get_date __archive_get_date
++#else
+ /** Parse a date/time string.  Treat relative times with respect to 'now'. */
+ time_t cm_get_date(time_t now, const char* str);
++#endif
+ 
+ #ifdef __cplusplus
+ } /* extern "C" */
+--- cmake-3.13.5.orig/bootstrap
++++ cmake-3.13.5/bootstrap
+@@ -1346,9 +1346,14 @@
+ for a in ${CMAKE_CXX_SOURCES} ${CMAKE_C_SOURCES} ${LexerParser_CXX_SOURCES} ${LexerParser_C_SOURCES} ${KWSYS_CXX_SOURCES} ${KWSYS_C_SOURCES}; do
+   objs="${objs} ${a}.o"
+ done
+-for a in ${LIBUV_C_SOURCES}; do
+-  objs="${objs} uv-`cmake_obj ${a}`"
+-done
++if [ -d ${cmake_source_dir}/Utilities/cmlibuv ]; then
++  for a in ${LIBUV_C_SOURCES}; do
++    objs="${objs} uv-`cmake_obj ${a}`"
++  done
++else
++  cmake_cxx_flags="${cmake_cxx_flags} -DCMAKE_USE_SYSTEM_LIBUV"
++  cmake_ld_flags="${cmake_ld_flags} -luv"
++fi
+ 
+ libs=""
+ 
+@@ -1463,11 +1468,13 @@
+   echo "${a}.o : ${src} ${dep}" >> "${cmake_bootstrap_dir}/Makefile"
+   echo "	${cmake_cxx_compiler} ${cmake_cxx_flags} -DKWSYS_NAMESPACE=cmsys ${src_flags} -c ${src} -o ${a}.o" >> "${cmake_bootstrap_dir}/Makefile"
+ done
+-for a in ${LIBUV_C_SOURCES}; do
+-  src=`cmake_escape "${cmake_source_dir}/Utilities/cmlibuv/${a}"`
+-  echo "uv-`cmake_obj ${a}` : ${src} ${dep}" >> "${cmake_bootstrap_dir}/Makefile"
+-  echo "	${cmake_c_compiler} ${cmake_c_flags} ${uv_c_flags} -c ${src} -o uv-`cmake_obj ${a}`" >> "${cmake_bootstrap_dir}/Makefile"
+-done
++if [ -d ${cmake_source_dir}/Utilities/cmlibuv ]; then
++  for a in ${LIBUV_C_SOURCES}; do
++    src=`cmake_escape "${cmake_source_dir}/Utilities/cmlibuv/${a}"`
++    echo "uv-`cmake_obj ${a}` : ${src} ${dep}" >> "${cmake_bootstrap_dir}/Makefile"
++    echo "	${cmake_c_compiler} ${cmake_c_flags} ${uv_c_flags} -c ${src} -o uv-`cmake_obj ${a}`" >> "${cmake_bootstrap_dir}/Makefile"
++  done
++fi
+ echo '
+ rebuild_cache:
+ 	cd "${cmake_binary_dir}" && "${cmake_source_dir}/bootstrap"

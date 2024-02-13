@@ -1,0 +1,32 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build gcc-g++-build llvm-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/lib
+install build/src/libEGL.so.1 $DESTDIR/dfb/lib/libswiftshaderEGL.so.1
+install build/src/libGLESv2.so.2 $DESTDIR/dfb/lib/libswiftshaderGLESv2.so.2
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/swiftshadergl-directfb-build.pc << EOF
+Name: SwiftShaderGL-DirectFB
+Version: 20231006
+Description: SwiftShader implementation of OpenGL ES and EGL for DirectFB platform
+Requires: $REQUIRES
+
+exec=\\
+/dfb/lib/libswiftshaderEGL.so.1 \\
+/dfb/lib/libswiftshaderGLESv2.so.2
+EOF
+
+exit

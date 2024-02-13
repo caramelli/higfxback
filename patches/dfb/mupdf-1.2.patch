@@ -88,9 +88,9 @@ exit
 +sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makerules
 +
 +if test -z $NOX11; then
-+  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n{$0="X11_LIBS := -lX11 -lXext"} 1' Makerules
++  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n {$0="X11_LIBS := -lX11 -lXext"} 1' Makerules
 +else
-+  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n{$0="NOX11=yes"} 1' Makerules
++  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n {$0="NOX11=yes"} 1' Makerules
 +fi
 +
 +sed -i "/^prefix=/s#=.*#=$PREFIX#" debian/mupdf.pc

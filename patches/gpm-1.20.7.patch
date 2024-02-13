@@ -12,7 +12,7 @@ releasedate="$(grep '^[[:digit:]]' doc/changelog | head -n1 | cut -d: -f2)"
 release="$(grep '^[[:digit:]]' doc/changelog | head -n1 | cut -d: -f1)"
 eof
 cat configure.ac.footer >> configure.ac
-libtoolize -c -i; aclocal; autoconf; autoheader
+libtoolize -c -f -i; aclocal; autoconf; autoheader
 YACC=byacc ./configure --disable-static --without-curses --sbindir=/bin --prefix=
 
 # build
@@ -149,8 +149,9 @@ exit
  
 --- gpm-1.20.7.orig/src/gpm.pc.in
 +++ gpm-1.20.7/src/gpm.pc.in
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,11 @@
 +prefix=@prefix@
++exec_prefix=${prefix}
 +libdir=@libdir@
 +includedir=@includedir@
 +
