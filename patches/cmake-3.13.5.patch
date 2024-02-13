@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="curl-build gcc-g++-build jsoncpp-build libarchive-build libuv-build rhash-build"
+REQUIRES="curl-build gcc-g++-build jsoncpp-build libarchive-build libuv-build make-build ncurses-build ninja-build rhash-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -14,6 +14,7 @@ make
 
 # install
 install -d $DESTDIR/bin
+install bin/ccmake $DESTDIR/bin
 install bin/cmake $DESTDIR/bin
 install bin/cpack $DESTDIR/bin
 install bin/ctest $DESTDIR/bin
@@ -48,6 +49,7 @@ install -m 644 Modules/CMakeFindBinUtils.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeGenericSystem.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeInitializeConfigs.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeLanguageInformation.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeNinjaFindMake.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakePackageConfigHelpers.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeParseArguments.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeParseImplicitLinkInfo.cmake $DESTDIR/share/cmake-3/Modules
@@ -150,6 +152,7 @@ Description: CMake build system
 Requires: $REQUIRES
 
 devel=\\
+/bin/ccmake \\
 /bin/cmake \\
 /bin/cpack \\
 /bin/ctest \\
@@ -186,6 +189,7 @@ devel=\\
 /share/cmake-3/Modules/CMakeGenericSystem.cmake \\
 /share/cmake-3/Modules/CMakeInitializeConfigs.cmake \\
 /share/cmake-3/Modules/CMakeLanguageInformation.cmake \\
+/share/cmake-3/Modules/CMakeNinjaFindMake.cmake \\
 /share/cmake-3/Modules/CMakePackageConfigHelpers.cmake \\
 /share/cmake-3/Modules/CMakeParseArguments.cmake \\
 /share/cmake-3/Modules/CMakeParseImplicitLinkInfo.cmake \\

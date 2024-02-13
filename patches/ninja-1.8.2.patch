@@ -1,0 +1,26 @@
+# This file is part of HiGFXback.
+
+# requires
+REQUIRES="gcc-g++-build python3-build"
+
+if ! pkg-config --exists --print-errors $REQUIRES; then exit 1; fi
+
+# build
+python3 configure.py --bootstrap
+
+# install
+install -d $DESTDIR/bin
+install ninja $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/ninja-build.pc << EOF
+Name: ninja
+Version: 1.8.2
+Description: Ninja build automation tool
+
+devel=\\
+/bin/ninja
+EOF
+
+exit

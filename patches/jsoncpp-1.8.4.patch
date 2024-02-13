@@ -52,3 +52,22 @@ exec=\\
 EOF
 
 exit
+--- jsoncpp-1.8.4.orig/meson.build
++++ jsoncpp-1.8.4/meson.build
+@@ -24,7 +24,6 @@
+   input : 'src/lib_json/version.h.in',
+   output : 'version.h',
+   configuration : jsoncpp_cdata,
+-  install : true,
+   install_dir : join_paths(get_option('prefix'), get_option('includedir'), 'json')
+ )
+ 
+@@ -72,7 +71,7 @@
+   sources : jsoncpp_gen_sources)
+ 
+ # tests
+-python = import('python3').find_python()
++python = find_program('python3')
+ 
+ jsoncpp_test = executable(
+   'jsoncpp_test',
