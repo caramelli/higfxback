@@ -8,7 +8,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 # configure
 rm -rf ext/Compress-Raw-Bzip2/bzip2-src
 rm -rf ext/Compress-Raw-Zlib/zlib-src
-./Configure -de -Dprefix=/ -Dman1dir=/share/man/man1 -Dman3dir=/share/man/man3
+./Configure -de -Dman1dir=/share/man/man1 -Dman3dir=/share/man/man3 -Dprivlib=/lib/perl5 -Dprefix=/
 
 # build
 make
@@ -16,132 +16,133 @@ make
 # install
 install -d $DESTDIR/bin
 install perl $DESTDIR/bin
-install -d $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/AutoLoader.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/base.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/bytes.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/constant.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/Carp.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/Exporter.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/Opcode.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/overload.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/Safe.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/SelectSaver.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/strict.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/subs.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/Symbol.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/utf8.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/vars.pm $DESTDIR/lib/perl5/5.10.1
-install -m 644 lib/warnings.pm $DESTDIR/lib/perl5/5.10.1
-install -d $DESTDIR/lib/perl5/5.10.1/Carp
-install -m 644 lib/Carp/Heavy.pm $DESTDIR/lib/perl5/5.10.1/Carp
-install -d $DESTDIR/lib/perl5/5.10.1/Class
-install -m 644 lib/Class/Struct.pm $DESTDIR/lib/perl5/5.10.1/Class
-install -d $DESTDIR/lib/perl5/5.10.1/Exporter
-install -m 644 lib/Exporter/Heavy.pm $DESTDIR/lib/perl5/5.10.1/Exporter
-install -d $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/Basename.pm $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/Compare.pm $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/Copy.pm $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/Path.pm $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/Spec.pm $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/stat.pm $DESTDIR/lib/perl5/5.10.1/File
-install -m 644 lib/File/Temp.pm $DESTDIR/lib/perl5/5.10.1/File
-install -d $DESTDIR/lib/perl5/5.10.1/File/Spec
-install -m 644 lib/File/Spec/Unix.pm $DESTDIR/lib/perl5/5.10.1/File/Spec
-install -d $DESTDIR/lib/perl5/5.10.1/Getopt
-install -m 644 lib/Getopt/Long.pm $DESTDIR/lib/perl5/5.10.1/Getopt
-install -d $DESTDIR/lib/perl5/5.10.1/Text
-install -m 644 lib/Text/ParseWords.pm $DESTDIR/lib/perl5/5.10.1/Text
-install -m 644 lib/Text/Tabs.pm $DESTDIR/lib/perl5/5.10.1/Text
-install -d $DESTDIR/lib/perl5/5.10.1/Tie
-install -m 644 lib/Tie/Hash.pm $DESTDIR/lib/perl5/5.10.1/Tie
-install -d $DESTDIR/lib/perl5/5.10.1/warnings
-install -m 644 lib/warnings/register.pm $DESTDIR/lib/perl5/5.10.1/warnings
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/B.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/Config.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/Config_git.pl $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/Config_heavy.pl $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/Cwd.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/DynaLoader.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/Errno.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/Fcntl.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/IO.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/POSIX.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -m 644 lib/XSLoader.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/B
-install lib/auto/B/B.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/B
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Bzip2
-install -m 644 lib/auto/Compress/Raw/Bzip2/autosplit.ix $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Bzip2
-install lib/auto/Compress/Raw/Bzip2/Bzip2.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Bzip2
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Zlib
-install -m 644 lib/auto/Compress/Raw/Zlib/autosplit.ix $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Zlib
-install lib/auto/Compress/Raw/Zlib/Zlib.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Zlib
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Zlib
-install -m 644 lib/auto/Compress/Zlib/autosplit.ix $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Zlib
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Data/Dumper
-install lib/auto/Data/Dumper/Dumper.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Data/Dumper
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/DynaLoader
-install -m 644 lib/auto/DynaLoader/dl_findfile.al $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/DynaLoader
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Fcntl
-install lib/auto/Fcntl/Fcntl.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Fcntl
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/File/Glob
-install lib/auto/File/Glob/Glob.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/File/Glob
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/IO
-install lib/auto/IO/IO.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/IO
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/List/Util
-install lib/auto/List/Util/Util.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/List/Util
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Opcode
-install lib/auto/Opcode/Opcode.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/Opcode
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/POSIX
-install -m 644 lib/auto/POSIX/autosplit.ix $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/POSIX
-install -m 644 lib/auto/POSIX/load_imports.al $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/POSIX
-install lib/auto/POSIX/POSIX.so $DESTDIR/lib/perl5/5.10.1/x86_64-linux/auto/POSIX
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Compress
-install -m 644 lib/Compress/Zlib.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Compress
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Compress/Raw
-install -m 644 lib/Compress/Raw/Bzip2.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Compress/Raw
-install -m 644 lib/Compress/Raw/Zlib.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Compress/Raw
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Data
-install -m 644 lib/Data/Dumper.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Data
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/File
-install -m 644 lib/File/Glob.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/File
-install -m 644 lib/File/GlobMapper.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/File
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO
-install -m 644 lib/IO/File.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO
-install -m 644 lib/IO/Handle.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO
-install -m 644 lib/IO/Seekable.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress
-install -m 644 lib/IO/Compress/Base.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress
-install -m 644 lib/IO/Compress/Bzip2.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress
-install -m 644 lib/IO/Compress/Gzip.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress
-install -m 644 lib/IO/Compress/RawDeflate.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Adapter
-install -m 644 lib/IO/Compress/Adapter/Bzip2.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Adapter
-install -m 644 lib/IO/Compress/Adapter/Deflate.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Adapter
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Base
-install -m 644 lib/IO/Compress/Base/Common.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Base
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Gzip
-install -m 644 lib/IO/Compress/Gzip/Constants.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Gzip
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Zlib
-install -m 644 lib/IO/Compress/Zlib/Extra.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Zlib
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress
-install -m 644 lib/IO/Uncompress/Base.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress
-install -m 644 lib/IO/Uncompress/Bunzip2.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress
-install -m 644 lib/IO/Uncompress/Gunzip.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress
-install -m 644 lib/IO/Uncompress/RawInflate.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Adapter
-install -m 644 lib/IO/Uncompress/Adapter/Bunzip2.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Adapter
-install -m 644 lib/IO/Uncompress/Adapter/Inflate.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Adapter
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/List
-install -m 644 lib/List/Util.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/List
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/List/Util
-install -m 644 lib/List/Util/PP.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/List/Util
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Scalar
-install -m 644 lib/Scalar/Util.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Scalar
-install -d $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Scalar/Util
-install -m 644 lib/Scalar/Util/PP.pm $DESTDIR/lib/perl5/5.10.1/x86_64-linux/Scalar/Util
+install -d $DESTDIR/lib/perl5
+install -m 644 lib/AutoLoader.pm $DESTDIR/lib/perl5
+install -m 644 lib/base.pm $DESTDIR/lib/perl5
+install -m 644 lib/bytes.pm $DESTDIR/lib/perl5
+install -m 644 lib/Carp.pm $DESTDIR/lib/perl5
+install -m 644 lib/constant.pm $DESTDIR/lib/perl5
+install -m 644 lib/Exporter.pm $DESTDIR/lib/perl5
+install -m 644 lib/feature.pm $DESTDIR/lib/perl5
+install -m 644 lib/overload.pm $DESTDIR/lib/perl5
+install -m 644 lib/Safe.pm $DESTDIR/lib/perl5
+install -m 644 lib/SelectSaver.pm $DESTDIR/lib/perl5
+install -m 644 lib/strict.pm $DESTDIR/lib/perl5
+install -m 644 lib/subs.pm $DESTDIR/lib/perl5
+install -m 644 lib/Symbol.pm $DESTDIR/lib/perl5
+install -m 644 lib/utf8.pm $DESTDIR/lib/perl5
+install -m 644 lib/vars.pm $DESTDIR/lib/perl5
+install -m 644 lib/warnings.pm $DESTDIR/lib/perl5
+install -d $DESTDIR/lib/perl5/Carp
+install -m 644 lib/Carp/Heavy.pm $DESTDIR/lib/perl5/Carp
+install -d $DESTDIR/lib/perl5/Class
+install -m 644 lib/Class/Struct.pm $DESTDIR/lib/perl5/Class
+install -d $DESTDIR/lib/perl5/Exporter
+install -m 644 lib/Exporter/Heavy.pm $DESTDIR/lib/perl5/Exporter
+install -d $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Basename.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Compare.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Copy.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Path.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Spec.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/stat.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Temp.pm $DESTDIR/lib/perl5/File
+install -d $DESTDIR/lib/perl5/File/Spec
+install -m 644 lib/File/Spec/Unix.pm $DESTDIR/lib/perl5/File/Spec
+install -d $DESTDIR/lib/perl5/Getopt
+install -m 644 lib/Getopt/Long.pm $DESTDIR/lib/perl5/Getopt
+install -d $DESTDIR/lib/perl5/Text
+install -m 644 lib/Text/ParseWords.pm $DESTDIR/lib/perl5/Text
+install -m 644 lib/Text/Tabs.pm $DESTDIR/lib/perl5/Text
+install -d $DESTDIR/lib/perl5/Tie
+install -m 644 lib/Tie/Hash.pm $DESTDIR/lib/perl5/Tie
+install -d $DESTDIR/lib/perl5/warnings
+install -m 644 lib/warnings/register.pm $DESTDIR/lib/perl5/warnings
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/B.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Config.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Config_git.pl $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Config_heavy.pl $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Cwd.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/DynaLoader.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Errno.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Fcntl.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/IO.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/Opcode.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/POSIX.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -m 644 lib/XSLoader.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/B
+install lib/auto/B/B.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/B
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Bzip2
+install -m 644 lib/auto/Compress/Raw/Bzip2/autosplit.ix $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Bzip2
+install lib/auto/Compress/Raw/Bzip2/Bzip2.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Bzip2
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Zlib
+install -m 644 lib/auto/Compress/Raw/Zlib/autosplit.ix $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Zlib
+install lib/auto/Compress/Raw/Zlib/Zlib.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Zlib
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Zlib
+install -m 644 lib/auto/Compress/Zlib/autosplit.ix $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Zlib
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Data/Dumper
+install lib/auto/Data/Dumper/Dumper.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Data/Dumper
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/DynaLoader
+install -m 644 lib/auto/DynaLoader/dl_findfile.al $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/DynaLoader
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Fcntl
+install lib/auto/Fcntl/Fcntl.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Fcntl
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/File/Glob
+install lib/auto/File/Glob/Glob.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/File/Glob
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/IO
+install lib/auto/IO/IO.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/IO
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/List/Util
+install lib/auto/List/Util/Util.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/List/Util
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Opcode
+install lib/auto/Opcode/Opcode.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Opcode
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX
+install -m 644 lib/auto/POSIX/autosplit.ix $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX
+install -m 644 lib/auto/POSIX/load_imports.al $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX
+install lib/auto/POSIX/POSIX.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress
+install -m 644 lib/Compress/Zlib.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw
+install -m 644 lib/Compress/Raw/Bzip2.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw
+install -m 644 lib/Compress/Raw/Zlib.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Data
+install -m 644 lib/Data/Dumper.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Data
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/File
+install -m 644 lib/File/Glob.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/File
+install -m 644 lib/File/GlobMapper.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/File
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO
+install -m 644 lib/IO/File.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO
+install -m 644 lib/IO/Handle.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO
+install -m 644 lib/IO/Seekable.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress
+install -m 644 lib/IO/Compress/Base.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress
+install -m 644 lib/IO/Compress/Bzip2.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress
+install -m 644 lib/IO/Compress/Gzip.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress
+install -m 644 lib/IO/Compress/RawDeflate.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Adapter
+install -m 644 lib/IO/Compress/Adapter/Bzip2.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Adapter
+install -m 644 lib/IO/Compress/Adapter/Deflate.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Adapter
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Base
+install -m 644 lib/IO/Compress/Base/Common.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Base
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Gzip
+install -m 644 lib/IO/Compress/Gzip/Constants.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Gzip
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Zlib
+install -m 644 lib/IO/Compress/Zlib/Extra.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Zlib
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress
+install -m 644 lib/IO/Uncompress/Base.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress
+install -m 644 lib/IO/Uncompress/Bunzip2.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress
+install -m 644 lib/IO/Uncompress/Gunzip.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress
+install -m 644 lib/IO/Uncompress/RawInflate.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Adapter
+install -m 644 lib/IO/Uncompress/Adapter/Bunzip2.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Adapter
+install -m 644 lib/IO/Uncompress/Adapter/Inflate.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Adapter
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List
+install -m 644 lib/List/Util.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List/Util
+install -m 644 lib/List/Util/PP.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List/Util
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar
+install -m 644 lib/Scalar/Util.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util
+install -m 644 lib/Scalar/Util/PP.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -153,93 +154,94 @@ Requires: $REQUIRES
 
 exec=\\
 /bin/perl \\
-/lib/perl5/5.10.1/AutoLoader.pm \\
-/lib/perl5/5.10.1/base.pm \\
-/lib/perl5/5.10.1/bytes.pm \\
-/lib/perl5/5.10.1/constant.pm \\
-/lib/perl5/5.10.1/Carp.pm \\
-/lib/perl5/5.10.1/Exporter.pm \\
-/lib/perl5/5.10.1/Opcode.pm \\
-/lib/perl5/5.10.1/overload.pm \\
-/lib/perl5/5.10.1/Safe.pm \\
-/lib/perl5/5.10.1/SelectSaver.pm \\
-/lib/perl5/5.10.1/strict.pm \\
-/lib/perl5/5.10.1/subs.pm \\
-/lib/perl5/5.10.1/Symbol.pm \\
-/lib/perl5/5.10.1/utf8.pm \\
-/lib/perl5/5.10.1/vars.pm \\
-/lib/perl5/5.10.1/warnings.pm \\
-/lib/perl5/5.10.1/Carp/Heavy.pm \\
-/lib/perl5/5.10.1/Class/Struct.pm \\
-/lib/perl5/5.10.1/Exporter/Heavy.pm \\
-/lib/perl5/5.10.1/File/Basename.pm \\
-/lib/perl5/5.10.1/File/Compare.pm \\
-/lib/perl5/5.10.1/File/Copy.pm \\
-/lib/perl5/5.10.1/File/Path.pm \\
-/lib/perl5/5.10.1/File/Spec.pm \\
-/lib/perl5/5.10.1/File/stat.pm \\
-/lib/perl5/5.10.1/File/Temp.pm \\
-/lib/perl5/5.10.1/File/Spec/Unix.pm \\
-/lib/perl5/5.10.1/Getopt/Long.pm \\
-/lib/perl5/5.10.1/Text/ParseWords.pm \\
-/lib/perl5/5.10.1/Text/Tabs.pm \\
-/lib/perl5/5.10.1/Tie/Hash.pm \\
-/lib/perl5/5.10.1/warnings/register.pm \\
-/lib/perl5/5.10.1/x86_64-linux/B.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Config.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Config_git.pl \\
-/lib/perl5/5.10.1/x86_64-linux/Config_heavy.pl \\
-/lib/perl5/5.10.1/x86_64-linux/Cwd.pm \\
-/lib/perl5/5.10.1/x86_64-linux/DynaLoader.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Errno.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Fcntl.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO.pm \\
-/lib/perl5/5.10.1/x86_64-linux/POSIX.pm \\
-/lib/perl5/5.10.1/x86_64-linux/XSLoader.pm \\
-/lib/perl5/5.10.1/x86_64-linux/auto/B/B.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Bzip2/autosplit.ix \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Bzip2/Bzip2.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Zlib/autosplit.ix \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Raw/Zlib/Zlib.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Compress/Zlib/autosplit.ix \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Data/Dumper/Dumper.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/DynaLoader/dl_findfile.al \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Fcntl/Fcntl.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/File/Glob/Glob.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/IO/IO.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/List/Util/Util.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/Opcode/Opcode.so \\
-/lib/perl5/5.10.1/x86_64-linux/auto/POSIX/autosplit.ix \\
-/lib/perl5/5.10.1/x86_64-linux/auto/POSIX/load_imports.al \\
-/lib/perl5/5.10.1/x86_64-linux/auto/POSIX/POSIX.so \\
-/lib/perl5/5.10.1/x86_64-linux/Compress/Zlib.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Compress/Raw/Bzip2.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Compress/Raw/Zlib.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Data/Dumper.pm \\
-/lib/perl5/5.10.1/x86_64-linux/File/Glob.pm \\
-/lib/perl5/5.10.1/x86_64-linux/File/GlobMapper.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/File.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Handle.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Seekable.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Base.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Bzip2.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Gzip.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/RawDeflate.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Adapter/Bzip2.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Adapter/Deflate.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Base/Common.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Gzip/Constants.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Compress/Zlib/Extra.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Base.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Bunzip2.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Gunzip.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/RawInflate.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Adapter/Bunzip2.pm \\
-/lib/perl5/5.10.1/x86_64-linux/IO/Uncompress/Adapter/Inflate.pm \\
-/lib/perl5/5.10.1/x86_64-linux/List/Util.pm \\
-/lib/perl5/5.10.1/x86_64-linux/List/Util/PP.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Scalar/Util.pm \\
-/lib/perl5/5.10.1/x86_64-linux/Scalar/Util/PP.pm
+/lib/perl5/AutoLoader.pm \\
+/lib/perl5/base.pm \\
+/lib/perl5/bytes.pm \\
+/lib/perl5/Carp.pm \\
+/lib/perl5/constant.pm \\
+/lib/perl5/Exporter.pm \\
+/lib/perl5/feature.pm \\
+/lib/perl5/overload.pm \\
+/lib/perl5/Safe.pm \\
+/lib/perl5/SelectSaver.pm \\
+/lib/perl5/strict.pm \\
+/lib/perl5/subs.pm \\
+/lib/perl5/Symbol.pm \\
+/lib/perl5/utf8.pm \\
+/lib/perl5/vars.pm \\
+/lib/perl5/warnings.pm \\
+/lib/perl5/Carp/Heavy.pm \\
+/lib/perl5/Class/Struct.pm \\
+/lib/perl5/Exporter/Heavy.pm \\
+/lib/perl5/File/Basename.pm \\
+/lib/perl5/File/Compare.pm \\
+/lib/perl5/File/Copy.pm \\
+/lib/perl5/File/Path.pm \\
+/lib/perl5/File/Spec.pm \\
+/lib/perl5/File/stat.pm \\
+/lib/perl5/File/Temp.pm \\
+/lib/perl5/File/Spec/Unix.pm \\
+/lib/perl5/Getopt/Long.pm \\
+/lib/perl5/Text/ParseWords.pm \\
+/lib/perl5/Text/Tabs.pm \\
+/lib/perl5/Tie/Hash.pm \\
+/lib/perl5/warnings/register.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/B.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Config.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Config_git.pl \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Config_heavy.pl \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Cwd.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/DynaLoader.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Errno.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Fcntl.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Opcode.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/POSIX.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/XSLoader.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/B/B.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Bzip2/autosplit.ix \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Bzip2/Bzip2.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Zlib/autosplit.ix \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Raw/Zlib/Zlib.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Compress/Zlib/autosplit.ix \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Data/Dumper/Dumper.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/DynaLoader/dl_findfile.al \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Fcntl/Fcntl.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/File/Glob/Glob.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/IO/IO.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/List/Util/Util.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Opcode/Opcode.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX/autosplit.ix \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX/load_imports.al \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX/POSIX.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Zlib.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw/Bzip2.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw/Zlib.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Data/Dumper.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/File/Glob.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/File/GlobMapper.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/File.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Handle.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Seekable.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Base.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Bzip2.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Gzip.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/RawDeflate.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Adapter/Bzip2.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Adapter/Deflate.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Base/Common.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Gzip/Constants.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Compress/Zlib/Extra.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Base.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Bunzip2.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Gunzip.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/RawInflate.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Adapter/Bunzip2.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/IO/Uncompress/Adapter/Inflate.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List/Util.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List/Util/PP.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util/PP.pm
 EOF
 
 exit

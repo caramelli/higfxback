@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build libaom-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DAVIF_CODEC_AOM=ON -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/include/avif
+install -m 644 include/avif/avif.h $DESTDIR/include
+install -d $DESTDIR/lib
+install build/libavif.so.15.* $DESTDIR/lib/libavif.so.15
+ln -sf libavif.so.15 $DESTDIR/lib/libavif.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/libavif.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libavif-build.pc << EOF
+Name: libavif
+Version: 0.11.1
+Description: AVIF library
+Requires: $REQUIRES
+
+devel=\\
+/include/avif/avif.h \\
+/lib/libavif.so \\
+/lib/pkgconfig/libavif.pc
+
+exec=\\
+/lib/libavif.so.15
+EOF
+
+exit

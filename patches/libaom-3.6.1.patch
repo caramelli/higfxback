@@ -1,0 +1,75 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DAOM_TARGET_CPU=generic -DBUILD_SHARED_LIBS=ON  -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/aomdec $DESTDIR/bin
+install build/aomenc $DESTDIR/bin
+install -d $DESTDIR/include/aom
+install -m 644 aom/aom.h $DESTDIR/include/aom
+install -m 644 aom/aom_codec.h $DESTDIR/include/aom
+install -m 644 aom/aom_decoder.h $DESTDIR/include/aom
+install -m 644 aom/aom_encoder.h $DESTDIR/include/aom
+install -m 644 aom/aom_external_partition.h $DESTDIR/include/aom
+install -m 644 aom/aom_frame_buffer.h $DESTDIR/include/aom
+install -m 644 aom/aom_image.h $DESTDIR/include/aom
+install -m 644 aom/aom_integer.h $DESTDIR/include/aom
+install -m 644 aom/aomcx.h $DESTDIR/include/aom
+install -m 644 aom/aomdx.h $DESTDIR/include/aom
+install -d $DESTDIR/lib
+install build/libaom.so.3.* $DESTDIR/lib/libaom.so.3
+ln -sf libaom.so.3 $DESTDIR/lib/libaom.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/aom.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libaom-build.pc << EOF
+Name: libaom
+Version: 3.6.1
+Description: Alliance for Open Media video codec
+Requires: $REQUIRES
+
+devel=\\
+/include/aom/aom.h \\
+/include/aom/aom_codec.h \\
+/include/aom/aom_decoder.h \\
+/include/aom/aom_encoder.h \\
+/include/aom/aom_external_partition.h \\
+/include/aom/aom_frame_buffer.h \\
+/include/aom/aom_image.h \\
+/include/aom/aom_integer.h \\
+/include/aom/aomcx.h \\
+/include/aom/aomdx.h \\
+/lib/libaom.so \\
+/lib/pkgconfig/aom.pc
+
+exec=\\
+/bin/aomdec \\
+/bin/aomenc \\
+/lib/libaom.so.3
+EOF
+
+exit
+--- libaom-3.6.1.orig/build/cmake/pkg_config.cmake
++++ libaom-3.6.1/build/cmake/pkg_config.cmake
+@@ -10,7 +10,7 @@
+ #
+ cmake_minimum_required(VERSION 3.5)
+ 
+-set(REQUIRED_ARGS "AOM_ROOT" "AOM_CONFIG_DIR" "CMAKE_INSTALL_PREFIX"
++set(REQUIRED_ARGS "AOM_ROOT" "AOM_CONFIG_DIR"
+                   "CMAKE_INSTALL_BINDIR" "CMAKE_INSTALL_INCLUDEDIR"
+                   "CMAKE_INSTALL_LIBDIR" "CMAKE_PROJECT_NAME"
+                   "CONFIG_MULTITHREAD" "HAVE_PTHREAD_H")
