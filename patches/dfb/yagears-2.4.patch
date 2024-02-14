@@ -1,0 +1,215 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-opengl-stubs-build meson-build libpng-build tiff-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/yagears2 $DESTDIR/dfb/bin
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+Name: yagears
+Version: 2.4
+Description: Yet Another Gears OpenGL / Vulkan demo
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/yagears2
+EOF
+
+exit
+--- yagears-2.4.orig/CMakeLists.txt
++++ yagears-2.4/CMakeLists.txt
+@@ -60,12 +60,12 @@
+   pkg_check_modules(GL gl)
+   if(GL_FOUND)
+     if(ENABLE_GLESV1_CM)
+-      list(APPEND GL_CFLAGS -DGLESV1_CM_H=<GL/gl.h> -DGLESV1_CM_LIB="libGL.so" -DGL_GLEXT_PROTOTYPES)
++      list(APPEND GL_CFLAGS -DGLESV1_CM_H=<GL/gl.h> -DGLESV1_CM_LIB="libGL.so.1" -DGL_GLEXT_PROTOTYPES)
+     endif()
+     if(ENABLE_GLESV2)
+       find_program(XXD xxd)
+       if(XXD)
+-        list(APPEND GL_CFLAGS -DGLESV2_H=<GL/gl.h> -DGLESV2_LIB="libGL.so" -DGL_GLEXT_PROTOTYPES)
++        list(APPEND GL_CFLAGS -DGLESV2_H=<GL/gl.h> -DGLESV2_LIB="libGL.so.1" -DGL_GLEXT_PROTOTYPES)
+       else()
+         set(ENABLE_GLESV2 OFF)
+       endif()
+@@ -82,7 +82,7 @@
+   if(ENABLE_GLESV1_CM)
+     pkg_check_modules(GLESV1_CM glesv1_cm)
+     if(GLESV1_CM_FOUND)
+-      list(APPEND GLESV1_CM_CFLAGS -DGLESV1_CM_H=<GLES/gl.h> -DGLESV1_CM_LIB="libGLESv1_CM.so")
++      list(APPEND GLESV1_CM_CFLAGS -DGLESV1_CM_H=<GLES/gl.h> -DGLESV1_CM_LIB="libGLESv1_CM.so.1")
+       set(GLESV1_CM_LDFLAGS -ldl)
+     else()
+       set(ENABLE_GLESV1_CM OFF)
+@@ -93,7 +93,7 @@
+     pkg_check_modules(GLESV2 glesv2)
+     find_program(XXD xxd)
+     if(GLESV2_FOUND AND XXD)
+-      list(APPEND GLESV2_CFLAGS -DGLESV2_H=<GLES2/gl2.h> -DGLESV2_LIB="libGLESv2.so")
++      list(APPEND GLESV2_CFLAGS -DGLESV2_H=<GLES2/gl2.h> -DGLESV2_LIB="libGLESv2.so.2")
+       set(GLESV2_LDFLAGS -ldl)
+     else()
+       set(ENABLE_GLESV2 OFF)
+--- yagears-2.4.orig/configure.ac
++++ yagears-2.4/configure.ac
+@@ -125,12 +125,12 @@
+   PKG_CHECK_MODULES(GL, gl, , enable_gl=no)
+   if test x$enable_gl = xyes; then
+     if test x$enable_glesv1_cm = xyes; then
+-      GL_CFLAGS="$GL_CFLAGS -DGLESV1_CM_H=\<GL/gl.h\> -DGLESV1_CM_LIB=\\\"libGL.so\\\" -DGL_GLEXT_PROTOTYPES"
++      GL_CFLAGS="$GL_CFLAGS -DGLESV1_CM_H=\<GL/gl.h\> -DGLESV1_CM_LIB=\\\"libGL.so.1\\\" -DGL_GLEXT_PROTOTYPES"
+     fi
+     if test x$enable_glesv2 = xyes; then
+       AC_PATH_TOOL(XXD, xxd)
+       if test -n "$XXD"; then
+-        GL_CFLAGS="$GL_CFLAGS -DGLESV2_H=\<GL/gl.h\> -DGLESV2_LIB=\\\"libGL.so\\\" -DGL_GLEXT_PROTOTYPES"
++        GL_CFLAGS="$GL_CFLAGS -DGLESV2_H=\<GL/gl.h\> -DGLESV2_LIB=\\\"libGL.so.1\\\" -DGL_GLEXT_PROTOTYPES"
+       else
+         enable_glesv2=no
+       fi
+@@ -145,7 +145,7 @@
+   if test x$enable_glesv1_cm = xyes; then
+     PKG_CHECK_MODULES(GLESV1_CM, glesv1_cm, , enable_glesv1_cm=no)
+     if test x$enable_glesv1_cm = xyes; then
+-      GLESV1_CM_CFLAGS="$GLESV1_CM_CFLAGS -DGLESV1_CM_H=\<GLES/gl.h\> -DGLESV1_CM_LIB=\\\"libGLESv1_CM.so\\\""
++      GLESV1_CM_CFLAGS="$GLESV1_CM_CFLAGS -DGLESV1_CM_H=\<GLES/gl.h\> -DGLESV1_CM_LIB=\\\"libGLESv1_CM.so.1\\\""
+       GLESV1_CM_LIBS=-ldl
+     fi
+   fi
+@@ -155,7 +155,7 @@
+     if test x$enable_glesv2 = xyes; then
+       AC_PATH_TOOL(XXD, xxd)
+       if test -n "$XXD"; then
+-        GLESV2_CFLAGS="$GLESV2_CFLAGS -DGLESV2_H=\<GLES2/gl2.h\> -DGLESV2_LIB=\\\"libGLESv2.so\\\""
++        GLESV2_CFLAGS="$GLESV2_CFLAGS -DGLESV2_H=\<GLES2/gl2.h\> -DGLESV2_LIB=\\\"libGLESv2.so.2\\\""
+         GLESV2_LIBS=-ldl
+       else
+         enable_glesv2=no
+--- yagears-2.4.orig/meson.build
++++ yagears-2.4/meson.build
+@@ -54,12 +54,12 @@
+   gl_dep = dependency('gl', required: false)
+   if gl_dep.found()
+     if enable_glesv1_cm
+-      gl_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GL/gl.h>', '-DGLESV1_CM_LIB="libGL.so"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
++      gl_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GL/gl.h>', '-DGLESV1_CM_LIB="libGL.so.1"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
+     endif
+     if enable_glesv2
+       xxd = find_program('xxd', required: false)
+       if xxd.found()
+-        gl_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GL/gl.h>', '-DGLESV2_LIB="libGL.so"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
++        gl_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GL/gl.h>', '-DGLESV2_LIB="libGL.so.1"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
+       else
+         enable_glesv2 = false
+       endif
+@@ -78,8 +78,8 @@
+   if enable_glesv1_cm
+     glesv1_cm_dep = dependency('glesv1_cm', required: false)
+     if glesv1_cm_dep.found()
+-      glesv1_cm_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv1_cm').stdout().strip().split(' '))
+-      glesv1_cm_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GLES/gl.h>', '-DGLESV1_CM_LIB="libGLESv1_CM.so"'], link_args: '-ldl', dependencies: glesv1_cm_dep)
++      glesv1_cm_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv1_cm', check: true).stdout().strip().split(' '))
++      glesv1_cm_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GLES/gl.h>', '-DGLESV1_CM_LIB="libGLESv1_CM.so.1"'], link_args: '-ldl', dependencies: glesv1_cm_dep)
+     else
+       enable_glesv1_cm = false
+     endif
+@@ -89,8 +89,8 @@
+     glesv2_dep = dependency('glesv2', required: false)
+     xxd = find_program('xxd', required: false)
+     if glesv2_dep.found() and xxd.found()
+-      glesv2_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv2').stdout().strip().split(' '))
+-      glesv2_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GLES2/gl2.h>', '-DGLESV2_LIB="libGLESv2.so"'], link_args: '-ldl', dependencies: glesv2_dep)
++      glesv2_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv2', check: true).stdout().strip().split(' '))
++      glesv2_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GLES2/gl2.h>', '-DGLESV2_LIB="libGLESv2.so.2"'], link_args: '-ldl', dependencies: glesv2_dep)
+     else
+       enable_glesv2 = false
+     endif
+@@ -107,7 +107,7 @@
+ directfb_dep = []
+ if enable_gl
+   if enable_gl_x11
+-    libdir = run_command('pkg-config', '--variable=libdir', 'gl').stdout().strip()
++    libdir = run_command('pkg-config', '--variable=libdir', 'gl', check: true).stdout().strip()
+     if cc.has_function('glXCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
+       x11_dep = dependency('x11', required: false)
+       if not x11_dep.found()
+@@ -120,8 +120,8 @@
+ 
+   if enable_gl_directfb
+     message('Checking for DirectFBGL module')
+-    moduledir = run_command('pkg-config', '--variable=moduledir', 'directfb-internal').stdout().strip()
+-    if run_command('test', '-d', moduledir + '/interfaces/IDirectFBGL').returncode() == 0
++    moduledir = run_command('pkg-config', '--variable=moduledir', 'directfb-internal', check: false).stdout().strip()
++    if import('fs').is_dir(moduledir + '/interfaces/IDirectFBGL')
+       message('DirectFBGL found')
+       directfb_dep = dependency('directfb', required: false)
+       if not directfb_dep.found()
+@@ -134,7 +134,7 @@
+   endif
+ 
+   if enable_gl_fbdev
+-    libdir = run_command('pkg-config', '--variable=libdir', 'gl').stdout().strip()
++    libdir = run_command('pkg-config', '--variable=libdir', 'gl', check: true).stdout().strip()
+     if not cc.has_function('glFBDevCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
+       enable_gl_fbdev = false
+     endif
+@@ -202,7 +202,7 @@
+           config_h.set('HAVE_WL_SHELL_SURFACE_SET_POSITION', false, description: 'Have function wl_shell_surface_set_position')
+         endif
+ 
+-        wayland_egl_dep = [wayland_dep, cc.find_library('wayland-egl', dirs: run_command('pkg-config', '--variable=libdir', 'wayland-client').stdout().strip())]
++        wayland_egl_dep = [wayland_dep, cc.find_library('wayland-egl', dirs: run_command('pkg-config', '--variable=libdir', 'wayland-client', check: true).stdout().strip())]
+       endif
+     endif
+ 
+@@ -221,8 +221,8 @@
+         endif
+       endforeach
+       if enable_egl_drm
+-        dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri').stdout().strip()
+-        modversion = run_command('pkg-config', '--modversion', 'dri')
++        dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri', check: true).stdout().strip()
++        modversion = run_command('pkg-config', '--modversion', 'dri', check: true)
+         drimajorversion = modversion.stdout().split('.')[0]
+         driminorversion = modversion.stdout().split('.')[1]
+         drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
+@@ -264,7 +264,7 @@
+   vulkan_dep = dependency('vulkan', required: false)
+   glslang_validator = find_program('glslangValidator', required: false)
+   if vulkan_dep.found() and glslang_validator.found()
+-    libdir = run_command('pkg-config', '--variable=libdir', 'vulkan').stdout().strip()
++    libdir = run_command('pkg-config', '--variable=libdir', 'vulkan', check: true).stdout().strip()
+ 
+     if enable_vk_x11
+       if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
+@@ -376,7 +376,7 @@
+ if enable_fltk
+   fltk_config = find_program('fltk-config', required: false)
+   if fltk_config.found()
+-    fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags').stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags').stdout().strip().split(' '))
++    fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags', check: true).stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags', check: true).stdout().strip().split(' '))
+   else
+     enable_fltk = false
+   endif
+@@ -493,7 +493,7 @@
+ if enable_wx
+   wx_config = find_program('wx-config', required: false)
+   if wx_config.found()
+-    wx_dep = declare_dependency(compile_args: run_command(wx_config, '--cflags').stdout().strip().split(' '), link_args: run_command(wx_config, '--libs', 'core,gl').stdout().strip().split(' '))
++    wx_dep = declare_dependency(compile_args: run_command(wx_config, '--cflags', check: true).stdout().strip().split(' '), link_args: run_command(wx_config, '--libs', 'core,gl', check: true).stdout().strip().split(' '))
+   else
+     enable_wx = false
+   endif
