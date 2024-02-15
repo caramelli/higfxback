@@ -5,6 +5,11 @@ REQUIRES="directfb2-build freetype-build libpng-build meson-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists ffmpeg-build; then
+  FFMPEG=1
+  REQUIRES="$REQUIRES ffmpeg-build"
+fi
+
 # configure
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
 
@@ -20,6 +25,7 @@ install build/src/dfiffcolorkeying $DESTDIR/dfb/bin
 install build/src/dflayerlevel $DESTDIR/dfb/bin
 install build/src/dfvffinfo $DESTDIR/dfb/bin
 install build/src/mkdfiff $DESTDIR/dfb/bin
+test $FFMPEG && install build/src/mkdfvff $DESTDIR/dfb/bin
 install build/src/mkdgiff $DESTDIR/dfb/bin
 
 # build.pc
@@ -32,12 +38,15 @@ Requires: $REQUIRES
 
 exec=\\
 /dfb/bin/dfbg \\
-/dfb/bin/dfbinfog \\
-/dfb/bin/dfiffinfog \\
-/dfb/bin/dfiffcolorkeyingg \\
-/dfb/bin/dflayerlevelg \\
-/dfb/bin/dfvffinfog \\
-/dfb/bin/mkdfiffg \\
+/dfb/bin/dfbinfo \\
+/dfb/bin/dfiffinfo \\
+/dfb/bin/dfiffcolorkeying \\
+/dfb/bin/dflayerlevel \\
+/dfb/bin/dfvffinfo \\
+/dfb/bin/mkdfiff \\
+EOF
+test $FFMPEG && echo /dfb/bin/mkdfvff \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc << EOF
 /dfb/bin/mkdgiff
 EOF
 

@@ -335,3 +335,12 @@ exit
  	$file{$linux_errno_h} = 1;
      } elsif ($^O eq 'MacOS') {
  	# note that we are only getting the GUSI errno's here ...
+@@ -270,7 +271,7 @@
+ 	    open(CPPO,"$cpp < errno.c |")
+ 		or die "Cannot exec $cpp";
+         } else {
+-	    my $cpp = default_cpp();
++	    my $cpp = default_cpp() . ' -P';
+ 	    open(CPPO,"$cpp < errno.c |")
+ 		or die "Cannot exec $cpp";
+ 	}

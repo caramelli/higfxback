@@ -1,0 +1,462 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="bzip2-build directfb2-build make-build xz-build zlib-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-directfb --enable-gpl --enable-shared --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install ffmpeg $DESTDIR/dfb/bin
+install ffprobe $DESTDIR/dfb/bin
+install ffserver $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/libavcodec
+install -m 644 libavcodec/avcodec.h $DESTDIR/dfb/include/libavcodec
+install -m 644 libavcodec/avfft.h $DESTDIR/dfb/include/libavcodec
+install -m 644 libavcodec/old_codec_ids.h $DESTDIR/dfb/include/libavcodec
+install -m 644 libavcodec/version.h $DESTDIR/dfb/include/libavcodec
+install -d $DESTDIR/dfb/include/libavdevice
+install -m 644 libavdevice/avdevice.h $DESTDIR/dfb/include/libavdevice
+install -m 644 libavdevice/version.h $DESTDIR/dfb/include/libavdevice
+install -d $DESTDIR/dfb/include/libavfilter
+install -m 644 libavfilter/avcodec.h $DESTDIR/dfb/include/libavfilter
+install -m 644 libavfilter/avfilter.h $DESTDIR/dfb/include/libavfilter
+install -m 644 libavfilter/avfiltergraph.h $DESTDIR/dfb/include/libavfilter
+install -m 644 libavfilter/buffersink.h $DESTDIR/dfb/include/libavfilter
+install -m 644 libavfilter/buffersrc.h $DESTDIR/dfb/include/libavfilter
+install -m 644 libavfilter/version.h $DESTDIR/dfb/include/libavfilter
+install -d $DESTDIR/dfb/include/libavformat
+install -m 644 libavformat/avformat.h $DESTDIR/dfb/include/libavformat
+install -m 644 libavformat/avio.h $DESTDIR/dfb/include/libavformat
+install -m 644 libavformat/version.h $DESTDIR/dfb/include/libavformat
+install -d $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/aes.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/attributes.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/audioconvert.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/avassert.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/avconfig.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/avstring.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/avutil.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/base64.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/bprint.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/bswap.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/buffer.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/channel_layout.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/common.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/cpu.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/dict.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/display.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/error.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/eval.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/ffversion.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/fifo.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/frame.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/imgutils.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/intfloat.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/intreadwrite.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/log.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/lzo.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/macros.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/mathematics.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/md5.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/mem.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/old_pix_fmts.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/opt.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/parseutils.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/pixdesc.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/pixfmt.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/rational.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/samplefmt.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/sha.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/time.h $DESTDIR/dfb/include/libavutil
+install -m 644 libavutil/version.h $DESTDIR/dfb/include/libavutil
+install -d $DESTDIR/dfb/include/libpostproc
+install -m 644 libpostproc/postprocess.h $DESTDIR/dfb/include/libpostproc
+install -m 644 libpostproc/version.h $DESTDIR/dfb/include/libpostproc
+install -d $DESTDIR/dfb/include/libswresample
+install -m 644 libswresample/swresample.h $DESTDIR/dfb/include/libswresample
+install -m 644 libswresample/version.h $DESTDIR/dfb/include/libswresample
+install -d $DESTDIR/dfb/include/libswscale
+install -m 644 libswscale/swscale.h $DESTDIR/dfb/include/libswscale
+install -m 644 libswscale/version.h $DESTDIR/dfb/include/libswscale
+install -d $DESTDIR/dfb/lib
+install libavcodec/libavcodec.so.56 $DESTDIR/dfb/lib
+ln -sf libavcodec.so.56 $DESTDIR/dfb/lib/libavcodec.so
+install libavdevice/libavdevice.so.56 $DESTDIR/dfb/lib
+ln -sf libavdevice.so.56 $DESTDIR/dfb/lib/libavdevice.so
+install libavfilter/libavfilter.so.5 $DESTDIR/dfb/lib
+ln -sf libavfilter.so.5 $DESTDIR/dfb/lib/libavfilter.so
+install libavformat/libavformat.so.56 $DESTDIR/dfb/lib
+ln -sf libavformat.so.56 $DESTDIR/dfb/lib/libavformat.so
+install libavutil/libavutil.so.54 $DESTDIR/dfb/lib
+ln -sf libavutil.so.54 $DESTDIR/dfb/lib/libavutil.so
+install libpostproc/libpostproc.so.53 $DESTDIR/dfb/lib
+ln -sf libpostproc.so.53 $DESTDIR/dfb/lib/libpostproc.so
+install libswresample/libswresample.so.1 $DESTDIR/dfb/lib
+ln -sf libswresample.so.1 $DESTDIR/dfb/lib/libswresample.so
+install libswscale/libswscale.so.3 $DESTDIR/dfb/lib
+ln -sf libswscale.so.3 $DESTDIR/dfb/lib/libswscale.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libavcodec/libavcodec.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libavdevice/libavdevice.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libavfilter/libavfilter.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libavformat/libavformat.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libavutil/libavutil.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libpostproc/libpostproc.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libswresample/libswresample.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libswscale/libswscale.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/ffmpeg-build.pc << EOF
+Name: ffmpeg
+Version: 2.8.22
+Description: A collection of libraries and tools to process multimedia content
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/libavcodec/avcodec.h \\
+/dfb/include/libavcodec/avfft.h \\
+/dfb/include/libavcodec/old_codec_ids.h \\
+/dfb/include/libavcodec/version.h \\
+/dfb/include/libavdevice/avdevice.h \\
+/dfb/include/libavdevice/version.h \\
+/dfb/include/libavfilter/avcodec.h \\
+/dfb/include/libavfilter/avfilter.h \\
+/dfb/include/libavfilter/avfiltergraph.h \\
+/dfb/include/libavfilter/buffersink.h \\
+/dfb/include/libavfilter/buffersrc.h \\
+/dfb/include/libavfilter/version.h \\
+/dfb/include/libavformat/avformat.h \\
+/dfb/include/libavformat/avio.h \\
+/dfb/include/libavformat/version.h \\
+/dfb/include/libavutil/aes.h \\
+/dfb/include/libavutil/attributes.h \\
+/dfb/include/libavutil/audioconvert.h \\
+/dfb/include/libavutil/avassert.h \\
+/dfb/include/libavutil/avconfig.h \\
+/dfb/include/libavutil/avstring.h \\
+/dfb/include/libavutil/avutil.h \\
+/dfb/include/libavutil/base64.h \\
+/dfb/include/libavutil/bprint.h \\
+/dfb/include/libavutil/bswap.h \\
+/dfb/include/libavutil/buffer.h \\
+/dfb/include/libavutil/channel_layout.h \\
+/dfb/include/libavutil/common.h \\
+/dfb/include/libavutil/cpu.h \\
+/dfb/include/libavutil/dict.h \\
+/dfb/include/libavutil/display.h \\
+/dfb/include/libavutil/error.h \\
+/dfb/include/libavutil/eval.h \\
+/dfb/include/libavutil/ffversion.h \\
+/dfb/include/libavutil/fifo.h \\
+/dfb/include/libavutil/frame.h \\
+/dfb/include/libavutil/imgutils.h \\
+/dfb/include/libavutil/intfloat.h \\
+/dfb/include/libavutil/intreadwrite.h \\
+/dfb/include/libavutil/log.h \\
+/dfb/include/libavutil/lzo.h \\
+/dfb/include/libavutil/macros.h \\
+/dfb/include/libavutil/mathematics.h \\
+/dfb/include/libavutil/md5.h \\
+/dfb/include/libavutil/mem.h \\
+/dfb/include/libavutil/old_pix_fmts.h \\
+/dfb/include/libavutil/opt.h \\
+/dfb/include/libavutil/parseutils.h \\
+/dfb/include/libavutil/pixdesc.h \\
+/dfb/include/libavutil/pixfmt.h \\
+/dfb/include/libavutil/rational.h \\
+/dfb/include/libavutil/samplefmt.h \\
+/dfb/include/libavutil/sha.h \\
+/dfb/include/libavutil/time.h \\
+/dfb/include/libavutil/version.h \\
+/dfb/include/libpostproc/postprocess.h \\
+/dfb/include/libpostproc/version.h \\
+/dfb/include/libswresample/swresample.h \\
+/dfb/include/libswresample/version.h \\
+/dfb/include/libswscale/swscale.h \\
+/dfb/include/libswscale/version.h \\
+/dfb/lib/libavcodec.so \\
+/dfb/lib/libavdevice.so \\
+/dfb/lib/libavfilter.so \\
+/dfb/lib/libavformat.so \\
+/dfb/lib/libavutil.so \\
+/dfb/lib/libpostproc.so \\
+/dfb/lib/libswresample.so \\
+/dfb/lib/libswscale.so \\
+/dfb/lib/pkgconfig/libavcodec.pc \\
+/dfb/lib/pkgconfig/libavdevice.pc \\
+/dfb/lib/pkgconfig/libavfilter.pc \\
+/dfb/lib/pkgconfig/libavformat.pc \\
+/dfb/lib/pkgconfig/libavutil.pc \\
+/dfb/lib/pkgconfig/libpostproc.pc \\
+/dfb/lib/pkgconfig/libswresample.pc \\
+/dfb/lib/pkgconfig/libswscale.pc
+
+exec=\\
+/dfb/bin/ffmpeg \\
+/dfb/bin/ffprobe \\
+/dfb/bin/ffserver \\
+/dfb/lib/libavcodec.so.56 \\
+/dfb/lib/libavdevice.so.56 \\
+/dfb/lib/libavfilter.so.5 \\
+/dfb/lib/libavformat.so.56 \\
+/dfb/lib/libavutil.so.54 \\
+/dfb/lib/libpostproc.so.53 \\
+/dfb/lib/libswresample.so.1 \\
+/dfb/lib/libswscale.so.3
+EOF
+
+exit
+--- ffmpeg-2.8.22.orig/configure
++++ ffmpeg-2.8.22/configure
+@@ -197,6 +197,7 @@
+ External library support:
+   --enable-avisynth        enable reading of AviSynth script files [no]
+   --disable-bzlib          disable bzlib [autodetect]
++  --enable-directfb        enable DirectFB [no]
+   --enable-fontconfig      enable fontconfig, useful for drawtext filter [no]
+   --enable-frei0r          enable frei0r video filtering [no]
+   --enable-gnutls          enable gnutls, needed for https support
+@@ -1359,6 +1360,7 @@
+     bzlib
+     crystalhd
+     decklink
++    directfb
+     frei0r
+     gnutls
+     iconv
+@@ -2643,6 +2645,7 @@
+ decklink_outdev_extralibs="-lstdc++"
+ decklink_indev_deps="decklink pthreads"
+ decklink_indev_extralibs="-lstdc++"
++directfb_outdev_deps="directfb"
+ dshow_indev_deps="IBaseFilter"
+ dshow_indev_extralibs="-lpsapi -lole32 -lstrmiids -luuid -loleaut32 -lshlwapi"
+ dv1394_indev_deps="dv1394"
+@@ -5213,6 +5216,7 @@
+                                { check_lib2 "dlfcn.h" dlopen -ldl; } ||
+                                die "ERROR: LoadLibrary/dlopen not found for avisynth"; }
+ enabled decklink          && { check_header DeckLinkAPI.h || die "ERROR: DeckLinkAPI.h header not found"; }
++enabled directfb          && require_pkg_config directfb directfb.h DirectFBInit
+ enabled frei0r            && { check_header frei0r.h || die "ERROR: frei0r.h header not found"; }
+ enabled gnutls            && require_pkg_config gnutls gnutls/gnutls.h gnutls_global_init
+ enabled ladspa            && { check_header ladspa.h || die "ERROR: ladspa.h header not found"; }
+--- ffmpeg-2.8.22.orig/libavdevice/Makefile
++++ ffmpeg-2.8.22/libavdevice/Makefile
+@@ -17,6 +17,7 @@
+ OBJS-$(CONFIG_CACA_OUTDEV)               += caca.o
+ OBJS-$(CONFIG_DECKLINK_OUTDEV)           += decklink_enc.o decklink_enc_c.o decklink_common.o
+ OBJS-$(CONFIG_DECKLINK_INDEV)            += decklink_dec.o decklink_dec_c.o decklink_common.o
++OBJS-$(CONFIG_DIRECTFB_OUTDEV)           += directfb.o
+ OBJS-$(CONFIG_DSHOW_INDEV)               += dshow_crossbar.o dshow.o dshow_enummediatypes.o \
+                                             dshow_enumpins.o dshow_filter.o \
+                                             dshow_pin.o dshow_common.o
+--- ffmpeg-2.8.22.orig/libavdevice/alldevices.c
++++ ffmpeg-2.8.22/libavdevice/alldevices.c
+@@ -51,6 +51,7 @@
+     REGISTER_INDEV   (BKTR,             bktr);
+     REGISTER_OUTDEV  (CACA,             caca);
+     REGISTER_INOUTDEV(DECKLINK,         decklink);
++    REGISTER_OUTDEV  (DIRECTFB,         directfb);
+     REGISTER_INDEV   (DSHOW,            dshow);
+     REGISTER_INDEV   (DV1394,           dv1394);
+     REGISTER_INOUTDEV(FBDEV,            fbdev);
+--- ffmpeg-2.8.22.orig/libavdevice/directfb.c
++++ ffmpeg-2.8.22/libavdevice/directfb.c
+@@ -0,0 +1,189 @@
++/*
++ * DirectFB ouput device
++ *
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <directfb.h>
++
++#include "libavutil/parseutils.h"
++#include "libavutil/pixdesc.h"
++#include "avdevice.h"
++
++typedef struct {
++    AVClass *class;
++    IDirectFB *dfb;
++    IDirectFBSurface *primary;
++    DFBSurfacePixelFormat pixelformat;
++    char *surface_size;
++} DirectFBContext;
++
++static const struct {
++    enum PixelFormat av_pix_fmt;
++    DFBSurfacePixelFormat dfb_pix_fmt;
++} directfb_pix_fmts[] = {
++    { PIX_FMT_BGR24, DSPF_RGB24 },
++    { PIX_FMT_BGRA, DSPF_ARGB /* DSPF_RGB32 */ },
++    { PIX_FMT_RGBA, DSPF_ABGR },
++    { PIX_FMT_RGB565LE, DSPF_RGB16 },
++    { PIX_FMT_BGR555LE, DSPF_BGR555 },
++    { PIX_FMT_RGB555LE, DSPF_RGB555 },
++};
++
++static int directfb_write_header(AVFormatContext *s)
++{
++    DirectFBContext *directfb = s->priv_data;
++    DFBSurfaceDescription dsc;
++    int i, err;
++
++    if (s->nb_streams > 1 ||
++        s->streams[0]->codec->codec_type != AVMEDIA_TYPE_VIDEO ||
++        s->streams[0]->codec->codec_id != CODEC_ID_RAWVIDEO) {
++        av_log(s, AV_LOG_ERROR, "Only supports one rawvideo stream\n");
++        return AVERROR(EINVAL);
++    }
++
++    for (i = 0; i < FF_ARRAY_ELEMS(directfb_pix_fmts); i++) {
++        if (directfb_pix_fmts[i].av_pix_fmt == s->streams[0]->codec->pix_fmt) {
++            directfb->pixelformat = directfb_pix_fmts[i].dfb_pix_fmt;
++            break;
++        }
++    }
++    if (i >= FF_ARRAY_ELEMS(directfb_pix_fmts)) {
++        av_log(s, AV_LOG_ERROR, "Unsupported pixel format %s.\n",
++               av_get_pix_fmt_name(s->streams[0]->codec->pix_fmt));
++        return AVERROR(EINVAL);
++    }
++
++    err = DirectFBInit(NULL, NULL);
++    if (err) {
++        av_log(s, AV_LOG_ERROR,
++               "Failed to initialize DirectFB %s\n", DirectFBErrorString(err));
++        return AVERROR(EINVAL);
++    }
++
++    err = DirectFBCreate(&directfb->dfb);
++    if (err) {
++        av_log(s, AV_LOG_ERROR,
++               "Failed to create main interface of DirectFB %s\n",
++               DirectFBErrorString(err));
++        return AVERROR(EINVAL);
++    }
++
++    dsc.flags = DSDESC_CAPS | DWDESC_WIDTH | DWDESC_HEIGHT;
++    dsc.caps = DSCAPS_PRIMARY;
++    if (directfb->surface_size) {
++        if (av_parse_video_size(&dsc.width, &dsc.height,
++                                directfb->surface_size) < 0) {
++            av_log(s, AV_LOG_ERROR,
++                   "Invalid surface size '%s'\n", directfb->surface_size);
++            directfb->dfb->Release(directfb->dfb);
++            return AVERROR(EINVAL);
++        }
++    }
++    else {
++        dsc.width = s->streams[0]->codec->width;
++        dsc.height = s->streams[0]->codec->height;
++    }
++    err = directfb->dfb->CreateSurface(directfb->dfb, &dsc, &directfb->primary);
++    if (err) {
++        av_log(s, AV_LOG_ERROR,
++               "Failed to create DirectFB primary surface interface %s\n",
++               DirectFBErrorString(err));
++        directfb->dfb->Release(directfb->dfb);
++        return AVERROR(EINVAL);
++    }
++
++    return 0;
++}
++
++static int directfb_write_packet(AVFormatContext *s, AVPacket *pkt)
++{
++    DirectFBContext *directfb = s->priv_data;
++    DFBSurfaceDescription dsc;
++    const AVPixFmtDescriptor *pixdesc;
++    IDirectFBSurface *surface;
++    int err;
++
++    dsc.flags =
++        DSDESC_PIXELFORMAT | DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PREALLOCATED;
++    dsc.pixelformat = directfb->pixelformat;
++    dsc.width = s->streams[0]->codec->width;
++    dsc.height = s->streams[0]->codec->height;
++    dsc.preallocated[0].data = pkt->data;
++    pixdesc = av_pix_fmt_desc_get(s->streams[0]->codec->pix_fmt);
++    dsc.preallocated[0].pitch =
++        dsc.width * ((av_get_bits_per_pixel(pixdesc) + 7) >> 3);
++    err = directfb->dfb->CreateSurface(directfb->dfb, &dsc, &surface);
++    if (err) {
++        av_log(s, AV_LOG_ERROR,
++               "Failed to create DirectFB surface interface %s\n",
++               DirectFBErrorString(err));
++        return AVERROR(EINVAL);
++    }
++
++    directfb->primary->StretchBlit(directfb->primary, surface, NULL, NULL);
++
++    directfb->primary->Flip(directfb->primary, NULL, DSFLIP_ONSYNC);
++
++    surface->Release(surface);
++
++    return 0;
++}
++
++static int directfb_write_trailer(AVFormatContext *s)
++{
++    DirectFBContext *directfb = s->priv_data;
++
++    if (directfb->primary) {
++        directfb->primary->Release(directfb->primary);
++        directfb->primary = NULL;
++    }
++
++    if (directfb->dfb) {
++        directfb->dfb->Release(directfb->dfb);
++        directfb->dfb = NULL;
++    }
++
++    return 0;
++}
++
++static const AVOption options[] = {
++    { "surface_size", "surface size", offsetof(DirectFBContext, surface_size),
++      FF_OPT_TYPE_STRING, {.str = NULL }, 0, 0, AV_OPT_FLAG_ENCODING_PARAM },
++    { NULL },
++};
++
++static const AVClass directfb_class = {
++    .class_name = "directfb outdev",
++    .item_name  = av_default_item_name,
++    .option     = options,
++    .version    = LIBAVUTIL_VERSION_INT,
++};
++
++AVOutputFormat ff_directfb_muxer = {
++    .name           = "directfb",
++    .long_name      = NULL_IF_CONFIG_SMALL("DirectFB output device"),
++    .priv_data_size = sizeof(DirectFBContext),
++    .audio_codec    = CODEC_ID_NONE,
++    .video_codec    = CODEC_ID_RAWVIDEO,
++    .write_header   = directfb_write_header,
++    .write_packet   = directfb_write_packet,
++    .write_trailer  = directfb_write_trailer,
++    .flags          = AVFMT_NOFILE,
++    .priv_class     = &directfb_class,
++};
