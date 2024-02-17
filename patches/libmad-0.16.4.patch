@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/include
+install -m 644 build/mad.h $DESTDIR/include
+install -d $DESTDIR/lib
+install build/libmad.so.0.* $DESTDIR/lib/libmad.so.0
+ln -sf libmad.so.0 $DESTDIR/lib/libmad.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/packaging/mad.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libmad-build.pc << EOF
+Name: libmad
+Version: 0.16.4
+Description: MPEG audio decoder library
+Requires: $REQUIRES
+
+devel=\\
+/include/mad.h \\
+/lib/libmad.so \\
+/lib/pkgconfig/mad.pc
+
+exec=\\
+/lib/libmad.so.0
+EOF
+
+exit

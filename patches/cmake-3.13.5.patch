@@ -6,7 +6,15 @@ REQUIRES="curl-build gcc-g++-build jsoncpp-build libarchive-build libuv-build ma
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-rm -rf cmbzip2 cmcurl cmexpat cmjsoncpp cmlibarchive cmliblzma cmlibrhash cmlibuv cmzlib
+rm -rf Utilities/cmbzip2
+rm -rf Utilities/cmcurl
+rm -rf Utilities/cmexpat
+rm -rf Utilities/cmjsoncpp
+rm -rf Utilities/cmlibarchive
+rm -rf Utilities/cmliblzma
+rm -rf Utilities/cmlibrhash
+rm -rf Utilities/cmlibuv
+rm -rf Utilities/cmzlib
 ./configure --system-libs --prefix=
 
 # build
@@ -22,6 +30,9 @@ install -d $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/AddFileDependencies.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/BasicConfigVersion-SameMajorVersion.cmake.in $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CheckForPthreads.c $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckIncludeFileCXX.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckTypeSize.c.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CheckTypeSize.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMake.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeASMCompiler.cmake.in $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeASMInformation.cmake $DESTDIR/share/cmake-3/Modules
@@ -38,6 +49,7 @@ install -m 644 Modules/CMakeCommonLanguageInclude.cmake $DESTDIR/share/cmake-3/M
 install -m 644 Modules/CMakeCompilerABI.h $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeCompilerIdDetection.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeConfigurableFile.in $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeDependentOption.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeDetermineASMCompiler.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeDetermineCCompiler.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeDetermineCXXCompiler.cmake $DESTDIR/share/cmake-3/Modules
@@ -169,6 +181,9 @@ devel=\\
 /share/cmake-3/Modules/AddFileDependencies.cmake \\
 /share/cmake-3/Modules/BasicConfigVersion-SameMajorVersion.cmake.in \\
 /share/cmake-3/Modules/CheckForPthreads.c \\
+/share/cmake-3/Modules/CheckIncludeFileCXX.cmake \\
+/share/cmake-3/Modules/CheckTypeSize.c.in \\
+/share/cmake-3/Modules/CheckTypeSize.cmake \\
 /share/cmake-3/Modules/CMake.cmake \\
 /share/cmake-3/Modules/CMakeASMCompiler.cmake.in \\
 /share/cmake-3/Modules/CMakeASMInformation.cmake \\
@@ -185,6 +200,7 @@ devel=\\
 /share/cmake-3/Modules/CMakeCompilerABI.h \\
 /share/cmake-3/Modules/CMakeCompilerIdDetection.cmake \\
 /share/cmake-3/Modules/CMakeConfigurableFile.in \\
+/share/cmake-3/Modules/CMakeDependentOption.cmake \\
 /share/cmake-3/Modules/CMakeDetermineASMCompiler.cmake \\
 /share/cmake-3/Modules/CMakeDetermineCCompiler.cmake \\
 /share/cmake-3/Modules/CMakeDetermineCXXCompiler.cmake \\
@@ -319,16 +335,18 @@ exit
        endif()
 --- cmake-3.13.5.orig/Source/cm_get_date.c
 +++ cmake-3.13.5/Source/cm_get_date.c
-@@ -4,4 +4,6 @@
- 
- #define __archive_get_date cm_get_date
+@@ -2,6 +2,8 @@
+    file Copyright.txt or https://cmake.org/licensing for details.  */
+ #include "cm_get_date.h"
  
 +#ifndef CMAKE_USE_SYSTEM_LIBARCHIVE
+ #define __archive_get_date cm_get_date
+ 
  #include "../Utilities/cmlibarchive/libarchive/archive_getdate.c"
 +#endif
 --- cmake-3.13.5.orig/Source/cm_get_date.h
 +++ cmake-3.13.5/Source/cm_get_date.h
-@@ -3,14 +3,20 @@
+@@ -3,6 +3,7 @@
  #ifndef cm_get_date_h
  #define cm_get_date_h
  
@@ -336,14 +354,14 @@ exit
  #include <time.h>
  
  #ifdef __cplusplus
- extern "C" {
+@@ -10,7 +11,12 @@
  #endif
  
+ /** Parse a date/time string.  Treat relative times with respect to 'now'. */
 +#ifdef CMAKE_USE_SYSTEM_LIBARCHIVE
 +time_t __archive_get_date(time_t now, const char *);
 +#define cm_get_date __archive_get_date
 +#else
- /** Parse a date/time string.  Treat relative times with respect to 'now'. */
  time_t cm_get_date(time_t now, const char* str);
 +#endif
  
