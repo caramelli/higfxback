@@ -5,8 +5,17 @@ REQUIRES="directfb2-build meson-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
 # configure
+if test $GL; then
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup -Dgl=GLES2/gl2.h -Dgl-cflags="`PKG_CONFIG_PATH=/dfb/lib/pkgconfig pkg-config --cflags glesv2`" -Dgl-ldflags="`PKG_CONFIG_PATH=/dfb/lib/pkgconfig pkg-config --libs glesv2`" --prefix=/dfb build
+else
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+fi
 
 # build
 meson compile -C build

@@ -1,0 +1,30 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build egl-opengl-stubs-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL
+install build/libidirectfbgl_egl.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfbgl-egl-build.pc << EOF
+Name: DirectFBGL-EGL
+Version: 20231006
+Description: DirectFBGL implementation on top of the EGL interface
+Requires: $REQUIRES
+
+exec=\\
+/lib/directfb-2.0-0/interfaces/IDirectFBGL/libidirectfbgl_egl.so
+EOF
+
+exit
