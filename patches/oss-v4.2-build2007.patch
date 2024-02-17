@@ -1,0 +1,46 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+./configure --no-regparm --only-drv=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install target/bin/ossinfo $DESTDIR/bin
+install target/bin/ossplay $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/oss-build.pc << EOF
+Name: oss
+Version: v4.2-build2007
+Description: Open Sound System utilities
+
+exec=\\
+/bin/ossinfo \\
+/bin/ossplay
+EOF
+
+exit
+--- oss-v4.2-build2007.orig/setup/setupdir.sh
++++ oss-v4.2-build2007/setup/setupdir.sh
+@@ -59,12 +59,6 @@
+     fi
+ fi
+ 
+-if test "`ls .` " != " " && test "`ls .` " != ".makefile "
+-then
+-	echo Error: Current directory must be empty
+-	exit 1
+-fi
+-
+ if test -f $SRCDIR/setup/setupdir.sh
+ then
+ 	echo Source directory is $SRCDIR

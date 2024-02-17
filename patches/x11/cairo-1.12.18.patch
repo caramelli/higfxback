@@ -49,7 +49,9 @@ install -d $DESTDIR/x11/lib/cairo
 install util/cairo-trace/.libs/libcairo-trace.so.0.0.0 $DESTDIR/x11/lib/cairo/libcairo-trace.so
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 src/cairo.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 src/cairo-ft.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 src/cairo-gobject.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 src/cairo-png.pc $DESTDIR/x11/lib/pkgconfig
 test $XCB && install -m 644 src/cairo-xcb.pc $DESTDIR/x11/lib/pkgconfig
 test $XLIB && install -m 644 src/cairo-xlib.pc $DESTDIR/x11/lib/pkgconfig
 test $XLIB && install -m 644 src/cairo-xlib-xrender.pc $DESTDIR/x11/lib/pkgconfig
@@ -80,7 +82,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
 /x11/lib/libcairo.so \\
 /x11/lib/libcairo-gobject.so \\
 /x11/lib/pkgconfig/cairo.pc \\
+/x11/lib/pkgconfig/cairo-ft.pc \\
 /x11/lib/pkgconfig/cairo-gobject.pc \\
+/x11/lib/pkgconfig/cairo-png.pc \\
 EOF
 test $XCB && echo /x11/lib/pkgconfig/cairo-xcb.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
 test $XLIB && echo /x11/lib/pkgconfig/cairo-xlib.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc

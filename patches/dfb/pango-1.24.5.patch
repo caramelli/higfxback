@@ -1,0 +1,165 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build cairo-build glib-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install pango/.libs/pango-querymodules $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-attributes.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-bidi-type.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-break.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-context.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-coverage.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-engine.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-enum-types.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-features.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-font.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-fontmap.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-fontset.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-glyph-item.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-glyph.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-gravity.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-item.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-language.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-layout.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-matrix.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-renderer.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-script.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-tabs.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-types.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pango-utils.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pangocairo.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pangofc-decoder.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pangofc-font.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pangofc-fontmap.h $DESTDIR/dfb/include/pango-1.0/pango
+install -m 644 pango/pangoft2.h $DESTDIR/dfb/include/pango-1.0/pango
+install -d $DESTDIR/dfb/lib
+install pango/.libs/libpango-1.0.so.0.* $DESTDIR/dfb/lib/libpango-1.0.so.0
+ln -sf libpango-1.0.so.0 $DESTDIR/dfb/lib/libpango-1.0.so
+install pango/.libs/libpangocairo-1.0.so.0.* $DESTDIR/dfb/lib/libpangocairo-1.0.so.0
+ln -sf libpangocairo-1.0.so.0 $DESTDIR/dfb/lib/libpangocairo-1.0.so
+install pango/.libs/libpangoft2-1.0.so.0.* $DESTDIR/dfb/lib/libpangoft2-1.0.so.0
+ln -sf libpangoft2-1.0.so.0 $DESTDIR/dfb/lib/libpangoft2-1.0.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pango.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pangocairo.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pangoft2.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/pango-build.pc << EOF
+Name: pango
+Version: 1.24.5
+Description: A library for layout and rendering of text
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/pango-1.0/pango/pango.h \\
+/dfb/include/pango-1.0/pango/pango-attributes.h \\
+/dfb/include/pango-1.0/pango/pango-bidi-type.h \\
+/dfb/include/pango-1.0/pango/pango-break.h \\
+/dfb/include/pango-1.0/pango/pango-context.h \\
+/dfb/include/pango-1.0/pango/pango-coverage.h \\
+/dfb/include/pango-1.0/pango/pango-engine.h \\
+/dfb/include/pango-1.0/pango/pango-enum-types.h \\
+/dfb/include/pango-1.0/pango/pango-features.h \\
+/dfb/include/pango-1.0/pango/pango-font.h \\
+/dfb/include/pango-1.0/pango/pango-fontmap.h \\
+/dfb/include/pango-1.0/pango/pango-fontset.h \\
+/dfb/include/pango-1.0/pango/pango-glyph-item.h \\
+/dfb/include/pango-1.0/pango/pango-glyph.h \\
+/dfb/include/pango-1.0/pango/pango-gravity.h \\
+/dfb/include/pango-1.0/pango/pango-item.h \\
+/dfb/include/pango-1.0/pango/pango-language.h \\
+/dfb/include/pango-1.0/pango/pango-layout.h \\
+/dfb/include/pango-1.0/pango/pango-matrix.h \\
+/dfb/include/pango-1.0/pango/pango-renderer.h \\
+/dfb/include/pango-1.0/pango/pango-script.h \\
+/dfb/include/pango-1.0/pango/pango-tabs.h \\
+/dfb/include/pango-1.0/pango/pango-types.h \\
+/dfb/include/pango-1.0/pango/pango-utils.h \\
+/dfb/include/pango-1.0/pango/pangocairo.h \\
+/dfb/include/pango-1.0/pango/pangofc-decoder.h \\
+/dfb/include/pango-1.0/pango/pangofc-font.h \\
+/dfb/include/pango-1.0/pango/pangofc-fontmap.h \\
+/dfb/include/pango-1.0/pango/pangoft2.h \\
+/dfb/lib/libpango-1.0.so \\
+/dfb/lib/libpangocairo-1.0.so \\
+/dfb/lib/libpangoft2-1.0.so \\
+/dfb/lib/pkgconfig/pango.pc \\
+/dfb/lib/pkgconfig/pangocairo.pc \\
+/dfb/lib/pkgconfig/pangoft2.pc
+
+exec=\\
+/dfb/bin/pango-querymodules \\
+/dfb/lib/libpango-1.0.so.0 \\
+/dfb/lib/libpangocairo-1.0.so.0 \\
+/dfb/lib/libpangoft2-1.0.so.0 \\
+/dfb/lib/pango/1.6.0/modules/pango-basic-fc.so
+EOF
+
+exit
+--- pango-1.24.5.orig/configure.in
++++ pango-1.24.5/configure.in
+@@ -42,6 +42,7 @@
+         [http://bugzilla.gnome.org/enter_bug.cgi?product=pango])
+ 
+ AC_CONFIG_SRCDIR([pango.pc.in])
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ dnl -Wno-portability tells automake to stop complaining about the
+ dnl usage of GNU Make specific features.
+--- pango-1.24.5.orig/m4/gtk-doc.m4
++++ pango-1.24.5/m4/gtk-doc.m4
+@@ -0,0 +1,39 @@
++dnl -*- mode: autoconf -*-
++
++# serial 1
++
++dnl Usage:
++dnl   GTK_DOC_CHECK([minimum-gtk-doc-version])
++AC_DEFUN([GTK_DOC_CHECK],
++[
++  AC_BEFORE([AC_PROG_LIBTOOL],[$0])dnl setup libtool first
++  AC_BEFORE([AM_PROG_LIBTOOL],[$0])dnl setup libtool first
++  dnl for overriding the documentation installation directory
++  AC_ARG_WITH([html-dir],
++    AS_HELP_STRING([--with-html-dir=PATH], [path to installed docs]),,
++    [with_html_dir='${datadir}/gtk-doc/html'])
++  HTML_DIR="$with_html_dir"
++  AC_SUBST([HTML_DIR])
++
++  dnl enable/disable documentation building
++  AC_ARG_ENABLE([gtk-doc],
++    AS_HELP_STRING([--enable-gtk-doc],
++                   [use gtk-doc to build documentation [[default=no]]]),,
++    [enable_gtk_doc=no])
++
++  if test x$enable_gtk_doc = xyes; then
++    ifelse([$1],[],
++      [PKG_CHECK_EXISTS([gtk-doc],,
++                        AC_MSG_ERROR([gtk-doc not installed and --enable-gtk-doc requested]))],
++      [PKG_CHECK_EXISTS([gtk-doc >= $1],,
++                        AC_MSG_ERROR([You need to have gtk-doc >= $1 installed to build gtk-doc]))])
++  fi
++
++  AC_MSG_CHECKING([whether to build gtk-doc documentation])
++  AC_MSG_RESULT($enable_gtk_doc)
++
++  AC_PATH_PROGS(GTKDOC_CHECK,gtkdoc-check,)
++
++  AM_CONDITIONAL([ENABLE_GTK_DOC], [test x$enable_gtk_doc = xyes])
++  AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], [test -n "$LIBTOOL"])
++])

@@ -1,0 +1,94 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="alsa-lib-build autotools-wrappers-lt-build ncurses-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16)
+aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-alsaconf --sbindir=/bin --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install alsactl/alsactl $DESTDIR/bin
+install alsaloop/alsaloop $DESTDIR/bin
+install alsamixer/alsamixer $DESTDIR/bin
+install amidi/amidi $DESTDIR/bin
+install amixer/amixer $DESTDIR/bin
+install aplay/aplay $DESTDIR/bin
+ln -sf aplay $DESTDIR/bin/arecord
+install axfer/axfer $DESTDIR/bin
+install bat/alsabat $DESTDIR/bin
+install seq/aconnect/aconnect $DESTDIR/bin
+install seq/aplaymidi/aplaymidi $DESTDIR/bin
+install seq/aplaymidi/arecordmidi $DESTDIR/bin
+install seq/aseqdump/aseqdump $DESTDIR/bin
+install seq/aseqnet/aseqnet $DESTDIR/bin
+install speaker-test/speaker-test $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/alsa-utils-build.pc << EOF
+Name: alsa-utils
+Version: 1.2.4
+Description: Advanced Linux Sound Architecture utilities
+Requires: $REQUIRES
+
+exec=\\
+/bin/aconnect \\
+/bin/alsabat \\
+/bin/alsactl \\
+/bin/alsaloop \\
+/bin/alsamixer \\
+/bin/amidi \\
+/bin/amixer \\
+/bin/aplay \\
+/bin/aplaymidi \\
+/bin/arecord \\
+/bin/arecordmidi \\
+/bin/aseqdump \\
+/bin/aseqnet \\
+/bin/axfer \\
+/bin/speaker-test
+EOF
+
+exit
+--- alsa-utils-1.2.4.orig/alsactl/Makefile.am
++++ alsa-utils-1.2.4/alsactl/Makefile.am
+@@ -1,3 +1,5 @@
++AUTOMAKE_OPTIONS = -Wno-portability
++
+ SUBDIRS = init
+ 
+ sbin_PROGRAMS=alsactl
+--- alsa-utils-1.2.4.orig/alsaucm/Makefile.am
++++ alsa-utils-1.2.4/alsaucm/Makefile.am
+@@ -1,3 +1,5 @@
++AUTOMAKE_OPTIONS = -Wno-portability
++
+ bin_PROGRAMS = \
+         alsaucm
+ 
+--- alsa-utils-1.2.4.orig/configure.ac
++++ alsa-utils-1.2.4/configure.ac
+@@ -3,7 +3,7 @@
+ AC_INIT(alsa-utils, 1.2.4)
+ AC_CONFIG_SRCDIR([aplay/aplay.c])
+ AC_PREFIX_DEFAULT(/usr)
+-AM_INIT_AUTOMAKE
++AM_INIT_AUTOMAKE([subdir-objects])
+ 
+ AM_MAINTAINER_MODE([enable])
+ 
+--- alsa-utils-1.2.4.orig/topology/Makefile.am
++++ alsa-utils-1.2.4/topology/Makefile.am
+@@ -1,3 +1,5 @@
++AUTOMAKE_OPTIONS = -Wno-portability
++
+ bin_PROGRAMS = \
+ 	alsatplg
+ 

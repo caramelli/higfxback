@@ -1,0 +1,102 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build liboil-build pango-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists alsa-lib-build; then
+  ALSA=1
+  REQUIRES="$REQUIRES alsa-lib-build"
+fi
+
+# configure (ac-2.61; am-1.10; lt-1.5.26)
+libtoolize -c -f; aclocal -I . -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-gstreamer --disable-gtk --disable-soup --disable-static --with-audio=`test $ALSA && echo alsa || echo oss` --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_context.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_debugger.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_frame.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_function.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_native_function.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_object.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_as_types.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_audio.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_buffer.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_enums.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_file_loader.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_keys.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_loader.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_player.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_rectangle.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_script.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_system.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -m 644 libswfdec/swfdec_url.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec
+install -d $DESTDIR/dfb/lib
+install libswfdec/.libs/libswfdec-0.5.so.5.* $DESTDIR/dfb/lib/libswfdec-0.5.so.5
+ln -sf libswfdec-0.5.so.5 $DESTDIR/dfb/lib/libswfdec-0.5.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 data/swfdec-0.5.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/swfdec-build.pc << EOF
+Name: swfdec
+Version: 0.5.5
+Description: SWF (Flash) animations decoder/renderer library
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/swfdec-0.5/libswfdec/swfdec.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_context.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_debugger.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_frame.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_function.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_native_function.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_object.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_as_types.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_audio.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_buffer.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_enums.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_file_loader.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_keys.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_loader.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_player.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_rectangle.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_script.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_system.h \\
+/dfb/include/swfdec-0.5/libswfdec/swfdec_url.h \\
+/dfb/lib/libswfdec-0.5.so \\
+/dfb/lib/pkgconfig/swfdec-0.5.pc
+
+exec=\\
+/dfb/lib/libswfdec-0.5.so.5
+EOF
+
+exit
+--- swfdec-0.5.5.orig/configure.ac
++++ swfdec-0.5.5/configure.ac
+@@ -50,7 +50,6 @@
+ #ACLOCAL_AMFLAGS="-I m4 $ACLOCAL_AMFLAGS"
+ 
+ AC_PROG_CC
+-AM_PROG_CC_STDC
+ AM_PROG_CC_C_O
+ AM_PROG_AS
+ AC_PROG_AWK
+--- swfdec-0.5.5.orig/test/Makefile.am
++++ swfdec-0.5.5/test/Makefile.am
+@@ -17,6 +17,7 @@
+ 
+ swfdec_extract_CFLAGS = $(GLOBAL_CFLAGS) $(SWFDEC_CFLAGS) $(CAIRO_CFLAGS)
+ swfdec_extract_LDFLAGS = $(SWFDEC_LIBS) $(CAIRO_LIBS)
++swfdec_extract_LDADD = -lm
+ 
+ libswfedit_la_CFLAGS = $(GLOBAL_CFLAGS) $(SWFDEC_CFLAGS) $(GTK_CFLAGS)
+ libswfedit_la_LDFLAGS = $(SWFDEC_LIBS) $(GTK_LIBS)

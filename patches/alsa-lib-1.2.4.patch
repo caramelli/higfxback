@@ -1,0 +1,103 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/alsa
+install -m 644 include/asoundef.h $DESTDIR/include/alsa
+install -m 644 include/asoundlib.h $DESTDIR/include/alsa
+install -m 644 include/conf.h $DESTDIR/include/alsa
+install -m 644 include/control.h $DESTDIR/include/alsa
+install -m 644 include/control_external.h $DESTDIR/include/alsa
+install -m 644 include/error.h $DESTDIR/include/alsa
+install -m 644 include/global.h $DESTDIR/include/alsa
+install -m 644 include/hwdep.h $DESTDIR/include/alsa
+install -m 644 include/input.h $DESTDIR/include/alsa
+install -m 644 include/mixer.h $DESTDIR/include/alsa
+install -m 644 include/output.h $DESTDIR/include/alsa
+install -m 644 include/pcm.h $DESTDIR/include/alsa
+install -m 644 include/pcm_external.h $DESTDIR/include/alsa
+install -m 644 include/pcm_extplug.h $DESTDIR/include/alsa
+install -m 644 include/pcm_ioplug.h $DESTDIR/include/alsa
+install -m 644 include/pcm_old.h $DESTDIR/include/alsa
+install -m 644 include/pcm_plugin.h $DESTDIR/include/alsa
+install -m 644 include/pcm_rate.h $DESTDIR/include/alsa
+install -m 644 include/rawmidi.h $DESTDIR/include/alsa
+install -m 644 include/seq.h $DESTDIR/include/alsa
+install -m 644 include/seq_event.h $DESTDIR/include/alsa
+install -m 644 include/seq_midi_event.h $DESTDIR/include/alsa
+install -m 644 include/seqmid.h $DESTDIR/include/alsa
+install -m 644 include/timer.h $DESTDIR/include/alsa
+install -m 644 include/version.h $DESTDIR/include/alsa
+install -d $DESTDIR/lib
+install src/.libs/libasound.so.2.* $DESTDIR/lib/libasound.so.2
+ln -sf libasound.so.2 $DESTDIR/lib/libasound.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 utils/alsa.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/aclocal
+install -m 644 utils/alsa.m4 $DESTDIR/share/aclocal
+install -d $DESTDIR/share/alsa
+install -m 644 src/conf/alsa.conf $DESTDIR/share/alsa
+install -d $DESTDIR/share/alsa/cards
+cat > $DESTDIR/share/alsa/cards/aliases.conf << EOF
+<confdir:pcm/default.conf>
+EOF
+install -d $DESTDIR/share/alsa/pcm
+install -m 644 src/conf/pcm/default.conf $DESTDIR/share/alsa/pcm
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/alsa-lib-build.pc << EOF
+Name: alsa-lib
+Version: 1.2.4
+Description: Advanced Linux Sound Architecture library
+Requires: $REQUIRES
+
+devel=\\
+/include/alsa/asoundef.h \\
+/include/alsa/asoundlib.h \\
+/include/alsa/conf.h \\
+/include/alsa/control.h \\
+/include/alsa/control_external.h \\
+/include/alsa/error.h \\
+/include/alsa/global.h \\
+/include/alsa/hwdep.h \\
+/include/alsa/input.h \\
+/include/alsa/mixer.h \\
+/include/alsa/output.h \\
+/include/alsa/pcm.h \\
+/include/alsa/pcm_external.h \\
+/include/alsa/pcm_extplug.h \\
+/include/alsa/pcm_ioplug.h \\
+/include/alsa/pcm_old.h \\
+/include/alsa/pcm_plugin.h \\
+/include/alsa/pcm_rate.h \\
+/include/alsa/rawmidi.h \\
+/include/alsa/seq.h \\
+/include/alsa/seq_event.h \\
+/include/alsa/seq_midi_event.h \\
+/include/alsa/seqmid.h \\
+/include/alsa/timer.h \\
+/include/alsa/version.h \\
+/lib/libasound.so \\
+/lib/pkgconfig/alsa.pc \\
+/share/aclocal/alsa.m4
+
+exec=\\
+/lib/libasound.so.2 \\
+/share/alsa/alsa.conf \\
+/share/alsa/cards/aliases.conf \\
+/share/alsa/pcm/default.conf
+EOF
+
+exit

@@ -1,0 +1,116 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.64; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboil.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboil-stdint.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboilcpu.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboildebug.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboilfuncs.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboilfunction.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboilprofile.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboiltypes.h $DESTDIR/include/liboil-0.3/liboil
+install -m 644 liboil/liboilutils.h $DESTDIR/include/liboil-0.3/liboil
+install -d $DESTDIR/lib
+install liboil/.libs/liboil-0.3.so.0.* $DESTDIR/lib/liboil-0.3.so.0
+ln -sf liboil-0.3.so.0 $DESTDIR/lib/liboil-0.3.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 liboil-0.3.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/liboil-build.pc << EOF
+Name: liboil
+Version: 0.3.17
+Description: optimized inner loop library
+Requires: $REQUIRES
+
+devel=\\
+/include/liboil-0.3/liboil/liboil.h \\
+/include/liboil-0.3/liboil/liboil-stdint.h \\
+/include/liboil-0.3/liboil/liboilcpu.h \\
+/include/liboil-0.3/liboil/liboildebug.h \\
+/include/liboil-0.3/liboil/liboilfuncs.h \\
+/include/liboil-0.3/liboil/liboilfunction.h \\
+/include/liboil-0.3/liboil/liboilprofile.h \\
+/include/liboil-0.3/liboil/liboiltypes.h \\
+/include/liboil-0.3/liboil/liboilutils.h \\
+/lib/liboil-0.3.so \\
+/lib/pkgconfig/liboil-0.3.pc
+
+exec=\\
+/lib/liboil-0.3.so.0
+EOF
+
+exit
+--- liboil-0.3.17.orig/configure.ac
++++ liboil-0.3.17/configure.ac
+@@ -24,6 +24,7 @@
+ AC_LIBTOOL_TAGS([])
+ AC_PROG_LIBTOOL
+ AM_PROG_AS
++AM_PROG_CC_C_O
+ 
+ AC_CONFIG_SRCDIR([liboil/liboil.h])
+ AC_CONFIG_MACRO_DIR([m4])
+@@ -111,7 +112,7 @@
+ AC_C_BIGENDIAN
+ AS_UNALIGNED_ACCESS
+ 
+-AC_LTDL_SYMBOL_USCORE
++LT_SYS_SYMBOL_USCORE
+ if test x${lt_cv_sys_symbol_underscore} = xyes ; then
+   AC_DEFINE(HAVE_SYMBOL_UNDERSCORE, 1, [Define if C symbols have leading underscore])
+ fi
+--- liboil-0.3.17.orig/m4/lt_sys_symbol_uscore.m4
++++ liboil-0.3.17/m4/lt_sys_symbol_uscore.m4
+@@ -0,0 +1,37 @@
++# LT_SYS_SYMBOL_USCORE
++# --------------------
++AC_DEFUN([LT_SYS_SYMBOL_USCORE],
++[m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
++AC_CACHE_CHECK([for _ prefix in compiled symbols],
++  [lt_cv_sys_symbol_underscore],
++  [lt_cv_sys_symbol_underscore=no
++  cat > conftest.$ac_ext <<_LT_EOF
++void nm_test_func(){}
++int main(){nm_test_func;return 0;}
++_LT_EOF
++  if AC_TRY_EVAL(ac_compile); then
++    # Now try to grab the symbols.
++    ac_nlist=conftest.nm
++    if AC_TRY_EVAL(NM conftest.$ac_objext \| $lt_cv_sys_global_symbol_pipe \> $ac_nlist) && test -s "$ac_nlist"; then
++      # See whether the symbols have a leading underscore.
++      if grep '^. _nm_test_func' "$ac_nlist" >/dev/null; then
++        lt_cv_sys_symbol_underscore=yes
++      else
++        if grep '^. nm_test_func ' "$ac_nlist" >/dev/null; then
++	  :
++        else
++	  echo "configure: cannot find nm_test_func in $ac_nlist" >&AS_MESSAGE_LOG_FD
++        fi
++      fi
++    else
++      echo "configure: cannot run $lt_cv_sys_global_symbol_pipe" >&AS_MESSAGE_LOG_FD
++    fi
++  else
++    echo "configure: failed program was:" >&AS_MESSAGE_LOG_FD
++    cat conftest.c >&AS_MESSAGE_LOG_FD
++  fi
++  rm -rf conftest*
++  ])
++  sys_symbol_underscore=$lt_cv_sys_symbol_underscore
++  AC_SUBST([sys_symbol_underscore])
++])
