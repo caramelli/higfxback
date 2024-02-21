@@ -1,0 +1,131 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --disable-static --prefix
+
+# build
+make -C programs lz4-wlib
+
+# install
+install -d $DESTDIR/bin
+install programs/lz4-wlib $DESTDIR/bin/lz4
+ln -sf lz4 $DESTDIR/bin/lz4c
+ln -sf lz4 $DESTDIR/bin/lz4cat
+ln -sf lz4 $DESTDIR/bin/unlz4
+install -d $DESTDIR/include
+install -m 644 lib/lz4.h $DESTDIR/include
+install -d $DESTDIR/lib
+install lib/liblz4.so.1.* $DESTDIR/lib/liblz4.so.1
+ln -sf liblz4.so.1 $DESTDIR/lib/liblz4.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 lib/liblz4.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/lz4-build.pc << EOF
+Name: lz4
+Version: 1.9.4
+Description: LZ4 compression library
+Requires: $REQUIRES
+
+devel=\\
+/include/lz4.h \\
+/lib/liblz4.so \\
+/lib/pkgconfig/liblz4.pc
+
+exec=\\
+/bin/lz4 \\
+/bin/lz4c \\
+/bin/lz4cat \\
+/bin/unlz4 \\
+/lib/liblz4.so.1
+EOF
+
+exit
+--- lz4-1.9.4.orig/Configure
++++ lz4-1.9.4/Configure
+@@ -0,0 +1,30 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++BUILD_STATIC=yes
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      BUILD_STATIC=no
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s#=.*#= $PREFIX#" lib/Makefile
++sed -i "/^PREFIX/s#=.*#= $PREFIX#" programs/Makefile
++
++sed -i "/^BUILD_STATIC/s#=.*#=$BUILD_STATIC#" lib/Makefile
+--- lz4-1.9.4.orig/lib/Makefile
++++ lz4-1.9.4/lib/Makefile
+@@ -119,7 +119,7 @@
+ 
+ $(LIBLZ4): $(SRCFILES)
+ 	@echo compiling dynamic library $(LIBVER)
+-	$(CC) $(FLAGS) -shared $^ -fPIC -fvisibility=hidden $(SONAME_FLAGS) -o $@
++	$(CC) $(FLAGS) -shared $^ -fPIC $(SONAME_FLAGS) -o $@
+ 	@echo creating versioned links
+ 	$(LN_SF) $@ liblz4.$(SHARED_EXT_MAJOR)
+ 	$(LN_SF) $@ liblz4.$(SHARED_EXT)
+@@ -127,7 +127,7 @@
+ endif
+ 
+ .PHONY: liblz4
+-liblz4: $(LIBLZ4)
++liblz4: $(LIBLZ4) liblz4.pc
+ 
+ .PHONY: clean
+ clean:
+@@ -178,7 +178,7 @@
+          -e 's|=${prefix}/|=$${prefix}/|' \
+           $< >$@
+ 
+-install: lib liblz4.pc
++install: lib
+ 	$(INSTALL_DIR) $(DESTDIR)$(pkgconfigdir)/ $(DESTDIR)$(includedir)/ $(DESTDIR)$(libdir)/ $(DESTDIR)$(bindir)/
+ 	$(INSTALL_DATA) liblz4.pc $(DESTDIR)$(pkgconfigdir)/
+ 	@echo Installing libraries in $(DESTDIR)$(libdir)
+--- lz4-1.9.4.orig/programs/Makefile
++++ lz4-1.9.4/programs/Makefile
+@@ -102,16 +102,14 @@
+ lz4-release: lz4
+ 
+ lz4-wlib: LIBFILES =
+-lz4-wlib: SRCFILES+= $(LZ4DIR)/xxhash.c  # benchmark unit needs XXH64()
+ lz4-wlib: LDFLAGS += -L $(LZ4DIR)
+ lz4-wlib: LDLIBS   = -llz4
+ lz4-wlib: liblz4 $(OBJFILES)
+-	@echo WARNING: $@ must link to an extended variant of the dynamic library which also exposes unstable symbols
+ 	$(CC) $(FLAGS) $(OBJFILES) -o $@$(EXT) $(LDLIBS)
+ 
+ .PHONY:liblz4
+ liblz4:
+-	CPPFLAGS="-DLZ4F_PUBLISH_STATIC_FUNCTIONS -DLZ4_PUBLISH_STATIC_FUNCTIONS" $(MAKE) -C $(LZ4DIR) liblz4
++	$(MAKE) -C $(LZ4DIR) liblz4
+ 
+ lz4c: lz4
+ 	$(LN_SF) lz4$(EXT) lz4c$(EXT)

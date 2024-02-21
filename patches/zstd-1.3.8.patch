@@ -1,0 +1,220 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --disable-static --without-lz4 --without-lzma --without-zlib --prefix
+
+# build
+make -C programs zstd-wlib
+
+# install
+install -d $DESTDIR/bin
+install programs/zstd-wlib $DESTDIR/bin/zstd
+ln -sf zstd $DESTDIR/bin/zstdcat
+ln -sf zstd $DESTDIR/bin/unzstd
+install programs/zstdgrep $DESTDIR/bin
+install programs/zstdless $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 lib/zstd.h $DESTDIR/include
+install -d $DESTDIR/lib
+install lib/libzstd.so.1.* $DESTDIR/lib/libzstd.so.1
+ln -sf libzstd.so.1 $DESTDIR/lib/libzstd.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 lib/libzstd.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/zstd-build.pc << EOF
+Name: zstd
+Version: 1.3.8
+Description: Zstandard compression library
+Requires: $REQUIRES
+
+devel=\\
+/include/zstd.h \\
+/lib/libzstd.so \\
+/lib/pkgconfig/libzstd.pc
+
+exec=\\
+/bin/unzstd \\
+/bin/zstd \\
+/bin/zstdcat \\
+/bin/zstdgrep \\
+/bin/zstdless \\
+/lib/libzstd.so.1
+EOF
+
+exit
+--- zstd-1.3.8.orig/Configure
++++ zstd-1.3.8/Configure
+@@ -0,0 +1,47 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++BUILD_STATIC=yes
++
++HAVE_LZ4=1
++HAVE_LZMA=1
++HAVE_ZLIB=1
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      BUILD_STATIC=no
++    ;;
++    --without-lz4)
++      HAVE_LZ4=0
++    ;;
++    --without-lzma)
++      HAVE_LZMA=0
++    ;;
++    --without-zlib)
++      HAVE_ZLIB=0
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^prefix/s#=.*#= $PREFIX#" lib/Makefile
++sed -i "/^prefix/s#=.*#= $PREFIX#" programs/Makefile
++
++sed -i "/^BUILD_STATIC/s#=.*#=$BUILD_STATIC#" lib/Makefile
++
++sed -i "/^HAVE_LZ4/s#echo [0-1] #echo $HAVE_LZMA #" programs/Makefile
++sed -i "/^HAVE_LZMA/s#echo [0-1] #echo $HAVE_LZMA #" programs/Makefile
++sed -i "/^HAVE_ZLIB/s#echo [0-1] #echo $HAVE_ZLIB #" programs/Makefile
+--- zstd-1.3.8.orig/lib/Makefile
++++ zstd-1.3.8/lib/Makefile
+@@ -18,6 +18,8 @@
+ LIBVER := $(shell echo $(LIBVER_SCRIPT))
+ VERSION?= $(LIBVER)
+ 
++BUILD_STATIC:=yes
++
+ CPPFLAGS+= -I. -I./common -DXXH_NAMESPACE=ZSTD_
+ ifeq ($(OS),Windows_NT)   # MinGW assumed
+ CPPFLAGS   += -D__USE_MINGW_ANSI_STDIO   # compatibility with %zu formatting
+@@ -115,8 +117,6 @@
+ endif
+ CPPFLAGS  += -DZSTD_LEGACY_SUPPORT=$(ZSTD_LEGACY_SUPPORT)
+ 
+-ZSTD_OBJ   := $(patsubst %.c,%.o,$(ZSTD_FILES))
+-
+ # macOS linker doesn't support -soname, and use different extension
+ # see : https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/DynamicLibraryDesignGuidelines.html
+ ifeq ($(shell uname), Darwin)
+@@ -139,9 +139,12 @@
+ all: lib
+ 
+ libzstd.a: ARFLAGS = rcs
+-libzstd.a: $(ZSTD_OBJ)
++libzstd.a: $(ZSTD_FILES)
++ifeq ($(BUILD_STATIC),yes)
+ 	@echo compiling static library
++	@$(COMPILE.c) $^
+ 	@$(AR) $(ARFLAGS) $@ $^
++endif
+ 
+ libzstd.a-mt: CPPFLAGS += -DZSTD_MULTITHREAD
+ libzstd.a-mt: libzstd.a
+@@ -157,7 +160,7 @@
+ else
+ 
+ LIBZSTD = libzstd.$(SHARED_EXT_VER)
+-$(LIBZSTD): LDFLAGS += -shared -fPIC -fvisibility=hidden
++$(LIBZSTD): LDFLAGS += -shared -fPIC
+ $(LIBZSTD): $(ZSTD_FILES)
+ 	@echo compiling dynamic library $(LIBVER)
+ 	@$(CC) $(FLAGS) $^ $(LDFLAGS) $(SONAME_FLAGS) -o $@
+@@ -168,7 +171,7 @@
+ endif
+ 
+ 
+-libzstd : $(LIBZSTD)
++libzstd : $(LIBZSTD) libzstd.pc
+ 
+ libzstd-mt : CPPFLAGS += -DZSTD_MULTITHREAD
+ libzstd-mt : libzstd
+@@ -185,7 +188,7 @@
+ # Special case : building library in single-thread mode _and_ without zstdmt_compress.c
+ ZSTDMT_FILES = compress/zstdmt_compress.c
+ ZSTD_NOMT_FILES = $(filter-out $(ZSTDMT_FILES),$(ZSTD_FILES))
+-libzstd-nomt: LDFLAGS += -shared -fPIC -fvisibility=hidden
++libzstd-nomt: LDFLAGS += -shared -fPIC
+ libzstd-nomt: $(ZSTD_NOMT_FILES)
+ 	@echo compiling single-thread dynamic library $(LIBVER)
+ 	@echo files : $(ZSTD_NOMT_FILES)
+@@ -241,16 +244,18 @@
+              $< >$@
+ 
+ install: install-pc install-static install-shared install-includes
+-	@echo zstd static and shared library installed
++	@echo zstd libraries installed
+ 
+-install-pc: libzstd.pc
++install-pc:
+ 	@$(INSTALL) -d -m 755 $(DESTDIR)$(PKGCONFIGDIR)/
+ 	@$(INSTALL_DATA) libzstd.pc $(DESTDIR)$(PKGCONFIGDIR)/
+ 
+ install-static: libzstd.a
++ifeq ($(BUILD_STATIC),yes)
+ 	@echo Installing static library
+ 	@$(INSTALL) -d -m 755 $(DESTDIR)$(LIBDIR)/
+ 	@$(INSTALL_DATA) libzstd.a $(DESTDIR)$(LIBDIR)
++endif
+ 
+ install-shared: libzstd
+ 	@echo Installing shared library
+--- zstd-1.3.8.orig/programs/Makefile
++++ zstd-1.3.8/programs/Makefile
+@@ -55,7 +55,7 @@
+             -Wvla -Wformat=2 -Winit-self -Wfloat-equal -Wwrite-strings \
+             -Wredundant-decls -Wmissing-prototypes -Wc++-compat
+ CFLAGS  += $(DEBUGFLAGS) $(MOREFLAGS)
+-FLAGS    = $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)
++FLAGS    = $(CPPFLAGS) $(CFLAGS)
+ 
+ 
+ ZSTDCOMMON_FILES := $(ZSTDDIR)/common/*.c
+@@ -180,6 +180,16 @@
+ zstd-release: DEBUGFLAGS_LD :=
+ zstd-release: zstd
+ 
++zstd-wlib: CPPFLAGS += $(ZLIBCPP) $(LZMACPP) $(LZ4CPP)
++zstd-wlib: LDFLAGS += $(ZLIBLD) $(LZMALD) $(LZ4LD)
++zstd-wlib: CPPFLAGS += -DZSTD_LEGACY_SUPPORT=$(ZSTD_LEGACY_SUPPORT)
++zstd-wlib: libzstd $(wildcard *.c)
++	$(CC) $(FLAGS) $(wildcard *.c) -o $@$(EXT) $(LDFLAGS) -L$(ZSTDDIR) -lzstd
++
++.PHONY:libzstd
++libzstd:
++	$(MAKE) -C $(ZSTDDIR) libzstd
++
+ zstd32 : CPPFLAGS += $(THREAD_CPP)
+ zstd32 : LDFLAGS  += $(THREAD_LD)
+ zstd32 : CPPFLAGS += -DZSTD_LEGACY_SUPPORT=$(ZSTD_LEGACY_SUPPORT)
+@@ -245,7 +255,7 @@
+ 	@$(RM) core *.o tmp* result* *.gcda dictionary *.zst \
+         zstd$(EXT) zstd32$(EXT) zstd-compress$(EXT) zstd-decompress$(EXT) \
+         zstd-small$(EXT) zstd-frugal$(EXT) zstd-nolegacy$(EXT) zstd4$(EXT) \
+-        *.gcda default.profraw have_zlib$(EXT)
++        *.gcda default.profraw zstd-wlib$(EXT)
+ 	@echo Cleaning completed
+ 
+ MD2ROFF = ronn

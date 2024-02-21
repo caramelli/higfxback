@@ -15,6 +15,7 @@ rm -rf Utilities/cmliblzma
 rm -rf Utilities/cmlibrhash
 rm -rf Utilities/cmlibuv
 rm -rf Utilities/cmzlib
+rm -rf Utilities/cmzstd
 ./configure --system-libs --prefix=
 
 # build
@@ -65,6 +66,7 @@ install -m 644 Modules/CMakeLanguageInformation.cmake $DESTDIR/share/cmake-3/Mod
 install -m 644 Modules/CMakeNinjaFindMake.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakePackageConfigHelpers.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeParseArguments.cmake $DESTDIR/share/cmake-3/Modules
+install -m 644 Modules/CMakeParseImplicitIncludeInfo.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakeParseImplicitLinkInfo.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakePlatformId.h.in $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/CMakePushCheckState.cmake $DESTDIR/share/cmake-3/Modules
@@ -106,8 +108,9 @@ install -m 644 Modules/ProcessorCount.cmake $DESTDIR/share/cmake-3/Modules
 install -m 644 Modules/WriteBasicConfigVersionFile.cmake $DESTDIR/share/cmake-3/Modules
 install -d $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/ADSP-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
-install -m 644 Modules/Compiler/ARMCC-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/AppleClang-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/ARMCC-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/ARMClang-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/Borland-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/Bruce-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/CMakeCommonCompilerMacros.cmake $DESTDIR/share/cmake-3/Modules/Compiler
@@ -119,6 +122,7 @@ install -m 644 Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake $DESTDIR/shar
 install -m 644 Modules/Compiler/Cray-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/Embarcadero-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/Fujitsu-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/GHS-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/GNU.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/GNU-ASM.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/GNU-C.cmake $DESTDIR/share/cmake-3/Modules/Compiler
@@ -131,7 +135,6 @@ install -m 644 Modules/Compiler/IAR-DetermineCompiler.cmake $DESTDIR/share/cmake
 install -m 644 Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/Intel-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
-install -m 644 Modules/Compiler/MIPSpro-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/MSVC-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/OpenWatcom-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/PGI-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
@@ -147,11 +150,14 @@ install -m 644 Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake $DESTDIR/s
 install -m 644 Modules/Compiler/Watcom-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/XL-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/XL-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/XLClang-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
+install -m 644 Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/zOS-C-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -m 644 Modules/Compiler/zOS-CXX-DetermineCompiler.cmake $DESTDIR/share/cmake-3/Modules/Compiler
 install -d $DESTDIR/share/cmake-3/Modules/FindPython
 install -m 644 Modules/FindPython/Support.cmake $DESTDIR/share/cmake-3/Modules/FindPython
 install -d $DESTDIR/share/cmake-3/Modules/Internal
+install -m 644 Modules/Internal/CMakeCheckCompilerFlag.cmake $DESTDIR/share/cmake-3/Modules/Internal
 install -m 644 Modules/Internal/FeatureTesting.cmake $DESTDIR/share/cmake-3/Modules/Internal
 install -d $DESTDIR/share/cmake-3/Modules/Platform
 install -m 644 Modules/Platform/Linux.cmake $DESTDIR/share/cmake-3/Modules/Platform
@@ -160,13 +166,13 @@ install -d $DESTDIR/share/cmake-3/Templates
 install -m 644 Templates/CPack.GenericDescription.txt $DESTDIR/share/cmake-3/Templates
 install -m 644 Templates/CPack.GenericWelcome.txt $DESTDIR/share/cmake-3/Templates
 install -m 644 Templates/CPackConfig.cmake.in $DESTDIR/share/cmake-3/Templates
-ln -sf cmake-3 $DESTDIR/share/cmake-3.13
+test -L $DESTDIR/share/cmake-3.17 || ln -s cmake-3 $DESTDIR/share/cmake-3.17
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/cmake3-build.pc << EOF
 Name: cmake
-Version: 3.13.5
+Version: 3.17.5
 Description: CMake build system
 Requires: $REQUIRES
 
@@ -216,6 +222,7 @@ devel=\\
 /share/cmake-3/Modules/CMakeNinjaFindMake.cmake \\
 /share/cmake-3/Modules/CMakePackageConfigHelpers.cmake \\
 /share/cmake-3/Modules/CMakeParseArguments.cmake \\
+/share/cmake-3/Modules/CMakeParseImplicitIncludeInfo.cmake \\
 /share/cmake-3/Modules/CMakeParseImplicitLinkInfo.cmake \\
 /share/cmake-3/Modules/CMakePlatformId.h.in \\
 /share/cmake-3/Modules/CMakePushCheckState.cmake \\
@@ -256,8 +263,9 @@ devel=\\
 /share/cmake-3/Modules/ProcessorCount.cmake \\
 /share/cmake-3/Modules/WriteBasicConfigVersionFile.cmake \\
 /share/cmake-3/Modules/Compiler/ADSP-DetermineCompiler.cmake \\
-/share/cmake-3/Modules/Compiler/ARMCC-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/AppleClang-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/ARMCC-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/ARMClang-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/Borland-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/Bruce-C-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/CMakeCommonCompilerMacros.cmake \\
@@ -269,6 +277,7 @@ devel=\\
 /share/cmake-3/Modules/Compiler/Cray-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/Embarcadero-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/Fujitsu-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/GHS-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/GNU.cmake \\
 /share/cmake-3/Modules/Compiler/GNU-ASM.cmake \\
 /share/cmake-3/Modules/Compiler/GNU-C.cmake \\
@@ -281,7 +290,6 @@ devel=\\
 /share/cmake-3/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake \\
 /share/cmake-3/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake \\
 /share/cmake-3/Modules/Compiler/Intel-DetermineCompiler.cmake \\
-/share/cmake-3/Modules/Compiler/MIPSpro-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/MSVC-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/PGI-DetermineCompiler.cmake \\
@@ -297,44 +305,47 @@ devel=\\
 /share/cmake-3/Modules/Compiler/Watcom-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/XL-C-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/XL-CXX-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/XLClang-C-DetermineCompiler.cmake \\
+/share/cmake-3/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/zOS-C-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake \\
 /share/cmake-3/Modules/FindPython/Support.cmake \\
+/share/cmake-3/Modules/Internal/CMakeCheckCompilerFlag.cmake \\
 /share/cmake-3/Modules/Internal/FeatureTesting.cmake \\
 /share/cmake-3/Modules/Platform/Linux.cmake \\
 /share/cmake-3/Modules/Platform/UnixPaths.cmake \\
-/share/cmake-3.13
+/share/cmake-3.17
 EOF
 
 exit
---- cmake-3.13.5.orig/Modules/Compiler/GNU.cmake
-+++ cmake-3.13.5/Modules/Compiler/GNU.cmake
-@@ -47,9 +47,6 @@
-   string(APPEND CMAKE_${lang}_FLAGS_RELWITHDEBINFO_INIT " -O2 -g -DNDEBUG")
-   set(CMAKE_${lang}_CREATE_PREPROCESSED_SOURCE "<CMAKE_${lang}_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -E <SOURCE> > <PREPROCESSED_SOURCE>")
-   set(CMAKE_${lang}_CREATE_ASSEMBLY_SOURCE "<CMAKE_${lang}_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -S <SOURCE> -o <ASSEMBLY_SOURCE>")
--  if(NOT APPLE OR NOT CMAKE_${lang}_COMPILER_VERSION VERSION_LESS 4) # work around #4462
--    set(CMAKE_INCLUDE_SYSTEM_FLAG_${lang} "-isystem ")
--  endif()
+--- cmake-3.17.5.orig/Modules/GNUInstallDirs.cmake
++++ cmake-3.17.5/Modules/GNUInstallDirs.cmake
+@@ -226,8 +226,10 @@
+       "Unable to determine default CMAKE_INSTALL_LIBDIR directory because no target architecture is known. "
+       "Please enable at least one language before including GNUInstallDirs.")
+   endif()
++  execute_process(COMMAND gcc -print-multi-os-directory OUTPUT_VARIABLE MULTIOSDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+   if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|kFreeBSD|GNU)$"
+       AND NOT CMAKE_CROSSCOMPILING
++      AND NOT ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8" AND "${MULTIOSDIR}" STREQUAL "../lib")
+       AND NOT EXISTS "/etc/arch-release")
+     if (EXISTS "/etc/debian_version") # is this a debian system ?
+       if(CMAKE_LIBRARY_ARCHITECTURE)
+--- cmake-3.17.5.orig/Source/cmMakefile.cxx
++++ cmake-3.17.5/Source/cmMakefile.cxx
+@@ -22,8 +22,9 @@
+ #include "cmsys/FStream.hxx"
+ #include "cmsys/RegularExpression.hxx"
  
-   set(_CMAKE_${lang}_IPO_SUPPORTED_BY_CMAKE YES)
-   set(_CMAKE_${lang}_IPO_MAY_BE_SUPPORTED_BY_COMPILER NO)
---- cmake-3.13.5.orig/Modules/GNUInstallDirs.cmake
-+++ cmake-3.13.5/Modules/GNUInstallDirs.cmake
-@@ -239,9 +239,9 @@
-           "Please enable at least one language before including GNUInstallDirs.")
-       else()
-         if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
--          set(_LIBDIR_DEFAULT "lib64")
-+          set(_LIBDIR_DEFAULT "lib")
-           if(DEFINED _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX)
--            set(__LAST_LIBDIR_DEFAULT "lib64")
-+            set(__LAST_LIBDIR_DEFAULT "lib")
-           endif()
-         endif()
-       endif()
---- cmake-3.13.5.orig/Source/cm_get_date.c
-+++ cmake-3.13.5/Source/cm_get_date.c
+-#include "cm_jsoncpp_value.h"
++#ifndef CMAKE_BOOTSTRAP
+ #include "cm_jsoncpp_writer.h"
++#endif
+ #include "cm_sys_stat.h"
+ 
+ #include "cmAlgorithms.h"
+--- cmake-3.17.5.orig/Source/cm_get_date.c
++++ cmake-3.17.5/Source/cm_get_date.c
 @@ -2,6 +2,8 @@
     file Copyright.txt or https://cmake.org/licensing for details.  */
  #include "cm_get_date.h"
@@ -344,14 +355,14 @@ exit
  
  #include "../Utilities/cmlibarchive/libarchive/archive_getdate.c"
 +#endif
---- cmake-3.13.5.orig/Source/cm_get_date.h
-+++ cmake-3.13.5/Source/cm_get_date.h
+--- cmake-3.17.5.orig/Source/cm_get_date.h
++++ cmake-3.17.5/Source/cm_get_date.h
 @@ -3,6 +3,7 @@
  #ifndef cm_get_date_h
  #define cm_get_date_h
  
 +#include "cmThirdParty.h"
- #include <time.h>
+ #include <time.h> /* NOLINT(modernize-deprecated-headers) */
  
  #ifdef __cplusplus
 @@ -10,7 +11,12 @@
@@ -367,10 +378,10 @@ exit
  
  #ifdef __cplusplus
  } /* extern "C" */
---- cmake-3.13.5.orig/bootstrap
-+++ cmake-3.13.5/bootstrap
-@@ -1346,9 +1346,14 @@
- for a in ${CMAKE_CXX_SOURCES} ${CMAKE_C_SOURCES} ${LexerParser_CXX_SOURCES} ${LexerParser_C_SOURCES} ${KWSYS_CXX_SOURCES} ${KWSYS_C_SOURCES}; do
+--- cmake-3.17.5.orig/bootstrap
++++ cmake-3.17.5/bootstrap
+@@ -1476,9 +1476,14 @@
+ for a in ${CMAKE_CXX_SOURCES} ${CMAKE_C_SOURCES} ${CMAKE_STD_CXX_SOURCES} ${LexerParser_CXX_SOURCES} ${LexerParser_C_SOURCES} ${KWSYS_CXX_SOURCES} ${KWSYS_C_SOURCES}; do
    objs="${objs} ${a}.o"
  done
 -for a in ${LIBUV_C_SOURCES}; do
@@ -387,7 +398,7 @@ exit
  
  libs=""
  
-@@ -1463,11 +1468,13 @@
+@@ -1605,11 +1610,13 @@
    echo "${a}.o : ${src} ${dep}" >> "${cmake_bootstrap_dir}/Makefile"
    echo "	${cmake_cxx_compiler} ${cmake_cxx_flags} -DKWSYS_NAMESPACE=cmsys ${src_flags} -c ${src} -o ${a}.o" >> "${cmake_bootstrap_dir}/Makefile"
  done
