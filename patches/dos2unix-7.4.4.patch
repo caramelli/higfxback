@@ -1,0 +1,63 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --disable-nls --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install dos2unix $DESTDIR/bin
+install unix2dos $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/dos2unix-build.pc << EOF
+Name: dos2unix
+Version: 7.4.4
+Description: DOS to Unix and vice versa text file format converter
+Requires: $REQUIRES
+
+devel=\\
+/bin/dos2unix \\
+/bin/unix2dos
+EOF
+
+exit
+--- dos2unix-7.4.4.orig/Configure
++++ dos2unix-7.4.4/Configure
+@@ -0,0 +1,28 @@
++#!/bin/sh
++
++PREFIX=/usr
++ENABLE_NLS=1
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-nls)
++      ENABLE_NLS=
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^prefix/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^ENABLE_NLS/s#=.*#= $ENABLE_NLS#" Makefile

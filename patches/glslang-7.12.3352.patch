@@ -1,0 +1,62 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/StandAlone/glslangValidator $DESTDIR/bin
+install build/StandAlone/spirv-remap $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/glslang-build.pc << EOF
+Name: glslang
+Version: 7.12.3352
+Description: Compiler front end for GLSL/ESSL shading languages, validator and SPIR-V generator
+Requires: $REQUIRES
+
+exec=\\
+/bin/spirv-remap \\
+/bin/glslangValidator
+EOF
+
+exit
+--- glslang-7.12.3352.orig/CMakeLists.txt
++++ glslang-7.12.3352/CMakeLists.txt
+@@ -4,6 +4,9 @@
+ if (POLICY CMP0048)
+   cmake_policy(SET CMP0048 NEW)
+ endif()
++
++project(glslang)
++
+ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+ 
+ # Adhere to GNU filesystem layout conventions
+@@ -62,7 +65,6 @@
+   endif()
+ endmacro(glslang_pch)
+ 
+-project(glslang)
+ # make testing optional
+ include(CTest)
+ 
+@@ -153,7 +155,7 @@
+ # CMake needs to find the right version of python, right from the beginning,
+ # otherwise, it will find the wrong version and fail later
+ if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/External)
+-    find_package(PythonInterp 3 REQUIRED)
++    find_package(Python3 REQUIRED)
+ endif()
+ 
+ # We depend on these for later projects, so they should come first.
