@@ -1,0 +1,370 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build spirv-headers-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/tools/spirv-as $DESTDIR/bin
+install build/tools/spirv-cfg $DESTDIR/bin
+install build/tools/spirv-dis $DESTDIR/bin
+install build/tools/spirv-link $DESTDIR/bin
+install build/tools/spirv-opt $DESTDIR/bin
+install build/tools/spirv-val $DESTDIR/bin
+install -d $DESTDIR/include/spirv-tools
+install -m 644 include/spirv-tools/libspirv.h $DESTDIR/include/spirv-tools
+install -m 644 include/spirv-tools/libspirv.hpp $DESTDIR/include/spirv-tools
+install -m 644 include/spirv-tools/linker.hpp $DESTDIR/include/spirv-tools
+install -m 644 include/spirv-tools/optimizer.hpp $DESTDIR/include/spirv-tools
+install -d $DESTDIR/lib
+install build/source/libSPIRV-Tools.so.0 $DESTDIR/lib
+ln -sf libSPIRV-Tools.so.0 $DESTDIR/lib/libSPIRV-Tools.so
+install build/source/link/libSPIRV-Tools-link.so.0 $DESTDIR/lib
+ln -sf libSPIRV-Tools-link.so.0 $DESTDIR/lib/libSPIRV-Tools-link.so
+install build/source/opt/libSPIRV-Tools-opt.so.0 $DESTDIR/lib
+ln -sf libSPIRV-Tools-opt.so.0 $DESTDIR/lib/libSPIRV-Tools-opt.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/SPIRV-Tools.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/spirv-tools-build.pc << EOF
+Name: SPIRV-Tools
+Version: 2020.4
+Description: utilities and libraries for processing SPIR-V
+Requires: $REQUIRES
+
+devel=\\
+/include/spirv-tools/libspirv.h \\
+/include/spirv-tools/libspirv.hpp \\
+/include/spirv-tools/linker.hpp \\
+/include/spirv-tools/optimizer.hpp \\
+/lib/libSPIRV-Tools.so \\
+/lib/libSPIRV-Tools-link.so \\
+/lib/libSPIRV-Tools-opt.so \\
+/lib/pkgconfig/SPIRV-Tools.pc
+
+exec=\\
+/bin/spirv-as \\
+/bin/spirv-cfg \\
+/bin/spirv-dis \\
+/bin/spirv-link \\
+/bin/spirv-opt \\
+/bin/spirv-val \\
+/lib/libSPIRV-Tools.so.0 \\
+/lib/libSPIRV-Tools-link.so.0 \\
+/lib/libSPIRV-Tools-opt.so.0
+EOF
+
+exit
+--- SPIRV-Tools-2020.4.orig/CMakeLists.txt
++++ SPIRV-Tools-2020.4/CMakeLists.txt
+@@ -188,7 +188,7 @@
+ endif()
+ 
+ # Tests require Python3
+-find_host_package(PythonInterp 3 REQUIRED)
++find_host_package(Python3 REQUIRED)
+ 
+ # Check for symbol exports on Linux.
+ # At the moment, this check will fail on the OSX build machines for the Android NDK.
+@@ -197,7 +197,7 @@
+   macro(spvtools_check_symbol_exports TARGET)
+     if (NOT "${SPIRV_SKIP_TESTS}")
+       add_test(NAME spirv-tools-symbol-exports-${TARGET}
+-               COMMAND ${PYTHON_EXECUTABLE}
++               COMMAND Python3::Interpreter
+                ${spirv-tools_SOURCE_DIR}/utils/check_symbol_exports.py "$<TARGET_FILE:${TARGET}>")
+     endif()
+   endmacro()
+@@ -296,12 +296,11 @@
+ 
+ if (NOT "${SPIRV_SKIP_TESTS}")
+   add_test(NAME spirv-tools-copyrights
+-           COMMAND ${PYTHON_EXECUTABLE} utils/check_copyright.py
++           COMMAND Python3::Interpreter utils/check_copyright.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+ endif()
+ 
+-set(SPIRV_LIBRARIES "-lSPIRV-Tools-opt -lSPIRV-Tools -lSPIRV-Tools-link")
+-set(SPIRV_SHARED_LIBRARIES "-lSPIRV-Tools-shared")
++set(SPIRV_LIBRARIES "-lSPIRV-Tools")
+ 
+ # Build pkg-config file
+ # Use a first-class target so it's regenerated when relevant files are updated.
+@@ -316,24 +315,12 @@
+                       -DSPIRV_LIBRARIES=${SPIRV_LIBRARIES}
+                       -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
+         DEPENDS "CHANGES" "cmake/SPIRV-Tools.pc.in" "cmake/write_pkg_config.cmake")
+-add_custom_target(spirv-tools-shared-pkg-config ALL
+-        COMMAND ${CMAKE_COMMAND}
+-                      -DCHANGES_FILE=${CMAKE_CURRENT_SOURCE_DIR}/CHANGES
+-                      -DTEMPLATE_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/SPIRV-Tools-shared.pc.in
+-                      -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools-shared.pc
+-                      -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+-                      -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+-                      -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+-                      -DSPIRV_SHARED_LIBRARIES=${SPIRV_SHARED_LIBRARIES}
+-                      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
+-        DEPENDS "CHANGES" "cmake/SPIRV-Tools-shared.pc.in" "cmake/write_pkg_config.cmake")
+ 
+ # Install pkg-config file
+ if (ENABLE_SPIRV_TOOLS_INSTALL)
+   install(
+     FILES
+       ${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools.pc
+-      ${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools-shared.pc
+     DESTINATION
+       ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+ endif()
+--- SPIRV-Tools-2020.4.orig/external/CMakeLists.txt
++++ SPIRV-Tools-2020.4/external/CMakeLists.txt
+@@ -37,8 +37,7 @@
+     add_subdirectory(${SPIRV_HEADER_DIR})
+   endif()
+ else()
+-  message(FATAL_ERROR
+-    "SPIRV-Headers was not found - please checkout a copy under external/.")
++  set(SPIRV_HEADER_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include PARENT_SCOPE)
+ endif()
+ 
+ if (NOT ${SPIRV_SKIP_TESTS})
+--- SPIRV-Tools-2020.4.orig/source/CMakeLists.txt
++++ SPIRV-Tools-2020.4/source/CMakeLists.txt
+@@ -31,7 +31,7 @@
+   set(GRAMMAR_INSTS_INC_FILE "${spirv-tools_BINARY_DIR}/core.insts-${CONFIG_VERSION}.inc")
+   set(GRAMMAR_KINDS_INC_FILE "${spirv-tools_BINARY_DIR}/operand.kinds-${CONFIG_VERSION}.inc")
+   add_custom_command(OUTPUT ${GRAMMAR_INSTS_INC_FILE} ${GRAMMAR_KINDS_INC_FILE}
+-    COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
++    COMMAND Python3::Interpreter ${GRAMMAR_PROCESSING_SCRIPT}
+       --spirv-core-grammar=${GRAMMAR_JSON_FILE}
+       --extinst-debuginfo-grammar=${DEBUGINFO_GRAMMAR_JSON_FILE}
+       --extinst-cldebuginfo100-grammar=${CLDEBUGINFO100_GRAMMAR_JSON_FILE}
+@@ -52,7 +52,7 @@
+   set(GRAMMAR_ENUM_STRING_MAPPING_INC_FILE "${spirv-tools_BINARY_DIR}/enum_string_mapping.inc")
+   add_custom_command(OUTPUT ${GRAMMAR_EXTENSION_ENUM_INC_FILE}
+      ${GRAMMAR_ENUM_STRING_MAPPING_INC_FILE}
+-    COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
++    COMMAND Python3::Interpreter ${GRAMMAR_PROCESSING_SCRIPT}
+       --spirv-core-grammar=${GRAMMAR_JSON_FILE}
+       --extinst-debuginfo-grammar=${DEBUGINFO_GRAMMAR_JSON_FILE}
+       --extinst-cldebuginfo100-grammar=${CLDEBUGINFO100_GRAMMAR_JSON_FILE}
+@@ -73,7 +73,7 @@
+   set(OPENCL_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${CONFIG_VERSION}/extinst.opencl.std.100.grammar.json")
+   set(VIMSYNTAX_FILE "${spirv-tools_BINARY_DIR}/spvasm.vim")
+   add_custom_command(OUTPUT ${VIMSYNTAX_FILE}
+-      COMMAND ${PYTHON_EXECUTABLE} ${VIMSYNTAX_PROCESSING_SCRIPT}
++      COMMAND Python3::Interpreter ${VIMSYNTAX_PROCESSING_SCRIPT}
+       --spirv-core-grammar=${GRAMMAR_JSON_FILE}
+       --extinst-debuginfo-grammar=${DEBUGINFO_GRAMMAR_JSON_FILE}
+       --extinst-glsl-grammar=${GLSL_GRAMMAR_JSON_FILE}
+@@ -89,7 +89,7 @@
+   set(GLSL_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${CONFIG_VERSION}/extinst.glsl.std.450.grammar.json")
+   set(GRAMMAR_INC_FILE "${spirv-tools_BINARY_DIR}/glsl.std.450.insts.inc")
+   add_custom_command(OUTPUT ${GRAMMAR_INC_FILE}
+-    COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
++    COMMAND Python3::Interpreter ${GRAMMAR_PROCESSING_SCRIPT}
+       --extinst-glsl-grammar=${GLSL_GRAMMAR_JSON_FILE}
+       --glsl-insts-output=${GRAMMAR_INC_FILE}
+     DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${CORE_GRAMMAR_JSON_FILE} ${GLSL_GRAMMAR_JSON_FILE}
+@@ -102,7 +102,7 @@
+   set(OPENCL_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${CONFIG_VERSION}/extinst.opencl.std.100.grammar.json")
+   set(GRAMMAR_INC_FILE "${spirv-tools_BINARY_DIR}/opencl.std.insts.inc")
+   add_custom_command(OUTPUT ${GRAMMAR_INC_FILE}
+-    COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
++    COMMAND Python3::Interpreter ${GRAMMAR_PROCESSING_SCRIPT}
+       --extinst-opencl-grammar=${OPENCL_GRAMMAR_JSON_FILE}
+       --opencl-insts-output=${GRAMMAR_INC_FILE}
+     DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${CORE_GRAMMAR_JSON_FILE} ${OPENCL_GRAMMAR_JSON_FILE}
+@@ -114,7 +114,7 @@
+   set(INSTS_FILE "${spirv-tools_BINARY_DIR}/${VENDOR_TABLE}.insts.inc")
+   set(GRAMMAR_FILE "${spirv-tools_SOURCE_DIR}/source/extinst.${VENDOR_TABLE}.grammar.json")
+   add_custom_command(OUTPUT ${INSTS_FILE}
+-    COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
++    COMMAND Python3::Interpreter ${GRAMMAR_PROCESSING_SCRIPT}
+       --extinst-vendor-grammar=${GRAMMAR_FILE}
+       --vendor-insts-output=${INSTS_FILE}
+       --vendor-operand-kind-prefix=${OPERAND_KIND_PREFIX}
+@@ -128,7 +128,7 @@
+ macro(spvtools_extinst_lang_headers NAME GRAMMAR_FILE)
+   set(OUT_H ${spirv-tools_BINARY_DIR}/${NAME}.h)
+   add_custom_command(OUTPUT ${OUT_H}
+-    COMMAND ${PYTHON_EXECUTABLE} ${LANG_HEADER_PROCESSING_SCRIPT}
++    COMMAND Python3::Interpreter ${LANG_HEADER_PROCESSING_SCRIPT}
+       --extinst-grammar=${GRAMMAR_FILE}
+       --extinst-output-path=${OUT_H}
+     DEPENDS ${LANG_HEADER_PROCESSING_SCRIPT} ${GRAMMAR_FILE}
+@@ -159,7 +159,7 @@
+ set(GENERATOR_INC_FILE ${spirv-tools_BINARY_DIR}/generators.inc)
+ set(SPIRV_XML_REGISTRY_FILE ${SPIRV_HEADER_INCLUDE_DIR}/spirv/spir-v.xml)
+ add_custom_command(OUTPUT ${GENERATOR_INC_FILE}
+-  COMMAND ${PYTHON_EXECUTABLE} ${XML_REGISTRY_PROCESSING_SCRIPT}
++  COMMAND Python3::Interpreter ${XML_REGISTRY_PROCESSING_SCRIPT}
+     --xml=${SPIRV_XML_REGISTRY_FILE}
+     --generator-output=${GENERATOR_INC_FILE}
+   DEPENDS ${XML_REGISTRY_PROCESSING_SCRIPT} ${SPIRV_XML_REGISTRY_FILE}
+@@ -189,7 +189,7 @@
+ set(SPIRV_TOOLS_CHANGES_FILE
+   ${spirv-tools_SOURCE_DIR}/CHANGES)
+ add_custom_command(OUTPUT ${SPIRV_TOOLS_BUILD_VERSION_INC}
+-   COMMAND ${PYTHON_EXECUTABLE}
++   COMMAND Python3::Interpreter
+            ${SPIRV_TOOLS_BUILD_VERSION_INC_GENERATOR}
+            ${spirv-tools_SOURCE_DIR} ${SPIRV_TOOLS_BUILD_VERSION_INC}
+    DEPENDS ${SPIRV_TOOLS_BUILD_VERSION_INC_GENERATOR}
+@@ -354,38 +354,21 @@
+   PRIVATE ${spirv-tools_BINARY_DIR}
+   PRIVATE ${SPIRV_HEADER_INCLUDE_DIR}
+   )
++
++set_target_properties(${SPIRV_TOOLS} PROPERTIES SOVERSION 0)
+ set_property(TARGET ${SPIRV_TOOLS} PROPERTY FOLDER "SPIRV-Tools libraries")
+ spvtools_check_symbol_exports(${SPIRV_TOOLS})
+ add_dependencies( ${SPIRV_TOOLS} core_tables enum_string_mapping extinst_tables )
+ 
+-add_library(${SPIRV_TOOLS}-shared SHARED ${SPIRV_SOURCES})
+-spvtools_default_compile_options(${SPIRV_TOOLS}-shared)
+-target_include_directories(${SPIRV_TOOLS}-shared
+-  PUBLIC
+-    $<BUILD_INTERFACE:${spirv-tools_SOURCE_DIR}/include>
+-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+-  PRIVATE ${spirv-tools_BINARY_DIR}
+-  PRIVATE ${SPIRV_HEADER_INCLUDE_DIR}
+-  )
+-set_target_properties(${SPIRV_TOOLS}-shared PROPERTIES CXX_VISIBILITY_PRESET hidden)
+-set_property(TARGET ${SPIRV_TOOLS}-shared PROPERTY FOLDER "SPIRV-Tools libraries")
+-spvtools_check_symbol_exports(${SPIRV_TOOLS}-shared)
+-target_compile_definitions(${SPIRV_TOOLS}-shared
+-  PRIVATE SPIRV_TOOLS_IMPLEMENTATION
+-  PUBLIC SPIRV_TOOLS_SHAREDLIB
+-)
+-add_dependencies( ${SPIRV_TOOLS}-shared core_tables enum_string_mapping extinst_tables )
+-
+ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+   find_library(LIBRT rt)
+   if(LIBRT)
+     target_link_libraries(${SPIRV_TOOLS} ${LIBRT})
+-    target_link_libraries(${SPIRV_TOOLS}-shared ${LIBRT})
+   endif()
+ endif()
+ 
+ if(ENABLE_SPIRV_TOOLS_INSTALL)
+-  install(TARGETS ${SPIRV_TOOLS} ${SPIRV_TOOLS}-shared EXPORT ${SPIRV_TOOLS}Targets
++  install(TARGETS ${SPIRV_TOOLS} EXPORT ${SPIRV_TOOLS}Targets
+     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+--- SPIRV-Tools-2020.4.orig/source/fuzz/CMakeLists.txt
++++ SPIRV-Tools-2020.4/source/fuzz/CMakeLists.txt
+@@ -311,6 +311,7 @@
+         PUBLIC SPIRV-Tools-opt
+         PUBLIC protobuf::libprotobuf)
+ 
++  set_target_properties(SPIRV-Tools-fuzz PROPERTIES SOVERSION 0)
+   set_property(TARGET SPIRV-Tools-fuzz PROPERTY FOLDER "SPIRV-Tools libraries")
+   spvtools_check_symbol_exports(SPIRV-Tools-fuzz)
+ 
+--- SPIRV-Tools-2020.4.orig/source/link/CMakeLists.txt
++++ SPIRV-Tools-2020.4/source/link/CMakeLists.txt
+@@ -27,6 +27,7 @@
+ target_link_libraries(SPIRV-Tools-link
+   PUBLIC SPIRV-Tools-opt)
+ 
++set_target_properties(SPIRV-Tools-link PROPERTIES SOVERSION 0)
+ set_property(TARGET SPIRV-Tools-link PROPERTY FOLDER "SPIRV-Tools libraries")
+ spvtools_check_symbol_exports(SPIRV-Tools-link)
+ 
+--- SPIRV-Tools-2020.4.orig/source/opt/CMakeLists.txt
++++ SPIRV-Tools-2020.4/source/opt/CMakeLists.txt
+@@ -247,6 +247,7 @@
+ target_link_libraries(SPIRV-Tools-opt
+   PUBLIC ${SPIRV_TOOLS})
+ 
++set_target_properties(SPIRV-Tools-opt PROPERTIES SOVERSION 0)
+ set_property(TARGET SPIRV-Tools-opt PROPERTY FOLDER "SPIRV-Tools libraries")
+ spvtools_check_symbol_exports(SPIRV-Tools-opt)
+ 
+--- SPIRV-Tools-2020.4.orig/source/opt/composite.cpp
++++ SPIRV-Tools-2020.4/source/opt/composite.cpp
+@@ -20,7 +20,7 @@
+ 
+ #include "source/opt/ir_context.h"
+ #include "source/opt/iterator.h"
+-#include "spirv/1.2/GLSL.std.450.h"
++#include "spirv/unified1/GLSL.std.450.h"
+ 
+ namespace spvtools {
+ namespace opt {
+--- SPIRV-Tools-2020.4.orig/source/opt/dead_insert_elim_pass.cpp
++++ SPIRV-Tools-2020.4/source/opt/dead_insert_elim_pass.cpp
+@@ -19,7 +19,7 @@
+ #include "source/opt/composite.h"
+ #include "source/opt/ir_context.h"
+ #include "source/opt/iterator.h"
+-#include "spirv/1.2/GLSL.std.450.h"
++#include "spirv/unified1/GLSL.std.450.h"
+ 
+ namespace spvtools {
+ namespace opt {
+--- SPIRV-Tools-2020.4.orig/source/reduce/CMakeLists.txt
++++ SPIRV-Tools-2020.4/source/reduce/CMakeLists.txt
+@@ -92,6 +92,7 @@
+   PUBLIC ${SPIRV_TOOLS}
+   PUBLIC SPIRV-Tools-opt)
+ 
++set_target_properties(SPIRV-Tools-reduce PROPERTIES SOVERSION 0)
+ set_property(TARGET SPIRV-Tools-reduce PROPERTY FOLDER "SPIRV-Tools libraries")
+ spvtools_check_symbol_exports(SPIRV-Tools-reduce)
+ 
+--- SPIRV-Tools-2020.4.orig/test/CMakeLists.txt
++++ SPIRV-Tools-2020.4/test/CMakeLists.txt
+@@ -167,12 +167,6 @@
+   LIBS ${SPIRV_TOOLS})
+ 
+ add_spvtools_unittest(
+-  TARGET c_interface_shared
+-  SRCS c_interface_test.cpp
+-  LIBS ${SPIRV_TOOLS}-shared
+-  ENVIRONMENT PATH=$<TARGET_FILE_DIR:${SPIRV_TOOLS}-shared>)
+-
+-add_spvtools_unittest(
+   TARGET cpp_interface
+   SRCS cpp_interface_test.cpp
+   LIBS SPIRV-Tools-opt)
+--- SPIRV-Tools-2020.4.orig/test/tools/CMakeLists.txt
++++ SPIRV-Tools-2020.4/test/tools/CMakeLists.txt
+@@ -13,9 +13,9 @@
+ # limitations under the License.
+ 
+ add_test(NAME spirv-tools_expect_unittests
+-         COMMAND ${PYTHON_EXECUTABLE} -m unittest expect_unittest.py
++         COMMAND Python3::Interpreter -m unittest expect_unittest.py
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+ add_test(NAME spirv-tools_spirv_test_framework_unittests
+-         COMMAND ${PYTHON_EXECUTABLE} -m unittest spirv_test_framework_unittest.py
++         COMMAND Python3::Interpreter -m unittest spirv_test_framework_unittest.py
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+ add_subdirectory(opt)
+--- SPIRV-Tools-2020.4.orig/test/tools/opt/CMakeLists.txt
++++ SPIRV-Tools-2020.4/test/tools/opt/CMakeLists.txt
+@@ -13,9 +13,9 @@
+ # limitations under the License.
+ 
+ if(NOT ${SPIRV_SKIP_TESTS})
+-  if(${PYTHONINTERP_FOUND})
++  if(${Python3_Interpreter_FOUND})
+     add_test(NAME spirv_opt_cli_tools_tests
+-      COMMAND ${PYTHON_EXECUTABLE}
++      COMMAND Python3::Interpreter
+       ${CMAKE_CURRENT_SOURCE_DIR}/../spirv_test_framework.py
+       $<TARGET_FILE:spirv-opt> $<TARGET_FILE:spirv-as> $<TARGET_FILE:spirv-dis>
+       --test-dir ${CMAKE_CURRENT_SOURCE_DIR})

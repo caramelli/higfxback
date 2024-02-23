@@ -1,0 +1,82 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build python3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/include/spirv
+install -m 644 include/spirv/spir-v.xml $DESTDIR/include/spirv
+install -d $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/extinst.glsl.std.450.grammar.json $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/extinst.opencl.std.100.grammar.json $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/GLSL.std.450.h $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/OpenCL.std.h $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/NonSemanticDebugPrintf.h $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/spirv.core.grammar.json $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/spirv.h $DESTDIR/include/spirv/unified1
+install -m 644 include/spirv/unified1/spirv.hpp $DESTDIR/include/spirv/unified1
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/spirv-headers-build.pc << EOF
+Name: SPIRV-Headers
+Version: 20200721
+Description: SPIR-V Headers
+Requires: $REQUIRES
+
+devel=\\
+/include/spirv/spir-v.xml \\
+/include/spirv/unified1/extinst.glsl.std.450.grammar.json \\
+/include/spirv/unified1/extinst.opencl.std.100.grammar.json \\
+/include/spirv/unified1/GLSL.std.450.h \\
+/include/spirv/unified1/OpenCL.std.h \\
+/include/spirv/unified1/NonSemanticDebugPrintf.h \\
+/include/spirv/unified1/spirv.core.grammar.json \\
+/include/spirv/unified1/spirv.h \\
+/include/spirv/unified1/spirv.hpp
+
+exit
+--- SPIRV-Headers-20200721.orig/CMakeLists.txt
++++ SPIRV-Headers-20200721/CMakeLists.txt
+@@ -63,6 +63,8 @@
+   set(SPIRV_HEADERS_ENABLE_INSTALL ON)
+ endif()
+ 
++add_subdirectory(tools/buildHeaders)
++
+ if (SPIRV_HEADERS_ENABLE_EXAMPLES)
+   message(STATUS "Building SPIRV-Header examples")
+   add_subdirectory(example)
+--- SPIRV-Headers-20200721.orig/tools/buildHeaders/CMakeLists.txt
++++ SPIRV-Headers-20200721/tools/buildHeaders/CMakeLists.txt
+@@ -1,7 +1,8 @@
+ cmake_minimum_required(VERSION 2.8)
+ 
+-set(CMAKE_INSTALL_PREFIX "install" CACHE STRING "prefix" FORCE)
+-
++if(POLICY CMP0048)
++    cmake_policy(SET CMP0048 NEW)
++endif()
+ project(buildSpvHeaders)
+ 
+ set(SOURCES
+@@ -23,4 +24,10 @@
+ 
+ add_executable(buildSpvHeaders ${SOURCES} ${HEADERS})
+ 
++add_custom_command(TARGET buildSpvHeaders POST_BUILD
++                   COMMAND cd ${CMAKE_SOURCE_DIR}/tools/buildHeaders &&
++                           python3 bin/makeExtinstHeaders.py &&
++                           cd ${CMAKE_SOURCE_DIR}/include/spirv/unified1 &&
++                           ${CMAKE_CURRENT_BINARY_DIR}/buildSpvHeaders -H spirv.core.grammar.json)
++
+ install(TARGETS buildSpvHeaders RUNTIME DESTINATION bin)
