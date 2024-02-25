@@ -1,19 +1,36 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="egl-opengl-stubs-build libpng-build meson-build tiff-build"
+REQUIRES="libpng-build meson-build tiff-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
+  VK=1
+  REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
+fi
+
+test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
+
 # configure
+if test $GL; then
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false --prefix=/dfb build
+else
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+fi
 
 # build
 meson compile -C build
 
 # install
 install -d $DESTDIR/dfb/bin
-install build/yagears2 $DESTDIR/dfb/bin
+test $GL && install build/yagears2 $DESTDIR/dfb/bin
+test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -24,8 +41,10 @@ Description: Yet Another Gears OpenGL / Vulkan demo
 Requires: $REQUIRES
 
 exec=\\
-/dfb/bin/yagears2
 EOF
+test $GL && ! test $VK && echo /dfb/bin/yagears2 >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && test $VK && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $VK && echo /dfb/bin/yagears2-vk >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 
 exit
 --- yagears-2.4.orig/CMakeLists.txt
@@ -63,6 +82,24 @@ exit
        set(GLESV2_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV2 OFF)
+@@ -102,7 +102,7 @@
+ endif()
+ 
+ if(NOT ENABLE_GL AND NOT ENABLE_GLESV1_CM AND NOT ENABLE_GLESV2)
+-  message(FATAL_ERROR "No OpenGL Engines found")
++  message(WARNING "No OpenGL Engines found")
+ endif()
+ 
+ # OpenGL Backends
+@@ -251,7 +251,7 @@
+ set(EGL_RPI ${ENABLE_EGL_RPI})
+ 
+ if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI)
+-  message(FATAL_ERROR "No OpenGL Backends found")
++  message(WARNING "No OpenGL Backends found")
+ endif()
+ 
+ # Vulkan WSIs
 --- yagears-2.4.orig/configure.ac
 +++ yagears-2.4/configure.ac
 @@ -125,12 +125,12 @@
@@ -98,6 +135,24 @@ exit
          GLESV2_LIBS=-ldl
        else
          enable_glesv2=no
+@@ -165,7 +165,7 @@
+ fi
+ 
+ if test x$enable_gl = xno -a x$enable_glesv1_cm = xno -a x$enable_glesv2 = xno; then
+-  AC_MSG_ERROR(No OpenGL Engines found)
++  AC_MSG_WARN(No OpenGL Engines found)
+ fi
+ 
+ # OpenGL Backends
+@@ -302,7 +302,7 @@
+ fi
+ 
+ if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
+-  AC_MSG_ERROR(No OpenGL Backends found)
++  AC_MSG_WARN(No OpenGL Backends found)
+ fi
+ 
+ # Vulkan WSIs
 --- yagears-2.4.orig/meson.build
 +++ yagears-2.4/meson.build
 @@ -54,12 +54,12 @@
@@ -137,6 +192,15 @@ exit
      else
        enable_glesv2 = false
      endif
+@@ -98,7 +98,7 @@
+ endif
+ 
+ if not enable_gl and not enable_glesv1_cm and not enable_glesv2
+-  error('No OpenGL Engines found')
++  warning('No OpenGL Engines found')
+ endif
+ 
+ # OpenGL Backends
 @@ -107,7 +107,7 @@
  directfb_dep = []
  if enable_gl
@@ -186,6 +250,15 @@ exit
          drimajorversion = modversion.stdout().split('.')[0]
          driminorversion = modversion.stdout().split('.')[1]
          drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
+@@ -254,7 +254,7 @@
+ config_h.set('EGL_RPI', enable_egl_rpi, description: 'Support for EGL with Raspberry Pi Dispmanx platform')
+ 
+ if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi
+-  error('No OpenGL Backends found')
++  warning('No OpenGL Backends found')
+ endif
+ 
+ # Vulkan WSIs
 @@ -264,7 +264,7 @@
    vulkan_dep = dependency('vulkan', required: false)
    glslang_validator = find_program('glslangValidator', required: false)

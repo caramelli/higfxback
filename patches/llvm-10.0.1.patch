@@ -70,6 +70,8 @@ install -m 644 include/llvm/ADT/Twine.h $DESTDIR/include/llvm/ADT
 install -d $DESTDIR/include/llvm/Analysis
 install -m 644 include/llvm/Analysis/AliasAnalysis.h $DESTDIR/include/llvm/Analysis
 install -m 644 include/llvm/Analysis/InstructionPrecedenceTracking.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/LoopInfo.h $DESTDIR/include/llvm/Analysis
+install -m 644 include/llvm/Analysis/LoopPass.h $DESTDIR/include/llvm/Analysis
 install -m 644 include/llvm/Analysis/MemoryDependenceAnalysis.h $DESTDIR/include/llvm/Analysis
 install -m 644 include/llvm/Analysis/MemoryLocation.h $DESTDIR/include/llvm/Analysis
 install -m 644 include/llvm/Analysis/OrderedBasicBlock.h $DESTDIR/include/llvm/Analysis
@@ -100,6 +102,7 @@ install -m 644 include/llvm/ExecutionEngine/Orc/CompileUtils.h $DESTDIR/include/
 install -m 644 include/llvm/ExecutionEngine/Orc/Core.h $DESTDIR/include/llvm/ExecutionEngine/Orc
 install -m 644 include/llvm/ExecutionEngine/Orc/IRCompileLayer.h $DESTDIR/include/llvm/ExecutionEngine/Orc
 install -m 644 include/llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h $DESTDIR/include/llvm/ExecutionEngine/Orc
+install -m 644 include/llvm/ExecutionEngine/Orc/LambdaResolver.h $DESTDIR/include/llvm/ExecutionEngine/Orc
 install -m 644 include/llvm/ExecutionEngine/Orc/Layer.h $DESTDIR/include/llvm/ExecutionEngine/Orc
 install -m 644 include/llvm/ExecutionEngine/Orc/Legacy.h $DESTDIR/include/llvm/ExecutionEngine/Orc
 install -m 644 include/llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h $DESTDIR/include/llvm/ExecutionEngine/Orc
@@ -139,6 +142,7 @@ install -m 644 include/llvm/IR/IntrinsicInst.h $DESTDIR/include/llvm/IR
 install -m 644 include/llvm/IR/Intrinsics.h $DESTDIR/include/llvm/IR
 install -m 644 include/llvm/IR/IRBuilder.h $DESTDIR/include/llvm/IR
 install -m 644 include/llvm/IR/LegacyPassManager.h $DESTDIR/include/llvm/IR
+install -m 644 include/llvm/IR/LegacyPassManagers.h $DESTDIR/include/llvm/IR
 install -m 644 include/llvm/IR/LLVMContext.h $DESTDIR/include/llvm/IR
 install -m 644 include/llvm/IR/Mangler.h $DESTDIR/include/llvm/IR
 install -m 644 include/llvm/IR/Metadata.def $DESTDIR/include/llvm/IR
@@ -202,6 +206,7 @@ install -m 644 include/llvm/Support/MemoryBuffer.h $DESTDIR/include/llvm/Support
 install -m 644 include/llvm/Support/Mutex.h $DESTDIR/include/llvm/Support
 install -m 644 include/llvm/Support/NativeFormatting.h $DESTDIR/include/llvm/Support
 install -m 644 include/llvm/Support/PointerLikeTypeTraits.h $DESTDIR/include/llvm/Support
+install -m 644 include/llvm/Support/PrettyStackTrace.h $DESTDIR/include/llvm/Support
 install -m 644 include/llvm/Support/raw_ostream.h $DESTDIR/include/llvm/Support
 install -m 644 include/llvm/Support/ReverseIteration.h $DESTDIR/include/llvm/Support
 install -m 644 include/llvm/Support/RWMutex.h $DESTDIR/include/llvm/Support
@@ -215,10 +220,14 @@ install -d $DESTDIR/include/llvm/Target
 install -m 644 include/llvm/Target/TargetMachine.h $DESTDIR/include/llvm/Target
 install -m 644 include/llvm/Target/TargetOptions.h $DESTDIR/include/llvm/Target
 install -d $DESTDIR/include/llvm/Transforms
+install -m 644 include/llvm/Transforms/Coroutines.h $DESTDIR/include/llvm/Transforms
+install -m 644 include/llvm/Transforms/IPO.h $DESTDIR/include/llvm/Transforms
 install -m 644 include/llvm/Transforms/Scalar.h $DESTDIR/include/llvm/Transforms
 install -d $DESTDIR/include/llvm/Transforms/InstCombine
 install -m 644 include/llvm/Transforms/InstCombine/InstCombine.h $DESTDIR/include/llvm/Transforms/InstCombine
 install -m 644 include/llvm/Transforms/InstCombine/InstCombineWorklist.h $DESTDIR/include/llvm/Transforms/InstCombine
+install -d $DESTDIR/include/llvm/Transforms/IPO
+install -m 644 include/llvm/Transforms/IPO/PassManagerBuilder.h $DESTDIR/include/llvm/Transforms/IPO
 install -d $DESTDIR/include/llvm/Transforms/Scalar
 install -m 644 include/llvm/Transforms/Scalar/GVN.h $DESTDIR/include/llvm/Transforms/Scalar
 install -d $DESTDIR/include/llvm-c
@@ -232,6 +241,7 @@ install -m 644 include/llvm-c/Types.h $DESTDIR/include/llvm-c
 install -d $DESTDIR/lib
 install build/lib/libLLVM-10.so.1 $DESTDIR/lib
 ln -sf libLLVM-10.so.1 $DESTDIR/lib/libLLVM-10.so
+ln -sf libLLVM-10.so $DESTDIR/lib/libLLVM.so
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -295,6 +305,8 @@ devel=\\
 /include/llvm/ADT/Twine.h \\
 /include/llvm/Analysis/AliasAnalysis.h \\
 /include/llvm/Analysis/InstructionPrecedenceTracking.h \\
+/include/llvm/Analysis/LoopInfo.h \\
+/include/llvm/Analysis/LoopPass.h \\
 /include/llvm/Analysis/MemoryDependenceAnalysis.h \\
 /include/llvm/Analysis/MemoryLocation.h \\
 /include/llvm/Analysis/OrderedBasicBlock.h \\
@@ -320,6 +332,7 @@ devel=\\
 /include/llvm/ExecutionEngine/Orc/Core.h \\
 /include/llvm/ExecutionEngine/Orc/IRCompileLayer.h \\
 /include/llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h \\
+/include/llvm/ExecutionEngine/Orc/LambdaResolver.h \\
 /include/llvm/ExecutionEngine/Orc/Layer.h \\
 /include/llvm/ExecutionEngine/Orc/Legacy.h \\
 /include/llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h \\
@@ -358,6 +371,7 @@ devel=\\
 /include/llvm/IR/Intrinsics.h \\
 /include/llvm/IR/IRBuilder.h \\
 /include/llvm/IR/LegacyPassManager.h \\
+/include/llvm/IR/LegacyPassManagers.h \\
 /include/llvm/IR/LLVMContext.h \\
 /include/llvm/IR/Mangler.h \\
 /include/llvm/IR/Metadata.def \\
@@ -418,6 +432,7 @@ devel=\\
 /include/llvm/Support/Mutex.h \\
 /include/llvm/Support/NativeFormatting.h \\
 /include/llvm/Support/PointerLikeTypeTraits.h \\
+/include/llvm/Support/PrettyStackTrace.h \\
 /include/llvm/Support/raw_ostream.h \\
 /include/llvm/Support/ReverseIteration.h \\
 /include/llvm/Support/RWMutex.h \\
@@ -429,9 +444,12 @@ devel=\\
 /include/llvm/Support/TypeSize.h \\
 /include/llvm/Target/TargetMachine.h \\
 /include/llvm/Target/TargetOptions.h \\
+/include/llvm/Transforms/Coroutines.h \\
+/include/llvm/Transforms/IPO.h \\
 /include/llvm/Transforms/Scalar.h \\
 /include/llvm/Transforms/InstCombine/InstCombine.h \\
 /include/llvm/Transforms/InstCombine/InstCombineWorklist.h \\
+/include/llvm/Transforms/IPO/PassManagerBuilder.h \\
 /include/llvm/Transforms/Scalar/GVN.h \\
 /include/llvm-c/DataTypes.h \\
 /include/llvm-c/Error.h \\
@@ -440,7 +458,8 @@ devel=\\
 /include/llvm-c/Target.h \\
 /include/llvm-c/TargetMachine.h \\
 /include/llvm-c/Types.h \\
-/lib/libLLVM-10.so
+/lib/libLLVM-10.so \\
+/lib/libLLVM.so
 
 exec=\\
 /lib/libLLVM-10.so.1
@@ -469,6 +488,16 @@ exit
  
  ######
  # LLVMBuild Integration
+--- llvm-10.0.1.orig/cmake/modules/AddLLVM.cmake
++++ llvm-10.0.1/cmake/modules/AddLLVM.cmake
+@@ -1960,7 +1960,6 @@
+     set(_install_name_dir INSTALL_NAME_DIR "@rpath")
+     set(_install_rpath "@loader_path/../lib${LLVM_LIBDIR_SUFFIX}" ${extra_libdir})
+   elseif(UNIX)
+-    set(_install_rpath "\$ORIGIN/../lib${LLVM_LIBDIR_SUFFIX}" ${extra_libdir})
+     if(${CMAKE_SYSTEM_NAME} MATCHES "(FreeBSD|DragonFly)")
+       set_property(TARGET ${name} APPEND_STRING PROPERTY
+                    LINK_FLAGS " -Wl,-z,origin ")
 --- llvm-10.0.1.orig/tools/llvm-shlib/CMakeLists.txt
 +++ llvm-10.0.1/tools/llvm-shlib/CMakeLists.txt
 @@ -60,6 +60,8 @@

@@ -1,0 +1,292 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+cd Source; sh ./Configure --prefix; cd -
+
+# build
+make -C Source
+
+# install
+install -d $DESTDIR/bin
+install Source/astcenc-* $DESTDIR/bin/astcenc
+ln -sf astcenc $DESTDIR/bin/astcdec
+install -d $DESTDIR/include
+install -m 644 Source/astcenc.h $DESTDIR/include
+install -m 644 Source/astcenc_internal.h $DESTDIR/include
+ln -sf astcenc_internal.h $DESTDIR/include/astc_codec_internals.h
+install -m 644 Source/astcenc_mathlib.h $DESTDIR/include
+install -d $DESTDIR/lib
+install Source/libastc-encoder.so.2 $DESTDIR/lib
+ln -sf libastc-encoder.so.2 $DESTDIR/lib/libastc-encoder.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 Source/astc-encoder.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/astc-encoder-build.pc << EOF
+Name: astc-encoder
+Version: 2.0
+Description: Adaptive Scalable Texture Compression (ASTC) encoder / decoder
+Requires: $REQUIRES
+
+devel=\\
+/include/astc_codec_internals.h \\
+/include/astcenc.h \\
+/include/astcenc_internal.h \\
+/include/astcenc_mathlib.h \\
+/lib/libastc-encoder.so \\
+/lib/pkgconfig/astc-encoder.pc
+
+exec=\\
+/bin/astcdec \\
+/bin/astcenc \\
+/lib/libastc-encoder.so.2
+EOF
+
+exit
+--- astc-encoder-2.0.orig/Source/Configure
++++ astc-encoder-2.0/Source/Configure
+@@ -0,0 +1,24 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" astc-encoder.pc
+--- astc-encoder-2.0.orig/Source/Makefile
++++ astc-encoder-2.0/Source/Makefile
+@@ -15,6 +15,8 @@
+ # under the License.
+ # -----------------------------------------------------------------------------
+ 
++PREFIX ?= /usr/local
++
+ # Configure the application to build
+ #
+ #   * astcenc - a full compressor/decompressor
+@@ -68,7 +70,9 @@
+     astcenc_quantization.cpp \
+     astcenc_symbolic_physical.cpp \
+     astcenc_weight_align.cpp \
+-    astcenc_weight_quant_xfer_tables.cpp \
++    astcenc_weight_quant_xfer_tables.cpp
++
++CLI_SOURCES = \
+     astcenccli_error_metrics.cpp \
+     astcenccli_image.cpp \
+     astcenccli_image_load_store.cpp \
+@@ -76,30 +80,28 @@
+     astcenccli_toplevel.cpp \
+     astcenccli_toplevel_help.cpp
+ 
+-EXTERNAL_SOURCES = \
+-    stb_image.h \
+-    stb_image_write.h \
+-    tinyexr.h
+-
+ HEADERS = \
+     astcenc.h \
+     astcenc_internal.h \
+-    astcenc_mathlib.h \
+-    astcenccli_internal.h \
+-    stb_image.h \
+-    stb_image_write.h \
+-    tinyexr.h
++    astcenc_mathlib.h
++
++CLI_HEADERS = \
++    astcenccli_internal.h
++
++LIB = libastc-encoder.so.2
+ 
+ BINARY = $(APP)-$(VEC)
+ 
+-OBJECTS = $(SOURCES:.cpp=-$(BINARY).o)
++OBJECTS = $(SOURCES:.cpp=-$(VEC).o)
+ 
+-EXTERNAL_OBJECTS = $(EXTERNAL_SOURCES:.h=-$(BINARY).o)
++CLI_OBJECTS = $(CLI_SOURCES:.cpp=-$(VEC).o)
++
++EXTERNAL_OBJECTS = stb_image-$(VEC).o stb_image_write-$(VEC).o tinyexr-$(VEC).o
+ 
+ # ==================================================
+ # CXXFLAGS setup (and input validation)
+ 
+-CXXFLAGS = -std=c++14 -fvisibility=hidden \
++CXXFLAGS = -std=c++14 -fPIC \
+            -Wall -Wextra -Wpedantic -Werror -Werror=shadow -Wdouble-promotion
+ 
+ # Validate that the APP parameter is a supported value, and patch CXXFLAGS
+@@ -115,7 +117,7 @@
+ 
+ # Validate that the BUILD parameter is a supported value, and patch CXXFLAGS
+ ifeq ($(BUILD),release)
+-CXXFLAGS += -O3 -DNDEBUG -flto
++CXXFLAGS += -O3 -DNDEBUG
+ else
+ ifeq ($(BUILD),profile)
+ CXXFLAGS += -O2 -g
+@@ -164,39 +166,46 @@
+ # ==================================================
+ # Build rules for the command line wrapper
+ 
+-$(BINARY): $(EXTERNAL_OBJECTS) $(OBJECTS)
++$(BINARY): $(EXTERNAL_OBJECTS) $(CLI_OBJECTS) $(LIB)
+ 	@$(CXX) -o $@ $^ $(CXXFLAGS) -lpthread
+ 	@echo "[Link] $@ (using $(VEC) $(BUILD))"
+ 
+ # Note: ensure NDEBUG is undefined; all three libraries are weak at runtime
+ # handling of corrupt files, relying on asserts to handle bad file input.
+ # Compiling with NDEBUG is a potential security risk.
+-stb_image-$(BINARY).o: stb_image.h
++stb_image-$(VEC).o: stb_image.h
+ 	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS_EXTERNAL) -DSTB_IMAGE_IMPLEMENTATION \
+ 		-DSTBI_NO_PSD -DSTBI_NO_GIF -DSTBI_NO_PIC -DSTBI_NO_PNM -UNDEBUG
+ 	@echo "[C++] $<"
+ 
+-stb_image_write-$(BINARY).o: stb_image_write.h
++stb_image_write-$(VEC).o: stb_image_write.h
+ 	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS_EXTERNAL) -DSTB_IMAGE_WRITE_IMPLEMENTATION \
+ 		-UNDEBUG
+ 	@echo "[C++] $<"
+ 
+-tinyexr-$(BINARY).o: tinyexr.h
++tinyexr-$(VEC).o: tinyexr.h
+ 	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS) -DTINYEXR_IMPLEMENTATION -UNDEBUG
+ 	@echo "[C++] $<"
+ 
+-$(OBJECTS): %-$(BINARY).o: %.cpp $(HEADERS)
+-	@$(CXX) -c -o $@ $(abspath $<) $(CXXFLAGS)
++$(CLI_OBJECTS): %-$(VEC).o: %.cpp $(CLI_HEADERS)
++	@$(CXX) -c -o $@ $< $(CXXFLAGS)
++	@echo "[C++] $<"
++
++$(LIB): $(OBJECTS)
++	@$(CXX) -o $@ $^ -shared -Wl,-soname,$(LIB)
++	@echo "[Link] $@"
++
++$(OBJECTS): %-$(VEC).o: %.cpp $(HEADERS)
++	@$(CXX) -c -o $@ $< $(CXXFLAGS)
+ 	@echo "[C++] $<"
+ 
+ # ==================================================
+ # Generic utility rules
+ 
+ clean:
+-	@rm -f *-$(BINARY).o
+-	@rm -f *-$(BINARY).obj
++	@rm -f *-$(VEC).o
++	@rm -f $(LIB)
+ 	@rm -f $(BINARY)
+-	@rm -f $(BINARY).exe
+ 	@echo "[Clean] Removing $(VEC) build outputs"
+ 
+ batchbuild:
+@@ -210,3 +219,16 @@
+ 	@+$(MAKE) -s clean VEC=sse2
+ 	@+$(MAKE) -s clean VEC=sse4.2
+ 	@+$(MAKE) -s clean VEC=avx2
++
++install: $(BINARY)
++	install -d $(DESTDIR)$(PREFIX)/bin
++	install $(BINARY) $(DESTDIR)$(PREFIX)/bin/$(APP)
++	install -d $(DESTDIR)$(PREFIX)/include
++	install -m 644 astcenc.h $(DESTDIR)$(PREFIX)/include
++	install -m 644 astcenc_internal.h $(DESTDIR)$(PREFIX)/include
++	install -m 644 astcenc_mathlib.h $(DESTDIR)$(PREFIX)/include
++	install -d $(DESTDIR)$(PREFIX)/lib
++	install $(LIB) $(DESTDIR)$(PREFIX)/lib
++	ln -sf $(LIB) $(DESTDIR)$(PREFIX)/lib/$(LIB:%.2=%)
++	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
++	sed "/^prefix=/s|=.*|=$(PREFIX)|" astc-encoder.pc > $(DESTDIR)$(PREFIX)/lib/pkgconfig/astc-encoder.pc
+--- astc-encoder-2.0.orig/Source/astc-encoder.pc
++++ astc-encoder-2.0/Source/astc-encoder.pc
+@@ -0,0 +1,9 @@
++prefix=/usr/local
++includedir=${prefix}/include
++libdir=${prefix}/lib
++
++Name: astc-encoder
++Description: Adaptive Scalable Texture Compression (ASTC) encoder / decoder
++Version: 2.0
++Libs: -L${libdir} -lastc-encoder
++Cflags: -I${includedir}
+--- astc-encoder-2.0.orig/Source/astcenc_ideal_endpoints_and_weights.cpp
++++ astc-encoder-2.0/Source/astcenc_ideal_endpoints_and_weights.cpp
+@@ -52,7 +52,7 @@
+ 
+ 	int texels_per_block = bsd->texel_count;
+ 
+-	const float *error_weights;
++	const float *error_weights = nullptr;
+ 	const float* data_vr = nullptr;
+ 	assert(component <= 3);
+ 	switch (component)
+--- astc-encoder-2.0.orig/Source/astcenc_internal.h
++++ astc-encoder-2.0/Source/astcenc_internal.h
+@@ -31,16 +31,12 @@
+ #include <functional>
+ #include <mutex>
+ 
+-#ifndef ASTCENC_SSE
+-#error ERROR: ASTCENC_SSE not defined
++#ifndef ASTCENC_VECALIGN
++#if ASTCENC_AVX
++  #define ASTCENC_VECALIGN 32
++#else
++  #define ASTCENC_VECALIGN 16
+ #endif
+-
+-#ifndef ASTCENC_POPCNT
+-#error ERROR: ASTCENC_POPCNT not defined
+-#endif
+-
+-#ifndef ASTCENC_AVX
+-#error ERROR: ASTCENC_AVX not defined
+ #endif
+ 
+ #include "astcenc.h"
+--- astc-encoder-2.0.orig/Source/astcenccli_toplevel.cpp
++++ astc-encoder-2.0/Source/astcenccli_toplevel.cpp
+@@ -81,12 +81,12 @@
+ 	{"-cs",      ASTCENC_OP_COMPRESS,   ASTCENC_PRF_LDR_SRGB},
+ 	{"-ds",      ASTCENC_OP_DECOMPRESS, ASTCENC_PRF_LDR_SRGB},
+ 	{"-ts",      ASTCENC_OP_TEST,       ASTCENC_PRF_LDR_SRGB},
+-	{"-ch",      ASTCENC_OP_COMPRESS,   ASTCENC_PRF_HDR},
+-	{"-dh",      ASTCENC_OP_DECOMPRESS, ASTCENC_PRF_HDR},
+-	{"-th",      ASTCENC_OP_TEST,       ASTCENC_PRF_HDR},
+-	{"-cH",      ASTCENC_OP_COMPRESS,   ASTCENC_PRF_HDR_RGB_LDR_A},
+-	{"-dH",      ASTCENC_OP_DECOMPRESS, ASTCENC_PRF_HDR_RGB_LDR_A},
+-	{"-tH",      ASTCENC_OP_TEST,       ASTCENC_PRF_HDR_RGB_LDR_A},
++	{"-ch",      ASTCENC_OP_COMPRESS,   ASTCENC_PRF_HDR_RGB_LDR_A},
++	{"-dh",      ASTCENC_OP_DECOMPRESS, ASTCENC_PRF_HDR_RGB_LDR_A},
++	{"-th",      ASTCENC_OP_TEST,       ASTCENC_PRF_HDR_RGB_LDR_A},
++	{"-cH",      ASTCENC_OP_COMPRESS,   ASTCENC_PRF_HDR},
++	{"-dH",      ASTCENC_OP_DECOMPRESS, ASTCENC_PRF_HDR},
++	{"-tH",      ASTCENC_OP_TEST,       ASTCENC_PRF_HDR},
+ 	{"-h",       ASTCENC_OP_HELP,       ASTCENC_PRF_HDR},
+ 	{"-help",    ASTCENC_OP_HELP,       ASTCENC_PRF_HDR},
+ 	{"-v",       ASTCENC_OP_VERSION,    ASTCENC_PRF_HDR},

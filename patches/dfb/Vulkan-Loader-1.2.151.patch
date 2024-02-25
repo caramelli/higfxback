@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build vulkan-headers-build"
+REQUIRES="cmake3-build directfb2-build vulkan-headers-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -84,6 +84,17 @@ exit
  
  mark_as_advanced(VulkanHeaders_INCLUDE_DIR VulkanRegistry_DIR)
  
+--- Vulkan-Loader-1.2.151.orig/loader/CMakeLists.txt
++++ Vulkan-Loader-1.2.151/loader/CMakeLists.txt
+@@ -238,7 +238,7 @@
+                                      "1"
+                                      VERSION
+                                      "${VulkanHeaders_VERSION_MAJOR}.${VulkanHeaders_VERSION_MINOR}.${VulkanHeaders_VERSION_PATCH}")
+-    target_link_libraries(vulkan ${CMAKE_DL_LIBS} pthread m)
++    target_link_libraries(vulkan ${CMAKE_DL_LIBS} rt m)
+     target_link_libraries(vulkan Vulkan::Headers)
+     if(APPLE)
+         find_library(COREFOUNDATION_LIBRARY NAMES CoreFoundation)
 --- Vulkan-Loader-1.2.151.orig/loader/loader.c
 +++ Vulkan-Loader-1.2.151/loader/loader.c
 @@ -7061,10 +7061,10 @@

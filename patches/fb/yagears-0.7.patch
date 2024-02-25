@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 # configure (ac-2.69; am-1.13.4; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/fb/lib/pkgconfig CPPFLAGS=-DEGL_NO_PLATFORM_SPECIFIC_TYPES LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-gl-x11 --disable-glesv1-cm --prefix=/fb
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-gl-x11 --disable-glesv1-cm --prefix=/fb
 
 # build
 make
@@ -39,6 +39,14 @@ exit
  
  AM_INIT_AUTOMAKE
  
+@@ -122,6 +123,7 @@
+    test x$enable_egl_wayland = xyes || test x$enable_egl_drm; then
+   PKG_CHECK_MODULES(EGL, egl, enable_egl=yes, enable_egl=no)
+   if test x$enable_egl = xyes; then
++    EGL_CFLAGS="$EGL_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
+     if test x$enable_egl_x11 = xyes; then
+       PKG_CHECK_MODULES(X11, x11,
+                         AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform),
 --- yagears-0.7.orig/main.c
 +++ yagears-0.7/main.c
 @@ -821,7 +821,7 @@
