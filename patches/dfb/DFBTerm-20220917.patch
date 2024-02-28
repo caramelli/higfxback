@@ -14,9 +14,9 @@ meson compile -C build
 # install
 install -d $DESTDIR/dfb/bin
 install build/src/dfbterm $DESTDIR/dfb/bin
-install -d $DESTDIR/dfb/libexec
-install build/src/dfbterm-pty-helper $DESTDIR/dfb/libexec
-ln -sf dfbterm-pty-helper $DESTDIR/dfb/libexec/gnome-pty-helper
+install -d $DESTDIR/dfb/libexec/dfbterm
+install build/src/dfbterm-pty-helper $DESTDIR/dfb/libexec/dfbterm
+ln -sf dfbterm-pty-helper $DESTDIR/dfb/libexec/dfbterm/gnome-pty-helper
 install -d $DESTDIR/dfb/share/dfbterm
 install -m 644 data/Misc-Fixed.dgiff $DESTDIR/dfb/share/dfbterm
 
@@ -30,20 +30,9 @@ Requires: $REQUIRES
 
 exec=\\
 /dfb/bin/dfbterm \\
-/dfb/libexec/dfbterm-pty-helper \\
-/dfb/libexec/gnome-pty-helper \\
+/dfb/libexec/dfbterm/dfbterm-pty-helper \\
+/dfb/libexec/dfbterm/gnome-pty-helper \\
 /dfb/share/dfbterm/Misc-Fixed.dgiff
 EOF
 
 exit
---- DFBTerm-20220917.orig/meson.build
-+++ DFBTerm-20220917/meson.build
-@@ -17,7 +17,7 @@
- project('DFBTerm', 'c')
- 
- dfbtermdatadir    = join_paths(get_option('prefix'), get_option('datadir'),    'dfbterm')
--dfbtermlibexecdir = join_paths(get_option('prefix'), get_option('libexecdir'), 'dfbterm')
-+dfbtermlibexecdir = join_paths(get_option('prefix'), get_option('libexecdir'))
- 
- with_system_libzvt = get_option('system-libzvt')
- 

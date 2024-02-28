@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/include
+install -m 644 tinyxml2.h $DESTDIR/include
+install -d $DESTDIR/lib
+install build/libtinyxml2.so.7.* $DESTDIR/lib/libtinyxml2.so.7
+ln -sf libtinyxml2.so.7 $DESTDIR/lib/libtinyxml2.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/tinyxml2.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/tinyxml2-build.pc << EOF
+Name: tinyxml2
+Version: 7.1.0
+Description: C++ XML parser
+Requires: $REQUIRES
+
+devel=\\
+/include/tinyxml2.h \\
+/lib/libtinyxml2.so \\
+/lib/pkgconfig/tinyxml2.pc
+
+exec=\\
+/lib/libtinyxml2.so.7
+EOF
+
+exit

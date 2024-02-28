@@ -1,9 +1,13 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="python3-build"
+REQUIRES="cmake3-build python3-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
 
 # build
 python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_core.h
@@ -19,6 +23,8 @@ install -m 644 include/vulkan/vulkan.h $DESTDIR/dfb/include/vulkan
 install -m 644 include/vulkan/vulkan_beta.h $DESTDIR/dfb/include/vulkan
 install -m 644 include/vulkan/vulkan_core.h $DESTDIR/dfb/include/vulkan
 install -m 644 include/vulkan/vulkan_directfb.h $DESTDIR/dfb/include/vulkan
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/vulkan-registry.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/vulkan/registry
 install -m 644 registry/vk.xml $DESTDIR/dfb/share/vulkan/registry
 
@@ -39,10 +45,35 @@ devel=\\
 /dfb/include/vulkan/vulkan_beta.h \\
 /dfb/include/vulkan/vulkan_core.h \\
 /dfb/include/vulkan/vulkan_directfb.h \\
+/dfb/lib/pkgconfig/vulkan-registry.pc \\
 /dfb/share/vulkan/registry/vk.xml
 EOF
 
 exit
+--- Vulkan-Headers-1.2.151.orig/CMakeLists.txt
++++ Vulkan-Headers-1.2.151/CMakeLists.txt
+@@ -20,8 +20,7 @@
+ 
+ cmake_minimum_required(VERSION 3.10.2)
+ 
+-# NONE = this project has no language toolchain requirement.
+-project(Vulkan-Headers NONE)
++project(Vulkan-Headers)
+ 
+ # User-interface declarations ----------------------------------------------------------------------------------------------------
+ # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
+@@ -48,6 +47,11 @@
+ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/registry" DESTINATION ${CMAKE_INSTALL_DATADIR}/vulkan)
+ 
++configure_file("${CMAKE_CURRENT_SOURCE_DIR}/registry/vulkan-registry.pc.in"
++               "${CMAKE_CURRENT_BINARY_DIR}/vulkan-registry.pc"
++               @ONLY)
++install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vulkan-registry.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
++
+ # uninstall target
+ if(NOT TARGET uninstall)
+     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
 --- Vulkan-Headers-1.2.151.orig/registry/docgenerator.py
 +++ Vulkan-Headers-1.2.151/registry/docgenerator.py
 @@ -0,0 +1,450 @@
@@ -4270,3 +4301,13 @@ exit
 +        category = typeinfo.elem.get('category')
 +        if category in ('struct', 'union'):
 +            self.genStruct(typeinfo, name, alias)
+--- Vulkan-Headers-1.2.151.orig/registry/vulkan-registry.pc.in
++++ Vulkan-Headers-1.2.151/registry/vulkan-registry.pc.in
+@@ -0,0 +1,7 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++datarootdir=${prefix}/share
++pkgdatadir=${pc_sysrootdir}${datarootdir}/vulkan
++
++Name: Vulkan Registry
++Description: Vulkan API registry file
++Version: 1.2.151
