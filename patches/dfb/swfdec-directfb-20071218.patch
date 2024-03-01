@@ -1,0 +1,120 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build swfdec-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.61; am-1.10; lt-2.2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install player/.libs/swfdec-directfb-player $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
+install -m 644 swfdec-directfb/swfdec-directfb.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
+install -m 644 swfdec-directfb/swfdec_directfb_main.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
+install -m 644 swfdec-directfb/swfdec_directfb_player.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
+install -m 644 swfdec-directfb/swfdec_directfb_renderer.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
+install -d $DESTDIR/dfb/lib
+install swfdec-directfb/.libs/libswfdec-directfb-0.5.so.0.* $DESTDIR/dfb/lib/libswfdec-directfb-0.5.so.0
+ln -sf libswfdec-directfb-0.5.so.0 $DESTDIR/dfb/lib/libswfdec-directfb-0.5.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 data/swfdec-directfb-0.5.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/swfdec-directfb-build.pc << EOF
+Name: swfdec-directfb
+Version: 20071218
+Description: DirectFB Swfdec player
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/swfdec-0.5/swfdec-directfb/swfdec-directfb.h \\
+/dfb/include/swfdec-0.5/swfdec-directfb/swfdec_directfb_main.h \\
+/dfb/include/swfdec-0.5/swfdec-directfb/swfdec_directfb_player.h \\
+/dfb/include/swfdec-0.5/swfdec-directfb/swfdec_directfb_renderer.h \\
+/dfb/lib/libswfdec-directfb-0.5.so \\
+/dfb/lib/pkgconfig/swfdec-directfb-0.5.pc
+
+exec=\\
+/dfb/bin/swfdec-directfb-player \\
+/dfb/lib/libswfdec-directfb-0.5.so.0
+EOF
+
+exit
+--- swfdec-directfb-20071218.orig/configure.ac
++++ swfdec-directfb-20071218/configure.ac
+@@ -52,7 +52,7 @@
+ dnl Check for essential libraries first:
+ dnl ====================================
+ 
+-SWFDEC_REQUIRES=0.5.5.1
++SWFDEC_REQUIRES=0.5.5
+ AC_SUBST(SWFDEC_REQUIRES)
+ PKG_CHECK_MODULES(SWFDEC, swfdec-$SWFDEC_MAJORMINOR = $SWFDEC_REQUIRES, HAVE_SWFDEC=yes, HAVE_SWFDEC=no)
+ if test "$HAVE_SWFDEC" = "no"; then
+--- swfdec-directfb-20071218.orig/data/swfdec-directfb.pc.in
++++ swfdec-directfb-20071218/data/swfdec-directfb.pc.in
+@@ -6,6 +6,6 @@
+ Name: swfdec-directfb
+ Description: Support for playing Flash files with DirectFB using Swfdec
+ Version: @VERSION@
+-Requires: swfdec = @SWFDEC_REQUIRES@ directfb >= @DIRECTFB_REQUIRES@ cairo-directfb
++Requires: swfdec-0.5 directfb >= @DIRECTFB_REQUIRES@ cairo-directfb
+ Libs: -L${libdir} -lswfdec-directfb-@SWFDEC_MAJORMINOR@
+ Cflags: -I${includedir}
+--- swfdec-directfb-20071218.orig/player/main.c
++++ swfdec-directfb-20071218/player/main.c
+@@ -42,6 +42,7 @@
+   guint w, h;
+   IDirectFB *dfb;
+   IDirectFBSurface *surface;
++  long next_event;
+   /* config variables */
+   char *size = NULL;
+ 
+@@ -86,6 +87,16 @@
+       g_object_unref (player);
+       return 1;
+     }
++  } else {
++    next_event = swfdec_player_get_next_event (player);
++    while (next_event >= 0 && !swfdec_player_is_initialized (player)) {
++      swfdec_player_advance (player, next_event);
++      next_event = swfdec_player_get_next_event (player);
++    }
++    swfdec_player_get_default_size (player, &w, &h);
++    dsc.flags |= DSDESC_WIDTH | DSDESC_HEIGHT;
++    dsc.width = w;
++    dsc.height = h;
+   }
+ 
+   ERROR_CHECK (dfb->CreateSurface (dfb, &dsc, &surface));
+--- swfdec-directfb-20071218.orig/swfdec-directfb/Makefile.am
++++ swfdec-directfb-20071218/swfdec-directfb/Makefile.am
+@@ -19,7 +19,7 @@
+ 	-export-symbols-regex '^(swfdec_.*)' \
+ 	$(GTK_LIBS) $(SWFDEC_LIBS) $(AUDIO_LIBS) $(CAIRO_LIBS)
+ 
+-libswfdec_@SWFDEC_MAJORMINOR@includedir = $(includedir)/swfdec-@SWFDEC_MAJORMINOR@/libswfdec-directfb
++libswfdec_@SWFDEC_MAJORMINOR@includedir = $(includedir)/swfdec-@SWFDEC_MAJORMINOR@/swfdec-directfb
+ libswfdec_@SWFDEC_MAJORMINOR@include_HEADERS = \
+ 	swfdec-directfb.h \
+ 	swfdec_directfb_main.h \
+--- swfdec-directfb-20071218.orig/swfdec-directfb/swfdec_source.c
++++ swfdec-directfb-20071218/swfdec-directfb/swfdec_source.c
+@@ -52,7 +52,7 @@
+   if (diff == -1)
+     return G_MAXLONG;
+   diff *= source->speed;
+-  g_source_get_current_time (source_, &now);
++  g_get_current_time (&now);
+   /* should really add to source->last instead of subtracting from now */
+   g_time_val_add (&now, -diff * 1000);
+   diff = my_time_val_difference (&source->last, &now);
