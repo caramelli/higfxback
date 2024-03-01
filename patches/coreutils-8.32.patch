@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16)
 aclocal -I m4; autoconf; autoheader -f; automake -a -c
-FORCE_UNSAFE_CONFIGURE=1 ./configure --enable-install-program=arch --enable-no-install-program=kill,groups,uptime --libexecdir=/libexecdir --prefix=
+FORCE_UNSAFE_CONFIGURE=1 ./configure --enable-install-program=arch --enable-no-install-program=kill,groups,uptime --libexecdir=/lib --prefix=
 
 # build
 make
@@ -116,8 +116,8 @@ install src/wc $DESTDIR/bin
 install src/who $DESTDIR/bin
 install src/whoami $DESTDIR/bin
 install src/yes $DESTDIR/bin
-install -d $DESTDIR/libexec
-install src/libstdbuf.so $DESTDIR/libexec
+install -d $DESTDIR/lib/coreutils
+install src/libstdbuf.so $DESTDIR/lib/coreutils
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -230,7 +230,7 @@ exec=\\
 /bin/who \\
 /bin/whoami \\
 /bin/yes \\
-/libexec/libstdbuf.so
+/lib/coreutils/libstdbuf.so
 EOF
 
 exit

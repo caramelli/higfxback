@@ -1,14 +1,23 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="bzip2-build directfb2-build make-build xz-build zlib-build"
+REQUIRES="directfb2-build make-build xz-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
+if pkg-config --exists x264-build; then
+  X264=1
+  REQUIRES="$REQUIRES x264-build"
+fi
+
 # configure
+if test $X264; then
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-directfb --enable-gpl --enable-libx264 --enable-shared --prefix=/dfb
+else
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-directfb --enable-gpl --enable-shared --prefix=/dfb
+fi
 
 # build
 make

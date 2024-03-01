@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build zlib-build"
+REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -13,10 +13,13 @@ libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
 make
 
 # install
-install -d $DESTDIR/include
-install -m 644 png.h $DESTDIR/include
-install -m 644 pngconf.h $DESTDIR/include
-install -m 644 pnglibconf.h $DESTDIR/include
+install -d $DESTDIR/include/libpng16
+install -m 644 png.h $DESTDIR/include/libpng16
+ln -sf libpng16/png.h $DESTDIR/include/png.h
+install -m 644 pngconf.h $DESTDIR/include/libpng16
+ln -sf libpng16/pngconf.h $DESTDIR/include/pngconf.h
+install -m 644 pnglibconf.h $DESTDIR/include/libpng16
+ln -sf libpng16/pnglibconf.h $DESTDIR/include/pnglibconf.h
 install -d $DESTDIR/lib
 install .libs/./libpng16.so.16.* $DESTDIR/lib/libpng16.so.16
 ln -sf libpng16.so.16 $DESTDIR/lib/libpng16.so
@@ -37,6 +40,9 @@ devel=\\
 /include/png.h \\
 /include/pngconf.h \\
 /include/pnglibconf.h \\
+/include/libpng16/png.h \\
+/include/libpng16/pngconf.h \\
+/include/libpng16/pnglibconf.h \\
 /lib/libpng.so \\
 /lib/libpng16.so \\
 /lib/pkgconfig/libpng.pc \\

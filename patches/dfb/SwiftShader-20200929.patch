@@ -6,13 +6,13 @@ REQUIRES="astc-encoder-build cmake3-build directfb2-build gcc-g++-build llvm-bui
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
+GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf include
 rm -rf third_party/astc-encoder
 rm -rf third_party/llvm-10.0
 rm -rf third_party/marl
 rm -rf third_party/SPIRV-Headers
 rm -rf third_party/SPIRV-Tools
-GENERATOR=${GENERATOR-Unix Makefiles}
 cmake -DSWIFTSHADER_BUILD_EGL=OFF -DSWIFTSHADER_BUILD_GLES_CM=OFF -DSWIFTSHADER_BUILD_GLESv2=OFF -DSWIFTSHADER_BUILD_PVR=OFF -DSWIFTSHADER_BUILD_TESTS=OFF -DSWIFTSHADER_BUILD_WSI_DIRECTFB=ON -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
 
 # build

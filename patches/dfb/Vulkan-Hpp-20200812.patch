@@ -6,9 +6,9 @@ REQUIRES="cmake3-build gcc-g++-build tinyxml2-build vulkan-headers-build"
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
+GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf tinyxml2
 rm -rf Vulkan-Headers
-GENERATOR=${GENERATOR-Unix Makefiles}
 cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DVulkanRegistry_DIR=`PKG_CONFIG_PATH=/dfb/lib/pkgconfig pkg-config --variable=pkgdatadir vulkan-registry` -DCMAKE_INSTALL_INCLUDEDIR=/dfb/include -B build -G "$GENERATOR"
 
 # build

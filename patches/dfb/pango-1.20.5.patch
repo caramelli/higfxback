@@ -5,8 +5,8 @@ REQUIRES="autotools-wrappers-lt-build cairo-build glib-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.63; am-1.11; lt-2.2.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+# configure (ac-2.61; am-1.10; lt-1.5.26)
+libtoolize -c -f; aclocal -I . -I m4; autoconf; autoheader; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --prefix=/dfb
 
 # build
@@ -18,7 +18,6 @@ install pango/.libs/pango-querymodules $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include/pango-1.0/pango
 install -m 644 pango/pango.h $DESTDIR/dfb/include/pango-1.0/pango
 install -m 644 pango/pango-attributes.h $DESTDIR/dfb/include/pango-1.0/pango
-install -m 644 pango/pango-bidi-type.h $DESTDIR/dfb/include/pango-1.0/pango
 install -m 644 pango/pango-break.h $DESTDIR/dfb/include/pango-1.0/pango
 install -m 644 pango/pango-context.h $DESTDIR/dfb/include/pango-1.0/pango
 install -m 644 pango/pango-coverage.h $DESTDIR/dfb/include/pango-1.0/pango
@@ -61,14 +60,13 @@ install -m 644 pangoft2.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/pango-build.pc << EOF
 Name: pango
-Version: 1.24.5
+Version: 1.20.5
 Description: A library for layout and rendering of text
 Requires: $REQUIRES
 
 devel=\\
 /dfb/include/pango-1.0/pango/pango.h \\
 /dfb/include/pango-1.0/pango/pango-attributes.h \\
-/dfb/include/pango-1.0/pango/pango-bidi-type.h \\
 /dfb/include/pango-1.0/pango/pango-break.h \\
 /dfb/include/pango-1.0/pango/pango-context.h \\
 /dfb/include/pango-1.0/pango/pango-coverage.h \\
@@ -111,18 +109,8 @@ exec=\\
 EOF
 
 exit
---- pango-1.24.5.orig/configure.in
-+++ pango-1.24.5/configure.in
-@@ -42,6 +42,7 @@
-         [http://bugzilla.gnome.org/enter_bug.cgi?product=pango])
- 
- AC_CONFIG_SRCDIR([pango.pc.in])
-+AC_CONFIG_MACRO_DIR([m4])
- 
- dnl -Wno-portability tells automake to stop complaining about the
- dnl usage of GNU Make specific features.
---- pango-1.24.5.orig/m4/gtk-doc.m4
-+++ pango-1.24.5/m4/gtk-doc.m4
+--- pango-1.20.5.orig/m4/gtk-doc.m4
++++ pango-1.20.5/m4/gtk-doc.m4
 @@ -0,0 +1,39 @@
 +dnl -*- mode: autoconf -*-
 +

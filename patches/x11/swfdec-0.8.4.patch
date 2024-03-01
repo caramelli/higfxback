@@ -1,0 +1,131 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build liboil-build pango-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.61; am-1.10; lt-2.2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-gstreamer --disable-gtk --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_array.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_context.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_debugger.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_frame.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_function.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_native_function.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_object.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_as_types.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_audio.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_buffer.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_enums.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_file_loader.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_gc_object.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_keys.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_loader.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_player.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_player_scripting.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_rectangle.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_renderer.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_script.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_socket.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_stream.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_system.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_url.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -m 644 swfdec/swfdec_version.h $DESTDIR/x11/include/swfdec-0.8/swfdec
+install -d $DESTDIR/x11/lib
+install swfdec/.libs/libswfdec-0.8.so.0.* $DESTDIR/x11/lib/libswfdec-0.8.so.0
+ln -sf libswfdec-0.8.so.0 $DESTDIR/x11/lib/libswfdec-0.8.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 data/swfdec-0.8.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/swfdec-build.pc << EOF
+Name: swfdec
+Version: 0.8.4
+Description: SWF (Flash) animations decoder/renderer library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/swfdec-0.8/swfdec/swfdec.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_array.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_context.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_debugger.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_frame.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_function.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_native_function.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_object.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_as_types.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_audio.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_buffer.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_enums.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_file_loader.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_gc_object.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_keys.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_loader.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_player.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_player_scripting.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_rectangle.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_renderer.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_script.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_socket.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_stream.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_system.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_url.h \\
+/x11/include/swfdec-0.8/swfdec/swfdec_version.h \\
+/x11/lib/libswfdec-0.8.so \\
+/x11/lib/pkgconfig/swfdec-0.8.pc
+
+exec=\\
+/x11/lib/libswfdec-0.8.so.0
+EOF
+
+exit
+--- swfdec-0.8.4.orig/configure.ac
++++ swfdec-0.8.4/configure.ac
+@@ -69,7 +69,6 @@
+ #ACLOCAL_AMFLAGS="-I m4 $ACLOCAL_AMFLAGS"
+ 
+ AC_PROG_CC
+-AM_PROG_CC_STDC
+ AM_PROG_CC_C_O
+ AM_PROG_AS
+ AC_PROG_AWK
+@@ -146,17 +145,13 @@
+ if test "$enable_gtk" = "yes"; then
+ 	PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_VER libsoup-2.4, HAVE_GTK=yes)
+ 	AC_DEFINE(HAVE_GTK, 1, [Define if Gtk is enabled])
+-else
+-	AC_MSG_NOTICE([Gtk support was not enabled.])
+-fi
+-AM_CONDITIONAL(WITH_GTK, [test "x$HAVE_GTK" = xyes])
+ 
+ dnl
+ dnl audio backend
+ dnl
+ AC_ARG_WITH(audio,
+             [AC_HELP_STRING([--with-audio=@<:@auto/pulse/none@:>@],
+-                            [audio backend to use])],,
++                            [audio backend to use with swfdec-gtk])],,
+ 	    [with_audio=alsa])
+ 
+ AUDIO_TYPE=
+@@ -205,6 +200,10 @@
+ AC_SUBST(AUDIO_LIBS)
+ AC_SUBST(AUDIO_CFLAGS)
+ AC_SUBST(AUDIO_TYPE)
++else
++	AC_MSG_NOTICE([Gtk support was not enabled.])
++fi
++AM_CONDITIONAL(WITH_GTK, [test "x$HAVE_GTK" = xyes])
+ 
+ LIBOIL_VER=0.3.1
+ PKG_CHECK_MODULES(LIBOIL, liboil-0.3 >= $LIBOIL_VER, HAVE_LIBOIL=yes, HAVE_LIBOIL=no)

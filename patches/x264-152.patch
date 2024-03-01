@@ -1,0 +1,46 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+./configure --disable-asm --enable-shared --system-libx264 --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install x264 $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 x264.h $DESTDIR/include
+install -m 644 x264_config.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libx264.so.152 $DESTDIR/lib
+ln -sf libx264.so.152 $DESTDIR/lib/libx264.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 x264.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/x264-build.pc << EOF
+Name: x264
+Version: 152
+Description: H.264/AVC encoder
+Requires: $REQUIRES
+
+devel=\\
+/include/x264.h \\
+/include/x264_config.h \\
+/lib/libx264.so \\
+/lib/pkgconfig/x264.pc
+
+exec=\\
+/bin/x264 \\
+/lib/libx264.so.152
+
+EOF
+
+exit

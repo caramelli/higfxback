@@ -6,7 +6,7 @@ REQUIRES="lite-build meson-build"
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --libexecdir=/dfb/lib --prefix=/dfb build
 
 # build
 meson compile -C build
@@ -14,9 +14,9 @@ meson compile -C build
 # install
 install -d $DESTDIR/dfb/bin
 install build/src/dfbterm $DESTDIR/dfb/bin
-install -d $DESTDIR/dfb/libexec/dfbterm
-install build/src/dfbterm-pty-helper $DESTDIR/dfb/libexec/dfbterm
-ln -sf dfbterm-pty-helper $DESTDIR/dfb/libexec/dfbterm/gnome-pty-helper
+install -d $DESTDIR/dfb/lib/dfbterm
+install build/src/dfbterm-pty-helper $DESTDIR/dfb/lib/dfbterm
+ln -sf dfbterm-pty-helper $DESTDIR/dfb/lib/dfbterm/gnome-pty-helper
 install -d $DESTDIR/dfb/share/dfbterm
 install -m 644 data/Misc-Fixed.dgiff $DESTDIR/dfb/share/dfbterm
 
@@ -30,8 +30,8 @@ Requires: $REQUIRES
 
 exec=\\
 /dfb/bin/dfbterm \\
-/dfb/libexec/dfbterm/dfbterm-pty-helper \\
-/dfb/libexec/dfbterm/gnome-pty-helper \\
+/dfb/lib/dfbterm/dfbterm-pty-helper \\
+/dfb/lib/dfbterm/gnome-pty-helper \\
 /dfb/share/dfbterm/Misc-Fixed.dgiff
 EOF
 

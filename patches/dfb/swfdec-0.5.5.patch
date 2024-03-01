@@ -5,14 +5,9 @@ REQUIRES="autotools-wrappers-lt-build liboil-build pango-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if pkg-config --exists alsa-lib-build; then
-  ALSA=1
-  REQUIRES="$REQUIRES alsa-lib-build"
-fi
-
 # configure (ac-2.61; am-1.10; lt-1.5.26)
 libtoolize -c -f; aclocal -I . -I m4; autoconf; autoheader; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-gstreamer --disable-gtk --disable-soup --disable-static --with-audio=`test $ALSA && echo alsa || echo oss` --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gstreamer --disable-gtk --disable-static --prefix=/dfb
 
 # build
 make
@@ -90,13 +85,42 @@ exit
  AM_PROG_CC_C_O
  AM_PROG_AS
  AC_PROG_AWK
---- swfdec-0.5.5.orig/test/Makefile.am
-+++ swfdec-0.5.5/test/Makefile.am
-@@ -17,6 +17,7 @@
+@@ -113,17 +112,13 @@
+ 	else
+ 	  AC_MSG_ERROR([Couldn't find a suitable Gtk version. You need at least version $GTK_VER])
+ 	fi
+-else
+-	AC_MSG_NOTICE([Gtk support was not enabled.])
+-fi
+-AM_CONDITIONAL(WITH_GTK, [test "x$HAVE_GTK" = xyes])
  
- swfdec_extract_CFLAGS = $(GLOBAL_CFLAGS) $(SWFDEC_CFLAGS) $(CAIRO_CFLAGS)
- swfdec_extract_LDFLAGS = $(SWFDEC_LIBS) $(CAIRO_LIBS)
-+swfdec_extract_LDADD = -lm
+ dnl
+ dnl audio backend
+ dnl
+ AC_ARG_WITH(audio,
+             [AC_HELP_STRING([--with-audio=@<:@auto/alsa/oss/none@:>@],
+-                            [audio backend to use])],,
++                            [audio backend to use with Gtk integration])],,
+ 	    [with_audio=auto])
  
- libswfedit_la_CFLAGS = $(GLOBAL_CFLAGS) $(SWFDEC_CFLAGS) $(GTK_CFLAGS)
- libswfedit_la_LDFLAGS = $(SWFDEC_LIBS) $(GTK_LIBS)
+ AUDIO_TYPE=
+@@ -182,6 +177,10 @@
+ AC_SUBST(AUDIO_LIBS)
+ AC_SUBST(AUDIO_CFLAGS)
+ AC_SUBST(AUDIO_TYPE)
++else
++	AC_MSG_NOTICE([Gtk support was not enabled.])
++fi
++AM_CONDITIONAL(WITH_GTK, [test "x$HAVE_GTK" = xyes])
+ 
+ LIBOIL_VER=0.3.1
+ PKG_CHECK_MODULES(LIBOIL, liboil-0.3 >= $LIBOIL_VER, HAVE_LIBOIL=yes, HAVE_LIBOIL=no)
+@@ -272,7 +271,7 @@
+ 	enable_libsoup=$enableval,
+ 	enable_libsoup="yes")
+ 
+-if test "$enable_libsoup" = "yes"; then
++if test "$enable_gtk" = "yes" -a "$enable_libsoup" = "yes"; then
+ 	PKG_CHECK_MODULES(HTTP, libsoup-2.2 >= 2.2.0, HAVE_HTTP=yes, HAVE_HTTP=no)
+ 	if test "x$HAVE_HTTP" = xyes; then
+ 	  AC_DEFINE(HAVE_HTTP, 1, [Define if libsoup is enabled])

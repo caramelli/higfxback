@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15)
 aclocal -I m4; autoconf; autoheader -f; automake -a -c
-FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=
+FORCE_UNSAFE_CONFIGURE=1 ./configure --libexecdir=/lib/tar --prefix=
 
 # build
 make
@@ -15,8 +15,8 @@ make
 # install
 install -d $DESTDIR/bin
 install src/tar $DESTDIR/bin
-install -d $DESTDIR/libexec
-install rmt/rmt $DESTDIR/libexec
+install -d $DESTDIR/lib/tar
+install rmt/rmt $DESTDIR/lib/tar
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -28,7 +28,7 @@ Requires: $REQUIRES
 
 exec=\\
 /bin/tar \\
-/libexec/rmt
+/lib/tar/rmt
 EOF
 
 exit

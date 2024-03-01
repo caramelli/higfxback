@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=fbdev-backend.so ./configure --disable-drm-compositor --disable-egl --disable-fullscreen-shell --disable-headless-compositor --disable-ivi-shell --disable-wayland-compositor --disable-weston-launch --disable-x11-compositor --disable-xcompose --disable-xwayland --enable-demo-clients-install --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=fbdev-backend.so ./configure --disable-drm-compositor --disable-egl --disable-fullscreen-shell --disable-headless-compositor --disable-ivi-shell --disable-wayland-compositor --disable-weston-launch --disable-x11-compositor --disable-xcompose --disable-xwayland --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
 
 # build
 make
@@ -39,9 +39,8 @@ install -d $DESTDIR/wl/lib/libweston-5
 install .libs/fbdev-backend.so $DESTDIR/wl/lib/libweston-5
 install -d $DESTDIR/wl/lib/weston
 install .libs/desktop-shell.so $DESTDIR/wl/lib/weston
-install -d $DESTDIR/wl/libexec
-install weston-desktop-shell $DESTDIR/wl/libexec
-install weston-keyboard $DESTDIR/wl/libexec
+install weston-desktop-shell $DESTDIR/wl/lib/weston
+install weston-keyboard $DESTDIR/wl/lib/weston
 install -d $DESTDIR/wl/share/weston
 install -m 644 data/icon_window.png $DESTDIR/wl/share/weston
 install -m 644 data/pattern.png $DESTDIR/wl/share/weston
@@ -81,8 +80,8 @@ exec=\\
 /wl/lib/libweston-desktop-5.so.0 \\
 /wl/lib/libweston-5/fbdev-backend.so \\
 /wl/lib/weston/desktop-shell.so \\
-/wl/libexec/weston-desktop-shell \\
-/wl/libexec/weston-keyboard \\
+/wl/lib/weston/weston-desktop-shell \\
+/wl/lib/weston/weston-keyboard \\
 /wl/share/weston/icon_window.png \\
 /wl/share/weston/pattern.png \\
 /wl/share/weston/sign_close.png \\

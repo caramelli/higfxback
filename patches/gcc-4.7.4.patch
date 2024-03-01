@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-ac-build mpc-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.64)
-./configure --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-native-system-header-dir=/include --prefix=
+./configure --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
 
 # build
 make
@@ -96,6 +96,8 @@ ln -sf libgcc_s.so.1 $DESTDIR/lib/libgcc_s.so
 install `./config.guess`/libstdc++-v3/src/.libs/libstdc++.so.6.* $DESTDIR/lib/libstdc++.so.6
 ln -sf libstdc++.so.6 $DESTDIR/lib/libstdc++.so
 install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
+install host-`./config.guess`/gcc/cc1 $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
+install host-`./config.guess`/gcc/cc1plus $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/crtbegin.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/crtbeginS.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/crtend.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
@@ -121,9 +123,6 @@ install -m 644 host-`./config.guess`/gcc/include/x86intrin.h $DESTDIR/lib/gcc/`.
 install -m 644 host-`./config.guess`/gcc/include/xmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
 install -m 644 host-`./config.guess`/gcc/include-fixed/limits.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
-install -d $DESTDIR/libexec/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install host-`./config.guess`/gcc/cc1 $DESTDIR/libexec/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install host-`./config.guess`/gcc/cc1plus $DESTDIR/libexec/gcc/`./config.guess`/`cat gcc/BASE-VER`
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -206,6 +205,8 @@ devel=\\
 /lib/cpp \\
 /lib/libgcc_s.so \\
 /lib/libstdc++.so \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1 \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1plus \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbegin.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbeginS.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtend.o \\
@@ -228,9 +229,7 @@ devel=\\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/unwind.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/x86intrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/xmmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed/limits.h \\
-/libexec/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1 \\
-/libexec/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1plus
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed/limits.h
 
 exec=\\
 /lib/libgcc_s.so.1 \\

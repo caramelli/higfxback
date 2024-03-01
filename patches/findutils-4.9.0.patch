@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16)
 aclocal -I m4 -I gl/m4; autoconf; autoheader -f; automake -a -c
-./configure --prefix=
+./configure --libexecdir=/lib/findutils --prefix=
 
 # build
 make
@@ -18,8 +18,8 @@ install find/find $DESTDIR/bin
 install locate/locate $DESTDIR/bin
 install locate/updatedb $DESTDIR/bin
 install xargs/xargs $DESTDIR/bin
-install -d $DESTDIR/libexec
-install locate/frcode $DESTDIR/libexec
+install -d $DESTDIR/lib/findutils
+install locate/frcode $DESTDIR/lib/findutils
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -34,7 +34,7 @@ exec=\\
 /bin/locate \\
 /bin/updatedb \\
 /bin/xargs \\
-/libexec/frcode
+/lib/findutils/frcode
 EOF
 
 exit

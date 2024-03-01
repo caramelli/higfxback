@@ -691,25 +691,16 @@ exit
  #
  # Generate glibconfig.h
  #
-@@ -11,8 +13,6 @@
+@@ -11,8 +13,7 @@
  #
  DISTCLEANFILES += glibconfig-stamp glibconfig.h glibconfig.h.win32
  BUILT_SOURCES += glibconfig-stamp
 -configexecincludedir = $(libdir)/glib-2.0/include
 -nodist_configexecinclude_HEADERS = glibconfig.h
++nodist_glibinclude_HEADERS = glibconfig.h
  glibconfig-stamp: ../config.status
  	$(AM_V_GEN) cd $(top_builddir) && \
  	  $(SHELL) ./config.status glib/glibconfig.h
-@@ -229,7 +229,8 @@
- glibinclude_HEADERS =   \
- 	glib-unix.h     \
- 	glib-object.h	\
--	glib.h
-+	glib.h		\
-+	glibconfig.h
- 
- deprecatedincludedir=$(includedir)/glib-2.0/glib/deprecated
- deprecatedinclude_HEADERS = \
 --- glib-2.50.3.orig/glib/ggettext.c
 +++ glib-2.50.3/glib/ggettext.c
 @@ -40,7 +40,6 @@

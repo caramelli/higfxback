@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68; am-1.11; lt-2.4)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
-./configure --disable-gudev --disable-hwdb --disable-introspection --disable-keymap --disable-udev_acl --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin --prefix=
+./configure --disable-gudev --disable-hwdb --disable-introspection --disable-keymap --disable-udev_acl --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin --libexecdir=/lib/udev --prefix=
 
 # build
 make
@@ -29,15 +29,15 @@ install -m 644 libudev/libudev.h $DESTDIR/include
 install -d $DESTDIR/lib
 install libudev/.libs/libudev.so.0.* $DESTDIR/lib/libudev.so.0
 ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
-install -d $DESTDIR/libexec
-install extras/ata_id/ata_id $DESTDIR/libexec
-install extras/cdrom_id/cdrom_id $DESTDIR/libexec
-install extras/firmware/firmware $DESTDIR/libexec
-install extras/input_id/input_id $DESTDIR/libexec
-install extras/path_id/path_id $DESTDIR/libexec
-install extras/scsi_id/scsi_id $DESTDIR/libexec
-install extras/usb_id/usb_id $DESTDIR/libexec
-install extras/v4l_id/v4l_id $DESTDIR/libexec
+install -d $DESTDIR/lib/udev
+install extras/ata_id/ata_id $DESTDIR/lib/udev
+install extras/cdrom_id/cdrom_id $DESTDIR/lib/udev
+install extras/firmware/firmware $DESTDIR/lib/udev
+install extras/input_id/input_id $DESTDIR/lib/udev
+install extras/path_id/path_id $DESTDIR/lib/udev
+install extras/scsi_id/scsi_id $DESTDIR/lib/udev
+install extras/usb_id/usb_id $DESTDIR/lib/udev
+install extras/v4l_id/v4l_id $DESTDIR/lib/udev
 install -d $DESTDIR/lib/pkgconfig
 install -m 644 libudev/libudev.pc $DESTDIR/lib/pkgconfig
 
@@ -61,14 +61,14 @@ exec=\\
 /etc/udev/udev.conf \\
 /etc/udev/rules.d/udev.rules \\
 /lib/libudev.so.0 \\
-/libexec/ata_id \\
-/libexec/cdrom_id \\
-/libexec/firmware \\
-/libexec/input_id \\
-/libexec/path_id \\
-/libexec/scsi_id \\
-/libexec/usb_id \\
-/libexec/v4l_id
+/lib/udev/ata_id \\
+/lib/udev/cdrom_id \\
+/lib/udev/firmware \\
+/lib/udev/input_id \\
+/lib/udev/path_id \\
+/lib/udev/scsi_id \\
+/lib/udev/usb_id \\
+/lib/udev/v4l_id
 EOF
 
 exit
