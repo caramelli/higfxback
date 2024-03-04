@@ -1,0 +1,93 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install tools/.libs/orcc $DESTDIR/bin
+install -d $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orc.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcbytecode.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcbytecodes.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orccode.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orccompiler.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcconstant.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orccpu.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcdebug.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcexecutor.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcfunctions.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcinstruction.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orclimits.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orconce.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcopcode.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcparse.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcprogram.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcrule.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orctarget.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcutils.h $DESTDIR/include/orc-0.4/orc
+install -m 644 orc/orcvariable.h $DESTDIR/include/orc-0.4/orc
+install -d $DESTDIR/include/orc-0.4/orc-test
+install -m 644 orc-test/orcprofile.h $DESTDIR/include/orc-0.4/orc-test
+install -m 644 orc-test/orctest.h $DESTDIR/include/orc-0.4/orc-test
+install -d $DESTDIR/lib
+install orc/.libs/liborc-0.4.so.0.* $DESTDIR/lib/liborc-0.4.so.0
+ln -sf liborc-0.4.so.0 $DESTDIR/lib/liborc-0.4.so
+install orc-test/.libs/liborc-test-0.4.so.0.* $DESTDIR/lib/liborc-test-0.4.so.0
+ln -sf liborc-test-0.4.so.0 $DESTDIR/lib/liborc-test-0.4.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 orc-0.4.pc $DESTDIR/lib/pkgconfig
+install -m 644 orc-test.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/orc-build.pc << EOF
+Name: orc
+Version: 0.4.30
+Description: Optimized inner loop Runtime Compiler
+Requires: $REQUIRES
+
+devel=\\
+/include/orc-0.4/orc/orc.h \\
+/include/orc-0.4/orc/orcbytecode.h \\
+/include/orc-0.4/orc/orcbytecodes.h \\
+/include/orc-0.4/orc/orccode.h \\
+/include/orc-0.4/orc/orccompiler.h \\
+/include/orc-0.4/orc/orcconstant.h \\
+/include/orc-0.4/orc/orccpu.h \\
+/include/orc-0.4/orc/orcdebug.h \\
+/include/orc-0.4/orc/orcexecutor.h \\
+/include/orc-0.4/orc/orcfunctions.h \\
+/include/orc-0.4/orc/orcinstruction.h \\
+/include/orc-0.4/orc/orclimits.h \\
+/include/orc-0.4/orc/orconce.h \\
+/include/orc-0.4/orc/orcopcode.h \\
+/include/orc-0.4/orc/orcparse.h \\
+/include/orc-0.4/orc/orcprogram.h \\
+/include/orc-0.4/orc/orcrule.h \\
+/include/orc-0.4/orc/orctarget.h \\
+/include/orc-0.4/orc/orcutils.h \\
+/include/orc-0.4/orc/orcvariable.h \\
+/include/orc-0.4/orc-test/orcprofile.h \\
+/include/orc-0.4/orc-test/orctest.h \\
+/lib/liborc-0.4.so \\
+/lib/liborc-test-0.4.so \\
+/lib/pkgconfig/orc-0.4.pc \\
+/lib/pkgconfig/orc-test.pc
+
+exec=\\
+/bin/orcc \\
+/lib/liborc-0.4.so.0 \\
+/lib/liborc-test-0.4.so.0
+EOF
+
+exit

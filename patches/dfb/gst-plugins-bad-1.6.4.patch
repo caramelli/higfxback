@@ -1,0 +1,216 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build curl-build directfb2-build gst-plugins-base-build libxml2-build openjpeg-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-decklink --disable-fbdev --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/lib
+install gst-libs/gst/adaptivedemux/.libs/libgstadaptivedemux-1.0.so.0.* $DESTDIR/dfb/lib/libgstadaptivedemux-1.0.so.0
+install gst-libs/gst/base/.libs/libgstbadbase-1.0.so.0.* $DESTDIR/dfb/lib/libgstbadbase-1.0.so.0
+install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/dfb/lib/libgstbasecamerabinsrc-1.0.so.0
+install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/dfb/lib/libgstcodecparsers-1.0.so.0
+install gst-libs/gst/interfaces/.libs/libgstphotography-1.0.so.0.* $DESTDIR/dfb/lib/libgstphotography-1.0.so.0
+install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/dfb/lib/libgstmpegts-1.0.so.0
+install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/dfb/lib/libgsturidownloader-1.0.so.0
+install gst-libs/gst/video/.libs/libgstbadvideo-1.0.so.0.* $DESTDIR/dfb/lib/libgstbadvideo-1.0.so.0
+install -d $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/bz2/.libs/libgstbz2.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/curl/.libs/libgstcurl.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/dash/.libs/libgstdashdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/directfb/.libs/libgstdfbvideosink.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/accurip/.libs/libgstaccurip.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/adpcmenc/.libs/libgstadpcmenc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/aiff/.libs/libgstaiff.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/asfmux/.libs/libgstasfmux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audiofxbad/.libs/libgstaudiofxbad.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audiomixer/.libs/libgstaudiomixer.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audiovisualizers/.libs/libgstaudiovisualizers.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/autoconvert/.libs/libgstautoconvert.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/bayer/.libs/libgstbayer.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/camerabin2/.libs/libgstcamerabin2.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/coloreffects/.libs/libgstcoloreffects.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/compositor/.libs/libgstcompositor.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/dataurisrc/.libs/libgstdataurisrc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/debugutils/.libs/libgstdebugutilsbad.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/dvbsuboverlay/.libs/libgstdvbsuboverlay.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/dvdspu/.libs/libgstdvdspu.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/festival/.libs/libgstfestival.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/fieldanalysis/.libs/libgstfieldanalysis.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/freeverb/.libs/libgstfreeverb.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/frei0r/.libs/libgstfrei0r.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/gaudieffects/.libs/libgstgaudieffects.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/gdp/.libs/libgstgdp.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/geometrictransform/.libs/libgstgeometrictransform.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/id3tag/.libs/libgstid3tag.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/inter/.libs/libgstinter.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/interlace/.libs/libgstinterlace.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/ivfparse/.libs/libgstivfparse.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/ivtc/.libs/libgstivtc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/jp2kdecimator/.libs/libgstjp2kdecimator.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/jpegformat/.libs/libgstjpegformat.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/liveadder/.libs/libgstliveadder.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/midi/.libs/libgstmidi.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/mpegdemux/.libs/libgstmpegpsdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/mpegpsmux/.libs/libgstmpegpsmux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/mpegtsdemux/.libs/libgstmpegtsdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/mpegtsmux/.libs/libgstmpegtsmux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/mxf/.libs/libgstmxf.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/pcapparse/.libs/libgstpcapparse.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/pnm/.libs/libgstpnm.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/rawparse/.libs/libgstrawparse.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/removesilence/.libs/libgstremovesilence.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/rtp/.libs/libgstrtpbad.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/onvif/.libs/libgstrtponvif.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/sdp/.libs/libgstsdpelem.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/segmentclip/.libs/libgstsegmentclip.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/siren/.libs/libgstsiren.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/smooth/.libs/libgstsmooth.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/speed/.libs/libgstspeed.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/stereo/.libs/libgststereo.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/subenc/.libs/libgstsubenc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videofilters/.libs/libgstvideofiltersbad.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videoparsers/.libs/libgstvideoparsersbad.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videosignal/.libs/libgstvideosignal.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/vmnc/.libs/libgstvmnc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/y4m/.libs/libgsty4mdec.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/yadif/.libs/libgstyadif.so $DESTDIR/dfb/lib/gstreamer-1.0
+install sys/shm/.libs/libgstshm.so $DESTDIR/dfb/lib/gstreamer-1.0
+install sys/vcd/.libs/libgstvcdsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+Name: gst-plugins-bad
+Version: 1.6.4
+Description: Bad GStreamer plugins
+Requires: $REQUIRES
+
+exec=\\
+/dfb/lib/libgstadaptivedemux-1.0.so.0 \\
+/dfb/lib/libgstbadbase-1.0.so.0 \\
+/dfb/lib/libgstbadvideo-1.0.so.0 \\
+/dfb/lib/libgstbasecamerabinsrc-1.0.so.0 \\
+/dfb/lib/libgstcodecparsers-1.0.so.0 \\
+/dfb/lib/libgstmpegts-1.0.so.0 \\
+/dfb/lib/libgstphotography-1.0.so.0 \\
+/dfb/lib/gstreamer-1.0/libgstaccurip.so \\
+/dfb/lib/gstreamer-1.0/libgstadpcmdec.so \\
+/dfb/lib/gstreamer-1.0/libgstadpcmenc.so \\
+/dfb/lib/gstreamer-1.0/libgstaiff.so \\
+/dfb/lib/gstreamer-1.0/libgstasfmux.so \\
+/dfb/lib/gstreamer-1.0/libgstaudiofxbad.so \\
+/dfb/lib/gstreamer-1.0/libgstaudiomixer.so \\
+/dfb/lib/gstreamer-1.0/libgstaudiovisualizers.so \\
+/dfb/lib/gstreamer-1.0/libgstautoconvert.so \\
+/dfb/lib/gstreamer-1.0/libgstbayer.so \\
+/dfb/lib/gstreamer-1.0/libgstbz2.so \\
+/dfb/lib/gstreamer-1.0/libgstcamerabin2.so \\
+/dfb/lib/gstreamer-1.0/libgstcoloreffects.so \\
+/dfb/lib/gstreamer-1.0/libgstcompositor.so \\
+/dfb/lib/gstreamer-1.0/libgstcurl.so \\
+/dfb/lib/gstreamer-1.0/libgstdashdemux.so \\
+/dfb/lib/gstreamer-1.0/libgstdataurisrc.so \\
+/dfb/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
+/dfb/lib/gstreamer-1.0/libgstdfbvideosink.so \\
+/dfb/lib/gstreamer-1.0/libgstdvbsuboverlay.so \\
+/dfb/lib/gstreamer-1.0/libgstdvdspu.so \\
+/dfb/lib/gstreamer-1.0/libgstfestival.so \\
+/dfb/lib/gstreamer-1.0/libgstfieldanalysis.so \\
+/dfb/lib/gstreamer-1.0/libgstfreeverb.so \\
+/dfb/lib/gstreamer-1.0/libgstfrei0r.so \\
+/dfb/lib/gstreamer-1.0/libgstgaudieffects.so \\
+/dfb/lib/gstreamer-1.0/libgstgdp.so \\
+/dfb/lib/gstreamer-1.0/libgstgeometrictransform.so \\
+/dfb/lib/gstreamer-1.0/libgstid3tag.so \\
+/dfb/lib/gstreamer-1.0/libgstinter.so \\
+/dfb/lib/gstreamer-1.0/libgstinterlace.so \\
+/dfb/lib/gstreamer-1.0/libgstivfparse.so \\
+/dfb/lib/gstreamer-1.0/libgstivtc.so \\
+/dfb/lib/gstreamer-1.0/libgstjp2kdecimator.so \\
+/dfb/lib/gstreamer-1.0/libgstjpegformat.so \\
+/dfb/lib/gstreamer-1.0/libgstliveadder.so \\
+/dfb/lib/gstreamer-1.0/libgstmidi.so \\
+/dfb/lib/gstreamer-1.0/libgstmpegpsdemux.so \\
+/dfb/lib/gstreamer-1.0/libgstmpegpsmux.so \\
+/dfb/lib/gstreamer-1.0/libgstmpegtsdemux.so \\
+/dfb/lib/gstreamer-1.0/libgstmpegtsmux.so \\
+/dfb/lib/gstreamer-1.0/libgstmxf.so \\
+/dfb/lib/gstreamer-1.0/libgstopenjpeg.so \\
+/dfb/lib/gstreamer-1.0/libgstpcapparse.so \\
+/dfb/lib/gstreamer-1.0/libgstpnm.so \\
+/dfb/lib/gstreamer-1.0/libgstrawparse.so \\
+/dfb/lib/gstreamer-1.0/libgstremovesilence.so \\
+/dfb/lib/gstreamer-1.0/libgstrfbsrc.so \\
+/dfb/lib/gstreamer-1.0/libgstrtpbad.so \\
+/dfb/lib/gstreamer-1.0/libgstrtponvif.so \\
+/dfb/lib/gstreamer-1.0/libgstsdpelem.so \\
+/dfb/lib/gstreamer-1.0/libgstsegmentclip.so \\
+/dfb/lib/gstreamer-1.0/libgstshm.so \\
+/dfb/lib/gstreamer-1.0/libgstsiren.so \\
+/dfb/lib/gstreamer-1.0/libgstsmooth.so \\
+/dfb/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+/dfb/lib/gstreamer-1.0/libgstspeed.so \\
+/dfb/lib/gstreamer-1.0/libgststereo.so \\
+/dfb/lib/gstreamer-1.0/libgstsubenc.so \\
+/dfb/lib/gstreamer-1.0/libgstvcdsrc.so \\
+/dfb/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
+/dfb/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
+/dfb/lib/gstreamer-1.0/libgstvideosignal.so \\
+/dfb/lib/gstreamer-1.0/libgstvmnc.so \\
+/dfb/lib/gstreamer-1.0/libgsty4mdec.so \\
+/dfb/lib/gstreamer-1.0/libgstyadif.so
+EOF
+
+exit
+--- gst-plugins-bad-1.6.4.orig/ext/dash/gstdashdemux.c
++++ gst-plugins-bad-1.6.4/ext/dash/gstdashdemux.c
+@@ -150,7 +150,7 @@
+ #include <gio/gio.h>
+ #include <gst/base/gsttypefindhelper.h>
+ #include <gst/tag/tag.h>
+-#include <gst/net/gstnet.h>
++#include <gst/net/net.h>
+ #include "gst/gst-i18n-plugin.h"
+ #include "gstdashdemux.h"
+ #include "gstdash_debug.h"
+--- gst-plugins-bad-1.6.4.orig/ext/directfb/dfbvideosink.c
++++ gst-plugins-bad-1.6.4/ext/directfb/dfbvideosink.c
+@@ -589,10 +589,9 @@
+           switch (event.input.key_symbol) {
+             case DIKS_ESCAPE:
+             {
+-              GST_ELEMENT_ERROR (dfbvideosink, RESOURCE, OPEN_WRITE,
+-                  ("Video output device is gone."),
+-                  ("We were running fullscreen and user "
+-                      "pressed the ESC key, stopping playback."));
++              GstPad *pad = gst_pad_get_peer (GST_VIDEO_SINK_PAD (dfbvideosink));
++              gst_pad_push_event (pad, gst_event_new_eos ());
++              gst_object_unref (pad);
+             }
+             default:
+               GST_DEBUG_OBJECT (dfbvideosink, "key press event %c !",
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
+@@ -26,8 +26,7 @@
+  * #GstCameraBinVideo.
+  *
+  */
+-#include <gst/app/gstappsrc.h>
+-#include <gst/app/gstappsink.h>
++#include <gst/app/app.h>
+ #include <gst/glib-compat-private.h>
+ #include "gstcamerabinpreview.h"
+ #include "gstbasecamerasrc.h"

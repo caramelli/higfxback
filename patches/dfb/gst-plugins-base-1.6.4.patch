@@ -1,0 +1,416 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gstreamer-build orc-build pango-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists alsa-lib-build; then
+  ALSA=1
+  REQUIRES="$REQUIRES alsa-lib-build"
+fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install tools/.libs/gst-device-monitor-1.0 $DESTDIR/dfb/bin
+install tools/.libs/gst-discoverer-1.0 $DESTDIR/dfb/bin
+install tools/.libs/gst-play-1.0 $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/allocators
+install -m 644 gst-libs/gst/allocators/allocators.h $DESTDIR/dfb/include/gstreamer-1.0/gst/allocators
+install -m 644 gst-libs/gst/allocators/gstdmabuf.h $DESTDIR/dfb/include/gstreamer-1.0/gst/allocators
+install -m 644 gst-libs/gst/allocators/gstfdmemory.h $DESTDIR/dfb/include/gstreamer-1.0/gst/allocators
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/app
+install -m 644 gst-libs/gst/app/app.h $DESTDIR/dfb/include/gstreamer-1.0/gst/app
+install -m 644 gst-libs/gst/app/gstappsink.h $DESTDIR/dfb/include/gstreamer-1.0/gst/app
+install -m 644 gst-libs/gst/app/gstappsrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/app
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-channels.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-enumtypes.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-format.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-info.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiobasesink.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiobasesrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiocdsrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudioclock.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiodecoder.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudioencoder.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiofilter.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudioiec61937.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiometa.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudioringbuffer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiosink.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/gstaudiosrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/streamvolume.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -m 644 gst-libs/gst/fft/fft.h $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -m 644 gst-libs/gst/fft/gstfft.h $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -m 644 gst-libs/gst/fft/gstfftf32.h $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -m 644 gst-libs/gst/fft/gstfftf64.h $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -m 644 gst-libs/gst/fft/gstffts16.h $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -m 644 gst-libs/gst/fft/gstffts32.h $DESTDIR/dfb/include/gstreamer-1.0/gst/fft
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/codec-utils.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/descriptions.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/encoding-profile.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/encoding-target.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/gstdiscoverer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/gstpluginsbaseversion.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/install-plugins.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/missing-plugins.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/pbutils.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/pbutils-enumtypes.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/riff
+install -m 644 gst-libs/gst/riff/riff.h $DESTDIR/dfb/include/gstreamer-1.0/gst/riff
+install -m 644 gst-libs/gst/riff/riff-ids.h $DESTDIR/dfb/include/gstreamer-1.0/gst/riff
+install -m 644 gst-libs/gst/riff/riff-media.h $DESTDIR/dfb/include/gstreamer-1.0/gst/riff
+install -m 644 gst-libs/gst/riff/riff-read.h $DESTDIR/dfb/include/gstreamer-1.0/gst/riff
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtcpbuffer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtp-enumtypes.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtpbaseaudiopayload.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtpbasedepayload.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtpbasepayload.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtpbuffer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtpdefs.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtphdrext.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/gstrtppayloads.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -m 644 gst-libs/gst/rtp/rtp.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtp
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtsp-enumtypes.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtspconnection.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtspdefs.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtspextension.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtspmessage.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtsprange.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtsptransport.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/gstrtspurl.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -m 644 gst-libs/gst/rtsp/rtsp.h $DESTDIR/dfb/include/gstreamer-1.0/gst/rtsp
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/sdp
+install -m 644 gst-libs/gst/sdp/sdp.h $DESTDIR/dfb/include/gstreamer-1.0/gst/sdp
+install -m 644 gst-libs/gst/sdp/gstmikey.h $DESTDIR/dfb/include/gstreamer-1.0/gst/sdp
+install -m 644 gst-libs/gst/sdp/gstsdp.h $DESTDIR/dfb/include/gstreamer-1.0/gst/sdp
+install -m 644 gst-libs/gst/sdp/gstsdpmessage.h $DESTDIR/dfb/include/gstreamer-1.0/gst/sdp
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/tag
+install -m 644 gst-libs/gst/tag/gsttagdemux.h $DESTDIR/dfb/include/gstreamer-1.0/gst/tag
+install -m 644 gst-libs/gst/tag/gsttagmux.h $DESTDIR/dfb/include/gstreamer-1.0/gst/tag
+install -m 644 gst-libs/gst/tag/tag.h $DESTDIR/dfb/include/gstreamer-1.0/gst/tag
+install -m 644 gst-libs/gst/tag/xmpwriter.h $DESTDIR/dfb/include/gstreamer-1.0/gst/tag
+install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/colorbalance.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/colorbalancechannel.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideodecoder.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideoencoder.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideofilter.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideometa.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideopool.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideosink.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideoutils.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/navigation.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-blend.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-chroma.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-color.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-converter.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-dither.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-enumtypes.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-event.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-format.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-frame.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-info.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-multiview.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-overlay-composition.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-resampler.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-scaler.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/video-tile.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/videoorientation.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/videooverlay.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -d $DESTDIR/dfb/lib
+install gst-libs/gst/allocators/.libs/libgstallocators-1.0.so.0.* $DESTDIR/dfb/lib/libgstallocators-1.0.so.0
+ln -sf libgstallocators-1.0.so.0 $DESTDIR/dfb/lib/libgstallocators-1.0.so
+install gst-libs/gst/app/.libs/libgstapp-1.0.so.0.* $DESTDIR/dfb/lib/libgstapp-1.0.so.0
+ln -sf libgstapp-1.0.so.0 $DESTDIR/dfb/lib/libgstapp-1.0.so
+install gst-libs/gst/audio/.libs/libgstaudio-1.0.so.0.* $DESTDIR/dfb/lib/libgstaudio-1.0.so.0
+ln -sf libgstaudio-1.0.so.0 $DESTDIR/dfb/lib/libgstaudio-1.0.so
+install gst-libs/gst/fft/.libs/libgstfft-1.0.so.0.* $DESTDIR/dfb/lib/libgstfft-1.0.so.0
+ln -sf libgstfft-1.0.so.0 $DESTDIR/dfb/lib/libgstfft-1.0.so
+install gst-libs/gst/pbutils/.libs/libgstpbutils-1.0.so.0.* $DESTDIR/dfb/lib/libgstpbutils-1.0.so.0
+ln -sf libgstpbutils-1.0.so.0 $DESTDIR/dfb/lib/libgstpbutils-1.0.so
+install gst-libs/gst/riff/.libs/libgstriff-1.0.so.0.* $DESTDIR/dfb/lib/libgstriff-1.0.so.0
+ln -sf libgstriff-1.0.so.0 $DESTDIR/dfb/lib/libgstriff-1.0.so
+install gst-libs/gst/rtp/.libs/libgstrtp-1.0.so.0.* $DESTDIR/dfb/lib/libgstrtp-1.0.so.0
+ln -sf libgstrtp-1.0.so.0 $DESTDIR/dfb/lib/libgstrtp-1.0.so
+install gst-libs/gst/rtsp/.libs/libgstrtsp-1.0.so.0.* $DESTDIR/dfb/lib/libgstrtsp-1.0.so.0
+ln -sf libgstrtsp-1.0.so.0 $DESTDIR/dfb/lib/libgstrtsp-1.0.so
+install gst-libs/gst/sdp/.libs/libgstsdp-1.0.so.0.* $DESTDIR/dfb/lib/libgstsdp-1.0.so.0
+ln -sf libgstsdp-1.0.so.0 $DESTDIR/dfb/lib/libgstsdp-1.0.so
+install gst-libs/gst/tag/.libs/libgsttag-1.0.so.0.* $DESTDIR/dfb/lib/libgsttag-1.0.so.0
+ln -sf libgsttag-1.0.so.0 $DESTDIR/dfb/lib/libgsttag-1.0.so
+install gst-libs/gst/video/.libs/libgstvideo-1.0.so.0.* $DESTDIR/dfb/lib/libgstvideo-1.0.so.0
+ln -sf libgstvideo-1.0.so.0 $DESTDIR/dfb/lib/libgstvideo-1.0.so
+install -d $DESTDIR/dfb/lib/gstreamer-1.0
+test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/pango/.libs/libgstpango.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/adder/.libs/libgstadder.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/app/.libs/libgstapp.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audioconvert/.libs/libgstaudioconvert.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audiorate/.libs/libgstaudiorate.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audioresample/.libs/libgstaudioresample.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/audiotestsrc/.libs/libgstaudiotestsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/encoding/.libs/libgstencodebin.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/gio/.libs/libgstgio.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/playback/.libs/libgstplayback.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/subparse/.libs/libgstsubparse.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/tcp/.libs/libgsttcp.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/typefind/.libs/libgsttypefindfunctions.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videoconvert/.libs/libgstvideoconvert.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videorate/.libs/libgstvideorate.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videoscale/.libs/libgstvideoscale.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videotestsrc/.libs/libgstvideotestsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/volume/.libs/libgstvolume.so $DESTDIR/dfb/lib/gstreamer-1.0
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-allocators-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-app-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-audio-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-fft-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-pbutils-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-plugins-base-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-riff-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-rtp-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-rtsp-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-sdp-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-tag-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-video-1.0.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
+Name: gst-plugins-base
+Version: 1.6.4
+Description: Base GStreamer plugins and libraries
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/gstreamer-1.0/gst/allocators/allocators.h \\
+/dfb/include/gstreamer-1.0/gst/allocators/gstdmabuf.h \\
+/dfb/include/gstreamer-1.0/gst/allocators/gstfdmemory.h \\
+/dfb/include/gstreamer-1.0/gst/app/app.h \\
+/dfb/include/gstreamer-1.0/gst/app/gstappsink.h \\
+/dfb/include/gstreamer-1.0/gst/app/gstappsrc.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-channels.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-enumtypes.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-format.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-info.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiobasesink.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiobasesrc.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiocdsrc.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudioclock.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiodecoder.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudioencoder.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiofilter.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudioiec61937.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiometa.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudioringbuffer.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiosink.h \\
+/dfb/include/gstreamer-1.0/gst/audio/gstaudiosrc.h \\
+/dfb/include/gstreamer-1.0/gst/audio/streamvolume.h \\
+/dfb/include/gstreamer-1.0/gst/fft/fft.h \\
+/dfb/include/gstreamer-1.0/gst/fft/gstfft.h \\
+/dfb/include/gstreamer-1.0/gst/fft/gstfftf32.h \\
+/dfb/include/gstreamer-1.0/gst/fft/gstfftf64.h \\
+/dfb/include/gstreamer-1.0/gst/fft/gstffts16.h \\
+/dfb/include/gstreamer-1.0/gst/fft/gstffts32.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/codec-utils.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/descriptions.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/encoding-profile.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/encoding-target.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/gstdiscoverer.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/gstpluginsbaseversion.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/install-plugins.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/missing-plugins.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/pbutils.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/pbutils-enumtypes.h \\
+/dfb/include/gstreamer-1.0/gst/riff/riff.h \\
+/dfb/include/gstreamer-1.0/gst/riff/riff-ids.h \\
+/dfb/include/gstreamer-1.0/gst/riff/riff-media.h \\
+/dfb/include/gstreamer-1.0/gst/riff/riff-read.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtcpbuffer.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtp-enumtypes.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtpbaseaudiopayload.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtpbasedepayload.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtpbasepayload.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtpbuffer.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtpdefs.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtphdrext.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/gstrtppayloads.h \\
+/dfb/include/gstreamer-1.0/gst/rtp/rtp.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtsp-enumtypes.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtspconnection.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtspdefs.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtspextension.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtspmessage.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtsprange.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtsptransport.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/gstrtspurl.h \\
+/dfb/include/gstreamer-1.0/gst/rtsp/rtsp.h \\
+/dfb/include/gstreamer-1.0/gst/sdp/gstmikey.h \\
+/dfb/include/gstreamer-1.0/gst/sdp/gstsdp.h \\
+/dfb/include/gstreamer-1.0/gst/sdp/gstsdpmessage.h \\
+/dfb/include/gstreamer-1.0/gst/sdp/sdp.h \\
+/dfb/include/gstreamer-1.0/gst/tag/gsttagdemux.h \\
+/dfb/include/gstreamer-1.0/gst/tag/gsttagmux.h \\
+/dfb/include/gstreamer-1.0/gst/tag/tag.h \\
+/dfb/include/gstreamer-1.0/gst/tag/xmpwriter.h \\
+/dfb/include/gstreamer-1.0/gst/video/colorbalance.h \\
+/dfb/include/gstreamer-1.0/gst/video/colorbalancechannel.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideodecoder.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideoencoder.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideofilter.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideometa.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideopool.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideosink.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideoutils.h \\
+/dfb/include/gstreamer-1.0/gst/video/navigation.h \\
+/dfb/include/gstreamer-1.0/gst/video/video.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-blend.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-chroma.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-color.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-converter.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-dither.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-enumtypes.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-event.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-format.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-frame.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-info.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-multiview.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-overlay-composition.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-resampler.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-scaler.h \\
+/dfb/include/gstreamer-1.0/gst/video/video-tile.h \\
+/dfb/include/gstreamer-1.0/gst/video/videoorientation.h \\
+/dfb/include/gstreamer-1.0/gst/video/videooverlay.h \\
+/dfb/lib/libgstallocators-1.0.so \\
+/dfb/lib/libgstapp-1.0.so \\
+/dfb/lib/libgstaudio-1.0.so \\
+/dfb/lib/libgstfft-1.0.so \\
+/dfb/lib/libgstpbutils-1.0.so \\
+/dfb/lib/libgstriff-1.0.so \\
+/dfb/lib/libgstrtp-1.0.so \\
+/dfb/lib/libgstrtsp-1.0.so \\
+/dfb/lib/libgstsdp-1.0.so \\
+/dfb/lib/libgsttag-1.0.so \\
+/dfb/lib/libgstvideo-1.0.so \\
+/dfb/lib/pkgconfig/gstreamer-allocators-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-app-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-audio-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-fft-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-pbutils-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-plugins-base-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-riff-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-rtp-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-rtsp-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-sdp-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-tag-1.0.pc \\
+/dfb/lib/pkgconfig/gstreamer-video-1.0.pc
+
+exec=\\
+/dfb/bin/gst-device-monitor-1.0 \\
+/dfb/bin/gst-discoverer-1.0 \\
+/dfb/bin/gst-play-1.0
+/dfb/lib/libgstallocators-1.0.so.0 \\
+/dfb/lib/libgstapp-1.0.so.0 \\
+/dfb/lib/libgstaudio-1.0.so.0 \\
+/dfb/lib/libgstfft-1.0.so.0 \\
+/dfb/lib/libgstpbutils-1.0.so.0 \\
+/dfb/lib/libgstriff-1.0.so.0 \\
+/dfb/lib/libgstrtp-1.0.so.0 \\
+/dfb/lib/libgstrtsp-1.0.so.0 \\
+/dfb/lib/libgstsdp-1.0.so.0 \\
+/dfb/lib/libgsttag-1.0.so.0 \\
+/dfb/lib/libgstvideo-1.0.so.0 \\
+/dfb/lib/gstreamer-1.0/libgstadder.so \\
+EOF
+test $ALSA && echo /dfb/lib/gstreamer-1.0/libgstalsa.so \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
+/dfb/lib/gstreamer-1.0/libgstapp.so \\
+/dfb/lib/gstreamer-1.0/libgstaudioconvert.so \\
+/dfb/lib/gstreamer-1.0/libgstaudiorate.so \\
+/dfb/lib/gstreamer-1.0/libgstaudioresample.so \\
+/dfb/lib/gstreamer-1.0/libgstaudiotestsrc.so \\
+/dfb/lib/gstreamer-1.0/libgstencodebin.so \\
+/dfb/lib/gstreamer-1.0/libgstgio.so \\
+/dfb/lib/gstreamer-1.0/libgstpango.so \\
+/dfb/lib/gstreamer-1.0/libgstplayback.so \\
+/dfb/lib/gstreamer-1.0/libgstsubparse.so \\
+/dfb/lib/gstreamer-1.0/libgsttcp.so \\
+/dfb/lib/gstreamer-1.0/libgsttypefindfunctions.so \\
+/dfb/lib/gstreamer-1.0/libgstvideoconvert.so \\
+/dfb/lib/gstreamer-1.0/libgstvideorate.so \\
+/dfb/lib/gstreamer-1.0/libgstvideoscale.so \\
+/dfb/lib/gstreamer-1.0/libgstvideotestsrc.so \\
+/dfb/lib/gstreamer-1.0/libgstvolume.so
+EOF
+
+exit
+--- gst-plugins-base-1.6.4.orig/gst-libs/gst/fft/fft.h
++++ gst-plugins-base-1.6.4/gst-libs/gst/fft/fft.h
+@@ -22,7 +22,6 @@
+ #ifndef __GST_FFT__H__
+ #define __GST_FFT__H__
+ 
+-#include <gst/fft/gstfft.h>
+ #include <gst/fft/gstffts16.h>
+ #include <gst/fft/gstffts32.h>
+ #include <gst/fft/gstfftf32.h>
+--- gst-plugins-base-1.6.4.orig/gst-libs/gst/riff/riff.h
++++ gst-plugins-base-1.6.4/gst-libs/gst/riff/riff.h
+@@ -22,7 +22,6 @@
+ #ifndef __GST_RIFF_H__
+ #define __GST_RIFF_H__
+ 
+-#include <gst/riff/riff-ids.h>
+ #include <gst/riff/riff-media.h>
+ #include <gst/riff/riff-read.h>
+ 
+--- gst-plugins-base-1.6.4.orig/gst-libs/gst/rtsp/rtsp.h
++++ gst-plugins-base-1.6.4/gst-libs/gst/rtsp/rtsp.h
+@@ -22,7 +22,6 @@
+ #ifndef __GST_RTSP__H__
+ #define __GST_RTSP__H__
+ 
+-#include <gst/rtsp/gstrtsp.h>
+ #include <gst/rtsp/gstrtspconnection.h>
+ #include <gst/rtsp/gstrtspdefs.h>
+ #include <gst/rtsp/gstrtsp-enumtypes.h>
+--- gst-plugins-base-1.6.4.orig/gst-libs/gst/sdp/sdp.h
++++ gst-plugins-base-1.6.4/gst-libs/gst/sdp/sdp.h
+@@ -22,7 +22,6 @@
+ #ifndef __GST_SDP__H__
+ #define __GST_SDP__H__
+ 
+-#include <gst/sdp/gstsdp.h>
+ #include <gst/sdp/gstsdpmessage.h>
+ #include <gst/sdp/gstmikey.h>
+ 
+--- gst-plugins-base-1.6.4.orig/tests/examples/fft/fftrange.c
++++ gst-plugins-base-1.6.4/tests/examples/fft/fftrange.c
+@@ -18,10 +18,7 @@
+  */
+ 
+ #include <stdio.h>
+-#include <gst/fft/gstffts16.h>
+-#include <gst/fft/gstffts32.h>
+-#include <gst/fft/gstfftf32.h>
+-#include <gst/fft/gstfftf64.h>
++#include <gst/fft/fft.h>
+ 
+ /* effectively max range seems to be 1/4 of what it should be */
+ 
