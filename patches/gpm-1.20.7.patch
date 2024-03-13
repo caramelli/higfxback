@@ -5,14 +5,14 @@ REQUIRES="autotools-wrappers-lt-build byacc-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.14; lt-2.4.2)
+# configure (ac-2.69; lt-2.4.2)
 cat << eof > configure.ac
 AC_INIT([gpm],[$(grep '^[[:digit:]]' doc/changelog | head -n1 | cut -d: -f1)],[http://www.nico.schottelius.org/software/gpm/])
 releasedate="$(grep '^[[:digit:]]' doc/changelog | head -n1 | cut -d: -f2)"
 release="$(grep '^[[:digit:]]' doc/changelog | head -n1 | cut -d: -f1)"
 eof
 cat configure.ac.footer >> configure.ac
-libtoolize -c -f -i; aclocal; autoconf; autoheader
+libtoolize -c -f -i; cat m4/* acinclude.m4 > aclocal.m4; autoconf; autoheader
 YACC=byacc ./configure --disable-static --without-curses --sbindir=/bin --prefix=
 
 # build

@@ -5,14 +5,14 @@ REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.13; lt-2.4.2)
+# configure (ac-2.69; lt-2.4.2)
 cd builds/unix; \
 freetype_major=`sed -n 's/^#define  *FREETYPE_MAJOR  *\([^ ][^ ]*\).*$/\1/p' ../../include/freetype/freetype.h` && \
 freetype_minor=`sed -n 's/^#define  *FREETYPE_MINOR  *\([^ ][^ ]*\).*$/.\1/p' ../../include/freetype/freetype.h` && \
 freetype_patch=`sed -n 's/^#define  *FREETYPE_PATCH  *\([^ ][^ ]*\).*$/.\1/p' ../../include/freetype/freetype.h` && \
 sed -e "s;@VERSION@;$freetype_major$freetype_minor$freetype_patch;" < configure.raw > configure.ac; \
 cd -
-cd builds/unix; libtoolize -c -f -i; aclocal; autoconf; cd -
+cd builds/unix; libtoolize -c -f -i; cat *.m4 > aclocal.m4; autoconf; cd -
 ./configure --disable-static --prefix=
 
 # build

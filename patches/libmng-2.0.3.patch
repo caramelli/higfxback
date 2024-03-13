@@ -1,0 +1,61 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build jpeg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.13; lt-2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 libmng.h $DESTDIR/include
+install -m 644 libmng_conf.h $DESTDIR/include
+install -m 644 libmng_types.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libmng.so.2.* $DESTDIR/lib/libmng.so.2
+ln -sf libmng.so.2 $DESTDIR/lib/libmng.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libmng.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libmng-build.pc << EOF
+Name: libmng
+Version: 2.0.3
+Description: Multiple-image Network Graphics (MNG) library
+Requires: $REQUIRES
+
+devel=\\
+/include/libmng.h \\
+/include/libmng_conf.h \\
+/include/libmng_types.h \\
+/lib/libmng.so \\
+/lib/pkgconfig/libmng.pc
+
+exec=\\
+/lib/libmng.so.2
+EOF
+
+exit
+--- libmng-2.0.3.orig/libmng_types.h
++++ libmng-2.0.3/libmng_types.h
+@@ -200,13 +200,6 @@
+ #undef FAR                             /* possibly defined by zlib or lcms */
+ #endif
+ #define JPEG_INTERNAL_OPTIONS          /* for RGB_PIXELSIZE */
+-/* There has been a change in jpeg-9 : */
+-#if !defined(HAVE_BOOLEAN) && !defined(_WIN32)
+-#define HAVE_BOOLEAN
+-#endif
+-#ifndef _WIN32
+-typedef int boolean;
+-#endif
+ /* For jpegsrc.v09a: */
+ #include <stdio.h>
+ #include <jpeglib.h>

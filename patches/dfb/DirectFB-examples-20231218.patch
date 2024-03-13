@@ -27,7 +27,7 @@ install build/src/df_cpuload $DESTDIR/dfb/bin
 install build/src/df_dok $DESTDIR/dfb/bin
 install build/src/df_drivertest $DESTDIR/dfb/bin
 install build/src/df_fire $DESTDIR/dfb/bin
-install build/src/df_gears $DESTDIR/dfb/bin
+test $GL && install build/src/df_gears $DESTDIR/dfb/bin
 install build/src/df_input $DESTDIR/dfb/bin
 install build/src/df_knuckles $DESTDIR/dfb/bin
 install build/src/df_layers $DESTDIR/dfb/bin
@@ -99,7 +99,9 @@ exec=\\
 /dfb/bin/df_dok \\
 /dfb/bin/df_drivertest \\
 /dfb/bin/df_fire \\
-/dfb/bin/df_gears \\
+EOF
+test $GL && echo /dfb/bin/df_gears \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/bin/df_input \\
 /dfb/bin/df_knuckles \\
 /dfb/bin/df_layers \\

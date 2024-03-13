@@ -10,6 +10,11 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-bui
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
   VK=1
   REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
@@ -30,7 +35,9 @@ meson compile -C build
 # install
 install -d $DESTDIR/dfb/bin
 test $GL && install build/yagears2 $DESTDIR/dfb/bin
+test $GL && test SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
 test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
+test $VK && test SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -42,9 +49,11 @@ Requires: $REQUIRES
 
 exec=\\
 EOF
-test $GL && ! test $VK && echo /dfb/bin/yagears2 >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GL && test $VK && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && echo /dfb/bin/yagears2-vk >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $VK && echo /dfb/bin/yagears2-vk \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $VK && test $SDL2 && echo /dfb/bin/yagears2-vk-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 
 exit
 --- yagears-2.4.orig/CMakeLists.txt
@@ -286,3 +295,12 @@ exit
    else
      enable_wx = false
    endif
+@@ -670,7 +670,7 @@
+ 
+ if VK_GUI
+ executable('yagears2-vk-gui',
+-           'vk-gui.cc', 'vulkan_gears.c', 'image_loader.c', png_source, tiff_source,
++           'vk-gui.cc', 'vulkan_gears.c', vert_spv_file, frag_spv_file, 'image_loader.c', png_source, tiff_source,
+            dependencies: [vulkan_dep, png_dep, tiff_dep, glfw_dep, sdl_dep],
+            install: true)
+ endif
