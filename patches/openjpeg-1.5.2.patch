@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build"
+REQUIRES="autotools-wrappers-lt-build libpng-build tiff-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -24,7 +24,8 @@ install -d $DESTDIR/lib
 install libopenjpeg/.libs/libopenjpeg.so.1.* $DESTDIR/lib/libopenjpeg.so.1
 ln -sf libopenjpeg.so.1 $DESTDIR/lib/libopenjpeg.so
 install -d $DESTDIR/lib/pkgconfig
-install -m 644 libopenjpeg1.pc $DESTDIR/lib/pkgconfig/libopenjpeg.pc
+install -m 644 libopenjpeg1.pc $DESTDIR/lib/pkgconfig
+ln -sf libopenjpeg1.pc $DESTDIR/lib/pkgconfig/libopenjpeg.pc
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -38,7 +39,8 @@ devel=\\
 /include/openjpeg.h \\
 /include/openjpeg-1.5/openjpeg.h \\
 /lib/libopenjpeg.so \\
-/lib/pkgconfig/libopenjpeg.pc
+/lib/pkgconfig/libopenjpeg.pc \\
+/lib/pkgconfig/libopenjpeg1.pc
 
 exec=\\
 /bin/image_to_j2k \\

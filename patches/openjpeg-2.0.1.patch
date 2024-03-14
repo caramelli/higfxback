@@ -1,0 +1,52 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build libpng-build tiff-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/bin/opj_compress $DESTDIR/bin
+install build/bin/opj_decompress $DESTDIR/bin
+install build/bin/opj_dump $DESTDIR/bin
+install -d $DESTDIR/include/openjpeg-2.0
+install -m 644 build/src/lib/openjp2/opj_config.h $DESTDIR/include/openjpeg-2.0
+install -m 644 src/lib/openjp2/openjpeg.h $DESTDIR/include/openjpeg-2.0
+install -m 644 src/lib/openjp2/opj_stdint.h $DESTDIR/include/openjpeg-2.0
+install -d $DESTDIR/lib
+install build/bin/libopenjp2.so.2.* $DESTDIR/lib/libopenjp2.so.7
+ln -sf libopenjp2.so.7 $DESTDIR/lib/libopenjp2.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/libopenjp2.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/openjpeg2-build.pc << EOF
+Name: openjpeg
+Version: 2.0.1
+Description: JPEG 2000 library
+Requires: $REQUIRES
+
+devel=\\
+/include/openjpeg-2.0/openjpeg.h \\
+/include/openjpeg-2.0/opj_config.h \\
+/include/openjpeg-2.0/opj_stdint.h \\
+/lib/libopenjp2.so \\
+/lib/pkgconfig/libopenjp2.pc
+
+exec=\\
+/bin/opj_compress \\
+/bin/opj_decompress \\
+/bin/opj_dump \\
+/lib/libopenjp2.so.7
+EOF
+
+exit

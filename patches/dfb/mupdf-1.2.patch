@@ -48,11 +48,10 @@ EOF
 exit
 --- mupdf-1.2.orig/Configure
 +++ mupdf-1.2/Configure
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,44 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
-+NOSTATIC=0
 +
 +while : ; do
 +  case "$1" in
@@ -64,7 +63,7 @@ exit
 +      shift
 +    ;;
 +    --disable-static)
-+      NOSTATIC=1
++      NOSTATIC=yes
 +    ;;
 +    --disable-x11)
 +      NOX11=yes
@@ -101,8 +100,8 @@ exit
  include Makethird
  
 +ifeq "$(NOX11)" ""
-+CFLAGS += `pkg-config --cflags-only-I xext`
-+LDFLAGS += `pkg-config --libs-only-L xext`
++CFLAGS += -I$(prefix)/include
++LDFLAGS += -L$(prefix)/lib
 +endif
 +
  THIRD_LIBS := $(FREETYPE_LIB)
@@ -132,10 +131,10 @@ exit
  
  # --- Fitz, MuPDF, MuXPS and MuCBZ library ---
  
-+ifeq "$(NOSTATIC)" "1"
-+FITZ_LIB := $(OUT)/libfitz.so.1
-+else
++ifeq "$(NOSTATIC)" ""
  FITZ_LIB := $(OUT)/libfitz.a
++else
++FITZ_LIB := $(OUT)/libfitz.so.1
 +endif
  FITZ_V8_LIB := $(OUT)/libfitzv8.a
  
@@ -145,32 +144,32 @@ exit
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
 -$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS)
-+ifeq "$(NOSTATIC)" "1"
++ifeq "$(NOSTATIC)" ""
++$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
++else
 +$(MUDRAW) : $(OUT)/mudraw.o
 +	$(LINK_CMD) -L$(OUT) -lfitz
-+else
-+$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
 +endif
  
  MUTOOL := $(addprefix $(OUT)/, mutool)
 -$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS)
-+ifeq "$(NOSTATIC)" "1"
++ifeq "$(NOSTATIC)" ""
++$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
++else
 +$(MUTOOL) : $(addprefix $(OUT)/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
 +	$(LINK_CMD) -L$(OUT) -lfitz
-+else
-+$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
 +endif
  
  ifeq "$(NOX11)" ""
  MUVIEW := $(OUT)/mupdf
 -$(MUVIEW) : $(FITZ_LIB) $(THIRD_LIBS)
-+ifeq "$(NOSTATIC)" "1"
-+$(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
-+	$(LINK_CMD) $(X11_LIBS) -L$(OUT) -lfitz
-+else
++ifeq "$(NOSTATIC)" ""
 +$(MUVIEW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
  $(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
  	$(LINK_CMD) $(X11_LIBS)
++else
++$(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
++	$(LINK_CMD) $(X11_LIBS) -L$(OUT) -lfitz
 +endif
  
  MUVIEW_V8 := $(OUT)/mupdf-v8
@@ -194,10 +193,10 @@ exit
  OS ?= $(shell uname)
  OS := $(OS:MINGW%=MINGW)
  
-+NOSTATIC ?= 0
++NOSTATIC ?= 
 +
  CFLAGS += -Wall
-+ifeq "$(NOSTATIC)" "1"
++ifeq "$(NOSTATIC)" "yes"
 +CFLAGS += -fPIC
 +endif
  

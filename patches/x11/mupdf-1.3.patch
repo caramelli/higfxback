@@ -1,0 +1,382 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="curl-build freetype-build jbig2dec-build jpeg-build make-build openjpeg2-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -rf thirdparty
+LDFLAGS=-Wl,-rpath,/x11/lib sh ./Configure --disable-static --with-x11-include /x11/include --with-x11-lib /x11/lib --prefix /x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install build/*/mudraw $DESTDIR/x11/bin
+install build/*/mupdf-x11-curl $DESTDIR/x11/bin/mupdf
+install build/*/mutool $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/mupdf
+install -m 644 include/mupdf/fitz.h $DESTDIR/x11/include/mupdf
+ln -sf mupdf/fitz.h $DESTDIR/x11/include/fitz.h
+install -m 644 ./include/mupdf/memento.h $DESTDIR/x11/include/mupdf
+ln -sf mupdf/memento.h $DESTDIR/x11/include/memento.h
+install -d $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/annotation.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/bitmap.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/buffer.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/colorspace.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/compressed-buffer.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/context.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/crypt.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/device.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/display-list.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/document.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/filter.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/font.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/function.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/getopt.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/glyph-cache.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/hash.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/image.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/link.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/math.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/meta.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/outline.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pcl.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-png.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pnm.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pwg.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-svg.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/path.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/pixmap.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/shade.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/store.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/stream.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/string.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/structured-text.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/system.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/text.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/transition.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/write-document.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/xml.h $DESTDIR/x11/include/mupdf/fitz
+install -d $DESTDIR/x11/lib
+install build/*/libmupdf.so.1 $DESTDIR/x11/lib
+ln -sf libmupdf.so.1 $DESTDIR/x11/lib/libmupdf.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 platform/debian/mupdf.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/mupdf-build.pc << EOF
+Name: mupdf
+Version: 1.3
+Description: PDF rendering library and document manipulation tools
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/fitz.h \\
+/x11/include/memento.h \\
+/x11/include/mupdf/fitz.h \\
+/x11/include/mupdf/memento.h \\
+/x11/include/mupdf/fitz/annotation.h \\
+/x11/include/mupdf/fitz/bitmap.h \\
+/x11/include/mupdf/fitz/buffer.h \\
+/x11/include/mupdf/fitz/colorspace.h \\
+/x11/include/mupdf/fitz/compressed-buffer.h \\
+/x11/include/mupdf/fitz/context.h \\
+/x11/include/mupdf/fitz/crypt.h \\
+/x11/include/mupdf/fitz/device.h \\
+/x11/include/mupdf/fitz/display-list.h \\
+/x11/include/mupdf/fitz/document.h \\
+/x11/include/mupdf/fitz/filter.h \\
+/x11/include/mupdf/fitz/font.h \\
+/x11/include/mupdf/fitz/function.h \\
+/x11/include/mupdf/fitz/getopt.h \\
+/x11/include/mupdf/fitz/glyph-cache.h \\
+/x11/include/mupdf/fitz/hash.h \\
+/x11/include/mupdf/fitz/image.h \\
+/x11/include/mupdf/fitz/link.h \\
+/x11/include/mupdf/fitz/math.h \\
+/x11/include/mupdf/fitz/meta.h \\
+/x11/include/mupdf/fitz/outline.h \\
+/x11/include/mupdf/fitz/output-pcl.h \\
+/x11/include/mupdf/fitz/output-png.h \\
+/x11/include/mupdf/fitz/output-pnm.h \\
+/x11/include/mupdf/fitz/output-pwg.h \\
+/x11/include/mupdf/fitz/output-svg.h \\
+/x11/include/mupdf/fitz/output.h \\
+/x11/include/mupdf/fitz/path.h \\
+/x11/include/mupdf/fitz/pixmap.h \\
+/x11/include/mupdf/fitz/shade.h \\
+/x11/include/mupdf/fitz/store.h \\
+/x11/include/mupdf/fitz/stream.h \\
+/x11/include/mupdf/fitz/string.h \\
+/x11/include/mupdf/fitz/structured-text.h \\
+/x11/include/mupdf/fitz/system.h \\
+/x11/include/mupdf/fitz/text.h \\
+/x11/include/mupdf/fitz/transition.h \\
+/x11/include/mupdf/fitz/write-document.h \\
+/x11/include/mupdf/fitz/xml.h \\
+/x11/lib/libmupdf.so \\
+/x11/lib/pkgconfig/mupdf.pc
+
+exec=\\
+/x11/bin/mudraw \\
+/x11/bin/mupdf \\
+/x11/bin/mutool \\
+/x11/lib/libmupdf.so.1
+EOF
+
+exit
+--- mupdf-1.3.orig/Configure
++++ mupdf-1.3/Configure
+@@ -0,0 +1,49 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++SYS_X11_CFLAGS="\$(shell pkg-config --cflags x11 xext 2> /dev/null)"
++SYS_X11_LIBS="\$(shell pkg-config --libs x11 xext 2> /dev/null)"
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      NOSTATIC=yes
++    ;;
++    --with-x11-include)
++      SYS_X11_CFLAGS=-I$2
++      shift
++    ;;
++    --with-x11-lib)
++      SYS_X11_LIBS="-L$2 -lX11 -lXext"
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++if test -z $LDFLAGS; then
++  sed -i "s|LINK_CMD =.*|LINK_CMD = \$(QUIET_LINK) \$(CC) \$(LDFLAGS) -o \$@ $^|" Makefile
++else
++  sed -i "s|LINK_CMD =.*|LINK_CMD = \$(QUIET_LINK) \$(CC) \$(LDFLAGS) $LDFLAGS -o \$@ $^|" Makefile
++fi
++
++sed -i "/^prefix ?=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makerules
++
++sed -i "/^SYS_X11_CFLAGS ?=/s#=.*#= $SYS_X11_CFLAGS#" Makerules
++sed -i "/^SYS_X11_LIBS ?=/s#=.*#= $SYS_X11_LIBS#" Makerules
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" platform/debian/mupdf.pc
+--- mupdf-1.3.orig/Makefile
++++ mupdf-1.3/Makefile
+@@ -54,7 +54,7 @@
+ CC_CMD = $(QUIET_CC) $(CC) $(CFLAGS) -o $@ -c $<
+ CXX_CMD = $(QUIET_CXX) $(CXX) $(CFLAGS) -o $@ -c $<
+ AR_CMD = $(QUIET_AR) $(AR) cr $@ $^
+-LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
++LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^
+ MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
+ RM_CMD = $(QUIET_RM) rm -f $@
+ 
+@@ -106,18 +106,20 @@
+ 
+ # --- Library ---
+ 
++ifeq "$(NOSTATIC)" ""
+ MUPDF_LIB := $(OUT)/libmupdf.a
+-MUPDF_JS_NONE_LIB := $(OUT)/libmupdf-js-none.a
++else
++MUPDF_LIB := $(OUT)/libmupdf.so.1
++endif
+ 
+-$(MUPDF_LIB) : $(FITZ_OBJ) $(PDF_OBJ) $(XPS_OBJ) $(CBZ_OBJ) $(IMG_OBJ)
+-$(MUPDF_JS_NONE_LIB) : $(PDF_JS_NONE_OBJ)
++$(MUPDF_LIB) : $(FITZ_OBJ) $(PDF_OBJ) $(XPS_OBJ) $(CBZ_OBJ) $(IMG_OBJ) $(PDF_JS_NONE_OBJ)
+ 
+ ifeq "$(V8_PRESENT)" "yes"
+ MUPDF_JS_V8_LIB := $(OUT)/libmupdf-js-v8.a
+ $(MUPDF_JS_V8_LIB) : $(PDF_JS_V8_OBJ)
+ endif
+ 
+-INSTALL_LIBS := $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(MUPDF_JS_V8_LIB)
++INSTALL_LIBS := $(MUPDF_LIB) $(MUPDF_JS_V8_LIB)
+ 
+ # --- Rules ---
+ 
+@@ -129,6 +131,10 @@
+ 	$(AR_CMD)
+ 	$(RANLIB_CMD)
+ 
++$(OUT)/libmupdf.so.1 :
++	$(LINK_CMD) -shared -Wl,-soname,libmupdf.so.1 $(THIRD_LIBS) $(LIBS)
++	ln -sf libmupdf.so.1 $(OUT)/libmupdf.so
++
+ $(OUT)/%: $(OUT)/%.o
+ 	$(LINK_CMD)
+ 
+@@ -217,14 +223,24 @@
+ # --- Tools and Apps ---
+ 
+ MUDRAW := $(addprefix $(OUT)/, mudraw)
+-$(MUDRAW) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS)
++ifeq "$(NOSTATIC)" ""
++$(MUDRAW) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS)
+ $(MUDRAW) : $(addprefix $(OUT)/tools/, mudraw.o)
+ 	$(LINK_CMD)
++else
++$(MUDRAW) : $(addprefix $(OUT)/tools/, mudraw.o)
++	$(LINK_CMD) -L$(OUT) -lmupdf
++endif
+ 
+ MUTOOL := $(addprefix $(OUT)/, mutool)
+-$(MUTOOL) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS)
++ifeq "$(NOSTATIC)" ""
++$(MUTOOL) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS)
+ $(MUTOOL) : $(addprefix $(OUT)/tools/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
+ 	$(LINK_CMD)
++else
++$(MUTOOL) : $(addprefix $(OUT)/tools/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
++	$(LINK_CMD) -L$(OUT) -lmupdf
++endif
+ 
+ ifeq "$(V8_PRESENT)" "yes"
+ MUJSTEST_V8 := $(OUT)/mujstest-v8
+@@ -235,15 +251,25 @@
+ 
+ ifeq "$(NOX11)" ""
+ MUVIEW_X11 := $(OUT)/mupdf-x11
+-$(MUVIEW_X11) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS)
++ifeq "$(NOSTATIC)" ""
++$(MUVIEW_X11) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS)
+ $(MUVIEW_X11) : $(addprefix $(OUT)/platform/x11/, x11_main.o x11_image.o pdfapp.o)
+ 	$(LINK_CMD) $(X11_LIBS)
++else
++$(MUVIEW_X11) : $(addprefix $(OUT)/platform/x11/, x11_main.o x11_image.o pdfapp.o)
++	$(LINK_CMD) $(X11_LIBS) -L$(OUT) -lmupdf
++endif
+ 
+ ifeq "$(NOCURL)" ""
+ MUVIEW_X11_CURL := $(OUT)/mupdf-x11-curl
+-$(MUVIEW_X11_CURL) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS) $(CURL_LIB)
++ifeq "$(NOSTATIC)" ""
++$(MUVIEW_X11_CURL) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS) $(CURL_LIB)
+ $(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o)
+ 	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS)
++else
++$(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o)
++	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) -L$(OUT) -lmupdf
++endif
+ endif
+ endif
+ 
+@@ -285,7 +311,7 @@
+ libs: $(INSTALL_LIBS)
+ apps: $(INSTALL_APPS)
+ 
+-install: libs apps
++install: third libs apps
+ 	install -d $(DESTDIR)$(incdir)/mupdf
+ 	install -d $(DESTDIR)$(incdir)/mupdf/fitz
+ 	install -d $(DESTDIR)$(incdir)/mupdf/pdf
+@@ -295,6 +321,9 @@
+ 
+ 	install -d $(DESTDIR)$(libdir)
+ 	install $(INSTALL_LIBS) $(DESTDIR)$(libdir)
++	if [ -f $(DESTDIR)$(libdir)/libmupdf.so.1 ]; then \
++		ln -sf libmupdf.so.1 $(DESTDIR)$(libdir)/libmupdf.so; \
++	fi
+ 
+ 	install -d $(DESTDIR)$(bindir)
+ 	install $(INSTALL_APPS) $(DESTDIR)$(bindir)
+@@ -313,7 +342,7 @@
+ tags: $(shell find include source -name '*.[ch]')
+ 	ctags $^
+ 
+-all: libs apps
++all: third libs apps
+ 
+ all-nojs:
+ 	$(MAKE) V8_PRESENT=no
+--- mupdf-1.3.orig/Makerules
++++ mupdf-1.3/Makerules
+@@ -4,7 +4,12 @@
+ OS := $(OS:MINGW%=MINGW)
+ OS := $(OS:Windows_NT=MINGW)
+ 
++NOSTATIC ?= 
++
+ CFLAGS += -Wall
++ifeq "$(NOSTATIC)" "yes"
++CFLAGS += -fPIC
++endif
+ 
+ ifeq "$(build)" "debug"
+ CFLAGS += -pipe -g -DDEBUG
+@@ -55,15 +60,20 @@
+ SYS_OPENSSL_LIBS = $(shell pkg-config --libs libcrypto)
+ endif
+ 
++SYS_CURL_CFLAGS = $(shell pkg-config --cflags libcurl)
++SYS_CURL_LIBS = $(shell pkg-config --libs libcurl)
+ SYS_CURL_DEPS = -lpthread -lrt
+ 
+-SYS_X11_CFLAGS = $(shell pkg-config --cflags x11 xext)
+-SYS_X11_LIBS = $(shell pkg-config --libs x11 xext)
++SYS_X11_CFLAGS ?= $(shell pkg-config --cflags x11 xext 2> /dev/null)
++SYS_X11_LIBS ?= $(shell pkg-config --libs x11 xext 2> /dev/null)
++ifeq "$(SYS_X11_LIBS)" ""
++NOX11 ?= yes
++endif
+ 
+ SYS_FREETYPE_CFLAGS = $(shell pkg-config --cflags freetype2)
+ SYS_FREETYPE_LIBS = $(shell pkg-config --libs freetype2)
+-SYS_OPENJPEG_CFLAGS = $(shell pkg-config --cflags libopenjpeg1)
+-SYS_OPENJPEG_LIBS = $(shell pkg-config --libs libopenjpeg1)
++SYS_OPENJPEG_CFLAGS = $(shell pkg-config --cflags libopenjp2)
++SYS_OPENJPEG_LIBS = $(shell pkg-config --libs libopenjp2)
+ SYS_JBIG2DEC_LIBS = -ljbig2dec
+ SYS_JPEG_LIBS = -ljpeg
+ SYS_ZLIB_LIBS = -lz
+--- mupdf-1.3.orig/Makethird
++++ mupdf-1.3/Makethird
+@@ -444,5 +444,6 @@
+ CURL_CFLAGS := -I$(CURL_DIR)/include
+ CURL_LIBS := $(SYS_CURL_DEPS)
+ else
+-NOCURL := yes
++CURL_CFLAGS := $(SYS_CURL_CFLAGS)
++CURL_LIBS := $(SYS_CURL_LIBS) $(SYS_CURL_DEPS)
+ endif
+--- mupdf-1.3.orig/platform/debian/mupdf.pc
++++ mupdf-1.3/platform/debian/mupdf.pc
+@@ -1,4 +1,4 @@
+-prefix=/usr
++prefix=/usr/local
+ exec_prefix=${prefix}
+ libdir=${exec_prefix}/lib
+ includedir=${prefix}/include
+@@ -6,7 +6,7 @@
+ Name: mupdf
+ Description: Library for rendering PDF documents
+ Requires.private: freetype2
+-Version: 0.5.0
++Version: 1.3
+ Libs: -L${libdir} -lmupdf
+ Libs.private: -lopenjpeg -ljbig2dec -ljpeg -lz -lm
+ Cflags: -I${includedir}
