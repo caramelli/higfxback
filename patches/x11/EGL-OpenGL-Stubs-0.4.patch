@@ -1,0 +1,85 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build opengl-registry-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix /x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/lib
+install libEGL.so.1 $DESTDIR/x11/lib/libstubEGL.so.1
+ln -sf libstubEGL.so.1 $DESTDIR/x11/lib/libEGL.so
+install libGL.so.1 $DESTDIR/x11/lib/libstubGL.so.1
+ln -sf libstubGL.so.1 $DESTDIR/x11/lib/libGL.so
+install libGLESv1_CM.so.1 $DESTDIR/x11/lib/libstubGLESv1_CM.so.1
+ln -sf libstubGLESv1_CM.so.1 $DESTDIR/x11/lib/libGLESv1_CM.so
+install libGLESv2.so.2 $DESTDIR/x11/lib/libstubGLESv2.so.2
+ln -sf libstubGLESv2.so.2 $DESTDIR/x11/lib/libGLESv2.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 egl.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 gl.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 glesv1_cm.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 glesv2.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/egl-opengl-stubs-build.pc << EOF
+Name: EGL-OpenGL-Stubs
+Version: 0.4
+Description: EGL and OpenGL stubs for linking at build time
+Requires: $REQUIRES
+
+devel=\\
+/x11/lib/libEGL.so \\
+/x11/lib/libGL.so \\
+/x11/lib/libGLESv1_CM.so \\
+/x11/lib/libGLESv2.so \\
+/x11/lib/pkgconfig/egl.pc \\
+/x11/lib/pkgconfig/gl.pc \\
+/x11/lib/pkgconfig/glesv1_cm.pc \\
+/x11/lib/pkgconfig/glesv2.pc
+
+exec=\\
+/x11/lib/libstubEGL.so.1 \\
+/x11/lib/libstubGL.so.1 \\
+/x11/lib/libstubGLESv1_CM.so.1 \\
+/x11/lib/libstubGLESv2.so.2
+EOF
+
+exit
+--- EGL-OpenGL-Stubs-0.4.orig/Configure
++++ EGL-OpenGL-Stubs-0.4/Configure
+@@ -0,0 +1,27 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" egl.pc
++sed -i "/^prefix=/s#=.*#=$PREFIX#" gl.pc
++sed -i "/^prefix=/s#=.*#=$PREFIX#" glesv1_cm.pc
++sed -i "/^prefix=/s#=.*#=$PREFIX#" glesv2.pc

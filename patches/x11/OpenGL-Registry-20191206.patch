@@ -1,0 +1,149 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-registry-build make-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C xml
+
+# install
+install -d $DESTDIR/x11/include/GL
+install -m 644 api/GL/gl.h $DESTDIR/x11/include/GL
+install -m 644 api/GL/glext.h $DESTDIR/x11/include/GL
+install -m 644 api/GL/glx.h $DESTDIR/x11/include/GL
+install -m 644 api/GL/glxext.h $DESTDIR/x11/include/GL
+install -d $DESTDIR/x11/include/GLES
+install -m 644 api/GLES/gl.h $DESTDIR/x11/include/GLES
+install -m 644 api/GLES/glext.h $DESTDIR/x11/include/GLES
+install -m 644 api/GLES/glplatform.h $DESTDIR/x11/include/GLES
+install -d $DESTDIR/x11/include/GLES2
+install -m 644 api/GLES2/gl2.h $DESTDIR/x11/include/GLES2
+install -m 644 api/GLES2/gl2ext.h $DESTDIR/x11/include/GLES2
+install -m 644 api/GLES2/gl2platform.h $DESTDIR/x11/include/GLES2
+install -d $DESTDIR/x11/include/GLES3
+install -m 644 api/GLES3/gl3.h $DESTDIR/x11/include/GLES3
+install -m 644 api/GLES3/gl3platform.h $DESTDIR/x11/include/GLES3
+install -d $DESTDIR/x11/share/opengl/registry
+install -m 644 xml/gl.xml $DESTDIR/x11/share/opengl/registry
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/opengl-registry-build.pc << EOF
+Name: OpenGL-Registry
+Version: 20191206
+Description: OpenGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GL/gl.h \\
+/x11/include/GL/glext.h \\
+/x11/include/GL/glx.h \\
+/x11/include/GL/glxext.h \\
+/x11/include/GLES/gl.h \\
+/x11/include/GLES/glext.h \\
+/x11/include/GLES/glplatform.h \\
+/x11/include/GLES2/gl2.h \\
+/x11/include/GLES2/gl2ext.h \\
+/x11/include/GLES2/gl2platform.h \\
+/x11/include/GLES3/gl3.h \\
+/x11/include/GLES3/gl3platform.h \\
+/x11/share/opengl/registry/gl.xml
+EOF
+
+exit
+--- OpenGL-Registry-20191206.orig/xml/Makefile
++++ OpenGL-Registry-20191206/xml/Makefile
+@@ -17,7 +17,7 @@
+ 
+ PYFILES = genheaders.py reg.py
+ GENOPTS =
+-GENHEADERS = ./genheaders.py $(GENOPTS)
++GENHEADERS = python3 ./genheaders.py $(GENOPTS)
+ 
+ # Generate all headers for GL / GLES / WGL / GLX
+ # Different headers depend on different XML registry files
+@@ -30,14 +30,17 @@
+ # platform-specific versions of these headers, where appropriate.
+ 
+ API	   = ../api
+-GLHEADERS  = $(API)/GL/glext.h \
++GLHEADERS  = \
++	     $(API)/GL/gl.h \
++	     $(API)/GL/glext.h \
+ 	     $(API)/GL/glcorearb.h \
+ 	     $(API)/GLES/gl.h \
+ 	     $(API)/GLES/glext.h \
+ 	     $(API)/GLES2/gl2.h \
+ 	     $(API)/GLES2/gl2ext.h \
+ 	     $(API)/GLES3/gl3.h
+-GLXHEADERS = $(API)/GL/glxext.h
++GLXHEADERS = $(API)/GL/glxext.h \
++	     $(API)/GL/glx.h
+ WGLHEADERS = $(API)/GL/wglext.h \
+ 	     $(API)/GL/wgl.h
+ ALLHEADERS = $(GLHEADERS) $(GLXHEADERS) $(WGLHEADERS)
+--- OpenGL-Registry-20191206.orig/xml/genheaders.py
++++ OpenGL-Registry-20191206/xml/genheaders.py
+@@ -41,10 +41,10 @@
+ startTime = None
+ def startTimer():
+     global startTime
+-    startTime = time.clock()
++    startTime = time.process_time()
+ def endTimer(msg):
+     global startTime
+-    endTime = time.clock()
++    endTime = time.process_time()
+     if (timeit):
+         write(msg, endTime - startTime)
+         startTime = None
+@@ -67,6 +67,7 @@
+ 
+ allVersions       = allExtensions = '.*'
+ noVersions        = noExtensions = None
++glthrough31Pat    = '1|2|3\.[01]'
+ gl12andLaterPat   = '1\.[2-9]|[234]\.[0-9]'
+ gles2onlyPat      = '2\.[0-9]'
+ gles2through30Pat = '2\.[0-9]|3\.0'
+@@ -221,6 +222,25 @@
+ protectProto = protect
+ 
+ buildList = [
++    # GL compatibility profile - GL/gl.h
++    CGeneratorOptions(
++        filename          = '../api/GL/gl.h',
++        apiname           = 'gl',
++        profile           = 'compatibility',
++        versions          = allVersions,
++        emitversions      = glthrough31Pat,
++        defaultExtensions = None,
++        addExtensions     = None,
++        removeExtensions  = None,
++        prefixText        = prefixStrings + glExtPlatformStrings + genDateCommentString,
++        genFuncPointers   = True,
++        protectFile       = protectFile,
++        protectFeature    = protectFeature,
++        protectProto      = False,
++        protectProtoStr   = 'GL_GLEXT_PROTOTYPES',
++        apicall           = 'GLAPI ',
++        apientry          = 'APIENTRY ',
++        apientryp         = 'APIENTRYP '),
+     # GL API 1.2+ + extensions - GL/glext.h
+     CGeneratorOptions(
+         filename          = '../api/GL/glext.h',
+@@ -441,11 +461,11 @@
+         addExtensions     = None,
+         removeExtensions  = None,
+         # add glXPlatformStrings?
+-        prefixText        = prefixStrings + genDateCommentString,
++        prefixText        = prefixStrings + ['#include <X11/Xutil.h>','typedef unsigned char GLubyte;',''] + genDateCommentString,
+         genFuncPointers   = True,
+         protectFile       = protectFile,
+         protectFeature    = protectFeature,
+-        protectProto      = protectProto,
++        protectProto      = False,
+         protectProtoStr   = 'GLX_GLXEXT_PROTOTYPES',
+         apicall           = '',
+         apientry          = '',

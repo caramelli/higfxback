@@ -1,13 +1,13 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-ac-build bison-build gcc-g++-build libxml2-build makedepend-build"
+REQUIRES="autotools-wrappers-ac-build bison-build gcc-g++-build libxml2-build makedepend-build opengl-registry-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68)
 cat m4/* acinclude.m4 > aclocal.m4; autoconf
-./configure --disable-gallium-llvm --disable-glu --disable-glw --with-gallium-drivers=swrast --with-driver=fbdev --with-egl-platforms=fbdev --enable-gallium-egl --enable-gles1 --enable-gles2 --prefix=/fb
+./configure --disable-gallium-llvm --disable-glu --disable-glw --enable-gallium-egl --enable-gles1 --enable-gles2 --with-driver=fbdev --with-egl-platforms=fbdev --with-gallium-drivers=swrast --prefix=/fb
 
 # build
 make
@@ -18,7 +18,7 @@ install lib/libEGL.so.1.* $DESTDIR/fb/lib/libmesaEGL.so.1
 install lib/libGL.so.1.* $DESTDIR/fb/lib/libmesaGL.so.1
 install lib/libGLESv1_CM.so.1.* $DESTDIR/fb/lib/libmesaGLESv1_CM.so.1
 install lib/libGLESv2.so.2.* $DESTDIR/fb/lib/libmesaGLESv2.so.2
-install lib/libglapi.so.0.* $DESTDIR/fb/lib/libglapi.so
+install lib/libglapi.so.0.* $DESTDIR/fb/lib/libglapi.so.0
 install -d $DESTDIR/fb/lib/egl
 install lib/egl/egl_gallium.so $DESTDIR/fb/lib/egl
 install lib/egl/st_GL.so $DESTDIR/fb/lib/egl
@@ -36,7 +36,7 @@ exec=\\
 /fb/lib/libmesaGL.so.1 \\
 /fb/lib/libmesaGLESv1_CM.so.1 \\
 /fb/lib/libmesaGLESv2.so.2 \\
-/fb/lib/libglapi.so \\
+/fb/lib/libglapi.so.0 \\
 /fb/lib/egl/egl_gallium.so \\
 /fb/lib/egl/st_GL.so
 EOF

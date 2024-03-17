@@ -1,0 +1,201 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libxext-build libxml2-build opengl-registry-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-dri --disable-gallium-llvm --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-shared-glapi --enable-xlib-glx --with-gallium-drivers=swrast --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/lib
+install lib/libEGL.so.1 $DESTDIR/x11/lib
+install lib/libGL.so.1 $DESTDIR/x11/lib
+install lib/libGLESv1_CM.so.1.* $DESTDIR/x11/lib/libmesaGLESv1_CM.so.1
+install lib/libGLESv2.so.2.* $DESTDIR/x11/lib/libmesaGLESv2.so.2
+install lib/libglapi.so.0.* $DESTDIR/x11/lib/libglapi.so.0
+install -d $DESTDIR/x11/lib/egl
+install lib/egl/egl_gallium.so $DESTDIR/x11/lib/egl
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/mesa-build.pc << EOF
+Name: Mesa
+Version: 9.2.5
+Description: Mesa implementation of Khronos specifications
+Requires: $REQUIRES
+
+exec=\\
+/x11/lib/libmesaEGL.so.1 \\
+/x11/lib/libmesaGL.so.1 \\
+/x11/lib/libmesaGLESv1_CM.so.1 \\
+/x11/lib/libmesaGLESv2.so.2 \\
+/x11/lib/libglapi.so.0 \\
+/x11/lib/egl/egl_gallium.so
+EOF
+
+exit
+--- Mesa-9.2.5.orig/configure.ac
++++ Mesa-9.2.5/configure.ac
+@@ -744,12 +744,6 @@
+     [enable_shared_glapi="$enableval"],
+     [enable_shared_glapi="$enable_dri"])
+ 
+-# Shared GLAPI is only useful for DRI
+-if test "x$enable_dri" = xno; then
+-    AC_MSG_NOTICE([Shared GLAPI is only useful for DRI, disabling])
+-    enable_shared_glapi=no
+-fi
+-
+ AM_CONDITIONAL(HAVE_SHARED_GLAPI, test "x$enable_shared_glapi" = xyes)
+ 
+ dnl
+@@ -1227,9 +1221,6 @@
+     if test "x$enable_egl" = xno; then
+         AC_MSG_ERROR([cannot enable egl_gallium without EGL])
+     fi
+-    if test "x$have_libdrm" != xyes; then
+-        AC_MSG_ERROR([egl_gallium requires libdrm >= $LIBDRM_REQUIRED])
+-    fi
+ 
+     GALLIUM_STATE_TRACKERS_DIRS="egl $GALLIUM_STATE_TRACKERS_DIRS"
+     GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS egl-static"
+@@ -1454,7 +1445,11 @@
+ 		;;
+ 
+ 	x11)
+-		PKG_CHECK_MODULES([XCB_DRI2], [x11-xcb xcb-dri2 >= 1.8 xcb-xfixes])
++		PKG_CHECK_MODULES([X11], [x11])
++
++                if test "x$enable_dri" = xyes; then
++                        PKG_CHECK_MODULES([XCB_DRI2], [x11-xcb xcb-dri2 >= 1.8 xcb-xfixes])
++                fi
+ 
+                 if test "x$enable_glx" = xyes; then
+                         HAVE_EGL_DRIVER_GLX=1
+--- Mesa-9.2.5.orig/src/egl/main/Makefile.am
++++ Mesa-9.2.5/src/egl/main/Makefile.am
+@@ -79,6 +79,7 @@
+ 
+ if HAVE_EGL_PLATFORM_X11
+ AM_CFLAGS += -DHAVE_X11_PLATFORM
++AM_CFLAGS += $(X11_CFLAGS)
+ AM_CFLAGS += $(XCB_DRI2_CFLAGS)
+ libEGL_la_LIBADD += $(XCB_DRI2_LIBS)
+ endif
+--- Mesa-9.2.5.orig/src/egl/main/eglcurrent.c
++++ Mesa-9.2.5/src/egl/main/eglcurrent.c
+@@ -146,6 +146,11 @@
+    memset(t, 0, sizeof(*t));
+    t->LastError = EGL_SUCCESS;
+    /* default, per EGL spec */
++#ifdef _EGL_BUILT_IN_DRIVER_GLX
++   if (getenv("EGL_GLX"))
++      t->CurrentAPIIndex = _eglConvertApiToIndex(EGL_OPENGL_API);
++   else
++#endif
+    t->CurrentAPIIndex = _eglConvertApiToIndex(EGL_OPENGL_ES_API);
+ }
+ 
+--- Mesa-9.2.5.orig/src/egl/main/egldriver.c
++++ Mesa-9.2.5/src/egl/main/egldriver.c
+@@ -569,6 +569,12 @@
+       _eglAddBuiltInDrivers();
+    }
+ 
++#ifdef _EGL_BUILT_IN_DRIVER_GLX
++      _EGLModule *mod = _eglModules->Elements[0];
++      if (!strcmp(mod->Path, "egl_glx"))
++         setenv("EGL_GLX", "1", 1);
++#endif
++
+    return (_eglModules != NULL);
+ }
+ 
+--- Mesa-9.2.5.orig/src/gallium/state_trackers/egl/x11/glxinit.c
++++ Mesa-9.2.5/src/gallium/state_trackers/egl/x11/glxinit.c
+@@ -7,6 +7,8 @@
+  * refactoring glxext.c.
+  */
+ 
++#ifdef GLX_DIRECT_RENDERING
++
+ #include <assert.h>
+ #include <X11/Xlib.h>
+ #include <X11/Xproto.h>
+@@ -22,8 +24,6 @@
+ 
+ #include "glxinit.h"
+ 
+-#ifdef GLX_DIRECT_RENDERING
+-
+ typedef struct GLXGenericGetString
+ {
+    CARD8 reqType;
+--- Mesa-9.2.5.orig/src/gallium/state_trackers/egl/x11/x11_screen.c
++++ Mesa-9.2.5/src/gallium/state_trackers/egl/x11/x11_screen.c
+@@ -26,7 +26,9 @@
+ #include <fcntl.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#ifdef GLX_DIRECT_RENDERING
+ #include <xf86drm.h>
++#endif
+ #include <X11/Xlibint.h>
+ #include <X11/extensions/XShm.h>
+ 
+@@ -34,7 +36,9 @@
+ #include "egllog.h"
+ 
+ #include "x11_screen.h"
++#ifdef GLX_DIRECT_RENDERING
+ #include "dri2.h"
++#endif
+ #include "glxinit.h"
+ 
+ struct x11_screen {
+--- Mesa-9.2.5.orig/src/gallium/state_trackers/egl/x11/x11_screen.h
++++ Mesa-9.2.5/src/gallium/state_trackers/egl/x11/x11_screen.h
+@@ -27,7 +27,9 @@
+ 
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
++#ifdef GLX_DIRECT_RENDERING
+ #include <X11/extensions/dri2tokens.h>
++#endif
+ #include "GL/gl.h" /* for GL types needed by __GLcontextModes */
+ #include "glcore.h"  /* for __GLcontextModes */
+ #include "pipe/p_compiler.h"
+--- Mesa-9.2.5.orig/src/gallium/targets/egl-static/Makefile.am
++++ Mesa-9.2.5/src/gallium/targets/egl-static/Makefile.am
+@@ -68,10 +68,11 @@
+ egl_gallium_la_LDFLAGS = -Wl,--no-undefined -Wl,--allow-multiple-definition -avoid-version -module
+ 
+ if HAVE_EGL_PLATFORM_X11
++AM_CPPFLAGS += $(X11_CFLAGS)
+ AM_CPPFLAGS += $(LIBDRM_CFLAGS)
+ egl_gallium_la_LIBADD += \
+ 	$(top_builddir)/src/gallium/winsys/sw/xlib/libws_xlib.la \
+-	-lX11 -lXext -lXfixes $(LIBDRM_LIBS)
++	-lX11 -lXext $(LIBDRM_LIBS)
+ endif
+ 
+ if HAVE_EGL_PLATFORM_WAYLAND
+--- Mesa-9.2.5.orig/src/mesa/drivers/x11/Makefile.am
++++ Mesa-9.2.5/src/mesa/drivers/x11/Makefile.am
+@@ -64,6 +64,10 @@
+ 	-no-undefined \
+ 	$(GL_LIB_DEPS)
+ 
++if HAVE_SHARED_GLAPI
++lib@GL_LIB@_la_LIBADD += $(top_builddir)/src/mapi/shared-glapi/libglapi.la
++endif
++
+ if BUILD_SHARED
+ # Provide compatibility with scripts for the old Mesa build system for
+ # a while by putting a link to the driver into /lib of the build tree.

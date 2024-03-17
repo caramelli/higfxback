@@ -1,0 +1,62 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lxml-build make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C api
+
+# install
+install -d $DESTDIR/x11/include/EGL
+install -m 644 api/EGL/egl.h $DESTDIR/x11/include/EGL
+install -m 644 api/EGL/eglext.h $DESTDIR/x11/include/EGL
+install -m 644 api/EGL/eglplatform.h $DESTDIR/x11/include/EGL
+install -d $DESTDIR/x11/include/KHR
+install -m 644 api/KHR/khrplatform.h $DESTDIR/x11/include/KHR
+install -d $DESTDIR/x11/share/egl/registry
+install -m 644 api/egl.xml $DESTDIR/x11/share/egl/registry
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/egl-registry-build.pc << EOF
+Name: EGL-Registry
+Version: 20200106
+Description: EGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/EGL/egl.h \\
+/x11/include/EGL/eglext.h \\
+/x11/include/EGL/eglplatform.h \\
+/x11/include/KHR/khrplatform.h \\
+/x11/share/egl/registry/egl.xml
+EOF
+
+exit
+--- EGL-Registry-20200106.orig/api/EGL/eglplatform.h
++++ EGL-Registry-20200106/api/EGL/eglplatform.h
+@@ -67,7 +67,13 @@
+  * implementations.
+  */
+ 
+-#if defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
++#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
++
++typedef void *EGLNativeDisplayType;
++typedef void *EGLNativePixmapType;
++typedef void *EGLNativeWindowType;
++
++#elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
+ #ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN 1
+ #endif
+--- EGL-Registry-20200106.orig/api/genheaders.py
++++ EGL-Registry-20200106/api/genheaders.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python -i
++#!/usr/bin/env python3
+ #
+ # Copyright (c) 2013-2017 The Khronos Group Inc.
+ #

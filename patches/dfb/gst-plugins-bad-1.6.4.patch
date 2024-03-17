@@ -1,9 +1,16 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build curl-build directfb2-build gst-plugins-base-build libxml2-build openjpeg2-build"
+REQUIRES="autotools-wrappers-lt-build curl-build directfb2-build gst-plugins-base-build libxml2-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists openjpeg2-build; then
+  REQUIRES="$REQUIRES openjpeg2-build"
+else
+  pkg-config --exists --print-errors openjpeg-build || exit 1
+  REQUIRES="$REQUIRES openjpeg-build"
+fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.2)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c

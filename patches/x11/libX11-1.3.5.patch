@@ -29,8 +29,10 @@ install src/.libs/libX11.so.6.* $DESTDIR/x11/lib/libX11.so.6
 ln -sf libX11.so.6 $DESTDIR/x11/lib/libX11.so
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 x11.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/X11
+install -m 644 src/XKeysymDB $DESTDIR/x11/share/X11
 install -d $DESTDIR/x11/share/X11/locale
-echo C/Compose:    C > $DESTDIR/x11/share/X11/locale/compose.dir
+echo C/Compose: C > $DESTDIR/x11/share/X11/locale/compose.dir
 echo C/XLC_LOCALE: C > $DESTDIR/x11/share/X11/locale/locale.dir
 install -d $DESTDIR/x11/share/X11/locale/C
 install -m 644 nls/C/Compose $DESTDIR/x11/share/X11/locale/C
@@ -60,6 +62,7 @@ devel=\\
 
 exec=\\
 /x11/lib/libX11.so.6 \\
+/x11/share/X11/XKeysymDB \\
 /x11/share/X11/locale/compose.dir \\
 /x11/share/X11/locale/locale.dir \\
 /x11/share/X11/locale/C/Compose \\

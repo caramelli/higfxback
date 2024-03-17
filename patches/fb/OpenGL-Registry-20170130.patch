@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="make-build egl-registry-build"
+REQUIRES="egl-registry-build make-build"
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -53,7 +53,7 @@ EOF
 exit
 --- OpenGL-Registry-20170130.orig/api/GL/glfbdev.h
 +++ OpenGL-Registry-20170130/api/GL/glfbdev.h
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,78 @@
 +#ifndef __glfbdev_h_
 +#define __glfbdev_h_ 1
 +
@@ -84,9 +84,8 @@ exit
 +** MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
 +*/
 +
-+#include <fcntl.h>
 +#include <linux/fb.h>
-+#include <sys/mman.h>
++#include <stddef.h>
 +
 +#ifndef GLFBDEV_VERSION_1_0
 +#define GLFBDEV_VERSION_1_0 1
@@ -135,7 +134,7 @@ exit
 +#endif
 --- OpenGL-Registry-20170130.orig/xml/Makefile
 +++ OpenGL-Registry-20170130/xml/Makefile
-@@ -17,14 +17,15 @@
+@@ -17,13 +17,15 @@
  
  PYFILES = genheaders.py reg.py
  GENOPTS =
@@ -147,13 +146,12 @@ exit
  
  API	   = ../api
 -GLHEADERS  = $(API)/GL/glext.h \
--	     $(API)/GL/glcorearb.h \
 +GLHEADERS  = \
 +	     $(API)/GL/gl.h \
 +	     $(API)/GL/glext.h \
+ 	     $(API)/GL/glcorearb.h \
  	     $(API)/GLES/gl.h \
  	     $(API)/GLES/glext.h \
- 	     $(API)/GLES2/gl2.h \
 --- OpenGL-Registry-20170130.orig/xml/genheaders.py
 +++ OpenGL-Registry-20170130/xml/genheaders.py
 @@ -75,10 +75,10 @@
@@ -173,7 +171,7 @@ exit
  
  allVersions       = allExtensions = '.*'
  noVersions        = noExtensions = None
-+glthrough21Pat    = '1|2\.[0-9]'
++glthrough21Pat    = '1|2'
  gl12andLaterPat   = '1\.[2-9]|[234]\.[0-9]'
  gles2onlyPat      = '2\.[0-9]'
  gles2through30Pat = '2\.[0-9]|3\.0'
