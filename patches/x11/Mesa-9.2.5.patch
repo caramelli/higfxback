@@ -90,17 +90,17 @@ exit
  endif
 --- Mesa-9.2.5.orig/src/egl/main/eglcurrent.c
 +++ Mesa-9.2.5/src/egl/main/eglcurrent.c
-@@ -146,6 +146,11 @@
+@@ -146,7 +146,10 @@
     memset(t, 0, sizeof(*t));
     t->LastError = EGL_SUCCESS;
     /* default, per EGL spec */
-+#ifdef _EGL_BUILT_IN_DRIVER_GLX
-+   if (getenv("EGL_GLX"))
+-   t->CurrentAPIIndex = _eglConvertApiToIndex(EGL_OPENGL_ES_API);
++   if (getenv("EGL_BIND_OPENGL_API"))
 +      t->CurrentAPIIndex = _eglConvertApiToIndex(EGL_OPENGL_API);
 +   else
-+#endif
-    t->CurrentAPIIndex = _eglConvertApiToIndex(EGL_OPENGL_ES_API);
++      t->CurrentAPIIndex = _eglConvertApiToIndex(EGL_OPENGL_ES_API);
  }
+ 
  
 --- Mesa-9.2.5.orig/src/egl/main/egldriver.c
 +++ Mesa-9.2.5/src/egl/main/egldriver.c
@@ -111,7 +111,7 @@ exit
 +#ifdef _EGL_BUILT_IN_DRIVER_GLX
 +      _EGLModule *mod = _eglModules->Elements[0];
 +      if (!strcmp(mod->Path, "egl_glx"))
-+         setenv("EGL_GLX", "1", 1);
++         setenv("EGL_BIND_OPENGL_API", "1", 1);
 +#endif
 +
     return (_eglModules != NULL);

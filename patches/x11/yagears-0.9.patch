@@ -1,0 +1,60 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.13.4; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1-cm --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install yagears $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/yagears-build.pc << EOF
+Name: yagears
+Version: 0.9
+Description: Yet Another Gears OpenGL demo
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/yagears
+EOF
+
+exit
+--- yagears-0.9.orig/configure.ac
++++ yagears-0.9/configure.ac
+@@ -1,6 +1,7 @@
+ AC_INIT(yagears, 0.9)
+ 
+ AC_CONFIG_HEADERS(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE
+ 
+@@ -126,6 +127,7 @@
+    test x$enable_egl_wayland = xyes || test x$enable_egl_drm; then
+   PKG_CHECK_MODULES(EGL, egl, enable_egl=yes, enable_egl=no)
+   if test x$enable_egl = xyes; then
++    EGL_CFLAGS="$EGL_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
+     if test x$enable_egl_x11 = xyes; then
+       PKG_CHECK_MODULES(X11, x11,
+                         AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform),
+--- yagears-0.9.orig/main.c
++++ yagears-0.9/main.c
+@@ -1128,6 +1128,8 @@
+ 
+     XMapWindow(x11_dpy, x11_win);
+ 
++    XMoveWindow(x11_dpy, x11_win, win_posx, win_posy);
++
+     x11_event_mask = ExposureMask;
+     XSelectInput(x11_dpy, x11_win, x11_event_mask);
+   }
