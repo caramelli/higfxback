@@ -1,9 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-build"
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build libx11-build tiff-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl-build; then
+  SDL=1
+  REQUIRES="$REQUIRES sdl-build"
+fi
 
 # configure (ac-2.69; am-1.13.4; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
@@ -15,6 +20,7 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install yagears $DESTDIR/x11/bin
+test $SDL && install yagears-gui $DESTDIR/x11/bin
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -25,8 +31,10 @@ Description: Yet Another Gears OpenGL demo
 Requires: $REQUIRES
 
 exec=\\
-/x11/bin/yagears
+/x11/bin/yagears \\
 EOF
+test $SDL && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 
 exit
 --- yagears-0.9.orig/configure.ac

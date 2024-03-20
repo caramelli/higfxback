@@ -24,11 +24,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 rm -rf src/video/khronos
-if test $GL; then
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --disable-video-opengl --disable-video-opengles1 --enable-video-directfb --prefix=/dfb
-else
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --enable-video-directfb --prefix=/dfb
-fi
 cd test; SDL_CFLAGS="-I../include -I/dfb/include -I/dfb/include/directfb" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/dfb/lib" ./configure --with-testdatadir=/dfb/share/SDL2/test; cd -
 
 # build
@@ -110,6 +106,7 @@ install test/testaudiohotplug $DESTDIR/dfb/share/SDL2/test
 install test/testaudioinfo $DESTDIR/dfb/share/SDL2/test
 install test/testautomation $DESTDIR/dfb/share/SDL2/test
 install test/testbounds $DESTDIR/dfb/share/SDL2/test
+install test/testcustomcursor $DESTDIR/dfb/share/SDL2/test
 install test/testdisplayinfo $DESTDIR/dfb/share/SDL2/test
 install test/testdraw2 $DESTDIR/dfb/share/SDL2/test
 install test/testdrawchessboard $DESTDIR/dfb/share/SDL2/test
@@ -120,6 +117,8 @@ install test/testfile $DESTDIR/dfb/share/SDL2/test
 install test/testfilesystem $DESTDIR/dfb/share/SDL2/test
 install test/testgamecontroller $DESTDIR/dfb/share/SDL2/test
 install test/testgesture $DESTDIR/dfb/share/SDL2/test
+test $GL && install test/testgl2 $DESTDIR/dfb/share/SDL2/test
+test $GL && install test/testgles $DESTDIR/dfb/share/SDL2/test
 test $GL && install test/testgles2 $DESTDIR/dfb/share/SDL2/test
 install test/testhaptic $DESTDIR/dfb/share/SDL2/test
 install test/testhotplug $DESTDIR/dfb/share/SDL2/test
@@ -241,6 +240,7 @@ exec=\\
 /dfb/share/SDL2/test/testaudioinfo \\
 /dfb/share/SDL2/test/testautomation \\
 /dfb/share/SDL2/test/testbounds \\
+/dfb/share/SDL2/test/testcustomcursor \\
 /dfb/share/SDL2/test/testdisplayinfo \\
 /dfb/share/SDL2/test/testdraw2 \\
 /dfb/share/SDL2/test/testdrawchessboard \\
@@ -251,7 +251,11 @@ exec=\\
 /dfb/share/SDL2/test/testfilesystem \\
 /dfb/share/SDL2/test/testgamecontroller \\
 /dfb/share/SDL2/test/testgesture \\
-/dfb/share/SDL2/test/testgles2 \\
+EOF
+test $GL && echo /dfb/share/SDL2/test/testgl2 \\ >> $DESTDIR/dfb/share/pkgconfig/sdl2-build.pc
+test $GL && echo /dfb/share/SDL2/test/testgles \\ >> $DESTDIR/dfb/share/pkgconfig/sdl2-build.pc
+test $GL && echo /dfb/share/SDL2/test/testgles2 \\ >> $DESTDIR/dfb/share/pkgconfig/sdl2-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/sdl2-build.pc << EOF
 /dfb/share/SDL2/test/testhaptic \\
 /dfb/share/SDL2/test/testhotplug \\
 /dfb/share/SDL2/test/testiconv \\
@@ -349,6 +353,56 @@ exit
  #include "SDL_mutex.h"
  #include "SDL_power.h"
  #include "SDL_render.h"
+--- SDL2-2.0.16.orig/src/dynapi/SDL_dynapi_procs.h
++++ SDL2-2.0.16/src/dynapi/SDL_dynapi_procs.h
+@@ -780,8 +780,6 @@
+ SDL_DYNAPI_PROC(size_t,SDL_RWwrite,(SDL_RWops *a, const void *b, size_t c, size_t d),(a,b,c,d),return)
+ SDL_DYNAPI_PROC(int,SDL_RWclose,(SDL_RWops *a),(a),return)
+ SDL_DYNAPI_PROC(void*,SDL_LoadFile,(const char *a, size_t *b),(a,b),return)
+-SDL_DYNAPI_PROC(SDL_MetalView,SDL_Metal_CreateView,(SDL_Window *a),(a),return)
+-SDL_DYNAPI_PROC(void,SDL_Metal_DestroyView,(SDL_MetalView a),(a),)
+ SDL_DYNAPI_PROC(int,SDL_LockTextureToSurface,(SDL_Texture *a, const SDL_Rect *b, SDL_Surface **c),(a,b,c),return)
+ SDL_DYNAPI_PROC(SDL_bool,SDL_HasARMSIMD,(void),(),return)
+ SDL_DYNAPI_PROC(char*,SDL_strtokr,(char *a, const char *b, char **c),(a,b,c),return)
+@@ -818,7 +816,6 @@
+ SDL_DYNAPI_PROC(char*,SDL_GetErrorMsg,(char *a, int b),(a,b),return)
+ SDL_DYNAPI_PROC(void,SDL_LockSensors,(void),(),)
+ SDL_DYNAPI_PROC(void,SDL_UnlockSensors,(void),(),)
+-SDL_DYNAPI_PROC(void*,SDL_Metal_GetLayer,(SDL_MetalView a),(a),return)
+ SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
+ SDL_DYNAPI_PROC(double,SDL_trunc,(double a),(a),return)
+ SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
+--- SDL2-2.0.16.orig/src/render/opengles/SDL_glesfuncs.h
++++ SDL2-2.0.16/src/render/opengles/SDL_glesfuncs.h
+@@ -27,10 +27,13 @@
+ SDL_PROC(void, glClear, (GLbitfield))
+ SDL_PROC(void, glClearColor, (GLclampf, GLclampf, GLclampf, GLclampf))
+ SDL_PROC(void, glColor4f, (GLfloat, GLfloat, GLfloat, GLfloat))
++SDL_PROC(void, glColorPointer, (GLint, GLenum, GLsizei, const GLvoid *))
+ SDL_PROC(void, glDeleteTextures, (GLsizei, const GLuint *))
++SDL_PROC(void, glDepthFunc, (GLenum))
+ SDL_PROC(void, glDisable, (GLenum))
+ SDL_PROC(void, glDisableClientState, (GLenum array))
+ SDL_PROC(void, glDrawArrays, (GLenum, GLint, GLsizei))
++SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *))
+ SDL_PROC_OES(void, glDrawTexfOES, (GLfloat, GLfloat, GLfloat, GLfloat, GLfloat))
+ SDL_PROC(void, glEnable, (GLenum))
+ SDL_PROC(void, glEnableClientState, (GLenum))
+@@ -39,12 +42,14 @@
+ SDL_PROC(void, glGenTextures, (GLsizei, GLuint *))
+ SDL_PROC(GLenum, glGetError, (void))
+ SDL_PROC(void, glGetIntegerv, (GLenum, GLint *))
++SDL_PROC(const GLubyte *, glGetString, (GLenum))
+ SDL_PROC(void, glLoadIdentity, (void))
+ SDL_PROC(void, glMatrixMode, (GLenum))
+ SDL_PROC(void, glOrthof, (GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat))
+ SDL_PROC(void, glPixelStorei, (GLenum, GLint))
+ SDL_PROC(void, glReadPixels, (GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid*))
+ SDL_PROC(void, glScissor, (GLint, GLint, GLsizei, GLsizei))
++SDL_PROC(void, glShadeModel, (GLenum))
+ SDL_PROC(void, glTexCoordPointer, (GLint, GLenum, GLsizei, const GLvoid *))
+ SDL_PROC(void, glTexEnvf, (GLenum, GLenum, GLfloat))
+ SDL_PROC(void, glTexImage2D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *))
 --- SDL2-2.0.16.orig/src/video/SDL_vulkan_internal.h
 +++ SDL2-2.0.16/src/video/SDL_vulkan_internal.h
 @@ -58,7 +58,7 @@
@@ -441,6 +495,15 @@ exit
  @OPENGLES1_TARGETS@ += testgles$(EXE)
  @OPENGLES2_TARGETS@ += testgles2$(EXE)
  
+@@ -169,7 +169,7 @@
+ 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+ 
+ testgles$(EXE): $(srcdir)/testgles.c
+-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
++	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+ 
+ testgles2$(EXE): $(srcdir)/testgles2.c
+ 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 --- SDL2-2.0.16.orig/test/configure.ac
 +++ SDL2-2.0.16/test/configure.ac
 @@ -192,6 +192,12 @@
@@ -565,6 +628,33 @@ exit
    };
  
  
+--- SDL2-2.0.16.orig/test/testcustomcursor.c
++++ SDL2-2.0.16/test/testcustomcursor.c
+@@ -231,8 +231,7 @@
+     for (i = 0; i < SDL_NUM_SYSTEM_CURSORS; ++i) {
+         cursors[1+i] = SDL_CreateSystemCursor((SDL_SystemCursor)i);
+         if (!cursors[1+i]) {
+-            SDL_Log("Error, couldn't create system cursor %d\n", i);
+-            quit(2);
++            break;
+         }
+     }
+     SDL_SetCursor(cursors[0]);
+@@ -244,10 +243,14 @@
+ #else
+     while (!done) {
+         loop();
++        SDL_Delay(10);
+     }
+ #endif
+ 
+     for (i = 0; i < SDL_arraysize(cursors); ++i) {
++        if (!cursors[i])
++            break;
++
+         SDL_FreeCursor(cursors[i]);
+     }
+     quit(0);
 --- SDL2-2.0.16.orig/test/testgamecontroller.c
 +++ SDL2-2.0.16/test/testgamecontroller.c
 @@ -624,10 +624,10 @@
@@ -582,6 +672,149 @@ exit
  
      if (!background_front || !background_back || !button || !axis) {
          SDL_DestroyRenderer(screen);
+--- SDL2-2.0.16.orig/test/testgles.c
++++ SDL2-2.0.16/test/testgles.c
+@@ -24,9 +24,49 @@
+ 
+ #include "SDL_opengles.h"
+ 
++typedef struct GLES_Context
++{
++#define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
++#define SDL_PROC_OES SDL_PROC
++#include "../src/render/opengles/SDL_glesfuncs.h"
++#undef SDL_PROC
++#undef SDL_PROC_OES
++} GLES_Context;
++
+ static SDLTest_CommonState *state;
+ static SDL_GLContext *context = NULL;
+ static int depth = 16;
++static GLES_Context ctx;
++
++static int LoadContext(GLES_Context * data)
++{
++#if SDL_VIDEO_DRIVER_UIKIT
++#define __SDL_NOGETPROCADDR__
++#elif SDL_VIDEO_DRIVER_ANDROID
++#define __SDL_NOGETPROCADDR__
++#elif SDL_VIDEO_DRIVER_PANDORA
++#define __SDL_NOGETPROCADDR__
++#endif
++
++#if defined __SDL_NOGETPROCADDR__
++#define SDL_PROC(ret,func,params) data->func=func;
++#else
++#define SDL_PROC(ret,func,params) \
++    do { \
++        data->func = SDL_GL_GetProcAddress(#func); \
++        if ( ! data->func ) { \
++            return SDL_SetError("Couldn't load GLES function %s: %s", #func, SDL_GetError()); \
++        } \
++    } while ( 0 );
++#endif /* __SDL_NOGETPROCADDR__ */
++
++#define SDL_PROC_OES SDL_PROC
++
++#include "../src/render/opengles/SDL_glesfuncs.h"
++#undef SDL_PROC
++#undef SDL_PROC_OES
++    return 0;
++}
+ 
+ /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
+ static void
+@@ -85,18 +125,18 @@
+ 
+ 
+     /* Do our drawing, too. */
+-    glClearColor(0.0, 0.0, 0.0, 1.0);
+-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
++    ctx.glClearColor(0.0, 0.0, 0.0, 1.0);
++    ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
+     /* Draw the cube */
+-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, color);
+-    glEnableClientState(GL_COLOR_ARRAY);
+-    glVertexPointer(3, GL_FLOAT, 0, cube);
+-    glEnableClientState(GL_VERTEX_ARRAY);
+-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
++    ctx.glColorPointer(4, GL_UNSIGNED_BYTE, 0, color);
++    ctx.glEnableClientState(GL_COLOR_ARRAY);
++    ctx.glVertexPointer(3, GL_FLOAT, 0, cube);
++    ctx.glEnableClientState(GL_VERTEX_ARRAY);
++    ctx.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
+ 
+-    glMatrixMode(GL_MODELVIEW);
+-    glRotatef(5.0, 1.0, 1.0, 1.0);
++    ctx.glMatrixMode(GL_MODELVIEW);
++    ctx.glRotatef(5.0, 1.0, 1.0, 1.0);
+ }
+ 
+ int
+@@ -188,6 +228,13 @@
+         }
+     }
+ 
++    /* Important: call this *after* creating the context */
++    if (LoadContext(&ctx) < 0) {
++        SDL_Log("Could not load GLES functions\n");
++        quit(2);
++        return 0;
++    }
++
+     if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
+         SDL_GL_SetSwapInterval(1);
+     } else {
+@@ -197,10 +244,10 @@
+     SDL_GetCurrentDisplayMode(0, &mode);
+     SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
+     SDL_Log("\n");
+-    SDL_Log("Vendor     : %s\n", glGetString(GL_VENDOR));
+-    SDL_Log("Renderer   : %s\n", glGetString(GL_RENDERER));
+-    SDL_Log("Version    : %s\n", glGetString(GL_VERSION));
+-    SDL_Log("Extensions : %s\n", glGetString(GL_EXTENSIONS));
++    SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
++    SDL_Log("Renderer   : %s\n", ctx.glGetString(GL_RENDERER));
++    SDL_Log("Version    : %s\n", ctx.glGetString(GL_VERSION));
++    SDL_Log("Extensions : %s\n", ctx.glGetString(GL_EXTENSIONS));
+     SDL_Log("\n");
+ 
+     status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
+@@ -271,15 +318,15 @@
+         }
+ 
+         aspectAdjust = (4.0f / 3.0f) / ((float)state->window_w / state->window_h);
+-        glViewport(0, 0, state->window_w, state->window_h);
+-        glMatrixMode(GL_PROJECTION);
+-        glLoadIdentity();
+-        glOrthof(-2.0, 2.0, -2.0 * aspectAdjust, 2.0 * aspectAdjust, -20.0, 20.0);
+-        glMatrixMode(GL_MODELVIEW);
+-        glLoadIdentity();
+-        glEnable(GL_DEPTH_TEST);
+-        glDepthFunc(GL_LESS);
+-        glShadeModel(GL_SMOOTH);
++        ctx.glViewport(0, 0, state->window_w, state->window_h);
++        ctx.glMatrixMode(GL_PROJECTION);
++        ctx.glLoadIdentity();
++        ctx.glOrthof(-2.0, 2.0, -2.0 * aspectAdjust, 2.0 * aspectAdjust, -20.0, 20.0);
++        ctx.glMatrixMode(GL_MODELVIEW);
++        ctx.glLoadIdentity();
++        ctx.glEnable(GL_DEPTH_TEST);
++        ctx.glDepthFunc(GL_LESS);
++        ctx.glShadeModel(GL_SMOOTH);
+     }
+ 
+     /* Main render loop */
+@@ -302,7 +349,7 @@
+                                     break;
+                                 }
+                                 /* Change view port to the new window dimensions */
+-                                glViewport(0, 0, event.window.data1, event.window.data2);
++                                ctx.glViewport(0, 0, event.window.data1, event.window.data2);
+                                 /* Update window content */
+                                 Render();
+                                 SDL_GL_SwapWindow(state->windows[i]);
 --- SDL2-2.0.16.orig/test/testgles2.c
 +++ SDL2-2.0.16/test/testgles2.c
 @@ -21,7 +21,7 @@

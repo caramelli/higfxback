@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="libpng-build meson-build tiff-build"
+REQUIRES="directfb2-build libpng-build meson-build tiff-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -35,9 +35,9 @@ meson compile -C build
 # install
 install -d $DESTDIR/dfb/bin
 test $GL && install build/yagears2 $DESTDIR/dfb/bin
-test $GL && test SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
+test $GL && test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
 test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
-test $VK && test SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
+test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
