@@ -1,0 +1,41 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build cairo-build libsvg-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.59; am-1.9; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-pango --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include
+install -m 644 src/svg-cairo.h $DESTDIR/x11/include
+install -d $DESTDIR/x11/lib
+install src/.libs/libsvg-cairo.so.1.* $DESTDIR/x11/lib/libsvg-cairo.so.1
+ln -sf libsvg-cairo.so.1 $DESTDIR/x11/lib/libsvg-cairo.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 libsvg-cairo.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libsvg-cairo-build.pc << EOF
+Name: libsvg-cairo
+Version: 20050813
+Description: SVG rendering library using Cairo
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/svg-cairo.h \\
+/x11/lib/libsvg-cairo.so \\
+/x11/lib/pkgconfig/libsvg-cairo.pc
+
+exec=\\
+/x11/lib/libsvg-cairo.so.1
+EOF
+
+exit
