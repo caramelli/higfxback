@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-ac-build mpc-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.64)
-./configure --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
+./configure --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-gxx-include-dir=/include/c++ --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
 
 # build
 make
@@ -18,77 +18,77 @@ install host-`./config.guess`/gcc/g++ $DESTDIR/bin
 ln -sf g++ $DESTDIR/bin/c++
 install host-`./config.guess`/gcc/xgcc $DESTDIR/bin/gcc
 ln -sf gcc $DESTDIR/bin/cc
-install -d $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/algorithm $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/c_global/cctype $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/c_global/clocale $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/c_global/cstdio $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/c_global/cstdlib $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/c_global/cstring $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/c_global/cwchar $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/iosfwd $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/list $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/map $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/set $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/string $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/include/std/utility $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -d $DESTDIR/include/c++/`cat gcc/BASE-VER`/backward
-install -m 644 libstdc++-v3/include/backward/binders.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/backward
-install -d $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/algorithmfwd.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/allocator.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/basic_string.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/basic_string.tcc $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/char_traits.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/concept_check.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/cpp_type_traits.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/functexcept.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/list.tcc $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/localefwd.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/move.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/ostream_insert.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/postypes.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/range_access.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_algo.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_algobase.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_construct.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_function.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_heap.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_iterator.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_iterator_base_funcs.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_iterator_base_types.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_list.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_map.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_multimap.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_multiset.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_pair.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_relops.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_set.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_tempbuf.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stl_tree.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/include/bits/stringfwd.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -d $DESTDIR/include/c++/`cat gcc/BASE-VER`/debug
-install -m 644 libstdc++-v3/include/debug/debug.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/debug
-install -d $DESTDIR/include/c++/`cat gcc/BASE-VER`/ext
-install -m 644 libstdc++-v3/include/ext/alloc_traits.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/ext
-install -m 644 libstdc++-v3/include/ext/atomicity.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/ext
-install -m 644 libstdc++-v3/include/ext/new_allocator.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/ext
-install -m 644 libstdc++-v3/include/ext/numeric_traits.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/ext
-install -m 644 libstdc++-v3/include/ext/type_traits.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/ext
-install -m 644 libstdc++-v3/libsupc++/atomic_lockfree_defines.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/libsupc++/cxxabi_forced.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/libsupc++/exception $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -m 644 libstdc++-v3/libsupc++/exception_defines.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/bits
-install -m 644 libstdc++-v3/libsupc++/new $DESTDIR/include/c++/`cat gcc/BASE-VER`
-install -d $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/atomic_word.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++allocator.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++config.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++locale.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/cpu_defines.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr-default.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/os_defines.h $DESTDIR/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits
+install -d $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/algorithm $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cctype $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/clocale $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cstdio $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cstdlib $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cstring $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cwchar $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/iosfwd $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/list $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/map $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/set $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/string $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/utility $DESTDIR/include/c++
+install -d $DESTDIR/include/c++/backward
+install -m 644 libstdc++-v3/include/backward/binders.h $DESTDIR/include/c++/backward
+install -d $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/algorithmfwd.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/allocator.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/basic_string.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/basic_string.tcc $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/char_traits.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/concept_check.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/cpp_type_traits.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/functexcept.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/list.tcc $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/localefwd.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/move.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/ostream_insert.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/postypes.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/range_access.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_algo.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_algobase.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_construct.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_function.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_heap.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_iterator.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_iterator_base_funcs.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_iterator_base_types.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_list.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_map.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_multimap.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_multiset.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_pair.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_relops.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_set.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_tempbuf.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_tree.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stringfwd.h $DESTDIR/include/c++/bits
+install -d $DESTDIR/include/c++/debug
+install -m 644 libstdc++-v3/include/debug/debug.h $DESTDIR/include/c++/debug
+install -d $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/alloc_traits.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/atomicity.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/new_allocator.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/numeric_traits.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/type_traits.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/libsupc++/atomic_lockfree_defines.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/libsupc++/cxxabi_forced.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/libsupc++/exception $DESTDIR/include/c++
+install -m 644 libstdc++-v3/libsupc++/exception_defines.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/libsupc++/new $DESTDIR/include/c++
+install -d $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/atomic_word.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++allocator.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++config.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++locale.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/cpu_defines.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr-default.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/os_defines.h $DESTDIR/include/c++/`./config.guess`/bits
 install -d $DESTDIR/lib
 ln -sf ../bin/cpp $DESTDIR/lib/cpp
 install host-`./config.guess`/gcc/libgcc_s.so.1 $DESTDIR/lib
@@ -138,70 +138,70 @@ devel=\\
 /bin/cpp \\
 /bin/g++ \\
 /bin/gcc \\
-/include/c++/`cat gcc/BASE-VER`/algorithm \\
-/include/c++/`cat gcc/BASE-VER`/cctype \\
-/include/c++/`cat gcc/BASE-VER`/clocale \\
-/include/c++/`cat gcc/BASE-VER`/cstdio \\
-/include/c++/`cat gcc/BASE-VER`/cstdlib \\
-/include/c++/`cat gcc/BASE-VER`/cstring \\
-/include/c++/`cat gcc/BASE-VER`/cwchar \\
-/include/c++/`cat gcc/BASE-VER`/exception \\
-/include/c++/`cat gcc/BASE-VER`/iosfwd \\
-/include/c++/`cat gcc/BASE-VER`/list \\
-/include/c++/`cat gcc/BASE-VER`/map \\
-/include/c++/`cat gcc/BASE-VER`/new \\
-/include/c++/`cat gcc/BASE-VER`/set \\
-/include/c++/`cat gcc/BASE-VER`/string \\
-/include/c++/`cat gcc/BASE-VER`/utility \\
-/include/c++/`cat gcc/BASE-VER`/backward/binders.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/algorithmfwd.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/allocator.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/atomic_lockfree_defines.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/basic_string.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/basic_string.tcc \\
-/include/c++/`cat gcc/BASE-VER`/bits/char_traits.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/concept_check.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/cpp_type_traits.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/cxxabi_forced.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/exception_defines.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/functexcept.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/list.tcc \\
-/include/c++/`cat gcc/BASE-VER`/bits/localefwd.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/move.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/ostream_insert.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/postypes.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/range_access.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_algo.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_algobase.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_construct.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_function.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_heap.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_iterator.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_iterator_base_funcs.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_iterator_base_types.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_list.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_map.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_multimap.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_multiset.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_pair.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_relops.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_set.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_tempbuf.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stl_tree.h \\
-/include/c++/`cat gcc/BASE-VER`/bits/stringfwd.h \\
-/include/c++/`cat gcc/BASE-VER`/debug/debug.h \\
-/include/c++/`cat gcc/BASE-VER`/ext/alloc_traits.h \\
-/include/c++/`cat gcc/BASE-VER`/ext/atomicity.h \\
-/include/c++/`cat gcc/BASE-VER`/ext/new_allocator.h \\
-/include/c++/`cat gcc/BASE-VER`/ext/numeric_traits.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/atomic_word.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/c++allocator.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/c++config.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/c++locale.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/cpu_defines.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/gthr-default.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/gthr.h \\
-/include/c++/`cat gcc/BASE-VER`/`./config.guess`/bits/os_defines.h \\
+/include/c++/algorithm \\
+/include/c++/cctype \\
+/include/c++/clocale \\
+/include/c++/cstdio \\
+/include/c++/cstdlib \\
+/include/c++/cstring \\
+/include/c++/cwchar \\
+/include/c++/exception \\
+/include/c++/iosfwd \\
+/include/c++/list \\
+/include/c++/map \\
+/include/c++/new \\
+/include/c++/set \\
+/include/c++/string \\
+/include/c++/utility \\
+/include/c++/backward/binders.h \\
+/include/c++/bits/algorithmfwd.h \\
+/include/c++/bits/allocator.h \\
+/include/c++/bits/atomic_lockfree_defines.h \\
+/include/c++/bits/basic_string.h \\
+/include/c++/bits/basic_string.tcc \\
+/include/c++/bits/char_traits.h \\
+/include/c++/bits/concept_check.h \\
+/include/c++/bits/cpp_type_traits.h \\
+/include/c++/bits/cxxabi_forced.h \\
+/include/c++/bits/exception_defines.h \\
+/include/c++/bits/functexcept.h \\
+/include/c++/bits/list.tcc \\
+/include/c++/bits/localefwd.h \\
+/include/c++/bits/move.h \\
+/include/c++/bits/ostream_insert.h \\
+/include/c++/bits/postypes.h \\
+/include/c++/bits/range_access.h \\
+/include/c++/bits/stl_algo.h \\
+/include/c++/bits/stl_algobase.h \\
+/include/c++/bits/stl_construct.h \\
+/include/c++/bits/stl_function.h \\
+/include/c++/bits/stl_heap.h \\
+/include/c++/bits/stl_iterator.h \\
+/include/c++/bits/stl_iterator_base_funcs.h \\
+/include/c++/bits/stl_iterator_base_types.h \\
+/include/c++/bits/stl_list.h \\
+/include/c++/bits/stl_map.h \\
+/include/c++/bits/stl_multimap.h \\
+/include/c++/bits/stl_multiset.h \\
+/include/c++/bits/stl_pair.h \\
+/include/c++/bits/stl_relops.h \\
+/include/c++/bits/stl_set.h \\
+/include/c++/bits/stl_tempbuf.h \\
+/include/c++/bits/stl_tree.h \\
+/include/c++/bits/stringfwd.h \\
+/include/c++/debug/debug.h \\
+/include/c++/ext/alloc_traits.h \\
+/include/c++/ext/atomicity.h \\
+/include/c++/ext/new_allocator.h \\
+/include/c++/ext/numeric_traits.h \\
+/include/c++/`./config.guess`/bits/atomic_word.h \\
+/include/c++/`./config.guess`/bits/c++allocator.h \\
+/include/c++/`./config.guess`/bits/c++config.h \\
+/include/c++/`./config.guess`/bits/c++locale.h \\
+/include/c++/`./config.guess`/bits/cpu_defines.h \\
+/include/c++/`./config.guess`/bits/gthr-default.h \\
+/include/c++/`./config.guess`/bits/gthr.h \\
+/include/c++/`./config.guess`/bits/os_defines.h \\
 /lib/cpp \\
 /lib/libgcc_s.so \\
 /lib/libstdc++.so \\

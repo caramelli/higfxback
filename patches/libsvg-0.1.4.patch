@@ -1,0 +1,152 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build expat-build jpeg-build libpng-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.59; am-1.9; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+./configure --disable-static --with-expat --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 src/svg.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libsvg.so.1.* $DESTDIR/lib/libsvg.so.1
+ln -sf libsvg.so.1 $DESTDIR/lib/libsvg.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libsvg.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libsvg-build.pc << EOF
+Name: libsvg
+Version: 0.1.4
+Description: Scalable Vector Graphics (SVG) library
+Requires: $REQUIRES
+
+devel=\\
+/include/svg.h \\
+/lib/libsvg.so \\
+/lib/pkgconfig/libsvg.pc
+
+exec=\\
+/lib/libsvg.so.1
+EOF
+
+exit
+--- libsvg-0.1.4.orig/configure.in
++++ libsvg-0.1.4/configure.in
+@@ -49,7 +49,7 @@
+   LIBSVG_CFLAGS="-DLIBSVG_EXPAT"
+   LIBSVG_LIBS="-lexpat"
+   LIBSVG_PARSER_BACKEND="expat"
+-  LIBSVG_REQUIRES=""
++  LIBSVG_REQUIRES="expat"
+ else
+   PKG_CHECK_MODULES(LIBSVG, libxml-2.0 >= 2.4.7 )
+   LIBSVG_PARSER_BACKEND="libxml"
+--- libsvg-0.1.4.orig/libsvg.pc.in
++++ libsvg-0.1.4/libsvg.pc.in
+@@ -6,6 +6,7 @@
+ Name: libsvg
+ Description: library for parsing SVG content
+ Version: @VERSION@
+-Requires: @LIBSVG_REQUIRES@
+-Libs: -L${libdir} -lsvg -lpng -ljpeg -lz
++Requires.private: @LIBSVG_REQUIRES@
++Libs: -L${libdir} -lsvg
++Libs.private: -ljpeg -lpng -lm -lz
+ Cflags: -I${includedir}
+--- libsvg-0.1.4.orig/src/Makefile.am
++++ libsvg-0.1.4/src/Makefile.am
+@@ -35,5 +35,5 @@
+ 
+ INCLUDES = $(LIBSVG_CFLAGS) $(WARN_CFLAGS)
+ 
+-libsvg_la_LIBADD = $(LIBSVG_LIBS)
++libsvg_la_LIBADD = $(LIBSVG_LIBS) -ljpeg -lpng
+ 
+--- libsvg-0.1.4.orig/src/svg_image.c
++++ libsvg-0.1.4/src/svg_image.c
+@@ -271,7 +271,7 @@
+ 
+     /* expand gray bit depth if needed */
+     if (color_type == PNG_COLOR_TYPE_GRAY && depth < 8)
+-	png_set_gray_1_2_4_to_8 (png);
++	png_set_expand_gray_1_2_4_to_8 (png);
+ 
+     /* transform transparency to alpha */
+     if (png_get_valid(png, info, PNG_INFO_tRNS))
+--- libsvg-0.1.4.orig/src/svg_parser_expat.c
++++ libsvg-0.1.4/src/svg_parser_expat.c
+@@ -30,31 +30,6 @@
+ #include "svgint.h"
+ #include "svg_hash.h"
+ 
+-static void
+-_svg_parser_sax_start_element (void		*closure,
+-			       const XML_Char	*name,
+-			       const XML_Char	**atts);
+-
+-static void
+-_svg_parser_sax_end_element (void		*closure,
+-			     const XML_Char	*name);
+-
+-static void
+-_svg_parser_sax_characters (void		*closure,
+-			    const XML_Char	*ch,
+-			    int			len);
+-
+-static void
+-_svg_parser_sax_warning (void		*closure,
+-			 const char	*msg, ...);
+-
+-static void
+-_svg_parser_sax_error (void		*closure,
+-		       const char	*msg, ...);
+-
+-static void
+-_svg_parser_sax_fatal_error (void	*closure,
+-			     const char	*msg, ...);
+ svg_status_t
+ _svg_parser_init (svg_parser_t *parser, svg_t *svg)
+ {
+@@ -134,33 +109,3 @@
+     return parser->status;
+ }
+ 
+-static void
+-_svg_parser_sax_warning (void *closure, const char *msg, ...)
+-{
+-    va_list args;
+-	
+-    va_start (args, msg);
+-    vfprintf (stderr, msg, args);
+-    va_end (args);
+-}
+-
+-static void
+-_svg_parser_sax_error (void *closure, const char *msg, ...)
+-{
+-    va_list args;
+-	
+-    va_start (args, msg);
+-    vfprintf (stderr, msg, args);
+-    va_end (args);
+-}
+-
+-static void
+-_svg_parser_sax_fatal_error (void *closure, const char *msg, ...)
+-{
+-    va_list args;
+-	
+-    va_start (args, msg);
+-    vfprintf (stderr, msg, args);
+-    va_end (args);
+-}
+-

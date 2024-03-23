@@ -116,18 +116,17 @@ exit
  LINK_V8_CMD = $(QUIET_LINK) $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS_V8)
  MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
  
-@@ -55,6 +60,10 @@
+@@ -55,6 +60,9 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
 +$(OUT)/libfitz.so.1 :
 +	$(LINK_CMD) -shared -Wl,-soname,libfitz.so.1 $(THIRD_LIBS) $(LIBS)
-+	ln -sf libfitz.so.1 $(OUT)/libfitz.so
 +
  $(OUT)/% : $(OUT)/%.o
  	$(LINK_CMD)
  
-@@ -79,7 +88,11 @@
+@@ -79,7 +87,11 @@
  
  # --- Fitz, MuPDF, MuXPS and MuCBZ library ---
  
@@ -139,7 +138,7 @@ exit
  FITZ_V8_LIB := $(OUT)/libfitzv8.a
  
  FITZ_SRC := $(notdir $(wildcard fitz/*.c draw/*.c))
-@@ -162,16 +175,31 @@
+@@ -162,16 +174,31 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
@@ -148,7 +147,7 @@ exit
 +$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
 +else
 +$(MUDRAW) : $(OUT)/mudraw.o
-+	$(LINK_CMD) -L$(OUT) -lfitz
++	$(LINK_CMD) $(FITZ_LIB)
 +endif
  
  MUTOOL := $(addprefix $(OUT)/, mutool)
@@ -157,7 +156,7 @@ exit
 +$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
 +else
 +$(MUTOOL) : $(addprefix $(OUT)/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
-+	$(LINK_CMD) -L$(OUT) -lfitz
++	$(LINK_CMD) $(FITZ_LIB)
 +endif
  
  ifeq "$(NOX11)" ""
@@ -169,16 +168,16 @@ exit
  	$(LINK_CMD) $(X11_LIBS)
 +else
 +$(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
-+	$(LINK_CMD) $(X11_LIBS) -L$(OUT) -lfitz
++	$(LINK_CMD) $(X11_LIBS) $(FITZ_LIB)
 +endif
  
  MUVIEW_V8 := $(OUT)/mupdf-v8
  $(MUVIEW_V8) : $(FITZ_V8_LIB) $(THIRD_LIBS)
-@@ -211,8 +239,11 @@
+@@ -211,8 +238,11 @@
  install: $(FITZ_LIB) $(MUVIEW) $(MUDRAW) $(MUTOOL)
  	install -d $(DESTDIR)$(bindir) $(DESTDIR)$(libdir) $(DESTDIR)$(incdir) $(DESTDIR)$(mandir)/man1
  	install $(FITZ_LIB) $(DESTDIR)$(libdir)
-+	if [ -f $(DESTDIR)$(libdir)/libfitz.so.1 ]; then \
++	if test -n "$(NOSTATIC)"; then \
 +		ln -sf libfitz.so.1 $(DESTDIR)$(libdir)/libfitz.so; \
 +	fi
  	install fitz/memento.h fitz/fitz.h pdf/mupdf.h xps/muxps.h cbz/mucbz.h $(DESTDIR)$(incdir)

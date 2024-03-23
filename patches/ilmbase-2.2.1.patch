@@ -1,0 +1,228 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/OpenEXR
+install -m 644 config/IlmBaseConfig.h $DESTDIR/include/OpenEXR
+install -m 644 Half/half.h $DESTDIR/include/OpenEXR
+install -m 644 Half/halfExport.h $DESTDIR/include/OpenEXR
+install -m 644 Half/halfFunction.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/Iex.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexBaseExc.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexExport.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexForward.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexMacros.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexMathExc.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexNamespace.h $DESTDIR/include/OpenEXR
+install -m 644 Iex/IexThrowErrnoExc.h $DESTDIR/include/OpenEXR
+install -m 644 IlmThread/IlmThread.h $DESTDIR/include/OpenEXR
+install -m 644 IlmThread/IlmThreadExport.h $DESTDIR/include/OpenEXR
+install -m 644 IlmThread/IlmThreadMutex.h $DESTDIR/include/OpenEXR
+install -m 644 IlmThread/IlmThreadNamespace.h $DESTDIR/include/OpenEXR
+install -m 644 IlmThread/IlmThreadPool.h $DESTDIR/include/OpenEXR
+install -m 644 IlmThread/IlmThreadSemaphore.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathBox.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathExc.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathExport.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathForward.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathFun.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathInt64.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathLimits.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathMath.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathMatrix.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathNamespace.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathPlatform.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathRandom.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathShear.h $DESTDIR/include/OpenEXR
+install -m 644 Imath/ImathVec.h $DESTDIR/include/OpenEXR
+install -d $DESTDIR/lib
+install Half/.libs/libHalf.so.23.* $DESTDIR/lib/libHalf.so.23
+ln -sf libHalf.so.23 $DESTDIR/lib/libHalf.so
+install Iex/.libs/libIex-2_2.so.23.* $DESTDIR/lib/libIex-2_2.so.23
+ln -sf libIex-2_2.so.23 $DESTDIR/lib/libIex.so
+install IexMath/.libs/libIexMath-2_2.so.23.* $DESTDIR/lib/libIexMath-2_2.so.23
+ln -sf libIexMath-2_2.so.23 $DESTDIR/lib/libIexMath.so
+install IlmThread/.libs/libIlmThread-2_2.so.23.* $DESTDIR/lib/libIlmThread-2_2.so.23
+ln -sf libIlmThread-2_2.so.23 $DESTDIR/lib/libIlmThread.so
+install Imath/.libs/libImath-2_2.so.23.* $DESTDIR/lib/libImath-2_2.so.23
+ln -sf libImath-2_2.so.23 $DESTDIR/lib/libImath.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 IlmBase.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/ilmbase-build.pc << EOF
+Name: ilmbase
+Version: 2.2.1
+Description: Industrial Light & Magic utility libraries
+Requires: $REQUIRES
+
+devel=\\
+/include/OpenEXR/half.h \\
+/include/OpenEXR/halfExport.h \\
+/include/OpenEXR/halfFunction.h \\
+/include/OpenEXR/Iex.h \\
+/include/OpenEXR/IexBaseExc.h \\
+/include/OpenEXR/IexExport.h \\
+/include/OpenEXR/IexForward.h \\
+/include/OpenEXR/IexMacros.h \\
+/include/OpenEXR/IexMathExc.h \\
+/include/OpenEXR/IexNamespace.h \\
+/include/OpenEXR/IexThrowErrnoExc.h \\
+/include/OpenEXR/IlmBaseConfig.h \\
+/include/OpenEXR/IlmThread.h \\
+/include/OpenEXR/IlmThreadExport.h \\
+/include/OpenEXR/IlmThreadMutex.h \\
+/include/OpenEXR/IlmThreadNamespace.h \\
+/include/OpenEXR/IlmThreadPool.h \\
+/include/OpenEXR/IlmThreadSemaphore.h \\
+/include/OpenEXR/ImathBox.h \\
+/include/OpenEXR/ImathExc.h \\
+/include/OpenEXR/ImathExport.h \\
+/include/OpenEXR/ImathForward.h \\
+/include/OpenEXR/ImathFun.h \\
+/include/OpenEXR/ImathInt64.h \\
+/include/OpenEXR/ImathLimits.h \\
+/include/OpenEXR/ImathMath.h \\
+/include/OpenEXR/ImathMatrix.h \\
+/include/OpenEXR/ImathNamespace.h \\
+/include/OpenEXR/ImathPlatform.h \\
+/include/OpenEXR/ImathRandom.h \\
+/include/OpenEXR/ImathShear.h \\
+/include/OpenEXR/ImathVec.h \\
+/lib/libHalf.so \\
+/lib/libIex.so \\
+/lib/libIexMath.so \\
+/lib/libIlmThread.so \\
+/lib/libImath.so \\
+/lib/pkgconfig/IlmBase.pc
+
+exec=\\
+/lib/libHalf.so.23 \\
+/lib/libIex-2_2.so.23 \\
+/lib/libIexMath-2_2.so.23 \\
+/lib/libIlmThread-2_2.so.23 \\
+/lib/libImath-2_2.so.23
+EOF
+
+exit
+--- ilmbase-2.2.1.orig/Half/Makefile.am
++++ ilmbase-2.2.1/Half/Makefile.am
+@@ -1,7 +1,5 @@
+ ## Process this file with automake to produce Makefile.in
+ 
+-INCLUDES = -I$(top_srcdir)/config
+-
+ lib_LTLIBRARIES = libHalf.la
+ 
+ libHalf_la_SOURCES = half.cpp half.h halfFunction.h halfLimits.h
+--- ilmbase-2.2.1.orig/HalfTest/Makefile.am
++++ ilmbase-2.2.1/HalfTest/Makefile.am
+@@ -9,9 +9,9 @@
+ 		   testFunction.h testLimits.cpp testLimits.h testSize.cpp \
+ 		   testSize.h
+ 
+-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/Half -I$(top_srcdir)/config
++HalfTest_CPPFLAGS = -I$(top_srcdir)/Half
+ 
+-LDADD = -L$(top_builddir)/Half -lHalf
++HalfTest_LDADD = -L$(top_builddir)/Half -lHalf
+ 
+ TESTS = HalfTest
+ 
+--- ilmbase-2.2.1.orig/Iex/Makefile.am
++++ ilmbase-2.2.1/Iex/Makefile.am
+@@ -1,7 +1,5 @@
+ ## Process this file with automake to produce Makefile.in
+ 
+-INCLUDES = -I$(top_srcdir)/config
+-
+ lib_LTLIBRARIES = libIex.la
+ 
+ libIex_la_SOURCES = IexThrowErrnoExc.cpp IexBaseExc.cpp IexBaseExc.h \
+--- ilmbase-2.2.1.orig/IexMath/Makefile.am
++++ ilmbase-2.2.1/IexMath/Makefile.am
+@@ -14,7 +14,6 @@
+ 
+ libIexMath_la_LIBADD = ../Iex/libIex.la
+ 
+-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/Iex \
+-           -I$(top_srcdir)/config
++libIexMath_la_CPPFLAGS = -I$(top_srcdir)/Iex
+ 
+ EXTRA_DIST = CMakeLists.txt
+--- ilmbase-2.2.1.orig/IexTest/Makefile.am
++++ ilmbase-2.2.1/IexTest/Makefile.am
+@@ -4,9 +4,9 @@
+ 
+ IexTest_SOURCES = main.cpp testBaseExc.cpp testBaseExc.h
+ 
+-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/Iex -I$(top_srcdir)/config
++IexTest_CPPFLAGS = -I$(top_srcdir)/Iex
+ 
+-LDADD = -L$(top_builddir)/Iex -lIex
++IexTest_LDADD = -L$(top_builddir)/Iex -lIex
+ 
+ TESTS = IexTest
+ 
+--- ilmbase-2.2.1.orig/IlmThread/Makefile.am
++++ ilmbase-2.2.1/IlmThread/Makefile.am
+@@ -28,4 +28,4 @@
+ EXTRA_DIST = $(noinst_HEADERS) IlmThreadMutexWin32.cpp IlmThreadSemaphoreWin32.cpp \
+ 	     IlmThreadWin32.cpp CMakeLists.txt
+ 
+-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/Iex -I$(top_srcdir)/config
++libIlmThread_la_CPPFLAGS = -I$(top_srcdir)/Iex
+--- ilmbase-2.2.1.orig/Imath/Makefile.am
++++ ilmbase-2.2.1/Imath/Makefile.am
+@@ -38,7 +38,6 @@
+                           ImathNamespace.h ImathForward.h ImathExport.h \
+                           ImathFrustumTest.h
+ 
+-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/Iex -I$(top_srcdir)/Half \
+-	   -I$(top_srcdir)/config
++libImath_la_CPPFLAGS = -I$(top_srcdir)/Iex -I$(top_srcdir)/Half
+ 
+ EXTRA_DIST = CMakeLists.txt
+--- ilmbase-2.2.1.orig/ImathTest/Makefile.am
++++ ilmbase-2.2.1/ImathTest/Makefile.am
+@@ -19,10 +19,9 @@
+ 		    testJacobiEigenSolver.cpp testJacobiEigenSolver.h \
+ 		    testFrustumTest.cpp testFrustumTest.h
+ 
+-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/Imath -I$(top_srcdir)/Iex -I$(top_srcdir)/Half \
+-	   -I$(top_srcdir)/config
++ImathTest_CPPFLAGS = -I$(top_srcdir)/Imath -I$(top_srcdir)/Iex -I$(top_srcdir)/Half
+ 
+-LDADD = -L$(top_builddir)/Imath -L$(top_builddir)/Iex -L$(top_builddir)/Half \
++ImathTest_LDADD = -L$(top_builddir)/Imath -L$(top_builddir)/Iex -L$(top_builddir)/Half \
+ 	-lImath -lIex -lHalf
+ 
+ TESTS = ImathTest
+--- ilmbase-2.2.1.orig/configure.ac
++++ ilmbase-2.2.1/configure.ac
+@@ -263,13 +263,10 @@
+ 
+      dnl If multiple archs specified, make sure that --disable-dependency-tracking was also specified
+      if test "$enable_dependency_tracking" != no ; then
+-        osx_arch_array=( ${osx_arch} )
+-        if test ${#osx_arch_array[@]} -gt 1 ; then
+           AC_MSG_ERROR([building multiple OS X architectures requires --disable-dependency-tracking.
+ Please re-run configure with these options:
+   --enable-osx-arch="${osx_arch}" --disable-dependency-tracking
+   		  ])
+-        fi
+      fi
+   fi
+ 

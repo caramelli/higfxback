@@ -1,12 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build make-build"
+REQUIRES="gcc-g++-build make-build stb-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-cd Source; sh ./Configure --prefix; cd -
+rm -f Source/stb_image.h
+rm -f Source/stb_image_write.h
+cd Source; sh ./Configure --stb_image /include/stb --prefix; cd -
 
 # build
 make -C Source
@@ -51,10 +53,12 @@ EOF
 exit
 --- astc-encoder-2.0.orig/Source/Configure
 +++ astc-encoder-2.0/Source/Configure
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,32 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
++
++STB_IMAGE=.
 +
 +while : ; do
 +  case "$1" in
@@ -63,6 +67,10 @@ exit
 +    ;;
 +    --prefix)
 +      PREFIX=$2
++      shift
++    ;;
++    --stb_image)
++      STB_IMAGE=$2
 +      shift
 +    ;;
 +    *)
@@ -76,18 +84,22 @@ exit
 +sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
 +
 +sed -i "/^prefix=/s#=.*#=$PREFIX#" astc-encoder.pc
++
++sed -i "/^STB_IMAGE ?=/s#=.*#= $STB_IMAGE#" Makefile
 --- astc-encoder-2.0.orig/Source/Makefile
 +++ astc-encoder-2.0/Source/Makefile
-@@ -15,6 +15,8 @@
+@@ -15,6 +15,10 @@
  # under the License.
  # -----------------------------------------------------------------------------
  
 +PREFIX ?= /usr/local
 +
++STB_IMAGE ?= .
++
  # Configure the application to build
  #
  #   * astcenc - a full compressor/decompressor
-@@ -68,7 +70,9 @@
+@@ -68,7 +72,9 @@
      astcenc_quantization.cpp \
      astcenc_symbolic_physical.cpp \
      astcenc_weight_align.cpp \
@@ -98,7 +110,7 @@ exit
      astcenccli_error_metrics.cpp \
      astcenccli_image.cpp \
      astcenccli_image_load_store.cpp \
-@@ -76,30 +80,28 @@
+@@ -76,30 +82,28 @@
      astcenccli_toplevel.cpp \
      astcenccli_toplevel_help.cpp
  
@@ -140,7 +152,7 @@ exit
             -Wall -Wextra -Wpedantic -Werror -Werror=shadow -Wdouble-promotion
  
  # Validate that the APP parameter is a supported value, and patch CXXFLAGS
-@@ -115,7 +117,7 @@
+@@ -115,7 +119,7 @@
  
  # Validate that the BUILD parameter is a supported value, and patch CXXFLAGS
  ifeq ($(BUILD),release)
@@ -149,7 +161,7 @@ exit
  else
  ifeq ($(BUILD),profile)
  CXXFLAGS += -O2 -g
-@@ -164,39 +166,46 @@
+@@ -164,39 +168,46 @@
  # ==================================================
  # Build rules for the command line wrapper
  
@@ -162,13 +174,13 @@ exit
  # handling of corrupt files, relying on asserts to handle bad file input.
  # Compiling with NDEBUG is a potential security risk.
 -stb_image-$(BINARY).o: stb_image.h
-+stb_image-$(VEC).o: stb_image.h
++stb_image-$(VEC).o: $(STB_IMAGE)/stb_image.h
  	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS_EXTERNAL) -DSTB_IMAGE_IMPLEMENTATION \
  		-DSTBI_NO_PSD -DSTBI_NO_GIF -DSTBI_NO_PIC -DSTBI_NO_PNM -UNDEBUG
  	@echo "[C++] $<"
  
 -stb_image_write-$(BINARY).o: stb_image_write.h
-+stb_image_write-$(VEC).o: stb_image_write.h
++stb_image_write-$(VEC).o: $(STB_IMAGE)/stb_image_write.h
  	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS_EXTERNAL) -DSTB_IMAGE_WRITE_IMPLEMENTATION \
  		-UNDEBUG
  	@echo "[C++] $<"
@@ -205,7 +217,7 @@ exit
  	@echo "[Clean] Removing $(VEC) build outputs"
  
  batchbuild:
-@@ -210,3 +219,16 @@
+@@ -210,3 +221,16 @@
  	@+$(MAKE) -s clean VEC=sse2
  	@+$(MAKE) -s clean VEC=sse4.2
  	@+$(MAKE) -s clean VEC=avx2

@@ -219,18 +219,17 @@ exit
  
  # --- Rules ---
  
-@@ -129,6 +131,10 @@
+@@ -129,6 +131,9 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
 +$(OUT)/libmupdf.so.1 :
 +	$(LINK_CMD) -shared -Wl,-soname,libmupdf.so.1 $(THIRD_LIBS) $(LIBS)
-+	ln -sf libmupdf.so.1 $(OUT)/libmupdf.so
 +
  $(OUT)/%: $(OUT)/%.o
  	$(LINK_CMD)
  
-@@ -217,14 +223,24 @@
+@@ -217,14 +222,24 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
@@ -241,7 +240,7 @@ exit
  	$(LINK_CMD)
 +else
 +$(MUDRAW) : $(addprefix $(OUT)/tools/, mudraw.o)
-+	$(LINK_CMD) -L$(OUT) -lmupdf
++	$(LINK_CMD) $(MUPDF_LIB)
 +endif
  
  MUTOOL := $(addprefix $(OUT)/, mutool)
@@ -252,12 +251,12 @@ exit
  	$(LINK_CMD)
 +else
 +$(MUTOOL) : $(addprefix $(OUT)/tools/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
-+	$(LINK_CMD) -L$(OUT) -lmupdf
++	$(LINK_CMD) $(MUPDF_LIB)
 +endif
  
  ifeq "$(V8_PRESENT)" "yes"
  MUJSTEST_V8 := $(OUT)/mujstest-v8
-@@ -235,15 +251,25 @@
+@@ -235,15 +250,25 @@
  
  ifeq "$(NOX11)" ""
  MUVIEW_X11 := $(OUT)/mupdf-x11
@@ -268,7 +267,7 @@ exit
  	$(LINK_CMD) $(X11_LIBS)
 +else
 +$(MUVIEW_X11) : $(addprefix $(OUT)/platform/x11/, x11_main.o x11_image.o pdfapp.o)
-+	$(LINK_CMD) $(X11_LIBS) -L$(OUT) -lmupdf
++	$(LINK_CMD) $(X11_LIBS) $(MUPDF_LIB)
 +endif
  
  ifeq "$(NOCURL)" ""
@@ -280,12 +279,12 @@ exit
  	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS)
 +else
 +$(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o)
-+	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) -L$(OUT) -lmupdf
++	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) $(MUPDF_LIB)
 +endif
  endif
  endif
  
-@@ -285,7 +311,7 @@
+@@ -285,7 +310,7 @@
  libs: $(INSTALL_LIBS)
  apps: $(INSTALL_APPS)
  
@@ -294,17 +293,17 @@ exit
  	install -d $(DESTDIR)$(incdir)/mupdf
  	install -d $(DESTDIR)$(incdir)/mupdf/fitz
  	install -d $(DESTDIR)$(incdir)/mupdf/pdf
-@@ -295,6 +321,9 @@
+@@ -295,6 +320,9 @@
  
  	install -d $(DESTDIR)$(libdir)
  	install $(INSTALL_LIBS) $(DESTDIR)$(libdir)
-+	if [ -f $(DESTDIR)$(libdir)/libmupdf.so.1 ]; then \
++	if test -n "$(NOSTATIC)"; then \
 +		ln -sf libmupdf.so.1 $(DESTDIR)$(libdir)/libmupdf.so; \
 +	fi
  
  	install -d $(DESTDIR)$(bindir)
  	install $(INSTALL_APPS) $(DESTDIR)$(bindir)
-@@ -313,7 +342,7 @@
+@@ -313,7 +341,7 @@
  tags: $(shell find include source -name '*.[ch]')
  	ctags $^
  

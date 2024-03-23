@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build ncurses-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.60; am-1.9)
+aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/nano $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/nano-build.pc << EOF
+Name: nano
+Version: 2.0.6
+Description: Pico editor clone with enhancements
+Requires: $REQUIRES
+
+exec=\\
+/bin/nano
+EOF
+
+exit

@@ -1,0 +1,410 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gcc-g++-build ilmbase-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install exrenvmap/.libs/exrenvmap $DESTDIR/bin
+install exrheader/.libs/exrheader $DESTDIR/bin
+install exrmakepreview/.libs/exrmakepreview $DESTDIR/bin
+install exrmaketiled/.libs/exrmaketiled $DESTDIR/bin
+install exrmultipart/.libs/exrmultipart $DESTDIR/bin
+install exrmultiview/.libs/exrmultiview $DESTDIR/bin
+install exrstdattr/.libs/exrstdattr $DESTDIR/bin
+install -d $DESTDIR/include/OpenEXR
+install -m 644 config/OpenEXRConfig.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfArray.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfCRgbaFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfChannelList.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfChromaticities.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfChromaticitiesAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfCompositeDeepScanLine.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfCompression.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepCompositing.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepFrameBuffer.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepImageState.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepImageStateAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepScanLineInputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepScanLineInputPart.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepScanLineOutputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepTiledInputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepTiledInputPart.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfDeepTiledOutputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfEnvmap.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfEnvmapAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfExport.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfFloatAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfForward.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfFrameBuffer.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfGenericInputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfGenericOutputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfHeader.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfIO.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfInputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfInputPart.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfInt64.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfKeyCode.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfKeyCodeAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfLineOrder.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfMatrixAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfMultiPartInputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfMultiPartOutputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfName.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfNamespace.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfOutputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfOutputPart.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfPartType.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfPixelType.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfPreviewImage.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfRational.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfRationalAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfRgba.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfRgbaFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfStandardAttributes.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfStringAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfStringVectorAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTestFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfThreading.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTileDescription.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTiledInputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTiledInputPart.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTiledOutputFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTiledRgbaFile.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTimeCode.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfTimeCodeAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfVecAttribute.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfVersion.h $DESTDIR/include/OpenEXR
+install -m 644 IlmImf/ImfXdr.h $DESTDIR/include/OpenEXR
+install -d $DESTDIR/lib
+install IlmImf/.libs/libIlmImf-2_2.so.23.* $DESTDIR/lib/libIlmImf-2_2.so.23
+ln -sf libIlmImf-2_2.so.23 $DESTDIR/lib/libIlmImf.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 OpenEXR.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/openexr-build.pc << EOF
+Name: openexr
+Version: 2.2.1
+Description: Extended Dynamic Range (EXR) library
+Requires: $REQUIRES
+
+devel=\\
+/include/OpenEXR/ImfArray.h \\
+/include/OpenEXR/ImfAttribute.h \\
+/include/OpenEXR/ImfCRgbaFile.h \\
+/include/OpenEXR/ImfChannelList.h \\
+/include/OpenEXR/ImfChromaticities.h \\
+/include/OpenEXR/ImfChromaticitiesAttribute.h \\
+/include/OpenEXR/ImfCompositeDeepScanLine.h \\
+/include/OpenEXR/ImfCompression.h \\
+/include/OpenEXR/ImfDeepCompositing.h \\
+/include/OpenEXR/ImfDeepFrameBuffer.h \\
+/include/OpenEXR/ImfDeepImageState.h \\
+/include/OpenEXR/ImfDeepImageStateAttribute.h \\
+/include/OpenEXR/ImfDeepScanLineInputFile.h \\
+/include/OpenEXR/ImfDeepScanLineInputPart.h \\
+/include/OpenEXR/ImfDeepScanLineOutputFile.h \\
+/include/OpenEXR/ImfDeepTiledInputFile.h \\
+/include/OpenEXR/ImfDeepTiledInputPart.h \\
+/include/OpenEXR/ImfDeepTiledOutputFile.h \\
+/include/OpenEXR/ImfEnvmap.h \\
+/include/OpenEXR/ImfEnvmapAttribute.h \\
+/include/OpenEXR/ImfExport.h \\
+/include/OpenEXR/ImfFloatAttribute.h \\
+/include/OpenEXR/ImfForward.h \\
+/include/OpenEXR/ImfFrameBuffer.h \\
+/include/OpenEXR/ImfGenericInputFile.h \\
+/include/OpenEXR/ImfGenericOutputFile.h \\
+/include/OpenEXR/ImfHeader.h \\
+/include/OpenEXR/ImfIO.h \\
+/include/OpenEXR/ImfInputFile.h \\
+/include/OpenEXR/ImfInputPart.h \\
+/include/OpenEXR/ImfInt64.h \\
+/include/OpenEXR/ImfKeyCode.h \\
+/include/OpenEXR/ImfKeyCodeAttribute.h \\
+/include/OpenEXR/ImfLineOrder.h \\
+/include/OpenEXR/ImfMatrixAttribute.h \\
+/include/OpenEXR/ImfMultiPartInputFile.h \\
+/include/OpenEXR/ImfMultiPartOutputFile.h \\
+/include/OpenEXR/ImfName.h \\
+/include/OpenEXR/ImfNamespace.h \\
+/include/OpenEXR/ImfOutputFile.h \\
+/include/OpenEXR/ImfOutputPart.h \\
+/include/OpenEXR/ImfPartType.h \\
+/include/OpenEXR/ImfPixelType.h \\
+/include/OpenEXR/ImfPreviewImage.h \\
+/include/OpenEXR/ImfRational.h \\
+/include/OpenEXR/ImfRationalAttribute.h \\
+/include/OpenEXR/ImfRgba.h \\
+/include/OpenEXR/ImfRgbaFile.h \\
+/include/OpenEXR/ImfStandardAttributes.h \\
+/include/OpenEXR/ImfStringAttribute.h \\
+/include/OpenEXR/ImfStringVectorAttribute.h \\
+/include/OpenEXR/ImfTestFile.h \\
+/include/OpenEXR/ImfThreading.h \\
+/include/OpenEXR/ImfTileDescription.h \\
+/include/OpenEXR/ImfTiledInputFile.h \\
+/include/OpenEXR/ImfTiledInputPart.h \\
+/include/OpenEXR/ImfTiledOutputFile.h \\
+/include/OpenEXR/ImfTiledRgbaFile.h \\
+/include/OpenEXR/ImfTimeCode.h \\
+/include/OpenEXR/ImfTimeCodeAttribute.h \\
+/include/OpenEXR/ImfVecAttribute.h \\
+/include/OpenEXR/ImfVersion.h \\
+/include/OpenEXR/ImfXdr.h \\
+/include/OpenEXR/OpenEXRConfig.h \\
+/lib/libIlmImf.so \\
+/lib/pkgconfig/OpenEXR.pc
+
+exec=\\
+/bin/exrenvmap \\
+/bin/exrheader \\
+/bin/exrmakepreview \\
+/bin/exrmaketiled \\
+/bin/exrmultipart \\
+/bin/exrmultiview \\
+/bin/exrstdattr \\
+/lib/libIlmImf-2_2.so.23
+EOF
+
+exit
+--- openexr-2.2.1.orig/IlmImf/Makefile.am
++++ openexr-2.2.1/IlmImf/Makefile.am
+@@ -188,19 +188,19 @@
+ EXTRA_DIST = $(noinst_HEADERS) b44ExpLogTable.cpp b44ExpLogTable.h dwaLookups.cpp dwaLookups.h CMakeLists.txt
+ 
+ 
+-INCLUDES = @ILMBASE_CXXFLAGS@ \
+-	   -I$(top_builddir)  \
+-	   -I$(top_srcdir)/config
++libIlmImf_la_CXXFLAGS = @ILMBASE_CXXFLAGS@
+ 
+ CLEANFILES = b44ExpLogTable b44ExpLogTable.h dwaLookups dwaLookups.h
+ 
+ b44ExpLogTable_SOURCES = b44ExpLogTable.cpp
++b44ExpLogTable_CXXFLAGS = @ILMBASE_CXXFLAGS@
+ b44ExpLogTable_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@
+ 
+ b44ExpLogTable.h: b44ExpLogTable
+ 	./b44ExpLogTable > b44ExpLogTable.h
+ 
+ dwaLookups_SOURCES = dwaLookups.cpp
++dwaLookups_CXXFLAGS = @ILMBASE_CXXFLAGS@
+ dwaLookups_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@
+ 
+ dwaLookups.h: dwaLookups
+--- openexr-2.2.1.orig/IlmImfExamples/Makefile.am
++++ openexr-2.2.1/IlmImfExamples/Makefile.am
+@@ -4,11 +4,10 @@
+ noinst_PROGRAMS = imfexamples
+ endif
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++imfexamples_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = -L$(top_builddir)/IlmImf \
++imfexamples_LDADD = -L$(top_builddir)/IlmImf \
+ 	@ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	-lIlmImf -lz
+ 
+--- openexr-2.2.1.orig/IlmImfFuzzTest/Makefile.am
++++ openexr-2.2.1/IlmImfFuzzTest/Makefile.am
+@@ -11,12 +11,10 @@
+ 			 testFuzzTiles.cpp testFuzzTiles.h 
+ 
+ 
+-INCLUDES = -I$(top_builddir)  \
+-	   -I$(top_srcdir)/IlmImf \
+-	   -I$(top_srcdir)/config \
++IlmImfFuzzTest_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = -L$(top_builddir)/IlmImf \
++IlmImfFuzzTest_LDADD = -L$(top_builddir)/IlmImf \
+ 	@ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	-lIlmImf -lz
+ 
+--- openexr-2.2.1.orig/IlmImfTest/Makefile.am
++++ openexr-2.2.1/IlmImfTest/Makefile.am
+@@ -53,20 +53,18 @@
+ 	             testDwaCompressorSimd.cpp testDwaCompressorSimd.h \
+ 	             testRle.cpp testRle.h
+ 
+-AM_CPPFLAGS = -DILM_IMF_TEST_IMAGEDIR=\"$(srcdir)/\"
++IlmImfTest_CPPFLAGS = -DILM_IMF_TEST_IMAGEDIR=\"$(srcdir)/\"
+ 
+ if BUILD_IMFHUGETEST
+ IlmImfTest_SOURCES += testDeepScanLineHuge.cpp testDeepScanLineHuge.h
+-AM_CPPFLAGS += -DENABLE_IMFHUGETEST
++IlmImfTest_CPPFLAGS += -DENABLE_IMFHUGETEST
+ endif
+ 
+ 
+-INCLUDES = -I$(top_builddir)  \
+-	   -I$(top_srcdir)/IlmImf \
+-	   -I$(top_srcdir)/config \
++IlmImfTest_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = -L$(top_builddir)/IlmImf \
++IlmImfTest_LDADD = -L$(top_builddir)/IlmImf \
+ 	@ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	-lIlmImf -lz
+ 
+--- openexr-2.2.1.orig/IlmImfUtil/Makefile.am
++++ openexr-2.2.1/IlmImfUtil/Makefile.am
+@@ -35,8 +35,5 @@
+ 
+ EXTRA_DIST = CMakeLists.txt
+ 
+-INCLUDES = @ILMBASE_CXXFLAGS@ \
+-	   -I$(top_builddir)  \
+-	   -I$(top_srcdir)/IlmImf  \
+-	   -I$(top_srcdir)/config
+-
++libIlmImfUtil_la_CXXFLAGS = @ILMBASE_CXXFLAGS@ \
++	   -I$(top_srcdir)/IlmImf
+--- openexr-2.2.1.orig/IlmImfUtilTest/Makefile.am
++++ openexr-2.2.1/IlmImfUtilTest/Makefile.am
+@@ -7,13 +7,11 @@
+ 	testDeepImage.h testDeepImage.cpp \
+ 	testIO.h testIO.cpp tmpDir.h
+ 
+-INCLUDES = -I$(top_builddir)  \
+-	   -I$(top_srcdir)/IlmImf \
++IlmImfUtilTest_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   -I$(top_srcdir)/IlmImfUtil \
+-	   -I$(top_srcdir)/config \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = -L$(top_builddir)/IlmImf \
++IlmImfUtilTest_LDADD = -L$(top_builddir)/IlmImf \
+ 	-L$(top_builddir)/IlmImfUtil \
+ 	@ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	-lIlmImfUtil -lIlmImf -lz
+--- openexr-2.2.1.orig/exrenvmap/Makefile.am
++++ openexr-2.2.1/exrenvmap/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrenvmap
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrenvmap_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@\
++exrenvmap_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@\
+ 	$(top_builddir)/IlmImf/libIlmImf.la \
+ 	-lz
+ 
+--- openexr-2.2.1.orig/exrheader/Makefile.am
++++ openexr-2.2.1/exrheader/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrheader
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrheader_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
++exrheader_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	$(top_builddir)/IlmImf/libIlmImf.la \
+ 	-lz
+ 
+--- openexr-2.2.1.orig/exrmakepreview/Makefile.am
++++ openexr-2.2.1/exrmakepreview/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrmakepreview
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrmakepreview_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@\
++exrmakepreview_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@\
+ 	$(top_builddir)/IlmImf/libIlmImf.la \
+ 	-lz
+ 
+--- openexr-2.2.1.orig/exrmaketiled/Makefile.am
++++ openexr-2.2.1/exrmaketiled/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrmaketiled
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrmaketiled_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
++exrmaketiled_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	$(top_builddir)/IlmImf/libIlmImf.la \
+ 	-lz
+ 
+--- openexr-2.2.1.orig/exrmultipart/Makefile.am
++++ openexr-2.2.1/exrmultipart/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrmultipart
+ 
+-INCLUDES = -I$(top_builddir) \
+--I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrmultipart_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
++exrmultipart_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ $(top_builddir)/IlmImf/libIlmImf.la \
+ -lz
+ 
+--- openexr-2.2.1.orig/exrmultiview/Makefile.am
++++ openexr-2.2.1/exrmultiview/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrmultiview
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrmultiview_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
++exrmultiview_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	$(top_builddir)/IlmImf/libIlmImf.la \
+ 	-lz
+ 
+--- openexr-2.2.1.orig/exrstdattr/Makefile.am
++++ openexr-2.2.1/exrstdattr/Makefile.am
+@@ -2,11 +2,10 @@
+ 
+ bin_PROGRAMS = exrstdattr
+ 
+-INCLUDES = -I$(top_builddir) \
+-           -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
++exrstdattr_CXXFLAGS = -I$(top_srcdir)/IlmImf \
+ 	   @ILMBASE_CXXFLAGS@
+ 
+-LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
++exrstdattr_LDADD = @ILMBASE_LDFLAGS@ @ILMBASE_LIBS@ \
+ 	$(top_builddir)/IlmImf/libIlmImf.la \
+ 	-lz
+ 

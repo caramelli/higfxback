@@ -1,0 +1,33 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="pkg-config-lite-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/include/stb
+install -m 644 stb_image.h $DESTDIR/include/stb
+install -m 644 stb_image_resize.h $DESTDIR/include/stb
+install -m 644 stb_image_write.h $DESTDIR/include/stb
+install -m 644 stb_rect_pack.h $DESTDIR/include/stb
+install -m 644 stb_textedit.h $DESTDIR/include/stb
+install -m 644 stb_truetype.h $DESTDIR/include/stb
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/stb-build.pc << EOF
+Name: stb
+Version: 20200214
+Description: single-file libraries
+
+devel=\\
+/include/stb/stb_image.h \\
+/include/stb/stb_image_resize.h \\
+/include/stb/stb_image_write.h \\
+/include/stb/stb_rect_pack.h \\
+/include/stb/stb_textedit.h \\
+/include/stb/stb_truetype.h
+EOF
+
+exit
