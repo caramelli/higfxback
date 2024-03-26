@@ -5,10 +5,7 @@ REQUIRES="autotools-wrappers-lt-build libxext-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if pkg-config --exists alsa-lib-build; then
-  ALSA=1
-  REQUIRES="$REQUIRES alsa-lib-build"
-fi
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1

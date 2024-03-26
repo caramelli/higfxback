@@ -5,9 +5,11 @@ REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
 # configure (ac-2.69; am-1.15; lt-2.4.4)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-./configure --disable-cxx --disable-jpeg --disable-lzma --disable-static --prefix=
+./configure --disable-cxx --disable-jpeg --disable-static --prefix=
 
 # build
 make

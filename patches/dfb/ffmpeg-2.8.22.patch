@@ -1,23 +1,26 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="directfb2-build make-build xz-build"
+REQUIRES="directfb2-build make-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
 if pkg-config --exists x264-build; then
-  X264=1
+  X264=--enable-libx264
   REQUIRES="$REQUIRES x264-build"
 fi
 
-# configure
-if test $X264; then
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-directfb --enable-gpl --enable-libx264 --enable-shared --prefix=/dfb
-else
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-directfb --enable-gpl --enable-shared --prefix=/dfb
+if pkg-config --exists x265-build; then
+  X265=--enable-libx265
+  REQUIRES="$REQUIRES x265-build"
 fi
+
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-directfb --enable-gpl --enable-shared $X264 $X265 --prefix=/dfb
 
 # build
 make
