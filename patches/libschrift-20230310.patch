@@ -1,0 +1,284 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --disable-static --disable-x11 --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 schrift.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libschrift.so.0 $DESTDIR/lib
+ln -sf libschrift.so.0 $DESTDIR/lib/libschrift.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libschrift.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libschrift-build.pc << EOF
+Name: libschrift
+Version: 20230310
+Description: A lightweight TrueType font rendering library
+Requires: $REQUIRES
+
+devel=\\
+/include/schrift.h \\
+/lib/libschrift.so \\
+/lib/pkgconfig/libschrift.pc
+
+exec=\\
+/lib/libschrift.so.0
+EOF
+
+exit
+--- libschrift-20230310.orig/Configure
++++ libschrift-20230310/Configure
+@@ -0,0 +1,36 @@
++#!/bin/sh
++
++VERSION=0.10.2
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      NOSTATIC=yes
++    ;;
++    --disable-x11)
++      NOX11=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" config.mk
++
++sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" config.mk
++
++sed -i "/^NOX11 ?=/s#=.*#= $NOX11#" config.mk
++
++sed "s,@prefix@,$PREFIX,;s,@version@,$VERSION," libschrift.pc.in > libschrift.pc
+--- libschrift-20230310.orig/Makefile
++++ libschrift-20230310/Makefile
+@@ -6,40 +6,60 @@
+ 
+ VERSION=0.10.2
+ 
++ifeq "$(NOSTATIC)" ""
++LIB := libschrift.a
++else
++LIB := libschrift.so.0
++endif
++
++ifeq "$(NOX11)" ""
++DEMO := demo
++endif
++
+ .PHONY: all clean install uninstall dist
+ 
+-all: libschrift.a libschrift.pc demo stress
++all: $(LIB) libschrift.pc $(DEMO) stress
+ 
+ libschrift.a: schrift.o
+ 	$(AR) rc $@ schrift.o
+ 	$(RANLIB) $@
++
++libschrift.so.0: schrift.o
++	$(LD) -shared -Wl,-soname,$@ $^ -o $@
++
+ schrift.o: schrift.h
+ 
+ libschrift.pc: libschrift.pc.in
+ 	@sed 's,@prefix@,$(PREFIX),;s,@version@,$(VERSION),' libschrift.pc.in > $@
+ 
+-demo: demo.o libschrift.a
+-	$(LD) $(EXTRAS_LDFLAGS) $@.o -o $@ -L$(X11LIB) -L. -lX11 -lXrender -lschrift -lm
++ifeq "$(NOX11)" ""
++$(DEMO): demo.o $(LIB)
++	$(LD) $(EXTRAS_LDFLAGS) $@.o -o $@ -L$(X11LIB) -lX11 -lXrender $(LIB)
+ demo.o: demo.c schrift.h util/utf8_to_utf32.h
+ 	$(CC) -c $(EXTRAS_CFLAGS) $(@:.o=.c) -o $@ $(EXTRAS_CPPFLAGS) -I$(X11INC)
++endif
+ 
+-stress: stress.o libschrift.a
+-	$(LD) $(EXTRAS_LDFLAGS) $@.o -o $@ -L. -lschrift -lm
++stress: stress.o $(LIB)
++	$(LD) $(EXTRAS_LDFLAGS) $@.o -o $@ $(LIB)
+ stress.o: stress.c schrift.h util/arg.h
+ 	$(CC) -c $(EXTRAS_CFLAGS) $(@:.o=.c) -o $@ $(EXTRAS_CPPFLAGS)
+ 
+ clean:
+ 	rm -f *.o
+ 	rm -f util/*.o
+-	rm -f libschrift.a
+-	rm -f demo
+-	rm -f stress
++	rm -f $(LIB)
++	rm -f $(DEMO) stress
+ 
+-install: libschrift.a libschrift.pc schrift.h schrift.3
+-	# libschrift.a
++install: $(LIB) libschrift.pc schrift.h schrift.3
++	# $(LIB)
+ 	mkdir -p "$(DESTDIR)$(PREFIX)/lib"
+-	cp -f libschrift.a "$(DESTDIR)$(PREFIX)/lib"
+-	chmod 644 "$(DESTDIR)$(PREFIX)/lib/libschrift.a"
++	cp -f $(LIB) "$(DESTDIR)$(PREFIX)/lib"
++	if test -z "$(NOSTATIC)"; then \
++		chmod 644 "$(DESTDIR)$(PREFIX)/lib/$(LIB)"; \
++	else \
++		chmod 755 "$(DESTDIR)$(PREFIX)/lib/$(LIB)"; \
++		ln -sf $(LIB) $(DESTDIR)$(PREFIX)/lib/libschrift.so; \
++	fi
+ 	# libschrift.pc
+ 	mkdir -p "$(DESTDIR)$(PREFIX)/lib/pkgconfig"
+ 	cp -f libschrift.pc "$(DESTDIR)$(PREFIX)/lib/pkgconfig"
+@@ -54,7 +74,7 @@
+ 	chmod 644 "$(DESTDIR)$(MANPREFIX)/man3/schrift.3"
+ 
+ uninstall:
+-	rm -f "$(DESTDIR)$(PREFIX)/lib/libschrift.a"
++	rm -f "$(DESTDIR)$(PREFIX)/lib/libschrift.*"
+ 	rm -f "$(DESTDIR)$(PREFIX)/lib/pkgconfig/libschrift.pc"
+ 	rm -f "$(DESTDIR)$(PREFIX)/include/schrift.h"
+ 	rm -f "$(DESTDIR)$(MANPREFIX)/man3/schrift.3"
+--- libschrift-20230310.orig/config.mk
++++ libschrift-20230310/config.mk
+@@ -1,5 +1,8 @@
+ # Customize below to fit your system
+ 
++NOSTATIC ?= 
++NOX11 ?= 
++
+ # compiler and linker
+ CC = cc
+ LD = cc
+@@ -13,6 +16,9 @@
+ # compiler flags for libschrift
+ CPPFLAGS =
+ CFLAGS   = -Os -std=c99 -pedantic -Wall -Wextra -Wconversion
++ifeq "$(NOSTATIC)" "yes"
++CFLAGS += -fPIC
++endif
+ LDFLAGS  = -Os
+ 
+ # compiler flags for the demo & stress test applications
+@@ -21,9 +27,10 @@
+ EXTRAS_LDFLAGS  = -g -Os
+ 
+ # X11 API installation paths (needed by the demo)
+-X11INC = /usr/include/X11
+-X11LIB = /usr/lib/X11
++ifeq "$(NOX11)" ""
++X11INC = $(PREFIX)/include
++X11LIB = $(PREFIX)/lib
+ # Uncomment below to build the demo on OpenBSD
+ #X11INC = /usr/X11R6/include
+ #X11LIB = /usr/X11R6/lib
+-
++endif
+--- libschrift-20230310.orig/libschrift.pc.in
++++ libschrift-20230310/libschrift.pc.in
+@@ -6,5 +6,4 @@
+ Description: A lightweight TrueType font rendering library
+ Version: @version@
+ Libs: -L${libdir} -lschrift
+-Libs.private: -lm
+ Cflags: -I${includedir}
+--- libschrift-20230310.orig/schrift.c
++++ libschrift-20230310/schrift.c
+@@ -16,7 +16,6 @@
+ 
+ #include <assert.h>
+ #include <errno.h>
+-#include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -65,6 +64,7 @@
+ #define GOT_A_SCALE_MATRIX         0x080
+ 
+ /* macros */
++#define ABS(x)    ((x) >= 0 ? (x) : -(x))
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+ #define SIGN(x)   (((x) > 0) - ((x) < 0))
+ /* Allocate values on the stack if they are small enough, else spill to heap. */
+@@ -588,13 +588,13 @@
+ 			points[i].x = 0.0;
+ 		}
+ 		if (pt.x >= width) {
+-			points[i].x = nextafter(width, 0.0);
++			points[i].x = width;
+ 		}
+ 		if (pt.y < 0.0) {
+ 			points[i].y = 0.0;
+ 		}
+ 		if (pt.y >= height) {
+-			points[i].y = nextafter(height, 0.0);
++			points[i].y = height;
+ 		}
+ 	}
+ }
+@@ -996,10 +996,10 @@
+ 	/* Transform the bounding box into SFT coordinate space. */
+ 	xScale = sft->xScale / sft->font->unitsPerEm;
+ 	yScale = sft->yScale / sft->font->unitsPerEm;
+-	box[0] = (int) floor(box[0] * xScale + sft->xOffset);
+-	box[1] = (int) floor(box[1] * yScale + sft->yOffset);
+-	box[2] = (int) ceil (box[2] * xScale + sft->xOffset);
+-	box[3] = (int) ceil (box[3] * yScale + sft->yOffset);
++	box[0] = (int) fast_floor(box[0] * xScale + sft->xOffset);
++	box[1] = (int) fast_floor(box[1] * yScale + sft->yOffset);
++	box[2] = (int) fast_ceil (box[2] * xScale + sft->xOffset);
++	box[3] = (int) fast_ceil (box[3] * yScale + sft->yOffset);
+ 	return 0;
+ }
+ 
+@@ -1358,7 +1358,7 @@
+ 	Point c = outl->points[curve.end];
+ 	Point g = { b.x-a.x, b.y-a.y };
+ 	Point h = { c.x-a.x, c.y-a.y };
+-	double area2 = fabs(g.x*h.y-h.x*g.y);
++	double area2 = ABS(g.x*h.y-h.x*g.y);
+ 	return area2 <= maxArea2;
+ }
+ 
+@@ -1441,8 +1441,8 @@
+ 		return;
+ 	}
+ 	
+-	crossingIncr.x = dir.x ? fabs(1.0 / delta.x) : 1.0;
+-	crossingIncr.y = fabs(1.0 / delta.y);
++	crossingIncr.x = dir.x ? ABS(1.0 / delta.x) : 1.0;
++	crossingIncr.y = ABS(1.0 / delta.y);
+ 
+ 	if (!dir.x) {
+ 		pixel.x = fast_floor(origin.x);
+@@ -1524,7 +1524,7 @@
+ 	num = (unsigned int) buf.width * (unsigned int) buf.height;
+ 	for (i = 0; i < num; ++i) {
+ 		cell     = buf.cells[i];
+-		value    = fabs(accum + cell.area);
++		value    = ABS(accum + cell.area);
+ 		value    = MIN(value, 1.0);
+ 		value    = value * 255.0 + 0.5;
+ 		image[i] = (uint8_t) value;

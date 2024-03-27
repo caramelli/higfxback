@@ -1,0 +1,84 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build jpeg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal -I ac_m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/appl/.libs/imgcmp $DESTDIR/bin
+install src/appl/.libs/imginfo $DESTDIR/bin
+install src/appl/.libs/jasper $DESTDIR/bin
+install src/appl/.libs/tmrdemo $DESTDIR/bin
+install -d $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_cm.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_config.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_debug.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_fix.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_getopt.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_icc.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_image.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_init.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_malloc.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_math.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_seq.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_stream.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_string.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_tmr.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_tvp.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_types.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jas_version.h $DESTDIR/include/jasper
+install -m 644 src/libjasper/include/jasper/jasper.h $DESTDIR/include/jasper
+install -d $DESTDIR/lib
+install src/libjasper/.libs/libjasper.so.4.* $DESTDIR/lib/libjasper.so.4
+ln -sf libjasper.so.4 $DESTDIR/lib/libjasper.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 pkgconfig/jasper.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/jasper-build.pc << EOF
+Name: jasper
+Version: 1.900.31
+Description: JasPer (JPEG-2000) library
+Requires: $REQUIRES
+
+devel=\\
+/include/jasper/jas_cm.h \\
+/include/jasper/jas_config.h \\
+/include/jasper/jas_debug.h \\
+/include/jasper/jas_fix.h \\
+/include/jasper/jas_getopt.h \\
+/include/jasper/jas_icc.h \\
+/include/jasper/jas_image.h \\
+/include/jasper/jas_init.h \\
+/include/jasper/jas_malloc.h \\
+/include/jasper/jas_math.h \\
+/include/jasper/jas_seq.h \\
+/include/jasper/jas_stream.h \\
+/include/jasper/jas_string.h \\
+/include/jasper/jas_tmr.h \\
+/include/jasper/jas_tvp.h \\
+/include/jasper/jas_types.h \\
+/include/jasper/jas_version.h \\
+/include/jasper/jasper.h \\
+/lib/libjasper.so \\
+/lib/pkgconfig/jasper.pc
+
+exec=\\
+/bin/imgcmp \\
+/bin/imginfo \\
+/bin/jasper \\
+/bin/tmrdemo \\
+/lib/libjasper.so.4
+EOF
+
+exit

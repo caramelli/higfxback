@@ -1,0 +1,76 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build jpeg-build libpng-build tiff-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install examples/.libs/cwebp $DESTDIR/bin
+install examples/.libs/dwebp $DESTDIR/bin
+install examples/.libs/img2webp $DESTDIR/bin
+install examples/.libs/webpinfo $DESTDIR/bin
+install examples/.libs/webpmux $DESTDIR/bin
+install -d $DESTDIR/include/webp
+install -m 644 src/webp/decode.h $DESTDIR/include/webp
+install -m 644 src/webp/demux.h $DESTDIR/include/webp
+install -m 644 src/webp/encode.h $DESTDIR/include/webp
+install -m 644 src/webp/mux.h $DESTDIR/include/webp
+install -m 644 src/webp/mux_types.h $DESTDIR/include/webp
+install -m 644 src/webp/types.h $DESTDIR/include/webp
+install -d $DESTDIR/lib
+install src/.libs/libwebp.so.7.* $DESTDIR/lib/libwebp.so.7
+ln -sf libwebp.so.7 $DESTDIR/lib/libwebp.so
+install src/demux/.libs/libwebpdemux.so.2.* $DESTDIR/lib/libwebpdemux.so.2
+ln -sf libwebpdemux.so.2 $DESTDIR/lib/libwebpdemux.so
+install src/demux/.libs/libwebpdemux.so.2.* $DESTDIR/lib/libwebpdemux.so.2
+ln -sf libwebpdemux.so.2 $DESTDIR/lib/libwebpdemux.so
+install src/mux/.libs/libwebpmux.so.3.* $DESTDIR/lib/libwebpmux.so.3
+ln -sf libwebpmux.so.3 $DESTDIR/lib/libwebpmux.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/libwebp.pc $DESTDIR/lib/pkgconfig
+install -m 644 src/demux/libwebpdemux.pc $DESTDIR/lib/pkgconfig
+install -m 644 src/mux/libwebpmux.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libwebp-build.pc << EOF
+Name: libwebp
+Version: 1.2.4
+Description: WebP library
+Requires: $REQUIRES
+
+devel=\\
+/include/webp/decode.h \\
+/include/webp/demux.h \\
+/include/webp/encode.h \\
+/include/webp/mux.h \\
+/include/webp/mux_types.h \\
+/include/webp/types.h \\
+/lib/libwebp.so \\
+/lib/libwebpdemux.so \\
+/lib/libwebpmux.so \\
+/lib/pkgconfig/libwebp.pc \\
+/lib/pkgconfig/libwebpdemux.pc \\
+/lib/pkgconfig/libwebpmux.pc
+
+exec=\\
+/bin/cwebp \\
+/bin/dwebp \\
+/bin/img2webp \\
+/bin/webpinfo \\
+/bin/webpmux \\
+/lib/libwebp.so.7 \\
+/lib/libwebpdemux.so.2 \\
+/lib/libwebpmux.so.3
+EOF
+
+exit

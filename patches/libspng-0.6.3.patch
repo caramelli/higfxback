@@ -1,0 +1,40 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="meson-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+meson setup --prefix=/ build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/include
+install -m 644 spng/spng.h $DESTDIR/include
+install -d $DESTDIR/lib
+install build/libspng.so.0.*[!p] $DESTDIR/lib/libspng.so.0
+ln -sf libspng.so.0 $DESTDIR/lib/libspng.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/meson-private/spng.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libspng-build.pc << EOF
+Name: libspng
+Version: 0.6.3
+Description: Simple PNG library
+Requires: $REQUIRES
+
+devel=\\
+/include/spng.h \\
+/lib/libspng.so \\
+/lib/pkgconfig/spng.pc
+
+exec=\\
+/lib/libspng.so.0
+EOF
+
+exit

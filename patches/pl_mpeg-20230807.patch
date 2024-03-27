@@ -1,0 +1,23 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="pkg-config-lite-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/include/pl_mpeg
+install -m 644 pl_mpeg.h $DESTDIR/include/pl_mpeg
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/pl_mpeg-build.pc << EOF
+Name: pl_mpeg
+Version: 20230807
+Description: single-file library to decode MPEG1 video and MP2 audio
+
+devel=\\
+/include/pl_mpeg/pl_mpeg.h
+EOF
+
+exit

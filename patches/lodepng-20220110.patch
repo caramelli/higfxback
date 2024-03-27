@@ -1,0 +1,25 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="pkg-config-lite-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/include/lodepng
+install -m 644 lodepng.cpp $DESTDIR/include/lodepng
+install -m 644 lodepng.h $DESTDIR/include/lodepng
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/lodepng-build.pc << EOF
+Name: lodepng
+Version: 20220110
+Description: single-file library to decode / encode PNG image
+
+devel=\\
+/include/lodepng/lodepng.cpp \\
+/include/lodepng/lodepng.h
+EOF
+
+exit
