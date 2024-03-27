@@ -7,6 +7,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
+  EGL_OPENGL="-Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
@@ -23,11 +24,7 @@ fi
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
 # configure
-if test $GL; then
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false --prefix=/dfb build
-else
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
-fi
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/dfb build
 
 # build
 meson compile -C build

@@ -7,6 +7,11 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl-build; then
+  SDL=1
+  REQUIRES="$REQUIRES sdl-build"
+fi
+
 if pkg-config --exists x264-build; then
   X264=--enable-libx264
   REQUIRES="$REQUIRES x264-build"
@@ -28,6 +33,7 @@ make
 # install
 install -d $DESTDIR/dfb/bin
 install ffmpeg $DESTDIR/dfb/bin
+test $SDL && install ffplay $DESTDIR/dfb/bin
 install ffprobe $DESTDIR/dfb/bin
 install ffserver $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include/libavcodec
@@ -215,6 +221,9 @@ devel=\\
 
 exec=\\
 /dfb/bin/ffmpeg \\
+EOF
+test $SDL && echo /dfb/bin/ffplay \\ >> $DESTDIR/dfb/share/pkgconfig/ffmpeg-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/ffmpeg-build.pc << EOF
 /dfb/bin/ffprobe \\
 /dfb/bin/ffserver \\
 /dfb/lib/libavcodec.so.56 \\

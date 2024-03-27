@@ -7,15 +7,12 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
+  EGL_OPENGL="-Dgl=GLES2/gl2.h -Dgl-ldflags=/dfb/lib/libGLESv2.so"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
 # configure
-if test $GL; then
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup -Dgl=GLES2/gl2.h -Dgl-cflags="`PKG_CONFIG_PATH=/dfb/lib/pkgconfig pkg-config --cflags glesv2`" -Dgl-ldflags="`PKG_CONFIG_PATH=/dfb/lib/pkgconfig pkg-config --libs glesv2`" --prefix=/dfb build
-else
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
-fi
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/dfb build
 
 # build
 meson compile -C build
@@ -160,3 +157,15 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 EOF
 
 exit
+--- DirectFB-examples-20231218.orig/meson.build
++++ DirectFB-examples-20231218/meson.build
+@@ -86,7 +86,8 @@
+ gl_dep = []
+ if get_option('gl') != ''
+   gl_dep = declare_dependency(compile_args: ['-DOPENGL_H="@0@"'.format(get_option('gl')),
+-                                            get_option('gl-cflags').strip().split(' ')],
++                                            get_option('gl-cflags') != '' ?
++                                            get_option('gl-cflags').strip().split(' ') : []],
+                               link_args: get_option('gl-ldflags') != '' ?
+                                          get_option('gl-ldflags').strip().split(' ') : [])
+ 

@@ -15,7 +15,7 @@ fi
 # configure (ac-2.61; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
-LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --disable-assembly --disable-dga --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xrandr --disable-video-x11-xv --prefix=/x11
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xrandr --disable-video-x11-xv --prefix=/x11
 cd test; SDL_CFLAGS="-I../include -I/x11/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/x11/lib" XPATH=-L/x11/lib ./configure --with-testdatadir=/x11/share/SDL/test; cd -
 
 # build
@@ -148,13 +148,15 @@ exec=\\
 /x11/share/SDL/test/testblitspeed \\
 /x11/share/SDL/test/testcdrom \\
 /x11/share/SDL/test/testcursor \\
-/x11/share/SDL/test/testdyngl \\
+EOF
+test $GL && echo /x11/share/SDL/test/testdyngl \\ >> $DESTDIR/x11/share/pkgconfig/sdl-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/sdl-build.pc << EOF
 /x11/share/SDL/test/testerror \\
 /x11/share/SDL/test/testfile \\
 /x11/share/SDL/test/testgamma \\
 EOF
-test $GL && echo /x11/share/SDL/test/testgl \\ >> $DESTDIR/dfb/share/pkgconfig/sdl-build.pc
-cat >> $DESTDIR/dfb/share/pkgconfig/sdl-build.pc << EOF
+test $GL && echo /x11/share/SDL/test/testgl \\ >> $DESTDIR/x11/share/pkgconfig/sdl-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/sdl-build.pc << EOF
 /x11/share/SDL/test/testiconv \\
 /x11/share/SDL/test/testjoystick \\
 /x11/share/SDL/test/testkeys \\
@@ -396,6 +398,14 @@ exit
  	sdlerr("loading sail.bmp");
      /* We've chosen magenta (#ff00ff) as colour key for the boat */
      SDL_SetColorKey(boat[0], SDL_SRCCOLORKEY | SDL_RLEACCEL,
+@@ -330,6 +330,7 @@
+ 	/* update changed areas of the screen */
+ 	SDL_UpdateRects(screen, NBOATS, updates);
+ 	frames++;
++	SDL_Delay(1);
+     } while(fade_level > 0);
+ 
+     printf("%d frames, %.2f fps\n",
 --- SDL-1.2.15.orig/test/testsprite.c
 +++ SDL-1.2.15/test/testsprite.c
 @@ -221,7 +221,7 @@
@@ -407,6 +417,14 @@ exit
  		quit(1);
  	}
  
+@@ -308,6 +308,7 @@
+ 			}
+ 		}
+ 		MoveSprites(screen, background);
++		SDL_Delay(1);
+ 	}
+ 	SDL_FreeSurface(sprite);
+ 	free(mem);
 --- SDL-1.2.15.orig/test/testvidinfo.c
 +++ SDL-1.2.15/test/testvidinfo.c
 @@ -135,7 +135,7 @@
