@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build gstreamer-build orc-build pango-build"
+REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build orc-build pango-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -157,7 +157,9 @@ install gst-libs/gst/video/.libs/libgstvideo-1.0.so.0.* $DESTDIR/dfb/lib/libgstv
 ln -sf libgstvideo-1.0.so.0 $DESTDIR/dfb/lib/libgstvideo-1.0.so
 install -d $DESTDIR/dfb/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/ogg/.libs/libgstogg.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/pango/.libs/libgstpango.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/adder/.libs/libgstadder.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/app/.libs/libgstapp.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/audioconvert/.libs/libgstaudioconvert.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -347,6 +349,7 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstaudiotestsrc.so \\
 /dfb/lib/gstreamer-1.0/libgstencodebin.so \\
 /dfb/lib/gstreamer-1.0/libgstgio.so \\
+/dfb/lib/gstreamer-1.0/libgstogg.so \\
 /dfb/lib/gstreamer-1.0/libgstpango.so \\
 /dfb/lib/gstreamer-1.0/libgstplayback.so \\
 /dfb/lib/gstreamer-1.0/libgstsubparse.so \\
@@ -356,7 +359,8 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstvideorate.so \\
 /dfb/lib/gstreamer-1.0/libgstvideoscale.so \\
 /dfb/lib/gstreamer-1.0/libgstvideotestsrc.so \\
-/dfb/lib/gstreamer-1.0/libgstvolume.so
+/dfb/lib/gstreamer-1.0/libgstvolume.so \\
+/dfb/lib/gstreamer-1.0/libgstvorbis.so
 EOF
 
 exit

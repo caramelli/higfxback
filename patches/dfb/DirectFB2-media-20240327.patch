@@ -5,6 +5,11 @@ REQUIRES="directfb2-build freetype-build libpng-build meson-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=1
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
 if pkg-config --exists libavif-build; then
   AVIF=1
   REQUIRES="$REQUIRES libavif-build"
@@ -48,6 +53,11 @@ fi
 if pkg-config --exists lodepng-build; then
   LODEPNG=1
   REQUIRES="$REQUIRES lodepng-build"
+fi
+
+if test $FUSIONSOUND && pkg-config --exists libmad-build; then
+  MAD=1
+  REQUIRES="$REQUIRES libmad-build"
 fi
 
 if pkg-config --exists libmng-build; then
@@ -100,6 +110,11 @@ if pkg-config --exists tiff-build; then
   REQUIRES="$REQUIRES tiff-build"
 fi
 
+if test $FUSIONSOUND && pkg-config --exists libvorbis-build; then
+  VORBIS=1
+  REQUIRES="$REQUIRES libvorbis-build"
+fi
+
 if pkg-config --exists libwebp-build; then
   WEBP=1
   REQUIRES="$REQUIRES libwebp-build"
@@ -143,6 +158,11 @@ test $MNG && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideopr
 test $PLM && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_plm.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
 test $SWFDEC && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_swfdec.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
 install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_v4l.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $FUSIONSOUND && install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $FFMPEG && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_ffmpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $MAD && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $VORBIS && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/directfb-interface-font_ft2.pc $DESTDIR/dfb/lib/pkgconfig
 test $SFT && install -m 644 build/meson-private/directfb-interface-font_sft.pc $DESTDIR/dfb/lib/pkgconfig
@@ -172,6 +192,12 @@ test $MNG && install -m 644 build/meson-private/directfb-interface-videoprovider
 test $PLM && install -m 644 build/meson-private/directfb-interface-videoprovider_plm.pc $DESTDIR/dfb/lib/pkgconfig
 test $SWFDEC && install -m 644 build/meson-private/directfb-interface-videoprovider_swfdec.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/directfb-interface-videoprovider_v4l.pc $DESTDIR/dfb/lib/pkgconfig
+test $FUSIONSOUND && test $FFMPEG && install -m 644 build/meson-private/fusionsound-interface-musicprovider_ffmpeg.pc $DESTDIR/dfb/lib/pkgconfig
+test $FUSIONSOUND && test $MAD && install -m 644 build/meson-private/fusionsound-interface-musicprovider_mad.pc $DESTDIR/dfb/lib/pkgconfig
+test $FUSIONSOUND && install -m 644 build/meson-private/fusionsound-interface-musicprovider_playlist.pc $DESTDIR/dfb/lib/pkgconfig
+test $FUSIONSOUND && test $VORBIS && install -m 644 build/meson-private/fusionsound-interface-musicprovider_vorbis.pc $DESTDIR/dfb/lib/pkgconfig
+PATH=/bin:/dfb/bin dfb-update-pkgconfig
+test $FUSIONSOUND && PATH=/bin:/dfb/bin fs-update-pkgconfig
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -220,6 +246,13 @@ test $PLM && echo /dfb/lib/pkgconfig/directfb-interface-videoprovider_plm.pc \\ 
 test $SWFDEC && echo /dfb/lib/pkgconfig/directfb-interface-videoprovider_swfdec.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
 /dfb/lib/pkgconfig/directfb-interface-videoprovider_v4l.pc
+EOF
+test $FUSIONSOUND && test $FFMPEG && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_ffmpeg.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $MAD && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_mad.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_playlist.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $VORBIS && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_vorbis.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
 
 exec=\\
 /dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont/libidirectfbfont_ft2.so \\
@@ -259,8 +292,14 @@ test $MNG && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libi
 test $PLM && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_plm.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $SWFDEC && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_swfdec.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
-/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_v4l.so
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_v4l.so \\
 EOF
+test $SWFDEC && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_swfdec.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $FFMPEG && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_ffmpeg.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $MAD && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $VORBIS && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 
 exit
 --- DirectFB2-media-20240327.orig/meson.build

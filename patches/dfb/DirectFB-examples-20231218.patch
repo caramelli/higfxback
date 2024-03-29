@@ -11,6 +11,11 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-bui
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=1
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
 # configure
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/dfb build
 
@@ -38,6 +43,9 @@ install build/src/df_spacedream $DESTDIR/dfb/bin
 install build/src/df_texture $DESTDIR/dfb/bin
 install build/src/df_video $DESTDIR/dfb/bin
 install build/src/df_window $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_advanced $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_buffer $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_stream $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/apple-red.dfiff $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/background.dfiff $DESTDIR/dfb/share/directfb-examples
@@ -77,6 +85,7 @@ install -m 644 data/star2.dfiff $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/star3.dfiff $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/star4.dfiff $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/swirl.dfiff $DESTDIR/dfb/share/directfb-examples
+test $FUSIONSOUND && install -m 644 data/test.wav $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/texture.dfiff $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/tux.dfiff $DESTDIR/dfb/share/directfb-examples
 install -m 644 data/tux_alpha.dfiff $DESTDIR/dfb/share/directfb-examples
@@ -112,6 +121,11 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/bin/df_texture \\
 /dfb/bin/df_video \\
 /dfb/bin/df_window \\
+EOF
+test $FUSIONSOUND && echo /dfb/bin/fs_advanced \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+test $FUSIONSOUND && echo /dfb/bin/fs_buffer \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+test $FUSIONSOUND && echo /dfb/bin/fs_stream \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/share/directfb-examples/apple-red.dfiff \\
 /dfb/share/directfb-examples/background.dfiff \\
 /dfb/share/directfb-examples/bbb.dfvff \\
@@ -150,6 +164,9 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/share/directfb-examples/star3.dfiff \\
 /dfb/share/directfb-examples/star4.dfiff \\
 /dfb/share/directfb-examples/swirl.dfiff \\
+EOF
+test $FUSIONSOUND && echo /dfb/share/directfb-examples/test.wav \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/share/directfb-examples/texture.dfiff \\
 /dfb/share/directfb-examples/tux.dfiff \\
 /dfb/share/directfb-examples/tux_alpha.dfiff \\

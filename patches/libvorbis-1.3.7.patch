@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libogg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/vorbis
+install -m 644 include/vorbis/codec.h $DESTDIR/include/vorbis
+install -m 644 include/vorbis/vorbisenc.h $DESTDIR/include/vorbis
+install -m 644 include/vorbis/vorbisfile.h $DESTDIR/include/vorbis
+install -d $DESTDIR/lib
+install lib/.libs/libvorbis.so.0.* $DESTDIR/lib/libvorbis.so.0
+ln -sf libvorbis.so.0 $DESTDIR/lib/libvorbis.so
+install lib/.libs/libvorbisenc.so.2.* $DESTDIR/lib/libvorbisenc.so.2
+ln -sf libvorbisenc.so.2 $DESTDIR/lib/libvorbisenc.so
+install lib/.libs/libvorbisfile.so.3.* $DESTDIR/lib/libvorbisfile.so.3
+ln -sf libvorbisfile.so.3 $DESTDIR/lib/libvorbisfile.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 vorbis.pc $DESTDIR/lib/pkgconfig
+install -m 644 vorbisenc.pc $DESTDIR/lib/pkgconfig
+install -m 644 vorbisfile.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libvorbis-build.pc << EOF
+Name: libvorbis
+Version: 1.3.7
+Description: Vorbis encoding / decoding library
+Requires: $REQUIRES
+
+devel=\\
+/include/vorbis/codec.h \\
+/include/vorbis/vorbisenc.h \\
+/include/vorbis/vorbisfile.h \\
+/lib/libvorbis.so \\
+/lib/libvorbisenc.so \\
+/lib/libvorbisfile.so \\
+/lib/pkgconfig/vorbis.pc \\
+/lib/pkgconfig/vorbisenc.pc \\
+/lib/pkgconfig/vorbisfile.pc
+
+exec=\\
+/lib/libvorbis.so.0 \\
+/lib/libvorbisenc.so.2 \\
+/lib/libvorbisfile.so.3
+EOF
+
+exit

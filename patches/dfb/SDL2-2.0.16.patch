@@ -12,6 +12,11 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-bui
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=--enable-fusionsound
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
   VK=1
   REQUIRES="$REQUIRES vulkan-loader-build"
@@ -21,7 +26,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 rm -rf src/video/khronos
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --enable-video-directfb --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --enable-video-directfb $FUSIONSOUND --prefix=/dfb
 cd test; SDL_CFLAGS="-I../include -I/dfb/include -I/dfb/include/directfb" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/dfb/lib" ./configure --with-testdatadir=/dfb/share/SDL2/test; cd -
 
 # build
@@ -318,6 +323,17 @@ exit
              alsa_lib=[`find_lib "libasound.so.*" "$ALSA_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
  
              AC_DEFINE(SDL_AUDIO_DRIVER_ALSA, 1, [ ])
+@@ -1241,8 +1241,8 @@
+             EXTRA_CFLAGS="$EXTRA_CFLAGS $FUSIONSOUND_CFLAGS"
+ 
+             AC_ARG_ENABLE(fusionsound-shared,
+-[AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [default=yes]])],
+-                          , enable_fusionsound_shared=yes)
++[AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [default=no]])],
++                          , enable_fusionsound_shared=no)
+             fusionsound_shared=no
+             AC_MSG_CHECKING(for FusionSound dynamic loading support)
+             if test x$have_loadso != xyes && \
 @@ -2214,8 +2214,8 @@
  
          if test x$video_directfb = xyes; then
@@ -430,10 +446,10 @@ exit
      if (path == NULL) {
          path = SDL_getenv("SDL_OPENGL_LIBRARY");
          if (path == NULL) {
-+#if SDL_VIDEO_OPENGL
-             path = "libGL.so.1";
-+#elif SDL_VIDEO_OPENGL_ES2
++#if SDL_VIDEO_OPENGL_ES2
 +            path = "libGLESv2.so.2";
++#elif SDL_VIDEO_OPENGL
+             path = "libGL.so.1";
 +#else /* SDL_VIDEO_OPENGL_ES */
 +            path = "libGLESv1_CM.so.1";
 +#endif
