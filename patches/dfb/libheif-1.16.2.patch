@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig cmake -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig cmake -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_RPATH=/dfb/lib -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
 
 # build
 cmake --build build
@@ -25,7 +25,7 @@ install -d $DESTDIR/dfb/lib
 install build/libheif/libheif.so.1.* $DESTDIR/dfb/lib/libheif.so.1
 ln -sf libheif.so.1 $DESTDIR/dfb/lib/libheif.so
 install -d $DESTDIR/dfb/lib/gdk-pixbuf-2.0/2.10.0/loaders
-install build/gdk-pixbuf/libpixbufloader-heif.so /dfb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install build/gdk-pixbuf/libpixbufloader-heif.so $DESTDIR/dfb/lib/gdk-pixbuf-2.0/2.10.0/loaders
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/libheif.pc $DESTDIR/dfb/lib/pkgconfig
 

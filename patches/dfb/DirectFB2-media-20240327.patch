@@ -25,7 +25,7 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gst-plugins-base-bui
   REQUIRES="$REQUIRES gst-plugins-base-build"
 fi
 
-if pkg-config --exists libheif-build; then
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libheif-build; then
   HEIF=1
   REQUIRES="$REQUIRES libheif-build"
 fi
@@ -43,6 +43,11 @@ fi
 if pkg-config --exists jpeg-build; then
   JPEG=1
   REQUIRES="$REQUIRES jpeg-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libjxl-build; then
+  JXL=1
+  REQUIRES="$REQUIRES libjxl-build"
 fi
 
 if pkg-config --exists libmpeg3-build; then
@@ -110,6 +115,11 @@ if pkg-config --exists tiff-build; then
   REQUIRES="$REQUIRES tiff-build"
 fi
 
+if test $FUSIONSOUND && pkg-config --exists tremor-build; then
+  TREMOR=1
+  REQUIRES="$REQUIRES tremor-build"
+fi
+
 if test $FUSIONSOUND && pkg-config --exists libvorbis-build; then
   VORBIS=1
   REQUIRES="$REQUIRES libvorbis-build"
@@ -140,6 +150,7 @@ test $HEIF && install build/interfaces/IDirectFBImageProvider/libidirectfbimagep
 test $IMLIB2 && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_imlib2.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
 test $JASPER && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jasper.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
 test $JPEG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $JXL && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jxl.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
 test $LODEPNG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_lodepng.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
 test $NANOSVG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_nanosvg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
 test $OPENEXR && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_openexr.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
@@ -162,6 +173,7 @@ test $FUSIONSOUND && install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusi
 test $FUSIONSOUND && test $FFMPEG && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_ffmpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 test $FUSIONSOUND && test $MAD && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 test $FUSIONSOUND && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $TREMOR && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_tremor.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 test $FUSIONSOUND && test $VORBIS && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/directfb-interface-font_ft2.pc $DESTDIR/dfb/lib/pkgconfig
@@ -175,6 +187,7 @@ test $HEIF && install -m 644 build/meson-private/directfb-interface-imageprovide
 test $IMLIB2 && install -m 644 build/meson-private/directfb-interface-imageprovider_imlib2.pc $DESTDIR/dfb/lib/pkgconfig
 test $JASPER && install -m 644 build/meson-private/directfb-interface-imageprovider_jasper.pc $DESTDIR/dfb/lib/pkgconfig
 test $JPEG && install -m 644 build/meson-private/directfb-interface-imageprovider_jpeg.pc $DESTDIR/dfb/lib/pkgconfig
+test $JXL && install -m 644 build/meson-private/directfb-interface-imageprovider_jxl.pc $DESTDIR/dfb/lib/pkgconfig
 test $LODEPNG && install -m 644 build/meson-private/directfb-interface-imageprovider_lodepng.pc $DESTDIR/dfb/lib/pkgconfig
 test $NANOSVG && install -m 644 build/meson-private/directfb-interface-imageprovider_nanosvg.pc $DESTDIR/dfb/lib/pkgconfig
 test $OPENEXR && install -m 644 build/meson-private/directfb-interface-imageprovider_openexr.pc $DESTDIR/dfb/lib/pkgconfig
@@ -195,6 +208,7 @@ install -m 644 build/meson-private/directfb-interface-videoprovider_v4l.pc $DEST
 test $FUSIONSOUND && test $FFMPEG && install -m 644 build/meson-private/fusionsound-interface-musicprovider_ffmpeg.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && test $MAD && install -m 644 build/meson-private/fusionsound-interface-musicprovider_mad.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && install -m 644 build/meson-private/fusionsound-interface-musicprovider_playlist.pc $DESTDIR/dfb/lib/pkgconfig
+test $FUSIONSOUND && test $TREMOR && install -m 644 build/meson-private/fusionsound-interface-musicprovider_tremor.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && test $VORBIS && install -m 644 build/meson-private/fusionsound-interface-musicprovider_vorbis.pc $DESTDIR/dfb/lib/pkgconfig
 PATH=/bin:/dfb/bin dfb-update-pkgconfig
 test $FUSIONSOUND && PATH=/bin:/dfb/bin fs-update-pkgconfig
@@ -224,6 +238,7 @@ test $HEIF && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_heif.pc \
 test $IMLIB2 && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_imlib2.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $JASPER && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_jasper.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $JPEG && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_jpeg.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $JXL && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_jxl.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $LODEPNG && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_lodepng.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $NANOSVG && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_nanosvg.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $OPENEXR && echo /dfb/lib/pkgconfig/directfb-interface-imageprovider_openexr.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
@@ -250,6 +265,7 @@ EOF
 test $FUSIONSOUND && test $FFMPEG && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_ffmpeg.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && test $MAD && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_mad.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_playlist.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $TREMOR && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_tremor.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && test $VORBIS && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_vorbis.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
@@ -271,6 +287,7 @@ test $HEIF && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/lib
 test $IMLIB2 && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_imlib2.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $JASPER && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jasper.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $JPEG && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jpeg.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $JXL && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jxl.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $LODEPNG && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_lodepng.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $NANOSVG && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_nanosvg.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $OPENEXR && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_openexr.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
@@ -298,6 +315,7 @@ test $SWFDEC && echo /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/l
 test $FUSIONSOUND && test $FFMPEG && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_ffmpeg.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && test $MAD && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && test $TREMOR && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_tremor.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && test $VORBIS && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 

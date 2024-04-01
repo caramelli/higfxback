@@ -1,0 +1,64 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/brotli $DESTDIR/bin
+install -d $DESTDIR/include/brotli
+install -m 644 c/include/brotli/decode.h $DESTDIR/include/brotli
+install -m 644 c/include/brotli/encode.h $DESTDIR/include/brotli
+install -m 644 c/include/brotli/port.h $DESTDIR/include/brotli
+install -m 644 c/include/brotli/shared_dictionary.h $DESTDIR/include/brotli
+install -m 644 c/include/brotli/types.h $DESTDIR/include/brotli
+install -d $DESTDIR/lib
+install build/libbrotlicommon.so.1.* $DESTDIR/lib/libbrotlicommon.so.1
+ln -sf libbrotlicommon.so.1 $DESTDIR/lib/libbrotlicommon.so
+install build/libbrotlidec.so.1.* $DESTDIR/lib/libbrotlidec.so.1
+ln -sf libbrotlidec.so.1 $DESTDIR/lib/libbrotlidec.so
+install build/libbrotlienc.so.1.* $DESTDIR/lib/libbrotlienc.so.1
+ln -sf libbrotlienc.so.1 $DESTDIR/lib/libbrotlienc.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/libbrotlicommon.pc $DESTDIR/lib/pkgconfig
+install -m 644 build/libbrotlidec.pc $DESTDIR/lib/pkgconfig
+install -m 644 build/libbrotlienc.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/brotli-build.pc << EOF
+Name: brotli
+Version: 1.1.0
+Description: Brotli compression library
+Requires: $REQUIRES
+
+devel=\\
+/include/brotli/decode.h \\
+/include/brotli/encode.h \\
+/include/brotli/port.h \\
+/include/brotli/shared_dictionary.h \\
+/include/brotli/types.h \\
+/lib/libbrotlicommon.so \\
+/lib/libbrotlidec.so \\
+/lib/libbrotlienc.so \\
+/lib/pkgconfig/libbrotlicommon.pc \\
+/lib/pkgconfig/libbrotlidec.pc \\
+/lib/pkgconfig/libbrotlienc.pc
+
+exec=\\
+/bin/brotli \\
+/lib/libbrotlicommon.so.1 \\
+/lib/libbrotlidec.so.1 \\
+/lib/libbrotlienc.so.1
+EOF
+
+exit

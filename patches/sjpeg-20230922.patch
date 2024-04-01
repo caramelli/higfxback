@@ -1,0 +1,116 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build jpeg-build libpng-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/sjpeg $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 src/sjpeg.h $DESTDIR/include
+install -d $DESTDIR/lib
+install build/libsjpeg.so.0.* $DESTDIR/lib/libsjpeg.so.0
+ln -sf libsjpeg.so.0 $DESTDIR/lib/libsjpeg.so
+install build/libsjpeg-utils.so.0.* $DESTDIR/lib/libsjpeg-utils.so.0
+ln -sf libsjpeg-utils.so.0 $DESTDIR/lib/libsjpeg-utils.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/sjpeg.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/sjpeg-build.pc << EOF
+Name: sjpeg
+Version: 20230922
+Description: Simple JPEG encoder
+Requires: $REQUIRES
+
+devel=\\
+/include/sjpeg.h \\
+/lib/libsjpeg.so \\
+/lib/libsjpeg-utils.so \\
+/lib/pkgconfig/sjpeg.pc
+
+exec=\\
+/bin/sjpeg \\
+/lib/libsjpeg.so.0 \\
+/lib/libsjpeg-utils.so.0.1
+EOF
+
+exit
+--- sjpeg-20230922.orig/CMakeLists.txt
++++ sjpeg-20230922/CMakeLists.txt
+@@ -82,13 +82,9 @@
+   target_link_libraries(sjpeg ${SJPEG_DEP_LIBRARIES})
+ endif()
+ 
+-# Make sure the OBJECT libraries are built with position independent code
+-# (it is not ON by default).
+-set_target_properties(sjpeg PROPERTIES POSITION_INDEPENDENT_CODE ON)
+-
+ # Set the version numbers.
+ set_target_properties(sjpeg PROPERTIES VERSION ${PROJECT_VERSION}
+-                      SOVERSION ${PROJECT_VERSION})
++                      SOVERSION 0)
+ 
+ # Find the standard image libraries.
+ set(SJPEG_DEP_IMG_LIBRARIES)
+@@ -162,7 +158,8 @@
+   target_link_libraries(sjpeg-utils ${SJPEG_DEP_IMG_LIBRARIES}
+                         ${SJPEG_DEP_GL_LIBRARIES})
+ endif()
+-# set_target_properties(sjpeg-utils PROPERTIES POSITION_INDEPENDENT_CODE ON)
++set_target_properties(sjpeg-utils PROPERTIES VERSION ${PROJECT_VERSION}
++                      SOVERSION 0)
+ 
+ # Build the executables if asked for.
+ if(SJPEG_BUILD_EXAMPLES)
+@@ -196,6 +193,9 @@
+   target_link_libraries(vjpeg ${SJPEG_DEP_GL_LIBRARIES} sjpeg sjpeg-utils)
+ 
+   install(TARGETS sjpeg-bin vjpeg RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
++  install(TARGETS sjpeg-utils
++          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ endif()
+ 
+ # Install the different headers and libraries.
+@@ -229,6 +229,18 @@
+   DESTINATION ${ConfigPackageLocation}
+ )
+ 
++# Create the pkg-config file.
++configure_file(
++  ${CMAKE_CURRENT_SOURCE_DIR}/pkgconfig/sjpeg.pc.in
++  ${CMAKE_CURRENT_BINARY_DIR}/sjpeg.pc
++  @ONLY
++)
++
++# Install the pkg-config file.
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sjpeg.pc
++  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
++)
++
+ 
+ ################################################################################
+ # Man page.
+--- sjpeg-20230922.orig/pkgconfig/sjpeg.pc.in
++++ sjpeg-20230922/pkgconfig/sjpeg.pc.in
+@@ -0,0 +1,9 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
++libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
++
++Name: sjpeg
++Description: Simple JPEG encoder
++Version: @PROJECT_VERSION@
++Libs: -L${libdir} -lsjpeg
++Cflags: -I${includedir}

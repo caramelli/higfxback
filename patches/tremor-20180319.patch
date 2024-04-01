@@ -1,0 +1,54 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libogg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/tremor
+install -m 644 ivorbiscodec.h $DESTDIR/include/tremor
+install -m 644 ivorbisfile.h $DESTDIR/include/tremor
+install -d $DESTDIR/lib
+install .libs/libvorbisidec.so.1.* $DESTDIR/lib/libvorbisidec.so.1
+ln -sf libvorbisidec.so.1 $DESTDIR/lib/libvorbisidec.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 vorbisidec.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/tremor-build.pc << EOF
+Name: tremor
+Version: 20180319
+Description: fixed-point Vorbis decoding library
+Requires: $REQUIRES
+
+devel=\\
+/include/tremor/ivorbiscodec.h \\
+/include/tremor/ivorbisfile.h \\
+/lib/libvorbisidec.so \\
+/lib/pkgconfig/vorbisidec.pc
+
+exec=\\
+/lib/libvorbisidec.so.1
+EOF
+
+exit
+--- tremor-20180319.orig/configure.in
++++ tremor-20180319/configure.in
+@@ -9,6 +9,8 @@
+ AC_CANONICAL_HOST
+ AC_CANONICAL_TARGET
+ 
++AC_CONFIG_MACRO_DIR([m4])
++
+ AM_CONFIG_HEADER([config.h])
+ 
+ AM_INIT_AUTOMAKE(libvorbisidec,1.2.1)

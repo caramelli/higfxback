@@ -1,0 +1,68 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DCMAKE_CXX_FLAGS=-DHWY_COMPILE_ONLY_EMU128 -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/include/hwy
+install -m 644 hwy/aligned_allocator.h $DESTDIR/include/hwy
+install -m 644 hwy/base.h $DESTDIR/include/hwy
+install -m 644 hwy/cache_control.h $DESTDIR/include/hwy
+install -m 644 hwy/detect_compiler_arch.h $DESTDIR/include/hwy
+install -m 644 hwy/detect_targets.h $DESTDIR/include/hwy
+install -m 644 hwy/foreach_target.h $DESTDIR/include/hwy
+install -m 644 hwy/highway.h $DESTDIR/include/hwy
+install -m 644 hwy/highway_export.h $DESTDIR/include/hwy
+install -m 644 hwy/targets.h $DESTDIR/include/hwy
+install -d $DESTDIR/include/hwy/ops
+install -m 644 hwy/ops/generic_ops-inl.h $DESTDIR/include/hwy/ops
+install -m 644 hwy/ops/scalar-inl.h $DESTDIR/include/hwy/ops
+install -m 644 hwy/ops/set_macros-inl.h $DESTDIR/include/hwy/ops
+install -m 644 hwy/ops/shared-inl.h $DESTDIR/include/hwy/ops
+install -m 644 hwy/ops/tuple-inl.h $DESTDIR/include/hwy/ops
+install -d $DESTDIR/lib
+install build/libhwy.so.1.* $DESTDIR/lib/libhwy.so.1
+ln -sf libhwy.so.1 $DESTDIR/lib/libhwy.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/libhwy.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/highway-build.pc << EOF
+Name: highway
+Version: 1.0.7
+Description: SIMD intrinsics wrapper
+Requires: $REQUIRES
+
+devel=\\
+/include/hwy/aligned_allocator.h \\
+/include/hwy/base.h \\
+/include/hwy/cache_control.h \\
+/include/hwy/detect_compiler_arch.h \\
+/include/hwy/detect_targets.h \\
+/include/hwy/foreach_target.h \\
+/include/hwy/highway.h \\
+/include/hwy/highway_export.h \\
+/include/hwy/targets.h \\
+/include/hwy/ops/generic_ops-inl.h \\
+/include/hwy/ops/scalar-inl.h \\
+/include/hwy/ops/set_macros-inl.h \\
+/include/hwy/ops/shared-inl.h \\
+/include/hwy/ops/tuple-inl.h \\
+/lib/libhwy.so \\
+/lib/pkgconfig/libhwy.pc
+
+exec=\\
+/lib/libhwy.so.1
+EOF
+
+exit

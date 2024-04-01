@@ -1,0 +1,82 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=1
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/src/df_databuffer $DESTDIR/dfb/bin
+install build/src/df_font_sample $DESTDIR/dfb/bin
+install build/src/df_image_sample $DESTDIR/dfb/bin
+install build/src/df_video_sample $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_music_sample $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/fishing.swf $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/FreeMono.ttf $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/FreeSans.ttf $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/FreeSerif.ttf $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.avif $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.bmp $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.dfiff $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.exr $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.gif $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.jp2 $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.jpg $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.jxl $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.m2v $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.png $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.svg $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.tiff $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/IM.webp $DESTDIR/dfb/share/directfb-media-samples
+install -m 644 data/linux.mng $DESTDIR/dfb/share/directfb-media-samples
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb-media-samples-build.pc << EOF
+Name: DirectFB-media-samples
+Version: 20230817
+Description: Samples and test programs for media providers
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/df_databuffer \\
+/dfb/bin/df_font_sample \\
+/dfb/bin/df_image_sample \\
+/dfb/bin/df_video_sample \\
+EOF
+test $FUSIONSOUND && echo /dfb/bin/fs_music_sample \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-media-samples-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-media-samples-build.pc << EOF
+/dfb/share/directfb-media-samples/fishing.swf \\
+/dfb/share/directfb-media-samples/FreeMono.ttf \\
+/dfb/share/directfb-media-samples/FreeSans.ttf \\
+/dfb/share/directfb-media-samples/FreeSerif.ttf \\
+/dfb/share/directfb-media-samples/IM.avif \\
+/dfb/share/directfb-media-samples/IM.bmp \\
+/dfb/share/directfb-media-samples/IM.dfiff \\
+/dfb/share/directfb-media-samples/IM.exr \\
+/dfb/share/directfb-media-samples/IM.gif \\
+/dfb/share/directfb-media-samples/IM.jp2 \\
+/dfb/share/directfb-media-samples/IM.jpg \\
+/dfb/share/directfb-media-samples/IM.jxl \\
+/dfb/share/directfb-media-samples/IM.m2v \\
+/dfb/share/directfb-media-samples/IM.png \\
+/dfb/share/directfb-media-samples/IM.svg \\
+/dfb/share/directfb-media-samples/IM.tiff \\
+/dfb/share/directfb-media-samples/IM.webp \\
+/dfb/share/directfb-media-samples/linux.mng
+EOF
+
+exit

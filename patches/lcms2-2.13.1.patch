@@ -1,0 +1,52 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build jpeg-build tiff-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install utils/jpgicc/.libs/jpgicc $DESTDIR/bin
+install utils/linkicc/.libs/linkicc $DESTDIR/bin
+install utils/psicc/.libs/psicc $DESTDIR/bin
+install utils/tificc/.libs/tificc $DESTDIR/bin
+install utils/transicc/.libs/transicc $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 include/lcms2.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/liblcms2.so.2.* $DESTDIR/lib/liblcms2.so.2
+ln -sf liblcms2.so.2 $DESTDIR/lib/liblcms2.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 lcms2.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/lcms2-build.pc << EOF
+Name: lcms2
+Version: 2.13.1
+Description: Little Color Management System
+Requires: $REQUIRES
+
+devel=\\
+/include/lcms2.h \\
+/lib/liblcms2.so \\
+/lib/pkgconfig/lcms2.pc
+
+exec=\\
+/bin/jpgicc \\
+/bin/linkicc \\
+/bin/psicc \\
+/bin/tificc \\
+/bin/transicc \\
+/lib/liblcms2.so.2
+EOF
+
+exit
