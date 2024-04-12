@@ -188,7 +188,7 @@ exit
              AC_DEFINE(SDL_AUDIO_DRIVER_ALSA)
 --- SDL-1.2.14.orig/src/video/directfb/SDL_DirectFB_video.c
 +++ SDL-1.2.14/src/video/directfb/SDL_DirectFB_video.c
-@@ -386,7 +386,15 @@
+@@ -386,7 +386,16 @@
    HIDDEN->enable_mga_crtc2 = 0;
    HIDDEN->mga_crtc2_stretch_overscan = 1;
  
@@ -196,8 +196,9 @@ exit
 +  if (SDL_getenv("SDL_DIRECTFB_FORCE_WINDOWED") != NULL)
 +    {
 +      int argc = 2;
-+      char *pargv[2] = { "SDL", "--dfb:force-windowed" };
-+      ret = DirectFBInit (&argc, (char ***)pargv);
++      char *args[] = { "SDL", "--dfb:force-windowed" };
++      char **argv = args;
++      ret = DirectFBInit (&argc, &argv);
 +    }
 +  else
 +    ret = DirectFBInit (NULL, NULL);
@@ -205,7 +206,7 @@ exit
    if (ret)
      {
        SetDirectFBerror ("DirectFBInit", ret);
-@@ -594,10 +602,8 @@
+@@ -594,10 +603,8 @@
    DFBSurfacePixelFormat  pixelformat;
    IDirectFBSurface      *surface;
  

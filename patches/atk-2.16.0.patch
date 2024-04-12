@@ -1,0 +1,107 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build glib-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atk.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atk-enum-types.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkaction.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkcomponent.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkdocument.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkeditabletext.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkgobjectaccessible.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkhyperlink.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkhyperlinkimpl.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkhypertext.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkimage.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkmisc.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atknoopobject.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atknoopobjectfactory.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkobject.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkobjectfactory.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkplug.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkrange.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkregistry.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkrelation.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkrelationset.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkrelationtype.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkselection.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atksocket.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkstate.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkstateset.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkstreamablecontent.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atktable.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atktablecell.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atktext.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkutil.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkvalue.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkversion.h $DESTDIR/include/atk-1.0/atk
+install -m 644 atk/atkwindow.h $DESTDIR/include/atk-1.0/atk
+install -d $DESTDIR/lib
+install atk/.libs/libatk-1.0.so.0.* $DESTDIR/lib/libatk-1.0.so.0
+ln -sf libatk-1.0.so.0 $DESTDIR/lib/libatk-1.0.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 atk.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/atk-build.pc << EOF
+Name: atk
+Version: 2.16.0
+Description: Accessibility ToolKit
+Requires: $REQUIRES
+
+devel=\\
+/include/atk-1.0/atk/atk.h \\
+/include/atk-1.0/atk/atk-enum-types.h \\
+/include/atk-1.0/atk/atkaction.h \\
+/include/atk-1.0/atk/atkcomponent.h \\
+/include/atk-1.0/atk/atkdocument.h \\
+/include/atk-1.0/atk/atkeditabletext.h \\
+/include/atk-1.0/atk/atkgobjectaccessible.h \\
+/include/atk-1.0/atk/atkhyperlink.h \\
+/include/atk-1.0/atk/atkhyperlinkimpl.h \\
+/include/atk-1.0/atk/atkhypertext.h \\
+/include/atk-1.0/atk/atkimage.h \\
+/include/atk-1.0/atk/atkmisc.h \\
+/include/atk-1.0/atk/atknoopobject.h \\
+/include/atk-1.0/atk/atknoopobjectfactory.h \\
+/include/atk-1.0/atk/atkobject.h \\
+/include/atk-1.0/atk/atkobjectfactory.h \\
+/include/atk-1.0/atk/atkplug.h \\
+/include/atk-1.0/atk/atkrange.h \\
+/include/atk-1.0/atk/atkregistry.h \\
+/include/atk-1.0/atk/atkrelation.h \\
+/include/atk-1.0/atk/atkrelationset.h \\
+/include/atk-1.0/atk/atkrelationtype.h \\
+/include/atk-1.0/atk/atkselection.h \\
+/include/atk-1.0/atk/atksocket.h \\
+/include/atk-1.0/atk/atkstate.h \\
+/include/atk-1.0/atk/atkstateset.h \\
+/include/atk-1.0/atk/atkstreamablecontent.h \\
+/include/atk-1.0/atk/atktable.h \\
+/include/atk-1.0/atk/atktablecell.h \\
+/include/atk-1.0/atk/atktext.h \\
+/include/atk-1.0/atk/atkutil.h \\
+/include/atk-1.0/atk/atkvalue.h \\
+/include/atk-1.0/atk/atkversion.h \\
+/include/atk-1.0/atk/atkwindow.h \\
+/lib/libatk-1.0.so \\
+/lib/pkgconfig/atk.pc
+
+exec=\\
+/lib/libatk-1.0.so.0
+EOF
+
+exit
