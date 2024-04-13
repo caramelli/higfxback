@@ -1,0 +1,85 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gdk-pixbuf-build libwebp-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install build/libpixbufloader-webp.so $DESTDIR/dfb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/webp-pixbuf-loader-build.pc << EOF
+Name: webp-pixbuf-loader
+Version: 0.0.7
+Description: WebP loader for GdkPixbuf
+Requires: $REQUIRES
+
+exec=\\
+/dfb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-webp.so
+EOF
+
+exit
+--- webp-pixbuf-loader-0.0.7.orig/io-webp.c
++++ webp-pixbuf-loader-0.0.7/io-webp.c
+@@ -297,7 +297,7 @@
+                         return FALSE;
+                 }
+                 data->anim_incr.total_data_len = file_size; /* allow for 8 byte header. "RIFF" + SIZE . */
+-                guchar *ptr = calloc (sizeof (guchar), file_size);
++                guchar *ptr = g_malloc0 (file_size);
+                 if (ptr == NULL) {
+                         g_set_error (error,
+                                      GDK_PIXBUF_ERROR,
+@@ -427,8 +427,17 @@
+ 
+                 guint pixbuf_length;
+                 stride = gdk_pixbuf_get_rowstride (data->pixbuf);
++                #if GDK_PIXBUF_MAJOR == 2 && GDK_PIXBUF_MINOR < 26
++                guchar *pixbuf_data = gdk_pixbuf_get_pixels (data->pixbuf);
++                pixbuf_length = (gdk_pixbuf_get_height (data->pixbuf) - 1) *
++                                gdk_pixbuf_get_rowstride (data->pixbuf) +
++                                gdk_pixbuf_get_width (data->pixbuf) *
++                                ((gdk_pixbuf_get_n_channels (data->pixbuf) *
++                                  gdk_pixbuf_get_bits_per_sample (data->pixbuf) + 7) / 8);
++                #else
+                 guchar *pixbuf_data = gdk_pixbuf_get_pixels_with_length (data->pixbuf,
+                                                                          &pixbuf_length);
++                #endif
+ 
+                 /* Initialise the picture to transparent black. */
+                 memset (pixbuf_data, 0x00, pixbuf_length);
+--- webp-pixbuf-loader-0.0.7.orig/tests/t3.c
++++ webp-pixbuf-loader-0.0.7/tests/t3.c
+@@ -2,11 +2,11 @@
+ 
+ gint
+ main(gint argc, gchar **argv) {
+-        g_autoptr(GdkPixbufAnimation) anim = gdk_pixbuf_animation_new_from_file(g_getenv("TEST_FILE"), NULL);
++        GdkPixbufAnimation *anim = gdk_pixbuf_animation_new_from_file(g_getenv("TEST_FILE"), NULL);
+         g_assert(anim != NULL);
+         g_assert(!gdk_pixbuf_animation_is_static_image(anim)); // Make sure it is an animation
+ 
+-        g_autoptr(GdkPixbufAnimationIter) anim_iter = gdk_pixbuf_animation_get_iter(anim, NULL);
++        GdkPixbufAnimationIter *anim_iter = gdk_pixbuf_animation_get_iter(anim, NULL);
+         g_assert(anim_iter != NULL);
+ 
+         int nframes;
+@@ -30,6 +30,8 @@
+                 else
+                         g_assert_cmpint(delay, ==, 300);
+         }
++        g_object_unref(anim_iter);
++        g_object_unref(anim);
+         g_assert(nframes == 15);
+         return 0;
+ }
+\ No newline at end of file
