@@ -20,7 +20,7 @@ cmake --build build
 
 # install
 install -d $DESTDIR/dfb/etc/vulkan/icd.d
-install -m 644 build/Linux/vk_swiftshader_icd.json $DESTDIR/dfb/etc/vulkan/icd.d
+install -m 644 build/Linux/vk_swiftshader_icd.json $DESTDIR/dfb/etc/vulkan/icd.d/swiftshader_icd.json
 install -d $DESTDIR/dfb/lib
 install build/Linux/libvk_swiftshader.so $DESTDIR/dfb/lib
 
@@ -33,7 +33,7 @@ Description: CPU-based implementation of Vulkan
 Requires: $REQUIRES
 
 exec=\\
-/dfb/etc/vulkan/icd.d/vk_swiftshader_icd.json
+/dfb/etc/vulkan/icd.d/swiftshader_icd.json \\
 /dfb/lib/libvk_swiftshader.so
 EOF
 
@@ -270,7 +270,7 @@ exit
  #include <map>
 --- SwiftShader-20200929.orig/src/Vulkan/VulkanPlatform.hpp
 +++ SwiftShader-20200929/src/Vulkan/VulkanPlatform.hpp
-@@ -49,18 +49,10 @@
+@@ -49,19 +49,13 @@
  	typedef VkNonDispatchableHandle<object##Ptr> object; \
  	template class VkNonDispatchableHandle<object##Ptr>;
  
@@ -281,16 +281,17 @@ exit
 +#include "vk_google_filtering_precision.h"
  
  namespace vk {
--// Here we define constants that used to be in the Vulkan headers, but are not part of the spec.
--// See: https://github.com/KhronosGroup/Vulkan-Docs/issues/1230
--
+ // Here we define constants that used to be in the Vulkan headers, but are not part of the spec.
+ // See: https://github.com/KhronosGroup/Vulkan-Docs/issues/1230
+ 
 -// When updating the Vulkan Headers we use, go through each constant below and make sure they are valid.
 -// Once that's done, update SwiftShaderVulkanHeaderVersion.
 -constexpr int SwiftShaderVulkanHeaderVersion = 148;
 -static_assert(SwiftShaderVulkanHeaderVersion == VK_HEADER_VERSION, "Please validate/update constants below upon upgrading Vulkan headers");
- 
+-
  constexpr auto VK_PIPELINE_BIND_POINT_RANGE_SIZE = (VK_PIPELINE_BIND_POINT_COMPUTE - VK_PIPELINE_BIND_POINT_GRAPHICS + 1);
  constexpr auto VK_IMAGE_VIEW_TYPE_END_RANGE = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+ 
 --- SwiftShader-20200929.orig/src/Vulkan/vk_ext_provoking_vertex.h
 +++ SwiftShader-20200929/src/Vulkan/vk_ext_provoking_vertex.h
 @@ -0,0 +1,56 @@

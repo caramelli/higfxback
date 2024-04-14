@@ -7,52 +7,58 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
-cmake -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
+cmake -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
 
 # build
 python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_beta.h
 python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_core.h
-python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_directfb.h
+python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_xcb.h
+python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_xlib.h
+python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_xlib_xrandr.h
 
 # install
-install -d $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vk_icd.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vk_layer.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vk_platform.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vk_sdk_platform.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vulkan.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vulkan_beta.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vulkan_core.h $DESTDIR/dfb/include/vulkan
-install -m 644 include/vulkan/vulkan_directfb.h $DESTDIR/dfb/include/vulkan
-install -d $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/vulkan-registry.pc $DESTDIR/dfb/lib/pkgconfig
-install -d $DESTDIR/dfb/share/vulkan/registry
-install -m 644 registry/vk.xml $DESTDIR/dfb/share/vulkan/registry
+install -d $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vk_icd.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vk_layer.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vk_platform.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vk_sdk_platform.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vulkan.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vulkan_beta.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vulkan_core.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vulkan_xcb.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vulkan_xlib.h $DESTDIR/x11/include/vulkan
+install -m 644 include/vulkan/vulkan_xlib_xrandr.h $DESTDIR/x11/include/vulkan
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 build/vulkan-registry.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/vulkan/registry
+install -m 644 registry/vk.xml $DESTDIR/x11/share/vulkan/registry
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
-cat > $DESTDIR/dfb/share/pkgconfig/vulkan-headers-build.pc << EOF
+cat > $DESTDIR/x11/share/pkgconfig/vulkan-headers-build.pc << EOF
 Name: Vulkan-Headers
-Version: 1.2.151
+Version: 1.2.156
 Description: Vulkan API Headers
 Requires: $REQUIRES
 
 devel=\\
-/dfb/include/vulkan/vk_icd.h \\
-/dfb/include/vulkan/vk_layer.h \\
-/dfb/include/vulkan/vk_platform.h \\
-/dfb/include/vulkan/vk_sdk_platform.h \\
-/dfb/include/vulkan/vulkan.h \\
-/dfb/include/vulkan/vulkan_beta.h \\
-/dfb/include/vulkan/vulkan_core.h \\
-/dfb/include/vulkan/vulkan_directfb.h \\
-/dfb/lib/pkgconfig/vulkan-registry.pc \\
-/dfb/share/vulkan/registry/vk.xml
+/x11/include/vulkan/vk_icd.h \\
+/x11/include/vulkan/vk_layer.h \\
+/x11/include/vulkan/vk_platform.h \\
+/x11/include/vulkan/vk_sdk_platform.h \\
+/x11/include/vulkan/vulkan.h \\
+/x11/include/vulkan/vulkan_beta.h \\
+/x11/include/vulkan/vulkan_core.h \\
+/x11/include/vulkan/vulkan_xcb.h \\
+/x11/include/vulkan/vulkan_xlib.h \\
+/x11/include/vulkan/vulkan_xlib_xrandr.h \\
+/x11/lib/pkgconfig/vulkan-registry.pc \\
+/x11/share/vulkan/registry/vk.xml
 EOF
 
 exit
---- Vulkan-Headers-1.2.151.orig/CMakeLists.txt
-+++ Vulkan-Headers-1.2.151/CMakeLists.txt
+--- Vulkan-Headers-1.2.156.orig/CMakeLists.txt
++++ Vulkan-Headers-1.2.156/CMakeLists.txt
 @@ -20,8 +20,7 @@
  
  cmake_minimum_required(VERSION 3.10.2)
@@ -75,8 +81,8 @@ exit
  # uninstall target
  if(NOT TARGET uninstall)
      configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
---- Vulkan-Headers-1.2.151.orig/registry/docgenerator.py
-+++ Vulkan-Headers-1.2.151/registry/docgenerator.py
+--- Vulkan-Headers-1.2.156.orig/registry/docgenerator.py
++++ Vulkan-Headers-1.2.156/registry/docgenerator.py
 @@ -0,0 +1,450 @@
 +#!/usr/bin/python3 -i
 +#
@@ -528,8 +534,8 @@ exit
 +        decls = self.makeCDecls(cmdinfo.elem)
 +        body += decls[0]
 +        self.writeInclude('protos', name, body)
---- Vulkan-Headers-1.2.151.orig/registry/extensionmetadocgenerator.py
-+++ Vulkan-Headers-1.2.151/registry/extensionmetadocgenerator.py
+--- Vulkan-Headers-1.2.156.orig/registry/extensionmetadocgenerator.py
++++ Vulkan-Headers-1.2.156/registry/extensionmetadocgenerator.py
 @@ -0,0 +1,636 @@
 +#!/usr/bin/python3 -i
 +#
@@ -1167,8 +1173,8 @@ exit
 +
 +        self.logMsg('error', 'Missing ' + versioningEnumName + '!')
 +        return default
---- Vulkan-Headers-1.2.151.orig/registry/hostsyncgenerator.py
-+++ Vulkan-Headers-1.2.151/registry/hostsyncgenerator.py
+--- Vulkan-Headers-1.2.156.orig/registry/hostsyncgenerator.py
++++ Vulkan-Headers-1.2.156/registry/hostsyncgenerator.py
 @@ -0,0 +1,154 @@
 +#!/usr/bin/python3 -i
 +#
@@ -1324,8 +1330,8 @@ exit
 +        self.makeThreadSafetyBlocks(cmdinfo.elem, 'param')
 +
 +        self.writeInclude()
---- Vulkan-Headers-1.2.151.orig/registry/interfacedocgenerator.py
-+++ Vulkan-Headers-1.2.151/registry/interfacedocgenerator.py
+--- Vulkan-Headers-1.2.156.orig/registry/interfacedocgenerator.py
++++ Vulkan-Headers-1.2.156/registry/interfacedocgenerator.py
 @@ -0,0 +1,118 @@
 +#!/usr/bin/python3 -i
 +#
@@ -1445,8 +1451,8 @@ exit
 +            self.makeInterfaceFile(feature)
 +
 +        OutputGenerator.endFile(self)
---- Vulkan-Headers-1.2.151.orig/registry/pygenerator.py
-+++ Vulkan-Headers-1.2.151/registry/pygenerator.py
+--- Vulkan-Headers-1.2.156.orig/registry/pygenerator.py
++++ Vulkan-Headers-1.2.156/registry/pygenerator.py
 @@ -0,0 +1,365 @@
 +#!/usr/bin/python3 -i
 +#
@@ -1813,8 +1819,8 @@ exit
 +        paramTypes = [param.text for param in cmdinfo.elem.findall('param/type')]
 +        for param_type in paramTypes:
 +            self.addMapping(name, param_type)
---- Vulkan-Headers-1.2.151.orig/registry/reflib.py
-+++ Vulkan-Headers-1.2.151/registry/reflib.py
+--- Vulkan-Headers-1.2.156.orig/registry/reflib.py
++++ Vulkan-Headers-1.2.156/registry/reflib.py
 @@ -0,0 +1,663 @@
 +#!/usr/bin/python3
 +#
@@ -2479,8 +2485,8 @@ exit
 +        branch = results.stdout.decode()[0:-1]
 +
 +    return (branch, '')
---- Vulkan-Headers-1.2.151.orig/registry/spec_tools/attributes.py
-+++ Vulkan-Headers-1.2.151/registry/spec_tools/attributes.py
+--- Vulkan-Headers-1.2.156.orig/registry/spec_tools/attributes.py
++++ Vulkan-Headers-1.2.156/registry/spec_tools/attributes.py
 @@ -0,0 +1,114 @@
 +#!/usr/bin/python3 -i
 +#
@@ -2596,8 +2602,8 @@ exit
 +        "Formats an object for repr(), debugger display, etc."
 +        return 'spec_tools.attributes.ExternSyncEntry("{}")'.format(self.full_reference)
 +
---- Vulkan-Headers-1.2.151.orig/registry/spec_tools/validity.py
-+++ Vulkan-Headers-1.2.151/registry/spec_tools/validity.py
+--- Vulkan-Headers-1.2.156.orig/registry/spec_tools/validity.py
++++ Vulkan-Headers-1.2.156/registry/spec_tools/validity.py
 @@ -0,0 +1,216 @@
 +#!/usr/bin/python3 -i
 +#
@@ -2815,8 +2821,8 @@ exit
 +            parts.append(', anchor={}'.format('-'.join(self.anchor)))
 +        parts.append('>')
 +        return ''.join(parts)
---- Vulkan-Headers-1.2.151.orig/registry/validitygenerator.py
-+++ Vulkan-Headers-1.2.151/registry/validitygenerator.py
+--- Vulkan-Headers-1.2.156.orig/registry/validitygenerator.py
++++ Vulkan-Headers-1.2.156/registry/validitygenerator.py
 @@ -0,0 +1,1484 @@
 +#!/usr/bin/python3 -i
 +#
@@ -4302,8 +4308,8 @@ exit
 +        category = typeinfo.elem.get('category')
 +        if category in ('struct', 'union'):
 +            self.genStruct(typeinfo, name, alias)
---- Vulkan-Headers-1.2.151.orig/registry/vulkan-registry.pc.in
-+++ Vulkan-Headers-1.2.151/registry/vulkan-registry.pc.in
+--- Vulkan-Headers-1.2.156.orig/registry/vulkan-registry.pc.in
++++ Vulkan-Headers-1.2.156/registry/vulkan-registry.pc.in
 @@ -0,0 +1,7 @@
 +prefix=@CMAKE_INSTALL_PREFIX@
 +datarootdir=${prefix}/share
@@ -4311,4 +4317,4 @@ exit
 +
 +Name: Vulkan Registry
 +Description: Vulkan API registry file
-+Version: 1.2.151
++Version: 1.2.156
