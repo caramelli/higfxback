@@ -1,0 +1,359 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="astc-encoder-build cmake3-build gcc-g++-build llvm-build marl-build opengl-registry-build spirv-tools-build vulkan-headers-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
+  XCB=1
+  REQUIRES="$REQUIRES libxcb-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxext-build; then
+  XLIB=1
+  REQUIRES="$REQUIRES libxext-build"
+fi
+
+test $XLIB || test $XCB || { echo Xlib or XCB packages required; exit 1; }
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -rf include
+rm -rf third_party/astc-encoder
+rm -rf third_party/llvm-10.0
+rm -rf third_party/marl
+rm -rf third_party/SPIRV-Headers
+rm -rf third_party/SPIRV-Tools
+cmake -DSWIFTSHADER_BUILD_GLES_CM=OFF -DSWIFTSHADER_BUILD_PVR=OFF -DSWIFTSHADER_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/x11/etc/vulkan/icd.d
+install -m 644 build/Linux/vk_swiftshader_icd.json $DESTDIR/x11/etc/vulkan/icd.d/swiftshader_icd.json
+install -d $DESTDIR/x11/lib
+install build/Linux/libEGL.so $DESTDIR/x11/lib/libswiftshaderEGL.so.1
+install build/Linux/libGLESv2.so $DESTDIR/x11/lib/libswiftshaderGLESv2.so.2
+install build/Linux/libvk_swiftshader.so $DESTDIR/x11/lib
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/swiftshader-build.pc << EOF
+Name: SwiftShader
+Version: 20201006
+Description: CPU-based implementation of Vulkan
+Requires: $REQUIRES
+
+exec=\\
+/x11/etc/vulkan/icd.d/swiftshader_icd.json \\
+/x11/lib/libswiftshaderEGL.so.1 \\
+/x11/lib/libswiftshaderGLESv2.so.2 \\
+/x11/lib/libvk_swiftshader.so
+EOF
+
+exit
+--- SwiftShader-20201006.orig/CMakeLists.txt
++++ SwiftShader-20201006/CMakeLists.txt
+@@ -579,6 +579,10 @@
+ endif()
+ unset(USE_EXCEPTIONS)
+ 
++if(NOT EXISTS ${SWIFTSHADER_DIR}/include)
++    include_directories(${CMAKE_INSTALL_PREFIX}/include)
++endif()
++
+ ###########################################################
+ # libbacktrace and boost
+ ###########################################################
+@@ -590,8 +594,10 @@
+ ###########################################################
+ # LLVM
+ ###########################################################
+-add_subdirectory(${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION} EXCLUDE_FROM_ALL)
+-set_target_properties(llvm PROPERTIES FOLDER "third_party")
++if(EXISTS ${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION})
++    add_subdirectory(${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION} EXCLUDE_FROM_ALL)
++    set_target_properties(llvm PROPERTIES FOLDER "third_party")
++endif()
+ 
+ ###########################################################
+ # Subzero
+@@ -605,9 +611,11 @@
+ # marl
+ ###########################################################
+ if(BUILD_MARL)
+-    set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
+-    add_subdirectory(${THIRD_PARTY_DIR}/marl)
+-    set_target_properties(marl PROPERTIES FOLDER "third_party")
++    if(EXISTS ${THIRD_PARTY_DIR}/marl)
++        set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
++        add_subdirectory(${THIRD_PARTY_DIR}/marl)
++        set_target_properties(marl PROPERTIES FOLDER "third_party")
++    endif()
+ endif()
+ 
+ if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
+@@ -626,8 +634,10 @@
+ # astc-encoder
+ ###########################################################
+ if(SWIFTSHADER_ENABLE_ASTC)
+-    add_subdirectory(${THIRD_PARTY_DIR}/astc-encoder)
+-    set_target_properties(astc-encoder PROPERTIES FOLDER "third_party")
++    if(EXISTS ${THIRD_PARTY_DIR}/astc-encoder)
++        add_subdirectory(${THIRD_PARTY_DIR}/astc-encoder)
++        set_target_properties(astc-encoder PROPERTIES FOLDER "third_party")
++    endif()
+ endif()
+ 
+ ###########################################################
+@@ -720,7 +730,7 @@
+ endif(SWIFTSHADER_BUILD_GLES_CM)
+ 
+ if(SWIFTSHADER_BUILD_VULKAN)
+-    if (NOT TARGET SPIRV-Tools)
++    if(EXISTS ${THIRD_PARTY_DIR}/SPIRV-Headers AND EXISTS ${THIRD_PARTY_DIR}/SPIRV-Tools)
+         # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
+         set(SPIRV-Headers_SOURCE_DIR "${THIRD_PARTY_DIR}/SPIRV-Headers")
+         set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
+--- SwiftShader-20201006.orig/src/Device/ASTC_Decoder.cpp
++++ SwiftShader-20201006/src/Device/ASTC_Decoder.cpp
+@@ -109,7 +109,11 @@
+ #ifdef SWIFTSHADER_ENABLE_ASTC
+ 	build_quantization_mode_table();
+ 
++#ifdef ASTCENC_INCLUDED
++	astcenc_profile decode_mode = isUnsignedByte ? ASTCENC_PRF_LDR : ASTCENC_PRF_HDR_RGB_LDR_A;
++#else
+ 	astc_decode_mode decode_mode = isUnsignedByte ? DECODE_LDR : DECODE_HDR;
++#endif
+ 
+ 	std::unique_ptr<block_size_descriptor> bsd(new block_size_descriptor);
+ 	init_block_size_descriptor(xBlockSize, yBlockSize, zBlockSize, bsd.get());
+--- SwiftShader-20201006.orig/src/OpenGL/compiler/OutputASM.cpp
++++ SwiftShader-20201006/src/OpenGL/compiler/OutputASM.cpp
+@@ -23,8 +23,8 @@
+ #include <GLES2/gl2.h>
+ #include <GLES2/gl2ext.h>
+ #include <GLES3/gl3.h>
+-#include <GL/glcorearb.h>
+-#include <GL/glext.h>
++
++#define GL_SAMPLER_2D_RECT_ARB 0x8B63
+ 
+ #include <stdlib.h>
+ 
+--- SwiftShader-20201006.orig/src/OpenGL/libGLESv2/utilities.h
++++ SwiftShader-20201006/src/OpenGL/libGLESv2/utilities.h
+@@ -23,8 +23,11 @@
+ 
+ #include <GLES2/gl2.h>
+ #include <GLES2/gl2ext.h>
+-#include <GL/glcorearb.h>
+-#include <GL/glext.h>
++
++#define GL_SAMPLER_2D_RECT_ARB            0x8B63
++#define GL_TEXTURE_RECTANGLE_ARB          0x84F5
++#define GL_TEXTURE_BINDING_RECTANGLE_ARB  0x84F6
++#define GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB 0x84F8
+ 
+ #include <string>
+ 
+--- SwiftShader-20201006.orig/src/Pipeline/CMakeLists.txt
++++ SwiftShader-20201006/src/Pipeline/CMakeLists.txt
+@@ -57,9 +57,7 @@
+ )
+ 
+ # Add SPIRV-Tools dep
+-if (NOT TARGET SPIRV-Tools)
+-    message(FATAL_ERROR "Missing required target: SPIRV-Tools")
+-endif()
++if (TARGET SPIRV-Tools)
+ 
+ set_target_properties(core_tables PROPERTIES FOLDER "SPIRV-Tools build")
+ set_target_properties(enum_string_mapping PROPERTIES FOLDER "SPIRV-Tools build")
+@@ -67,6 +65,8 @@
+ set_target_properties(spirv-tools-pkg-config PROPERTIES FOLDER "SPIRV-Tools build")
+ set_target_properties(spirv-tools-shared-pkg-config PROPERTIES FOLDER "SPIRV-Tools build")
+ 
++endif()
++
+ set_target_properties(vk_pipeline PROPERTIES
+     POSITION_INDEPENDENT_CODE 1
+     FOLDER "SwiftShader VK"
+--- SwiftShader-20201006.orig/src/Reactor/CMakeLists.txt
++++ SwiftShader-20201006/src/Reactor/CMakeLists.txt
+@@ -127,8 +127,16 @@
+         ${ROOT_PROJECT_COMPILE_OPTIONS}
+ )
+ 
+-target_link_libraries(ReactorLLVM
+-    PRIVATE
+-        llvm
+-        ${REACTOR_PRIVATE_LINK_LIBRARIES}
+-)
++if(TARGET llvm)
++    target_link_libraries(ReactorLLVM
++        PRIVATE
++            llvm
++            ${REACTOR_PRIVATE_LINK_LIBRARIES}
++    )
++else()
++    target_link_libraries(ReactorLLVM
++        PRIVATE
++            LLVM
++            ${REACTOR_PRIVATE_LINK_LIBRARIES}
++    )
++endif()
+--- SwiftShader-20201006.orig/src/Vulkan/CMakeLists.txt
++++ SwiftShader-20201006/src/Vulkan/CMakeLists.txt
+@@ -216,16 +216,8 @@
+     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vk_swiftshader> ${CMAKE_BINARY_DIR}/bin/${VULKAN_API_LIBRARY_NAME}
+ )
+ 
+-# The vk_swiftshader_icd.json manifest file will point to ICD_LIBRARY_PATH.
+-# Set ICD_LIBRARY_PATH to be a relative path similar to "./libvk_swiftshader.so", so both files can be moved.
+-# A relative path is relative to the manifest file.
+-set(ICD_LIBRARY_PATH "${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
+-if(WIN32)
+-    # The path is output to a JSON file, which requires backslashes to be escaped.
+-    set(ICD_LIBRARY_PATH ".\\\\${ICD_LIBRARY_PATH}")
+-else()
+-    set(ICD_LIBRARY_PATH "./${ICD_LIBRARY_PATH}")
+-endif()
++include(GNUInstallDirs)
++set(ICD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
+ configure_file(
+     "vk_swiftshader_icd.json.tmpl"
+     "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json"
+--- SwiftShader-20201006.orig/src/Vulkan/VkStringify.cpp
++++ SwiftShader-20201006/src/Vulkan/VkStringify.cpp
+@@ -16,8 +16,8 @@
+ 
+ #include "System/Debug.hpp"
+ 
+-#include <vulkan/vk_ext_provoking_vertex.h>
+-#include <vulkan/vk_google_filtering_precision.h>
++#include "vk_ext_provoking_vertex.h"
++#include "vk_google_filtering_precision.h"
+ 
+ #include <iostream>
+ #include <map>
+--- SwiftShader-20201006.orig/src/Vulkan/VulkanPlatform.hpp
++++ SwiftShader-20201006/src/Vulkan/VulkanPlatform.hpp
+@@ -49,9 +49,8 @@
+ 	typedef VkNonDispatchableHandle<object##Ptr> object; \
+ 	template class VkNonDispatchableHandle<object##Ptr>;
+ 
+-#include <vulkan/vk_ext_provoking_vertex.h>
+-#include <vulkan/vk_google_filtering_precision.h>
+-#include <vulkan/vulkan_core.h>
++#include "vk_ext_provoking_vertex.h"
++#include "vk_google_filtering_precision.h"
+ 
+ namespace vk {
+ // Here we define constants that used to be in the Vulkan headers, but are not part of the spec.
+--- SwiftShader-20201006.orig/src/Vulkan/vk_ext_provoking_vertex.h
++++ SwiftShader-20201006/src/Vulkan/vk_ext_provoking_vertex.h
+@@ -0,0 +1,56 @@
++// Copyright 2019 The SwiftShader Authors. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#include <vulkan/vulkan_core.h>
++
++// THIS FILE SHOULD BE DELETED IF VK_EXT_provoking_vertex IS EVER ADDED TO THE VULKAN HEADERS
++#ifdef VK_EXT_provoking_vertex
++#error "VK_EXT_provoking_vertex is already defined in the Vulkan headers, you can delete this file"
++#endif
++
++static constexpr VkStructureType VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT = static_cast<VkStructureType>(1000254000);
++static constexpr VkStructureType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT = static_cast<VkStructureType>(1000254001);
++static constexpr VkStructureType VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT = static_cast<VkStructureType>(1000254002);
++
++#define VK_EXT_provoking_vertex 1
++#define VK_EXT_PROVOKING_VERTEX_SPEC_VERSION 1
++#define VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME "VK_EXT_provoking_vertex"
++
++typedef enum VkProvokingVertexModeEXT {
++    VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT = 0,
++    VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT = 1,
++    VK_PROVOKING_VERTEX_MODE_BEGIN_RANGE_EXT = VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT,
++    VK_PROVOKING_VERTEX_MODE_END_RANGE_EXT = VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT,
++    VK_PROVOKING_VERTEX_MODE_RANGE_SIZE_EXT = (VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT - VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT + 1),
++    VK_PROVOKING_VERTEX_MODE_MAX_ENUM_EXT = 0x7FFFFFFF
++} VkProvokingVertexModeEXT;
++
++typedef struct VkPhysicalDeviceProvokingVertexFeaturesEXT {
++    VkStructureType    sType;
++    void*              pNext;
++    VkBool32           provokingVertexLast;
++} VkPhysicalDeviceProvokingVertexFeaturesEXT;
++
++typedef struct VkPhysicalDeviceProvokingVertexPropertiesEXT {
++    VkStructureType    sType;
++    void*              pNext;
++    VkBool32           provokingVertexModePerPipeline;
++} VkPhysicalDeviceProvokingVertexPropertiesEXT;
++
++typedef struct VkPipelineRasterizationProvokingVertexStateCreateInfoEXT {
++    VkStructureType             sType;
++    const void*                 pNext;
++    VkProvokingVertexModeEXT    provokingVertexMode;
++} VkPipelineRasterizationProvokingVertexStateCreateInfoEXT;
++
+--- SwiftShader-20201006.orig/src/Vulkan/vk_google_filtering_precision.h
++++ SwiftShader-20201006/src/Vulkan/vk_google_filtering_precision.h
+@@ -0,0 +1,41 @@
++// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#include <vulkan/vulkan_core.h>
++
++// THIS FILE SHOULD BE DELETED IF VK_GOOGLE_sampler_filtering_precision IS EVER ADDED TO THE VULKAN HEADERS
++#ifdef VK_GOOGLE_sampler_filtering_precision
++#error "VK_GOOGLE_sampler_filtering_precision is already defined in the Vulkan headers, you can delete this file"
++#endif
++
++static constexpr VkStructureType VK_STRUCTURE_TYPE_SAMPLER_FILTERING_PRECISION_GOOGLE = static_cast<VkStructureType>(1000264000);
++
++#define VK_GOOGLE_sampler_filtering_precisions 1
++#define VK_GOOGLE_SAMPLER_FILTERING_PRECISION_SPEC_VERSION 1
++#define VK_GOOGLE_SAMPLER_FILTERING_PRECISION_EXTENSION_NAME "VK_GOOGLE_sampler_filtering_precision"
++
++typedef enum VkSamplerFilteringPrecisionModeGOOGLE {
++    VK_SAMPLER_FILTERING_PRECISION_MODE_LOW_GOOGLE = 0,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_HIGH_GOOGLE = 1,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_BEGIN_RANGE_GOOGLE = VK_SAMPLER_FILTERING_PRECISION_MODE_LOW_GOOGLE,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_END_RANGE_GOOGLE = VK_SAMPLER_FILTERING_PRECISION_MODE_HIGH_GOOGLE,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_RANGE_SIZE_GOOGLE = (VK_SAMPLER_FILTERING_PRECISION_MODE_HIGH_GOOGLE - VK_SAMPLER_FILTERING_PRECISION_MODE_LOW_GOOGLE + 1),
++    VK_SAMPLER_FILTERING_PRECISION_MODE_MAX_ENUM_GOOGLE = 0x7FFFFFFF
++} VkSamplerFilteringPrecisionModeGOOGLE;
++
++typedef struct VkSamplerFilteringPrecisionGOOGLE {
++    VkStructureType                       sType;
++    const void*                           pNext;
++    VkSamplerFilteringPrecisionModeGOOGLE samplerFilteringPrecisionMode;
++} VkSamplerFilteringPrecisionGOOGLE;
