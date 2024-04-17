@@ -1,0 +1,377 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loader-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
+  XCB=1
+else
+  XLIB=1
+  BUILD_WSI="-DBUILD_WSI_XCB_SUPPORT=OFF -DCUBE_WSI_SELECTION=XLIB"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build; then
+  XLIB=1
+else
+  XCB=1
+  BUILD_WSI=-DBUILD_WSI_XLIB_SUPPORT=OFF
+fi
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/x11/lib/pkgconfig cmake $BUILD_WSI -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DGLSLANG_INSTALL_DIR=`dirname $(dirname $(which glslangValidator))` -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/x11/bin
+test $XCB && install build/cube/vkcube $DESTDIR/x11/bin/vkcube-xcb
+test $XLIB && install build/cube/vkcube-xlib $DESTDIR/x11/bin
+test $XCB && install build/cube/vkcubepp $DESTDIR/x11/bin/vkcubepp-xcb
+test $XLIB && install build/cube/vkcubepp-xlib $DESTDIR/x11/bin
+install build/vulkaninfo/vulkaninfo $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
+Name: Vulkan-Tools
+Version: 1.2.156
+Description: A collection of Vulkan utilities
+Requires: $REQUIRES
+
+exec=\\
+EOF
+test $XCB && echo /x11/bin/vkcube-xcb \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
+test $XLIB && echo /x11/bin/vkcube-xlib \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
+test $XCB && echo /x11/bin/vkcubepp-xcb \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
+test $XLIB && echo /x11/bin/vkcubepp-xlib \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
+/x11/bin/vulkaninfo
+EOF
+
+exit
+--- Vulkan-Tools-1.2.156.orig/CMakeLists.txt
++++ Vulkan-Tools-1.2.156/CMakeLists.txt
+@@ -27,7 +27,7 @@
+ 
+ # find_package(), include() and global project settings --------------------------------------------------------------------------
+ 
+-find_package(PythonInterp 3 QUIET)
++find_package(Python3 QUIET)
+ 
+ # User-interface declarations ----------------------------------------------------------------------------------------------------
+ # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
+@@ -148,9 +148,9 @@
+ endif()
+ 
+ # Optional codegen target
+-if(PYTHONINTERP_FOUND)
++if(Python3_Interpreter_FOUND)
+     add_custom_target(VulkanTools_generated_source
+-                      COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
++                      COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
+                               ${VulkanRegistry_DIR} --incremental
+                       )
+ else()
+--- Vulkan-Tools-1.2.156.orig/cmake/FindVulkanHeaders.cmake
++++ Vulkan-Tools-1.2.156/cmake/FindVulkanHeaders.cmake
+@@ -62,8 +62,10 @@
+ find_package_handle_standard_args(VulkanHeaders
+     DEFAULT_MSG
+     VulkanHeaders_INCLUDE_DIR)
++set(FPHSA_NAME_MISMATCHED TRUE)
+ find_package_handle_standard_args(VulkanRegistry
+     DEFAULT_MSG
+     VulkanRegistry_DIR)
++unset(FPHSA_NAME_MISMATCHED)
+ 
+ mark_as_advanced(VulkanHeaders_INCLUDE_DIR VulkanRegistry_DIR)
+--- Vulkan-Tools-1.2.156.orig/cmake/FindX11.cmake
++++ Vulkan-Tools-1.2.156/cmake/FindX11.cmake
+@@ -0,0 +1,23 @@
++# Try to find libX11
++#
++# This will define:
++#
++#   X11_FOUND       - True if libX11 is found
++#   X11_INCLUDE_DIR - Include directory for DirectFB
++#   X11_LIBRARIES   - Link these to use DirectFB
++#
++# Redistribution and use is allowed according to the terms of the BSD license.
++# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
++
++find_package(PkgConfig)
++pkg_check_modules(PC_X11 QUIET x11)
++
++find_path(X11_INCLUDE_DIR NAMES X11/Xlib.h HINTS ${PC_X11_INCLUDE_DIRS})
++
++find_library(X11_LIBRARIES NAMES X11 HINTS ${PC_X11_LIBRARY_DIRS})
++
++include(FindPackageHandleStandardArgs)
++
++find_package_handle_standard_args(X11 DEFAULT_MSG X11_LIBRARIES X11_INCLUDE_DIR)
++
++mark_as_advanced(X11_INCLUDE_DIR X11_LIBRARIES)
+--- Vulkan-Tools-1.2.156.orig/cmake/FindXCB.cmake
++++ Vulkan-Tools-1.2.156/cmake/FindXCB.cmake
+@@ -35,15 +35,15 @@
+         ${PC_${comp}_LIBRARY_DIRS}
+         )
+ 
+-    find_package_handle_standard_args(${comp}
+-        FOUND_VAR ${comp}_FOUND
++    find_package_handle_standard_args(${compname}
++        FOUND_VAR ${compname}_FOUND
+         REQUIRED_VARS ${compname}_INCLUDE_DIR ${compname}_LIBRARY)
+     mark_as_advanced(${compname}_INCLUDE_DIR ${compname}_LIBRARY)
+ 
+     list(APPEND XCB_INCLUDE_DIRS ${${compname}_INCLUDE_DIR})
+     list(APPEND XCB_LIBRARIES ${${compname}_LIBRARY})
+ 
+-    if(NOT ${comp}_FOUND)
++    if(NOT ${compname}_FOUND)
+         set(XCB_FOUND false)
+     endif()
+ endforeach()
+--- Vulkan-Tools-1.2.156.orig/cube/CMakeLists.txt
++++ Vulkan-Tools-1.2.156/cube/CMakeLists.txt
+@@ -31,12 +31,12 @@
+     message(STATUS "Using cmake find_program to look for glslangValidator")
+     if(WIN32)
+         execute_process(
+-            COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-windows-x64-Release.zip)
++            COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-windows-x64-Release.zip)
+         set(GLSLANG_VALIDATOR_NAME "glslangValidator.exe")
+     elseif(APPLE)
+-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-osx-Release.zip)
++        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-osx-Release.zip)
+     elseif(UNIX AND NOT APPLE) # i.e. Linux
+-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
++        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
+     endif()
+     if (WIN32)
+         set(PLATFORM_DIR "${PROJECT_SOURCE_DIR}/glslang/windows/bin")
+@@ -98,31 +98,31 @@
+             message(FATAL_ERROR "Selected XCB for vkcube build but not building Xcb support")
+         endif()
+         set(CUBE_INCLUDE_DIRS ${XCB_INCLUDE_DIRS} ${CUBE_INCLUDE_DIRS})
+-        link_libraries(${XCB_LIBRARIES})
+-        add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
++        set(CUBE_LIBRARIES ${XCB_LIBRARIES})
++        set(CUBE_PLATFORM VK_USE_PLATFORM_XCB_KHR)
+     elseif(CUBE_WSI_SELECTION STREQUAL "XLIB")
+         if(NOT BUILD_WSI_XLIB_SUPPORT)
+             message(FATAL_ERROR "Selected XLIB for vkcube build but not building Xlib support")
+         endif()
+         set(CUBE_INCLUDE_DIRS ${X11_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
+-        link_libraries(${X11_LIBRARIES})
+-        add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
++        set(CUBE_LIBRARIES ${X11_LIBRARIES})
++        set(CUBE_PLATFORM VK_USE_PLATFORM_XLIB_KHR)
+     elseif(CUBE_WSI_SELECTION STREQUAL "WAYLAND")
+         if(NOT BUILD_WSI_WAYLAND_SUPPORT)
+             message(FATAL_ERROR "Selected Wayland for vkcube build but not building Wayland support")
+         endif()
+         set(CUBE_INCLUDE_DIRS ${WAYLAND_CLIENT_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
+-        link_libraries(${WAYLAND_CLIENT_LIBRARIES})
+-        add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
++        set(CUBE_LIBRARIES ${WAYLAND_CLIENT_LIBRARIES})
++        set(CUBE_PLATFORM VK_USE_PLATFORM_WAYLAND_KHR)
+     elseif(CUBE_WSI_SELECTION STREQUAL "DIRECTFB")
+         if(NOT BUILD_WSI_DIRECTFB_SUPPORT)
+             message(FATAL_ERROR "Selected DIRECTFB for vkcube build but not building DirectFB support")
+         endif()
+         set(CUBE_INCLUDE_DIRS ${DIRECTFB_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
+-        link_libraries(${DIRECTFB_LIBRARIES})
+-        add_definitions(-DVK_USE_PLATFORM_DIRECTFB_EXT)
++        set(CUBE_LIBRARIES ${DIRECTFB_LIBRARIES})
++        set(CUBE_PLATFORM VK_USE_PLATFORM_DIRECTFB_EXT)
+     elseif(CUBE_WSI_SELECTION STREQUAL "DISPLAY")
+-        add_definitions(-DVK_USE_PLATFORM_DISPLAY_KHR)
++        set(CUBE_PLATFORM VK_USE_PLATFORM_DISPLAY_KHR)
+     else()
+         message(FATAL_ERROR "Unrecognized value for CUBE_WSI_SELECTION: ${CUBE_WSI_SELECTION}")
+     endif()
+@@ -191,7 +191,8 @@
+                        ${PROJECT_SOURCE_DIR}/cube/cube.frag
+                        cube.vert.inc
+                        cube.frag.inc)
+-        target_link_libraries(vkcube Vulkan::Vulkan)
++        target_link_libraries(vkcube Vulkan::Vulkan ${CUBE_LIBRARIES})
++        target_compile_definitions(vkcube PUBLIC ${CUBE_PLATFORM})
+         include(CheckLibraryExists)
+         CHECK_LIBRARY_EXISTS("rt" clock_gettime "" NEED_RT)
+         if (NEED_RT)
+@@ -241,7 +242,8 @@
+                        ${PROJECT_SOURCE_DIR}/cube/cube.frag
+                        cube.vert.inc
+                        cube.frag.inc)
+-        target_link_libraries(vkcubepp Vulkan::Vulkan)
++        target_link_libraries(vkcubepp Vulkan::Vulkan ${CUBE_LIBRARIES})
++        target_compile_definitions(vkcubepp PUBLIC ${CUBE_PLATFORM})
+     endif()
+ else()
+     if(CMAKE_CL_64)
+@@ -272,3 +274,39 @@
+ else()
+     install(TARGETS vkcubepp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ endif()
++
++# ----------------------------------------------------------------------------
++# vkcube-xlib
++
++if (CMAKE_SYSTEM_NAME MATCHES "Linux|BSD")
++    if(BUILD_WSI_XLIB_SUPPORT)
++        add_executable(vkcube-xlib
++                       cube.c
++                       ${PROJECT_SOURCE_DIR}/cube/cube.vert
++                       ${PROJECT_SOURCE_DIR}/cube/cube.frag
++                       cube.vert.inc
++                       cube.frag.inc)
++        target_link_libraries(vkcube-xlib Vulkan::Vulkan ${X11_LIBRARIES})
++        target_compile_definitions(vkcube-xlib PUBLIC VK_USE_PLATFORM_XLIB_KHR)
++        CHECK_LIBRARY_EXISTS("rt" clock_gettime "" NEED_RT)
++        if (NEED_RT)
++            target_link_libraries(vkcube-xlib rt)
++        endif()
++    endif()
++endif()
++
++# ----------------------------------------------------------------------------
++# vkcubepp-xlib
++
++if (CMAKE_SYSTEM_NAME MATCHES "Linux|BSD")
++    if(BUILD_WSI_XLIB_SUPPORT)
++        add_executable(vkcubepp-xlib
++                       cube.cpp
++                       ${PROJECT_SOURCE_DIR}/cube/cube.vert
++                       ${PROJECT_SOURCE_DIR}/cube/cube.frag
++                       cube.vert.inc
++                       cube.frag.inc)
++        target_link_libraries(vkcubepp-xlib Vulkan::Vulkan ${X11_LIBRARIES})
++        target_compile_definitions(vkcubepp-xlib PUBLIC VK_USE_PLATFORM_XLIB_KHR)
++    endif()
++endif()
+--- Vulkan-Tools-1.2.156.orig/cube/cube.c
++++ Vulkan-Tools-1.2.156/cube/cube.c
+@@ -3810,6 +3810,8 @@
+     memset(demo, 0, sizeof(*demo));
+     demo->presentMode = VK_PRESENT_MODE_FIFO_KHR;
+     demo->frameCount = INT32_MAX;
++    demo->width = 500;
++    demo->height = 500;
+     /* For cube demo we just grab the first physical device by default */
+     demo->gpu_number = 0;
+ 
+@@ -3845,6 +3847,16 @@
+             i++;
+             continue;
+         }
++        if (strcmp(argv[i], "--width") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->width) == 1 && demo->width > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--height") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->height) == 1 && demo->height > 0) {
++            i++;
++            continue;
++        }
+         if (strcmp(argv[i], "--suppress_popups") == 0) {
+             demo->suppress_popups = true;
+             continue;
+@@ -3872,6 +3884,7 @@
+             "\t[--incremental_present] [--display_timing]\n"
+             "\t[--gpu_number <index of physical device>]\n"
+             "\t[--present_mode <present mode enum>]\n"
++            "\t[--width <width>] [--height <height>]\n"
+             "\t<present_mode_enum>\n"
+             "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = %d\n"
+             "\t\tVK_PRESENT_MODE_MAILBOX_KHR = %d\n"
+@@ -3900,9 +3913,6 @@
+ 
+     demo_init_vk(demo);
+ 
+-    demo->width = 500;
+-    demo->height = 500;
+-
+     demo->spin_angle = 4.0f;
+     demo->spin_increment = 0.2f;
+     demo->pause = false;
+--- Vulkan-Tools-1.2.156.orig/cube/cube.cpp
++++ Vulkan-Tools-1.2.156/cube/cube.cpp
+@@ -939,6 +939,8 @@
+ 
+     presentMode = vk::PresentModeKHR::eFifo;
+     frameCount = UINT32_MAX;
++    width = 500;
++    height = 500;
+     use_xlib = false;
+     /* For cube demo we just grab the first physical device by default */
+     gpu_number = 0;
+@@ -970,6 +972,16 @@
+             i++;
+             continue;
+         }
++        if (strcmp(argv[i], "--width") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &width) == 1 && width > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--height") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &height) == 1 && height > 0) {
++            i++;
++            continue;
++        }
+         if (strcmp(argv[i], "--suppress_popups") == 0) {
+             suppress_popups = true;
+             continue;
+@@ -984,11 +996,12 @@
+               << "\t[--break] [--c <framecount>] [--suppress_popups]\n"
+               << "\t[--gpu_number <index of physical device>]\n"
+               << "\t[--present_mode <present mode enum>]\n"
++              << "\t[--width <width>] [--height <height>]\n"
+               << "\t<present_mode_enum>\n"
+               << "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = " << VK_PRESENT_MODE_IMMEDIATE_KHR << "\n"
+               << "\t\tVK_PRESENT_MODE_MAILBOX_KHR = " << VK_PRESENT_MODE_MAILBOX_KHR << "\n"
+               << "\t\tVK_PRESENT_MODE_FIFO_KHR = " << VK_PRESENT_MODE_FIFO_KHR << "\n"
+-              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR;
++              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR << "\n";
+ 
+ #if defined(_WIN32)
+         if (!suppress_popups) MessageBox(NULL, usage.str().c_str(), "Usage Error", MB_OK);
+@@ -1005,9 +1018,6 @@
+ 
+     init_vk();
+ 
+-    width = 500;
+-    height = 500;
+-
+     spin_angle = 4.0f;
+     spin_increment = 0.2f;
+     pause = false;
+--- Vulkan-Tools-1.2.156.orig/vulkaninfo/CMakeLists.txt
++++ Vulkan-Tools-1.2.156/vulkaninfo/CMakeLists.txt
+@@ -17,6 +17,10 @@
+ 
+ # CMakeLists.txt file for building Vulkaninfo
+ 
++if (NOT WIN32)
++    find_package(Threads REQUIRED)
++endif()
++
+ if(WIN32)
+     add_executable(vulkaninfo vulkaninfo.cpp vulkaninfo.rc)
+ elseif(APPLE)
+@@ -32,7 +36,7 @@
+ target_include_directories(vulkaninfo PRIVATE ${CMAKE_SOURCE_DIR}/vulkaninfo/generated)
+ 
+ if (NOT WIN32)
+-    target_link_libraries(vulkaninfo ${CMAKE_DL_LIBS})
++    target_link_libraries(vulkaninfo ${CMAKE_DL_LIBS} Threads::Threads)
+ endif()
+ 
+ if(UNIX AND NOT APPLE) # i.e. Linux
