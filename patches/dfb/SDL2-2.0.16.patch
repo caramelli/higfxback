@@ -832,14 +832,16 @@ exit
                                  SDL_GL_SwapWindow(state->windows[i]);
 --- SDL2-2.0.16.orig/test/testgles2.c
 +++ SDL2-2.0.16/test/testgles2.c
-@@ -21,7 +21,7 @@
- #include "SDL_test_common.h"
+@@ -22,8 +22,10 @@
  
  #if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__NACL__) \
--    || defined(__WINDOWS__) || defined(__LINUX__)
-+    || defined(__WINDOWS__)
+     || defined(__WINDOWS__) || defined(__LINUX__)
++#ifndef HAVE_OPENGLES2
  #define HAVE_OPENGLES2
  #endif
++#endif
+ 
+ #ifdef HAVE_OPENGLES2
  
 --- SDL2-2.0.16.orig/test/testiconv.c
 +++ SDL2-2.0.16/test/testiconv.c
@@ -941,7 +943,17 @@ exit
      num_sprites = NUM_SPRITES;
 --- SDL2-2.0.16.orig/test/testspriteminimal.c
 +++ SDL2-2.0.16/test/testspriteminimal.c
-@@ -158,7 +158,7 @@
+@@ -132,7 +132,8 @@
+ 
+     /* Check for events */
+     while (SDL_PollEvent(&event)) {
+-        if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN) {
++        if (event.type == SDL_QUIT ||
++            event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+             done = 1;
+         }
+     }
+@@ -158,7 +159,7 @@
          quit(2);
      }
  
