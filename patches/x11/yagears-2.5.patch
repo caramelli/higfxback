@@ -1,61 +1,74 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="directfb2-build libpng-build meson-build tiff-build"
+REQUIRES="libpng-build meson-build tiff-build"
 
-PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
+  XCB=1
+  REQUIRES="$REQUIRES libxcb-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libx11-build; then
+  XLIB=1
+  REQUIRES="$REQUIRES libx11-build"
+fi
+
+test $XLIB || test $XCB || { echo Xlib or XCB packages required; exit 1; }
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
   EGL_OPENGL="-Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
   VK=1
+  VULKAN="-Dvk-d2d=false"
   REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
 fi
 
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl2-build; then
   SDL2=1
   REQUIRES="$REQUIRES sdl2-build"
 fi
 
 # configure
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/dfb build
+PKG_CONFIG_PATH=/x11/lib/pkgconfig meson setup $EGL_OPENGL $VULKAN --prefix=/x11 build
 
 # build
 meson compile -C build
 
 # install
-install -d $DESTDIR/dfb/bin
-test $GL && install build/yagears2 $DESTDIR/dfb/bin
-test $GL && test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
-test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
-test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
+install -d $DESTDIR/x11/bin
+test $GL && install build/yagears2 $DESTDIR/x11/bin
+test $GL && test $SDL2 && install build/yagears2-gui $DESTDIR/x11/bin
+test $VK && install build/yagears2-vk $DESTDIR/x11/bin
+test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/x11/bin
 
 # build.pc
-install -d $DESTDIR/dfb/share/pkgconfig
-cat > $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/yagears2-build.pc << EOF
 Name: yagears
-Version: 2.4
+Version: 2.5
 Description: Yet Another Gears OpenGL / Vulkan demo
 Requires: $REQUIRES
 
 exec=\\
 EOF
-test $GL && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GL && test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && echo /dfb/bin/yagears2-vk \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && test $SDL2 && echo /dfb/bin/yagears2-vk-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && echo /x11/bin/yagears2 \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $GL && test $SDL2 && echo /x11/bin/yagears2-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $VK && echo /x11/bin/yagears2-vk \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $VK && test $SDL2 && echo /x11/bin/yagears2-vk-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 
 exit
---- yagears-2.4.orig/CMakeLists.txt
-+++ yagears-2.4/CMakeLists.txt
-@@ -60,12 +60,12 @@
+--- yagears-2.5.orig/CMakeLists.txt
++++ yagears-2.5/CMakeLists.txt
+@@ -61,12 +61,12 @@
    pkg_check_modules(GL gl)
    if(GL_FOUND)
      if(ENABLE_GLESV1_CM)
@@ -70,7 +83,7 @@ exit
        else()
          set(ENABLE_GLESV2 OFF)
        endif()
-@@ -82,7 +82,7 @@
+@@ -83,7 +83,7 @@
    if(ENABLE_GLESV1_CM)
      pkg_check_modules(GLESV1_CM glesv1_cm)
      if(GLESV1_CM_FOUND)
@@ -79,7 +92,7 @@ exit
        set(GLESV1_CM_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV1_CM OFF)
-@@ -93,7 +93,7 @@
+@@ -94,7 +94,7 @@
      pkg_check_modules(GLESV2 glesv2)
      find_program(XXD xxd)
      if(GLESV2_FOUND AND XXD)
@@ -88,7 +101,7 @@ exit
        set(GLESV2_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV2 OFF)
-@@ -102,7 +102,7 @@
+@@ -103,7 +103,7 @@
  endif()
  
  if(NOT ENABLE_GL AND NOT ENABLE_GLESV1_CM AND NOT ENABLE_GLESV2)
@@ -97,7 +110,7 @@ exit
  endif()
  
  # OpenGL Backends
-@@ -251,7 +251,7 @@
+@@ -252,7 +252,7 @@
  set(EGL_RPI ${ENABLE_EGL_RPI})
  
  if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI)
@@ -106,9 +119,9 @@ exit
  endif()
  
  # Vulkan WSIs
---- yagears-2.4.orig/configure.ac
-+++ yagears-2.4/configure.ac
-@@ -125,12 +125,12 @@
+--- yagears-2.5.orig/configure.ac
++++ yagears-2.5/configure.ac
+@@ -128,12 +128,12 @@
    PKG_CHECK_MODULES(GL, gl, , enable_gl=no)
    if test x$enable_gl = xyes; then
      if test x$enable_glesv1_cm = xyes; then
@@ -123,7 +136,7 @@ exit
        else
          enable_glesv2=no
        fi
-@@ -145,7 +145,7 @@
+@@ -148,7 +148,7 @@
    if test x$enable_glesv1_cm = xyes; then
      PKG_CHECK_MODULES(GLESV1_CM, glesv1_cm, , enable_glesv1_cm=no)
      if test x$enable_glesv1_cm = xyes; then
@@ -132,7 +145,7 @@ exit
        GLESV1_CM_LIBS=-ldl
      fi
    fi
-@@ -155,7 +155,7 @@
+@@ -158,7 +158,7 @@
      if test x$enable_glesv2 = xyes; then
        AC_PATH_TOOL(XXD, xxd)
        if test -n "$XXD"; then
@@ -141,7 +154,7 @@ exit
          GLESV2_LIBS=-ldl
        else
          enable_glesv2=no
-@@ -165,7 +165,7 @@
+@@ -168,7 +168,7 @@
  fi
  
  if test x$enable_gl = xno -a x$enable_glesv1_cm = xno -a x$enable_glesv2 = xno; then
@@ -150,7 +163,7 @@ exit
  fi
  
  # OpenGL Backends
-@@ -302,7 +302,7 @@
+@@ -305,7 +305,7 @@
  fi
  
  if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
@@ -159,9 +172,30 @@ exit
  fi
  
  # Vulkan WSIs
---- yagears-2.4.orig/meson.build
-+++ yagears-2.4/meson.build
-@@ -54,12 +54,12 @@
+--- yagears-2.5.orig/gui.cc
++++ yagears-2.5/gui.cc
+@@ -1229,6 +1229,7 @@
+   #if defined(SDL)
+   if (!strcmp(toolkit, "sdl")) {
+     #if SDL_VERSION_ATLEAST(2, 0, 0)
++    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, gears_engine_version(gears_engine) ? SDL_GL_CONTEXT_PROFILE_ES : 0);
+     sdl_win = SDL_CreateWindow("yagears", win_posx, win_posy, win_width, win_height, SDL_WINDOW_OPENGL);
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gears_engine_version(gears_engine));
+     SDL_GL_CreateContext(sdl_win);
+--- yagears-2.5.orig/main.c
++++ yagears-2.5/main.c
+@@ -1494,6 +1494,8 @@
+       goto out;
+     }
+ 
++    XInternAtom(x11_dpy, "WM_DELETE_WINDOW", True);
++
+     XMapWindow(x11_dpy, x11_win);
+ 
+     XMoveWindow(x11_dpy, x11_win, win_posx, win_posy);
+--- yagears-2.5.orig/meson.build
++++ yagears-2.5/meson.build
+@@ -55,12 +55,12 @@
    gl_dep = dependency('gl', required: false)
    if gl_dep.found()
      if enable_glesv1_cm
@@ -176,7 +210,7 @@ exit
        else
          enable_glesv2 = false
        endif
-@@ -78,8 +78,8 @@
+@@ -79,8 +79,8 @@
    if enable_glesv1_cm
      glesv1_cm_dep = dependency('glesv1_cm', required: false)
      if glesv1_cm_dep.found()
@@ -187,7 +221,7 @@ exit
      else
        enable_glesv1_cm = false
      endif
-@@ -89,8 +89,8 @@
+@@ -90,8 +90,8 @@
      glesv2_dep = dependency('glesv2', required: false)
      xxd = find_program('xxd', required: false)
      if glesv2_dep.found() and xxd.found()
@@ -198,7 +232,7 @@ exit
      else
        enable_glesv2 = false
      endif
-@@ -98,7 +98,7 @@
+@@ -99,7 +99,7 @@
  endif
  
  if not enable_gl and not enable_glesv1_cm and not enable_glesv2
@@ -207,7 +241,7 @@ exit
  endif
  
  # OpenGL Backends
-@@ -107,7 +107,7 @@
+@@ -108,7 +108,7 @@
  directfb_dep = []
  if enable_gl
    if enable_gl_x11
@@ -216,7 +250,7 @@ exit
      if cc.has_function('glXCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
        x11_dep = dependency('x11', required: false)
        if not x11_dep.found()
-@@ -120,8 +120,8 @@
+@@ -121,8 +121,8 @@
  
    if enable_gl_directfb
      message('Checking for DirectFBGL module')
@@ -227,7 +261,7 @@ exit
        message('DirectFBGL found')
        directfb_dep = dependency('directfb', required: false)
        if not directfb_dep.found()
-@@ -134,7 +134,7 @@
+@@ -135,7 +135,7 @@
    endif
  
    if enable_gl_fbdev
@@ -236,7 +270,7 @@ exit
      if not cc.has_function('glFBDevCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
        enable_gl_fbdev = false
      endif
-@@ -202,7 +202,7 @@
+@@ -203,7 +203,7 @@
            config_h.set('HAVE_WL_SHELL_SURFACE_SET_POSITION', false, description: 'Have function wl_shell_surface_set_position')
          endif
  
@@ -245,7 +279,7 @@ exit
        endif
      endif
  
-@@ -221,8 +221,8 @@
+@@ -222,8 +222,8 @@
          endif
        endforeach
        if enable_egl_drm
@@ -256,7 +290,7 @@ exit
          drimajorversion = modversion.stdout().split('.')[0]
          driminorversion = modversion.stdout().split('.')[1]
          drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
-@@ -254,7 +254,7 @@
+@@ -255,7 +255,7 @@
  config_h.set('EGL_RPI', enable_egl_rpi, description: 'Support for EGL with Raspberry Pi Dispmanx platform')
  
  if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi
@@ -265,7 +299,7 @@ exit
  endif
  
  # Vulkan WSIs
-@@ -264,7 +264,7 @@
+@@ -266,7 +266,7 @@
    vulkan_dep = dependency('vulkan', required: false)
    glslang_validator = find_program('glslangValidator', required: false)
    if vulkan_dep.found() and glslang_validator.found()
@@ -274,7 +308,7 @@ exit
  
      if enable_vk_x11
        if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
-@@ -376,7 +376,7 @@
+@@ -391,7 +391,7 @@
  if enable_fltk
    fltk_config = find_program('fltk-config', required: false)
    if fltk_config.found()
@@ -283,7 +317,7 @@ exit
    else
      enable_fltk = false
    endif
-@@ -493,7 +493,7 @@
+@@ -508,7 +508,7 @@
  if enable_wx
    wx_config = find_program('wx-config', required: false)
    if wx_config.found()
@@ -292,7 +326,7 @@ exit
    else
      enable_wx = false
    endif
-@@ -670,7 +670,7 @@
+@@ -686,7 +686,7 @@
  
  if VK_GUI
  executable('yagears2-vk-gui',
