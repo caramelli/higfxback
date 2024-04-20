@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxfixes-build libxrender-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/Xcursor
+install -m 644 include/X11/Xcursor/Xcursor.h $DESTDIR/x11/include/X11/Xcursor
+install -d $DESTDIR/x11/lib
+install src/.libs/libXcursor.so.1.* $DESTDIR/x11/lib/libXcursor.so.1
+ln -sf libXcursor.so.1 $DESTDIR/x11/lib/libXcursor.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcursor.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxcursor-build.pc << EOF
+Name: libXcursor
+Version: 1.1.10
+Description: X cursor management library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Xcursor/Xcursor.h \\
+/x11/lib/libXcursor.so \\
+/x11/lib/pkgconfig/xcursor.pc
+
+exec=\\
+/x11/lib/libXcursor.so.1
+EOF
+
+exit
+--- libXcursor-1.1.10.orig/configure.ac
++++ libXcursor-1.1.10/configure.ac
+@@ -29,6 +29,7 @@
+ dnl not possible to extract the version number here from Xcursor.h
+ dnl
+ AC_INIT([libXcursor],1.1.10,[https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],[libXcursor])
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AM_MAINTAINER_MODE

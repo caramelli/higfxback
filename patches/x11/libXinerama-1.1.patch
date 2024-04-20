@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxext-build xineramaproto-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/Xinerama.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib
+install src/.libs/libXinerama.so.1.* $DESTDIR/x11/lib/libXinerama.so.1
+ln -sf libXinerama.so.1 $DESTDIR/x11/lib/libXinerama.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xinerama.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxinerama-build.pc << EOF
+Name: libXinerama
+Version: 1.1
+Description: Xinerama library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/Xinerama.h \\
+/x11/lib/libXinerama.so \\
+/x11/lib/pkgconfig/xinerama.pc
+
+exec=\\
+/x11/lib/libXinerama.so.1
+EOF
+
+exit
+--- libXinerama-1.1.orig/configure.ac
++++ libXinerama-1.1/configure.ac
+@@ -23,6 +23,7 @@
+ AC_PREREQ([2.57])
+ 
+ AC_INIT(libXinerama, 1.1, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], libXinerama)
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ AM_MAINTAINER_MODE
+ 

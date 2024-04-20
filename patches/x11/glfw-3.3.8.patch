@@ -1,0 +1,191 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build egl-opengl-stubs-build libxcursor-build libxi-build libxinerama-build stb-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists vulkan-loader-build; then
+  VK=1
+  REQUIRES="$REQUIRES vulkan-loader-build"
+fi
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -f deps/nuklear.h
+rm -f deps/stb_image_write.h
+PKG_CONFIG_PATH=/x11/lib/pkgconfig cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/x11/bin
+install build/tests/glfwinfo $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/GLFW
+install -m 644 include/GLFW/glfw3.h $DESTDIR/x11/include/GLFW
+install -d $DESTDIR/x11/lib
+install build/src/libglfw.so.3.* $DESTDIR/x11/lib/libglfw.so.3
+ln -sf libglfw.so.3 $DESTDIR/x11/lib/libglfw.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 build/src/glfw3.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/glfw3/examples
+install build/examples/boing $DESTDIR/x11/share/glfw3/examples
+install build/examples/gears $DESTDIR/x11/share/glfw3/examples
+install build/examples/offscreen $DESTDIR/x11/share/glfw3/examples
+install build/examples/particles $DESTDIR/x11/share/glfw3/examples
+install build/examples/sharing $DESTDIR/x11/share/glfw3/examples
+install build/examples/simple $DESTDIR/x11/share/glfw3/examples/triangle-opengl
+install build/examples/splitview $DESTDIR/x11/share/glfw3/examples
+install build/examples/wave $DESTDIR/x11/share/glfw3/examples
+install build/tests/clipboard $DESTDIR/x11/share/glfw3/examples
+install build/tests/cursor $DESTDIR/x11/share/glfw3/examples
+install build/tests/empty $DESTDIR/x11/share/glfw3/examples
+install build/tests/events $DESTDIR/x11/share/glfw3/examples
+install build/tests/icon $DESTDIR/x11/share/glfw3/examples
+install build/tests/iconify $DESTDIR/x11/share/glfw3/examples
+install build/tests/monitors $DESTDIR/x11/share/glfw3/examples
+install build/tests/msaa $DESTDIR/x11/share/glfw3/examples
+install build/tests/reopen $DESTDIR/x11/share/glfw3/examples
+install build/tests/tearing $DESTDIR/x11/share/glfw3/examples
+install build/tests/threads $DESTDIR/x11/share/glfw3/examples
+install build/tests/timeout $DESTDIR/x11/share/glfw3/examples
+install build/tests/title $DESTDIR/x11/share/glfw3/examples
+install build/tests/triangle-vulkan $DESTDIR/x11/share/glfw3/examples
+install build/tests/windows $DESTDIR/x11/share/glfw3/examples
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/glfw-build.pc << EOF
+Name: glfw
+Version: 3.3.8
+Description: OpenGL Framework
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GLFW/glfw3.h \\
+/x11/lib/libglfw.so \\
+/x11/lib/pkgconfig/glfw3.pc
+
+exec=\\
+/x11/bin/glfwinfo \\
+/x11/lib/libglfw.so.3 \\
+/x11/share/glfw3/examples/boing \\
+/x11/share/glfw3/examples/clipboard \\
+/x11/share/glfw3/examples/cursor \\
+/x11/share/glfw3/examples/empty \\
+/x11/share/glfw3/examples/events \\
+/x11/share/glfw3/examples/gears \\
+/x11/share/glfw3/examples/icon \\
+/x11/share/glfw3/examples/iconify \\
+/x11/share/glfw3/examples/monitors \\
+/x11/share/glfw3/examples/msaa \\
+/x11/share/glfw3/examples/offscreen \\
+/x11/share/glfw3/examples/particles \\
+/x11/share/glfw3/examples/reopen \\
+/x11/share/glfw3/examples/sharing \\
+/x11/share/glfw3/examples/splitview \\
+/x11/share/glfw3/examples/tearing \\
+/x11/share/glfw3/examples/threads \\
+/x11/share/glfw3/examples/timeout \\
+/x11/share/glfw3/examples/title \\
+/x11/share/glfw3/examples/triangle-opengl \\
+EOF
+test $VK && echo /x11/share/glfw3/examples/triangle-vulkan \\ >> $DESTDIR/x11/share/pkgconfig/glfw-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/glfw-build.pc << EOF
+/x11/share/glfw3/examples/wave \\
+/x11/share/glfw3/examples/windows
+EOF
+
+exit
+--- glfw-3.3.8.orig/CMakeLists.txt
++++ glfw-3.3.8/CMakeLists.txt
+@@ -204,36 +204,41 @@
+ # Use X11 for window creation
+ #--------------------------------------------------------------------
+ if (_GLFW_X11)
+-
+-    find_package(X11 REQUIRED)
++    find_package(PkgConfig)
++    pkg_check_modules(X11 REQUIRED x11)
+ 
+     list(APPEND glfw_PKG_DEPS "x11")
+ 
+     # Set up library and include paths
+-    list(APPEND glfw_INCLUDE_DIRS "${X11_X11_INCLUDE_PATH}")
+-    list(APPEND glfw_LIBRARIES "${X11_X11_LIB}" "${CMAKE_THREAD_LIBS_INIT}")
++    list(APPEND glfw_INCLUDE_DIRS "${X11_INCLUDE_DIRS}")
++    list(APPEND glfw_LIBRARIES "${X11_LINK_LIBRARIES}" "${CMAKE_THREAD_LIBS_INIT}")
+ 
+     # Check for XRandR (modern resolution switching and gamma control)
++    find_path(X11_Xrandr_INCLUDE_PATH X11/extensions/Xrandr.h ${X11_INCLUDE_DIRS})
+     if (NOT X11_Xrandr_INCLUDE_PATH)
+         message(FATAL_ERROR "RandR headers not found; install libxrandr development package")
+     endif()
+ 
+     # Check for Xinerama (legacy multi-monitor support)
++    find_path(X11_Xinerama_INCLUDE_PATH X11/extensions/Xinerama.h ${X11_INCLUDE_DIRS})
+     if (NOT X11_Xinerama_INCLUDE_PATH)
+         message(FATAL_ERROR "Xinerama headers not found; install libxinerama development package")
+     endif()
+ 
+     # Check for Xkb (X keyboard extension)
++    find_path(X11_Xkb_INCLUDE_PATH X11/extensions/XKB.h ${X11_INCLUDE_DIRS})
+     if (NOT X11_Xkb_INCLUDE_PATH)
+         message(FATAL_ERROR "XKB headers not found; install X11 development package")
+     endif()
+ 
+     # Check for Xcursor (cursor creation from RGBA images)
++    find_path(X11_Xcursor_INCLUDE_PATH X11/Xcursor/Xcursor.h ${X11_INCLUDE_DIRS})
+     if (NOT X11_Xcursor_INCLUDE_PATH)
+         message(FATAL_ERROR "Xcursor headers not found; install libxcursor development package")
+     endif()
+ 
+     # Check for XInput (modern HID input)
++    find_path(X11_Xi_INCLUDE_PATH X11/extensions/XInput2.h ${X11_INCLUDE_DIRS})
+     if (NOT X11_Xi_INCLUDE_PATH)
+         message(FATAL_ERROR "XInput headers not found; install libxi development package")
+     endif()
+--- glfw-3.3.8.orig/examples/CMakeLists.txt
++++ glfw-3.3.8/examples/CMakeLists.txt
+@@ -58,6 +58,10 @@
+ set_target_properties(${GUI_ONLY_BINARIES} ${CONSOLE_BINARIES} PROPERTIES
+                       FOLDER "GLFW3/Examples")
+ 
++find_path(STB_INCLUDE_PATH stb/stb_image_write.h)
++if (STB_INCLUDE_PATH)
++    target_include_directories(offscreen PRIVATE ${STB_INCLUDE_PATH}/stb)
++endif()
+ if (GLFW_USE_OSMESA)
+     target_compile_definitions(offscreen PRIVATE USE_NATIVE_OSMESA)
+ endif()
+--- glfw-3.3.8.orig/tests/CMakeLists.txt
++++ glfw-3.3.8/tests/CMakeLists.txt
+@@ -42,11 +42,13 @@
+ add_executable(cursor cursor.c ${GLAD_GL})
+ 
+ add_executable(empty WIN32 MACOSX_BUNDLE empty.c ${TINYCTHREAD} ${GLAD_GL})
+-add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
+ add_executable(icon WIN32 MACOSX_BUNDLE icon.c ${GLAD_GL})
++if(EXISTS deps/nuklear.h)
++add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
+ add_executable(inputlag WIN32 MACOSX_BUNDLE inputlag.c ${GETOPT} ${GLAD_GL})
+ add_executable(joysticks WIN32 MACOSX_BUNDLE joysticks.c ${GLAD_GL})
+ add_executable(opacity WIN32 MACOSX_BUNDLE opacity.c ${GLAD_GL})
++endif()
+ add_executable(tearing WIN32 MACOSX_BUNDLE tearing.c ${GLAD_GL})
+ add_executable(threads WIN32 MACOSX_BUNDLE threads.c ${TINYCTHREAD} ${GLAD_GL})
+ add_executable(timeout WIN32 MACOSX_BUNDLE timeout.c ${GLAD_GL})
+@@ -61,8 +63,12 @@
+     target_link_libraries(threads "${RT_LIBRARY}")
+ endif()
+ 
++if(EXISTS deps/nuklear.h)
+ set(GUI_ONLY_BINARIES empty gamma icon inputlag joysticks opacity tearing
+     threads timeout title triangle-vulkan windows)
++else()
++set(GUI_ONLY_BINARIES empty icon tearing threads timeout title triangle-vulkan windows)
++endif()
+ set(CONSOLE_BINARIES clipboard events msaa glfwinfo iconify monitors reopen
+                      cursor)
+ 
