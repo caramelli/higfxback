@@ -468,6 +468,23 @@ exit
          }
  
      SDL_DFB_CHECKERR(windata->window_surface->Flip(windata->window_surface,NULL,  DSFLIP_PIPELINE |DSFLIP_BLIT | DSFLIP_ONSYNC ));
+--- SDL2-2.0.16.orig/src/video/directfb/SDL_DirectFB_video.c
++++ SDL2-2.0.16/src/video/directfb/SDL_DirectFB_video.c
+@@ -227,13 +227,7 @@
+             DirectFBSetOption("disable-module", "x11input");
+     }
+ 
+-    devdata->use_linux_input = readBoolEnv(DFBENV_USE_LINUX_INPUT, 1);       /* default: on */
+-
+-    if (!devdata->use_linux_input)
+-    {
+-        SDL_DFB_LOG("Disabling linux input\n");
+-        DirectFBSetOption("disable-module", "linux_input");
+-    }
++    devdata->use_linux_input = readBoolEnv(DFBENV_USE_LINUX_INPUT, 0);
+ 
+     SDL_DFB_CHECKERR(DirectFBCreate(&dfb));
+ 
 --- SDL2-2.0.16.orig/src/video/directfb/SDL_DirectFB_video.h
 +++ SDL2-2.0.16/src/video/directfb/SDL_DirectFB_video.h
 @@ -42,7 +42,7 @@
@@ -490,6 +507,14 @@ exit
      if (window->flags & SDL_WINDOW_OPENGL) {
          desc.surface_caps |= DSCAPS_GL;
      }
+@@ -153,6 +153,7 @@
+ 
+     /* Make it the top most window. */
+     SDL_DFB_CHECK(windata->dfbwin->RaiseToTop(windata->dfbwin));
++    SDL_DFB_CHECK(windata->dfbwin->RequestFocus(windata->dfbwin));
+ 
+     /* remember parent */
+     /* windata->sdlwin = window; */
 --- SDL2-2.0.16.orig/test/Makefile.in
 +++ SDL2-2.0.16/test/Makefile.in
 @@ -4,7 +4,7 @@
