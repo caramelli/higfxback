@@ -1,0 +1,217 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build gyp-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build vulkan-loader-build; then
+  TOKTX=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build vulkan-loader-build"
+fi
+
+# configure
+rm -rf other_include
+rm -rf other_lib
+gyp -Dstaging_dir=/dfb --depth=. --generator-output=build/make/linux
+sed "/^prefix=/s|=.*|=/dfb|" libktx.pc.in > libktx.pc
+
+# build
+make -C build/make/linux libktx
+test $TOKTX && make -C build/make/linux toktx
+
+# install
+test $TOKTX && install -d $DESTDIR/dfb/bin
+test $TOKTX && install build/make/linux/out/*/toktx $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include
+install -m 644 include/ktx.h $DESTDIR/dfb/include
+install -d $DESTDIR/dfb/lib
+install build/make/linux/out/*/lib.target/libktx.so.3 $DESTDIR/dfb/lib
+ln -sf libktx.so.3 $DESTDIR/dfb/lib/libktx.so
+test $TOKTX && install build/make/linux/out/*/lib.target/libktx.gl.so.3 $DESTDIR/dfb/lib
+test $TOKTX && ln -sf libktx.gl.so.3 $DESTDIR/dfb/lib/libktx.gl.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 libktx.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc << EOF
+Name: KTX-Software
+Version: 3.0.1
+Description: Khronos Texture (KTX) library and tools
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/ktx.h \\
+EOF
+test $TOKTX && echo /dfb/lib/libktx.gl.so \\ >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc << EOF
+/dfb/lib/libktx.so \\
+/dfb/lib/pkgconfig/libktx.pc
+
+exec=\\
+EOF
+test $TOKTX && echo /dfb/bin/toktx \\ >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc
+test $TOKTX && echo /dfb/lib/libktx.gl.so.3 \\ >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc << EOF
+/dfb/lib/libktx.so.3
+EOF
+
+exit
+--- KTX-Software-3.0.1.orig/gyp_include/libgl.gypi
++++ KTX-Software-3.0.1/gyp_include/libgl.gypi
+@@ -11,7 +11,7 @@
+     'type': 'none',
+     'direct_dependent_settings': {
+       'include_dirs': [
+-        '<(gl_includes_parent_dir)',
++        '<(gl_includes_parent_dir)', '<(staging_dir)/include'
+       ]
+     },
+     'variables': {
+@@ -20,8 +20,8 @@
+           'lib_dirs': [ ],
+           'libs': ['$(SDKROOT)/System/Library/Frameworks/OpenGL.framework'],
+         }, 'OS == "linux"', {
+-          'lib_dirs': [ ],
+-          'libs': ['-lGL'],
++          'lib_dirs': [ '<(staging_dir)/lib' ],
++          'libs': [ '-Wl,-rpath,<(staging_dir)/lib', '-lGL', '-ldl' ],
+         }, 'OS == "win"', {
+           'lib_dirs': [ '<(glew_lib_dir)' ],
+           'conditions': [
+--- KTX-Software-3.0.1.orig/lib/etcunpack.cxx
++++ KTX-Software-3.0.1/lib/etcunpack.cxx
+@@ -31,7 +31,8 @@
+ #include <assert.h>
+ #include <stdlib.h>
+ 
+-#include "GL/glcorearb.h"
++#include "GL/gl.h"
++#include "GL/glext.h"
+ // Not defined in glcorearb.h.
+ #define GL_ETC1_RGB8_OES                0x8D64
+ #include "ktx.h"
+--- KTX-Software-3.0.1.orig/lib/glloader.c
++++ KTX-Software-3.0.1/lib/glloader.c
+@@ -51,7 +51,8 @@
+     #include <GL/glew.h>
+   #else
+     #define GL_GLEXT_PROTOTYPES
+-    #include <GL/glcorearb.h>
++    #include <GL/gl.h>
++    #include <GL/glext.h>
+   #endif
+ 
+   #define GL_APIENTRY APIENTRY
+--- KTX-Software-3.0.1.orig/lib/libktx.gypi
++++ KTX-Software-3.0.1/lib/libktx.gypi
+@@ -55,7 +55,24 @@
+   ],
+   'targets': [
+     {
++      'target_name': 'libktx',
++      'product_extension': 'so.3',
++      'type': 'shared_library',
++      'cflags': [ '-std=c99' ],
++      'include_dirs': [ '<@(include_dirs)' ],
++      'mac_bundle': 0,
++      'sources': [
++        'checkheader.c',
++        'filestream.c',
++        'hashlist.c',
++        'memstream.c',
++        'swap.c',
++        'texture.c'
++      ],
++    }, # libktx target
++    {
+       'target_name': 'libktx.gl',
++      'product_extension': 'so.3',
+       'type': '<(library)',
+       'cflags': [ '-std=c99' ],
+       'defines': [ 'KTX_OPENGL=1' ],
+--- KTX-Software-3.0.1.orig/lib/swap.c
++++ KTX-Software-3.0.1/lib/swap.c
+@@ -19,18 +19,16 @@
+  * limitations under the License.
+  */
+ 
+-#include "KHR/khrplatform.h"
+-
+ /*
+  * SwapEndian16: Swaps endianness in an array of 16-bit values
+  */
+ void
+-_ktxSwapEndian16(khronos_uint16_t* pData16, int count)
++_ktxSwapEndian16(unsigned short* pData16, int count)
+ {
+     int i;
+     for (i = 0; i < count; ++i)
+     {
+-        khronos_uint16_t x = *pData16;
++        unsigned short x = *pData16;
+         *pData16++ = (x << 8) | (x >> 8);
+     }
+ }
+@@ -39,12 +37,12 @@
+  * SwapEndian32: Swaps endianness in an array of 32-bit values
+  */
+ void 
+-_ktxSwapEndian32(khronos_uint32_t* pData32, int count)
++_ktxSwapEndian32(unsigned int* pData32, int count)
+ {
+     int i;
+     for (i = 0; i < count; ++i)
+     {
+-        khronos_uint32_t x = *pData32;
++        unsigned int x = *pData32;
+         *pData32++ = (x << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) | (x >> 24);
+     }
+ }
+--- KTX-Software-3.0.1.orig/lib/writer_v1.c
++++ KTX-Software-3.0.1/lib/writer_v1.c
+@@ -41,7 +41,7 @@
+ #include <assert.h>
+ #include <limits.h>
+ 
+-#include "GL/glcorearb.h"
++#include "GL/gl.h"
+ #include "ktx.h"
+ #include "ktxint.h"
+ #include "stream.h"
+--- KTX-Software-3.0.1.orig/libktx.pc.in
++++ KTX-Software-3.0.1/libktx.pc.in
+@@ -0,0 +1,9 @@
++prefix=@prefix@
++includedir=${prefix}/include
++libdir=${prefix}/lib
++
++Name: libktx
++Description: Khronos Texture library
++Version: 3.0.1
++Libs: -L${libdir} -lktx
++Cflags: -I${includedir}
+--- KTX-Software-3.0.1.orig/tools/toktx/toktx.cpp
++++ KTX-Software-3.0.1/tools/toktx/toktx.cpp
+@@ -30,7 +30,7 @@
+ #include <sstream>
+ #include <vector>
+ 
+-#include "GL/glcorearb.h"
++#include "GL/gl.h"
+ #include "ktx.h"
+ #include "argparser.h"
+ #include "image.h"
+--- KTX-Software-3.0.1.orig/tools/toktx/toktx.gypi
++++ KTX-Software-3.0.1/tools/toktx/toktx.gypi
+@@ -27,7 +27,8 @@
+         {
+           'target_name': 'toktx',
+           'type': '<(executable)',
+-          'include_dirs' : [ '../../utils' ],
++          'include_dirs' : [ '../../utils', '<(staging_dir)/include' ],
++          'ldflags': [ '-Wl,-rpath,<(staging_dir)/lib' ],
+           'mac_bundle': 0,
+           'dependencies': [ 'libktx.gyp:libktx.gl' ],
+           'sources': [

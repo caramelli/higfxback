@@ -1,0 +1,24 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build json-build stb-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/include
+install -m 644 tiny_gltf.h $DESTDIR/include
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/tinygltf-build.pc << EOF
+Name: tinygltf
+Version: 2.4.0
+Description: single-file library for Graphics Library Transmission Format
+Requires: $REQUIRES
+
+devel=\\
+/include/tiny_gltf.h
+EOF
+
+exit

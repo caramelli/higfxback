@@ -1,0 +1,24 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="python3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/lib/python3
+install -m 644 six.py $DESTDIR/lib/python3
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/six-build.pc << EOF
+Name: six
+Version: 1.16.0
+Description: Python 2 and 3 compatibility utilities
+Requires: $REQUIRES
+
+exec=\\
+/lib/python3/six.py
+EOF
+
+exit

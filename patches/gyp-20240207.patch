@@ -1,0 +1,40 @@
+# This file is part of HiGFXback
+
+REQUIRES="python3-build six-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/bin
+install gyp $DESTDIR/bin
+install gyp_main.py $DESTDIR/bin
+install -d $DESTDIR/lib/python3/gyp
+install -m 644 pylib/gyp/__init__.py $DESTDIR/lib/python3/gyp
+install -m 644 pylib/gyp/common.py $DESTDIR/lib/python3/gyp
+install -m 644 pylib/gyp/input.py $DESTDIR/lib/python3/gyp
+install -m 644 pylib/gyp/simple_copy.py $DESTDIR/lib/python3/gyp
+install -m 644 pylib/gyp/xcode_emulation.py $DESTDIR/lib/python3/gyp
+install -d $DESTDIR/lib/python3/gyp/generator
+install -m 644 pylib/gyp/generator/make.py $DESTDIR/lib/python3/gyp/generator
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gyp-build.pc << EOF
+Name: gyp
+Version: 20240207
+Description: Generate Your Projects build system
+Requires: $REQUIRES
+
+devel=\\
+/bin/gyp \\
+/bin/gyp_main.py \\
+/lib/python3/gyp/__init__.py \\
+/lib/python3/gyp/common.py \\
+/lib/python3/gyp/generator \\
+/lib/python3/gyp/input.py \\
+/lib/python3/gyp/simple_copy.py \\
+/lib/python3/gyp/xcode_emulation.py \\
+/lib/python3/gyp/generator/make.py
+EOF
+
+exit

@@ -1,0 +1,24 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/include
+install -m 644 single_include/nlohmann/json.hpp $DESTDIR/include
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/json-build.pc << EOF
+Name: json
+Version: 3.5.0
+Description: single-file JSON library
+Requires: $REQUIRES
+
+devel=\\
+/include/json.hpp
+EOF
+
+exit

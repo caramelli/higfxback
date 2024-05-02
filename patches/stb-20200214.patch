@@ -1,11 +1,16 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="pkg-config-lite-build"
+REQUIRES="make-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# build
+make -C tests
+
 # install
+install -d $DESTDIR/bin
+install tests/image_write_test $DESTDIR/bin
 install -d $DESTDIR/include/stb
 install -m 644 stb.h $DESTDIR/include/stb
 install -m 644 stb_image.h $DESTDIR/include/stb
@@ -30,6 +35,9 @@ devel=\\
 /include/stb/stb_rect_pack.h \\
 /include/stb/stb_textedit.h \\
 /include/stb/stb_truetype.h
+
+exec=\\
+/bin/image_write_test
 EOF
 
 exit
