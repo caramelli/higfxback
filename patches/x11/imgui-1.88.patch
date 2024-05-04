@@ -1,0 +1,288 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build make-build stb-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists vulkan-loader-build; then
+  VK=1
+  REQUIRES="$REQUIRES vulkan-loader-build"
+fi
+
+test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
+  GLFW=1
+  REQUIRES="$REQUIRES glfw-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+# configure
+rm -f imstb_rectpack.h
+rm -f imstb_textedit.h
+rm -f imstb_truetype.h
+
+# build
+test $GL && test $GLFW && PKG_CONFIG_PATH=/x11/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" make -C examples/example_glfw_opengl2
+test $VK && test $GLFW && PKG_CONFIG_PATH=/x11/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" make -C examples/example_glfw_vulkan
+test $GL && test $SDL2 && PKG_CONFIG_PATH=/x11/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" make -C examples/example_sdl_opengl3
+test $VK && test $SDL2 && PKG_CONFIG_PATH=/x11/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" make -C examples/example_sdl_vulkan
+
+# install
+install -d $DESTDIR/x11/include/imgui
+install -m 644 imconfig.h $DESTDIR/x11/include/imgui
+install -m 644 imgui.cpp $DESTDIR/x11/include/imgui
+install -m 644 imgui.h $DESTDIR/x11/include/imgui
+install -m 644 imgui_draw.cpp $DESTDIR/x11/include/imgui
+install -m 644 imgui_internal.h $DESTDIR/x11/include/imgui
+test $GL && install -m 644 backends/imgui_impl_opengl2.cpp $DESTDIR/x11/include/imgui
+test $GL && install -m 644 backends/imgui_impl_opengl2.h $DESTDIR/x11/include/imgui
+test $GL && install -m 644 backends/imgui_impl_opengl3.cpp $DESTDIR/x11/include/imgui
+test $GL && install -m 644 backends/imgui_impl_opengl3.h $DESTDIR/x11/include/imgui
+test $VK && install -m 644 backends/imgui_impl_vulkan.cpp $DESTDIR/x11/include/imgui
+test $VK && install -m 644 backends/imgui_impl_vulkan.h $DESTDIR/x11/include/imgui
+test $GLFW && install -m 644 backends/imgui_impl_glfw.cpp $DESTDIR/x11/include/imgui
+test $GLFW && install -m 644 backends/imgui_impl_glfw.h $DESTDIR/x11/include/imgui
+test $SDL2 && install -m 644 backends/imgui_impl_sdl.cpp $DESTDIR/x11/include/imgui
+test $SDL2 && install -m 644 backends/imgui_impl_sdl.h $DESTDIR/x11/include/imgui
+install -m 644 imgui_tables.cpp $DESTDIR/x11/include/imgui
+install -m 644 imgui_widgets.cpp $DESTDIR/x11/include/imgui
+install -d $DESTDIR/x11/share/imgui
+install -m 644 imgui_demo.cpp $DESTDIR/x11/share/imgui
+test $GL && test $GLFW && install examples/example_glfw_opengl2/example_glfw_opengl2 $DESTDIR/x11/share/imgui
+test $VK && test $GLFW && install examples/example_glfw_vulkan/example_glfw_vulkan $DESTDIR/x11/share/imgui
+test $GL && test $SDL2 && install examples/example_sdl_opengl3/example_sdl_opengl3 $DESTDIR/x11/share/imgui
+test $VK && test $SDL2 && install examples/example_sdl_vulkan/example_sdl_vulkan $DESTDIR/x11/share/imgui
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/imgui-build.pc << EOF
+Name: imgui
+Version: 1.88
+Description: Immediate mode GUI
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/imgui/imconfig.h \\
+/x11/include/imgui/imgui.cpp \\
+/x11/include/imgui/imgui.h \\
+/x11/include/imgui/imgui_demo.cpp \\
+/x11/include/imgui/imgui_draw.cpp \\
+EOF
+test $GL && echo /x11/include/imgui/imgui_impl_opengl2.cpp \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $GL && echo /x11/include/imgui/imgui_impl_opengl2.h \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $GL && echo /x11/include/imgui/imgui_impl_opengl3.cpp \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $GL && echo /x11/include/imgui/imgui_impl_opengl3.h \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $VK && echo /x11/include/imgui/imgui_impl_vulkan.cpp \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $VK && echo /x11/include/imgui/imgui_impl_vulkan.h \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $GLFW && echo /x11/include/imgui/imgui_impl_glfw.cpp \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $GLFW && echo /x11/include/imgui/imgui_impl_glfw.h \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $SDL2 && echo /x11/include/imgui/imgui_impl_sdl.cpp \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $SDL2 && echo /x11/include/imgui/imgui_impl_sdl.h \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc << EOF
+/x11/include/imgui/imgui_internal.h \\
+/x11/include/imgui/imgui_tables.cpp \\
+/x11/include/imgui/imgui_widgets.cpp \\
+/x11/share/imgui/imgui_demo.cpp
+
+exec=\\
+EOF
+test $GL && test $GLFW && echo /x11/share/imgui/example_glfw_opengl2 \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $VK && test $GLFW && echo /x11/share/imgui/example_glfw_vulkan \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $GL && test $SDL2 && echo /x11/share/imgui/example_sdl_opengl3 \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+test $VK && test $SDL2 && echo /x11/share/imgui/example_sdl_vulkan \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/imgui-build.pc
+
+exit
+--- imgui-1.88.orig/backends/imgui_impl_sdl.cpp
++++ imgui-1.88/backends/imgui_impl_sdl.cpp
+@@ -65,7 +65,9 @@
+ 
+ // SDL
+ #include <SDL.h>
++#ifdef _WIN32
+ #include <SDL_syswm.h>
++#endif
+ #if defined(__APPLE__)
+ #include <TargetConditionals.h>
+ #endif
+--- imgui-1.88.orig/examples/example_glfw_opengl2/Makefile
++++ imgui-1.88/examples/example_glfw_opengl2/Makefile
+@@ -22,7 +22,7 @@
+ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+ UNAME_S := $(shell uname -s)
+ 
+-CXXFLAGS = -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
+ CXXFLAGS += -g -Wall -Wformat
+ LIBS =
+ 
+@@ -32,7 +32,7 @@
+ 
+ ifeq ($(UNAME_S), Linux) #LINUX
+ 	ECHO_MESSAGE = "Linux"
+-	LIBS += -lGL `pkg-config --static --libs glfw3`
++	LIBS += -lGL `pkg-config --libs glfw3`
+ 
+ 	CXXFLAGS += `pkg-config --cflags glfw3`
+ 	CFLAGS = $(CXXFLAGS)
+--- imgui-1.88.orig/examples/example_glfw_vulkan/Makefile
++++ imgui-1.88/examples/example_glfw_vulkan/Makefile
+@@ -0,0 +1,39 @@
++#
++# You will need GLFW (http://www.glfw.org)
++#
++
++#CXX = g++
++#CXX = clang++
++
++EXE = example_glfw_vulkan
++IMGUI_DIR = ../..
++SOURCES = main.cpp
++SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
++SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp
++OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
++
++CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -g -Wall -Wformat
++CXXFLAGS += `pkg-config --cflags glfw3`
++LIBS = `pkg-config --libs glfw3` -lvulkan
++
++##---------------------------------------------------------------------
++## BUILD RULES
++##---------------------------------------------------------------------
++
++%.o:%.cpp
++	$(CXX) $(CXXFLAGS) -c -o $@ $<
++
++%.o:$(IMGUI_DIR)/%.cpp
++	$(CXX) $(CXXFLAGS) -c -o $@ $<
++
++%.o:$(IMGUI_DIR)/backends/%.cpp
++	$(CXX) $(CXXFLAGS) -c -o $@ $<
++
++all: $(EXE)
++
++$(EXE): $(OBJS)
++	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
++
++clean:
++	rm -f $(EXE) $(OBJS)
+--- imgui-1.88.orig/examples/example_sdl_opengl3/Makefile
++++ imgui-1.88/examples/example_sdl_opengl3/Makefile
+@@ -21,9 +21,9 @@
+ SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
+ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+ UNAME_S := $(shell uname -s)
+-LINUX_GL_LIBS = -lGL
++# LINUX_GL_LIBS = -lGL
+ 
+-CXXFLAGS = -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
+ CXXFLAGS += -g -Wall -Wformat
+ LIBS =
+ 
+@@ -32,8 +32,8 @@
+ ##---------------------------------------------------------------------
+ 
+ ## This assumes a GL ES library available in the system, e.g. libGLESv2.so
+-# CXXFLAGS += -DIMGUI_IMPL_OPENGL_ES2
+-# LINUX_GL_LIBS = -lGLESv2
++CXXFLAGS += -DIMGUI_IMPL_OPENGL_ES2
++LINUX_GL_LIBS = -lGLESv2
+ ## If you're on a Raspberry Pi and want to use the legacy drivers,
+ ## use the following instead:
+ # LINUX_GL_LIBS = -L/opt/vc/lib -lbrcmGLESv2
+@@ -44,9 +44,9 @@
+ 
+ ifeq ($(UNAME_S), Linux) #LINUX
+ 	ECHO_MESSAGE = "Linux"
+-	LIBS += $(LINUX_GL_LIBS) -ldl `sdl2-config --libs`
++	LIBS += $(LINUX_GL_LIBS) -ldl `pkg-config --libs sdl2`
+ 
+-	CXXFLAGS += `sdl2-config --cflags`
++	CXXFLAGS += `pkg-config --cflags sdl2`
+ 	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+--- imgui-1.88.orig/examples/example_sdl_vulkan/Makefile
++++ imgui-1.88/examples/example_sdl_vulkan/Makefile
+@@ -0,0 +1,39 @@
++#
++# You will need SDL2 (http://www.libsdl.org)
++#
++
++#CXX = g++
++#CXX = clang++
++
++EXE = example_sdl_vulkan
++IMGUI_DIR = ../..
++SOURCES = main.cpp
++SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
++SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp
++OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
++
++CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -g -Wall -Wformat
++CXXFLAGS += `pkg-config --cflags sdl2`
++LIBS = `pkg-config --libs sdl2` -lvulkan
++
++##---------------------------------------------------------------------
++## BUILD RULES
++##---------------------------------------------------------------------
++
++%.o:%.cpp
++	$(CXX) $(CXXFLAGS) -c -o $@ $<
++
++%.o:$(IMGUI_DIR)/%.cpp
++	$(CXX) $(CXXFLAGS) -c -o $@ $<
++
++%.o:$(IMGUI_DIR)/backends/%.cpp
++	$(CXX) $(CXXFLAGS) -c -o $@ $<
++
++all: $(EXE)
++
++$(EXE): $(OBJS)
++	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
++
++clean:
++	rm -f $(EXE) $(OBJS)
+--- imgui-1.88.orig/imgui_internal.h
++++ imgui-1.88/imgui_internal.h
+@@ -186,7 +186,11 @@
+ #define STB_TEXTEDIT_GETWIDTH_NEWLINE   (-1.0f)
+ #define STB_TEXTEDIT_UNDOSTATECOUNT     99
+ #define STB_TEXTEDIT_UNDOCHARCOUNT      999
++#ifdef IMGUI_STB_TEXTEDIT_FILENAME
++#include IMGUI_STB_TEXTEDIT_FILENAME
++#else
+ #include "imstb_textedit.h"
++#endif
+ 
+ } // namespace ImStb
+ 
+--- imgui-1.88.orig/imgui_widgets.cpp
++++ imgui-1.88/imgui_widgets.cpp
+@@ -3762,7 +3762,12 @@
+ #define STB_TEXTEDIT_K_SHIFT        0x400000
+ 
+ #define STB_TEXTEDIT_IMPLEMENTATION
++#define STB_TEXTEDIT_IMPLEMENTATION
++#ifdef IMGUI_STB_TEXTEDIT_FILENAME
++#include IMGUI_STB_TEXTEDIT_FILENAME
++#else
+ #include "imstb_textedit.h"
++#endif
+ 
+ // stb_textedit internally allows for a single undo record to do addition and deletion, but somehow, calling
+ // the stb_textedit_paste() function creates two separate records, so we perform it manually. (FIXME: Report to nothings/stb?)
