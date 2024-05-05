@@ -5,33 +5,35 @@ REQUIRES="gcc-g++-build gyp-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build vulkan-loader-build; then
-  TOKTX=1
-  REQUIRES="$REQUIRES egl-opengl-stubs-build vulkan-loader-build"
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists opengl-registry-build; then
+  GL=-Dktx_opengl=1
+  REQUIRES="$REQUIRES opengl-registry-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists vulkan-headers-build; then
+  VK=-Dktx_vulkan=1
+  REQUIRES="$REQUIRES vulkan-headers-build"
 fi
 
 # configure
 rm -rf other_include
 rm -rf other_lib
-gyp -Dstaging_dir=/dfb --depth=. --generator-output=build/make/linux
-sed "/^prefix=/s|=.*|=/dfb|" libktx.pc.in > libktx.pc
+gyp $GL $VK -Dstaging_dir=/dfb --depth=. --generator-output=build/make/linux
+sed "/^prefix=/s|=.*|=/dfb|" pkgconfig/libktx.pc.in > pkgconfig/libktx.pc
 
 # build
-make -C build/make/linux libktx
-test $TOKTX && make -C build/make/linux toktx
+make -C build/make/linux toktx
 
 # install
-test $TOKTX && install -d $DESTDIR/dfb/bin
-test $TOKTX && install build/make/linux/out/*/toktx $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/bin
+install build/make/linux/out/*/toktx $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include
 install -m 644 include/ktx.h $DESTDIR/dfb/include
 install -d $DESTDIR/dfb/lib
 install build/make/linux/out/*/lib.target/libktx.so.3 $DESTDIR/dfb/lib
 ln -sf libktx.so.3 $DESTDIR/dfb/lib/libktx.so
-test $TOKTX && install build/make/linux/out/*/lib.target/libktx.gl.so.3 $DESTDIR/dfb/lib
-test $TOKTX && ln -sf libktx.gl.so.3 $DESTDIR/dfb/lib/libktx.gl.so
 install -d $DESTDIR/dfb/lib/pkgconfig
-install -m 644 libktx.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 pkgconfig/libktx.pc $DESTDIR/dfb/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -43,94 +45,790 @@ Requires: $REQUIRES
 
 devel=\\
 /dfb/include/ktx.h \\
-EOF
-test $TOKTX && echo /dfb/lib/libktx.gl.so \\ >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc
-cat >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc << EOF
 /dfb/lib/libktx.so \\
 /dfb/lib/pkgconfig/libktx.pc
 
 exec=\\
-EOF
-test $TOKTX && echo /dfb/bin/toktx \\ >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc
-test $TOKTX && echo /dfb/lib/libktx.gl.so.3 \\ >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc
-cat >> $DESTDIR/dfb/share/pkgconfig/ktx-software-build.pc << EOF
+/dfb/bin/toktx \\
 /dfb/lib/libktx.so.3
 EOF
 
 exit
---- KTX-Software-3.0.1.orig/gyp_include/libgl.gypi
-+++ KTX-Software-3.0.1/gyp_include/libgl.gypi
-@@ -11,7 +11,7 @@
-     'type': 'none',
-     'direct_dependent_settings': {
-       'include_dirs': [
--        '<(gl_includes_parent_dir)',
-+        '<(gl_includes_parent_dir)', '<(staging_dir)/include'
-       ]
-     },
-     'variables': {
-@@ -20,8 +20,8 @@
-           'lib_dirs': [ ],
-           'libs': ['$(SDKROOT)/System/Library/Frameworks/OpenGL.framework'],
-         }, 'OS == "linux"', {
--          'lib_dirs': [ ],
--          'libs': ['-lGL'],
-+          'lib_dirs': [ '<(staging_dir)/lib' ],
-+          'libs': [ '-Wl,-rpath,<(staging_dir)/lib', '-lGL', '-ldl' ],
-         }, 'OS == "win"', {
-           'lib_dirs': [ '<(glew_lib_dir)' ],
-           'conditions': [
+--- KTX-Software-3.0.1.orig/TODO.md
++++ KTX-Software-3.0.1/TODO.md
+@@ -8,7 +8,7 @@
+ library
+ -------
+ 
+-- [ ] Find a way so that applications do not have to define KTX_OPENGL{,_ES*} when
++- [x] Find a way so that applications do not have to define KTX_OPENGL{,_ES*} when
+       using the library.
+ - [x] make reader that is usable without OpenGL context
+ - [ ] use TexStorage in GL texture loader when available
+--- KTX-Software-3.0.1.orig/gyp_include/config.gypi
++++ KTX-Software-3.0.1/gyp_include/config.gypi
+@@ -81,6 +81,9 @@
+ 
+     # Directory containing EGL, GL{,ES}*, KHR, etc. include directories.
+     'gl_includes_parent_dir': '../other_include',
++    'staging_dir%': '<(gl_includes_parent_dir)',
++    'ktx_opengl%': '0',
++    'ktx_vulkan%': '0',
+ 
+     # Default platform for Windows builds. Multiple platform solution
+     # & project files are no longer generated. Limitations in GYP
+--- KTX-Software-3.0.1.orig/include/ktx.h
++++ KTX-Software-3.0.1/include/ktx.h
+@@ -34,9 +34,6 @@
+  * @author Based on original work by Georg Kolling, Imagination Technology
+  *
+  * @version 3.0
+- *
+- * @todo Find a way so that applications do not have to define KTX_OPENGL{,_ES*}
+- *       when using the library.
+  */
+ 
+ #include <stdio.h>
+@@ -82,6 +79,9 @@
+   typedef int GLsizei;
+   typedef unsigned int GLuint;
+   typedef unsigned char GLubyte;
++  typedef signed char GLbyte;
++  #define GL_FALSE 0
++  #define GL_TRUE  1
+ #endif
+ 
+ #ifdef __cplusplus
 --- KTX-Software-3.0.1.orig/lib/etcunpack.cxx
 +++ KTX-Software-3.0.1/lib/etcunpack.cxx
-@@ -31,7 +31,8 @@
+@@ -31,9 +31,11 @@
  #include <assert.h>
  #include <stdlib.h>
  
 -#include "GL/glcorearb.h"
+-// Not defined in glcorearb.h.
+-#define GL_ETC1_RGB8_OES                0x8D64
++#if KTX_OPENGL
++
 +#include "GL/gl.h"
 +#include "GL/glext.h"
- // Not defined in glcorearb.h.
- #define GL_ETC1_RGB8_OES                0x8D64
++#define GL_ETC1_RGB8_OES 0x8D64
  #include "ktx.h"
+ #include "ktxint.h"
+ 
+@@ -286,3 +288,5 @@
+ }
+ 
+ #endif /* SUPPORT_SOFTWARE_ETC_UNPACK */
++
++#endif
+--- KTX-Software-3.0.1.orig/lib/gl_funclist.inl
++++ KTX-Software-3.0.1/lib/gl_funclist.inl
+@@ -0,0 +1,53 @@
++/* -*- tab-width: 4; -*- */
++/* vi: set sw=2 ts=4 expandtab textwidth=70: */
++
++/*
++ * ©2017 Mark Callow.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * @internal
++ * @file gl_funclist.h
++ * @~English
++ *
++ * @brief List of OpenGL {,ES} functions used by libktx.
++ */
++
++// There is no way for the pre-processor to uppercase stringized macro args
++// so we have to explicitly give the types.
++
++#define required 1     // Present in all GL versions. Load failure is an error.
++#define not_required 0 // May not be present. Code must check before calling.
++
++GL_FUNCTION(PFNGLBINDTEXTUREPROC, glBindTexture, required)
++GL_FUNCTION(PFNGLCOMPRESSEDTEXIMAGE1DPROC, glCompressedTexImage1D, not_required)
++GL_FUNCTION(PFNGLCOMPRESSEDTEXIMAGE2DPROC, glCompressedTexImage2D, required)
++GL_FUNCTION(PFNGLCOMPRESSEDTEXIMAGE3DPROC, glCompressedTexImage3D, not_required)
++GL_FUNCTION(PFNGLDELETETEXTURESPROC, glDeleteTextures, required)
++GL_FUNCTION(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap, not_required)
++GL_FUNCTION(PFNGLGENTEXTURESPROC, glGenTextures, required)
++GL_FUNCTION(PFNGLGETERRORPROC, glGetError, required)
++GL_FUNCTION(PFNGLGETINTEGERVPROC, glGetIntegerv, required)
++GL_FUNCTION(PFNGLGETSTRINGPROC, glGetString, required)
++GL_FUNCTION(PFNGLGETSTRINGIPROC, glGetStringi, not_required)
++GL_FUNCTION(PFNGLPIXELSTOREIPROC, glPixelStorei, required)
++GL_FUNCTION(PFNGLTEXIMAGE1DPROC, glTexImage1D, not_required)
++GL_FUNCTION(PFNGLTEXIMAGE2DPROC, glTexImage2D, required)
++GL_FUNCTION(PFNGLTEXIMAGE3DPROC, glTexImage3D, not_required)
++GL_FUNCTION(PFNGLTEXPARAMETERIPROC, glTexParameteri, required)
++GL_FUNCTION(PFNGLTEXPARAMETERIVPROC, glTexParameteriv, required)
++
++#undef required
++#undef not_required
+--- KTX-Software-3.0.1.orig/lib/gl_funcs.c
++++ KTX-Software-3.0.1/lib/gl_funcs.c
+@@ -0,0 +1,177 @@
++/* -*- tab-width: 4; -*- */
++/* vi: set sw=2 ts=4 expandtab textwidth=70: */
++
++/*
++ * ©2017 Mark Callow.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * @internal
++ * @file gl_funcs.c
++ * @~English
++ *
++ * @brief Retrieve OpenGL function pointers needed by libktx
++ */
++
++#define UNIX 0
++#define MACOS 0
++#define WINDOWS 0
++
++#if defined(_WIN32)
++#undef WINDOWS
++#define WINDOWS 1
++#endif
++#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || defined(__DragonFly__)
++#undef UNIX
++#define UNIX 1
++#endif
++#if defined(linux) || defined(__linux) || defined(__linux__)
++#undef UNIX
++#define UNIX 1
++#endif
++#if defined(__APPLE__) && defined(__x86_64__)
++#undef MACOS
++#define MACOS 1
++#endif
++
++#if (IOS + MACOS + UNIX + WINDOWS) > 1
++#error "Multiple OS\'s defined"
++#endif
++
++#if WINDOWS
++#define WINDOWS_LEAN_AND_MEAN
++#include <windows.h>
++#else
++#include <dlfcn.h>
++#define WINAPI
++#endif
++
++#if KTX_OPENGL
++
++#define NO_SHORTCUTS
++#include "gl_funcs.h"
++
++#if WINDOWS
++HMODULE ktxOpenGLLibrary;
++#define GetOpenGLLibary(flags) ktxFindOpenGL()
++#define LoadProcAddr GetProcAddress
++#elif MACOS || UNIX
++#define GetOpenGLModuleHandle(flags) dlopen(NULL, flags)
++#define LoadProcAddr dlsym
++void* ktxOpenGLLibrary;
++#else
++#error "Don\'t know how to load symbols on this OS."
++#endif
++
++typedef void (WINAPI *PFNVOIDFUNCTION)(void);
++typedef  PFNVOIDFUNCTION *(WINAPI * PFNWGLGETPROCADDRESS) (const char *proc);
++static  PFNWGLGETPROCADDRESS wglGetProcAddressPtr;
++static const char* noloadmsg = "Could not load OpenGL command: %s!\n";
++
++/* Define pointers for functions libktx is using. */
++struct glFuncPtrs gl;
++
++#if defined(__GNUC__)
++// This strange casting is because dlsym returns a void* thus is not
++// compatible with ISO C which forbids conversion of object pointers
++// to function pointers. The cast masks the conversion from the
++// compiler thus no warning even though -pedantic is set. Since the
++// platform supports dlsym, conversion to function pointers must
++// work, despite the mandated ISO C warning.
++#define GL_FUNCTION(type, func, required)                                  \
++  if ( wglGetProcAddressPtr )                                              \
++    *(void **)(&gl.func) = wglGetProcAddressPtr(#func);                    \
++  if ( !gl.func )                                                          \
++    *(void **)(&gl.func) = LoadProcAddr(ktxOpenGLLibrary, #func);          \
++  if ( !gl.func && required ) {                                            \
++        fprintf(stderr, noloadmsg, #func);                                 \
++        return KTX_FALSE;                                                  \
++  }
++#else
++#define GL_FUNCTION(type, func, required)                                  \
++  if ( wglGetProcAddressPtr )                                              \
++    gl.func = (type)wglGetProcAddressPtr(#func);                           \
++  if ( !gl.##func )                                                        \
++    gl.func = (type)LoadProcAddr(ktxOpenGLLibrary, #func);                 \
++  if ( !gl.func && required ) {                                            \
++    fprintf(stderr, noloadmsg, #func);                                     \
++    return KTX_FALSE;                                                      \
++  }
++#endif
++
++#if WINDOWS
++static HMODULE
++ktxFindOpenGL()
++{
++    HMODULE module = 0;
++    BOOL found;
++    // Check current module to see if we are statically linked to GL.
++    found = GetModuleHandleExA(
++        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
++        (LPCSTR)ktxFindOpenGL,
++        &module
++    );
++    if (found) {
++        if (LoadProcAddr(module, "glGetError") != NULL)
++            return module;
++    }
++    found = GetModuleHandleExA(
++        0,
++        "libGLESv2.dll",
++        &module
++    );
++    if (found) return module;
++    found = GetModuleHandleExA(
++        0,
++        "libGLES_CM.dll",
++        &module
++    );
++    if (found) return module;
++    found = GetModuleHandleExA(
++        0,
++        "opengl32.dll",
++        &module
++    );
++    if (found) {
++        wglGetProcAddressPtr =
++            (PFNWGLGETPROCADDRESS)LoadProcAddr(module,
++                                               "wglGetProcAddress");
++        if (wglGetProcAddressPtr != NULL)
++            return module;
++    }
++    return module;
++}
++#endif
++
++ktx_bool_t
++ktxOpenGLLoadLibrary(void)
++{
++    if (ktxOpenGLLibrary)
++        return KTX_TRUE;
++
++    ktxOpenGLLibrary = GetOpenGLModuleHandle(RTLD_LAZY);
++    if (ktxOpenGLLibrary == NULL) {
++        fprintf(stderr, "Could not load OpenGL library.\n");
++        return(KTX_FALSE);
++    }
++
++#include "gl_funclist.inl"
++
++    return KTX_TRUE;
++}
++
++#undef GL_FUNCTION
++
++#endif
+--- KTX-Software-3.0.1.orig/lib/gl_funcs.h
++++ KTX-Software-3.0.1/lib/gl_funcs.h
+@@ -0,0 +1,73 @@
++/* -*- tab-width: 4; -*- */
++/* vi: set sw=2 ts=4 expandtab textwidth=70: */
++
++/*
++ * ©2017 Mark Callow.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * @internal
++ * @file vk_funcs.h
++ * @~English
++ *
++ * @brief Declare pointers for OpenGL {,ES} functions.
++ *
++ * Dynamically retrieving pointers avoids apps or shared library builds having to link with OpenGL {,ES}
++ * and avoids the need for compiling different versions of the libary for different OpenGL {,ES} versions.
++ */
++
++#ifndef _GL_FUNCS_H_
++#define _GL_FUNCS_H_
++
++#include "GL/gl.h"
++#include "GL/glext.h"
++#include "ktx.h"
++
++#if defined(_WIN32)
++#define WINDOWS_LEAN_AND_MEAN
++#include <windows.h>
++extern HMODULE ktxOpenGLLibrary;
++#else
++extern void* ktxOpenGLLibrary;
++#endif
++
++extern ktx_bool_t ktxOpenGLLoadLibrary(void);
++
++#define GL_FUNCTION(type, fun, required) type fun;
++
++extern struct glFuncPtrs {
++#include "gl_funclist.inl"
++} gl;
++
++#undef GL_FUNCTION
++
++#if !defined(NO_SHORTCUTS)
++// Macros to allow standard, i.e always present functions, to be called
++// by their prototype names.
++#define glBindTexture gl.glBindTexture
++#define glCompressedTexImage2D gl.glCompressedTexImage2D
++#define glDeleteTextures gl.glDeleteTextures
++#define glGenTextures gl.glGenTextures
++#define glGetError gl.glGetError
++#define glGetIntegerv gl.glGetIntegerv
++#define glGetString(x) (const char*)gl.glGetString(x)
++#define glPixelStorei gl.glPixelStorei
++#define glTexImage2D gl.glTexImage2D
++#define glTexParameteri gl.glTexParameteri
++#define glTexParameteriv gl.glTexParameteriv
++#endif
++
++#endif /* _GL_FUNCS_H_ */
++
 --- KTX-Software-3.0.1.orig/lib/glloader.c
 +++ KTX-Software-3.0.1/lib/glloader.c
-@@ -51,7 +51,8 @@
-     #include <GL/glew.h>
-   #else
-     #define GL_GLEXT_PROTOTYPES
--    #include <GL/glcorearb.h>
-+    #include <GL/gl.h>
-+    #include <GL/glext.h>
-   #endif
+@@ -38,54 +38,11 @@
  
-   #define GL_APIENTRY APIENTRY
+ #if KTX_OPENGL
+ 
+-  #ifdef _WIN32
+-    #include <windows.h>
+-    #undef KTX_USE_GETPROC  /* Must use GETPROC on Windows */
+-    #define KTX_USE_GETPROC 1
+-  #else
+-    #if !defined(KTX_USE_GETPROC)
+-      #define KTX_USE_GETPROC 0
+-    #endif
+-  #endif
+-  #if KTX_USE_GETPROC
+-    #include <GL/glew.h>
+-  #else
+-    #define GL_GLEXT_PROTOTYPES
+-    #include <GL/glcorearb.h>
+-  #endif
+-
+-  #define GL_APIENTRY APIENTRY
+-  #include "gl_funcptrs.h"
+-
+-#elif KTX_OPENGL_ES1
+-
+-  #include <GLES/gl.h>
+-  #include <GLES/glext.h>
+-  #include "gles1_funcptrs.h"
+-
+-#elif KTX_OPENGL_ES2
+-
+-  #define GL_GLEXT_PROTOTYPES
+-  #include <GLES2/gl2.h>
+-  #include <GLES2/gl2ext.h>
+-  #include "gles2_funcptrs.h"
+-
+-#elif KTX_OPENGL_ES3
+-
+-  #define GL_GLEXT_PROTOTYPES
+-  #include <GLES3/gl3.h>
+-  #include <GLES2/gl2ext.h>
+-  #include "gles3_funcptrs.h"
+-
+-#else
+-  #error Please #define one of KTX_OPENGL, KTX_OPENGL_ES1, KTX_OPENGL_ES2 or KTX_OPENGL_ES3 as 1
+-#endif
++#include "gl_funcs.h"
+ 
++#define GL_ETC1_RGB8_OES 0x8D64
+ #include "ktx.h"
+ #include "ktxint.h"
+-#include "ktxgl.h"
+-
+-DECLARE_GL_FUNCPTRS
+ 
+ /**
+  * @defgroup ktx_glloader OpenGL Texture Image Loader
+@@ -186,18 +143,9 @@
+ /**
+  * @internal
+  * @~English
+- * @brief Workaround mismatch of glGetString declaration and standard string
+- *        function parameters.
+- */
+-#define glGetString(x) (const char*)glGetString(x)
+-
+-/**
+- * @internal
+- * @~English
+- * @brief Workaround mismatch of glGetStringi declaration and standard string
+- *        function parameters.
++ * @brief Indicates if the current context supports cube map arrays.
+  */
+-#define pfGlGetStringi(x,y) (const char*)pfGlGetStringi(x,y)
++static GLboolean supportsMaxLevel = GL_FALSE;
+ 
+ /**
+  * @internal
+@@ -207,7 +155,7 @@
+ static GLboolean
+ hasExtension(const char* extension) 
+ {
+-    if (pfGlGetStringi == NULL) {
++    if (gl.glGetStringi == NULL) {
+         if (strstr(glGetString(GL_EXTENSIONS), extension) != NULL)
+             return GL_TRUE;
+         else
+@@ -217,7 +165,7 @@
+ 
+         glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+         for (i = 0; i < n; i++) {
+-            if (strcmp(pfGlGetStringi(GL_EXTENSIONS, i), extension) == 0)
++            if (strcmp((const char*)gl.glGetStringi(GL_EXTENSIONS, i), extension) == 0)
+                 return GL_TRUE;
+         }
+         return GL_FALSE;
+@@ -235,7 +183,8 @@
+  * @li sizedFormats
+  * @li supportsSwizzle
+  * @li supportsSRGB
+- * @li b16Formats
++ * @li R16Formats
++ * @li supportsMaxLevel
+  */
+ static void
+ discoverContextCapabilities(void)
+@@ -243,11 +192,6 @@
+     GLint majorVersion = 1;
+     GLint minorVersion = 0;
+ 
+-    // Done here so things will work when GLEW, or equivalent, is being used
+-    // and GL function names are defined as pointers. Initialization at
+-    // declaration would happen before these pointers have been initialized.
+-    INITIALIZE_GL_FUNCPTRS
+-
+     if (strstr(glGetString(GL_VERSION), "GL ES") != NULL)
+         contextProfile = _CONTEXT_ES_PROFILE_BIT;
+     // MAJOR & MINOR only introduced in GL {,ES} 3.0
+@@ -268,11 +212,25 @@
+             sizedFormats = _NO_SIZED_FORMATS;
+             R16Formats = _KTX_NO_R16_FORMATS;
+             supportsSRGB = GL_FALSE;
++            // These things could be found by dlsym when, e.g. the same driver
++            // supports ES1, ES2 and ES3. For all but Tex*3D, there's no
++            // corresponding extension whose presence we could check. Just zero
++            // the pointers to prevent use.
++            gl.glGetStringi = NULL;
++            gl.glCompressedTexImage1D = NULL;
++            if (!hasExtension("GL_OES_texture_3D")) {
++                gl.glCompressedTexImage3D = NULL;
++                gl.glTexImage3D = NULL;
++            }
++            if (majorVersion < 2)
++                gl.glGenerateMipmap = NULL;
++
+         } else {
+             sizedFormats = _NON_LEGACY_FORMATS;
+             if (hasExtension("GL_EXT_texture_cube_map_array")) {
+                 supportsCubeMapArrays = GL_TRUE;
+             }
++            supportsMaxLevel = GL_TRUE;
+         }
+         if (hasExtension("GL_OES_required_internalformat")) {
+             sizedFormats |= _ALL_SIZED_FORMATS;
+@@ -291,6 +249,7 @@
+                 sizedFormats &= ~_LEGACY_FORMATS;
+             if (majorVersion >= 4)
+                 supportsCubeMapArrays = GL_TRUE;
++            supportsMaxLevel = GL_TRUE;
+         } else {
+             // < 3.2
+             contextProfile = GL_CONTEXT_COMPATIBILITY_PROFILE_BIT;
+@@ -303,6 +262,12 @@
+             if (majorVersion == 3) {
+                 if (minorVersion == 0)
+                     R16Formats &= ~_KTX_R16_FORMATS_SNORM;
++                if (minorVersion < 1) {
++                    if (hasExtension("GL_ARB_texture_query_levels"))
++                        supportsMaxLevel = GL_TRUE;
++                } else {
++                  supportsMaxLevel = GL_TRUE;
++                }
+             } else if (hasExtension("GL_ARB_texture_rg")) {
+                 R16Formats &= ~_KTX_R16_FORMATS_SNORM;
+             } else {
+@@ -455,8 +420,8 @@
+ {
+     ktx_cbdata* cbData = (ktx_cbdata*)userdata;
+     
+-    assert(pfGlTexImage1D != NULL);
+-    pfGlTexImage1D(cbData->glTarget + face, miplevel,
++    assert(gl.glTexImage1D != NULL);
++    gl.glTexImage1D(cbData->glTarget + face, miplevel,
+                    cbData->glInternalformat, width, 0,
+                    cbData->glFormat, cbData->glType, pixels);
+     
+@@ -476,8 +441,8 @@
+ {
+     ktx_cbdata* cbData = (ktx_cbdata*)userdata;
+     
+-    assert(pfGlCompressedTexImage1D != NULL);
+-    pfGlCompressedTexImage1D(cbData->glTarget + face, miplevel,
++    assert(gl.glCompressedTexImage1D != NULL);
++    gl.glCompressedTexImage1D(cbData->glTarget + face, miplevel,
+                              cbData->glInternalformat, width, 0,
+                              faceLodSize, pixels);
+     
+@@ -581,8 +546,8 @@
+ {
+     ktx_cbdata* cbData = (ktx_cbdata*)userdata;
+     
+-    assert(pfGlTexImage3D != NULL);
+-    pfGlTexImage3D(cbData->glTarget + face, miplevel,
++    assert(gl.glTexImage3D != NULL);
++    gl.glTexImage3D(cbData->glTarget + face, miplevel,
+                    cbData->glInternalformat,
+                    width, height,
+                    cbData->numLayers == 0 ? depth : cbData->numLayers,
+@@ -605,8 +570,8 @@
+ {
+     ktx_cbdata* cbData = (ktx_cbdata*)userdata;
+     
+-    assert(pfGlCompressedTexImage3D != NULL);
+-    pfGlCompressedTexImage3D(cbData->glTarget + face, miplevel,
++    assert(gl.glCompressedTexImage3D != NULL);
++    gl.glCompressedTexImage3D(cbData->glTarget + face, miplevel,
+                              cbData->glInternalformat,
+                              width, height,
+                              cbData->numLayers == 0 ? depth : cbData->numLayers,
+@@ -627,8 +592,7 @@
+  * @brief Create a GL texture object from a ktxTexture object.
+  *
+  * Sets the texture object's GL_TEXTURE_MAX_LEVEL parameter according to the
+- * number of levels in the KTX data, provided the library has been compiled
+- * with a version of gl.h where GL_TEXTURE_MAX_LEVEL is defined.
++ * number of levels in the KTX data, provided the context supports this feature.
+  *
+  * Unpacks compressed GL_ETC1_RGB8_OES and GL_ETC2_* format
+  * textures in software when the format is not supported by the GL context,
+@@ -691,6 +655,12 @@
+         return KTX_INVALID_VALUE;
+     }
+ 
++    if (!ktxOpenGLLibrary) {
++        if (!ktxOpenGLLoadLibrary()) {
++            abort();
++        }
++    }
++
+     if (contextProfile == 0)
+         discoverContextCapabilities();
+ 
+@@ -745,16 +715,16 @@
+     }
+     
+     if (target == GL_TEXTURE_1D &&
+-        ((This->isCompressed && (pfGlCompressedTexImage1D == NULL)) ||
+-         (!This->isCompressed && (pfGlTexImage1D == NULL))))
++        ((This->isCompressed && (gl.glCompressedTexImage1D == NULL)) ||
++         (!This->isCompressed && (gl.glTexImage1D == NULL))))
+     {
+         return KTX_UNSUPPORTED_TEXTURE_TYPE;
+     }
+     
+     /* Reject 3D texture if unsupported. */
+     if (target == GL_TEXTURE_3D &&
+-        ((This->isCompressed && (pfGlCompressedTexImage3D == NULL)) ||
+-         (!This->isCompressed && (pfGlTexImage3D == NULL))))
++        ((This->isCompressed && (gl.glCompressedTexImage3D == NULL)) ||
++         (!This->isCompressed && (gl.glTexImage3D == NULL))))
+     {
+         return KTX_UNSUPPORTED_TEXTURE_TYPE;
+     }
+@@ -786,13 +756,12 @@
+     glBindTexture(target, texname);
+     
+     // Prefer glGenerateMipmaps over GL_GENERATE_MIPMAP
+-    if (This->generateMipmaps && (pfGlGenerateMipmap == NULL)) {
++    if (This->generateMipmaps && (gl.glGenerateMipmap == NULL)) {
+         glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+     }
+-#ifdef GL_TEXTURE_MAX_LEVEL
+-    if (!This->generateMipmaps)
++
++    if (!This->generateMipmaps && supportsMaxLevel)
+         glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, This->numLevels - 1);
+-#endif
+ 
+     if (target == GL_TEXTURE_CUBE_MAP) {
+         cbData.glTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+@@ -844,8 +813,8 @@
+     if (result == KTX_SUCCESS)
+     {
+         // Prefer glGenerateMipmaps over GL_GENERATE_MIPMAP
+-        if (This->generateMipmaps && pfGlGenerateMipmap) {
+-            pfGlGenerateMipmap(target);
++        if (This->generateMipmaps && gl.glGenerateMipmap) {
++            gl.glGenerateMipmap(target);
+         }
+         *pTarget = target;
+         if (pTexture) {
+@@ -864,8 +833,7 @@
+  * @brief Create a GL texture object from KTX data in a stdio FILE stream.
+  *
+  * Sets the texture object's GL_TEXTURE_MAX_LEVEL parameter according to the
+- * number of levels in the ktxStream, provided the library has been compiled
+- * with a version of gl.h where GL_TEXTURE_MAX_LEVEL is defined.
++ * number of levels in the ktxStream, provided the context supports this feature.
+  *
+  * Unpacks compressed GL_ETC1_RGB8_OES and GL_ETC2_* format textures in
+  * software when the format is not supported by the GL context, provided the
+@@ -1113,3 +1081,5 @@
+ }
+ 
+ /** @} */
++
++#endif
 --- KTX-Software-3.0.1.orig/lib/libktx.gypi
 +++ KTX-Software-3.0.1/lib/libktx.gypi
-@@ -55,7 +55,24 @@
+@@ -16,14 +16,12 @@
+       'filestream.c',
+       'filestream.h',
+       'gl_format.h',
+-      'gl_funcptrs.h',
+-      'gles1_funcptrs.h',
+-      'gles2_funcptrs.h',
+-      'gles3_funcptrs.h',
++      'gl_funclist.inl',
++      'gl_funcs.c',
++      'gl_funcs.h',
+       'glloader.c',
+       'hashlist.c',
+       'hashtable.c',
+-      'ktxgl.h',
+       'ktxint.h',
+       'memstream.c',
+       'memstream.h',
+@@ -55,23 +53,30 @@
    ],
    'targets': [
      {
+-      'target_name': 'libktx.gl',
 +      'target_name': 'libktx',
-+      'product_extension': 'so.3',
-+      'type': 'shared_library',
-+      'cflags': [ '-std=c99' ],
-+      'include_dirs': [ '<@(include_dirs)' ],
-+      'mac_bundle': 0,
-+      'sources': [
-+        'checkheader.c',
-+        'filestream.c',
-+        'hashlist.c',
-+        'memstream.c',
-+        'swap.c',
-+        'texture.c'
-+      ],
-+    }, # libktx target
-+    {
-       'target_name': 'libktx.gl',
 +      'product_extension': 'so.3',
        'type': '<(library)',
        'cflags': [ '-std=c99' ],
-       'defines': [ 'KTX_OPENGL=1' ],
+-      'defines': [ 'KTX_OPENGL=1' ],
++      'defines': [ 'KTX_OPENGL=<(ktx_opengl)', 'KTX_VULKAN=<(ktx_vulkan)' ],
+       'direct_dependent_settings': {
+          'include_dirs': [ '<@(include_dirs)' ],
+       },
+-      'include_dirs': [ '<@(include_dirs)' ],
++      'include_dirs': [ '<@(include_dirs)', '<(staging_dir)/include' ],
+       'mac_bundle': 0,
+       'dependencies': [ 'vulkan_headers' ],
+       'sources': [
+         '<@(sources)',
+         '<@(vksource_files)',
+       ],
++      'link_settings': {
++        'conditions': [
++          ['OS == "linux"', {
++            'libraries': [ '-ldl' ],
++          }],
++        ],
++      },
+       'conditions': [
+         ['_type == "shared_library"', {
+-          'dependencies': [ 'libgl', 'libvulkan.lazy' ],
+           'conditions': [
+             ['OS == "mac" or OS == "ios"', {
+               'direct_dependent_settings': {
+@@ -105,39 +110,11 @@
+                 'INSTALL_PATH': '@rpath',
+               },
+             }, 'OS == "linux"', {
+-              'defines': [ 'KTX_USE_FUNCPTRS_FOR_VULKAN' ],
+-              'dependencies!': [ 'libvulkan.lazy' ],
+             }] # OS == "mac or OS == "ios"
+           ], # conditions
+         }] # _type == "shared_library"
+       ], # conditions
+-    }, # libktx.gl target
+-    {
+-      'target_name': 'libktx.es1',
+-      'type': 'static_library',
+-      'cflags': [ '-std=c99' ],
+-      'defines': [ 'KTX_OPENGL_ES1=1' ],
+-      'direct_dependent_settings': {
+-        'include_dirs': [ '<@(include_dirs)' ],
+-      },
+-      'sources': [ '<@(sources)' ],
+-      'include_dirs': [ '<@(include_dirs)' ],
+-    }, # libktx.es1
+-    {
+-      'target_name': 'libktx.es3',
+-      'type': 'static_library',
+-      'cflags': [ '-std=c99' ],
+-      'defines': [ 'KTX_OPENGL_ES3=1' ],
+-      'dependencies': [ 'vulkan_headers' ],
+-      'direct_dependent_settings': {
+-         'include_dirs': [ '<@(include_dirs)' ],
+-      },
+-      'sources': [
+-        '<@(sources)',
+-        '<@(vksource_files)',
+-      ],
+-      'include_dirs': [ '<@(include_dirs)' ],
+-    }, # libktx.es3
++    }, # libktx target
+   ], # targets
+   'conditions': [
+     ['OS == "linux" or OS == "mac" or OS == "win"', {
 --- KTX-Software-3.0.1.orig/lib/swap.c
 +++ KTX-Software-3.0.1/lib/swap.c
 @@ -19,18 +19,16 @@
@@ -169,19 +867,193 @@ exit
          *pData32++ = (x << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) | (x >> 24);
      }
  }
+--- KTX-Software-3.0.1.orig/lib/vk_funcs.c
++++ KTX-Software-3.0.1/lib/vk_funcs.c
+@@ -25,8 +25,6 @@
+  * @brief Retrieve Vulkan function pointers needed by libktx
+  */
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+-
+ #define UNIX 0
+ #define MACOS 0
+ #define WINDOWS 0
+@@ -50,7 +48,7 @@
+ 
+ #if (IOS + MACOS + UNIX + WINDOWS) > 1
+ #error "Multiple OS\'s defined"
+-#endif 
++#endif
+ 
+ #if WINDOWS
+ #define WINDOWS_LEAN_AND_MEAN
+@@ -58,29 +56,23 @@
+ #else
+ #include <dlfcn.h>
+ #endif
+-#include "ktx.h"
++
++#if KTX_VULKAN
++
+ #include "vk_funcs.h"
+ 
+ #if WINDOWS
+-HMODULE ktxVulkanLibary;
+-#define LoadLibrary LoadLibrary
++HMODULE ktxVulkanLibrary;
++#define GetVulkanModuleHandle(flags) ktxFindVulkan()
+ #define LoadProcAddr GetProcAddress
+ #elif MACOS || UNIX
+-#define LoadLibrary dlopen
++#define GetVulkanModuleHandle(flags) dlopen(NULL, flags)
+ #define LoadProcAddr dlsym
+ void* ktxVulkanLibrary;
+ #else
+ #error "Don\'t know how to load symbols on this OS."
+ #endif
+ 
+-#if WINDOWS
+-#define VULKANLIB "vulkan-1.dll"
+-#elif MACOS
+-#define VULKANLIB "vulkan.framework/vulkan"
+-#elif UNIX
+-#define VULKANLIB "libvulkan.so"
+-#endif
+-
+ static PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+ 
+ /* Define pointers for functions libktx is using. */
+@@ -123,13 +115,29 @@
+ #endif
+ #endif
+ 
++#if WINDOWS
++#define VULKANLIB "vulkan-1.dll"
++static HMODULE
++ktxFindVulkan()
++{
++    HMODULE module = NULL;
++    BOOL found;
++    found = GetModuleHandleExA(
++        0,
++        VULKANLIB,
++        &module
++    );
++    return module;
++}
++#endif
++
+ ktx_bool_t
+ ktxVulkanLoadLibrary(void)
+ {
+     if (ktxVulkanLibrary)
+         return KTX_TRUE;
+ 
+-    ktxVulkanLibrary = LoadLibrary(VULKANLIB, RTLD_LAZY);
++    ktxVulkanLibrary = GetVulkanModuleHandle(RTLD_LAZY);
+     if (ktxVulkanLibrary == NULL) {
+         fprintf(stderr, "Could not load Vulkan library.\n");
+         return(KTX_FALSE);
+@@ -153,12 +161,4 @@
+ 
+ #undef VK_FUNCTION
+ 
+-#else
+-
+-extern
+-#if defined(__GNUC__)
+-__attribute__((unused))
+ #endif
+-int keepISOCompilersHappy;
+-
+-#endif /* KTX_USE_FUNCPTRS_FOR_VULKAN */
+--- KTX-Software-3.0.1.orig/lib/vk_funcs.h
++++ KTX-Software-3.0.1/lib/vk_funcs.h
+@@ -25,24 +25,20 @@
+  * @brief Declare pointers for Vulkan functions.
+  *
+  * Dynamically retrieving pointers avoids apps having to make sure a
+- * Vulkan library is availablei when using a shared libktx, even if
++ * Vulkan library is available when using a shared libktx, even if
+  * not using libktx's Vulkan loader.
+  */
+ 
+ #ifndef _VK_FUNCS_H_
+ #define _VK_FUNCS_H_
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+ #define VK_NO_PROTOTYPES
+-#endif
+ 
+ #include <vulkan/vulkan.h>
+ #include "ktx.h"
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+-
+ #if defined(_WIN32)
+-extern HMODULE ktxVulkanLibary;
++extern HMODULE ktxVulkanLibrary;
+ #else
+ extern void* ktxVulkanLibrary;
+ #endif
+@@ -89,9 +85,5 @@
+ #define vkUnmapMemory ktx_vkUnmapMemory
+ #define vkWaitForFences ktx_vkWaitForFences
+ 
+-#undef VK_FUNCTION
+-
+-#endif /* KTX_USE_FUNCPTRS_FOR_VULKAN */
+-
+ #endif /* _VK_FUNCS_H_ */
+ 
+--- KTX-Software-3.0.1.orig/lib/vkloader.c
++++ KTX-Software-3.0.1/lib/vkloader.c
+@@ -36,9 +36,9 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
++#if KTX_VULKAN
++
+ #include "vk_funcs.h"   // Must be included before ktxvulkan.h.
+-#endif
+ #include "ktxvulkan.h"
+ #include "ktxint.h"
+ #include "vk_format.h"
+@@ -160,7 +160,6 @@
+     };
+     VkResult result;
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+     // Delay loading not supported so must do it ourselves.
+     if (!ktxVulkanLibrary) {
+         if (!ktxVulkanLoadLibrary())
+@@ -175,7 +174,6 @@
+             // never suffer these.
+             abort();
+     }
+-#endif
+ 
+     This->physicalDevice = physicalDevice;
+     This->device = device;
+@@ -1442,3 +1440,5 @@
+ }
+ 
+ /** @} */
++
++#endif
 --- KTX-Software-3.0.1.orig/lib/writer_v1.c
 +++ KTX-Software-3.0.1/lib/writer_v1.c
-@@ -41,7 +41,7 @@
+@@ -41,7 +41,6 @@
  #include <assert.h>
  #include <limits.h>
  
 -#include "GL/glcorearb.h"
-+#include "GL/gl.h"
  #include "ktx.h"
  #include "ktxint.h"
  #include "stream.h"
---- KTX-Software-3.0.1.orig/libktx.pc.in
-+++ KTX-Software-3.0.1/libktx.pc.in
+--- KTX-Software-3.0.1.orig/pkgconfig/libktx.pc.in
++++ KTX-Software-3.0.1/pkgconfig/libktx.pc.in
 @@ -0,0 +1,9 @@
 +prefix=@prefix@
 +includedir=${prefix}/include
@@ -192,26 +1064,118 @@ exit
 +Version: 3.0.1
 +Libs: -L${libdir} -lktx
 +Cflags: -I${includedir}
+--- KTX-Software-3.0.1.orig/tests/loadtests/glloadtests/glloadtests.gypi
++++ KTX-Software-3.0.1/tests/loadtests/glloadtests/glloadtests.gypi
+@@ -81,7 +81,7 @@
+           ],
+           'dependencies': [
+             'appfwSDL',
+-            'libktx.gyp:libktx.gl',
++            'libktx.gyp:libktx',
+             'libktx.gyp:libgl',
+             'testimages',
+           ],
+@@ -167,7 +167,7 @@
+           'mac_bundle': 1,
+           'dependencies': [
+             'appfwSDL',
+-            'libktx.gyp:libktx.es3',
++            'libktx.gyp:libktx',
+             'libgles3',
+             'testimages',
+           ],
+@@ -224,7 +224,7 @@
+           'mac_bundle': 1,
+           'dependencies': [
+             'appfwSDL',
+-            'libktx.gyp:libktx.es1',
++            'libktx.gyp:libktx',
+             'libgles1',
+             'testimages',
+           ],
+--- KTX-Software-3.0.1.orig/tests/loadtests/vkloadtests/vkloadtests.gypi
++++ KTX-Software-3.0.1/tests/loadtests/vkloadtests/vkloadtests.gypi
+@@ -34,6 +34,7 @@
+         'appfwSDL',
+         'libassimp',
+         'libktx.gyp:libvulkan',
++        'libktx.gyp:libktx',
+         'testimages',
+       ],
+       'includes': [
+@@ -125,7 +126,6 @@
+       }, # xcode_settings
+       'conditions': [
+         ['OS == "ios"', {
+-          'dependencies': [ 'libktx.gyp:libktx.es3' ],
+           'mac_bundle_resources': [
+             '../../../icons/ios/CommonIcons.xcassets',
+             'resources/ios/LaunchImages.xcassets',
+@@ -136,14 +136,11 @@
+             'ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME': 'LaunchImage',
+           },
+         }, 'OS == "linux"', {
+-          'dependencies': [ 'libktx.gyp:libktx.gl' ],
+         }, 'OS == "mac"', {
+-          'dependencies': [ 'libktx.gyp:libktx.gl' ],
+           'mac_bundle_resources': [
+             '../../../icons/mac/ktx_app.icns',
+           ],
+         }, 'OS == "win"', {
+-          'dependencies': [ 'libktx.gyp:libktx.gl' ],
+           'sources!': [ '<(vkinfoplist_file)' ],
+           'sources': [
+              '../../../icons/win/ktx_app.ico',
+--- KTX-Software-3.0.1.orig/tests/texturetests/texturetests.gypi
++++ KTX-Software-3.0.1/tests/texturetests/texturetests.gypi
+@@ -41,7 +41,7 @@
+         #'appfwSDL',
+         'gtest',
+         'gtest_main',
+-        'libktx.gyp:libktx.gl',
++        'libktx.gyp:libktx',
+       ],
+       'include_dirs': [
+         '../../lib',
+--- KTX-Software-3.0.1.orig/tests/unittests/unittests.gypi
++++ KTX-Software-3.0.1/tests/unittests/unittests.gypi
+@@ -41,7 +41,7 @@
+         #'appfwSDL',
+         'gtest',
+         'gtest_main',
+-        'libktx.gyp:libktx.gl',
++        'libktx.gyp:libktx',
+       ],
+       'sources': [
+         'unittests.cc',
 --- KTX-Software-3.0.1.orig/tools/toktx/toktx.cpp
 +++ KTX-Software-3.0.1/tools/toktx/toktx.cpp
-@@ -30,7 +30,7 @@
+@@ -30,7 +30,6 @@
  #include <sstream>
  #include <vector>
  
 -#include "GL/glcorearb.h"
-+#include "GL/gl.h"
  #include "ktx.h"
  #include "argparser.h"
  #include "image.h"
+@@ -45,6 +44,7 @@
+ 
+ #if ALLOW_LEGACY_FORMAT_CREATION
+ #if !defined(GL_LUMINANCE)
++#define GL_ALPHA                        0x1906
+ #define GL_LUMINANCE                    0x1909
+ #define GL_LUMINANCE_ALPHA              0x190A
+ #endif
 --- KTX-Software-3.0.1.orig/tools/toktx/toktx.gypi
 +++ KTX-Software-3.0.1/tools/toktx/toktx.gypi
-@@ -27,7 +27,8 @@
-         {
+@@ -28,8 +28,9 @@
            'target_name': 'toktx',
            'type': '<(executable)',
--          'include_dirs' : [ '../../utils' ],
-+          'include_dirs' : [ '../../utils', '<(staging_dir)/include' ],
+           'include_dirs' : [ '../../utils' ],
 +          'ldflags': [ '-Wl,-rpath,<(staging_dir)/lib' ],
            'mac_bundle': 0,
-           'dependencies': [ 'libktx.gyp:libktx.gl' ],
+-          'dependencies': [ 'libktx.gyp:libktx.gl' ],
++          'dependencies': [ 'libktx.gyp:libktx' ],
            'sources': [
+             '../../utils/argparser.cpp',
+             '../../utils/argparser.h',

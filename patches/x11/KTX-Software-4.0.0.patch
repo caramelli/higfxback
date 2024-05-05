@@ -1,0 +1,566 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists opengl-registry-build; then
+  GL=-DKTX_OPENGL=ON
+  REQUIRES="$REQUIRES opengl-registry-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists vulkan-headers-build; then
+  VK=-DKTX_VULKAN=ON
+  REQUIRES="$REQUIRES vulkan-headers-build"
+fi
+
+# configure
+rm -rf other_include
+rm -rf other_lib
+cmake $GL $VK -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -DKTX_FEATURE_TESTS=OFF -B build
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/x11/bin
+install build/tools/ktx2check/ktx2check $DESTDIR/x11/bin
+install build/tools/ktx2ktx2/ktx2ktx2 $DESTDIR/x11/bin
+install build/tools/ktxinfo/ktxinfo $DESTDIR/x11/bin
+install build/tools/ktxsc/ktxsc $DESTDIR/x11/bin
+install build/tools/toktx/toktx $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include
+install -m 644 include/ktx.h $DESTDIR/x11/include
+install -d $DESTDIR/x11/lib
+install build/libktx.so.4.* $DESTDIR/x11/lib/libktx.so.4
+ln -sf libktx.so.4 $DESTDIR/x11/lib/libktx.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 build/libktx.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/ktx-software-build.pc << EOF
+Name: KTX-Software
+Version: 4.0.0
+Description: Khronos Texture (KTX) library and tools
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/ktx.h \\
+/x11/lib/libktx.so \\
+/x11/lib/pkgconfig/libktx.pc
+
+exec=\\
+/x11/bin/ktx2check \\
+/x11/bin/ktx2ktx2 \\
+/x11/bin/ktxinfo \\
+/x11/bin/ktxsc \\
+/x11/bin/toktx \\
+/x11/lib/libktx.so.4
+EOF
+
+exit
+--- KTX-Software-4.0.0.orig/CMakeLists.txt
++++ KTX-Software-4.0.0/CMakeLists.txt
+@@ -38,6 +38,9 @@
+ option( KTX_FEATURE_STATIC_LIBRARY "Create static libraries (shared otherwise)" ${LIB_TYPE_DEFAULT} )
+ option( KTX_FEATURE_TESTS "Create unit tests" ON )
+ 
++option( KTX_OPENGL "OpenGL Texture Image Loader" OFF )
++option( KTX_VULKAN "Vulkan Texture Image Loader" OFF )
++
+ set_target_processor_type(CPU_ARCHITECTURE)
+ if(CPU_ARCHITECTURE STREQUAL x86_64 OR CPU_ARCHITECTURE STREQUAL x86)
+     option( BASISU_SUPPORT_SSE "Compile with SSE support so applications can choose to use it" ON )
+@@ -161,6 +164,9 @@
+     lib/vkformat_str.c
+     )
+ 
++execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot OUTPUT_VARIABLE SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
++include_directories(${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include)
++
+ # Main library
+ add_library( ktx ${LIB_TYPE}
+     ${KTX_MAIN_SRC}
+@@ -356,6 +362,14 @@
+         target_compile_definitions( ${lib} PRIVATE KTX_OMIT_VULKAN=1 )
+     endif()
+ 
++    if(KTX_OPENGL)
++        target_compile_definitions( ${lib} PRIVATE KTX_OPENGL=1 )
++    endif()
++
++    if(KTX_VULKAN)
++        target_compile_definitions( ${lib} PRIVATE KTX_VULKAN=1 )
++    endif()
++
+ endmacro(commom_lib_settings)
+ 
+ set(KTX_BUILD_DIR "${CMAKE_BINARY_DIR}")
+@@ -628,6 +642,17 @@
+     COMPONENT library
+ )
+ 
++configure_file(
++    "${CMAKE_CURRENT_SOURCE_DIR}/pkgconfig/libktx.pc.in"
++    "${CMAKE_CURRENT_BINARY_DIR}/libktx.pc"
++    @ONLY
++)
++
++install( FILES
++    "${CMAKE_CURRENT_BINARY_DIR}/libktx.pc"
++    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
++)
++
+ 
+ # CPack
+ 
+--- KTX-Software-4.0.0.orig/cmake/version.cmake
++++ KTX-Software-4.0.0/cmake/version.cmake
+@@ -148,11 +148,10 @@
+             set(KTX_VERSION_PATCH "0")
+         endif()
+     else()
+-        message(WARNING "Error retrieving version from GIT tag. Falling back to 0.0.0-noversion ")
+-        set(KTX_VERSION_MAJOR "0" )
++        set(KTX_VERSION_MAJOR "4" )
+         set(KTX_VERSION_MINOR "0" )
+         set(KTX_VERSION_PATCH "0" )
+-        set(KTX_VERSION_TWEAK "-noversion" )
++        set(KTX_VERSION_TWEAK "" )
+     endif()
+ endif()
+ 
+--- KTX-Software-4.0.0.orig/include/ktx.h
++++ KTX-Software-4.0.0/include/ktx.h
+@@ -1400,7 +1400,7 @@
+ /**
+  * @deprecated Will be dropped before V4 release.
+  */
+-#define ktxTexture_GetSize ktxTexture_getDatasize
++#define ktxTexture_GetSize ktxTexture_GetDataSize
+ 
+ /**
+ @~English
+--- KTX-Software-4.0.0.orig/lib/etcunpack.cxx
++++ KTX-Software-4.0.0/lib/etcunpack.cxx
+@@ -20,9 +20,11 @@
+ #include <assert.h>
+ #include <stdlib.h>
+ 
+-#include "GL/glcorearb.h"
+-// Not defined in glcorearb.h.
+-#define GL_ETC1_RGB8_OES                0x8D64
++#if KTX_OPENGL
++
++#include "GL/gl.h"
++#include "GL/glext.h"
++#define GL_ETC1_RGB8_OES 0x8D64
+ #include "ktx.h"
+ #include "ktxint.h"
+ 
+@@ -275,3 +277,5 @@
+ }
+ 
+ #endif /* SUPPORT_SOFTWARE_ETC_UNPACK */
++
++#endif
+--- KTX-Software-4.0.0.orig/lib/gl_funcs.c
++++ KTX-Software-4.0.0/lib/gl_funcs.c
+@@ -54,6 +54,9 @@
+ #include <stdlib.h>
+ #define WINAPI
+ #endif
++
++#if KTX_OPENGL
++
+ #define NO_SHORTCUTS
+ #include "gl_funcs.h"
+ 
+@@ -97,7 +100,7 @@
+ // work, despite the mandated ISO C warning.
+ #define GL_FUNCTION(type, func, required)                                  \
+   if ( wglGetProcAddressPtr )                                              \
+-  *(void **)(&gl.func) = wglGetProcAddressPtr(#func);                      \
++    *(void **)(&gl.func) = wglGetProcAddressPtr(#func);                    \
+   if ( !gl.func )                                                          \
+     *(void **)(&gl.func) = LoadProcAddr(ktxOpenGLModuleHandle, #func);     \
+   if ( !gl.func && required ) {                                            \
+@@ -108,9 +111,9 @@
+ #define GL_FUNCTION(type, func, required)                                  \
+   if ( wglGetProcAddressPtr )                                              \
+     gl.func = (type)wglGetProcAddressPtr(#func);                           \
+-  if ( !gl.##func)                                                         \
++  if ( !gl.##func )                                                        \
+     gl.func = (type)LoadProcAddr(ktxOpenGLModuleHandle, #func);            \
+-  if ( !gl.func && required) {                                             \
++  if ( !gl.func && required ) {                                            \
+     fprintf(stderr, noloadmsg, #func);                                     \
+     return KTX_FALSE;                                                      \
+   }
+@@ -118,49 +121,50 @@
+ 
+ #if WINDOWS
+ static HMODULE
+-ktxFindOpenGL() {
+-	HMODULE module = 0;
++ktxFindOpenGL()
++{
++    HMODULE module = 0;
+     BOOL found;
+     // Use GetModule not LoadLibrary so we only succeed if the process
+     // has already loaded some OpenGL library.
+-	// Check current module to see if we are statically linked to GL.
+-	found = GetModuleHandleExA(
+-		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+-		(LPCSTR)ktxFindOpenGL,
+-		&module
+-	);
+-	if (found) {
+-		if (LoadProcAddr(module, "glGetError") != NULL)
+-			return module;
+-	}
+-	// Not statically linked. See what dll the process has loaded.
+-	// Emulators probably also have opengl32.lib loaded so check that last.
+-	found = GetModuleHandleExA(
+-		0,
+-		"libGLESv2.dll",
+-		&module
+-	);
+-	if (found) return module;
+-	found = GetModuleHandleExA(
+-		0,
+-		"libGLES_CM.dll",
+-		&module
+-	);
+-	if (found) return module;
+-	found = GetModuleHandleExA(
+-		0,
+-		"opengl32.dll",
+-		&module
+-	);
+-	if (found) {
+-		// Need wglGetProcAddr for non-OpenGL-2 functions.
+-		wglGetProcAddressPtr =
+-			(PFNWGLGETPROCADDRESS)LoadProcAddr(module,
+-				                               "wglGetProcAddress");
+-		if (wglGetProcAddressPtr != NULL)
++    // Check current module to see if we are statically linked to GL.
++    found = GetModuleHandleExA(
++        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
++        (LPCSTR)ktxFindOpenGL,
++        &module
++    );
++    if (found) {
++        if (LoadProcAddr(module, "glGetError") != NULL)
+             return module;
+-	}
+-	return module; // Keep the compiler happy!
++    }
++    // Not statically linked. See what dll the process has loaded.
++    // Emulators probably also have opengl32.lib loaded so check that last.
++    found = GetModuleHandleExA(
++        0,
++        "libGLESv2.dll",
++        &module
++    );
++    if (found) return module;
++    found = GetModuleHandleExA(
++        0,
++        "libGLES_CM.dll",
++        &module
++    );
++    if (found) return module;
++    found = GetModuleHandleExA(
++        0,
++        "opengl32.dll",
++        &module
++    );
++    if (found) {
++        // Need wglGetProcAddr for non-OpenGL-2 functions.
++        wglGetProcAddressPtr =
++            (PFNWGLGETPROCADDRESS)LoadProcAddr(module,
++                                               "wglGetProcAddress");
++        if (wglGetProcAddressPtr != NULL)
++            return module;
++    }
++    return module; // Keep the compiler happy!
+ }
+ #endif
+ 
+@@ -171,7 +175,7 @@
+         return KTX_SUCCESS;
+ 
+     ktxOpenGLModuleHandle = GetOpenGLModuleHandle(RTLD_LAZY);
+-	if (ktxOpenGLModuleHandle == NULL) {
++    if (ktxOpenGLModuleHandle == NULL) {
+         fprintf(stderr, "OpenGL lib not linked or loaded by application.\n");
+         // Normal use is for this constructor to be called by an
+         // application that has completed OpenGL initialization. In that
+@@ -192,3 +196,4 @@
+ 
+ #undef GL_FUNCTION
+ 
++#endif
+--- KTX-Software-4.0.0.orig/lib/gl_funcs.h
++++ KTX-Software-4.0.0/lib/gl_funcs.h
+@@ -21,7 +21,8 @@
+ #define _GL_FUNCS_H_
+ 
+ #undef GL_GLEXT_PROTOTYPES // Just to be sure.
+-#include "GL/glcorearb.h"
++#include "GL/gl.h"
++#include "GL/glext.h"
+ #include "ktx.h"
+ 
+ #if WINDOWS
+--- KTX-Software-4.0.0.orig/lib/glloader.c
++++ KTX-Software-4.0.0/lib/glloader.c
+@@ -26,6 +26,8 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ 
++#if KTX_OPENGL
++
+ #include "gl_funcs.h"
+ 
+ #include "ktx.h"
+@@ -183,7 +185,7 @@
+  * @li sizedFormats
+  * @li supportsSwizzle
+  * @li supportsSRGB
+- * @li b16Formats
++ * @li R16Formats
+  * @li supportsMaxLevel
+  */
+ static void
+@@ -1036,3 +1038,5 @@
+ }
+ 
+ /** @} */
++
++#endif
+--- KTX-Software-4.0.0.orig/lib/swap.c
++++ KTX-Software-4.0.0/lib/swap.c
+@@ -8,18 +8,17 @@
+  * SPDX-License-Identifier: Apache-2.0
+  */
+ 
+-#include <KHR/khrplatform.h>
+ #include "ktx.h"
+ 
+ /*
+  * SwapEndian16: Swaps endianness in an array of 16-bit values
+  */
+ void
+-_ktxSwapEndian16(khronos_uint16_t* pData16, ktx_size_t count)
++_ktxSwapEndian16(uint16_t* pData16, ktx_size_t count)
+ {
+     for (ktx_size_t i = 0; i < count; ++i)
+     {
+-        khronos_uint16_t x = *pData16;
++        uint16_t x = *pData16;
+         *pData16++ = (x << 8) | (x >> 8);
+     }
+ }
+@@ -28,11 +27,11 @@
+  * SwapEndian32: Swaps endianness in an array of 32-bit values
+  */
+ void
+-_ktxSwapEndian32(khronos_uint32_t* pData32, ktx_size_t count)
++_ktxSwapEndian32(uint32_t* pData32, ktx_size_t count)
+ {
+     for (ktx_size_t i = 0; i < count; ++i)
+     {
+-        khronos_uint32_t x = *pData32;
++        uint32_t x = *pData32;
+         *pData32++ = (x << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) | (x >> 24);
+     }
+ }
+@@ -41,11 +40,11 @@
+  * SwapEndian364: Swaps endianness in an array of 32-bit values
+  */
+ void
+-_ktxSwapEndian64(khronos_uint64_t* pData64, ktx_size_t count)
++_ktxSwapEndian64(uint64_t* pData64, ktx_size_t count)
+ {
+     for (ktx_size_t i = 0; i < count; ++i)
+     {
+-        khronos_uint64_t x = *pData64;
++        uint64_t x = *pData64;
+         *pData64++ = (x << 56) | ((x & 0xFF00) << 40) | ((x & 0xFF0000) << 24)
+                      | ((x & 0xFF000000) << 8 ) | ((x & 0xFF00000000) >> 8)
+                      | ((x & 0xFF0000000000) >> 24)
+--- KTX-Software-4.0.0.orig/lib/vk_funcs.c
++++ KTX-Software-4.0.0/lib/vk_funcs.c
+@@ -43,10 +43,6 @@
+ #error "Multiple OS\'s defined"
+ #endif
+ 
+-#include "vk_funcs.h"
+-
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+-
+ #if WINDOWS
+ #define WINDOWS_LEAN_AND_MEAN
+ #include <windows.h>
+@@ -54,7 +50,10 @@
+ #include <dlfcn.h>
+ #include <stdlib.h>
+ #endif
+-#include "ktx.h"
++
++#if KTX_VULKAN
++
++#include "vk_funcs.h"
+ 
+ #if WINDOWS
+ HMODULE ktxVulkanModuleHandle;
+@@ -124,11 +123,11 @@
+     HMODULE module = NULL;
+     BOOL found;
+     found = GetModuleHandleExA(
+-		0,
+-		VULKANLIB,
+-		&module
+-	);
+-	return module;
++        0,
++        VULKANLIB,
++        &module
++    );
++    return module;
+ }
+ #endif
+ 
+@@ -171,12 +170,4 @@
+ 
+ #undef VK_FUNCTION
+ 
+-#else
+-
+-extern
+-#if defined(__GNUC__)
+-__attribute__((unused))
+ #endif
+-int keepISOCompilersHappy;
+-
+-#endif /* !KTX_OMIT_VULKAN && KTX_USE_FUNCPTRS_FOR_VULKAN */
+--- KTX-Software-4.0.0.orig/lib/vk_funcs.h
++++ KTX-Software-4.0.0/lib/vk_funcs.h
+@@ -14,27 +14,19 @@
+  * @brief Declare pointers for Vulkan functions.
+  *
+  * Dynamically retrieving pointers avoids apps having to make sure a
+- * Vulkan library is availablei when using a shared libktx, even if
++ * Vulkan library is available when using a shared libktx, even if
+  * not using libktx's Vulkan loader.
+  */
+ 
+ #ifndef _VK_FUNCS_H_
+ #define _VK_FUNCS_H_
+ 
+-#if !defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+-#define KTX_USE_FUNCPTRS_FOR_VULKAN 1
+-#endif
+-
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+ #define VK_NO_PROTOTYPES
+-#endif
+ 
+ #include "vulkan/vk_platform.h"
+ #include "vulkan/vulkan_core.h"
+ #include "ktx.h"
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+-
+ #if WINDOWS
+ #define WINDOWS_LEAN_AND_MEAN
+ #include <windows.h>
+@@ -85,9 +77,5 @@
+ #define vkUnmapMemory ktx_vkUnmapMemory
+ #define vkWaitForFences ktx_vkWaitForFences
+ 
+-#undef VK_FUNCTION
+-
+-#endif /* KTX_USE_FUNCPTRS_FOR_VULKAN */
+-
+ #endif /* _VK_FUNCS_H_ */
+ 
+--- KTX-Software-4.0.0.orig/lib/vkloader.c
++++ KTX-Software-4.0.0/lib/vkloader.c
+@@ -26,6 +26,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
++#if KTX_VULKAN
++
+ #include "vk_funcs.h"   // Must be included before ktxvulkan.h.
+ #include "ktxvulkan.h"
+ #include "ktxint.h"
+@@ -150,14 +152,12 @@
+     };
+     VkResult result;
+ 
+-#if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
+     // Delay loading not supported so must do it ourselves.
+     if (!ktxVulkanModuleHandle) {
+         result = ktxLoadVulkanLibrary();
+         if (result != KTX_SUCCESS)
+             return result;
+     }
+-#endif
+ 
+     This->physicalDevice = physicalDevice;
+     This->device = device;
+@@ -1553,3 +1553,5 @@
+ }
+ 
+ /** @} */
++
++#endif
+--- KTX-Software-4.0.0.orig/pkgconfig/libktx.pc.in
++++ KTX-Software-4.0.0/pkgconfig/libktx.pc.in
+@@ -0,0 +1,9 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
++libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
++
++Name: libktx
++Description: Khronos Texture library
++Version: @PROJECT_VERSION@
++Libs: -L${libdir} -lktx
++Cflags: -I${includedir}
+--- KTX-Software-4.0.0.orig/tools/toktx/toktx.cc
++++ KTX-Software-4.0.0/tools/toktx/toktx.cc
+@@ -22,7 +22,6 @@
+ #include <inttypes.h>
+ #include <zstd.h>
+ 
+-#include "GL/glcorearb.h"
+ #include "ktx.h"
+ #include "../../lib/vkformat_enum.h"
+ #include "argparser.h"
+@@ -40,15 +39,21 @@
+ #define GL_RED                          0x1903
+ #define GL_RGB8                         0x8051
+ #define GL_RGB16                        0x8054
++#define GL_RGB32F                       0x8815
+ #define GL_RGBA8                        0x8058
+ #define GL_RGBA16                       0x805B
++#define GL_RGBA32F                      0x8814
++#define GL_SRGB8                        0x8C41
++#define GL_SRGB8_ALPHA8                 0x8C43
+ #endif
+ #if !defined(GL_RG)
+ #define GL_RG                           0x8227
+ #define GL_R8                           0x8229
+ #define GL_R16                          0x822A
++#define GL_R32F                         0x822E
+ #define GL_RG8                          0x822B
+ #define GL_RG16                         0x822C
++#define GL_RG32F                        0x8230
+ #endif
+ 
+ #ifndef GL_SR8

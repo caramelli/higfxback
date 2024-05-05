@@ -1,0 +1,1390 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build glm-build glslang-build imgui-build ktx-software-build stb_font-build tinygltf-build vulkan-loader-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -rf external
+PKG_CONFIG_PATH=/x11/lib/pkgconfig cmake -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_BINDIR=/x11/share/Vulkan-Examples -DCMAKE_INSTALL_RPATH=/x11/lib -DRESOURCE_INSTALL_DIR=/x11/share/Vulkan-Examples -B build
+
+# build
+python3 ./data/shaders/glsl/compileshaders.py
+cmake --build build
+
+# install
+install -d $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/bloom $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computecloth $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computecullandlod $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computeheadless $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computenbody $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computeparticles $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computeraytracing $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/computeshader $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/debugmarker $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/deferred $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/deferredmultisampling $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/descriptorsets $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/distancefieldfonts $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/dynamicuniformbuffer $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/gears $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/gltfloading $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/gltfscenerendering $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/gltfskinning $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/hdr $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/imgui $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/indirectdraw $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/inputattachments $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/instancing $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/multisampling $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/multithreading $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/multiview $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/negativeviewportheight $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/occlusionquery $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/oit $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/parallaxmapping $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/particlefire $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/pbrbasic $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/pbribl $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/pbrtexture $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/pipelines $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/pushconstants $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/radialblur $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/renderheadless $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/screenshot $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/shadowmapping $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/shadowmappingcascade $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/shadowmappingomni $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/specializationconstants $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/sphericalenvmapping $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/ssao $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/stencilbuffer $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/subpasses $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/textoverlay $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/texture $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/texture3d $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/texturearray $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/texturecubemap $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/texturecubemaparray $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/triangle $DESTDIR/x11/share/Vulkan-Examples
+install build/bin/vulkanscene $DESTDIR/x11/share/Vulkan-Examples
+install -m 644 data/font.fnt $DESTDIR/x11/share/Vulkan-Examples
+install -m 644 data/Roboto-Medium.ttf $DESTDIR/x11/share/Vulkan-Examples
+install -d $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/chinesedragon.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/color_teapot_spheres.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/cube.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/deferred_box.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/deferred_floor.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/fireplace.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/glowsphere.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/lavaplanet.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/oaktree.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/plane.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/plane_circle.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/plane_z.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/plants.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/retroufo.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/retroufo_glow.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/retroufo_red_lowpoly.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/rock01.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/samplebuilding.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/samplebuilding_glass.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/sampleroom.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/samplescene.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/shadowscene_fire.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/sphere.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/suzanne_lods.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/teapot.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/terrain_gridlines.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/torusknot.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/treasure_glow.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/treasure_smooth.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/venus.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/voyager.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/vulkanscene_shadow.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/vulkanscenebackground.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/vulkanscenelogos.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -m 644 data/models/vulkanscenemodels.gltf $DESTDIR/x11/share/Vulkan-Examples/models
+install -d $DESTDIR/x11/share/Vulkan-Examples/models/armor
+install -m 644 data/models/armor/armor.gltf $DESTDIR/x11/share/Vulkan-Examples/models/armor
+install -m 644 data/models/armor/colormap_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/models/armor
+install -m 644 data/models/armor/normalmap_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/models/armor
+install -d $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -m 644 data/models/cerberus/albedo.ktx $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -m 644 data/models/cerberus/ao.ktx $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -m 644 data/models/cerberus/cerberus.gltf $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -m 644 data/models/cerberus/metallic.ktx $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -m 644 data/models/cerberus/normal.ktx $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -m 644 data/models/cerberus/roughness.ktx $DESTDIR/x11/share/Vulkan-Examples/models/cerberus
+install -d $DESTDIR/x11/share/Vulkan-Examples/models/CesiumMan/glTF
+install -m 644 data/models/CesiumMan/glTF/CesiumMan.gltf $DESTDIR/x11/share/Vulkan-Examples/models/CesiumMan/glTF
+install -m 644 data/models/CesiumMan/glTF/CesiumMan_data.bin $DESTDIR/x11/share/Vulkan-Examples/models/CesiumMan/glTF
+install -m 644 data/models/CesiumMan/glTF/CesiumMan_img0.jpg $DESTDIR/x11/share/Vulkan-Examples/models/CesiumMan/glTF
+install -d $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet.bin $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet.gltf $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_baseColor.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_baseColor1.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_baseColor2.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_baseColor3.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_baseColor4.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_normal.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_normal1.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_normal2.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_normal3.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_normal4.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic1.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic2.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic3.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -m 644 data/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic4.png $DESTDIR/x11/share/Vulkan-Examples/models/FlightHelmet/glTF
+install -d $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/10381718147657362067.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/10388182081421875623.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/11474523244911310074.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/11490520546946913238.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/12501374198249454378.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/13982482287905699490.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/14118779221266351425.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/14170708867020035030.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/14267839433702832875.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/14650633544276105767.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/15295713303328085182.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/15722799267630235092.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/16275776544635328252.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/16299174074766089871.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/17876391417123941155.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/2051777328469649772.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/2185409758123873465.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/2299742237651021498.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/2374361008830720677.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/2775690330959970771.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/2969916736137545357.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/332936164838540657.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/3628158980083700836.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/3827035219084910048.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/4477655471536070370.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/4601176305987539675.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/4675343432951571524.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/4910669866631290573.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/4975155472559461469.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/5061699253647017043.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/5792855332885324923.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/5823059166183034438.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/6047387724914829168.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/6151467286084645207.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/6593109234861095314.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/6667038893015345571.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/6772804448157695701.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/7056944414013900257.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/7268504077753552595.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/7441062115984513793.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/755318871556304029.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/759203620573749278.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/7645212358685992005.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/8006627369776289000.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/8481240838833932244.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/8750083169368950601.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/8773302468495022225.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/9288698199695299068.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/sponza.bin $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/sponza.bin $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -m 644 data/models/sponza/white.ktx $DESTDIR/x11/share/Vulkan-Examples/models/sponza
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/base
+install -m 644 data/shaders/glsl/base/uioverlay.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/base
+install -m 644 data/shaders/glsl/base/uioverlay.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/base
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/colorpass.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/colorpass.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/gaussblur.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/gaussblur.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/phongpass.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/phongpass.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/skybox.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -m 644 data/shaders/glsl/bloom/skybox.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/bloom
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecloth
+install -m 644 data/shaders/glsl/computecloth/cloth.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecloth
+install -m 644 data/shaders/glsl/computecloth/cloth.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecloth
+install -m 644 data/shaders/glsl/computecloth/cloth.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecloth
+install -m 644 data/shaders/glsl/computecloth/sphere.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecloth
+install -m 644 data/shaders/glsl/computecloth/sphere.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecloth
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod
+install -m 644 data/shaders/glsl/computecullandlod/cull.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod
+install -m 644 data/shaders/glsl/computecullandlod/indirectdraw.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod
+install -m 644 data/shaders/glsl/computecullandlod/indirectdraw.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeheadless
+install -m 644 data/shaders/glsl/computeheadless/headless.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeheadless
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computenbody
+install -m 644 data/shaders/glsl/computenbody/particle.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computenbody
+install -m 644 data/shaders/glsl/computenbody/particle.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computenbody
+install -m 644 data/shaders/glsl/computenbody/particle_calculate.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computenbody
+install -m 644 data/shaders/glsl/computenbody/particle_integrate.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computenbody
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeparticles
+install -m 644 data/shaders/glsl/computeparticles/particle.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeparticles
+install -m 644 data/shaders/glsl/computeparticles/particle.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeparticles
+install -m 644 data/shaders/glsl/computeparticles/particle.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeparticles
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing
+install -m 644 data/shaders/glsl/computeraytracing/raytracing.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing
+install -m 644 data/shaders/glsl/computeraytracing/texture.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing
+install -m 644 data/shaders/glsl/computeraytracing/texture.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeshader
+install -m 644 data/shaders/glsl/computeshader/edgedetect.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeshader
+install -m 644 data/shaders/glsl/computeshader/emboss.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeshader
+install -m 644 data/shaders/glsl/computeshader/sharpen.comp.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeshader
+install -m 644 data/shaders/glsl/computeshader/texture.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeshader
+install -m 644 data/shaders/glsl/computeshader/texture.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/computeshader
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -m 644 data/shaders/glsl/debugmarker/colorpass.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -m 644 data/shaders/glsl/debugmarker/colorpass.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -m 644 data/shaders/glsl/debugmarker/postprocess.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -m 644 data/shaders/glsl/debugmarker/postprocess.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -m 644 data/shaders/glsl/debugmarker/toon.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -m 644 data/shaders/glsl/debugmarker/toon.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/debugmarker
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferred
+install -m 644 data/shaders/glsl/deferred/deferred.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferred
+install -m 644 data/shaders/glsl/deferred/deferred.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferred
+install -m 644 data/shaders/glsl/deferred/mrt.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferred
+install -m 644 data/shaders/glsl/deferred/mrt.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferred
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling
+install -m 644 data/shaders/glsl/deferredmultisampling/deferred.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling
+install -m 644 data/shaders/glsl/deferredmultisampling/deferred.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling
+install -m 644 data/shaders/glsl/deferredmultisampling/mrt.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling
+install -m 644 data/shaders/glsl/deferredmultisampling/mrt.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/descriptorsets
+install -m 644 data/shaders/glsl/descriptorsets/cube.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/descriptorsets
+install -m 644 data/shaders/glsl/descriptorsets/cube.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/descriptorsets
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts
+install -m 644 data/shaders/glsl/distancefieldfonts/bitmap.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts
+install -m 644 data/shaders/glsl/distancefieldfonts/bitmap.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts
+install -m 644 data/shaders/glsl/distancefieldfonts/sdf.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts
+install -m 644 data/shaders/glsl/distancefieldfonts/sdf.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/dynamicuniformbuffer
+install -m 644 data/shaders/glsl/dynamicuniformbuffer/base.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/dynamicuniformbuffer
+install -m 644 data/shaders/glsl/dynamicuniformbuffer/base.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/dynamicuniformbuffer
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gears
+install -m 644 data/shaders/glsl/gears/gears.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gears
+install -m 644 data/shaders/glsl/gears/gears.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gears
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfloading
+install -m 644 data/shaders/glsl/gltfloading/mesh.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfloading
+install -m 644 data/shaders/glsl/gltfloading/mesh.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfloading
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfscenerendering
+install -m 644 data/shaders/glsl/gltfscenerendering/scene.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfscenerendering
+install -m 644 data/shaders/glsl/gltfscenerendering/scene.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfscenerendering
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfskinning
+install -m 644 data/shaders/glsl/gltfskinning/skinnedmodel.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfskinning
+install -m 644 data/shaders/glsl/gltfskinning/skinnedmodel.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/gltfskinning
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -m 644 data/shaders/glsl/hdr/bloom.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -m 644 data/shaders/glsl/hdr/bloom.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -m 644 data/shaders/glsl/hdr/composition.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -m 644 data/shaders/glsl/hdr/composition.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -m 644 data/shaders/glsl/hdr/gbuffer.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -m 644 data/shaders/glsl/hdr/gbuffer.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/hdr
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/imgui
+install -m 644 data/shaders/glsl/imgui/scene.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/imgui
+install -m 644 data/shaders/glsl/imgui/scene.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/imgui
+install -m 644 data/shaders/glsl/imgui/ui.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/imgui
+install -m 644 data/shaders/glsl/imgui/ui.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/imgui
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -m 644 data/shaders/glsl/indirectdraw/ground.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -m 644 data/shaders/glsl/indirectdraw/ground.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -m 644 data/shaders/glsl/indirectdraw/indirectdraw.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -m 644 data/shaders/glsl/indirectdraw/indirectdraw.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -m 644 data/shaders/glsl/indirectdraw/skysphere.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -m 644 data/shaders/glsl/indirectdraw/skysphere.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/inputattachments
+install -m 644 data/shaders/glsl/inputattachments/attachmentread.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/inputattachments
+install -m 644 data/shaders/glsl/inputattachments/attachmentread.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/inputattachments
+install -m 644 data/shaders/glsl/inputattachments/attachmentwrite.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/inputattachments
+install -m 644 data/shaders/glsl/inputattachments/attachmentwrite.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/inputattachments
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -m 644 data/shaders/glsl/instancing/instancing.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -m 644 data/shaders/glsl/instancing/instancing.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -m 644 data/shaders/glsl/instancing/planet.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -m 644 data/shaders/glsl/instancing/planet.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -m 644 data/shaders/glsl/instancing/starfield.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -m 644 data/shaders/glsl/instancing/starfield.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/instancing
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multisampling
+install -m 644 data/shaders/glsl/multisampling/mesh.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multisampling
+install -m 644 data/shaders/glsl/multisampling/mesh.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multisampling
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multithreading
+install -m 644 data/shaders/glsl/multithreading/phong.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multithreading
+install -m 644 data/shaders/glsl/multithreading/phong.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multithreading
+install -m 644 data/shaders/glsl/multithreading/starsphere.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multithreading
+install -m 644 data/shaders/glsl/multithreading/starsphere.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multithreading
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multiview
+install -m 644 data/shaders/glsl/multiview/multiview.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multiview
+install -m 644 data/shaders/glsl/multiview/multiview.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multiview
+install -m 644 data/shaders/glsl/multiview/viewdisplay.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multiview
+install -m 644 data/shaders/glsl/multiview/viewdisplay.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/multiview
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/negativeviewportheight
+install -m 644 data/shaders/glsl/negativeviewportheight/quad.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/negativeviewportheight
+install -m 644 data/shaders/glsl/negativeviewportheight/quad.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/negativeviewportheight
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -m 644 data/shaders/glsl/occlusionquery/mesh.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -m 644 data/shaders/glsl/occlusionquery/mesh.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -m 644 data/shaders/glsl/occlusionquery/occluder.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -m 644 data/shaders/glsl/occlusionquery/occluder.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -m 644 data/shaders/glsl/occlusionquery/simple.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -m 644 data/shaders/glsl/occlusionquery/simple.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/oit
+install -m 644 data/shaders/glsl/oit/color.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/oit
+install -m 644 data/shaders/glsl/oit/color.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/oit
+install -m 644 data/shaders/glsl/oit/geometry.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/oit
+install -m 644 data/shaders/glsl/oit/geometry.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/oit
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/parallaxmapping
+install -m 644 data/shaders/glsl/parallaxmapping/parallax.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/parallaxmapping
+install -m 644 data/shaders/glsl/parallaxmapping/parallax.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/parallaxmapping
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/particlefire
+install -m 644 data/shaders/glsl/particlefire/normalmap.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/particlefire
+install -m 644 data/shaders/glsl/particlefire/normalmap.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/particlefire
+install -m 644 data/shaders/glsl/particlefire/particle.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/particlefire
+install -m 644 data/shaders/glsl/particlefire/particle.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/particlefire
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrbasic
+install -m 644 data/shaders/glsl/pbrbasic/pbr.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrbasic
+install -m 644 data/shaders/glsl/pbrbasic/pbr.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrbasic
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/filtercube.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/genbrdflut.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/genbrdflut.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/irradiancecube.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/pbribl.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/pbribl.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/prefilterenvmap.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/skybox.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -m 644 data/shaders/glsl/pbribl/skybox.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbribl
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/filtercube.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/genbrdflut.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/genbrdflut.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/irradiancecube.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/prefilterenvmap.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/pbrtexture.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/pbrtexture.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/skybox.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -m 644 data/shaders/glsl/pbrtexture/skybox.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -m 644 data/shaders/glsl/pipelines/phong.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -m 644 data/shaders/glsl/pipelines/phong.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -m 644 data/shaders/glsl/pipelines/toon.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -m 644 data/shaders/glsl/pipelines/toon.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -m 644 data/shaders/glsl/pipelines/wireframe.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -m 644 data/shaders/glsl/pipelines/wireframe.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pipelines
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pushconstants
+install -m 644 data/shaders/glsl/pushconstants/pushconstants.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pushconstants
+install -m 644 data/shaders/glsl/pushconstants/pushconstants.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/pushconstants
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -m 644 data/shaders/glsl/radialblur/colorpass.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -m 644 data/shaders/glsl/radialblur/colorpass.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -m 644 data/shaders/glsl/radialblur/phongpass.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -m 644 data/shaders/glsl/radialblur/phongpass.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -m 644 data/shaders/glsl/radialblur/radialblur.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -m 644 data/shaders/glsl/radialblur/radialblur.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/radialblur
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/renderheadless
+install -m 644 data/shaders/glsl/renderheadless/triangle.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/renderheadless
+install -m 644 data/shaders/glsl/renderheadless/triangle.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/renderheadless
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/screenshot
+install -m 644 data/shaders/glsl/screenshot/mesh.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/screenshot
+install -m 644 data/shaders/glsl/screenshot/mesh.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/screenshot
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -m 644 data/shaders/glsl/shadowmapping/offscreen.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -m 644 data/shaders/glsl/shadowmapping/offscreen.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -m 644 data/shaders/glsl/shadowmapping/quad.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -m 644 data/shaders/glsl/shadowmapping/quad.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -m 644 data/shaders/glsl/shadowmapping/scene.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -m 644 data/shaders/glsl/shadowmapping/scene.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -m 644 data/shaders/glsl/shadowmappingcascade/debugshadowmap.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -m 644 data/shaders/glsl/shadowmappingcascade/debugshadowmap.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -m 644 data/shaders/glsl/shadowmappingcascade/depthpass.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -m 644 data/shaders/glsl/shadowmappingcascade/depthpass.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -m 644 data/shaders/glsl/shadowmappingcascade/scene.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -m 644 data/shaders/glsl/shadowmappingcascade/scene.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -m 644 data/shaders/glsl/shadowmappingomni/cubemapdisplay.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -m 644 data/shaders/glsl/shadowmappingomni/cubemapdisplay.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -m 644 data/shaders/glsl/shadowmappingomni/offscreen.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -m 644 data/shaders/glsl/shadowmappingomni/offscreen.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -m 644 data/shaders/glsl/shadowmappingomni/scene.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -m 644 data/shaders/glsl/shadowmappingomni/scene.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/specializationconstants
+install -m 644 data/shaders/glsl/specializationconstants/uber.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/specializationconstants
+install -m 644 data/shaders/glsl/specializationconstants/uber.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/specializationconstants
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/sphericalenvmapping
+install -m 644 data/shaders/glsl/sphericalenvmapping/sem.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/sphericalenvmapping
+install -m 644 data/shaders/glsl/sphericalenvmapping/sem.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/sphericalenvmapping
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -m 644 data/shaders/glsl/ssao/blur.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -m 644 data/shaders/glsl/ssao/composition.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -m 644 data/shaders/glsl/ssao/fullscreen.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -m 644 data/shaders/glsl/ssao/gbuffer.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -m 644 data/shaders/glsl/ssao/gbuffer.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -m 644 data/shaders/glsl/ssao/ssao.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/ssao
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer
+install -m 644 data/shaders/glsl/stencilbuffer/outline.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer
+install -m 644 data/shaders/glsl/stencilbuffer/outline.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer
+install -m 644 data/shaders/glsl/stencilbuffer/toon.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer
+install -m 644 data/shaders/glsl/stencilbuffer/toon.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -m 644 data/shaders/glsl/subpasses/composition.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -m 644 data/shaders/glsl/subpasses/composition.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -m 644 data/shaders/glsl/subpasses/gbuffer.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -m 644 data/shaders/glsl/subpasses/gbuffer.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -m 644 data/shaders/glsl/subpasses/transparent.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -m 644 data/shaders/glsl/subpasses/transparent.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/subpasses
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/textoverlay
+install -m 644 data/shaders/glsl/textoverlay/mesh.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/textoverlay
+install -m 644 data/shaders/glsl/textoverlay/mesh.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/textoverlay
+install -m 644 data/shaders/glsl/textoverlay/text.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/textoverlay
+install -m 644 data/shaders/glsl/textoverlay/text.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/textoverlay
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texture
+install -m 644 data/shaders/glsl/texture/texture.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texture
+install -m 644 data/shaders/glsl/texture/texture.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texture
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texture3d
+install -m 644 data/shaders/glsl/texture3d/texture3d.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texture3d
+install -m 644 data/shaders/glsl/texture3d/texture3d.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texture3d
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturearray
+install -m 644 data/shaders/glsl/texturearray/instancing.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturearray
+install -m 644 data/shaders/glsl/texturearray/instancing.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturearray
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap
+install -m 644 data/shaders/glsl/texturecubemap/reflect.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap
+install -m 644 data/shaders/glsl/texturecubemap/reflect.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap
+install -m 644 data/shaders/glsl/texturecubemap/skybox.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap
+install -m 644 data/shaders/glsl/texturecubemap/skybox.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray
+install -m 644 data/shaders/glsl/texturecubemaparray/reflect.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray
+install -m 644 data/shaders/glsl/texturecubemaparray/reflect.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray
+install -m 644 data/shaders/glsl/texturecubemaparray/skybox.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray
+install -m 644 data/shaders/glsl/texturecubemaparray/skybox.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/triangle
+install -m 644 data/shaders/glsl/triangle/triangle.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/triangle
+install -m 644 data/shaders/glsl/triangle/triangle.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/triangle
+install -d $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -m 644 data/shaders/glsl/vulkanscene/logo.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -m 644 data/shaders/glsl/vulkanscene/logo.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -m 644 data/shaders/glsl/vulkanscene/mesh.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -m 644 data/shaders/glsl/vulkanscene/mesh.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -m 644 data/shaders/glsl/vulkanscene/skybox.frag.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -m 644 data/shaders/glsl/vulkanscene/skybox.vert.spv $DESTDIR/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene
+install -d $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/colored_glass_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/crate01_color_height_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/crate02_color_height_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/cubemap_array.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/cubemap_space.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/cubemap_vulkan.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/cubemap_yokohama_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/fireplace_colormap_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/fireplace_normalmap_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/font_bitmap_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/font_sdf_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/ground_dry_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/lavaplanet_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/matcap_array_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/metalplate01_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/metalplate_nomips_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/particle01_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/particle_fire.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/particle_gradient_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/particle_smoke.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/rocks_color_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/rocks_normal_height_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/stonefloor01_color_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/stonefloor01_normal_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/stonefloor02_color_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/stonefloor02_normal_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/texture_orientation_ccw_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/texture_orientation_cw_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/texturearray_plants_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/texturearray_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/texturearray_rocks_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/vulkan_11_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -m 644 data/textures/vulkan_cloth_rgba.ktx $DESTDIR/x11/share/Vulkan-Examples/textures
+install -d $DESTDIR/x11/share/Vulkan-Examples/textures/hdr
+install -m 644 data/textures/hdr/gcanyon_cube.ktx $DESTDIR/x11/share/Vulkan-Examples/textures/hdr
+install -m 644 data/textures/hdr/pisa_cube.ktx $DESTDIR/x11/share/Vulkan-Examples/textures/hdr
+install -m 644 data/textures/hdr/uffizi_cube.ktx $DESTDIR/x11/share/Vulkan-Examples/textures/hdr
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/vulkan-examples-build.pc << EOF
+Name: Vulkan-Examples
+Version: 20201118
+Description: A collection of Vulkan demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/x11/share/Vulkan-Examples/bloom \\
+/x11/share/Vulkan-Examples/computecloth \\
+/x11/share/Vulkan-Examples/computecullandlod \\
+/x11/share/Vulkan-Examples/computeheadless \\
+/x11/share/Vulkan-Examples/computenbody \\
+/x11/share/Vulkan-Examples/computeparticles \\
+/x11/share/Vulkan-Examples/computeraytracing \\
+/x11/share/Vulkan-Examples/computeshader \\
+/x11/share/Vulkan-Examples/debugmarker \\
+/x11/share/Vulkan-Examples/deferred \\
+/x11/share/Vulkan-Examples/deferredmultisampling \\
+/x11/share/Vulkan-Examples/descriptorsets \\
+/x11/share/Vulkan-Examples/distancefieldfonts \\
+/x11/share/Vulkan-Examples/dynamicuniformbuffer \\
+/x11/share/Vulkan-Examples/font.fnt \\
+/x11/share/Vulkan-Examples/gears \\
+/x11/share/Vulkan-Examples/gltfloading \\
+/x11/share/Vulkan-Examples/gltfscenerendering \\
+/x11/share/Vulkan-Examples/gltfskinning \\
+/x11/share/Vulkan-Examples/hdr \\
+/x11/share/Vulkan-Examples/imgui \\
+/x11/share/Vulkan-Examples/indirectdraw \\
+/x11/share/Vulkan-Examples/inputattachments \\
+/x11/share/Vulkan-Examples/instancing \\
+/x11/share/Vulkan-Examples/multisampling \\
+/x11/share/Vulkan-Examples/multithreading \\
+/x11/share/Vulkan-Examples/multiview \\
+/x11/share/Vulkan-Examples/negativeviewportheight \\
+/x11/share/Vulkan-Examples/occlusionquery \\
+/x11/share/Vulkan-Examples/oit \\
+/x11/share/Vulkan-Examples/parallaxmapping \\
+/x11/share/Vulkan-Examples/particlefire \\
+/x11/share/Vulkan-Examples/pbrbasic \\
+/x11/share/Vulkan-Examples/pbribl \\
+/x11/share/Vulkan-Examples/pbrtexture \\
+/x11/share/Vulkan-Examples/pipelines \\
+/x11/share/Vulkan-Examples/pushconstants \\
+/x11/share/Vulkan-Examples/radialblur \\
+/x11/share/Vulkan-Examples/renderheadless \\
+/x11/share/Vulkan-Examples/Roboto-Medium.ttf \\
+/x11/share/Vulkan-Examples/screenshot \\
+/x11/share/Vulkan-Examples/shadowmapping \\
+/x11/share/Vulkan-Examples/shadowmappingcascade \\
+/x11/share/Vulkan-Examples/shadowmappingomni \\
+/x11/share/Vulkan-Examples/specializationconstants \\
+/x11/share/Vulkan-Examples/sphericalenvmapping \\
+/x11/share/Vulkan-Examples/ssao \\
+/x11/share/Vulkan-Examples/stencilbuffer \\
+/x11/share/Vulkan-Examples/subpasses \\
+/x11/share/Vulkan-Examples/textoverlay \\
+/x11/share/Vulkan-Examples/texture \\
+/x11/share/Vulkan-Examples/texture3d \\
+/x11/share/Vulkan-Examples/texturearray \\
+/x11/share/Vulkan-Examples/texturecubemap \\
+/x11/share/Vulkan-Examples/texturecubemaparray \\
+/x11/share/Vulkan-Examples/triangle \\
+/x11/share/Vulkan-Examples/vulkanscene \\
+/x11/share/Vulkan-Examples/models/chinesedragon.gltf \\
+/x11/share/Vulkan-Examples/models/color_teapot_spheres.gltf \\
+/x11/share/Vulkan-Examples/models/cube.gltf \\
+/x11/share/Vulkan-Examples/models/deferred_box.gltf \\
+/x11/share/Vulkan-Examples/models/deferred_floor.gltf \\
+/x11/share/Vulkan-Examples/models/fireplace.gltf \\
+/x11/share/Vulkan-Examples/models/glowsphere.gltf \\
+/x11/share/Vulkan-Examples/models/lavaplanet.gltf \\
+/x11/share/Vulkan-Examples/models/oaktree.gltf \\
+/x11/share/Vulkan-Examples/models/plane.gltf \\
+/x11/share/Vulkan-Examples/models/plane_circle.gltf \\
+/x11/share/Vulkan-Examples/models/plane_z.gltf \\
+/x11/share/Vulkan-Examples/models/plants.gltf \\
+/x11/share/Vulkan-Examples/models/retroufo.gltf \\
+/x11/share/Vulkan-Examples/models/retroufo_glow.gltf \\
+/x11/share/Vulkan-Examples/models/retroufo_red_lowpoly.gltf \\
+/x11/share/Vulkan-Examples/models/rock01.gltf \\
+/x11/share/Vulkan-Examples/models/samplebuilding.gltf \\
+/x11/share/Vulkan-Examples/models/samplebuilding_glass.gltf \\
+/x11/share/Vulkan-Examples/models/sampleroom.gltf \\
+/x11/share/Vulkan-Examples/models/samplescene.gltf \\
+/x11/share/Vulkan-Examples/models/shadowscene_fire.gltf \\
+/x11/share/Vulkan-Examples/models/sphere.gltf \\
+/x11/share/Vulkan-Examples/models/suzanne_lods.gltf \\
+/x11/share/Vulkan-Examples/models/teapot.gltf \\
+/x11/share/Vulkan-Examples/models/terrain_gridlines.gltf \\
+/x11/share/Vulkan-Examples/models/torusknot.gltf \\
+/x11/share/Vulkan-Examples/models/treasure_glow.gltf \\
+/x11/share/Vulkan-Examples/models/treasure_smooth.gltf \\
+/x11/share/Vulkan-Examples/models/venus.gltf \\
+/x11/share/Vulkan-Examples/models/voyager.gltf \\
+/x11/share/Vulkan-Examples/models/vulkanscene_shadow.gltf \\
+/x11/share/Vulkan-Examples/models/vulkanscenebackground.gltf \\
+/x11/share/Vulkan-Examples/models/vulkanscenelogos.gltf \\
+/x11/share/Vulkan-Examples/models/vulkanscenemodels.gltf \\
+/x11/share/Vulkan-Examples/models/armor/armor.gltf \\
+/x11/share/Vulkan-Examples/models/armor/colormap_rgba.ktx \\
+/x11/share/Vulkan-Examples/models/armor/normalmap_rgba.ktx \\
+/x11/share/Vulkan-Examples/models/cerberus/albedo.ktx \\
+/x11/share/Vulkan-Examples/models/cerberus/ao.ktx \\
+/x11/share/Vulkan-Examples/models/cerberus/cerberus.gltf \\
+/x11/share/Vulkan-Examples/models/cerberus/metallic.ktx \\
+/x11/share/Vulkan-Examples/models/cerberus/normal.ktx \\
+/x11/share/Vulkan-Examples/models/cerberus/roughness.ktx \\
+/x11/share/Vulkan-Examples/models/CesiumMan/glTF/CesiumMan.gltf \\
+/x11/share/Vulkan-Examples/models/CesiumMan/glTF/CesiumMan_data.bin \\
+/x11/share/Vulkan-Examples/models/CesiumMan/glTF/CesiumMan_img0.jpg \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet.bin \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet.gltf \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_baseColor.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_baseColor1.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_baseColor2.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_baseColor3.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_baseColor4.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_normal.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_normal1.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_normal2.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_normal3.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_normal4.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic1.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic2.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic3.png \\
+/x11/share/Vulkan-Examples/models/FlightHelmet/glTF/FlightHelmet_occlusionRoughnessMetallic4.png \\
+/x11/share/Vulkan-Examples/models/sponza/10381718147657362067.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/10388182081421875623.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/11474523244911310074.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/11490520546946913238.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/12501374198249454378.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/13982482287905699490.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/14118779221266351425.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/14170708867020035030.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/14267839433702832875.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/14650633544276105767.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/15295713303328085182.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/15722799267630235092.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/16275776544635328252.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/16299174074766089871.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/17876391417123941155.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/2051777328469649772.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/2185409758123873465.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/2299742237651021498.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/2374361008830720677.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/2775690330959970771.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/2969916736137545357.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/332936164838540657.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/3628158980083700836.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/3827035219084910048.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/4477655471536070370.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/4601176305987539675.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/4675343432951571524.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/4910669866631290573.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/4975155472559461469.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/5061699253647017043.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/5792855332885324923.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/5823059166183034438.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/6047387724914829168.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/6151467286084645207.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/6593109234861095314.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/6667038893015345571.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/6772804448157695701.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/7056944414013900257.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/7268504077753552595.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/7441062115984513793.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/755318871556304029.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/759203620573749278.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/7645212358685992005.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/8006627369776289000.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/8481240838833932244.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/8750083169368950601.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/8773302468495022225.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/9288698199695299068.ktx \\
+/x11/share/Vulkan-Examples/models/sponza/sponza.bin \\
+/x11/share/Vulkan-Examples/models/sponza/sponza.gltf \\
+/x11/share/Vulkan-Examples/models/sponza/white.ktx \\
+/x11/share/Vulkan-Examples/shaders/glsl/base/uioverlay.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/base/uioverlay.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/colorpass.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/colorpass.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/gaussblur.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/gaussblur.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/phongpass.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/phongpass.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/skybox.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/bloom/skybox.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecloth/cloth.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecloth/cloth.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecloth/cloth.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecloth/sphere.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecloth/sphere.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod/cull.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod/indirectdraw.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computecullandlod/indirectdraw.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeheadless/headless.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computenbody/particle.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computenbody/particle.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computenbody/particle_calculate.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computenbody/particle_integrate.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeparticles/particle.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeparticles/particle.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeparticles/particle.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing/raytracing.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing/texture.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeraytracing/texture.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeshader/edgedetect.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeshader/emboss.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeshader/sharpen.comp.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeshader/texture.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/computeshader/texture.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/debugmarker/colorpass.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/debugmarker/colorpass.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/debugmarker/postprocess.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/debugmarker/postprocess.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/debugmarker/toon.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/debugmarker/toon.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferred/deferred.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferred/deferred.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferred/mrt.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferred/mrt.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling/deferred.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling/deferred.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling/mrt.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/deferredmultisampling/mrt.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/descriptorsets/cube.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/descriptorsets/cube.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts/bitmap.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts/bitmap.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts/sdf.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/distancefieldfonts/sdf.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/dynamicuniformbuffer/base.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/dynamicuniformbuffer/base.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gears/gears.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gears/gears.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gltfloading/mesh.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gltfloading/mesh.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gltfscenerendering/scene.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gltfscenerendering/scene.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gltfskinning/skinnedmodel.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/gltfskinning/skinnedmodel.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/hdr/bloom.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/hdr/bloom.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/hdr/composition.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/hdr/composition.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/hdr/gbuffer.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/hdr/gbuffer.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/imgui/scene.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/imgui/scene.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/imgui/ui.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/imgui/ui.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw/ground.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw/ground.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw/indirectdraw.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw/indirectdraw.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw/skysphere.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/indirectdraw/skysphere.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/inputattachments/attachmentread.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/inputattachments/attachmentread.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/inputattachments/attachmentwrite.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/inputattachments/attachmentwrite.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/instancing/instancing.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/instancing/instancing.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/instancing/planet.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/instancing/planet.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/instancing/starfield.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/instancing/starfield.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multisampling/mesh.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multisampling/mesh.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multithreading/phong.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multithreading/phong.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multithreading/starsphere.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multithreading/starsphere.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multiview/multiview.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multiview/multiview.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multiview/viewdisplay.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/multiview/viewdisplay.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/negativeviewportheight/quad.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/negativeviewportheight/quad.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery/mesh.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery/mesh.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery/occluder.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery/occluder.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery/simple.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/occlusionquery/simple.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/oit/color.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/oit/color.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/oit/geometry.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/oit/geometry.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/parallaxmapping/parallax.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/parallaxmapping/parallax.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/particlefire/normalmap.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/particlefire/normalmap.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/particlefire/particle.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/particlefire/particle.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrbasic/pbr.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrbasic/pbr.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/filtercube.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/genbrdflut.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/genbrdflut.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/irradiancecube.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/pbribl.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/pbribl.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/prefilterenvmap.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/skybox.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbribl/skybox.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/filtercube.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/genbrdflut.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/genbrdflut.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/irradiancecube.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/pbrtexture.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/pbrtexture.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/prefilterenvmap.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/skybox.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pbrtexture/skybox.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pipelines/phong.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pipelines/phong.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pipelines/toon.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pipelines/toon.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pipelines/wireframe.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pipelines/wireframe.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pushconstants/pushconstants.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/pushconstants/pushconstants.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/radialblur/colorpass.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/radialblur/colorpass.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/radialblur/phongpass.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/radialblur/phongpass.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/radialblur/radialblur.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/radialblur/radialblur.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/renderheadless/triangle.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/renderheadless/triangle.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/screenshot/mesh.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/screenshot/mesh.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping/offscreen.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping/offscreen.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping/quad.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping/quad.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping/scene.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmapping/scene.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade/debugshadowmap.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade/debugshadowmap.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade/depthpass.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade/depthpass.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade/scene.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingcascade/scene.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni/cubemapdisplay.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni/cubemapdisplay.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni/offscreen.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni/offscreen.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni/scene.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/shadowmappingomni/scene.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/specializationconstants/uber.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/specializationconstants/uber.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/sphericalenvmapping/sem.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/sphericalenvmapping/sem.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/ssao/blur.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/ssao/composition.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/ssao/fullscreen.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/ssao/gbuffer.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/ssao/gbuffer.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/ssao/ssao.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer/outline.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer/outline.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer/toon.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/stencilbuffer/toon.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/subpasses/composition.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/subpasses/composition.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/subpasses/gbuffer.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/subpasses/gbuffer.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/subpasses/transparent.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/subpasses/transparent.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/textoverlay/mesh.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/textoverlay/mesh.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/textoverlay/text.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/textoverlay/text.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texture/texture.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texture/texture.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texture3d/texture3d.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texture3d/texture3d.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturearray/instancing.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturearray/instancing.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap/reflect.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap/reflect.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap/skybox.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemap/skybox.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray/reflect.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray/reflect.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray/skybox.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/texturecubemaparray/skybox.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/triangle/triangle.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/triangle/triangle.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene/logo.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene/logo.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene/mesh.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene/mesh.vert.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene/skybox.frag.spv \\
+/x11/share/Vulkan-Examples/shaders/glsl/vulkanscene/skybox.vert.spv \\
+/x11/share/Vulkan-Examples/textures/colored_glass_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/crate01_color_height_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/crate02_color_height_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/cubemap_array.ktx \\
+/x11/share/Vulkan-Examples/textures/cubemap_space.ktx \\
+/x11/share/Vulkan-Examples/textures/cubemap_vulkan.ktx \\
+/x11/share/Vulkan-Examples/textures/cubemap_yokohama_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/fireplace_colormap_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/fireplace_normalmap_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/font_bitmap_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/font_sdf_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/ground_dry_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/hdr/gcanyon_cube.ktx \\
+/x11/share/Vulkan-Examples/textures/hdr/pisa_cube.ktx \\
+/x11/share/Vulkan-Examples/textures/hdr/uffizi_cube.ktx \\
+/x11/share/Vulkan-Examples/textures/lavaplanet_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/matcap_array_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/metalplate01_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/metalplate_nomips_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/particle01_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/particle_fire.ktx \\
+/x11/share/Vulkan-Examples/textures/particle_gradient_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/particle_smoke.ktx \\
+/x11/share/Vulkan-Examples/textures/rocks_color_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/rocks_normal_height_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/stonefloor01_color_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/stonefloor01_normal_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/stonefloor02_color_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/stonefloor02_normal_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/texture_orientation_ccw_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/texture_orientation_cw_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/texturearray_plants_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/texturearray_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/texturearray_rocks_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/vulkan_11_rgba.ktx \\
+/x11/share/Vulkan-Examples/textures/vulkan_cloth_rgba.ktx
+EOF
+
+exit
+--- Vulkan-Examples-20201118.orig/CMakeLists.txt
++++ Vulkan-Examples-20201118/CMakeLists.txt
+@@ -6,13 +6,21 @@
+ 
+ project(${NAME})
+ 
+-include_directories(external)
++if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/external)
+ include_directories(external/glm)
+ include_directories(external/gli)
+ include_directories(external/imgui)
++include_directories(external/stb)
+ include_directories(external/tinygltf)
+ include_directories(external/ktx/include)
+ include_directories(external/ktx/other_include)
++else()
++execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot OUTPUT_VARIABLE SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
++include_directories(${SYSROOT}/include/stb)
++include_directories(${SYSROOT}/include/stb_font/latin1/consolas)
++include_directories(${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui)
++endif()
++
+ include_directories(base)
+ 
+ OPTION(USE_D2D_WSI "Build the project using Direct to Display swapchain" OFF)
+@@ -48,6 +56,7 @@
+ 			MESSAGE("Using bundled Vulkan library version")
+ 		ENDIF()
+ 	ENDIF()
++	include_directories(${Vulkan_INCLUDE_DIR})
+ 	find_package(Threads REQUIRED)
+ 	IF(USE_D2D_WSI)
+ 		MESSAGE("Using direct to display extension...")
+@@ -138,8 +147,6 @@
+ 	# Nothing here (yet)
+ ELSEIF(APPLE)
+ 	link_libraries(${Vulkan_LIBRARY} "-framework AppKit" "-framework QuartzCore")
+-ELSE(WIN32)
+-	link_libraries(${XCB_LIBRARIES} ${Vulkan_LIBRARY} ${Vulkan_LIBRARY} ${DIRECTFB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ ENDIF(WIN32)
+ 
+ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
+--- Vulkan-Examples-20201118.orig/base/CMakeLists.txt
++++ Vulkan-Examples-20201118/base/CMakeLists.txt
+@@ -1,6 +1,19 @@
+-file(GLOB BASE_SRC "*.cpp" "*.hpp" "*.h" "../external/imgui/*.cpp")
++file(GLOB BASE_SRC "*.cpp" "*.hpp" "*.h")
++if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/external)
++    set(BASE_SRC ${BASE_SRC}
++        ../external/imgui/imgui.cpp
++        ../external/imgui/imgui_draw.cpp
++        ../external/imgui/imgui_widgets.cpp)
++else()
++    set(BASE_SRC ${BASE_SRC}
++        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui.cpp
++        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_draw.cpp
++        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_tables.cpp
++        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_widgets.cpp)
++endif()
+ file(GLOB BASE_HEADERS "*.hpp" "*.h")
+ 
++if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/external)
+ set(KTX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../external/ktx)
+ set(KTX_SOURCES
+     ${KTX_DIR}/lib/texture.c
+@@ -9,10 +22,21 @@
+     ${KTX_DIR}/lib/swap.c
+     ${KTX_DIR}/lib/memstream.c
+     ${KTX_DIR}/lib/filestream.c)
++endif()
+ 
+-add_library(base STATIC ${BASE_SRC} ${KTX_SOURCES})
++add_library(base STATIC ${BASE_SRC})
++if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/external)
++    target_sources(base PRIVATE ${KTX_SOURCES})
++else()
++    target_compile_definitions(base PRIVATE
++        IMGUI_STB_RECT_PACK_FILENAME=\"stb_rect_pack.h\"
++        IMGUI_STB_TEXTEDIT_FILENAME=\"stb_textedit.h\"
++        IMGUI_STB_TRUETYPE_FILENAME=\"stb_truetype.h\")
++    find_library(KTX_LIBRARY NAMES ktx)
++    target_link_libraries(base ${KTX_LIBRARY})
++endif()
+ if(WIN32)
+     target_link_libraries(base ${Vulkan_LIBRARY} ${WINLIBS})
+- else(WIN32)
+-    target_link_libraries(base ${Vulkan_LIBRARY} ${XCB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
++else(WIN32)
++    target_link_libraries(base ${Vulkan_LIBRARY} ${XCB_LIBRARIES} ${DIRECTFB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ endif(WIN32)
+\ No newline at end of file
+--- Vulkan-Examples-20201118.orig/base/VulkanTexture.h
++++ Vulkan-Examples-20201118/base/VulkanTexture.h
+@@ -16,7 +16,6 @@
+ #include "vulkan/vulkan.h"
+ 
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #include "VulkanBuffer.h"
+ #include "VulkanDevice.h"
+--- Vulkan-Examples-20201118.orig/base/VulkanUIOverlay.cpp
++++ Vulkan-Examples-20201118/base/VulkanUIOverlay.cpp
+@@ -431,9 +431,9 @@
+ 		return res;
+ 	}
+ 
+-	bool UIOverlay::inputFloat(const char *caption, float *value, float step, uint32_t precision)
++	bool UIOverlay::inputFloat(const char *caption, float *value, float step, const char* format)
+ 	{
+-		bool res = ImGui::InputFloat(caption, value, step, step * 10.0f, precision);
++		bool res = ImGui::InputFloat(caption, value, step, step * 10.0f, format);
+ 		if (res) { updated = true; };
+ 		return res;
+ 	}
+--- Vulkan-Examples-20201118.orig/base/VulkanUIOverlay.h
++++ Vulkan-Examples-20201118/base/VulkanUIOverlay.h
+@@ -22,7 +22,7 @@
+ #include "VulkanBuffer.h"
+ #include "VulkanDevice.h"
+ 
+-#include "../external/imgui/imgui.h"
++#include "imgui.h"
+ 
+ #if defined(__ANDROID__)
+ #include "VulkanAndroid.h"
+@@ -81,7 +81,7 @@
+ 		bool header(const char* caption);
+ 		bool checkBox(const char* caption, bool* value);
+ 		bool checkBox(const char* caption, int32_t* value);
+-		bool inputFloat(const char* caption, float* value, float step, uint32_t precision);
++		bool inputFloat(const char* caption, float* value, float step, const char* format);
+ 		bool sliderFloat(const char* caption, float* value, float min, float max);
+ 		bool sliderInt(const char* caption, int32_t* value, int32_t min, int32_t max);
+ 		bool comboBox(const char* caption, int32_t* itemindex, std::vector<std::string> items);
+--- Vulkan-Examples-20201118.orig/base/VulkanglTFModel.h
++++ Vulkan-Examples-20201118/base/VulkanglTFModel.h
+@@ -17,7 +17,6 @@
+ #include "VulkanDevice.h"
+ 
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define GLM_FORCE_RADIANS
+ #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+--- Vulkan-Examples-20201118.orig/base/vulkanexamplebase.cpp
++++ Vulkan-Examples-20201118/base/vulkanexamplebase.cpp
+@@ -610,7 +610,7 @@
+ 
+ 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+ 	ImGui::SetNextWindowPos(ImVec2(10, 10));
+-	ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
++	ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+ 	ImGui::Begin("Vulkan Example", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+ 	ImGui::TextUnformatted(title.c_str());
+ 	ImGui::TextUnformatted(deviceProperties.deviceName);
+--- Vulkan-Examples-20201118.orig/cmake/FindVulkan.cmake
++++ Vulkan-Examples-20201118/cmake/FindVulkan.cmake
+@@ -0,0 +1,4 @@
++find_library(Vulkan_LIBRARY NAMES vulkan)
++find_path(Vulkan_INCLUDE_DIR NAMES vulkan/vulkan.h)
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(Vulkan DEFAULT_MSG Vulkan_LIBRARY Vulkan_INCLUDE_DIR)
+--- Vulkan-Examples-20201118.orig/cmake/FindXCB.cmake
++++ Vulkan-Examples-20201118/cmake/FindXCB.cmake
+@@ -35,10 +35,12 @@
+         ${PC_${comp}_LIBRARY_DIRS}
+         )
+ 
++    set(FPHSA_NAME_MISMATCHED TRUE)
+     find_package_handle_standard_args(${comp}
+         FOUND_VAR ${comp}_FOUND
+         REQUIRED_VARS ${compname}_INCLUDE_DIR ${compname}_LIBRARY)
+     mark_as_advanced(${compname}_INCLUDE_DIR ${compname}_LIBRARY)
++    unset(FPHSA_NAME_MISMATCHED)
+ 
+     list(APPEND XCB_INCLUDE_DIRS ${${compname}_INCLUDE_DIR})
+     list(APPEND XCB_LIBRARIES ${${compname}_LIBRARY})
+--- Vulkan-Examples-20201118.orig/data/shaders/glsl/compileshaders.py
++++ Vulkan-Examples-20201118/data/shaders/glsl/compileshaders.py
+@@ -16,7 +16,7 @@
+     if args.glslang != None and isExe(args.glslang):
+         return args.glslang
+ 
+-    exe_name = "glslangvalidator"
++    exe_name = "glslangValidator"
+     if os.name == "nt":
+         exe_name += ".exe"
+ 
+@@ -32,7 +32,7 @@
+ dir_path = dir_path.replace('\\', '/')
+ for root, dirs, files in os.walk(dir_path):
+     for file in files:
+-        if file.endswith(".vert") or file.endswith(".frag") or file.endswith(".comp") or file.endswith(".geom") or file.endswith(".tesc") or file.endswith(".tese") or file.endswith(".rgen") or file.endswith(".rchit") or file.endswith(".rmiss"):
++        if file.endswith(".vert") or file.endswith(".frag") or file.endswith(".comp") or file.endswith(".geom") or file.endswith(".tesc") or file.endswith(".tese"):
+             input_file = os.path.join(root, file)
+             output_file = input_file + ".spv"
+ 
+@@ -40,9 +40,6 @@
+             if args.g:
+                 add_params = "-g"
+ 
+-            if file.endswith(".rgen") or file.endswith(".rchit") or file.endswith(".rmiss"):
+-               add_params = add_params + " --target-env vulkan1.2"
+-
+             res = subprocess.call("%s -V %s -o %s %s" % (glslang_path, input_file, output_file, add_params), shell=True)
+             # res = subprocess.call([glslang_path, '-V', input_file, '-o', output_file, add_params], shell=True)
+             if res != 0:
+--- Vulkan-Examples-20201118.orig/examples/CMakeLists.txt
++++ Vulkan-Examples-20201118/examples/CMakeLists.txt
+@@ -11,10 +11,13 @@
+ 	if(EXISTS ${EXAMPLE_FOLDER}/${EXAMPLE_NAME}.h)
+ 		SET(MAIN_HEADER ${EXAMPLE_FOLDER}/${EXAMPLE_NAME}.h)
+ 	ENDIF()
+-	find_package(OpenMP)
+ 	# imgui example requires additional source files
+ 	IF(${EXAMPLE_NAME} STREQUAL "imgui")
+-		file(GLOB ADD_SOURCE "../external/imgui/*.cpp")
++		IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/external)
++			SET(ADD_SOURCE ${CMAKE_SOURCE_DIR}/external/imgui/imgui_demo.cpp)
++		ELSE()
++			SET(ADD_SOURCE ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/share/imgui/imgui_demo.cpp)
++		ENDIF()
+ 		SET(SOURCE ${SOURCE} ${ADD_SOURCE})
+ 	ENDIF()
+ 	# wayland requires additional source files
+@@ -39,13 +42,11 @@
+ 	endif(WIN32)
+ 
+ 	set_target_properties(${EXAMPLE_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+-	if(OpenMP_CXX_FOUND)
+-		target_compile_options(${EXAMPLE_NAME} PRIVATE ${OpenMP_CXX_FLAGS})
+-		IF(${EXAMPLE_NAME} STREQUAL "texture3d")
+-			if(OpenMP_CXX_FOUND)
+-    			target_link_libraries(${EXAMPLE_NAME} OpenMP::OpenMP_CXX)
+-			endif()	
+-		endif()
++	IF(${EXAMPLE_NAME} STREQUAL "texture3d")
++		find_package(OpenMP)
++		if(OpenMP_CXX_FOUND)
++  			target_link_libraries(${EXAMPLE_NAME} OpenMP::OpenMP_CXX)
++		endif()	
+ 	endif()
+ 
+ 	if(RESOURCE_INSTALL_DIR)
+--- Vulkan-Examples-20201118.orig/examples/bloom/bloom.cpp
++++ Vulkan-Examples-20201118/examples/bloom/bloom.cpp
+@@ -721,7 +721,7 @@
+ 			if (overlay->checkBox("Bloom", &bloom)) {
+ 				buildCommandBuffers();
+ 			}
+-			if (overlay->inputFloat("Scale", &ubos.blurParams.blurScale, 0.1f, 2)) {
++			if (overlay->inputFloat("Scale", &ubos.blurParams.blurScale, 0.1f, "%.2f")) {
+ 				updateUniformBuffersBlur();
+ 			}
+ 		}
+--- Vulkan-Examples-20201118.orig/examples/displacement/displacement.cpp
++++ Vulkan-Examples-20201118/examples/displacement/displacement.cpp
+@@ -392,10 +392,10 @@
+ 			if (overlay->checkBox("Tessellation displacement", &displacement)) {
+ 				updateUniformBuffers();
+ 			}
+-			if (overlay->inputFloat("Strength", &uboTessEval.tessStrength, 0.025f, 3)) {
++			if (overlay->inputFloat("Strength", &uboTessEval.tessStrength, 0.025f, "%.3f")) {
+ 				updateUniformBuffers();
+ 			}
+-			if (overlay->inputFloat("Level", &uboTessControl.tessLevel, 0.5f, 2)) {
++			if (overlay->inputFloat("Level", &uboTessControl.tessLevel, 0.5f, "%.2f")) {
+ 				updateUniformBuffers();
+ 			}
+ 			if (deviceFeatures.fillModeNonSolid) {
+--- Vulkan-Examples-20201118.orig/examples/hdr/hdr.cpp
++++ Vulkan-Examples-20201118/examples/hdr/hdr.cpp
+@@ -878,7 +878,7 @@
+ 				updateUniformBuffers();
+ 				buildCommandBuffers();
+ 			}
+-			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.025f, 3)) {
++			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.025f, "%.3f")) {
+ 				updateParams();
+ 			}
+ 			if (overlay->checkBox("Bloom", &bloom)) {
+--- Vulkan-Examples-20201118.orig/examples/imgui/main.cpp
++++ Vulkan-Examples-20201118/examples/imgui/main.cpp
+@@ -346,10 +346,10 @@
+ 		ImGui::PlotLines("Frame Times", &uiSettings.frameTimes[0], 50, 0, "", uiSettings.frameTimeMin, uiSettings.frameTimeMax, ImVec2(0, 80));
+ 
+ 		ImGui::Text("Camera");
+-		ImGui::InputFloat3("position", &example->camera.position.x, 2);
+-		ImGui::InputFloat3("rotation", &example->camera.rotation.x, 2);
++		ImGui::InputFloat3("position", &example->camera.position.x, "%.2f");
++		ImGui::InputFloat3("rotation", &example->camera.rotation.x, "%.2f");
+ 
+-		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiSetCond_FirstUseEver);
++		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
+ 		ImGui::Begin("Example settings");
+ 		ImGui::Checkbox("Render models", &uiSettings.displayModels);
+ 		ImGui::Checkbox("Display logos", &uiSettings.displayLogos);
+@@ -358,7 +358,7 @@
+ 		ImGui::SliderFloat("Light speed", &uiSettings.lightSpeed, 0.1f, 1.0f);
+ 		ImGui::End();
+ 
+-		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
++		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+ 		ImGui::ShowDemoWindow();
+ 
+ 		// Render to generate draw buffers
+--- Vulkan-Examples-20201118.orig/examples/pbribl/pbribl.cpp
++++ Vulkan-Examples-20201118/examples/pbribl/pbribl.cpp
+@@ -1427,10 +1427,10 @@
+ 				updateUniformBuffers();
+ 				buildCommandBuffers();
+ 			}
+-			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.1f, 2)) {
++			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.1f, "%.2f")) {
+ 				updateParams();
+ 			}
+-			if (overlay->inputFloat("Gamma", &uboParams.gamma, 0.1f, 2)) {
++			if (overlay->inputFloat("Gamma", &uboParams.gamma, 0.1f, "%.2f")) {
+ 				updateParams();
+ 			}
+ 			if (overlay->checkBox("Skybox", &displaySkybox)) {
+--- Vulkan-Examples-20201118.orig/examples/pbrtexture/pbrtexture.cpp
++++ Vulkan-Examples-20201118/examples/pbrtexture/pbrtexture.cpp
+@@ -1345,10 +1345,10 @@
+ 	virtual void OnUpdateUIOverlay(vks::UIOverlay *overlay)
+ 	{
+ 		if (overlay->header("Settings")) {
+-			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.1f, 2)) {
++			if (overlay->inputFloat("Exposure", &uboParams.exposure, 0.1f, "%.2f")) {
+ 				updateParams();
+ 			}
+-			if (overlay->inputFloat("Gamma", &uboParams.gamma, 0.1f, 2)) {
++			if (overlay->inputFloat("Gamma", &uboParams.gamma, 0.1f, "%.2f")) {
+ 				updateParams();
+ 			}
+ 			if (overlay->checkBox("Skybox", &displaySkybox)) {
+--- Vulkan-Examples-20201118.orig/examples/stencilbuffer/stencilbuffer.cpp
++++ Vulkan-Examples-20201118/examples/stencilbuffer/stencilbuffer.cpp
+@@ -263,7 +263,7 @@
+ 	virtual void OnUpdateUIOverlay(vks::UIOverlay *overlay)
+ 	{
+ 		if (overlay->header("Settings")) {
+-			if (overlay->inputFloat("Outline width", &uboVS.outlineWidth, 0.05f, 2)) {
++			if (overlay->inputFloat("Outline width", &uboVS.outlineWidth, 0.05f, "%.2f")) {
+ 				updateUniformBuffers();
+ 			}
+ 		}
+--- Vulkan-Examples-20201118.orig/examples/terraintessellation/terraintessellation.cpp
++++ Vulkan-Examples-20201118/examples/terraintessellation/terraintessellation.cpp
+@@ -10,7 +10,6 @@
+ #include "VulkanglTFModel.h"
+ #include "frustum.hpp"
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define ENABLE_VALIDATION false
+ 
+@@ -836,7 +835,7 @@
+ 			if (overlay->checkBox("Tessellation", &tessellation)) {
+ 				updateUniformBuffers();
+ 			}
+-			if (overlay->inputFloat("Factor", &uboTess.tessellationFactor, 0.05f, 2)) {
++			if (overlay->inputFloat("Factor", &uboTess.tessellationFactor, 0.05f, "%.2f")) {
+ 				updateUniformBuffers();
+ 			}
+ 			if (deviceFeatures.fillModeNonSolid) {
+--- Vulkan-Examples-20201118.orig/examples/tessellation/tessellation.cpp
++++ Vulkan-Examples-20201118/examples/tessellation/tessellation.cpp
+@@ -327,7 +327,7 @@
+ 	virtual void OnUpdateUIOverlay(vks::UIOverlay *overlay)
+ 	{
+ 		if (overlay->header("Settings")) {
+-			if (overlay->inputFloat("Tessellation level", &uboTessControl.tessLevel, 0.25f, 2)) {
++			if (overlay->inputFloat("Tessellation level", &uboTessControl.tessLevel, 0.25f, "%.2f")) {
+ 				updateUniformBuffers();
+ 			}
+ 			if (deviceFeatures.fillModeNonSolid) {
+--- Vulkan-Examples-20201118.orig/examples/textoverlay/textoverlay.cpp
++++ Vulkan-Examples-20201118/examples/textoverlay/textoverlay.cpp
+@@ -10,7 +10,7 @@
+ #include <iomanip>
+ #include "vulkanexamplebase.h"
+ #include "VulkanglTFModel.h"
+-#include "../external/stb/stb_font_consolas_24_latin1.inl"
++#include "stb_font_consolas_24_latin1.inl"
+ 
+ #define ENABLE_VALIDATION false
+ 
+--- Vulkan-Examples-20201118.orig/examples/texture/texture.cpp
++++ Vulkan-Examples-20201118/examples/texture/texture.cpp
+@@ -8,7 +8,6 @@
+ 
+ #include "vulkanexamplebase.h"
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define VERTEX_BUFFER_BIND_ID 0
+ #define ENABLE_VALIDATION false
+--- Vulkan-Examples-20201118.orig/examples/texturearray/texturearray.cpp
++++ Vulkan-Examples-20201118/examples/texturearray/texturearray.cpp
+@@ -8,7 +8,6 @@
+ 
+ #include "vulkanexamplebase.h"
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define ENABLE_VALIDATION false
+ 
+--- Vulkan-Examples-20201118.orig/examples/texturecubemap/texturecubemap.cpp
++++ Vulkan-Examples-20201118/examples/texturecubemap/texturecubemap.cpp
+@@ -9,7 +9,6 @@
+ #include "vulkanexamplebase.h"
+ #include "VulkanglTFModel.h"
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define ENABLE_VALIDATION false
+ 
+--- Vulkan-Examples-20201118.orig/examples/texturecubemaparray/texturecubemaparray.cpp
++++ Vulkan-Examples-20201118/examples/texturecubemaparray/texturecubemaparray.cpp
+@@ -9,7 +9,6 @@
+ #include "vulkanexamplebase.h"
+ #include "VulkanglTFModel.h"
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define ENABLE_VALIDATION false
+ 
+--- Vulkan-Examples-20201118.orig/examples/texturemipmapgen/texturemipmapgen.cpp
++++ Vulkan-Examples-20201118/examples/texturemipmapgen/texturemipmapgen.cpp
+@@ -9,7 +9,6 @@
+ #include "vulkanexamplebase.h"
+ #include "VulkanglTFModel.h"
+ #include <ktx.h>
+-#include <ktxvulkan.h>
+ 
+ #define ENABLE_VALIDATION false
+ 
