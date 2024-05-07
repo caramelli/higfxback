@@ -1,0 +1,699 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="atk-build autotools-wrappers-lt-build gdk-pixbuf-build pango-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PATH=/bin:/x11/bin PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install demos/gtk-demo/.libs/gtk-demo $DESTDIR/x11/bin
+install gtk/gtk-update-icon-cache $DESTDIR/x11/bin
+install gtk/.libs/gtk-query-immodules-2.0 $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/gtk-2.0
+install -m 644 gdk/gdkconfig.h $DESTDIR/x11/include/gtk-2.0
+install -d $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdk.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkapplaunchcontext.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkcairo.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkcolor.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkcursor.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkdisplay.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkdisplaymanager.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkdnd.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkdrawable.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkenumtypes.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkevents.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkfont.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkgc.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkimage.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkinput.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkkeys.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkkeysyms.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkkeysyms-compat.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkpango.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkpixbuf.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkpixmap.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkprivate.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkproperty.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkregion.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkrgb.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkscreen.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkselection.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkspawn.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdktestutils.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdktypes.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkvisual.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/gdkwindow.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -m 644 gdk/x11/gdkx.h $DESTDIR/x11/include/gtk-2.0/gdk
+install -d $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtk.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaboutdialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaccelgroup.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaccellabel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaccelmap.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaccessible.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaction.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkactiongroup.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkactivatable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkadjustment.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkalignment.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkarrow.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkaspectframe.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkassistant.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbin.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbindings.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbuildable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbuilder.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcalendar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcelleditable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcelllayout.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrenderer.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrendereraccel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrenderercombo.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrendererpixbuf.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrendererprogress.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrendererspin.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrendererspinner.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrenderertext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellrenderertoggle.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcellview.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcheckbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcheckmenuitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkclipboard.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkclist.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcolorbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcolorsel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcolorseldialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcombo.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcombobox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcomboboxentry.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcomboboxtext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcontainer.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkctree.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkcurve.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkdebug.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkdialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkdnd.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkdrawingarea.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkeditable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkentry.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkentrybuffer.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkentrycompletion.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkenums.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkeventbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkexpander.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfilechooser.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfilechooserbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfilechooserdialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfilechooserwidget.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfilefilter.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfilesel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfixed.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfontbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkfontsel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkframe.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkgamma.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkgc.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhandlebox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhbbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhpaned.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhruler.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhscale.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhscrollbar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhseparator.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkhsv.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkiconfactory.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkicontheme.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkiconview.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkimage.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkimagemenuitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkimcontext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkimcontextsimple.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkimmulticontext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkinfobar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkinputdialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkinvisible.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkitemfactory.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtklabel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtklayout.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtklinkbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtklist.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtklistitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkliststore.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmain.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmarshal.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmenu.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmenubar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmenuitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmenushell.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmenutoolbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmessagedialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmisc.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmodules.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkmountoperation.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtknotebook.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkobject.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkoffscreenwindow.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkoldeditable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkoptionmenu.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkorientable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkpagesetup.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkpaned.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkpapersize.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkpixmap.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkplug.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkpreview.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkprintcontext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkprintoperation.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkprintoperationpreview.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkprintsettings.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkprogress.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkprogressbar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkradioaction.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkradiobutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkradiomenuitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkradiotoolbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrange.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrc.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentaction.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentchooser.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentchooserdialog.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentchoosermenu.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentchooserwidget.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentfilter.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkrecentmanager.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkruler.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkscale.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkscalebutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkscrollbar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkscrolledwindow.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkselection.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkseparator.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkseparatormenuitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkseparatortoolitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtksettings.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkshow.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtksignal.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtksizegroup.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtksocket.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkspinbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkspinner.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkstatusbar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkstatusicon.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkstock.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkstyle.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktearoffmenuitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktestutils.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextbuffer.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextbufferrichtext.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextchild.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextdisplay.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextiter.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextlayout.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextmark.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktexttag.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktexttagtable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktextview.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktipsquery.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoggleaction.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktogglebutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoggletoolbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoolbar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoolbutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoolitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoolitemgroup.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoolpalette.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktoolshell.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktooltip.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktooltips.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktree.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreednd.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreeitem.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreemodel.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreemodelfilter.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreemodelsort.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreeselection.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreesortable.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreestore.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreeview.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktreeviewcolumn.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktypebuiltins.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtktypeutils.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkuimanager.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvbbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvbox.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkversion.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkviewport.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvolumebutton.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvpaned.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvruler.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvscale.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvscrollbar.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkvseparator.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkwidget.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -m 644 gtk/gtkwindow.h $DESTDIR/x11/include/gtk-2.0/gtk
+install -d $DESTDIR/x11/include/gtk-unix-print-2.0/gtk
+install -m 644 gtk/gtkpagesetupunixdialog.h $DESTDIR/x11/include/gtk-unix-print-2.0/gtk
+install -m 644 gtk/gtkprinter.h $DESTDIR/x11/include/gtk-unix-print-2.0/gtk
+install -m 644 gtk/gtkprintjob.h $DESTDIR/x11/include/gtk-unix-print-2.0/gtk
+install -m 644 gtk/gtkprintunixdialog.h $DESTDIR/x11/include/gtk-unix-print-2.0/gtk
+install -d $DESTDIR/x11/lib
+install gdk/.libs/libgdk-x11-2.0.so.0.* $DESTDIR/x11/lib/libgdk-x11-2.0.so.0
+ln -sf libgdk-x11-2.0.so.0 $DESTDIR/x11/lib/libgdk-2.0.so
+install gtk/.libs/libgtk-x11-2.0.so.0.* $DESTDIR/x11/lib/libgtk-x11-2.0.so.0
+ln -sf libgtk-x11-2.0.so.0 $DESTDIR/x11/lib/libgtk-2.0.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 gdk-2.0.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 gtk+-2.0.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 gtk+-unix-print-2.0.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/aclocal
+install -m 644 m4macros/gtk-2.0.m4 $DESTDIR/x11/share/aclocal
+install -d $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/alphatest.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/apple-red.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/appwindow.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/assistant.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/background.jpg $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/builder.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/button_box.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/changedisplay.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/clipboard.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/colorsel.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/combobox.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/demo.ui $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/dialog.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/drawingarea.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/editable_cells.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/entry_buffer.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/entry_completion.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/expander.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/floppybuddy.gif $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-applets.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-calendar.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-foot.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-fs-directory.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-fs-regular.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-gimp.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-gmush.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnome-gsame.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gnu-keys.png $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/gtk-logo-rgb.gif $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/hypertext.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/iconview.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/iconview_edit.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/images.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/infobar.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/links.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/list_store.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/menus.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/offscreen_window.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/offscreen_window2.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/panes.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/pickers.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/pixbufs.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/printing.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/rotated_text.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/search_entry.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/sizegroup.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/spinner.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/stock_browser.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/textscroll.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/textview.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/toolpalette.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/tree_store.c $DESTDIR/x11/share/gtk-2.0/demo
+install -m 644 demos/gtk-demo/ui_manager.c $DESTDIR/x11/share/gtk-2.0/demo
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/gtk2-build.pc << EOF
+Name: gtk+
+Version: 2.24.32
+Description: GIMP ToolKit
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/gtk-2.0/gdkconfig.h \\
+/x11/include/gtk-2.0/gdk/gdk.h \\
+/x11/include/gtk-2.0/gdk/gdkapplaunchcontext.h \\
+/x11/include/gtk-2.0/gdk/gdkcairo.h \\
+/x11/include/gtk-2.0/gdk/gdkcolor.h \\
+/x11/include/gtk-2.0/gdk/gdkcursor.h \\
+/x11/include/gtk-2.0/gdk/gdkdisplay.h \\
+/x11/include/gtk-2.0/gdk/gdkdisplaymanager.h \\
+/x11/include/gtk-2.0/gdk/gdkdnd.h \\
+/x11/include/gtk-2.0/gdk/gdkdrawable.h \\
+/x11/include/gtk-2.0/gdk/gdkenumtypes.h \\
+/x11/include/gtk-2.0/gdk/gdkevents.h \\
+/x11/include/gtk-2.0/gdk/gdkfont.h \\
+/x11/include/gtk-2.0/gdk/gdkgc.h \\
+/x11/include/gtk-2.0/gdk/gdkimage.h \\
+/x11/include/gtk-2.0/gdk/gdkinput.h \\
+/x11/include/gtk-2.0/gdk/gdkkeys.h \\
+/x11/include/gtk-2.0/gdk/gdkkeysyms.h \\
+/x11/include/gtk-2.0/gdk/gdkkeysyms-compat.h \\
+/x11/include/gtk-2.0/gdk/gdkpango.h \\
+/x11/include/gtk-2.0/gdk/gdkpixbuf.h \\
+/x11/include/gtk-2.0/gdk/gdkpixmap.h \\
+/x11/include/gtk-2.0/gdk/gdkprivate.h \\
+/x11/include/gtk-2.0/gdk/gdkproperty.h \\
+/x11/include/gtk-2.0/gdk/gdkregion.h \\
+/x11/include/gtk-2.0/gdk/gdkrgb.h \\
+/x11/include/gtk-2.0/gdk/gdkscreen.h \\
+/x11/include/gtk-2.0/gdk/gdkselection.h \\
+/x11/include/gtk-2.0/gdk/gdkspawn.h \\
+/x11/include/gtk-2.0/gdk/gdktestutils.h \\
+/x11/include/gtk-2.0/gdk/gdktypes.h \\
+/x11/include/gtk-2.0/gdk/gdkvisual.h \\
+/x11/include/gtk-2.0/gdk/gdkwindow.h \\
+/x11/include/gtk-2.0/gdk/gdkx.h \\
+/x11/include/gtk-2.0/gtk/gtk.h \\
+/x11/include/gtk-2.0/gtk/gtkaboutdialog.h \\
+/x11/include/gtk-2.0/gtk/gtkaccelgroup.h \\
+/x11/include/gtk-2.0/gtk/gtkaccellabel.h \\
+/x11/include/gtk-2.0/gtk/gtkaccelmap.h \\
+/x11/include/gtk-2.0/gtk/gtkaccessible.h \\
+/x11/include/gtk-2.0/gtk/gtkaction.h \\
+/x11/include/gtk-2.0/gtk/gtkactiongroup.h \\
+/x11/include/gtk-2.0/gtk/gtkactivatable.h \\
+/x11/include/gtk-2.0/gtk/gtkadjustment.h \\
+/x11/include/gtk-2.0/gtk/gtkalignment.h \\
+/x11/include/gtk-2.0/gtk/gtkarrow.h \\
+/x11/include/gtk-2.0/gtk/gtkaspectframe.h \\
+/x11/include/gtk-2.0/gtk/gtkassistant.h \\
+/x11/include/gtk-2.0/gtk/gtkbbox.h \\
+/x11/include/gtk-2.0/gtk/gtkbin.h \\
+/x11/include/gtk-2.0/gtk/gtkbindings.h \\
+/x11/include/gtk-2.0/gtk/gtkbox.h \\
+/x11/include/gtk-2.0/gtk/gtkbuildable.h \\
+/x11/include/gtk-2.0/gtk/gtkbuilder.h \\
+/x11/include/gtk-2.0/gtk/gtkbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkcalendar.h \\
+/x11/include/gtk-2.0/gtk/gtkcelleditable.h \\
+/x11/include/gtk-2.0/gtk/gtkcelllayout.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrenderer.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrendereraccel.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrenderercombo.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrendererpixbuf.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrendererprogress.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrendererspin.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrendererspinner.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrenderertext.h \\
+/x11/include/gtk-2.0/gtk/gtkcellrenderertoggle.h \\
+/x11/include/gtk-2.0/gtk/gtkcellview.h \\
+/x11/include/gtk-2.0/gtk/gtkcheckbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkcheckmenuitem.h \\
+/x11/include/gtk-2.0/gtk/gtkclipboard.h \\
+/x11/include/gtk-2.0/gtk/gtkclist.h \\
+/x11/include/gtk-2.0/gtk/gtkcolorbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkcolorsel.h \\
+/x11/include/gtk-2.0/gtk/gtkcolorseldialog.h \\
+/x11/include/gtk-2.0/gtk/gtkcombo.h \\
+/x11/include/gtk-2.0/gtk/gtkcombobox.h \\
+/x11/include/gtk-2.0/gtk/gtkcomboboxentry.h \\
+/x11/include/gtk-2.0/gtk/gtkcomboboxtext.h \\
+/x11/include/gtk-2.0/gtk/gtkcontainer.h \\
+/x11/include/gtk-2.0/gtk/gtkctree.h \\
+/x11/include/gtk-2.0/gtk/gtkcurve.h \\
+/x11/include/gtk-2.0/gtk/gtkdebug.h \\
+/x11/include/gtk-2.0/gtk/gtkdialog.h \\
+/x11/include/gtk-2.0/gtk/gtkdnd.h \\
+/x11/include/gtk-2.0/gtk/gtkdrawingarea.h \\
+/x11/include/gtk-2.0/gtk/gtkeditable.h \\
+/x11/include/gtk-2.0/gtk/gtkentry.h \\
+/x11/include/gtk-2.0/gtk/gtkentrybuffer.h \\
+/x11/include/gtk-2.0/gtk/gtkentrycompletion.h \\
+/x11/include/gtk-2.0/gtk/gtkenums.h \\
+/x11/include/gtk-2.0/gtk/gtkeventbox.h \\
+/x11/include/gtk-2.0/gtk/gtkexpander.h \\
+/x11/include/gtk-2.0/gtk/gtkfilechooser.h \\
+/x11/include/gtk-2.0/gtk/gtkfilechooserbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkfilechooserdialog.h \\
+/x11/include/gtk-2.0/gtk/gtkfilechooserwidget.h \\
+/x11/include/gtk-2.0/gtk/gtkfilefilter.h \\
+/x11/include/gtk-2.0/gtk/gtkfilesel.h \\
+/x11/include/gtk-2.0/gtk/gtkfixed.h \\
+/x11/include/gtk-2.0/gtk/gtkfontbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkfontsel.h \\
+/x11/include/gtk-2.0/gtk/gtkframe.h \\
+/x11/include/gtk-2.0/gtk/gtkgamma.h \\
+/x11/include/gtk-2.0/gtk/gtkgc.h \\
+/x11/include/gtk-2.0/gtk/gtkhandlebox.h \\
+/x11/include/gtk-2.0/gtk/gtkhbbox.h \\
+/x11/include/gtk-2.0/gtk/gtkhbox.h \\
+/x11/include/gtk-2.0/gtk/gtkhpaned.h \\
+/x11/include/gtk-2.0/gtk/gtkhruler.h \\
+/x11/include/gtk-2.0/gtk/gtkhscale.h \\
+/x11/include/gtk-2.0/gtk/gtkhscrollbar.h \\
+/x11/include/gtk-2.0/gtk/gtkhseparator.h \\
+/x11/include/gtk-2.0/gtk/gtkhsv.h \\
+/x11/include/gtk-2.0/gtk/gtkiconfactory.h \\
+/x11/include/gtk-2.0/gtk/gtkicontheme.h \\
+/x11/include/gtk-2.0/gtk/gtkiconview.h \\
+/x11/include/gtk-2.0/gtk/gtkimage.h \\
+/x11/include/gtk-2.0/gtk/gtkimagemenuitem.h \\
+/x11/include/gtk-2.0/gtk/gtkimcontext.h \\
+/x11/include/gtk-2.0/gtk/gtkimcontextsimple.h \\
+/x11/include/gtk-2.0/gtk/gtkimmulticontext.h \\
+/x11/include/gtk-2.0/gtk/gtkinfobar.h \\
+/x11/include/gtk-2.0/gtk/gtkinputdialog.h \\
+/x11/include/gtk-2.0/gtk/gtkinvisible.h \\
+/x11/include/gtk-2.0/gtk/gtkitem.h \\
+/x11/include/gtk-2.0/gtk/gtkitemfactory.h \\
+/x11/include/gtk-2.0/gtk/gtklabel.h \\
+/x11/include/gtk-2.0/gtk/gtklayout.h \\
+/x11/include/gtk-2.0/gtk/gtklinkbutton.h \\
+/x11/include/gtk-2.0/gtk/gtklist.h \\
+/x11/include/gtk-2.0/gtk/gtklistitem.h \\
+/x11/include/gtk-2.0/gtk/gtkliststore.h \\
+/x11/include/gtk-2.0/gtk/gtkmain.h \\
+/x11/include/gtk-2.0/gtk/gtkmarshal.h \\
+/x11/include/gtk-2.0/gtk/gtkmenu.h \\
+/x11/include/gtk-2.0/gtk/gtkmenubar.h \\
+/x11/include/gtk-2.0/gtk/gtkmenuitem.h \\
+/x11/include/gtk-2.0/gtk/gtkmenushell.h \\
+/x11/include/gtk-2.0/gtk/gtkmenutoolbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkmessagedialog.h \\
+/x11/include/gtk-2.0/gtk/gtkmisc.h \\
+/x11/include/gtk-2.0/gtk/gtkmodules.h \\
+/x11/include/gtk-2.0/gtk/gtkmountoperation.h \\
+/x11/include/gtk-2.0/gtk/gtknotebook.h \\
+/x11/include/gtk-2.0/gtk/gtkobject.h \\
+/x11/include/gtk-2.0/gtk/gtkoffscreenwindow.h \\
+/x11/include/gtk-2.0/gtk/gtkoldeditable.h \\
+/x11/include/gtk-2.0/gtk/gtkoptionmenu.h \\
+/x11/include/gtk-2.0/gtk/gtkorientable.h \\
+/x11/include/gtk-2.0/gtk/gtkpagesetup.h \\
+/x11/include/gtk-2.0/gtk/gtkpaned.h \\
+/x11/include/gtk-2.0/gtk/gtkpapersize.h \\
+/x11/include/gtk-2.0/gtk/gtkpixmap.h \\
+/x11/include/gtk-2.0/gtk/gtkplug.h \\
+/x11/include/gtk-2.0/gtk/gtkpreview.h \\
+/x11/include/gtk-2.0/gtk/gtkprintcontext.h \\
+/x11/include/gtk-2.0/gtk/gtkprintoperation.h \\
+/x11/include/gtk-2.0/gtk/gtkprintoperationpreview.h \\
+/x11/include/gtk-2.0/gtk/gtkprintsettings.h \\
+/x11/include/gtk-2.0/gtk/gtkprogress.h \\
+/x11/include/gtk-2.0/gtk/gtkprogressbar.h \\
+/x11/include/gtk-2.0/gtk/gtkradioaction.h \\
+/x11/include/gtk-2.0/gtk/gtkradiobutton.h \\
+/x11/include/gtk-2.0/gtk/gtkradiomenuitem.h \\
+/x11/include/gtk-2.0/gtk/gtkradiotoolbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkrange.h \\
+/x11/include/gtk-2.0/gtk/gtkrc.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentaction.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentchooser.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentchooserdialog.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentchoosermenu.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentchooserwidget.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentfilter.h \\
+/x11/include/gtk-2.0/gtk/gtkrecentmanager.h \\
+/x11/include/gtk-2.0/gtk/gtkruler.h \\
+/x11/include/gtk-2.0/gtk/gtkscale.h \\
+/x11/include/gtk-2.0/gtk/gtkscalebutton.h \\
+/x11/include/gtk-2.0/gtk/gtkscrollbar.h \\
+/x11/include/gtk-2.0/gtk/gtkscrolledwindow.h \\
+/x11/include/gtk-2.0/gtk/gtkselection.h \\
+/x11/include/gtk-2.0/gtk/gtkseparator.h \\
+/x11/include/gtk-2.0/gtk/gtkseparatormenuitem.h \\
+/x11/include/gtk-2.0/gtk/gtkseparatortoolitem.h \\
+/x11/include/gtk-2.0/gtk/gtksettings.h \\
+/x11/include/gtk-2.0/gtk/gtkshow.h \\
+/x11/include/gtk-2.0/gtk/gtksignal.h \\
+/x11/include/gtk-2.0/gtk/gtksizegroup.h \\
+/x11/include/gtk-2.0/gtk/gtksocket.h \\
+/x11/include/gtk-2.0/gtk/gtkspinbutton.h \\
+/x11/include/gtk-2.0/gtk/gtkspinner.h \\
+/x11/include/gtk-2.0/gtk/gtkstatusbar.h \\
+/x11/include/gtk-2.0/gtk/gtkstatusicon.h \\
+/x11/include/gtk-2.0/gtk/gtkstock.h \\
+/x11/include/gtk-2.0/gtk/gtkstyle.h \\
+/x11/include/gtk-2.0/gtk/gtktable.h \\
+/x11/include/gtk-2.0/gtk/gtktearoffmenuitem.h \\
+/x11/include/gtk-2.0/gtk/gtktestutils.h \\
+/x11/include/gtk-2.0/gtk/gtktext.h \\
+/x11/include/gtk-2.0/gtk/gtktextbuffer.h \\
+/x11/include/gtk-2.0/gtk/gtktextbufferrichtext.h \\
+/x11/include/gtk-2.0/gtk/gtktextchild.h \\
+/x11/include/gtk-2.0/gtk/gtktextdisplay.h \\
+/x11/include/gtk-2.0/gtk/gtktextiter.h \\
+/x11/include/gtk-2.0/gtk/gtktextlayout.h \\
+/x11/include/gtk-2.0/gtk/gtktextmark.h \\
+/x11/include/gtk-2.0/gtk/gtktexttag.h \\
+/x11/include/gtk-2.0/gtk/gtktexttagtable.h \\
+/x11/include/gtk-2.0/gtk/gtktextview.h \\
+/x11/include/gtk-2.0/gtk/gtktipsquery.h \\
+/x11/include/gtk-2.0/gtk/gtktoggleaction.h \\
+/x11/include/gtk-2.0/gtk/gtktogglebutton.h \\
+/x11/include/gtk-2.0/gtk/gtktoggletoolbutton.h \\
+/x11/include/gtk-2.0/gtk/gtktoolbar.h \\
+/x11/include/gtk-2.0/gtk/gtktoolbutton.h \\
+/x11/include/gtk-2.0/gtk/gtktoolitem.h \\
+/x11/include/gtk-2.0/gtk/gtktoolitemgroup.h \\
+/x11/include/gtk-2.0/gtk/gtktoolpalette.h \\
+/x11/include/gtk-2.0/gtk/gtktoolshell.h \\
+/x11/include/gtk-2.0/gtk/gtktooltip.h \\
+/x11/include/gtk-2.0/gtk/gtktooltips.h \\
+/x11/include/gtk-2.0/gtk/gtktree.h \\
+/x11/include/gtk-2.0/gtk/gtktreednd.h \\
+/x11/include/gtk-2.0/gtk/gtktreeitem.h \\
+/x11/include/gtk-2.0/gtk/gtktreemodel.h \\
+/x11/include/gtk-2.0/gtk/gtktreemodelfilter.h \\
+/x11/include/gtk-2.0/gtk/gtktreemodelsort.h \\
+/x11/include/gtk-2.0/gtk/gtktreeselection.h \\
+/x11/include/gtk-2.0/gtk/gtktreesortable.h \\
+/x11/include/gtk-2.0/gtk/gtktreestore.h \\
+/x11/include/gtk-2.0/gtk/gtktreeview.h \\
+/x11/include/gtk-2.0/gtk/gtktreeviewcolumn.h \\
+/x11/include/gtk-2.0/gtk/gtktypebuiltins.h \\
+/x11/include/gtk-2.0/gtk/gtktypeutils.h \\
+/x11/include/gtk-2.0/gtk/gtkuimanager.h \\
+/x11/include/gtk-2.0/gtk/gtkvbbox.h \\
+/x11/include/gtk-2.0/gtk/gtkvbox.h \\
+/x11/include/gtk-2.0/gtk/gtkversion.h \\
+/x11/include/gtk-2.0/gtk/gtkviewport.h \\
+/x11/include/gtk-2.0/gtk/gtkvolumebutton.h \\
+/x11/include/gtk-2.0/gtk/gtkvpaned.h \\
+/x11/include/gtk-2.0/gtk/gtkvruler.h \\
+/x11/include/gtk-2.0/gtk/gtkvscale.h \\
+/x11/include/gtk-2.0/gtk/gtkvscrollbar.h \\
+/x11/include/gtk-2.0/gtk/gtkvseparator.h \\
+/x11/include/gtk-2.0/gtk/gtkwidget.h \\
+/x11/include/gtk-2.0/gtk/gtkwindow.h \\
+/x11/include/gtk-unix-print-2.0/gtk/gtkpagesetupunixdialog.h \\
+/x11/include/gtk-unix-print-2.0/gtk/gtkprinter.h \\
+/x11/include/gtk-unix-print-2.0/gtk/gtkprintjob.h \\
+/x11/include/gtk-unix-print-2.0/gtk/gtkprintunixdialog.h \\
+/x11/lib/libgdk-2.0.so \\
+/x11/lib/libgtk-2.0.so \\
+/x11/lib/pkgconfig/gdk-2.0.pc \\
+/x11/lib/pkgconfig/gtk+-2.0.pc \\
+/x11/lib/pkgconfig/gtk+-unix-print-2.0.pc \\
+/x11/share/aclocal/gtk-2.0.m4
+
+exec=\\
+/x11/bin/gtk-demo \\
+/x11/bin/gtk-query-immodules-2.0 \\
+/x11/bin/gtk-update-icon-cache \\
+/x11/lib/libgdk-x11-2.0.so.0 \\
+/x11/lib/libgtk-x11-2.0.so.0 \\
+/x11/share/gtk-2.0/demo/alphatest.png \\
+/x11/share/gtk-2.0/demo/apple-red.png \\
+/x11/share/gtk-2.0/demo/appwindow.c \\
+/x11/share/gtk-2.0/demo/assistant.c \\
+/x11/share/gtk-2.0/demo/background.jpg \\
+/x11/share/gtk-2.0/demo/builder.c \\
+/x11/share/gtk-2.0/demo/button_box.c \\
+/x11/share/gtk-2.0/demo/changedisplay.c \\
+/x11/share/gtk-2.0/demo/clipboard.c \\
+/x11/share/gtk-2.0/demo/colorsel.c \\
+/x11/share/gtk-2.0/demo/combobox.c \\
+/x11/share/gtk-2.0/demo/demo.ui \\
+/x11/share/gtk-2.0/demo/dialog.c \\
+/x11/share/gtk-2.0/demo/drawingarea.c \\
+/x11/share/gtk-2.0/demo/editable_cells.c \\
+/x11/share/gtk-2.0/demo/entry_buffer.c \\
+/x11/share/gtk-2.0/demo/entry_completion.c \\
+/x11/share/gtk-2.0/demo/expander.c \\
+/x11/share/gtk-2.0/demo/floppybuddy.gif \\
+/x11/share/gtk-2.0/demo/gnome-applets.png \\
+/x11/share/gtk-2.0/demo/gnome-calendar.png \\
+/x11/share/gtk-2.0/demo/gnome-foot.png \\
+/x11/share/gtk-2.0/demo/gnome-fs-directory.png \\
+/x11/share/gtk-2.0/demo/gnome-fs-regular.png \\
+/x11/share/gtk-2.0/demo/gnome-gimp.png \\
+/x11/share/gtk-2.0/demo/gnome-gmush.png \\
+/x11/share/gtk-2.0/demo/gnome-gsame.png \\
+/x11/share/gtk-2.0/demo/gnu-keys.png \\
+/x11/share/gtk-2.0/demo/gtk-logo-rgb.gif \\
+/x11/share/gtk-2.0/demo/hypertext.c \\
+/x11/share/gtk-2.0/demo/iconview.c \\
+/x11/share/gtk-2.0/demo/iconview_edit.c \\
+/x11/share/gtk-2.0/demo/images.c \\
+/x11/share/gtk-2.0/demo/infobar.c \\
+/x11/share/gtk-2.0/demo/links.c \\
+/x11/share/gtk-2.0/demo/list_store.c \\
+/x11/share/gtk-2.0/demo/menus.c \\
+/x11/share/gtk-2.0/demo/offscreen_window.c \\
+/x11/share/gtk-2.0/demo/offscreen_window2.c \\
+/x11/share/gtk-2.0/demo/panes.c \\
+/x11/share/gtk-2.0/demo/pickers.c \\
+/x11/share/gtk-2.0/demo/pixbufs.c \\
+/x11/share/gtk-2.0/demo/printing.c \\
+/x11/share/gtk-2.0/demo/rotated_text.c \\
+/x11/share/gtk-2.0/demo/search_entry.c \\
+/x11/share/gtk-2.0/demo/sizegroup.c \\
+/x11/share/gtk-2.0/demo/spinner.c \\
+/x11/share/gtk-2.0/demo/stock_browser.c \\
+/x11/share/gtk-2.0/demo/textscroll.c \\
+/x11/share/gtk-2.0/demo/textview.c \\
+/x11/share/gtk-2.0/demo/toolpalette.c \\
+/x11/share/gtk-2.0/demo/tree_store.c \\
+/x11/share/gtk-2.0/demo/ui_manager.c
+EOF
+
+exit
+--- gtk+-2.24.32.orig/gdk-2.0.pc.in
++++ gtk+-2.24.32/gdk-2.0.pc.in
+@@ -8,5 +8,5 @@
+ Description: GTK+ Drawing Kit (${target} target)
+ Version: @VERSION@
+ Requires: @GDK_PACKAGES@
+-Libs: -L${libdir} -lgdk-${target}-@GTK_API_VERSION@ @GDK_EXTRA_LIBS@
+-Cflags: -I${includedir}/gtk-2.0 -I${libdir}/gtk-2.0/include @GDK_EXTRA_CFLAGS@
++Libs: -L${libdir} -lgdk-@GTK_API_VERSION@ @GDK_EXTRA_LIBS@
++Cflags: -I${includedir}/gtk-2.0 @GDK_EXTRA_CFLAGS@
+--- gtk+-2.24.32.orig/gtk+-2.0.pc.in
++++ gtk+-2.24.32/gtk+-2.0.pc.in
+@@ -10,6 +10,6 @@
+ Name: GTK+
+ Description: GTK+ Graphical UI Library (${target} target)
+ Version: @VERSION@
+-Requires: gdk-${target}-2.0 @GTK_PACKAGES@
+-Libs: -L${libdir} -lgtk-${target}-@GTK_API_VERSION@ @GTK_EXTRA_LIBS@
++Requires: gdk-2.0 @GTK_PACKAGES@
++Libs: -L${libdir} -lgtk-@GTK_API_VERSION@ @GTK_EXTRA_LIBS@
+ Cflags: -I${includedir}/gtk-2.0 @GTK_EXTRA_CFLAGS@
+--- gtk+-2.24.32.orig/gtk+-unix-print-2.0.pc.in
++++ gtk+-2.24.32/gtk+-unix-print-2.0.pc.in
+@@ -10,5 +10,5 @@
+ Name: GTK+
+ Description: GTK+ Unix print support
+ Version: @VERSION@
+-Requires: gtk+-${target}-2.0 @GTK_PACKAGES@
++Requires: gtk+-2.0 @GTK_PACKAGES@
+ Cflags: -I${includedir}/gtk-unix-print-2.0
