@@ -1,0 +1,3451 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="a52dec-build autotools-wrappers-lt-build gtk2-build sdl-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.61; am-1.9; lt-1.5.26)
+cd common/video/iso-mpeg4; libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c --foreign; cd -
+cd lib/SDLAudio; libtoolize -c -f; aclocal -I .; autoconf; automake -a -c --foreign; cd -
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c --foreign; touch bootstrapped
+LD_LIBRARY_PATH=$DESTDIR/x11/lib PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install lib/mp4v2/util/.libs/mp4dump $DESTDIR/x11/bin
+install lib/mp4v2/util/.libs/mp4info $DESTDIR/x11/bin
+install lib/mp4v2/util/.libs/mp4tags $DESTDIR/x11/bin
+install lib/mp4v2/util/.libs/mp4trackdump $DESTDIR/x11/bin
+install lib/mp4v2/util/.libs/mp4videoinfo $DESTDIR/x11/bin
+install lib/mpeg2ps/.libs/mpeg_ps_extract $DESTDIR/x11/bin
+install lib/mpeg2ps/.libs/mpeg_ps_info $DESTDIR/x11/bin
+install lib/mpeg2t/.libs/mpeg2t_dump $DESTDIR/x11/bin
+install player/src/.libs/gmp4player $DESTDIR/x11/bin
+install player/src/.libs/mp4player $DESTDIR/x11/bin
+install server/mp4creator/.libs/mp4creator $DESTDIR/x11/bin
+install server/mp4live/.libs/mp4live $DESTDIR/x11/bin
+install server/util/avi2raw/.libs/avi2raw $DESTDIR/x11/bin
+install server/util/avidump/.libs/avidump $DESTDIR/x11/bin
+install server/util/lboxcrop/.libs/lboxcrop $DESTDIR/x11/bin
+install server/util/rgb2yuv/.libs/rgb2yuv $DESTDIR/x11/bin
+install util/h264/.libs/h264_parse $DESTDIR/x11/bin
+install util/mpeg2/.libs/mpeg2video_parse $DESTDIR/x11/bin
+install util/mpeg4vol/.libs/mpeg4vol $DESTDIR/x11/bin
+install util/yuv/.libs/sdl_pcm_play $DESTDIR/x11/bin
+install util/yuv/.libs/yuvdump $DESTDIR/x11/bin
+install -d $DESTDIR/x11/lib
+install common/video/iso-mpeg4/src/.libs/libmpeg4ip_mpeg4_iso.so.0.* $DESTDIR/x11/lib/libmpeg4ip_mpeg4_iso.so.0
+ln -sf libmpeg4ip_mpeg4_iso.so.0 $DESTDIR/x11/lib/libmpeg4ip_mpeg4_iso.so
+install lib/ffmpeg/.libs/libmpeg4ip_ffmpeg.so.0.* $DESTDIR/x11/lib/libmpeg4ip_ffmpeg.so.0
+ln -sf libmpeg4ip_ffmpeg.so.0 $DESTDIR/x11/lib/libmpeg4ip_ffmpeg.so
+install lib/fposrec/.libs/libmpeg4ip_fposrec.so.0.* $DESTDIR/x11/lib/libmpeg4ip_fposrec.so.0
+ln -sf libmpeg4ip_fposrec.so.0 $DESTDIR/x11/lib/libmpeg4ip_fposrec.so
+install lib/gnu/.libs/libmpeg4ip_gnu.so.0.* $DESTDIR/x11/lib/libmpeg4ip_gnu.so.0
+ln -sf libmpeg4ip_gnu.so.0 $DESTDIR/x11/lib/libmpeg4ip_gnu.so
+install lib/ismacryp/.libs/libismacryp.so.0.* $DESTDIR/x11/lib/libismacryp.so.0
+ln -sf libismacryp.so.0 $DESTDIR/x11/lib/libismacryp.so
+install lib/mp4/.libs/libmp4.so.0.* $DESTDIR/x11/lib/libmp4.so.0
+ln -sf libmp4.so.0 $DESTDIR/x11/lib/libmp4.so
+install lib/mp4av/.libs/libmp4av.so.0.* $DESTDIR/x11/lib/libmp4av.so.0
+ln -sf libmp4av.so.0 $DESTDIR/x11/lib/libmp4av.so
+install lib/mp4v2/.libs/libmp4v2.so.0.* $DESTDIR/x11/lib/libmp4v2.so.0
+ln -sf libmp4v2.so.0 $DESTDIR/x11/lib/libmp4v2.so
+install lib/msg_queue/.libs/libmsg_queue.so.0.* $DESTDIR/x11/lib/libmsg_queue.so.0
+ln -sf libmsg_queue.so.0 $DESTDIR/x11/lib/libmsg_queue.so
+install lib/SDLAudio/src/.libs/libmpeg4ipSDL-1.2.so.0.* $DESTDIR/x11/lib/libmpeg4ipSDL-1.2.so.0
+ln -sf libmpeg4ipSDL-1.2.so.0 $DESTDIR/x11/lib/libmpeg4ipSDL-1.2.so
+install lib/sdp/.libs/libsdp.so.0.* $DESTDIR/x11/lib/libsdp.so.0
+ln -sf libsdp.so.0 $DESTDIR/x11/lib/libsdp.so
+install lib/srtp/.libs/libsrtpif.so.0.* $DESTDIR/x11/lib/libsrtpif.so.0
+ln -sf libsrtpif.so.0 $DESTDIR/x11/lib/libsrtpif.so
+install player/lib/libhttp/.libs/libhttp.so.0.* $DESTDIR/x11/lib/libhttp.so.0
+ln -sf libhttp.so.0 $DESTDIR/x11/lib/libhttp.so
+install player/lib/mp4util/.libs/libmp4util.so.0.* $DESTDIR/x11/lib/libmp4util.so.0
+ln -sf libmp4util.so.0 $DESTDIR/x11/lib/libmp4util.so
+install -d $DESTDIR/x11/lib/mp4player_plugin
+install player/plugin/audio/a52dec/.libs/a52_audio_plugin.so.0 $DESTDIR/x11/lib/mp4player_plugin/a52_audio_plugin.so
+install player/src/codec/aa/.libs/aac_plugin.so.0.* $DESTDIR/x11/lib/mp4player_plugin/aac_plugin.so
+install player/src/codec/mp3/.libs/mp3_plugin.so.0.* $DESTDIR/x11/lib/mp4player_plugin/mp3_plugin.so
+install player/src/codec/mpeg4/.libs/mpeg4_iso_plugin.so.0.* $DESTDIR/x11/lib/mp4player_plugin/mpeg4_iso_plugin.so
+install player/src/codec/wav/.libs/wav_plugin.so.0.* $DESTDIR/x11/lib/mp4player_plugin/wav_plugin.so
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/mpeg4ip-build.pc << EOF
+Name: mpeg4ip
+Version: 1.6.1
+Description: utilities for encoding, streaming, playing and manipulating MPEG content
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/avi2raw \\
+/x11/bin/avidump \\
+/x11/bin/gmp4player \\
+/x11/bin/h264_parse \\
+/x11/bin/lboxcrop \\
+/x11/bin/mp4creator \\
+/x11/bin/mp4dump \\
+/x11/bin/mp4info \\
+/x11/bin/mp4live \\
+/x11/bin/mp4player \\
+/x11/bin/mp4tags \\
+/x11/bin/mp4trackdump \\
+/x11/bin/mp4videoinfo \\
+/x11/bin/mpeg_ps_extract \\
+/x11/bin/mpeg_ps_info \\
+/x11/bin/mpeg2t_dump \\
+/x11/bin/mpeg2video_parse \\
+/x11/bin/mpeg4vol \\
+/x11/bin/rgb2yuv \\
+/x11/bin/sdl_pcm_play \\
+/x11/bin/yuvdump \\
+/x11/lib/libhttp.so \\
+/x11/lib/libhttp.so.0 \\
+/x11/lib/libismacryp.so \\
+/x11/lib/libismacryp.so.0 \\
+/x11/lib/libmp4.so \\
+/x11/lib/libmp4.so.0 \\
+/x11/lib/libmp4av.so \\
+/x11/lib/libmp4av.so.0 \\
+/x11/lib/libmp4util.so \\
+/x11/lib/libmp4util.so.0 \\
+/x11/lib/libmp4v2.so \\
+/x11/lib/libmp4v2.so.0 \\
+/x11/lib/libmpeg4ip_ffmpeg.so \\
+/x11/lib/libmpeg4ip_ffmpeg.so.0 \\
+/x11/lib/libmpeg4ip_fposrec.so \\
+/x11/lib/libmpeg4ip_fposrec.so.0 \\
+/x11/lib/libmpeg4ip_gnu.so \\
+/x11/lib/libmpeg4ip_gnu.so.0 \\
+/x11/lib/libmpeg4ip_mpeg4_iso.so \\
+/x11/lib/libmpeg4ip_mpeg4_iso.so.0 \\
+/x11/lib/libmpeg4ipSDL-1.2.so \\
+/x11/lib/libmpeg4ipSDL-1.2.so.0 \\
+/x11/lib/libmsg_queue.so \\
+/x11/lib/libmsg_queue.so.0 \\
+/x11/lib/libsdp.so \\
+/x11/lib/libsdp.so.0 \\
+/x11/lib/libsrtpif.so \\
+/x11/lib/libsrtpif.so.0 \\
+/x11/lib/mp4player_plugin/a52_audio_plugin.so \\
+/x11/lib/mp4player_plugin/aac_plugin.so \\
+/x11/lib/mp4player_plugin/mp3_plugin.so \\
+/x11/lib/mp4player_plugin/mpeg4_iso_plugin.so \\
+/x11/lib/mp4player_plugin/wav_plugin.so
+EOF
+
+exit
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/dataStruct.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/dataStruct.hpp
+@@ -353,15 +353,13 @@
+ 
+ 
+ 	// msg.cpp
+-	Void errorHandler(Char *s, ...);
+-	Void noteStat(Char *s, ...);
+-	Void noteDebug(Char *s, ...);
+-	Void noteDetail(Char *s, ...);
+-	Void noteProgress(Char *s, ...);
+-	Void noteProgressNoNL(Char *s, ...);
+-	Void noteWarning(Char *s, ...);
+-	Void noteError(Char *s, ...);
+-	Void noteErrorNoPre(Char *s, ...);
++	Void errorHandler(const Char *s, ...);
++	Void noteStat(const Char *s, ...);
++	Void noteDebug(const Char *s, ...);
++	Void noteDetail(const Char *s, ...);
++	Void noteProgress(const Char *s, ...);
++	Void noteWarning(const Char *s, ...);
++	Void noteError(const Char *s, ...);
+ 
+ 	//download_filter.cpp
+ 	Void check_marker(Int marker_bit);
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/entropy.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/entropy.hpp
+@@ -46,7 +46,7 @@
+ 
+ typedef struct VlcTableTag {
+ 	Int lSymbol;
+-	char *pchBits;
++	const char *pchBits;
+ } VlcTable;
+ 
+ class CEntropyEncoder
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/globals.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/globals.hpp
+@@ -80,7 +80,7 @@
+ EXTERN WVT_CODEC mzte_codec;
+ 
+ /* for displaying state information */
+-EXTERN Char *mapStateToText[]
++EXTERN const Char *mapStateToText[]
+ #ifdef DEFINE_GLOBALS
+  = {"S_DC", "S_INIT", "S_ZTR", "S_ZTR_D", "S_IZ", "S_VZTR", "S_VAL", "S_LINIT",
+  "S_LZTR", "S_LZTR_D", "S_LVZTR"}
+@@ -88,7 +88,7 @@
+ ;
+ 
+ /* for displaying Type information */
+-EXTERN Char *mapTypeToText[]
++EXTERN const Char *mapTypeToText[]
+ #ifdef DEFINE_GLOBALS
+  =  {"IZ", "VAL", "ZTR", "VZTR", "ZTR_D", "VLEAF", "ZLEAF",
+      "UNTYPED"}
+@@ -96,7 +96,7 @@
+ ;
+ 
+ /* for displaying arithmetic probability model information */
+-EXTERN Char *mapArithModelToText[]
++EXTERN const Char *mapArithModelToText[]
+ #ifdef DEFINE_GLOBALS
+ = {"ACM_NONE", "ACM_SKIP", "ACM_ROOT", "ACM_VALZ", "ACM_VALNZ", "ACM_RESID",
+   "ACM_DC"}
+@@ -113,7 +113,7 @@
+ 
+ /* The filename (sans suffix) where the coefficient info. during 
+    the encoding phase is written. */
+-EXTERN Char *mapFileEnc
++EXTERN const Char *mapFileEnc
+ #ifdef DEFINE_GLOBALS
+ ="mapEnc"
+ #endif
+@@ -121,7 +121,7 @@
+ 
+ /* The filename (sans suffix) where the coefficient info. during 
+    the decoding phase is written. */
+-EXTERN Char *mapFileDec
++EXTERN const Char *mapFileDec
+ #ifdef DEFINE_GLOBALS
+ ="mapDec"
+ #endif
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/grayc.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/grayc.hpp
+@@ -77,7 +77,7 @@
+ 	CU8Image (const Char* vdlFileName); // read from a VM file.
+ 
+ 	// Attributes
+-	Bool valid () const {return this != 0;}
++	Bool valid () const {return m_ppxlc != 0;}
+ 	const CRct& where () const {return m_rc;}
+ 	CRct boundingBox (const PixelC pxlcOutsideColor = (PixelC) transpValue) const;
+ 	PixelC pixel (CoordI x, CoordI y) const {return m_ppxlc [m_rc.offset (x, y)];}
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/grayf.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/grayf.hpp
+@@ -65,7 +65,7 @@
+ 	CFloatImage (const Char* vdlFileName); // read from a VM file.
+ 
+ 	// Attributes
+-	Bool valid () const {return this != 0;}
++	Bool valid () const {return m_ppxlf != 0;}
+ 	const CRct& where () const {return m_rc;}
+ 	CRct boundingBox (const PixelF pxlfOutsideColor = (PixelF) transpValue) const;
+ 	PixelF pixel (CoordI x, CoordI y) const {return m_ppxlf [m_rc.offset (x, y)];}
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/grayi.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/grayi.hpp
+@@ -66,7 +66,7 @@
+ 	CIntImage (const Char* vdlFileName); // read from a VM file.
+ 
+ 	// Attributes
+-	Bool valid () const {return this != 0;}
++	Bool valid () const {return m_ppxli != 0;}
+ 	const CRct& where () const {return m_rc;}
+ 	CRct boundingBox (const PixelI pxliOutsideColor = (PixelI) transpValue) const;
+ 	PixelI pixel (CoordI x, CoordI y) const {return m_ppxli [m_rc.offset (x, y)];}
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/typeapi.h
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/typeapi.h
+@@ -127,7 +127,7 @@
+ 
+ Int divroundnearest(Int i, Int iDenom);
+ Void dumpNonCodedFrame(FILE* pfYUV, FILE* pfSeg, FILE **ppfAux, Int iAuxCompCount, CRct& rct, UInt nBits);
+-Void fatal_error(char *pchMessage, Int iCont = 0);
++Void fatal_error(const char *pchMessage, Int iCont = 0);
+ 
+ // for unix compability
+ #ifndef SEEK_CUR
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/vop.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/vop.hpp
+@@ -65,7 +65,7 @@
+ 	CVideoObjectPlane (const Char* vdlFileName); // load from a vdl stream
+ 
+ 	// Attributes
+-	Bool valid () const {return this != 0;}
++	Bool valid () const {return m_ppxl != 0;}
+ 	CRct where () const {return m_rc;}
+ 	CPixel pixel (CoordI x, CoordI y) const {return m_ppxl [m_rc.offset (x, y)];}
+ 	CPixel pixel (CoordI x, CoordI y, UInt accuracy) const; 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/yuvac.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/yuvac.hpp
+@@ -80,7 +80,6 @@
+ 	const CRct& whereBoundY () const {return m_rctBoundY;}
+ 	const CRct& whereBoundUV () const {return m_rctBoundUV;}
+ 
+-	Bool valid () const {return this != 0;}
+ 	const CU8Image* getPlane (PlaneType plnType) const;
+ 	const CU8Image* getPlaneA(Int iAuxComp) const;
+ 	AlphaUsage fAUsage () const {return m_fAUsage;}
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/include/yuvai.hpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/include/yuvai.hpp
+@@ -60,7 +60,6 @@
+ 	CVOPIntYUVBA (AlphaUsage fAUsage = RECTANGLE);
+ 
+ 	// Attributes
+-	Bool valid () const {return this != 0;}
+ 	const CRct& whereY () const {return m_piiY -> where ();}
+ 	const CRct& whereUV () const {return m_piiU -> where ();}
+ 	const CIntImage* getPlane (PlaneType plnType) const;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_blkdec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_blkdec.cpp
+@@ -186,8 +186,8 @@
+ 	else 
+ 	{  
+ 	
+-		if (iBlk<=V_BLOCK && pmbmd->m_bCodeDcAsAc==FALSE
+-		|| iBlk>=A_BLOCK1 && pmbmd->m_bCodeDcAsAcAlpha==FALSE) {
++		if ((iBlk<=V_BLOCK && pmbmd->m_bCodeDcAsAc==FALSE)
++		|| (iBlk>=A_BLOCK1 && pmbmd->m_bCodeDcAsAcAlpha==FALSE)) {
+ 		rgiCoefQ [0] = decodeIntraDCmpeg (iBlk <= Y_BLOCK4 || iBlk >=A_BLOCK1);
+ 		iCoefStart++;
+ 		}
+@@ -201,8 +201,8 @@
+ 		Int* rgiZigzag = grgiStandardZigzag;
+ 	    if (m_vopmd.bAlternateScan && iBlk<=V_BLOCK) // 12.22.98 Changes
+             rgiZigzag = grgiVerticalZigzag;
+-        else if (iBlk<=V_BLOCK && pmbmd->m_bACPrediction
+-			|| iBlk >= A_BLOCK1 && pmbmd->m_pbACPredictionAlpha[(iBlk-7)/4])
++        else if ((iBlk<=V_BLOCK && pmbmd->m_bACPrediction)
++			|| (iBlk >= A_BLOCK1 && pmbmd->m_pbACPredictionAlpha[(iBlk-7)/4]))
+ 			rgiZigzag = (pmbmd->m_preddir [iBlk - 1] == HORIZONTAL) ? grgiVerticalZigzag : grgiHorizontalZigzag;
+  		//	Added for data partitioning mode By Toshiba(1998-1-16:DP+RVLC)
+ 		// HHI Schueuer
+@@ -627,8 +627,8 @@
+ 			rgiCoefQ [0] += divroundnearest(blkmPred [0], iDcScaler);
+ 			// clip range after inverse pred
+ 			rgiCoefQ [0] = rgiCoefQ[0] < -2048 ? -2048 : (rgiCoefQ[0] > 2047 ? 2047 : rgiCoefQ[0]);
+-			if (iBlkIdx<(A_BLOCK1 - 1) && pmbmd->m_bACPrediction
+-				|| iBlkIdx>=(A_BLOCK1 - 1) && pmbmd->m_pbACPredictionAlpha[(iBlkIdx-7)/4])	{
++			if ((iBlkIdx<(A_BLOCK1 - 1) && pmbmd->m_bACPrediction)
++				|| (iBlkIdx>=(A_BLOCK1 - 1) && pmbmd->m_pbACPredictionAlpha[(iBlkIdx-7)/4]))	{
+ 				Int i, j;
+ 				//do AC prediction
+ 				if (pmbmd->m_preddir [iBlkIdx] == HORIZONTAL)	{
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_errdec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_errdec.cpp
+@@ -200,6 +200,7 @@
+ 		uiMarker = m_pbitstrmIn -> getBits (1);
+ 		assert(uiMarker == 1);
+ 		// this is bogus - swinder.
++		(void)tVopIncr;
+ 		//assert (m_t == tCurrSec * 60 + tVopIncr * 60 / m_volmd.iClockRate); //in terms of 60Hz clock ticks
+ 
+ 		VOPpredType vopPredType = (VOPpredType) m_pbitstrmIn -> getBits (NUMBITS_VP_PRED_TYPE);
+@@ -450,6 +451,7 @@
+ 		for (i=0; i < g_pNewPredDec->m_iNumSlice; i++ ) {
+ 		    noStore_vop_id = g_pNewPredDec->make_next_decbuf(g_pNewPredDec->m_pNewPredControl, 
+ 											g_pNewPredDec->GetCurrentVOP_id(), i);
++		    (void)noStore_vop_id;
+ 		}
+ 	}
+ // ~NEWPRED
+@@ -498,7 +500,6 @@
+ 
+ 	Bool bRestartDelayedQP = TRUE;
+ 
+-	Bool bRet;
+ 	const PixelC* RefbufY = m_pvopcRefQ0-> pixelsY ();
+ 	const PixelC* RefbufU = m_pvopcRefQ0-> pixelsU ();
+ 	const PixelC* RefbufV = m_pvopcRefQ0-> pixelsV ();
+@@ -508,7 +509,6 @@
+ 	if (m_volmd.bNewpredEnable) {
+ 		// temporarily store present reference picture
+ 		g_pNewPredDec->CopyReftoBuf(RefbufY, RefbufU, RefbufV, m_rctRefFrameY, m_rctRefFrameUV);
+-		bRet = FALSE;
+ 
+ 		iMBX = mbn % m_iNumMBX;
+ 		iMBY = mbn / m_iNumMBX;
+@@ -520,7 +520,7 @@
+ 				((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width);
+ 		RefpointV = (PixelC*) g_pNewPredDec->m_pchNewPredRefV +
+ 				((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width);
+-		bRet = g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
++		g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
+ 
+ 		// padding around VP
+ 		pRefpointY = (PixelC*) m_pvopcRefQ0->pixelsY () + m_iStartInRefToCurrRctY;
+@@ -654,7 +654,6 @@
+ 
+ // NEWPRED
+ 				if (m_volmd.bNewpredEnable && (m_volmd.bNewpredSegmentType == 0)) {				
+-					bRet = FALSE;
+ 					// copy picture from NEWPRED reference picture memory
+ // RRV modification
+ 					RefpointY = (PixelC*) g_pNewPredDec->m_pchNewPredRefY +
+@@ -666,7 +665,7 @@
+ 					RefpointV = (PixelC*) g_pNewPredDec->m_pchNewPredRefV +
+ 				 		((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width) + 
+ 				 		iMBY * (BLOCK_SIZE *m_iRRVScale) * m_rctRefFrameUV.width;
+-					bRet = g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
++					g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
+ 
+ 					pRefpointY = (PixelC*) m_pvopcRefQ0->pixelsY () + m_iStartInRefToCurrRctY + iMBY * (MB_SIZE *m_iRRVScale) * m_rctRefFrameY.width;
+ 					pRefpointU = (PixelC*) m_pvopcRefQ0->pixelsU () + m_iStartInRefToCurrRctUV + iMBY * (BLOCK_SIZE *m_iRRVScale) * m_rctRefFrameUV.width;
+@@ -829,6 +828,7 @@
+ 		for (i=0; i < g_pNewPredDec->m_iNumSlice; i++ ) {
+ 			noStore_vop_id = g_pNewPredDec->make_next_decbuf(g_pNewPredDec->m_pNewPredControl, 
+ 				g_pNewPredDec->GetCurrentVOP_id(), i);
++			(void)noStore_vop_id;
+ 		}
+ 		// copy previous decoded picutre to reference picture memory because of output ording
+ 		for( int iSlice = 0; iSlice < g_pNewPredDec->m_iNumSlice; iSlice++ ) {
+@@ -1070,7 +1070,7 @@
+ 	PixelC* ppxlcCurrQMBUBackup = NULL;
+ 	PixelC* ppxlcCurrQMBVBackup = NULL;
+ 	PixelC* ppxlcCurrQMBBYBackup = NULL;
+-	PixelC* ppxlcCurrQMBBUVBackup;
++	//PixelC* ppxlcCurrQMBBUVBackup;
+ 	//PixelC* ppxlcCurrQMBABackup;
+ 	Bool bPaddedLBackup = FALSE;
+ 	Bool bPaddedTBackup = FALSE;
+@@ -1312,7 +1312,7 @@
+ 				ppxlcCurrQMBUBackup = ppxlcCurrQMBU;
+ 				ppxlcCurrQMBVBackup = ppxlcCurrQMBV;
+ 				ppxlcCurrQMBBYBackup = ppxlcCurrQMBBY;
+-				ppxlcCurrQMBBUVBackup = ppxlcCurrQMBBUV;
++				//ppxlcCurrQMBBUVBackup = ppxlcCurrQMBBUV;
+ 				//ppxlcCurrQMBABackup = ppxlcCurrQMBA;
+ 				bPaddedLBackup = (pmbmdBackup-1)->m_bPadded;
+ 				bPaddedTBackup = (pmbmdBackup-m_iNumMBX)->m_bPadded;
+@@ -1809,7 +1809,6 @@
+ 	// end HHI
+ 	Int iWidthDst;
+ 	Int iDcScaler;
+-	Int* rgiCoefQ;
+ 	for (Int iBlk = Y_BLOCK1; iBlk <= V_BLOCK; iBlk++) {
+ 	  if (iBlk < /* (UInt)*/ U_BLOCK) {
+ 			if (pmbmd -> m_rgTranspStatus [iBlk] == ALL) 
+@@ -1849,7 +1848,6 @@
+ 			rgchBlkShape = (ppxlcCurrMBBUV && pmbmd -> m_rgTranspStatus[iBlk] == PARTIAL) ? ppxlcCurrMBBUV : NULL; // 09/16/99 HHI Schueuer: added for sadct
+ 			iDcScaler = iDcScalerC;
+ 		}
+-		rgiCoefQ = m_rgpiCoefQ [iBlk - 1];
+ 		const BlockMemory blkmPred = NULL;
+ 		Int iQpPred = iQP; //default to current if no pred (use 128 case)
+ 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_mbdec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_mbdec.cpp
+@@ -272,7 +272,6 @@
+ 	// end HHI
+ 	Int iWidthDst;
+ 	Int iDcScaler;
+-	Int* rgiCoefQ;
+ 	for (Int iBlk = Y_BLOCK1; iBlk <= V_BLOCK; iBlk++) {
+ 	  if (iBlk < /* (UInt)*/ U_BLOCK) {
+ 			if (pmbmd -> m_rgTranspStatus [iBlk] == ALL) 
+@@ -311,7 +310,6 @@
+ 			iDcScaler = iDcScalerC;
+ 		}
+ 
+-		rgiCoefQ = m_rgpiCoefQ [iBlk - 1];
+ 		const BlockMemory blkmPred = NULL;
+ 		Int iQpPred = iQP; //default to current if no pred
+ 		decideIntraPred (blkmPred, 
+@@ -428,7 +426,6 @@
+ 	// HHI Schueuer: for sadct, see also the cond. assignments inside the next switch stmt.
+ 	const PixelC* rgchBlkShape = NULL;   
+ 	// end HHI
+-	Int* rgiCoefQ;
+ 	for (Int iBlk = A_BLOCK1; iBlk <= A_BLOCK4; iBlk++) {
+ 		if (pmbmd -> m_rgTranspStatus [iBlk - 6] == ALL) 
+ 			continue;
+@@ -452,7 +449,6 @@
+ 			break;
+ 		}
+ 
+-		rgiCoefQ = m_rgpiCoefQ [iBlk - 1];
+ 		const BlockMemory blkmPred = NULL;
+ 		Int iQpPred = iQP;
+ 		decideIntraPred (blkmPred, 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_mbheaddec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_mbheaddec.cpp
+@@ -426,14 +426,11 @@
+ 		if (pmbmd->m_rgTranspStatus [iBlk] != ALL)	
+ 			cNonTrnspBlk++;
+ 	}
+-	Int iMODB = 0;
+-	//	Int iMCBPC = 0;
+ 	Int iCBPC = 0;
+ 	Int iCBPY = 0;
+ 	Int iMbType, uiCBPB = 0;
+ 	if (m_pbitstrmIn->getBits (1) == 1)	 {					//MODB=1 colocated non-skip but curr skip
+ 		pmbmd->m_bSkip = TRUE;  
+-		iMODB = 0;
+ 		pmbmd->m_mbType = (!(m_volmd.volType == ENHN_LAYER && m_vopmd.iRefSelectCode == 0))? DIRECT : FORWARD;
+ 		if(m_volmd.volType == ENHN_LAYER && m_vopmd.iRefSelectCode == 0)
+ 			return;
+@@ -457,7 +454,6 @@
+  		//assert (iMbType >= 0 && iMbType <= 3);
+  		ASSERT (iMbType >= 0 && iMbType <= 3);
+ 		pmbmd->m_mbType = (MBType) iMbType;
+-		iMODB = 1;
+ 	}												//MODB="00"
+ 	else {
+ 		if (m_volmd.volType == BASE_LAYER || (m_volmd.volType == ENHN_LAYER && m_vopmd.iRefSelectCode != 0))
+@@ -478,7 +474,6 @@
+  		//assert (iMbType >= 0 && iMbType <= 3);
+  		ASSERT (iMbType >= 0 && iMbType <= 3);
+ 		pmbmd->m_mbType = (MBType) iMbType;		
+-		iMODB = 2;
+ 		uiCBPB = m_pbitstrmIn->getBits (cNonTrnspBlk + 2);
+ 		pmbmd->m_bhas4MVForward = pmbmd->m_bhas4MVBackward = FALSE;	//this is okay; will be reset later
+ 									//Only one mv for B-VOP except direct mode (will be reset in mvdec.cpp)
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_mcdec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_mcdec.cpp
+@@ -133,7 +133,7 @@
+         const CMotionVector* pmv8 = pmvForward;
+         for (iBlk = 0; iBlk < 4; iBlk++)	{
+           pmv8++;
+-          if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++          if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+             if (m_volmd.bQuarterSample) // Quarter sample
+               motionCompQuarterSample (m_ppxlcPredMBY + rgiBlkOffsetPixel [iBlk], 
+                                        m_pvopcRefQ0->pixelsY (), BLOCK_SIZE,
+@@ -150,6 +150,7 @@
+                           m_vopmd.iRoundingControl,
+                           prctMVLimitForward
+                           );
++          }
+         }
+       }
+       CoordI xRefUVForward, yRefUVForward;
+@@ -178,7 +179,7 @@
+         for (iBlk = 0; iBlk < 4; iBlk++)	{
+           pmv8++;
+           if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
+-            if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++            if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+               if (m_volmd.bQuarterSample) // Quarter sample
+                 motionCompQuarterSample (m_ppxlcPredMBBackY + rgiBlkOffsetPixel [iBlk],
+                                          m_pvopcRefQ1->pixelsY (), BLOCK_SIZE, 
+@@ -196,6 +197,7 @@
+                             m_vopmd.iRoundingControl,
+                             prctMVLimitBackward
+                             );
++            }
+         }
+       }
+       CoordI xRefUVBackward, yRefUVBackward;
+@@ -256,7 +258,7 @@
+       const CMotionVector* pmv8 = pmvForward;
+       for (iBlk = 0; iBlk < 4; iBlk++)	{
+         pmv8++;
+-        if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++        if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+           if (m_volmd.bQuarterSample) // Quarter sample
+             motionCompQuarterSample (
+                                      m_ppxlcPredMBA[iAuxComp] + rgiBlkOffsetPixel [iBlk], 
+@@ -274,11 +276,12 @@
+                         0,
+                         prctMVLimitForward
+                         );
++        }
+       }
+       pmv8 = pmvBackward;
+       for (iBlk = 0; iBlk < 4; iBlk++)	{
+         pmv8++;
+-        if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++        if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+           if (m_volmd.bQuarterSample) // Quarter sample
+             motionCompQuarterSample (
+                                      m_ppxlcPredMBBackA[iAuxComp] + rgiBlkOffsetPixel [iBlk], 
+@@ -296,6 +299,7 @@
+                         0,
+                         prctMVLimitBackward
+                         );
++        }
+       }
+ 
+     } // ~added by mwi
+@@ -359,7 +363,7 @@
+         const CMotionVector* pmv8 = pmvForward;
+         for (iBlk = 0; iBlk < 4; iBlk++)	{
+           pmv8++;
+-          if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++          if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+             if (m_volmd.bQuarterSample) // Quarter sample
+               motionCompQuarterSample (
+                                        m_ppxlcPredMBA[iAuxComp] + rgiBlkOffsetPixel [iBlk], 
+@@ -377,6 +381,7 @@
+                           0,
+                           prctMVLimitForward
+                           );
++          }
+         }
+       }
+       if (!pmbmd->m_bhas4MVBackward && !pmbmd -> m_bFieldMV)	//12.22.98 
+@@ -431,7 +436,7 @@
+         const CMotionVector* pmv8 = pmvBackward;
+         for (iBlk = 0; iBlk < 4; iBlk++)	{
+           pmv8++;
+-          if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++          if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+             if (m_volmd.bQuarterSample) // Quarter sample
+               motionCompQuarterSample (
+                                        m_ppxlcPredMBBackA[iAuxComp] + rgiBlkOffsetPixel [iBlk], 
+@@ -449,6 +454,7 @@
+                           0,
+                           prctMVLimitBackward
+                           );
++          }
+         }
+       }
+     }
+@@ -535,18 +541,12 @@
+ 	if (pmbmd->m_mbType == DIRECT || pmbmd->m_mbType == INTERPOLATE) { // Y is done when doing motion estimation
+       if (m_volmd.bQuarterSample) // Quarter sample
+         motionCompQuarterSample (m_ppxlcPredMBY, m_pvopcRefQ0->pixelsY (), MB_SIZE,
+-				                     x * 4, y * 4,
+-				                     m_vopmd.iRoundingControl, prctMVLimitForward);
++                                 x * 4, y * 4,
++                                 m_vopmd.iRoundingControl, prctMVLimitForward);
+       else
+-		motionComp (
+-			m_ppxlcPredMBY,
+-			m_pvopcRefQ0->pixelsY (),
+-			MB_SIZE, // either MB or BLOCK size
+-			x * 2, 
+-			y * 2,
+-			m_vopmd.iRoundingControl,
+-			prctMVLimitForward
+-		);
++        motionComp ( m_ppxlcPredMBY, m_pvopcRefQ0->pixelsY (), MB_SIZE, // either MB or BLOCK size
++                     x * 2, y * 2,
++                     m_vopmd.iRoundingControl, prctMVLimitForward);
+ 		motionCompUV (m_ppxlcPredMBU, m_ppxlcPredMBV, m_pvopcRefQ0,
+ 			x, y, 0, 0, m_vopmd.iRoundingControl,prctMVLimitForward);
+ 		
+@@ -555,15 +555,9 @@
+                                    x * 4, y * 4,
+                                    m_vopmd.iRoundingControl, prctMVLimitBackward);
+         else
+-		motionComp (
+-			m_ppxlcPredMBBackY,
+-			m_pvopcRefQ1->pixelsY (),
+-			MB_SIZE, // either MB or BLOCK size
+-			x * 2, 
+-			y * 2,
+-			m_vopmd.iRoundingControl,
+-			prctMVLimitBackward
+-		);
++          motionComp (m_ppxlcPredMBBackY, m_pvopcRefQ1->pixelsY (), MB_SIZE, // either MB or BLOCK size
++                      x * 2, y * 2,
++                      m_vopmd.iRoundingControl, prctMVLimitBackward);
+ 		motionCompUV (m_ppxlcPredMBBackU, m_ppxlcPredMBBackV, m_pvopcRefQ1,
+ 			x, y, 0, 0, m_vopmd.iRoundingControl, prctMVLimitBackward);
+ 		averagePredAndAssignToCurrQ (ppxlcCurrQMBY, ppxlcCurrQMBU, ppxlcCurrQMBV);
+@@ -613,7 +607,7 @@
+ 			const CMotionVector* pmv8 = pmvForward;
+ 			for (iBlk = 0; iBlk < 4; iBlk++)	{
+               pmv8++;
+-              if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++              if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+                 if (m_volmd.bQuarterSample) // Quarter sample
+                   motionCompQuarterSample (m_ppxlcPredMBY + rgiBlkOffsetPixel [iBlk],
+                                            m_pvopcRefQ0->pixelsY (), BLOCK_SIZE, 
+@@ -630,6 +624,7 @@
+                               m_vopmd.iRoundingControl,
+                               prctMVLimitForward
+                               );
++              }
+ 			}
+ 		}
+ 		CoordI xRefUVForward, yRefUVForward;
+@@ -657,7 +652,7 @@
+ 			const CMotionVector* pmv8 = pmvBackward;
+ 			for (iBlk = 0; iBlk < 4; iBlk++)	{
+ 				pmv8++;
+-				if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL)
++				if (pmbmd->m_rgTranspStatus [iBlk + 1] != ALL) {
+                   if (m_volmd.bQuarterSample) // Quarter sample
+                     motionCompQuarterSample (m_ppxlcPredMBBackY + rgiBlkOffsetPixel [iBlk], 
+                                              m_pvopcRefQ1->pixelsY (),BLOCK_SIZE, 
+@@ -674,6 +669,7 @@
+                                 m_vopmd.iRoundingControl,
+                                 prctMVLimitBackward
+                                 );
++				}
+ 			}
+ 		}
+ 		CoordI xRefUVBackward, yRefUVBackward;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_vopmbdec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_vopmbdec.cpp
+@@ -519,6 +519,7 @@
+ 		for (i=0; i < g_pNewPredDec->m_iNumSlice; i++ ) {
+ 			noStore_vop_id = g_pNewPredDec->make_next_decbuf(g_pNewPredDec->m_pNewPredControl, 
+ 				g_pNewPredDec->GetCurrentVOP_id(), i);
++			(void)noStore_vop_id;
+ 		}
+ 	}
+ 	// ~NEWPRED
+@@ -1025,7 +1026,6 @@
+ 	const PixelC* RefbufV = m_pvopcRefQ0-> pixelsV ();
+ 	PixelC *RefpointY, *RefpointU, *RefpointV;
+ 	PixelC *pRefpointY, *pRefpointU, *pRefpointV;
+-	Bool bRet;
+ 	int newpred_resync;
+ 	// ~NEWPRED
+ 	
+@@ -1083,7 +1083,6 @@
+ 		// NEWPRED
+ 		if (m_volmd.bNewpredEnable) {
+ 			g_pNewPredDec->CopyReftoBuf(RefbufY, RefbufU, RefbufV, m_rctRefFrameY, m_rctRefFrameUV);
+-			bRet = FALSE;
+ 			
+ 			RefpointY = (PixelC*) g_pNewPredDec->m_pchNewPredRefY +
+ 				(EXPANDY_REF_FRAME * m_rctRefFrameY.width);
+@@ -1091,7 +1090,7 @@
+ 				((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width);
+ 			RefpointV = (PixelC*) g_pNewPredDec->m_pchNewPredRefV +
+ 				((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width);
+-			bRet = g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
++			g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
+ 			
+ 			pRefpointY = (PixelC*) m_pvopcRefQ0->pixelsY () + m_iStartInRefToCurrRctY;
+ 			pRefpointU = (PixelC*) m_pvopcRefQ0->pixelsU () + m_iStartInRefToCurrRctUV;
+@@ -1120,9 +1119,8 @@
+ 			PixelC* ppxlcCurrQMBV = ppxlcCurrQV;
+ 			//	  In a given Sprite update piece, Check whether current macroblock is not a hole and should be coded ?
+ 			PixelC* ppxlcCurrQMBBY = ppxlcCurrQBY;
+-			Bool  bSptMB_NOT_HOLE= TRUE;
+ 			if (m_uiSprite == 1 && m_vopmd.SpriteXmitMode != STOP) 
+-				bSptMB_NOT_HOLE = SptUpdateMB_NOT_HOLE(0, iMBY, pmbmd); 
++				SptUpdateMB_NOT_HOLE(0, iMBY, pmbmd); 
+ 			
+ 			//	Added for error resilience mode By Toshiba
+ 			skipAnyStuffing();
+@@ -1131,7 +1129,6 @@
+ 				iVideoPacketNumber++;
+ 				bRestartDelayedQP = TRUE;
+ 				// NEWPRED
+-				bRet = FALSE;
+ 				if (m_volmd.bNewpredEnable && (m_volmd.bNewpredSegmentType == 0))
+ 				{ 	
+ 					// RRV modification
+@@ -1144,7 +1141,7 @@
+ 					RefpointV = (PixelC*) g_pNewPredDec->m_pchNewPredRefV +
+ 						((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width) + 
+ 						iMBY * (BLOCK_SIZE *m_iRRVScale) * m_rctRefFrameUV.width;
+-					bRet = g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
++					g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
+ 					
+ 					pRefpointY = (PixelC*) m_pvopcRefQ0->pixelsY () + m_iStartInRefToCurrRctY + iMBY * (MB_SIZE *m_iRRVScale) * m_rctRefFrameY.width;
+ 					pRefpointU = (PixelC*) m_pvopcRefQ0->pixelsU () + m_iStartInRefToCurrRctUV + iMBY * (BLOCK_SIZE *m_iRRVScale) * m_rctRefFrameUV.width;
+@@ -1290,7 +1287,7 @@
+ 					// sprite update piece use P_VOP syntax with no MV
+ 					else if (m_uiSprite == 1 && m_vopmd.SpriteXmitMode != STOP) 	
+ 					{
+-						bSptMB_NOT_HOLE = SptUpdateMB_NOT_HOLE(iMBX+1, iMBY, pmbmdRight);
++						SptUpdateMB_NOT_HOLE(iMBX+1, iMBY, pmbmdRight);
+ 						ppxlcCurrQMBBY += MB_SIZE;
+ 						if (pmbmdRight -> m_rgTranspStatus [0] != ALL)
+ 							decodeMBTextureHeadOfPVOP (pmbmdRight, iCurrentQP, &bRestartDelayedQP);
+@@ -1356,7 +1353,6 @@
+ 				}
+ 				
+ 				if (newpred_resync) {
+-					bRet = FALSE;
+ 					if (m_volmd.bNewpredEnable && (m_volmd.bNewpredSegmentType == 0)) {
+ 						RefpointY = (PixelC*) g_pNewPredDec->m_pchNewPredRefY +
+ 							(EXPANDY_REF_FRAME * m_rctRefFrameY.width) + 
+@@ -1367,7 +1363,7 @@
+ 						RefpointV = (PixelC*) g_pNewPredDec->m_pchNewPredRefV +
+ 							((EXPANDY_REF_FRAME/2)*m_rctRefFrameUV.width) + 
+ 							iMBY * (BLOCK_SIZE *m_iRRVScale) * m_rctRefFrameUV.width;
+-						bRet = g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
++						g_pNewPredDec->CopyNPtoVM(iVideoPacketNumber, RefpointY, RefpointU, RefpointV);
+ 						
+ 						pRefpointY = (PixelC*) m_pvopcRefQ0->pixelsY () + m_iStartInRefToCurrRctY + iMBY * (MB_SIZE *m_iRRVScale) * m_rctRefFrameY.width;
+ 						pRefpointU = (PixelC*) m_pvopcRefQ0->pixelsU () + m_iStartInRefToCurrRctUV + iMBY * (BLOCK_SIZE *m_iRRVScale) * m_rctRefFrameUV.width;
+@@ -1418,6 +1414,7 @@
+ 		for (i=0; i < g_pNewPredDec->m_iNumSlice; i++ ) {
+ 			noStore_vop_id = g_pNewPredDec->make_next_decbuf(g_pNewPredDec->m_pNewPredControl, 
+ 				g_pNewPredDec->GetCurrentVOP_id(), i);
++			(void)noStore_vop_id;
+ 		}
+ 		
+ 		// copy previous picture to reference picture memory because of output ordering
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_decoder_vopsedec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_decoder_vopsedec.cpp
+@@ -602,7 +602,7 @@
+ 			m_iNumBitsTimeIncr,
+ 			iDisplayWidth,
+ 			iDisplayHeight,
+-			"",
++			(char *)"",
+ 			m_volmd.bNewpredSegmentType,
+ 			m_volmd.fAUsage,
+ 			m_volmd.bShapeOnly,
+@@ -1262,6 +1262,7 @@
+ 	m_volmd.fAUsage = (AlphaUsage) uiAUsage;
+ 	if (m_volmd.fAUsage == RECTANGLE) {
+ 		UInt uiMarker = m_pbitstrmIn -> getBits (1);
++		(void)uiMarker;
+ 		// wmay for divx ASSERT(uiMarker==1);
+ 		m_ivolWidth = m_pbitstrmIn -> getBits (NUMBITS_VOP_WIDTH);
+ 		uiMarker  = m_pbitstrmIn -> getBits (1);
+@@ -2221,6 +2222,7 @@
+ 				Int iSign = (m_pbitstrmIn -> getBits (1) == 1)? -1 : 1;
+ 				Int left = iSign * m_pbitstrmIn -> getBits (NUMBITS_VOP_HORIZONTAL_SPA_REF - 1);
+ 				Int marker = m_pbitstrmIn -> getBits (1); // marker bit
++				(void)marker;
+ 				iSign = (m_pbitstrmIn -> getBits (1) == 1)? -1 : 1;
+ 				Int top = iSign * m_pbitstrmIn -> getBits (NUMBITS_VOP_VERTICAL_SPA_REF - 1);
+ 			
+@@ -2406,8 +2408,8 @@
+ void CVideoObjectDecoder::bufferB2flush ()
+ {
+ 	if (!(m_pBuffB2 -> empty ())) {
+-	if ( m_pBuffB2 -> m_bCodedFutureRef == 1 ) // added by Sharp (99/1/28)
+-		m_pBuffB1 -> copyBuf (*m_pBuffB2);
++		if ( m_pBuffB2 -> m_bCodedFutureRef == 1 ) // added by Sharp (99/1/28)
++			m_pBuffB1 -> copyBuf (*m_pBuffB2);
+ 		m_pBuffB2 -> dispose ();
+ 	}
+ }
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_error.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_error.cpp
+@@ -81,7 +81,7 @@
+ }
+ //	End Toshiba(1998-1-16:DP+RVLC)
+ 
+-Void fatal_error(char *pchMessage, Int iCond)
++Void fatal_error(const char *pchMessage, Int iCond)
+ {
+ 	if(iCond)
+ 		return;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_gmc_motion.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_gmc_motion.cpp
+@@ -145,7 +145,7 @@
+ 	Int xi0prime, yj0prime, xi1prime, yj1prime, xi2prime = 0, yj2prime = 0;
+ 	Int ipa, ipb, ipc, ipd, ipe, ipf;
+ 	Int ipa_i, ipa_f, ipb_i, ipb_f, ipd_i, ipd_f, ipe_i, ipe_f;
+-	Int iWidth, iHight = 0, iWidthHight;
++	Int iWidth, iHight = 0;
+ 	Int xi1dprime, yj1dprime, xi2dprime = 0, yj2dprime = 0;
+ 	Int iVW, iVH = 0, iVWH = 0;
+ 	Int ivw_pwr, ivh_pwr = 0, ivwh_pwr = 0;
+@@ -210,7 +210,6 @@
+ 	
+ 	if(m_iNumOfPnts == 3) {
+ 		iHight = yj2 - yj0;
+-		iWidthHight = iWidth*iHight;
+ 		
+ 		iVH = 1; ivh_pwr = 0;
+ 		while(iVH < iHight) {
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_gmc_util.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_gmc_util.cpp
+@@ -366,7 +366,7 @@
+ 	Int xi0prime, yj0prime, xi1prime = 0, yj1prime, xi2prime = 0, yj2prime  =0;
+ 	Int ipa, ipb, ipc, ipd, ipe, ipf;
+ 	Int ipa_i, ipa_f, ipb_i, ipb_f, ipd_i, ipd_f, ipe_i, ipe_f;
+-	Int iWidth, iHight = 0, iWidthHight;
++	Int iWidth, iHight = 0;
+ 	Int xi, yj;
+ 	Int xi1dprime, yj1dprime, xi2dprime = 0, yj2dprime = 0;
+ 	Int iVW, iVH = 0, iVWH = 0;
+@@ -423,7 +423,6 @@
+ 	
+ 	if(m_iNumOfPnts == 3) {
+ 		iHight = yj2 - yj0;
+-		iWidthHight = iWidth*iHight;
+ 		
+ 		iVH = 1; ivh_pwr = 0;
+ 		while(iVH < iHight) {
+@@ -563,7 +562,7 @@
+ 	Int xi0prime, yj0prime, xi1prime, yj1prime, xi2prime= 0, yj2prime = 0;
+ 	Int ipa, ipb, ipc, ipd, ipe, ipf;
+ 	Int ipa_i, ipa_f, ipb_i, ipb_f, ipd_i, ipd_f, ipe_i, ipe_f;
+-	Int iWidth, iHight = 0, iWidthHight;
++	Int iWidth, iHight = 0;
+ 	Int xi, yj;
+ 	Int xi1dprime, yj1dprime, xi2dprime = 0, yj2dprime = 0;
+ 	Int iVW, iVH = 0, iVWH = 0;
+@@ -630,7 +629,6 @@
+ 	
+ 	if(m_iNumOfPnts == 3) {
+ 		iHight = yj2 - yj0;
+-		iWidthHight = iWidth*iHight;
+ 		
+ 		iVH = 1; ivh_pwr = 0;
+ 		while(iVH < iHight) {
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_mc.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_mc.cpp
+@@ -345,7 +345,7 @@
+ 	  {
+ 		  blkX = x + BLOCK_SIZE;
+ 		  blkY = y + BLOCK_SIZE;
+-		  if (pmbmd->m_rgTranspStatus [Y_BLOCK1] != ALL)
++		  if (pmbmd->m_rgTranspStatus [Y_BLOCK1] != ALL) {
+ 			  if (m_volmd.bQuarterSample) // Quarter sample
+ 				  motionCompQuarterSample (ppxlcPredMB, ppxlcRefLeftTop, BLOCK_SIZE,
+ 										   x * 4 + 2 * pmv8->iMVX + pmv8->iHalfX, 
+@@ -360,8 +360,9 @@
+ 							  m_vopmd.iRoundingControl,
+ 							  prctMVLimit
+ 							  );
++		  }
+ 		  pmv8++;
+-		  if (pmbmd->m_rgTranspStatus [Y_BLOCK2] != ALL)
++		  if (pmbmd->m_rgTranspStatus [Y_BLOCK2] != ALL) {
+ 			  if (m_volmd.bQuarterSample) // Quarter sample
+ 				  motionCompQuarterSample (ppxlcPredMB + OFFSET_BLK1, 
+ 										   ppxlcRefLeftTop, BLOCK_SIZE,
+@@ -377,8 +378,9 @@
+ 							  m_vopmd.iRoundingControl,
+ 							  prctMVLimit
+ 							  );
++		  }
+ 		  pmv8++;
+-		  if (pmbmd->m_rgTranspStatus [Y_BLOCK3] != ALL)
++		  if (pmbmd->m_rgTranspStatus [Y_BLOCK3] != ALL) {
+ 			  if (m_volmd.bQuarterSample) // Quarter sample
+ 				  motionCompQuarterSample (ppxlcPredMB + OFFSET_BLK2, 
+ 										   ppxlcRefLeftTop, BLOCK_SIZE,
+@@ -394,8 +396,9 @@
+ 							  m_vopmd.iRoundingControl,
+ 							  prctMVLimit
+ 							  );
++		  }
+ 		  pmv8++;
+-		  if (pmbmd->m_rgTranspStatus [Y_BLOCK4] != ALL)
++		  if (pmbmd->m_rgTranspStatus [Y_BLOCK4] != ALL) {
+ 			  if (m_volmd.bQuarterSample) // Quarter sample
+ 				  motionCompQuarterSample (ppxlcPredMB + OFFSET_BLK3, 
+ 										   ppxlcRefLeftTop, BLOCK_SIZE,
+@@ -411,6 +414,7 @@
+ 							  m_vopmd.iRoundingControl,
+ 							  prctMVLimit
+ 							  );
++		  }
+ 	  }
+ //      CoordI blkX = x + BLOCK_SIZE;
+ //	    CoordI blkY = y + BLOCK_SIZE;
+@@ -684,32 +688,22 @@
+     
+ 	limitMVRangeToExtendedBBQuarterPel(xRef,yRef,prctMVLimit,iSize);
+     
+-    Int blkSizeX, blkSizeY;
++    Int blkSize = (iSize == 0) ? 16 : iSize;
++    ppxlcblk = (U8*) calloc(blkSize*blkSize,sizeof(U8));
++    blkInterpolateY (ppxlcRefLeftTop,iSize,xRef,yRef,ppxlcblk,iRoundingControl);
+     if (iSize == 0) { // INTERLACED
+-      blkSizeX = 16;
+-      blkSizeY = 8;
+-      
+-      ppxlcblk = (U8*) calloc(blkSizeX*blkSizeX,sizeof(U8));
+-      blkInterpolateY (ppxlcRefLeftTop,iSize,xRef,yRef,ppxlcblk,iRoundingControl);
+-      
+-      for (iy = 0; iy < blkSizeX; iy++) { 
++      for (iy = 0; iy < blkSize; iy++) { 
+         if (!(iy&1)) 
+-          for (ix = 0; ix < blkSizeX; ix++) { 
+-            ppxlcPred [ix] = *(ppxlcblk+ix+iy*blkSizeX);
++          for (ix = 0; ix < blkSize; ix++) { 
++            ppxlcPred [ix] = *(ppxlcblk+ix+iy*blkSize);
+           }
+-        ppxlcPred += blkSizeX;
++        ppxlcPred += blkSize;
+       }
+     } //~INTERLACED
+     else { 
+-      blkSizeX = iSize;
+-      blkSizeY = iSize;
+-      
+-      ppxlcblk = (U8*) calloc(blkSizeX*blkSizeX,sizeof(U8));
+-      blkInterpolateY (ppxlcRefLeftTop,iSize,xRef,yRef,ppxlcblk,iRoundingControl);
+-      
+-      for (iy = 0; iy < blkSizeX; iy++) { 
+-        for (ix = 0; ix < blkSizeX; ix++) { 
+-          ppxlcPred [ix] = *(ppxlcblk+ix+iy*blkSizeX);
++      for (iy = 0; iy < blkSize; iy++) { 
++        for (ix = 0; ix < blkSize; ix++) { 
++          ppxlcPred [ix] = *(ppxlcblk+ix+iy*blkSize);
+         }
+         ppxlcPred += MB_SIZE;
+       }
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_shape.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_shape.cpp
+@@ -1098,7 +1098,7 @@
+ 
+ //	Modified for error resilient mode by Toshiba(1997-11-14)
+ //		if (iMBX != 0 && validBlock (pmbmd - 1, gIndexOfCandBlk [1] [0]))
+-		if (!bLeftBndry && validBlock (pmbmd, pmbmd - 1, gIndexOfCandBlk [1] [0]))
++		if (!bLeftBndry && validBlock (pmbmd, pmbmd - 1, gIndexOfCandBlk [1] [0])) {
+ // GMC
+ 			if(!((pmbmd-1)->m_bMCSEL)){
+ // ~GMC
+@@ -1109,10 +1109,11 @@
+ 				return CMotionVector ();
+ 			}
+ // ~GMC
++		}
+ 		if (iMBY != 0)   {
+ //	Modified for error resilient mode by Toshiba(1997-11-14)
+ //			if (validBlock (pmbmd - m_iNumMBX, gIndexOfCandBlk [1] [1]))
+-			if (!bTopBndry && validBlock (pmbmd, pmbmd - m_iNumMBX, gIndexOfCandBlk [1] [1]))
++			if (!bTopBndry && validBlock (pmbmd, pmbmd - m_iNumMBX, gIndexOfCandBlk [1] [1])) {
+ // GMC
+ 				if(!((pmbmd-m_iNumMBX)->m_bMCSEL)){
+ // ~GMC
+@@ -1123,9 +1124,10 @@
+ 					return CMotionVector ();
+ 				}
+ // ~GMC
++			}
+ //	Modified for error resilient mode by Toshiba(1997-11-14)
+ //			if (iMBX < m_iNumMBX - 1 && validBlock (pmbmd - m_iNumMBX + 1, gIndexOfCandBlk [1] [2]))
+-			if (!bRightBndry && validBlock (pmbmd, pmbmd - m_iNumMBX + 1, gIndexOfCandBlk [1] [2]))
++			if (!bRightBndry && validBlock (pmbmd, pmbmd - m_iNumMBX + 1, gIndexOfCandBlk [1] [2])) {
+ // GMC
+ 				if(!((pmbmd-m_iNumMBX + 1)->m_bMCSEL)){
+ // ~GMC
+@@ -1136,6 +1138,7 @@
+ 					return CMotionVector ();
+ 				}
+ // ~GMC
++			}
+ 		}
+ 	}
+ 	return CMotionVector ();																		
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_spt.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_spt.cpp
+@@ -689,7 +689,7 @@
+ 
+ 		IntraPredDirection* Spreddir = m_rgmbmdSpt[iMBY][iMBX1].m_preddir;
+ 		IntraPredDirection* preddir = (*pmbmdLeft).m_preddir;	
+-		if (iMBXoffset >0 ) 
++		if (iMBXoffset >0 ) {
+ 			if( m_ppPieceMBstatus[iMBY][iMBX1] == NOT_DONE)
+ 			{
+ 				m_ppPieceMBstatus[iMBY][iMBX1] = PIECE_DONE;
+@@ -701,6 +701,7 @@
+ 				*pmbmdLeft = CMBMode (m_rgmbmdSpt[iMBY][iMBX1]);
+ 				memcpy (preddir, Spreddir, 10  * sizeof (IntraPredDirection));
+ 			}
++		}
+ // dshu: begin of modification
+ 		if ( iMBX < (m_rctSptQ.width / MB_SIZE))	  
+ // dshu: end of modification
+@@ -945,8 +946,6 @@
+ {
+ 	m_iNumMBX = m_rctSptQ.width / MB_SIZE; 
+ 	m_iNumMBY = m_rctSptQ.height () / MB_SIZE;	
+-	Int iMBXleft, iMBXright; 
+-	Int iMBYup, iMBYdown;
+ 	CMBMode* pmbmd = m_rgmbmdSprite;
+ 	PixelC* ppxlcRefY  = (PixelC*) m_pvopcSptQ->pixelsY () + m_iStartInRefToCurrRctY;
+ 	PixelC* ppxlcRefU  = (PixelC*) m_pvopcSptQ->pixelsU () + m_iStartInRefToCurrRctUV;
+@@ -966,12 +965,8 @@
+ 		PixelC* ppxlcRefMBA   = ppxlcRefA;
+     PixelC** pppxlcRefMBA = &ppxlcRefMBA;
+ 
+-		iMBYup = iMBY -1;
+-		iMBYdown = iMBY +1;
+ 		for (Int iMBX = 0; iMBX < m_iNumMBX; iMBX++)
+ 		{
+-			iMBXleft = iMBX -1 ; 
+-			iMBXright = iMBX +1 ;
+ 			if((m_volmd.bShapeOnly==FALSE) && (m_ppPieceMBstatus[iMBY][iMBX] == PIECE_DONE))
+ 			{
+ 				pmbmd->m_bPadded=FALSE;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/sys_vopses.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/sys_vopses.cpp
+@@ -348,8 +348,9 @@
+ 		m_pidct = new CInvSADCT(m_volmd.nBits);
+ 		// m_pidct = new CInvBlockDCT(m_volmd.nBits); // 20-11
+         m_rgiCurrMBCoeffWidth = new Int*[11];
+-        for (i=0; i<11; i++) 
++        for (i=0; i<11; i++) {
+         	m_rgiCurrMBCoeffWidth[i] = 0;
++        }
+         
+ 		for (i=Y_BLOCK1; i<=U_BLOCK; i++) 
+ 			m_rgiCurrMBCoeffWidth[i] = new Int[BLOCK_SIZE];
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/tools_entropy_bitstrm.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/tools_entropy_bitstrm.cpp
+@@ -140,7 +140,6 @@
+ 
+ Void COutBitStream::bookmark (Bool bSet)
+ {
+-	static Bool bBookmarkOn = FALSE;
+ 	static Int iBitPosition;
+ 	static Int lCounter;
+ 	static UInt uEncNumEmptyBits;
+@@ -155,7 +154,6 @@
+ 		chEncBuffer = m_chEncBuffer;
+ 		pchBufferRun = m_pchBufferRun;
+ 		iBuffer = m_iBuffer;
+-		bBookmarkOn = TRUE;
+ 	}
+ 	else {
+ 		m_iBitPosition = iBitPosition;
+@@ -164,7 +162,6 @@
+ 		m_chEncBuffer = chEncBuffer;
+ 		m_pchBufferRun = pchBufferRun;
+ 		m_iBuffer = iBuffer;
+-		bBookmarkOn = FALSE;
+ 	}
+ }
+ 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/tools_entropy_huffman.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/tools_entropy_huffman.cpp
+@@ -93,9 +93,11 @@
+     CHuffmanDecoderNode () {m_c0End=0;m_c1End=0;
+             m_l0NextNodeOrSymbol=-1;m_l1NextNodeOrSymbol=-1;};
+     Bool is0Valid() {if ((m_c0End==0)&&(m_l0NextNodeOrSymbol==-1))
+-            return FALSE;return TRUE;};
++            return FALSE;
++        return TRUE;};
+     Bool is1Valid() {if ((m_c1End==0)&&(m_l1NextNodeOrSymbol==-1))
+-            return FALSE;return TRUE;};
++            return FALSE;
++        return TRUE;};
+ };
+ 
+ CHuffmanTree::CHuffmanTree (Int lNOfSymbols, Int *lpFrequencies)
+@@ -268,13 +270,13 @@
+                     Int &lCodeSize, Char *pCode)
+ {
+ 	huffmanTable >> ws;
+-    while(huffmanTable.peek()=='/')
+-    {
++	while(huffmanTable.peek()=='/')
++	{
+ 		trashRestOfLine (huffmanTable);
+ 		huffmanTable >> ws;
+-    }
+-    if(huffmanTable.peek()==EOF)
+-        return FALSE;
++	}
++	if(huffmanTable.peek()==EOF)
++		return FALSE;
+ 
+ 	lSymbol=makeIndexFromSymbolInTable(huffmanTable);      
+ 	huffmanTable >> ws;
+@@ -699,7 +701,7 @@
+         {                                                                            
+ 	        if(iBitPosition==0)                                                      
+ 		        *pCodeTableEntry=0;                                                  
+-			Int iBitC = pVlcTmp->pchBits[lCodeSize - i - 1];
++            Int iBitC = pVlcTmp->pchBits[lCodeSize - i - 1];
+             assert(iBitC=='0' || iBitC=='1');
+             if(iBitC=='0')                                                          
+ 				*pCodeTableEntry&=~(0x01<<iBitPosition);                             
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/tools_sadct_sadct.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/tools_sadct_sadct.cpp
+@@ -281,7 +281,7 @@
+         for (Int ix=0; ix<m_N; ix++) 
+         	*dstPtr++ = (*srcPtr++ != transpValue) ? 1 : 0;
+                     
+-		rgchMask += stride;
++        rgchMask += stride;
+ 	}
+ }
+ 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_grayc.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_grayc.cpp
+@@ -122,7 +122,6 @@
+ 
+ Void CU8Image::swap (CU8Image& uci) 
+ {
+-	assert (this && &uci);
+ 	CRct rcT = uci.m_rc; 
+ 	uci.m_rc = m_rc; 
+ 	m_rc = rcT; 
+@@ -1600,15 +1599,8 @@
+ 
+ Double CU8Image::snr (const CU8Image& uciCompare, const CU8Image& uciMsk) const
+ {
+-	CU8Image* puciMskOp = NULL;
+ 	Double msError = 0;
+-	if (&uciMsk == NULL) {
+-		puciMskOp = new CU8Image (where (), (PixelC) opaqueValue);		
+-		msError = mse (uciCompare, *puciMskOp);
+-		delete puciMskOp;
+-	}
+-	else
+-		msError = mse (uciCompare, uciMsk);
++	msError = mse (uciCompare, uciMsk);
+ 	if (msError == 0.0)
+ 		return 1000000.0;
+ 	else 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_grayf.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_grayf.cpp
+@@ -104,7 +104,6 @@
+ 
+ Void CFloatImage::swap (CFloatImage& fi) 
+ {
+-	assert (this && &fi);
+ 	CRct rcT = fi.m_rc; 
+ 	fi.m_rc = m_rc; 
+ 	m_rc = rcT; 
+@@ -1409,15 +1408,8 @@
+ 
+ Double CFloatImage::snr (const CFloatImage& fiCompare, const CFloatImage& fiMsk) const
+ {
+-	CFloatImage* pfiMskOp = NULL;
+ 	Double msError = 0;
+-	if (&fiMsk == NULL) {
+-		pfiMskOp = new CFloatImage (where (), (PixelF) opaqueValue);		
+-		msError = mse (fiCompare, *pfiMskOp);
+-		delete pfiMskOp;
+-	}
+-	else
+-		msError = mse (fiCompare, fiMsk);
++	msError = mse (fiCompare, fiMsk);
+ 	if (msError == 0.0)
+ 		return 1000000.0;
+ 	else 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_grayi.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_grayi.cpp
+@@ -114,7 +114,6 @@
+ 
+ Void CIntImage::swap (CIntImage& ii) 
+ {
+-	assert (this && &ii);
+ 	CRct rcT = ii.m_rc; 
+ 	ii.m_rc = m_rc; 
+ 	m_rc = rcT; 
+@@ -1266,15 +1265,8 @@
+ 
+ Double CIntImage::snr (const CIntImage& iiCompare, const CIntImage& iiMsk) const
+ {
+-	CIntImage* piiMskOp = NULL;
+ 	Double msError = 0;
+-	if (&iiMsk == NULL) {
+-		piiMskOp = new CIntImage (where (), (PixelI) opaqueValue);		
+-		msError = mse (iiCompare, *piiMskOp);
+-		delete piiMskOp;
+-	}
+-	else
+-		msError = mse (iiCompare, iiMsk);
++	msError = mse (iiCompare, iiMsk);
+ 	if (msError == 0.0)
+ 		return 1000000.0;
+ 	else 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_typeapi.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_typeapi.cpp
+@@ -313,7 +313,6 @@
+ 
+ own CVOPIntYUVBA* vopfFitToMulOfMBSize (const CVOPIntYUVBA* pvopf, const CSite* pstLeftTop)
+ {
+-	if (!pvopf -> valid ()) return NULL;
+ 	CVOPIntYUVBA* pvopfRet = new CVOPIntYUVBA (pvopf -> fAUsage ());
+ 	UInt iPln;
+ 	for (iPln = Y_PLANE; iPln <= BUV_PLANE; iPln++) {
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_vop.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_vop.cpp
+@@ -107,7 +107,6 @@
+ 
+ Void CVideoObjectPlane::swap (CVideoObjectPlane& vop) 
+ {
+-	assert (this && &vop);
+ 	CRct rcT = vop.m_rc; 
+ 	vop.m_rc = m_rc; 
+ 	m_rc = rcT; 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_yuvac.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_yuvac.cpp
+@@ -324,7 +324,6 @@
+ 
+ Void CVOPU8YUVBA::overlay (const CVOPU8YUVBA& vopc)
+ {
+-	if (!vopc.valid ()) return;
+ 	if (m_puciBY)		//sometime rectangular vops dont have by
+ 		m_puciBY -> overlay (*vopc.getPlane (BY_PLANE));
+ 	if (m_puciBUV)
+@@ -339,7 +338,6 @@
+ 
+ Void CVOPU8YUVBA::overlay (const CVOPU8YUVBA& vopc, const CRct& rctY)
+ {	
+-	if (!vopc.valid ()) return;
+ 	if (!rctY.valid ()) return;
+ 	CRct rctUV = rctY.downSampleBy2 ();
+ 	m_puciBY -> overlay (*vopc.getPlane (BY_PLANE), rctY);
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/type_yuvai.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/type_yuvai.cpp
+@@ -382,7 +382,6 @@
+ 
+ Void CVOPIntYUVBA::overlay (const CVOPIntYUVBA& vopi)
+ {
+-	if (!vopi.valid ()) return;
+ 	m_piiBY -> overlay (*vopi.getPlane (BY_PLANE));
+ 	m_piiBUV -> overlay (*vopi.getPlane (BUV_PLANE));
+ 	overlayMB (m_piiY, vopi.getPlane (Y_PLANE), vopi.getPlane (BY_PLANE));
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_main_read_image.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_main_read_image.cpp
+@@ -155,7 +155,6 @@
+   PICTURE *img;
+   Int img_cwidth, img_cheight;
+   Int wordsize;
+-  Int img_size;
+   Int img_colors = mzte_codec.m_iColors;
+   Int img_bit_depth = mzte_codec.m_iBitDepth;
+   Int col;
+@@ -164,13 +163,6 @@
+   img_cheight = (tile_height+1)/2;
+   wordsize = (img_bit_depth > 8) ? 2 : 1;
+   
+-  if (img_colors==MONO) { /*SL: image size for mono */
+-    img_size = tile_width*tile_height; /* bit_depth>8 occupies 2 bytes */
+-  }
+-  else { /* only for 420 color for now */
+-    img_size = tile_width*tile_height+2*img_cwidth*img_cheight;
+-  } 
+-    
+ /*  vm_param_org->Image = vm_param->Image;*/
+ 
+ 	mzte_codec.m_ImageOrg = mzte_codec.m_Image;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_main_seg.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_main_seg.cpp
+@@ -387,16 +387,10 @@
+ 		       Int usemask, Int colors, Int alphaTH, 
+ 		       Int change_CR_disable, FILTER *Filter) 
+ {
+-  Int Nx[3], Ny[3];
+   Int Width[3], Height[3];
+   Int nLevels[3];
+   Int col,i;
+ 
+-  /* for 4:2:0 YUV image only */
+-  Nx[0] = Ny[0]=2;
+-  for(col=1; col<colors; col++) Nx[col]=Ny[col]=1;
+-
+-
+   Width[0] = MyImage[0].width;
+   Width[1] = Width[2] = (Width[0]+1)>>1;
+ 
+@@ -508,11 +502,6 @@
+   Int Width[3], Height[3];
+   Int nLevels[3];
+   Int col,i;
+-  Int Nx[3], Ny[3];
+-
+-  /* for 4:2:0 YUV image only */
+-  Nx[0] = Ny[0]=2;
+-  for(col=1; col<3; col++) Nx[col]=Ny[col]=1;
+ 
+   nLevels[0] = wvtDecompLev;
+   nLevels[1] = nLevels[2] = nLevels[0]-1;
+@@ -557,11 +546,6 @@
+   Int Width[3], Height[3];
+   Int nLevels[3];
+   Int col,i;
+-  Int Nx[3], Ny[3];
+-
+-  /* for 4:2:0 YUV image only */
+-  Nx[0] = Ny[0]=2;
+-  for(col=1; col<3; col++) Nx[col]=Ny[col]=1;
+ 
+   nLevels[0] = wvtDecompLev;
+   nLevels[1] = nLevels[2] = nLevels[0]-1;
+@@ -766,6 +750,8 @@
+ /*		}*/
+ 	}
+ 
++	(void)RealWidth;
++	(void)RealHeight;
+ /*	{*/
+ /*		FILE *fp;*/
+ /*		char test[100];*/
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_main_vtcdec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_main_vtcdec.cpp
+@@ -212,7 +212,9 @@
+     errorHandler("Wrong texture_object_layer_start_code.");
+ 
+   texture_object_id = get_X_bits(16);
++  (void)texture_object_id;
+   marker_bit = get_X_bits(1);
++  (void)marker_bit;
+ 
+ // hjlee 0901
+ //  wvtfilter->DWT_Type = get_X_bits(1);
+@@ -307,6 +309,7 @@
+ 
+ 
+   wavelet_stuffing = get_X_bits(3);
++  (void)wavelet_stuffing;
+ 
+   if (texture_object_layer_shape==0) {
+     mzte_codec.m_iAlphaChannel       = 0; 
+@@ -409,6 +412,7 @@
+ 		h_size += 50; // modified by Sharp (99/11/16)
+ /*		mzte_codec.m_iNumOfTile = mzte_codec.m_display_width/mzte_codec.m_tile_width*mzte_codec.m_display_height/mzte_codec.m_tile_height;*/
+ //		} deleted by Sharp (99/3/29)
++		(void)marker_bit;
+ 		*header_size += h_size; /* by bits (not by bytes) */
+ 	}
+ }
+@@ -431,7 +435,9 @@
+ 	Int h_size = 0; // added by Sharp (99/2/16)
+ 
+   texture_object_id = get_X_bits(16);
++  (void)texture_object_id;
+   marker_bit = get_X_bits(1);
++  (void)marker_bit;
+ 
+ // hjlee 0901
+ //  wvtfilter->DWT_Type = get_X_bits(1);
+@@ -541,6 +547,7 @@
+ 
+ 
+   wavelet_stuffing = get_X_bits(3);
++  (void)wavelet_stuffing;
+   h_size += 3; // added by Sharp (99/2/16)
+ 
+ // added for FDAM1 by Samsung AIT on 2000/02/03
+@@ -731,20 +738,20 @@
+ 
+ Void CVTCDecoder::textureLayerDC_Dec()
+ {
+-  Int col, err;
++  Int col;
+ 
+   noteProgress("Decoding DC coefficients....");
+   for (col=0; col<mzte_codec.m_iColors; col++) 
+   {
+     /* initilize all wavelet coefficients */
+     mzte_codec.m_iCurColor=col;
+-    err=ztqInitDC(1, col);
++    ztqInitDC(1, col);
+ 
+     /* losslessly decoding DC coefficients */
+     wavelet_dc_decode(col);
+ 
+     /* dequantize DC coefficients */
+-    err=decIQuantizeDC(col);
++    decIQuantizeDC(col);
+   }  
+   noteProgress("Completed decoding of DC coefficients.");
+ }
+@@ -920,6 +927,7 @@
+     if(get_X_bits(32) != texture_snr_layer_start_code)
+       errorHandler("Error in decoding texture_snr_layer_start_code");
+     texture_snr_layer_id=get_X_bits(5);
++    (void)texture_snr_layer_id;
+   }
+   else 
+     noteProgress("Decoding Multi-Quant Mode Layer without SNR start code....");
+@@ -1122,9 +1130,6 @@
+   UChar *inmask[3], *outmask[3];
+   Int nLevels[3], ret;
+   Int Width[3], Height[3];
+-  Int Nx[3], Ny[3];
+-  Int usemask;
+-  Int useInt=1;
+   PICTURE *Image;
+   Int col,l;
+ 
+@@ -1148,8 +1153,6 @@
+   noteDetail("Creating and initializing data structures....");
+   mzte_codec.m_iColors = 3;
+   mzte_codec.m_iBitDepth = 8;  
+-  usemask = mzte_codec.m_iAlphaChannel = 0;
+-  useInt =1;
+ 
+   init_acm_maxf_dec();  // hjlee 0901 
+   for (col=0; col<mzte_codec.m_iColors; col++) // hjlee 0901 BUG
+@@ -1205,9 +1208,6 @@
+   nLevels[0] = mzte_codec.m_iWvtDecmpLev ;
+   nLevels[1] = nLevels[2] = nLevels[0]-1;
+   
+-  Nx[0] = Ny[0]=2;
+-  for(col=1;col<3;col++) Nx[col]=Ny[col]=1;
+-  
+ // #ifdef _DECODER_  // hjlee
+   mzte_codec.m_Image = Image;
+ // #endif
+@@ -1298,9 +1298,6 @@
+   UChar *inmask[3], *outmask[3];
+   Int nLevels[3], ret;
+   Int Width[3], Height[3];
+-  Int Nx[3], Ny[3];
+-  Int usemask;
+-  Int useInt=1;
+   //  Int target_shape_layer = target_spatial_levels;
+  // PICTURE *Image; deleted by SL 03/03/99
+   Int l;
+@@ -1354,8 +1351,6 @@
+   noteDetail("Creating and initializing data structures....");
+   mzte_codec.m_iColors = 3;
+   mzte_codec.m_iBitDepth = 8;  
+-  usemask = mzte_codec.m_iAlphaChannel;//= 0; // modified by SL@Sarnoff (03/03/99)
+-  useInt =1;
+ 
+   init_acm_maxf_dec();  // hjlee 0901 
+   for (col=0; col<mzte_codec.m_iColors; col++) // hjlee 0901 BUG
+@@ -1410,9 +1405,6 @@
+   nLevels[0] = mzte_codec.m_iWvtDecmpLev ;
+   nLevels[1] = nLevels[2] = nLevels[0]-1;
+   
+-  Nx[0] = Ny[0]=2;
+-  for(col=1;col<3;col++) Nx[col]=Ny[col]=1;
+-  
+ //#ifdef _DECODER_  // hjlee 
+   mzte_codec.m_Image = Image;
+ //#endif
+@@ -1556,7 +1548,6 @@
+   FILE *bitfile;
+   UChar *frm[3], *frm_mask[3]; // modified by Sharp (99/5/10) // FPDAM added by Sharp
+   //Int tileX, tileY;
+-  Int id_to;
+   Int *table;
+   Int *jump_table;
+   Int *decode_tile_id;
+@@ -1738,9 +1729,6 @@
+     frm_mask[2]=(UChar *)malloc(sizeof(UChar)*(mzte_codec.m_iObjectWidth>>1)*(mzte_codec.m_iObjectHeight>>1));
+ // FPDAM end
+ // end: modified by Sharp (99/5/10)
+-
+-    /* set last tile_id */
+-    id_to = mzte_codec.m_target_tile_id_to;
+ 	}
+ // begin: added by Sharp (99/4/7)
+ 	else
+@@ -2046,6 +2034,8 @@
+     if ( mzte_codec.m_extension_type == 1 ){
+       ref_tile_id1 = get_X_bits(16);
+       ref_tile_id2 = get_X_bits(16);
++      (void)ref_tile_id1;
++      (void)ref_tile_id2;
+     }
+   }
+ // FPDAM begin: added by Sharp
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_main_vtcenc.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_main_vtcenc.cpp
+@@ -249,7 +249,6 @@
+ 
+ Void CVTCEncoder::texture_packet_header_Enc(FILTER **wvtfilter) // hjlee 0901 
+ {
+-  Int  texture_object_id=0;
+   //  Int  texture_object_layer_shape=mzte_codec.m_iAlphaChannel;
+   //  Int  wavelet_stuffing = 0x0f;
+ //  Int  wavelet_upload;
+@@ -258,7 +257,6 @@
+ 
+   if(!mzte_codec.m_usErrResiDisable){
+ 		flush_bits(); // added by Sharp(99/3/29)
+-		texture_object_id=1<<15; // error resilience
+ 
+ 		prev_TU_first = prev_TU_last = prev_TU_err = -1;
+ 		flush_bytes(); // to get alignment in buffer
+@@ -1492,6 +1490,7 @@
+ 		}
+ 	// end: added by Sharp (99/2/16)
+ #endif
++		(void)garbage;
+ // end: deleted by Sharp (99/4/7)
+ 
+ 	//	TextureObjectLayer_enc(synfilter);  deleted by Sharp (99/2/16)
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_main_wavelet.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_main_wavelet.cpp
+@@ -137,16 +137,9 @@
+   UChar *inimage[3];
+   UChar *inmask[3], *outmask[3];
+   Int *outcoeff[3];
+-  Int Nx[3], Ny[3];
+   Int width[3], height[3];
+-  Int useInt=1, usemask=0;
+   Int nLevels[3], ret;
+ 
+-  /* for 4:2:0 YUV image only */
+-  Nx[0] = Ny[0]=2;
+-  for(col=1; col<mzte_codec.m_iColors; col++) Nx[col]=Ny[col]=1;
+-
+-
+   nLevels[0] = mzte_codec.m_iWvtDecmpLev ;
+   nLevels[1] = nLevels[2] = nLevels[0]-1;
+   width[0] = mzte_codec.m_iWidth;
+@@ -156,14 +149,6 @@
+ 
+ /*	printf("%d %d\n", width[0], height[0]);*/
+ 
+-  useInt  = 1;
+-  usemask = mzte_codec.m_iAlphaChannel;
+-
+-  
+-  Nx[0] = Ny[0]= 2;
+-  for(col=1;col<3;col++)
+-    Nx[col]=Ny[col]=1;
+-  
+   for (col=0; col<mzte_codec.m_iColors; col++) {
+ 
+     inimage[col] = (UChar *)mzte_codec.m_Image[col].data;
+@@ -217,9 +202,8 @@
+   UChar *inmask[3], *outmask[3];
+   Int *incoeff[3];
+   Int Mean[3];
+-  Int Nx[3], Ny[3];
+   Int Width[3], Height[3];
+-  Int useInt=1, usemask=0;
++  Int usemask=0;
+   Int nLevels[3], ret, MinLevel = 0;
+ 
+   Int fullsize;// = 0; modified by SL 030399
+@@ -238,14 +222,8 @@
+   Mean[1] = mzte_codec.m_iMean[1];
+   Mean[2] = mzte_codec.m_iMean[2];
+ 
+-  useInt  = 1;
+   usemask = mzte_codec.m_iAlphaChannel;
+ 
+-  Nx[0] = Ny[0]= 2;
+-  for(col=1;col<mzte_codec.m_iColors;col++)
+-    Nx[col]=Ny[col]=1;
+-
+-
+   for (col=0; col<mzte_codec.m_iColors; col++) {
+ 
+     if ((inmask[col]=(UChar *)malloc(sizeof(UChar)*
+@@ -352,6 +330,7 @@
+         *dp++ = COEFF_ORGVAL(j,i,c);
+       }
+     }
++    (void)dspH;
+   }
+ }
+ 
+@@ -365,7 +344,6 @@
+   Int Mean[3];
+   Int nLevels[3];
+   DATA  *p_dst;
+-	UChar *inmask[3];
+ 
+ 
+   Width[0]  = mzte_codec.m_tile_width;
+@@ -387,7 +365,6 @@
+ 
+ 
+   for(col=0; col<mzte_codec.m_iColors; col++) {
+-	inmask[col] = mzte_codec.m_Image[col].mask;
+     Mean[col] = mzte_codec.m_iMean[col];
+     for (y=0; y<Height[col]; y++) {
+       p_dst = frm[col] + (tileY*Height[col]+y)*dspWidth[col] + tileX*Width[col];
+@@ -420,7 +397,6 @@
+   UChar *workmask;
+   Int width, height;
+   Int nLevels, ret;
+-  Int orgWidth, orgHeight;
+   Int tileX, tileY;
+   Int tileWidth, tileHeight;
+   Int nTilesW, nTilesH;
+@@ -470,9 +446,6 @@
+     errorHandler("Memory error: workmask\n");
+ 
+   for (col=0; col<mzte_codec.m_iColors; col++) {
+-    orgWidth = SrcImg[col].width;
+-    orgHeight = SrcImg[col].height;
+-
+     if (col==0) {
+       tileWidth = TileWidth;
+       tileHeight = TileHeight;
+@@ -518,7 +491,7 @@
+     if ( wordsize == 1 ) {  /* BYTE */
+       p_dst = (UChar *)inimage;
+       for(k=0; k<(tileHeight+h_pre+h_ape); k++) {
+-        p_src = (UChar *)(SrcImg[col].data) + (tileHeight*tileY-h_pre+k)*orgWidth
++        p_src = (UChar *)(SrcImg[col].data) + (tileHeight*tileY-h_pre+k)*SrcImg[col].width
+             + tileWidth*tileX-w_pre;
+         for(l=0; l<(tileWidth+w_pre+w_ape); l++) {
+           (*(p_dst++)) = (Int)(*(p_src++));
+@@ -527,8 +500,8 @@
+     } else {    /* Unsigned Short */
+       p_dsts = (UShort *)inimage;
+       for(k=0; k<(tileHeight+h_pre+h_ape); k++) {
+-        p_srcs = (UShort *)(SrcImg[col].data) + (tileHeight*tileY-h_pre)*orgWidth
+-            + tileWidth*tileX-w_pre + orgWidth*k;
++        p_srcs = (UShort *)(SrcImg[col].data) + (tileHeight*tileY-h_pre)*SrcImg[col].width
++            + tileWidth*tileX-w_pre + SrcImg[col].width*k;
+         for(l=0; l<(tileWidth+w_pre+w_ape); l++) {
+           (*(p_dsts++)) = (Int)(*(p_srcs++));
+         }
+@@ -596,9 +569,8 @@
+   UChar *inmask[3], *outmask[3];
+   Int *incoeff[3];
+   Int Mean[3];
+-  Int Nx[3], Ny[3];
+   Int Width[3], Height[3];
+-  Int useInt=1, usemask=0;
++  Int usemask=0;
+   Int nLevels[3], ret, MinLevel = 0x0;
+ 
+   Int fullsize;// = 0; modified by SL 030399
+@@ -617,14 +589,8 @@
+   Mean[1] = mzte_codec.m_iMean[1];
+   Mean[2] = mzte_codec.m_iMean[2];
+ 
+-  useInt  = 1;
+   usemask = mzte_codec.m_iAlphaChannel;
+ 
+-  Nx[0] = Ny[0]= 2;
+-  for(col=1;col<mzte_codec.m_iColors;col++)
+-    Nx[col]=Ny[col]=1;
+-
+-
+   for (col=0; col<mzte_codec.m_iColors; col++) {
+ 
+     if ((inmask[col]=(UChar *)malloc(sizeof(UChar)*
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_pezw_PEZW_textureLayerBQ.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_pezw_PEZW_textureLayerBQ.cpp
+@@ -300,6 +300,7 @@
+                             LH_zero[col] = lshift_by_NBit (splev0_bitstream[snrlev], splev0_bitstream_len[snrlev], 1);
+                             HL_zero[col] = lshift_by_NBit (splev0_bitstream[snrlev], splev0_bitstream_len[snrlev], 1);
+                             HH_zero[col] = lshift_by_NBit (splev0_bitstream[snrlev], splev0_bitstream_len[snrlev], 1);
++                            (void)LH_zero; (void)HL_zero; (void)HH_zero;
+                         }
+                      }
+                     else
+@@ -435,8 +436,9 @@
+ 
+     /* allocate rate control structure */
+     reach_budget = (unsigned char **) calloc(levels,sizeof(char *));
+-    for(i=0;i<levels;i++)
++    for(i=0;i<levels;i++) {
+         reach_budget[i]= (unsigned char *)calloc(Max_Bitplane,sizeof(char));
++    }
+ 
+ 	/* target bitplane */
+ 	Min_Bitplane  = SPlayer[0][0].SNR_scalability_levels-PEZW_target_snr_levels;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_pezw_PEZW_utils.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_pezw_PEZW_utils.cpp
+@@ -153,7 +153,6 @@
+ void CVTCEncoder::PEZW_bitpack (PEZW_SPATIAL_LAYER **SPlayer)
+ {
+   int levels = mzte_codec.m_iWvtDecmpLev;
+-  int levels_UV;
+   int Quant[NCOLOR], q;
+   int texture_spatial_layer_id;
+ 
+@@ -174,9 +173,6 @@
+   int flag;
+   int Bit, bits_to_go;
+ 
+-  levels_UV = levels-1;  /* this should depend on the color format 
+-			                mzte_codec.color_format */
+-
+   /* get quantization information */
+   for (col=0;col<mzte_codec.m_iColors; col++)
+     Quant[col] = mzte_codec.m_Qinfo[col]->Quant[0];
+@@ -355,9 +351,9 @@
+ 		
+ 	        /* for each color compoent */
+ 	        for (col=0;col<mzte_codec.m_iColors; col++){
+-	            if(col>0)  
++		        if(col>0)
+ 	                spalev = lev-1;
+-	             else
++		        else
+ 	                spalev = lev;
+ 	    
+ 		        if((lev==0)&&(col>0))
+@@ -526,6 +522,7 @@
+ 			    TEXTURE_SPATIAL_LAYER_START_CODE)
+ 		        printf("Wrong texture_spatial_layer_start_code.");
+ 		     spatial_id = get_X_bits(5);
++		     (void)spatial_id;
+ 		} 
+ 
+  	    for (snrlev=0;snrlev<Snrlevels;snrlev++)
+@@ -537,6 +534,7 @@
+ 	       if (snr_layer_start_code != texture_snr_layer_start_code)
+ 		        printf("Wrong texture_snr_layer_start_code.");
+ 	       snr_id = get_X_bits(5);
++	       (void)snr_id;
+ 
+ 		   get_X_bits_checksc_init();
+ 	     }
+@@ -612,6 +610,7 @@
+ 		    if (snr_layer_start_code != texture_snr_layer_start_code)
+ 			 printf("Wrong texture_snr_layer_start_code.");
+ 		    snr_id = get_X_bits(5);
++		    (void)snr_id;
+ 		}
+ 	   
+ 	   for (splev=0;splev<mzte_codec.m_iWvtDecmpLev;splev++)
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_decode.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_decode.cpp
+@@ -75,7 +75,7 @@
+     int pos;
+ 	int hpos_start, hpos_end;
+ 	int vpos_start, vpos_end;
+-    Int lev, npix;
++    Int lev;
+     Int hstart, vstart,start, end;
+     Int x,y;
+     Char SignBit;
+@@ -154,7 +154,6 @@
+ 				coeffsBlk[y][x]=the_wvt_tree[0];
+ 				for (lev=1;lev<levels;lev++)
+ 					{
+-						npix=1<<(2*(lev-1));
+ 						pos = level_pos[lev];
+ 						hstart=hpos*(1<<(lev-1));
+ 						vstart=vpos*(1<<(lev-1));
+@@ -188,7 +187,6 @@
+ void PEZW_tree_decode (int band,WINT *wvt_tree,int *snr_weight)
+ {
+ 	int i,j,k,m,n;
+-	int npix;
+ 	int bplane;
+ 	int scan_tree_done;
+ 	int context;
+@@ -278,7 +276,6 @@
+             if(reach_budget[i][bpos]==1)
+                     break; 
+ 
+-			npix=1<<(2*i);
+ 			for(j=0;j<num_ScanTree;j++)
+ 			  for(k=ScanTrees[2*j];k<ScanTrees[2*j+1];k++)
+ 			  {
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_encode.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_encode.cpp
+@@ -75,7 +75,7 @@
+     int pos;
+ 	int hpos_start, hpos_end;
+ 	int vpos_start, vpos_end;
+-    Int lev, npix;
++    Int lev;
+     Int hstart, vstart,start, end;
+     Int x,y;
+     Int levels;
+@@ -113,7 +113,6 @@
+ 				the_wvt_tree[0]=coeffsBlk[y][x];
+ 				for (lev=1;lev<levels;lev++)
+ 					{
+-						npix=1<<(2*(lev-1));
+ 						pos = level_pos[lev];
+ 						hstart=hpos*(1<<(lev-1));
+ 						vstart=vpos*(1<<(lev-1));
+@@ -174,7 +173,7 @@
+ void PEZW_tree_encode (int band,WINT *wvt_tree)
+ {
+ 	int i,j,k,m;
+-	int npix_block, npix;
++	int npix_block;
+ 	int pix_pos, max_pos;
+ 	int maxval;
+ 	int bplane;
+@@ -190,8 +189,6 @@
+ 	char skip_flag;
+ 	char VAL_flag;
+ 
+-	char treeBit, NoTree_flag;
+-
+ 	/* first find out the largest value of the coefficients */
+ 	for (i=tree_depth-1;i>=1;i--){
+ 		npix_block = 1<<(2*(i-1));
+@@ -274,12 +271,10 @@
+ 			next_ScanTrees=temp_ptr;			
+ 			bpos=bitplane[i];
+ 
+-			npix=1<<(2*i);
+ 			for(j=0;j<num_ScanTree;j++)
+ 			  for(k=ScanTrees[2*j];k<ScanTrees[2*j+1];k++)
+ 			  {
+ 				VAL_flag=0;
+-				NoTree_flag=0;
+ 				/* decide the zerotree symbol */
+ 				if((prev_label[k]==IVAL)||(prev_label[k]==ZTRV)){
+ 
+@@ -303,7 +298,6 @@
+ 				}
+ 				else{
+ 				  if(i==tree_depth-1){
+-					NoTree_flag=1;
+ 				    /* the last level */
+ 				    if(abs_wvt_tree[k]>>bpos){
+ 				      label=IVAL;
+@@ -318,7 +312,6 @@
+ 				  }
+ 				  else if(wvt_tree_maxval[k]>>bpos)
+ 				    {	/* not a zerotree */
+-					  treeBit=0;
+ 				      if(abs_wvt_tree[k]>>bpos){
+ 							label=IVAL;
+ 							VAL_flag=1;
+@@ -343,7 +336,6 @@
+ 				    }
+ 				  else
+ 				    {	/* a zerotree root */
+-					  treeBit=1;
+ 				      if(abs_wvt_tree[k]>>bpos){
+ 						label=ZTRV;
+ 						VAL_flag=1;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_init_decode.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_init_decode.cpp
+@@ -84,9 +84,7 @@
+ 	int pos, bpos;
+ 	int hpos_start, hpos_end;
+ 	int vpos_start, vpos_end;
+-	int hsize, vsize;
+ 	int band;
+-	int npix;
+ 	int start,end;
+ 	//	int IsStream=1;
+ 	//	int Mbplane=0;
+@@ -99,10 +97,6 @@
+ 		fprintf(fp_debug,"\n\n\n********Decoder*********\n");
+ #endif
+ 
+-
+-    hsize = Imgwidth;
+-    vsize = Imgheight;
+-
+ 	/* define the global variables defined in 
+ 	 wvtpezw_tree_codec.h */
+ 	tree_depth = levels;
+@@ -138,7 +132,6 @@
+ 	hloc_map[0]=0;
+ 	vloc_map[0]=0;
+ 	for(i=1;i<tree_depth;i++){
+-			npix=1<<(2*(i-1));
+ 			pos=level_pos[i];
+ 			start=level_pos[i-1];
+ 			end=level_pos[i];
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_init_encode.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_pezw_wvtpezw_tree_init_encode.cpp
+@@ -86,10 +86,7 @@
+ 	int pos, bpos;
+ 	int hpos_start, hpos_end;
+ 	int vpos_start, vpos_end;
+-    int dc_width, dc_height;
+-	int hsize, vsize;
+ 	int band;
+-	int npix;
+ 	int start,end;
+ 	//	int IsStream=1;
+ 	//	int Mbplane=0;
+@@ -101,9 +98,6 @@
+ 		fprintf(fp_debug,"\n********Encoder*********\n");
+ #endif
+ 
+-    hsize = Imgwidth;
+-    vsize = Imgheight;
+-
+ 	/* define the global variables defined in 
+ 	 wvtpezw_tree_codec.h */
+ 
+@@ -113,10 +107,6 @@
+ 
+ 	MaxValue=0;
+ 
+-    /* dc bitstream */
+-    dc_width = hsize>>levels;
+-    dc_height = vsize>>levels;
+-
+ 	/* positions of each depth within the tree */
+     len_tree_struct = 0;
+ 	level_pos = (short *)calloc(tree_depth,sizeof(short));
+@@ -161,7 +151,6 @@
+ 	hloc_map[0]=0;
+ 	vloc_map[0]=0;
+ 	for(i=1;i<tree_depth;i++){
+-			npix=1<<(2*(i-1));
+ 			pos=level_pos[i];
+ 			start=level_pos[i-1];
+ 			end=level_pos[i];
+@@ -267,10 +256,10 @@
+ 				break;
+ 			}
+ 	}
+-    if(MaxValue==0)
+-        Max_Bitplane=0;
+-    else
+-    	Max_Bitplane=Mbplane+1;
++	if(MaxValue==0)
++		Max_Bitplane=0;
++	else
++		Max_Bitplane=Mbplane+1;
+ 
+ 	for(i=0;i<tree_depth;i++)
+ 		{
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_shape_ShapeDecoding.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_shape_ShapeDecoding.cpp
+@@ -73,8 +73,6 @@
+   UChar *outmask, *recmask;
+   Int k,   ret;
+   Int i,j;
+-  Int w,h;
+-//  Int c;
+   Int coded_height, coded_width;
+   Int minbsize;
+   Int change_CR_disable;
+@@ -120,8 +118,6 @@
+     if(*targetLevel <0) *targetLevel =0;
+ 
+     for(k=levels;k>*targetLevel;k--) {
+-      w = (coded_width >>k);
+-      h = (coded_height >> k);
+ #if 1 /*def DEBUG*/
+       fprintf(stderr,"Decoding Shape Enhanced Layer %d...\n", levels-k+1);
+ #endif
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_shape_ShapeEncoding.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_shape_ShapeEncoding.cpp
+@@ -138,6 +138,8 @@
+       totalbits = get_total_bit_rate();
+ #ifdef DEBUG
+       printf("Enhanced Layer %d bits = %d\n", levels-k, totalbits-previoustotalbits);
++#else
++      (void)previoustotalbits;
+ #endif
+       previoustotalbits = totalbits;
+     }
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_shape_ShapeEnhEncode.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_shape_ShapeEnhEncode.cpp
+@@ -747,16 +747,11 @@
+ 	Int				i,j;	// SAIT_PDAM: ADDED by D.-S.Cho (Samsung AIT) 
+ 	Int             mborder = MBORDER;
+ 	Int             mbsize_ext = mbsize+(mborder<<1);
+-	Int             border = BORDER;
+-	Int             bsize = mbsize >> 1;
+-	Int             bsize_ext = bsize+(border<<1);
+ 	Int             context = 0, prob=0;
+ 	Int		start_bit, end_bit, bitnum=0;
+-	UChar           *lower_bab_data,
+-                        *curr_bab_data;
++	UChar           *curr_bab_data;
+ 	UChar			*curr_bab_data_tr = NULL;	// SAIT_PDAM: ADDED by D.-S.Cho (Samsung AIT) 
+ 
+-        lower_bab_data = bordered_lower_bab + border * bsize_ext + border;
+ 		// SAIT_PDAM: BEGIN - ADDED by D.-S.Cho (Samsung AIT) 
+ 		if (scan_order == 1) {
+ 			curr_bab_data_tr = (UChar *)calloc(mbsize_ext*mbsize_ext, sizeof(UChar));
+@@ -846,7 +841,7 @@
+ 	if(scan_order==1) free(curr_bab_data_tr); // SAIT_PDAM: ADDED by D.-S.Cho (Samsung AIT) 
+ 	end_bit = bitstream->cnt;
+ 	bitnum = end_bit - start_bit;
+-
++	(void)bitnum;
+ }
+ 
+ /* Modified by shson */
+@@ -985,7 +980,7 @@
+ 
+ 	end_bit = bitstream->cnt;
+ 	bitnum = end_bit - start_bit;
+-
++	(void)bitnum;
+ }
+ 
+ /*********************************************************************************
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_wavelet_dwtmask.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_wavelet_dwtmask.cpp
+@@ -227,7 +227,6 @@
+ {
+   Int i;
+   Int SegLength = 0;
+-  Int odd;
+   Int start, end;
+   UChar *a, *b, *c;
+   /* double check filter class and type */
+@@ -250,7 +249,6 @@
+     while(i<Length && (a[i])==DWT_IN) i++;
+     end = i;
+     SegLength = end-start;
+-    odd = start%2;
+     if(SegLength==1) { /* special case for single poInt */
+       /* swap the subsampled mask for single poInt if highpass is IN */
+       if(Direction == DWT_HORIZONTAL) {
+@@ -330,6 +328,7 @@
+     while(i<Length && (a[i])==DWT_IN) i++;
+     end = i;
+     SegLength = end-start;
++    (void)SegLength;
+     odd = start%2;
+     /* swap the subsampled mask for the start of segment if it is odd*/
+     if(odd) {
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_wavelet_idwt.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_wavelet_idwt.cpp
+@@ -218,6 +218,7 @@
+   /*    if (y1 != 0) y1--;*/
+   /*    if (y2 != (nTiley-1)) y2++;*/
+   /*  }*/
++  (void)nTiley;
+ 
+   width = (x2-x1+1)*TileWidth;
+   height = (y2-y1+1)*TileHeight;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_zte_ztscanUtil.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_zte_ztscanUtil.cpp
+@@ -100,10 +100,7 @@
+ 
+ Void CVTCCommon::probModelInitSQ(Int col)
+ {
+-  SNR_IMAGE *snr_image;
+   Int i,l;
+-  
+-  snr_image=&(mzte_codec.m_SPlayer[col].SNRlayer.snr_image);
+ 
+   for (l=0; l<mzte_codec.m_iWvtDecmpLev;++l)
+   {
+@@ -129,10 +126,7 @@
+ 
+ Void CVTCCommon::probModelFreeSQ(Int col)
+ {
+-  SNR_IMAGE *snr_image;
+   Int i,l;
+-  
+-  snr_image=&(mzte_codec.m_SPlayer[col].SNRlayer.snr_image);
+ 
+   for (l=0; l<mzte_codec.m_iWvtDecmpLev;++l)
+   {  
+@@ -167,11 +161,8 @@
+ 
+ Void CVTCCommon::probModelInitMQ(Int col)
+ {
+-  SNR_IMAGE *snr_image;
+   Int i,l;
+   
+-  snr_image=&(mzte_codec.m_SPlayer[col].SNRlayer.snr_image);
+-  
+   for (l=0; l<mzte_codec.m_iWvtDecmpLev;++l)
+   {
+     mzte_ac_model_init(&acmType[col][l][CONTEXT_INIT],NUMCHAR_TYPE,NULL,
+@@ -215,10 +206,7 @@
+ 
+ Void CVTCCommon::probModelFreeMQ(Int col)
+ {
+-  SNR_IMAGE *snr_image;
+   Int i,l;
+-  
+-  snr_image=&(mzte_codec.m_SPlayer[col].SNRlayer.snr_image);
+ 
+   for (l=0; l<mzte_codec.m_iWvtDecmpLev;++l)
+   {  
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_zte_ztscan_dec.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_zte_ztscan_dec.cpp
+@@ -725,21 +725,16 @@
+ {
+ //Modified by Sarnoff for error resilience, 3/5/99
+  if(mzte_codec.m_usErrResiDisable){  //no error resi case
+-  Int h,w,dc_h,dc_w,dc_h2,dc_w2;
++  Int h,w,dc_h,dc_w;
+ 
+   dc_h=mzte_codec.m_iDCHeight;
+   dc_w=mzte_codec.m_iDCWidth;
+-  dc_h2=dc_h<<1;
+-  dc_w2=dc_w<<1;
+ 
+   for(h=0;h<dc_h;h++)
+     for(w=0;w<dc_w;w++)  // 1127    
+       for (color=0; color<mzte_codec.m_iColors; color++) 
+       {  	
+-	SNR_IMAGE *snr_image;
+ 	int tw,sw,sh,n; // 1127
+-	
+-	snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+  
+ 	height=mzte_codec.m_SPlayer[color].height;
+ 	width=mzte_codec.m_SPlayer[color].width;
+@@ -780,12 +775,8 @@
+       }
+  }
+  else{ //error resilience case
+-  Int dc_h,dc_w;
+   Int tw,sw,sh,n;
+ 
+-  dc_h=mzte_codec.m_iDCHeight;
+-  dc_w=mzte_codec.m_iDCWidth;
+-
+   /* rewrote for error resilience, bbc, 11/9/98 */
+   while(LTU<=TU_max){
+     get_TU_location(LTU);
+@@ -1166,8 +1157,6 @@
+     nCol = (layer==0) ? 1 : NCOL;
+     for (color=0; color < nCol; ++color)
+     {      
+-      SNR_IMAGE *snr_image;
+-
+       noteProgress("  Coding Layer %d, Color %d", layer - (color!=0), color);
+ 
+       ac_h2=acH2;
+@@ -1183,8 +1172,6 @@
+ 	ac_w>>=1;
+       }
+ 
+-      snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+-
+       coeffinfo=mzte_codec.m_SPlayer[color].coeffinfo;
+       height=mzte_codec.m_SPlayer[color].height;
+       width=mzte_codec.m_SPlayer[color].width;
+@@ -1421,11 +1408,8 @@
+     {
+       for (color=0; color<NCOL; ++color)
+       {      
+-	SNR_IMAGE *snr_image;
+ 	int tw,sw,sh,n;  // 1124
+ 	
+-	snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+-	
+ 	coeffinfo=mzte_codec.m_SPlayer[color].coeffinfo;
+ 	height=mzte_codec.m_SPlayer[color].height;
+ 	width=mzte_codec.m_SPlayer[color].width;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_zte_ztscan_enc.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_zte_ztscan_enc.cpp
+@@ -719,12 +719,10 @@
+ ********************************************************/ 
+ Void CVTCEncoder::cachb_encode_SQ_tree()
+ {
+-  Int h,w,dc_h,dc_w,dc_h2,dc_w2;
++  Int h,w,dc_h,dc_w;
+ 
+   dc_h=mzte_codec.m_iDCHeight;
+   dc_w=mzte_codec.m_iDCWidth;
+-  dc_h2=dc_h<<1;
+-  dc_w2=dc_w<<1;
+ 
+ //Modified by Sarnoff for error resilience, 3/5/99
+  if(mzte_codec.m_usErrResiDisable){ //no error resi case
+@@ -732,11 +730,8 @@
+     for(w=0;w<dc_w;w++)  // 1124
+       for (color=0; color<mzte_codec.m_iColors; color++) 
+       {  	
+-	SNR_IMAGE *snr_image;
+ 	Int tw,sw,sh,n; // 1124
+ 	
+-	snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+-	
+ 	height=mzte_codec.m_Image[color].height;
+ 	width=mzte_codec.m_Image[color].width;
+ 	
+@@ -778,11 +773,8 @@
+     for(w=0;w<dc_w;w++)  // 1124
+       for (color=0; color<mzte_codec.m_iColors; color++) 
+       {  	
+-		SNR_IMAGE *snr_image;
+ 		Int tw,sw,sh,n; // 1124
+ 	
+-		snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+-	
+ 		height=mzte_codec.m_Image[color].height;
+ 		width=mzte_codec.m_Image[color].width;
+ 	
+@@ -1235,8 +1227,6 @@
+     nCol = (layer==0) ? 1 : NCOL;
+     for (color=0; color < nCol; ++color)
+     {      
+-      SNR_IMAGE *snr_image;
+-
+       noteProgress("  Coding Layer %d, Color %d", layer - (color!=0), color);
+ 
+       ac_h2=acH2;
+@@ -1251,8 +1241,6 @@
+ 	ac_h>>=1;
+ 	ac_w>>=1;
+       }
+-    
+-      snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+ 
+       coeffinfo=mzte_codec.m_SPlayer[color].coeffinfo;
+       height=mzte_codec.m_SPlayer[color].height;
+@@ -1470,11 +1458,8 @@
+     {
+       for (color=0; color<NCOL; ++color)
+       {      
+-	SNR_IMAGE *snr_image;
+ 	Int tw,sw,sh,n; // 1124
+ 	
+-	snr_image=&(mzte_codec.m_SPlayer[color].SNRlayer.snr_image);
+-	
+ 	coeffinfo=mzte_codec.m_SPlayer[color].coeffinfo;
+ 	height=mzte_codec.m_SPlayer[color].height;
+ 	width=mzte_codec.m_SPlayer[color].width;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_ztq_encQM.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_ztq_encQM.cpp
+@@ -156,7 +156,10 @@
+ 
+   /* Are we at a leaf? */
+   if ((nc = findChild(x, y, xc, yc, c)) == 0)
++  {
+     isLeaf = 1;
++    (void)isLeaf;
++  }
+   else
+   {
+     isLeaf = 0;
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_ztq_errorHandler.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_ztq_errorHandler.cpp
+@@ -60,7 +60,7 @@
+ #include "dataStruct.hpp"
+ #include "msg.hpp"
+ 
+-Void CVTCCommon::errorHandler(Char *s, ...)
++Void CVTCCommon::errorHandler(const Char *s, ...)
+ {
+   va_list ap;
+ 
+--- mpeg4ip-1.6.1.orig/common/video/iso-mpeg4/src/vtc_ztq_msg.cpp
++++ mpeg4ip-1.6.1/common/video/iso-mpeg4/src/vtc_ztq_msg.cpp
+@@ -58,7 +58,6 @@
+     noteStat()        :  for statistics file (no newline).
+     noteDebug()       :  for debugging stuff.
+     noteDetail()      :  for detailed running commentary.
+-    noteProgressNoNL():  for running commentary (no newline).
+     noteProgress()    :  for running commentary.
+     noteWarning()     :  for warning messages.
+     noteError()       :  for problems which can't be continued from.
+@@ -83,7 +82,7 @@
+ /* Filter variable for user messages */
+ Int quiet=QUIET_DETAIL;
+ 
+-Void CVTCCommon::noteStat(Char *s, ...)
++Void CVTCCommon::noteStat(const Char *s, ...)
+ {
+   va_list ap;
+ 
+@@ -93,7 +92,7 @@
+   va_end(ap);
+ }
+ 
+-Void CVTCCommon::noteDebug(Char *s, ...)
++Void CVTCCommon::noteDebug(const Char *s, ...)
+ {
+   va_list ap;
+ 
+@@ -108,7 +107,7 @@
+   }
+ }
+ 
+-Void CVTCCommon::noteDetail(Char *s, ...)
++Void CVTCCommon::noteDetail(const Char *s, ...)
+ {
+   va_list ap;
+ 
+@@ -123,7 +122,7 @@
+   }
+ }
+ 
+-Void CVTCCommon::noteProgress(Char *s, ...)
++Void CVTCCommon::noteProgress(const Char *s, ...)
+ {
+   va_list ap;
+ 
+@@ -138,21 +137,7 @@
+ }
+ 
+ 
+-Void CVTCCommon::noteProgressNoNL(Char *s, ...)
+-{
+-  va_list ap;
+-
+-  if (quiet<QUIET_PROGRESS)
+-  {
+-    va_start(ap, s);
+-    vfprintf(ofp, s, ap);
+-    fflush(ofp);
+-    va_end(ap);
+-  }
+-}
+-
+-
+-Void CVTCCommon::noteWarning(Char *s, ...)
++Void CVTCCommon::noteWarning(const Char *s, ...)
+ {
+   va_list ap;
+ 
+@@ -168,7 +153,7 @@
+ }
+ 
+ 
+-Void CVTCCommon::noteError(Char *s, ...)
++Void CVTCCommon::noteError(const Char *s, ...)
+ {
+   va_list ap;
+ 
+@@ -182,15 +167,3 @@
+     va_end(ap);
+   }
+ }
+-
+-Void CVTCCommon::noteErrorNoPre(Char *s, ...)
+-{
+-  va_list ap;
+-
+-  if (quiet<QUIET_ERRORS)
+-  {
+-    va_start(ap, s);
+-    vfprintf(efp, s, ap);
+-    va_end(ap);
+-  }
+-}
+--- mpeg4ip-1.6.1.orig/configure.in
++++ mpeg4ip-1.6.1/configure.in
+@@ -801,17 +801,9 @@
+     fi
+ fi
+ 
+-AC_PATH_X
+-AC_PATH_XTRA
+-extra=
+-if test x$have_x = xyes; then
+-    extra="$X_LIBS -lX11 -lXext"
+-fi
+ dnl Get SDL cflags and SDL libraries to include
+-SDL_LIBS="`sdl-config --libs` $extra"
++SDL_LIBS="`pkg-config --libs sdl`"
+ AC_SUBST(SDL_LIBS)
+-SDL_LIB_LIBS="`sdl-config --libs | sed /-lSDLmain/s///`"
+-AC_SUBST(SDL_LIB_LIBS)
+ 
+ AC_SUBST(SUN_LIBS)
+ 
+@@ -872,7 +864,7 @@
+ PLAYER_PLUGIN_DIR=$libdir/mp4player_plugin
+ AC_SUBST(PLAYER_PLUGIN_DIR)
+ 
+-SDL_CFLAGS=`sdl-config --cflags`
++SDL_CFLAGS=`pkg-config --cflags sdl`
+ 
+ case "$target" in
+    *-apple-darwin*)
+--- mpeg4ip-1.6.1.orig/gtk-2.0.m4
++++ mpeg4ip-1.6.1/gtk-2.0.m4
+@@ -0,0 +1,196 @@
++# Configure paths for GTK+
++# Owen Taylor     1997-2001
++
++dnl AM_PATH_GTK_2_0([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND [, MODULES]]]])
++dnl Test for GTK+, and define GTK_CFLAGS and GTK_LIBS, if gthread is specified in MODULES, 
++dnl pass to pkg-config
++dnl
++AC_DEFUN([AM_PATH_GTK_2_0],
++[dnl 
++dnl Get the cflags and libraries from pkg-config
++dnl
++AC_ARG_ENABLE(gtktest, [  --disable-gtktest       do not try to compile and run a test GTK+ program],
++		    , enable_gtktest=yes)
++
++  pkg_config_args=gtk+-2.0
++  for module in . $4
++  do
++      case "$module" in
++         gthread) 
++             pkg_config_args="$pkg_config_args gthread-2.0"
++         ;;
++      esac
++  done
++
++  no_gtk=""
++
++  AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
++
++  if test x$PKG_CONFIG != xno ; then
++    if pkg-config --atleast-pkgconfig-version 0.7 ; then
++      :
++    else
++      echo "*** pkg-config too old; version 0.7 or better required."
++      no_gtk=yes
++      PKG_CONFIG=no
++    fi
++  else
++    no_gtk=yes
++  fi
++
++  min_gtk_version=ifelse([$1], ,2.0.0,$1)
++  AC_MSG_CHECKING(for GTK+ - version >= $min_gtk_version)
++
++  if test x$PKG_CONFIG != xno ; then
++    ## don't try to run the test against uninstalled libtool libs
++    if $PKG_CONFIG --uninstalled $pkg_config_args; then
++	  echo "Will use uninstalled version of GTK+ found in PKG_CONFIG_PATH"
++	  enable_gtktest=no
++    fi
++
++    if $PKG_CONFIG --atleast-version $min_gtk_version $pkg_config_args; then
++	  :
++    else
++	  no_gtk=yes
++    fi
++  fi
++
++  if test x"$no_gtk" = x ; then
++    GTK_CFLAGS=`$PKG_CONFIG $pkg_config_args --cflags`
++    GTK_LIBS=`$PKG_CONFIG $pkg_config_args --libs`
++    gtk_config_major_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
++           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
++    gtk_config_minor_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
++           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
++    gtk_config_micro_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
++           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
++    if test "x$enable_gtktest" = "xyes" ; then
++      ac_save_CFLAGS="$CFLAGS"
++      ac_save_LIBS="$LIBS"
++      CFLAGS="$CFLAGS $GTK_CFLAGS"
++      LIBS="$GTK_LIBS $LIBS"
++dnl
++dnl Now check if the installed GTK+ is sufficiently new. (Also sanity
++dnl checks the results of pkg-config to some extent)
++dnl
++      rm -f conf.gtktest
++      AC_TRY_RUN([
++#include <gtk/gtk.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++int 
++main ()
++{
++  int major, minor, micro;
++  char *tmp_version;
++
++  system ("touch conf.gtktest");
++
++  /* HP/UX 9 (%@#!) writes to sscanf strings */
++  tmp_version = g_strdup("$min_gtk_version");
++  if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
++     printf("%s, bad version string\n", "$min_gtk_version");
++     exit(1);
++   }
++
++  if ((gtk_major_version != $gtk_config_major_version) ||
++      (gtk_minor_version != $gtk_config_minor_version) ||
++      (gtk_micro_version != $gtk_config_micro_version))
++    {
++      printf("\n*** 'pkg-config --modversion gtk+-2.0' returned %d.%d.%d, but GTK+ (%d.%d.%d)\n", 
++             $gtk_config_major_version, $gtk_config_minor_version, $gtk_config_micro_version,
++             gtk_major_version, gtk_minor_version, gtk_micro_version);
++      printf ("*** was found! If pkg-config was correct, then it is best\n");
++      printf ("*** to remove the old version of GTK+. You may also be able to fix the error\n");
++      printf("*** by modifying your LD_LIBRARY_PATH enviroment variable, or by editing\n");
++      printf("*** /etc/ld.so.conf. Make sure you have run ldconfig if that is\n");
++      printf("*** required on your system.\n");
++      printf("*** If pkg-config was wrong, set the environment variable PKG_CONFIG_PATH\n");
++      printf("*** to point to the correct configuration files\n");
++    } 
++  else if ((gtk_major_version != GTK_MAJOR_VERSION) ||
++	   (gtk_minor_version != GTK_MINOR_VERSION) ||
++           (gtk_micro_version != GTK_MICRO_VERSION))
++    {
++      printf("*** GTK+ header files (version %d.%d.%d) do not match\n",
++	     GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION);
++      printf("*** library (version %d.%d.%d)\n",
++	     gtk_major_version, gtk_minor_version, gtk_micro_version);
++    }
++  else
++    {
++      if ((gtk_major_version > major) ||
++        ((gtk_major_version == major) && (gtk_minor_version > minor)) ||
++        ((gtk_major_version == major) && (gtk_minor_version == minor) && (gtk_micro_version >= micro)))
++      {
++        return 0;
++       }
++     else
++      {
++        printf("\n*** An old version of GTK+ (%d.%d.%d) was found.\n",
++               gtk_major_version, gtk_minor_version, gtk_micro_version);
++        printf("*** You need a version of GTK+ newer than %d.%d.%d. The latest version of\n",
++	       major, minor, micro);
++        printf("*** GTK+ is always available from ftp://ftp.gtk.org.\n");
++        printf("***\n");
++        printf("*** If you have already installed a sufficiently new version, this error\n");
++        printf("*** probably means that the wrong copy of the pkg-config shell script is\n");
++        printf("*** being found. The easiest way to fix this is to remove the old version\n");
++        printf("*** of GTK+, but you can also set the PKG_CONFIG environment to point to the\n");
++        printf("*** correct copy of pkg-config. (In this case, you will have to\n");
++        printf("*** modify your LD_LIBRARY_PATH enviroment variable, or edit /etc/ld.so.conf\n");
++        printf("*** so that the correct libraries are found at run-time))\n");
++      }
++    }
++  return 1;
++}
++],, no_gtk=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
++       CFLAGS="$ac_save_CFLAGS"
++       LIBS="$ac_save_LIBS"
++     fi
++  fi
++  if test "x$no_gtk" = x ; then
++     AC_MSG_RESULT(yes (version $gtk_config_major_version.$gtk_config_minor_version.$gtk_config_micro_version))
++     ifelse([$2], , :, [$2])     
++  else
++     AC_MSG_RESULT(no)
++     if test "$PKG_CONFIG" = "no" ; then
++       echo "*** A new enough version of pkg-config was not found."
++       echo "*** See http://pkgconfig.sourceforge.net"
++     else
++       if test -f conf.gtktest ; then
++        :
++       else
++          echo "*** Could not run GTK+ test program, checking why..."
++	  ac_save_CFLAGS="$CFLAGS"
++	  ac_save_LIBS="$LIBS"
++          CFLAGS="$CFLAGS $GTK_CFLAGS"
++          LIBS="$LIBS $GTK_LIBS"
++          AC_TRY_LINK([
++#include <gtk/gtk.h>
++#include <stdio.h>
++],      [ return ((gtk_major_version) || (gtk_minor_version) || (gtk_micro_version)); ],
++        [ echo "*** The test program compiled, but did not run. This usually means"
++          echo "*** that the run-time linker is not finding GTK+ or finding the wrong"
++          echo "*** version of GTK+. If it is not finding GTK+, you'll need to set your"
++          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
++          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
++          echo "*** is required on your system"
++	  echo "***"
++          echo "*** If you have an old version installed, it is best to remove it, although"
++          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH" ],
++        [ echo "*** The test program failed to compile or link. See the file config.log for the"
++          echo "*** exact error that occured. This usually means GTK+ is incorrectly installed."])
++          CFLAGS="$ac_save_CFLAGS"
++          LIBS="$ac_save_LIBS"
++       fi
++     fi
++     GTK_CFLAGS=""
++     GTK_LIBS=""
++     ifelse([$3], , :, [$3])
++  fi
++  AC_SUBST(GTK_CFLAGS)
++  AC_SUBST(GTK_LIBS)
++  rm -f conf.gtktest
++])
+--- mpeg4ip-1.6.1.orig/include/mpeg4ip.h
++++ mpeg4ip-1.6.1/include/mpeg4ip.h
+@@ -120,14 +120,6 @@
+ #endif
+ #include <sys/param.h>
+ 
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-char *strcasestr(const char *haystack, const char *needle);
+-#ifdef __cplusplus
+-}
+-#endif
+-
+ #define OPEN_RDWR O_RDWR
+ #define OPEN_CREAT O_CREAT 
+ #define OPEN_RDONLY O_RDONLY
+@@ -169,9 +161,9 @@
+ /*****************************************************************************
+  *             Generic type includes used in the whole package               *
+  *****************************************************************************/
+-#define D64  "%"D64F
+-#define U64  "%"U64F
+-#define X64 "%"X64F
++#define D64  "%" D64F
++#define U64  "%" U64F
++#define X64 "%" X64F
+ 
+ #define M_LLU TO_U64(1000)
+ #define M_64 TO_U64(1000)
+--- mpeg4ip-1.6.1.orig/lib/SDLAudio/configure.in
++++ mpeg4ip-1.6.1/lib/SDLAudio/configure.in
+@@ -1330,7 +1330,7 @@
+         AC_MSG_RESULT(not implemented yet)
+         ;;
+ esac
+-MYSDL_CFLAGS=`sdl-config --cflags`
++MYSDL_CFLAGS=`pkg-config --cflags sdl`
+ CFLAGS="$CFLAGS $MYSDL_CFLAGS"
+ # Finally create all the generated files
+ dnl Important: Any directory that you want to be in the distcheck should
+--- mpeg4ip-1.6.1.orig/lib/mp4/ctts.c
++++ mpeg4ip-1.6.1/lib/mp4/ctts.c
+@@ -94,11 +94,11 @@
+ 	quicktime_atom_t atom;
+ 
+ 	if (!file->use_mp4) {
+-		return;
++		return -1;
+ 	}
+ 
+ 	if (ctts->total_entries == 1 && ctts->table[0].sample_offset == 0) {
+-		return;
++		return -1;
+ 	}
+ 
+ 	quicktime_atom_write_header(file, &atom, "ctts");
+--- mpeg4ip-1.6.1.orig/lib/mp4/funcprotos.h
++++ mpeg4ip-1.6.1/lib/mp4/funcprotos.h
+@@ -2,84 +2,236 @@
+ #define FUNCPROTOS_H
+ 
+ /* atom handling routines */
++int quicktime_atom_is(quicktime_atom_t *atom, char *type);
++int quicktime_atom_read_header(quicktime_t *file, quicktime_atom_t *atom);
+ long quicktime_atom_read_size(char *data);
++int quicktime_atom_read_type(char *data, char *type);
+ u_int64_t quicktime_atom_read_size64(char *data);
++int quicktime_atom_skip(quicktime_t *file, quicktime_atom_t *atom);
++int quicktime_atom_write_footer(quicktime_t *file, quicktime_atom_t *atom);
++int quicktime_atom_write_header(quicktime_t *file, quicktime_atom_t *atom, char *text);
+ 
+ quicktime_trak_t* quicktime_add_track(quicktime_moov_t *moov);
+ quicktime_trak_t* quicktime_find_track_by_id(quicktime_moov_t *moov, int trackId);
+ 
+ /* initializers for every atom */
+-int quicktime_matrix_init(quicktime_matrix_t *matrix);
+-int quicktime_edts_init_table(quicktime_edts_t *edts);
++int quicktime_init(quicktime_t *file);
++int quicktime_ctab_init(quicktime_ctab_t *ctab);
++int quicktime_ctts_init(quicktime_ctts_t *ctts);
++int quicktime_ctts_init_common(quicktime_t *file, quicktime_ctts_t *ctts);
++int quicktime_dimm_init(quicktime_dimm_t *dimm);
++int quicktime_dinf_init_all(quicktime_dinf_t *dinf);
++int quicktime_dinf_init(quicktime_dinf_t *dinf);
++int quicktime_dmax_init(quicktime_dmax_t *dmax);
++int quicktime_dmed_init(quicktime_dmed_t *dmed);
++int quicktime_dref_init(quicktime_dref_t *dref);
++int quicktime_dref_init_all(quicktime_dref_t *dref);
++int quicktime_drep_init(quicktime_drep_t *drep);
+ int quicktime_edts_init(quicktime_edts_t *edts);
++int quicktime_edts_init_table(quicktime_edts_t *edts);
+ int quicktime_elst_init(quicktime_elst_t *elst);
+ int quicktime_elst_init_all(quicktime_elst_t *elst);
+-int quicktime_elst_table_init(quicktime_elst_table_t *table); /* initialize a table */
+-int quicktime_tkhd_init(quicktime_tkhd_t *tkhd);
+-int quicktime_tkhd_init_video(quicktime_t *file, quicktime_tkhd_t *tkhd, int frame_w, int frame_h);
+-int quicktime_ctab_init(quicktime_ctab_t *ctab);
+-int quicktime_mjqt_init(quicktime_mjqt_t *mjqt);
++int quicktime_esds_init(quicktime_esds_t *esds);
++int quicktime_gmhd_init(quicktime_gmhd_t *gmhd);
++int quicktime_gmin_init(quicktime_gmin_t *gmin);
++int quicktime_hdlr_init(quicktime_hdlr_t *hdlr);
++int quicktime_hdlr_init_video(quicktime_hdlr_t *hdlr);
++int quicktime_hdlr_init_audio(quicktime_hdlr_t *hdlr);
++int quicktime_hdlr_init_hint(quicktime_hdlr_t *hdlr);
++int quicktime_hdlr_init_data(quicktime_hdlr_t *hdlr);
++int quicktime_hinf_init(quicktime_hinf_t *hinf);
++int quicktime_hint_init(quicktime_hint_t *hint);
++int quicktime_hint_hnti_init(quicktime_hint_hnti_t *hnti);
++int quicktime_hint_udta_init(quicktime_hint_udta_t *hint_udta);
++int quicktime_hmhd_init(quicktime_hmhd_t *hmhd);
++int quicktime_hnti_init(quicktime_hnti_t *hnti);
++int quicktime_iods_init(quicktime_iods_t *iods);
++int quicktime_matrix_init(quicktime_matrix_t *matrix);
++int quicktime_maxr_init(quicktime_maxr_t *maxr);
++int quicktime_mdat_init(quicktime_mdat_t *mdat);
++int quicktime_mdhd_init(quicktime_mdhd_t *mdhd);
++int quicktime_mdhd_init_video(quicktime_t *file, quicktime_mdhd_t *mdhd, int time_scale);
++int quicktime_mdhd_init_audio(quicktime_t *file, quicktime_mdhd_t *mdhd, int time_scale);
++int quicktime_mdhd_init_hint(quicktime_t *file, quicktime_mdhd_t *mdhd, quicktime_trak_t *refTrak, int time_scale);
++int quicktime_mdia_init(quicktime_mdia_t *mdia);
++int quicktime_mdia_init_video(quicktime_t *file, quicktime_mdia_t *mdia, int frame_w, int frame_h, float frame_rate, int time_scale, char *compressor);
++int quicktime_mdia_init_audio(quicktime_t *file, quicktime_mdia_t *mdia, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
++int quicktime_mdia_init_hint(quicktime_t *file, quicktime_mdia_t *mdia, quicktime_trak_t *refTrak, int maxPktSize, int time_scale, int sampleDuration);
++int quicktime_minf_init(quicktime_minf_t *minf);
++int quicktime_minf_init_video(quicktime_t *file, quicktime_minf_t *minf, int frame_w, int frame_h, int time_scale, float frame_rate, char *compressor);
++int quicktime_minf_init_audio(quicktime_t *file, quicktime_minf_t *minf, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
++int quicktime_minf_init_hint(quicktime_t *file, quicktime_minf_t *minf, quicktime_trak_t *refTrak, int maxPktSize, int timeScale, int sampleDuration);
+ int quicktime_mjht_init(quicktime_mjht_t *mjht);
+-int quicktime_stsd_table_init(quicktime_stsd_table_t *table);
++int quicktime_mjqt_init(quicktime_mjqt_t *mjqt);
++int quicktime_moov_init(quicktime_moov_t *moov);
++int quicktime_mvhd_init(quicktime_mvhd_t *mvhd);
++int quicktime_nump_init(quicktime_nump_t *nump);
++int quicktime_payt_init(quicktime_payt_t *payt);
++int quicktime_pmax_init(quicktime_pmax_t *pmax);
++int quicktime_rtp_init(quicktime_rtp_t *rtp);
++int quicktime_sdp_init(quicktime_sdp_t *sdp);
++int quicktime_smhd_init(quicktime_smhd_t *smhd);
++int quicktime_stbl_init(quicktime_stbl_t *tkhd);
++int quicktime_stbl_init_video(quicktime_t *file, quicktime_stbl_t *stbl, int frame_w, int frame_h, int time_scale, float frame_rate, char *compressor);
++int quicktime_stbl_init_audio(quicktime_t *file, quicktime_stbl_t *stbl, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
++int quicktime_stbl_init_hint(quicktime_t *file, quicktime_stbl_t *stbl, quicktime_trak_t *refTrak, int maxPktSize, int timeScale, int sampleDuration);
++int quicktime_stco_init(quicktime_stco_t *stco);
++int quicktime_stco_init_common(quicktime_t *file, quicktime_stco_t *stco);
++int quicktime_stsc_init(quicktime_stsc_t *stsc);
++int quicktime_stsc_init_video(quicktime_t *file, quicktime_stsc_t *stsc);
++int quicktime_stsc_init_audio(quicktime_t *file, quicktime_stsc_t *stsc);
+ int quicktime_stsd_init(quicktime_stsd_t *stsd);
+ int quicktime_stsd_init_table(quicktime_stsd_t *stsd);
+ int quicktime_stsd_init_video(quicktime_t *file, quicktime_stsd_t *stsd, int frame_w, int frame_h, float frame_rate, char *compression);
+ int quicktime_stsd_init_audio(quicktime_t *file, quicktime_stsd_t *stsd, int channels, int sample_rate, int bits, char *compressor);
+-int quicktime_stts_init(quicktime_stts_t *stts);
+-int quicktime_stts_init_table(quicktime_stts_t *stts);
+-int quicktime_stts_init_video(quicktime_t *file, quicktime_stts_t *stts, int time_scale, float frame_rate);
+-int quicktime_stts_init_audio(quicktime_t *file, quicktime_stts_t *stts, int time_scale, int sample_duration);
+-int quicktime_stts_init_hint(quicktime_t *file, quicktime_stts_t *stts, int sample_duration);
++int quicktime_stsd_table_init(quicktime_stsd_table_t *table);
+ int quicktime_stss_init(quicktime_stss_t *stss);
++int quicktime_stsd_init_hint(quicktime_t *file, quicktime_stsd_t *stsd, int maxPktSize, int timeScale);
+ int quicktime_stss_init_common(quicktime_t *file, quicktime_stss_t *stss);
+-int quicktime_stsc_init(quicktime_stsc_t *stsc);
+-int quicktime_stsc_init_video(quicktime_t *file, quicktime_stsc_t *stsc);
+-int quicktime_stsc_init_audio(quicktime_t *file, quicktime_stsc_t *stsc);
+ int quicktime_stsz_init(quicktime_stsz_t *stsz);
+ int quicktime_stsz_init_video(quicktime_t *file, quicktime_stsz_t *stsz);
+ int quicktime_stsz_init_audio(quicktime_t *file, quicktime_stsz_t *stsz, int sample_size);
+-int quicktime_stco_init(quicktime_stco_t *stco);
+-int quicktime_stco_init_common(quicktime_t *file, quicktime_stco_t *stco);
+-int quicktime_stbl_init(quicktime_stbl_t *tkhd);
+-int quicktime_stbl_init_video(quicktime_t *file, quicktime_stbl_t *stbl, int frame_w, int frame_h, int time_scale, float frame_rate, char *compressor);
+-int quicktime_stbl_init_audio(quicktime_t *file, quicktime_stbl_t *stbl, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
+-int quicktime_stbl_init_hint(quicktime_t *file, quicktime_stbl_t *stbl, quicktime_trak_t *refTrak, int maxPktSize, int timeScale, int sampleDuration);
+-int quicktime_vmhd_init(quicktime_vmhd_t *vmhd);
+-int quicktime_vmhd_init_video(quicktime_t *file, quicktime_vmhd_t *vmhd, int frame_w, int frame_h, float frame_rate);
+-int quicktime_smhd_init(quicktime_smhd_t *smhd);
+-int quicktime_dref_table_init(quicktime_dref_table_t *table);
+-int quicktime_dref_init_all(quicktime_dref_t *dref);
+-int quicktime_dref_init(quicktime_dref_t *dref);
+-int quicktime_dinf_init_all(quicktime_dinf_t *dinf);
+-int quicktime_dinf_init(quicktime_dinf_t *dinf);
+-int quicktime_minf_init(quicktime_minf_t *minf);
+-int quicktime_minf_init_video(quicktime_t *file, quicktime_minf_t *minf, int frame_w, int frame_h, int time_scale, float frame_rate, char *compressor);
+-int quicktime_minf_init_audio(quicktime_t *file, quicktime_minf_t *minf, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
+-int quicktime_minf_init_hint(quicktime_t *file, quicktime_minf_t *minf, quicktime_trak_t *refTrak, int maxPktSize, int timeScale, int sampleDuration);
+-int quicktime_mdhd_init(quicktime_mdhd_t *mdhd);
+-int quicktime_mdhd_init_video(quicktime_t *file, quicktime_mdhd_t *mdhd, int time_scale);
+-int quicktime_mdhd_init_audio(quicktime_t *file, quicktime_mdhd_t *mdhd, int time_scale);
+-int quicktime_mdia_init(quicktime_mdia_t *mdia);
+-int quicktime_mdia_init_video(quicktime_t *file, quicktime_mdia_t *mdia, int frame_w, int frame_h, float frame_rate, int time_scale, char *compressor);
+-int quicktime_mdia_init_audio(quicktime_t *file, quicktime_mdia_t *mdia, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
+-int quicktime_mdia_init_hint(quicktime_t *file, quicktime_mdia_t *mdia, quicktime_trak_t *refTrak, int maxPktSize, int time_scale, int sampleDuration);
++int quicktime_stts_init(quicktime_stts_t *stts);
++int quicktime_stts_init_table(quicktime_stts_t *stts);
++int quicktime_stts_init_video(quicktime_t *file, quicktime_stts_t *stts, int time_scale, float frame_rate);
++int quicktime_stts_init_audio(quicktime_t *file, quicktime_stts_t *stts, int time_scale, int sample_duration);
++int quicktime_stts_init_hint(quicktime_t *file, quicktime_stts_t *stts, int sample_duration);
++int quicktime_tims_init(quicktime_tims_t *tims);
++int quicktime_tkhd_init(quicktime_tkhd_t *tkhd);
++int quicktime_tkhd_init_video(quicktime_t *file, quicktime_tkhd_t *tkhd, int frame_w, int frame_h);
++int quicktime_tkhd_init_hint(quicktime_t *file, quicktime_tkhd_t *tkhd);
++int quicktime_tmax_init(quicktime_tmax_t *tmax);
++int quicktime_tmin_init(quicktime_tmin_t *tmin);
++int quicktime_tpyl_init(quicktime_tpyl_t *tpyl);
+ int quicktime_trak_init(quicktime_trak_t *trak);
+ int quicktime_trak_init_video(quicktime_t *file, quicktime_trak_t *trak, int frame_w, int frame_h, float frame_rate, int time_scale, char *compressor);
+ int quicktime_trak_init_audio(quicktime_t *file, quicktime_trak_t *trak, int channels, int sample_rate, int bits, int sample_size, int time_scale, int sample_duration, char *compressor);
+ int quicktime_trak_init_hint(quicktime_t *file, quicktime_trak_t *trak, quicktime_trak_t *refTrak, int maxPktSize, int time_scale, int sample_duration);
+ int quicktime_tref_init(quicktime_tref_t *tref);
+ int quicktime_tref_init_hint(quicktime_tref_t *tref, quicktime_trak_t *refTrak);
++int quicktime_trpy_init(quicktime_trpy_t *trpy);
+ int quicktime_udta_init(quicktime_udta_t *udta);
+-int quicktime_mvhd_init(quicktime_mvhd_t *mvhd);
+-int quicktime_moov_init(quicktime_moov_t *moov);
+-int quicktime_mdat_init(quicktime_mdat_t *mdat);
+-int quicktime_init(quicktime_t *file);
+-int quicktime_hdlr_init(quicktime_hdlr_t *hdlr);
+-int quicktime_hdlr_init_video(quicktime_hdlr_t *hdlr);
+-int quicktime_hdlr_init_audio(quicktime_hdlr_t *hdlr);
+-int quicktime_hdlr_init_data(quicktime_hdlr_t *hdlr);
++int quicktime_vmhd_init(quicktime_vmhd_t *vmhd);
++int quicktime_vmhd_init_video(quicktime_t *file, quicktime_vmhd_t *vmhd, int frame_w, int frame_h, float frame_rate);
+ 
+-/* utilities for reading data types */
++/* deleters */
++int quicktime_ctab_delete(quicktime_ctab_t *ctab);
++int quicktime_ctts_delete(quicktime_ctts_t *ctts);
++int quicktime_dimm_delete(quicktime_dimm_t *dimm);
++int quicktime_dinf_delete(quicktime_dinf_t *dinf);
++int quicktime_dmax_delete(quicktime_dmax_t *dmax);
++int quicktime_dmed_delete(quicktime_dmed_t *dmed);
++int quicktime_dref_delete(quicktime_dref_t *dref);
++int quicktime_drep_delete(quicktime_drep_t *drep);
++int quicktime_edts_delete(quicktime_edts_t *edts);
++int quicktime_elst_delete(quicktime_elst_t *elst);
++int quicktime_esds_delete(quicktime_esds_t *esds);
++int quicktime_gmhd_delete(quicktime_gmhd_t *gmhd);
++int quicktime_gmin_delete(quicktime_gmin_t *gmin);
++int quicktime_hdlr_delete(quicktime_hdlr_t *hdlr);
++int quicktime_hinf_delete(quicktime_hinf_t *hinf);
++int quicktime_hint_delete(quicktime_hint_t *hint);
++int quicktime_hint_hnti_delete(quicktime_hint_hnti_t *hnti);
++int quicktime_hint_udta_delete(quicktime_hint_udta_t *hint_udta);
++int quicktime_hmhd_delete(quicktime_hmhd_t *hmhd);
++int quicktime_hnti_delete(quicktime_hnti_t *hnti);
++int quicktime_iods_delete(quicktime_iods_t *iods);
++int quicktime_matrix_delete(quicktime_matrix_t *matrix);
++int quicktime_maxr_delete(quicktime_maxr_t *maxr);
++int quicktime_mdat_delete(quicktime_mdat_t *mdat);
++int quicktime_mdhd_delete(quicktime_mdhd_t *mdhd);
++int quicktime_mdia_delete(quicktime_mdia_t *mdia);
++int quicktime_minf_delete(quicktime_minf_t *minf);
++int quicktime_mjht_delete(quicktime_mjht_t *mjht);
++int quicktime_mjqt_delete(quicktime_mjqt_t *mjqt);
++int quicktime_moov_delete(quicktime_moov_t *moov);
++int quicktime_mvhd_delete(quicktime_mvhd_t *mvhd);
++int quicktime_nump_delete(quicktime_nump_t *nump);
++int quicktime_payt_delete(quicktime_payt_t *payt);
++int quicktime_pmax_delete(quicktime_pmax_t *pmax);
++int quicktime_rtp_delete(quicktime_rtp_t *rtp);
++int quicktime_sdp_delete(quicktime_sdp_t *sdp);
++int quicktime_smhd_delete(quicktime_smhd_t *smhd);
++int quicktime_stbl_delete(quicktime_stbl_t *stbl);
++int quicktime_stco_delete(quicktime_stco_t *stco);
++int quicktime_stsc_delete(quicktime_stsc_t *stsc);
++int quicktime_stsd_delete(quicktime_stsd_t *stsd);
++int quicktime_stsd_table_delete(quicktime_stsd_table_t *table);
++int quicktime_stss_delete(quicktime_stss_t *stss);
++int quicktime_stsz_delete(quicktime_stsz_t *stsz);
++int quicktime_stts_delete(quicktime_stts_t *stts);
++int quicktime_tims_delete(quicktime_tims_t *tims);
++int quicktime_tkhd_delete(quicktime_tkhd_t *tkhd);
++int quicktime_tmax_delete(quicktime_tmax_t *tmax);
++int quicktime_tmin_delete(quicktime_tmin_t *tmin);
++int quicktime_tpyl_delete(quicktime_tpyl_t *tpyl);
++int quicktime_trak_delete(quicktime_trak_t *trak);
++int quicktime_tref_delete(quicktime_tref_t *tref);
++int quicktime_trpy_delete(quicktime_trpy_t *trpy);
++int quicktime_udta_delete(quicktime_udta_t *udta);
++int quicktime_vmhd_delete(quicktime_vmhd_t *vmhd);
++
++/* utilities for dumping data types */
++int quicktime_ctab_dump(quicktime_ctab_t *ctab);
++int quicktime_ctts_dump(quicktime_ctts_t *ctts);
++int quicktime_dimm_dump(quicktime_dimm_t *dimm);
++int quicktime_dinf_dump(quicktime_dinf_t *dinf);
++int quicktime_dmax_dump(quicktime_dmax_t *dmax);
++int quicktime_dmed_dump(quicktime_dmed_t *dmed);
++int quicktime_dref_dump(quicktime_dref_t *dref);
++int quicktime_drep_dump(quicktime_drep_t *drep);
++int quicktime_edts_dump(quicktime_edts_t *edts);
++int quicktime_elst_dump(quicktime_elst_t *elst);
++int quicktime_esds_dump(quicktime_esds_t *esds);
++int quicktime_gmhd_dump(quicktime_gmhd_t *gmhd);
++int quicktime_gmin_dump(quicktime_gmin_t *gmin);
++int quicktime_hdlr_dump(quicktime_hdlr_t *hdlr);
++int quicktime_hinf_dump(quicktime_hinf_t *hinf);
++int quicktime_hint_dump(quicktime_hint_t *hint);
++int quicktime_hint_hnti_dump(quicktime_hint_hnti_t *hnti);
++int quicktime_hint_udta_dump(quicktime_hint_udta_t *hint_udta);
++int quicktime_hmhd_dump(quicktime_hmhd_t *hmhd);
++int quicktime_hnti_dump(quicktime_hnti_t *hnti);
++int quicktime_iods_dump(quicktime_iods_t *iods);
++int quicktime_matrix_dump(quicktime_matrix_t *matrix);
++int quicktime_maxr_dump(quicktime_maxr_t *maxr);
++int quicktime_mdat_dump(quicktime_mdat_t *mdat);
++int quicktime_mdhd_dump(quicktime_mdhd_t *mdhd);
++int quicktime_mdia_dump(quicktime_mdia_t *mdia);
++int quicktime_minf_dump(quicktime_minf_t *minf);
++int quicktime_mjht_dump(quicktime_mjht_t *mjht);
++int quicktime_mjqt_dump(quicktime_mjqt_t *mjqt);
++int quicktime_moov_dump(quicktime_moov_t *moov);
++int quicktime_mvhd_dump(quicktime_mvhd_t *mvhd);
++int quicktime_nump_dump(quicktime_nump_t *nump);
++int quicktime_payt_dump(quicktime_payt_t *payt);
++int quicktime_pmax_dump(quicktime_pmax_t *pmax);
++int quicktime_rtp_dump(quicktime_rtp_t *rtp);
++int quicktime_sdp_dump(quicktime_sdp_t *sdp);
++int quicktime_smhd_dump(quicktime_smhd_t *smhd);
++int quicktime_stbl_dump(void *minf_ptr, quicktime_stbl_t *stbl);
++int quicktime_stco_dump(quicktime_stco_t *stco);
++int quicktime_stsc_dump(quicktime_stsc_t *stsc);
++int quicktime_stsd_dump(void *minf_ptr, quicktime_stsd_t *stsd);
++int quicktime_stsd_table_dump(void *minf_ptr, quicktime_stsd_table_t *table);
++int quicktime_stsd_video_dump(quicktime_stsd_table_t *table);
++int quicktime_stsd_audio_dump(quicktime_stsd_table_t *table);
++int quicktime_stsd_hint_dump(quicktime_stsd_table_t *table);
++int quicktime_stss_dump(quicktime_stss_t *stss);
++int quicktime_stsz_dump(quicktime_stsz_t *stsz);
++int quicktime_stts_dump(quicktime_stts_t *stts);
++int quicktime_tims_dump(quicktime_tims_t *tims);
++int quicktime_tkhd_dump(quicktime_tkhd_t *tkhd);
++int quicktime_tmax_dump(quicktime_tmax_t *tmax);
++int quicktime_tmin_dump(quicktime_tmin_t *tmin);
++int quicktime_tpyl_dump(quicktime_tpyl_t *tpyl);
++int quicktime_trak_dump(quicktime_trak_t *trak);
++int quicktime_tref_dump(quicktime_tref_t *tref);
++int quicktime_trpy_dump(quicktime_trpy_t *trpy);
++int quicktime_udta_dump(quicktime_udta_t *udta);
++int quicktime_vmhd_dump(quicktime_vmhd_t *vmhd);
++
++/* utilities for reading and writing data types */
+ int quicktime_read_data(quicktime_t *file, char *data, int size);
+ int quicktime_write_data(quicktime_t *file, char *data, int size);
+ int quicktime_read_pascal(quicktime_t *file, char *data);
+@@ -100,10 +252,122 @@
+ int quicktime_write_char(quicktime_t *file, char x);
+ int quicktime_read_char32(quicktime_t *file, char *string);
+ int quicktime_write_char32(quicktime_t *file, char *string);
+-int quicktime_copy_char32(char *output, char *input);
+-long quicktime_position(quicktime_t *file);
+ int quicktime_read_mp4_descr_length(quicktime_t *file);
+ int quicktime_write_mp4_descr_length(quicktime_t *file, int length, bool compact);
++int quicktime_read_ctab(quicktime_t *file, quicktime_ctab_t *ctab);
++int quicktime_read_ctts(quicktime_t *file, quicktime_ctts_t *ctts);
++int quicktime_write_ctts(quicktime_t *file, quicktime_ctts_t *ctts);
++int quicktime_read_dimm(quicktime_t *file, quicktime_dimm_t *dimm);
++int quicktime_write_dimm(quicktime_t *file, quicktime_dimm_t *dimm);
++int quicktime_read_dinf(quicktime_t *file, quicktime_dinf_t *dinf, quicktime_atom_t *dinf_atom);
++int quicktime_write_dinf(quicktime_t *file, quicktime_dinf_t *dinf);
++int quicktime_read_dmax(quicktime_t *file, quicktime_dmax_t *dmax);
++int quicktime_write_dmax(quicktime_t *file, quicktime_dmax_t *dmax);
++int quicktime_read_dmed(quicktime_t *file, quicktime_dmed_t *dmed);
++int quicktime_write_dmed(quicktime_t *file, quicktime_dmed_t *dmed);
++int quicktime_read_dref(quicktime_t *file, quicktime_dref_t *dref);
++int quicktime_write_dref(quicktime_t *file, quicktime_dref_t *dref);
++int quicktime_read_drep(quicktime_t *file, quicktime_drep_t *drep);
++int quicktime_write_drep(quicktime_t *file, quicktime_drep_t *drep);
++int quicktime_read_edts(quicktime_t *file, quicktime_edts_t *edts, quicktime_atom_t *edts_atom);
++int quicktime_write_edts(quicktime_t *file, quicktime_edts_t *edts, long duration);
++int quicktime_read_elst(quicktime_t *file, quicktime_elst_t *elst);
++int quicktime_write_elst(quicktime_t *file, quicktime_elst_t *elst, long duration);
++int quicktime_read_esds(quicktime_t *file, quicktime_esds_t *esds);
++int quicktime_write_esds_video(quicktime_t *file, quicktime_esds_t *esds, int esid);
++int quicktime_write_esds_audio(quicktime_t *file, quicktime_esds_t *esds, int esid);
++int quicktime_read_gmhd(quicktime_t *file, quicktime_gmhd_t *gmhd, quicktime_atom_t *parent_atom);
++int quicktime_write_gmhd(quicktime_t *file, quicktime_gmhd_t *gmhd);
++int quicktime_read_gmin(quicktime_t *file, quicktime_gmin_t *gmin);
++int quicktime_write_gmin(quicktime_t *file, quicktime_gmin_t *gmin);
++int quicktime_read_hdlr(quicktime_t *file, quicktime_hdlr_t *hdlr);
++int quicktime_write_hdlr(quicktime_t *file, quicktime_hdlr_t *hdlr);
++int quicktime_read_hinf(quicktime_t *file, quicktime_hinf_t *hinf, quicktime_atom_t *parent_atom);
++int quicktime_write_hinf(quicktime_t *file, quicktime_hinf_t *hinf);
++int quicktime_read_hint(quicktime_t *file, quicktime_hint_t *hint, quicktime_atom_t *parent_atom);
++int quicktime_write_hint(quicktime_t *file, quicktime_hint_t *hint);
++int quicktime_read_hint_hnti(quicktime_t *file, quicktime_hint_hnti_t *hnti, quicktime_atom_t *parent_atom);
++int quicktime_write_hint_hnti(quicktime_t *file, quicktime_hint_hnti_t *hnti);
++int quicktime_read_hint_udta(quicktime_t *file, quicktime_hint_udta_t *hint_udta, quicktime_atom_t *parent_atom);
++int quicktime_write_hint_udta(quicktime_t *file, quicktime_hint_udta_t *hint_udta);
++int quicktime_read_hmhd(quicktime_t *file, quicktime_hmhd_t *hmhd);
++int quicktime_write_hmhd(quicktime_t *file, quicktime_hmhd_t *hmhd);
++int quicktime_read_hnti(quicktime_t *file, quicktime_hnti_t *hnti, quicktime_atom_t *parent_atom);
++int quicktime_write_hnti(quicktime_t *file, quicktime_hnti_t *hnti);
++int quicktime_read_iods(quicktime_t *file, quicktime_iods_t *iods);
++int quicktime_write_iods(quicktime_t *file, quicktime_iods_t *iods);
++int quicktime_read_matrix(quicktime_t *file, quicktime_matrix_t *matrix);
++int quicktime_write_matrix(quicktime_t *file, quicktime_matrix_t *matrix);
++int quicktime_read_maxr(quicktime_t *file, quicktime_maxr_t *maxr);
++int quicktime_write_maxr(quicktime_t *file, quicktime_maxr_t *maxr);
++int quicktime_read_mdat(quicktime_t *file, quicktime_mdat_t *mdat, quicktime_atom_t *parent_atom);
++int quicktime_write_mdat(quicktime_t *file, quicktime_mdat_t *mdat);
++int quicktime_read_mdhd(quicktime_t *file, quicktime_mdhd_t *mdhd);
++int quicktime_write_mdhd(quicktime_t *file, quicktime_mdhd_t *mdhd);
++int quicktime_read_mdia(quicktime_t *file, quicktime_mdia_t *mdia, quicktime_atom_t *trak_atom);
++int quicktime_write_mdia(quicktime_t *file, quicktime_mdia_t *mdia);
++int quicktime_read_minf(quicktime_t *file, quicktime_minf_t *minf, quicktime_atom_t *parent_atom);
++int quicktime_write_minf(quicktime_t *file, quicktime_minf_t *minf);
++int quicktime_read_moov(quicktime_t *file, quicktime_moov_t *moov, quicktime_atom_t *parent_atom);
++int quicktime_write_moov(quicktime_t *file, quicktime_moov_t *moov);
++int quicktime_read_mvhd(quicktime_t *file, quicktime_mvhd_t *mvhd);
++int quicktime_write_mvhd(quicktime_t *file, quicktime_mvhd_t *mvhd);
++int quicktime_read_nump(quicktime_t *file, quicktime_nump_t *nump);
++int quicktime_write_nump(quicktime_t *file, quicktime_nump_t *nump);
++int quicktime_read_payt(quicktime_t *file, quicktime_payt_t *payt);
++int quicktime_write_payt(quicktime_t *file, quicktime_payt_t *payt);
++int quicktime_read_pmax(quicktime_t *file, quicktime_pmax_t *pmax);
++int quicktime_write_pmax(quicktime_t *file, quicktime_pmax_t *pmax);
++int quicktime_read_rtp(quicktime_t *file, quicktime_rtp_t *rtp, quicktime_atom_t *rtp_atom);
++int quicktime_write_rtp(quicktime_t *file, quicktime_rtp_t *rtp);
++int quicktime_read_sdp(quicktime_t *file, quicktime_sdp_t *sdp, quicktime_atom_t *sdp_atom);
++int quicktime_write_sdp(quicktime_t *file, quicktime_sdp_t *sdp);
++int quicktime_read_smhd(quicktime_t *file, quicktime_smhd_t *smhd);
++int quicktime_write_smhd(quicktime_t *file, quicktime_smhd_t *smhd);
++int quicktime_read_stbl(quicktime_t *file, quicktime_minf_t *minf, quicktime_stbl_t *stbl, quicktime_atom_t *parent_atom);
++int quicktime_write_stbl(quicktime_t *file, quicktime_minf_t *minf, quicktime_stbl_t *stbl);
++int quicktime_read_stco(quicktime_t *file, quicktime_stco_t *stco);
++int quicktime_write_stco(quicktime_t *file, quicktime_stco_t *stco);
++int quicktime_read_stsc(quicktime_t *file, quicktime_stsc_t *stsc);
++int quicktime_write_stsc(quicktime_t *file, quicktime_stsc_t *stsc);
++int quicktime_read_stsd(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_t *stsd);
++int quicktime_write_stsd(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_t *stsd);
++int quicktime_read_stsd(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_t *stsd);
++int quicktime_write_stsd(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_t *stsd);
++int quicktime_read_stsd_table(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_table_t *table);
++int quicktime_write_stsd_table(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_table_t *table);
++int quicktime_read_stsd_video(quicktime_t *file, quicktime_stsd_table_t *table, quicktime_atom_t *parent_atom);
++int quicktime_write_stsd_video(quicktime_t *file, quicktime_stsd_table_t *table);
++int quicktime_read_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table, quicktime_atom_t *parent_atom);
++int quicktime_write_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table);
++int quicktime_read_stsd_hint(quicktime_t *file, quicktime_stsd_table_t *table, quicktime_atom_t *parent_atom);
++int quicktime_write_stsd_hint(quicktime_t *file, quicktime_stsd_table_t *table);
++int quicktime_read_stss(quicktime_t *file, quicktime_stss_t *stss);
++int quicktime_write_stss(quicktime_t *file, quicktime_stss_t *stss);
++int quicktime_read_stsz(quicktime_t *file, quicktime_stsz_t *stsz);
++int quicktime_write_stsz(quicktime_t *file, quicktime_stsz_t *stsz);
++int quicktime_read_stts(quicktime_t *file, quicktime_stts_t *stts);
++int quicktime_write_stts(quicktime_t *file, quicktime_stts_t *stts);
++int quicktime_read_tims(quicktime_t *file, quicktime_tims_t *tims);
++int quicktime_write_tims(quicktime_t *file, quicktime_tims_t *tims);
++int quicktime_read_tkhd(quicktime_t *file, quicktime_tkhd_t *tkhd);
++int quicktime_write_tkhd(quicktime_t *file, quicktime_tkhd_t *tkhd);
++int quicktime_read_tmax(quicktime_t *file, quicktime_tmax_t *tmax);
++int quicktime_write_tmax(quicktime_t *file, quicktime_tmax_t *tmax);
++int quicktime_read_tmin(quicktime_t *file, quicktime_tmin_t *tmin);
++int quicktime_write_tmin(quicktime_t *file, quicktime_tmin_t *tmin);
++int quicktime_read_tpyl(quicktime_t *file, quicktime_tpyl_t *tpyl);
++int quicktime_write_tpyl(quicktime_t *file, quicktime_tpyl_t *tpyl);
++int quicktime_read_trak(quicktime_t *file, quicktime_trak_t *trak, quicktime_atom_t *trak_atom);
++int quicktime_write_trak(quicktime_t *file, quicktime_trak_t *trak, long moov_time_scale);
++int quicktime_read_tref(quicktime_t *file, quicktime_tref_t *tref, quicktime_atom_t *parent_atom);
++int quicktime_write_tref(quicktime_t *file, quicktime_tref_t *tref);
++int quicktime_read_trpy(quicktime_t *file, quicktime_trpy_t *trpy);
++int quicktime_write_trpy(quicktime_t *file, quicktime_trpy_t *trpy);
++int quicktime_read_udta(quicktime_t *file, quicktime_udta_t *udta, quicktime_atom_t *udta_atom);
++int quicktime_write_udta(quicktime_t *file, quicktime_udta_t *udta);
++int quicktime_read_vmhd(quicktime_t *file, quicktime_vmhd_t *vmhd);
++int quicktime_write_vmhd(quicktime_t *file, quicktime_vmhd_t *vmhd);
+ 
+ /* Most codecs don't specify the actual number of bits on disk in the stbl. */
+ /* Convert the samples to the number of bytes for reading depending on the codec. */
+@@ -139,10 +403,52 @@
+ long quicktime_sample_to_offset(quicktime_trak_t *trak, long sample);
+ long quicktime_offset_to_sample(quicktime_trak_t *trak, long offset);
+ 
++int quicktime_chunk_of_sample(long *chunk_sample, long *chunk, quicktime_trak_t *trak, long sample);
++
++int quicktime_trak_duration(quicktime_trak_t *trak, long *duration, long *timescale);
++long quicktime_track_end(quicktime_trak_t *trak);
++int quicktime_trak_fix_counts(quicktime_t *file, quicktime_trak_t *trak);
++int quicktime_trak_shift_offsets(quicktime_trak_t *trak, long offset);
++
+ quicktime_trak_t* quicktime_add_trak(quicktime_moov_t *moov);
+ int quicktime_delete_trak(quicktime_moov_t *moov, quicktime_trak_t *trak);
++
+ int quicktime_get_timescale(float frame_rate);
+ 
++int quicktime_init_audio_map(quicktime_audio_map_t *atrack, quicktime_trak_t *trak);
++int quicktime_delete_audio_map(quicktime_audio_map_t *atrack);
++int quicktime_init_video_map(quicktime_video_map_t *vtrack, quicktime_trak_t *trak);
++int quicktime_delete_video_map(quicktime_video_map_t *vtrack);
++
++int quicktime_esds_get_decoder_config(quicktime_esds_t* esds, u_char** ppBuf, int* pBufSize);
++int quicktime_esds_set_decoder_config(quicktime_esds_t* esds, u_char* pBuf, int bufSize);
++
++int quicktime_hint_set(quicktime_hint_t *hint, quicktime_trak_t *refTrak);
++
++int quicktime_iods_set_audio_profile(quicktime_iods_t* iods, int id);
++int quicktime_iods_set_video_profile(quicktime_iods_t* iods, int id);
++
++int quicktime_shift_offsets(quicktime_moov_t *moov, long offset);
++
++int quicktime_set_udta_string(char **string, int *size, char *new_string);
++int quicktime_read_udta_string(quicktime_t *file, char **string, int *size);
++int quicktime_write_udta_string(quicktime_t *file, char *string, int size);
++
++int quicktime_dump_hint_tlv(u_char* hintBuf);
++int quicktime_get_packet_size(u_char* hintBuf);
++
++int quicktime_rtp_set(quicktime_rtp_t *rtp, char *string);
++
++int quicktime_sdp_set(quicktime_sdp_t *sdp, char *string);
++int quicktime_sdp_append(quicktime_sdp_t *sdp, char *appendString);
++
++int quicktime_update_ctts(quicktime_ctts_t *ctts, long sample_offset);
++int quicktime_update_stco(quicktime_stco_t *stco, long chunk, long offset);
++int quicktime_update_stsc(quicktime_stsc_t *stsc, long chunk, long samples);
++int quicktime_update_stss(quicktime_stss_t *stss, long sample);
++int quicktime_update_stsz(quicktime_stsz_t *stsz, long sample, long sample_size);
++int quicktime_update_stts(quicktime_stts_t *stts, long sample_duration);
++
+ /* update all the tables after writing a buffer */
+ /* set sample_size to 0 if no sample size should be set */
+ int quicktime_update_tables(quicktime_t *file, 
+@@ -155,6 +461,16 @@
+ 							long sample_duration,
+ 							u_char isSyncSample,
+ 							long renderingOffset);
++
+ unsigned long quicktime_current_time();
+ 
++int quicktime_copy_char32(char *output, char *input);
++
++int quicktime_match_32(char *input, char *output);
++
++int quicktime_print_chars(char *desc, char *input, int len);
++
++long quicktime_position(quicktime_t *file);
++int quicktime_set_position(quicktime_t *file, long position);
++
+ #endif
+--- mpeg4ip-1.6.1.orig/lib/mp4/hinf.c
++++ mpeg4ip-1.6.1/lib/mp4/hinf.c
+@@ -101,7 +101,7 @@
+ 		} else if (quicktime_atom_is(&leaf_atom, "dmax")) {
+ 			quicktime_read_dmax(file, &(hinf->dmax));
+ 		} else if (quicktime_atom_is(&leaf_atom, "payt")) {
+-			quicktime_read_payt(file, &(hinf->payt), &leaf_atom);
++			quicktime_read_payt(file, &(hinf->payt));
+ 		} else {
+ 			quicktime_atom_skip(file, &leaf_atom);
+ 		}
+--- mpeg4ip-1.6.1.orig/lib/mp4/hinthnti.c
++++ mpeg4ip-1.6.1/lib/mp4/hinthnti.c
+@@ -58,7 +58,7 @@
+ 	quicktime_atom_t atom;
+ 
+ 	if (hnti->sdp.string == NULL) {
+-		return;
++		return -1;
+ 	}
+ 
+ 	quicktime_atom_write_header(file, &atom, "hnti");
+--- mpeg4ip-1.6.1.orig/lib/mp4/hintudta.c
++++ mpeg4ip-1.6.1/lib/mp4/hintudta.c
+@@ -71,7 +71,7 @@
+ 	quicktime_atom_t atom;
+ 
+ 	if (hint_udta->hnti.sdp.string == NULL) {
+-		return;
++		return -1;
+ 	}
+ 
+ 	quicktime_atom_write_header(file, &atom, "udta");
+--- mpeg4ip-1.6.1.orig/lib/mp4/hnti.c
++++ mpeg4ip-1.6.1/lib/mp4/hnti.c
+@@ -58,7 +58,7 @@
+ 	quicktime_atom_t atom;
+ 
+ 	if (hnti->rtp.string == NULL) {
+-		return;
++		return -1;
+ 	}
+ 
+ 	quicktime_atom_write_header(file, &atom, "hnti");
+--- mpeg4ip-1.6.1.orig/lib/mp4/mdat.c
++++ mpeg4ip-1.6.1/lib/mp4/mdat.c
+@@ -10,6 +10,13 @@
+ {
+ }
+ 
++int quicktime_mdat_dump(quicktime_mdat_t *mdat)
++{
++	printf("    movie data (mdat)\n");
++	printf("     size %d\n", mdat->size);
++	printf("     start %d\n", mdat->start);
++}
++
+ int quicktime_read_mdat(quicktime_t *file, quicktime_mdat_t *mdat, quicktime_atom_t *parent_atom)
+ {
+ 	mdat->size = parent_atom->size;
+--- mpeg4ip-1.6.1.orig/lib/mp4/mdhd.c
++++ mpeg4ip-1.6.1/lib/mp4/mdhd.c
+@@ -39,7 +39,7 @@
+ 	mdhd->language = refTrak->mdia.mdhd.language;
+ }
+ 
+-quicktime_mdhd_delete(quicktime_mdhd_t *mdhd)
++int quicktime_mdhd_delete(quicktime_mdhd_t *mdhd)
+ {
+ }
+ 
+--- mpeg4ip-1.6.1.orig/lib/mp4/minf.c
++++ mpeg4ip-1.6.1/lib/mp4/minf.c
+@@ -108,7 +108,7 @@
+ 			{ minf->is_hint = 1; quicktime_read_gmhd(file, &(minf->gmhd), &leaf_atom); }
+ 		else
+ 		if(quicktime_atom_is(&leaf_atom, "hmhd"))
+-			{ minf->is_hint = 1; quicktime_read_hmhd(file, &(minf->hmhd), &leaf_atom); }
++			{ minf->is_hint = 1; quicktime_read_hmhd(file, &(minf->hmhd)); }
+ 		else
+ 		if(quicktime_atom_is(&leaf_atom, "hdlr"))
+ 			{ 
+--- mpeg4ip-1.6.1.orig/lib/mp4/rtp.c
++++ mpeg4ip-1.6.1/lib/mp4/rtp.c
+@@ -76,7 +76,7 @@
+         quicktime_atom_t atom;
+ 
+         if (rtp->string == NULL) {
+-                return;
++                return -1;
+         }
+ 
+         quicktime_atom_write_header(file, &atom, "rtp ");
+--- mpeg4ip-1.6.1.orig/lib/mp4/sdp.c
++++ mpeg4ip-1.6.1/lib/mp4/sdp.c
+@@ -75,7 +75,7 @@
+         quicktime_atom_t atom;
+ 
+         if (sdp->string == NULL) {
+-                return;
++                return -1;
+         }
+ 
+         quicktime_atom_write_header(file, &atom, "sdp ");
+--- mpeg4ip-1.6.1.orig/lib/mp4/stsdtable.c
++++ mpeg4ip-1.6.1/lib/mp4/stsdtable.c
+@@ -370,6 +370,14 @@
+ 	tims->timeScale = 0;
+ }
+ 
++int quicktime_tims_delete(quicktime_tims_t *tims)
++{
++}
++
++int quicktime_tims_dump(quicktime_tims_t *tims)
++{
++}
++
+ int quicktime_read_tims(quicktime_t *file, quicktime_tims_t *tims)
+ {
+ 	tims->timeScale = quicktime_read_int32(file);
+--- mpeg4ip-1.6.1.orig/lib/mp4/tref.c
++++ mpeg4ip-1.6.1/lib/mp4/tref.c
+@@ -63,7 +63,7 @@
+ 	quicktime_atom_t atom;
+ 
+ 	if (tref->hint.numTracks == 0) {
+-		return;
++		return -1;
+ 	}
+ 
+ 	quicktime_atom_write_header(file, &atom, "tref");
+--- mpeg4ip-1.6.1.orig/lib/mp4/udta.c
++++ mpeg4ip-1.6.1/lib/mp4/udta.c
+@@ -99,12 +99,12 @@
+ 	if (file->use_mp4) {
+ 		if (udta->copyright_len == 0
+ 		  && udta->hnti.rtp.string == NULL) {
+-			return;
++			return -1;
+ 		}
+ 	} else {
+ 		if (udta->copyright_len + udta->name_len + udta->info_len == 0
+ 		  && udta->hnti.rtp.string == NULL) {
+-			return;
++			return -1;
+ 		}
+ 	}
+ 
+--- mpeg4ip-1.6.1.orig/lib/mp4v2/atom_standard.cpp
++++ mpeg4ip-1.6.1/lib/mp4v2/atom_standard.cpp
+@@ -22,15 +22,15 @@
+ #include "mp4common.h"
+ #include "atoms.h"
+ 
+-static const char name[5]={0251,'n', 'a', 'm', '\0'};
+-static const char art[5]={0251,'A', 'R', 'T', '\0'};
+-static const char wrt[5]={0251,'w', 'r', 't', '\0'};
+-static const char alb[5]={0251,'a', 'l', 'b', '\0'};
+-static const char day[5]={0251,'d', 'a', 'y', '\0'};
+-static const char too[5]={0251,'t', 'o', 'o', '\0'};
+-static const char cmt[5]={0251,'c', 'm', 't', '\0'};
+-static const char gen[5]={0251,'g', 'e', 'n', '\0'};
+-static const char grp[5]={0251,'g', 'r', 'p', '\0'};
++static const char name[5]={'\xa9','n', 'a', 'm', '\0'};
++static const char art[5]={'\xa9','A', 'R', 'T', '\0'};
++static const char wrt[5]={'\xa9','w', 'r', 't', '\0'};
++static const char alb[5]={'\xa9','a', 'l', 'b', '\0'};
++static const char day[5]={'\xa9','d', 'a', 'y', '\0'};
++static const char too[5]={'\xa9','t', 'o', 'o', '\0'};
++static const char cmt[5]={'\xa9','c', 'm', 't', '\0'};
++static const char gen[5]={'\xa9','g', 'e', 'n', '\0'};
++static const char grp[5]={'\xa9','g', 'r', 'p', '\0'};
+ 
+ MP4StandardAtom::MP4StandardAtom (const char *type) : MP4Atom(type)
+ {
+--- mpeg4ip-1.6.1.orig/lib/mp4v2/mp4atom.cpp
++++ mpeg4ip-1.6.1/lib/mp4v2/mp4atom.cpp
+@@ -264,11 +264,11 @@
+       }
+       break;
+     case 0251:
+-      static const char name[5]={0251,'n', 'a', 'm', '\0'};
+-      static const char cmt[5]={0251,'c', 'm', 't', '\0'};
+-      static const char cpy[5]={0251,'c', 'p', 'y', '\0'};
+-      static const char des[5]={0251,'d', 'e', 's','\0'};
+-      static const char prd[5]={0251, 'p', 'r', 'd', '\0'};
++      static const char name[5]={'\xa9','n', 'a', 'm', '\0'};
++      static const char cmt[5]={'\xa9','c', 'm', 't', '\0'};
++      static const char cpy[5]={'\xa9','c', 'p', 'y', '\0'};
++      static const char des[5]={'\xa9','d', 'e', 's','\0'};
++      static const char prd[5]={'\xa9', 'p', 'r', 'd', '\0'};
+       if (ATOMID(type) == ATOMID(name) ||
+ 	  ATOMID(type) == ATOMID(cmt) ||
+ 	  ATOMID(type) == ATOMID(cpy) ||
+--- mpeg4ip-1.6.1.orig/lib/rtp/net_udp.c
++++ mpeg4ip-1.6.1/lib/rtp/net_udp.c
+@@ -163,9 +163,8 @@
+ 	va_end(ap);
+ 	rtp_message(LOG_ALERT, "ERROR: %s, (%d - %s)\n", buffer, e, ws_errs[i].errname);
+ #else
+-	uint32_t retlen;
+ 	va_start(ap, msg);
+-	retlen = vsnprintf(buffer, blen, msg, ap);
++	vsnprintf(buffer, blen, msg, ap);
+ 	va_end(ap);
+ 	rtp_message(LOG_ALERT, "%s:%s", buffer, strerror(errno));
+ #endif
+--- mpeg4ip-1.6.1.orig/player/lib/audio/faad/huffdec.c
++++ mpeg4ip-1.6.1/player/lib/audio/faad/huffdec.c
+@@ -369,7 +369,8 @@
+         for(b = 0; b < info->nsbk; b = *group++)
+             for(i = 0; i < info->sfb_per_sbk[b]; i ++)
+                 *mask++ = 1;
+-            return 2;
++
++        return 2;
+     }
+ 
+     /* otherwise get mask */
+--- mpeg4ip-1.6.1.orig/player/lib/audio/faad/monopred.c
++++ mpeg4ip-1.6.1/player/lib/audio/faad/monopred.c
+@@ -90,10 +90,9 @@
+ static void inv_table_flt_round(float *ftmp)
+ {
+     int exp;
+-    double mnt;
+     float descale;
+ 
+-    mnt = frexp((double)*ftmp, &exp);
++    frexp((double)*ftmp, &exp);
+     descale = (float)ldexp(1.0, exp + 15);
+     *ftmp += descale;
+     *ftmp -= descale;
+--- mpeg4ip-1.6.1.orig/player/lib/audio/faad/port.h
++++ mpeg4ip-1.6.1/player/lib/audio/faad/port.h
+@@ -40,8 +40,8 @@
+ int check_mc_info(faacDecHandle hDecoder, MC_Info *mip, int new_config);
+ int chn_config(faacDecHandle hDecoder, int id, int tag,
+                int common_window, MC_Info *mip);
+-__inline void decode_huff_cw(faacDecHandle hDecoder, Huffman *h, int *qp, Hcb *hcb);
+-__inline int decode_huff_cw_scl(faacDecHandle hDecoder, Huffscl *h);
++void decode_huff_cw(faacDecHandle hDecoder, Huffman *h, int *qp, Hcb *hcb);
++int decode_huff_cw_scl(faacDecHandle hDecoder, Huffscl *h);
+ int enter_mc_info(faacDecHandle hDecoder, MC_Info *mip, ProgConfig *pcp);
+ int get_adif_header(faacDecHandle hDecoder);
+ int get_adts_header(faacDecHandle hDecoder);
+--- mpeg4ip-1.6.1.orig/player/src/media_utils.cpp
++++ mpeg4ip-1.6.1/player/src/media_utils.cpp
+@@ -605,7 +605,8 @@
+ 				  int have_audio_driver,
+ 				  control_callback_vft_t *cc_vft)
+ {
+-  char *slash, *cm;
++  const char *slash;
++  char *cm;
+   uint64_t prog;
+   session_desc_t *sdp;
+ 
+@@ -897,7 +898,6 @@
+     } 
+     ret = http_get(http_client, NULL, &http_resp);
+     if (ret > 0) {
+-      sdp_decode_info_t *sdp_info;
+       sdp_info = set_sdp_decode_from_memory(http_resp->body);
+       do_sdp = 1;
+       http_free_connection(http_client);
+--- mpeg4ip-1.6.1.orig/player/src/qtime_bytestream.cpp
++++ mpeg4ip-1.6.1/player/src/qtime_bytestream.cpp
+@@ -235,7 +235,7 @@
+       cmp /= m_time_scale;
+       //player_debug_message("frame %d "U64, ix, cmp);
+       if (cmp >= start) {
+-	player_debug_message("Searched through - frame %d is "U64, 
++	player_debug_message("Searched through - frame %d is " U64, 
+ 			     ix, start);
+ 	break;
+       }
+--- mpeg4ip-1.6.1.orig/server/mp4live/audio_encoder_base.cpp
++++ mpeg4ip-1.6.1/server/mp4live/audio_encoder_base.cpp
+@@ -90,7 +90,7 @@
+     return new CFaacAudioEncoder(ap, next, srcChannels, srcSampleRate, mtu, realTime);
+ #else
+     error_message("faac encoder not available in this build");
+-    return false;
++    return NULL;
+ #endif
+   } else if (!strcasecmp(encoderName, AUDIO_ENCODER_LAME)) {
+ #ifdef HAVE_LAME
+--- mpeg4ip-1.6.1.orig/server/mp4live/video_util_resize.h
++++ mpeg4ip-1.6.1/server/mp4live/video_util_resize.h
+@@ -90,7 +90,7 @@
+ 
+ void CopyYuv(const uint8_t *fY, const uint8_t *fU, const uint8_t *fV,
+ 	     uint32_t fyStride, uint32_t fuStride, uint32_t fvStride,
+-	     uint8_t *tY, uint8_t *tU, uint8_t *fV,
+-	     uint32_t tyStride, uint32_t tvStride, uint32_t tvStride,
++	     uint8_t *tY, uint8_t *tU, uint8_t *tV,
++	     uint32_t tyStride, uint32_t tuStride, uint32_t tvStride,
+ 	     uint32_t w, uint32_t h);
+ #endif
