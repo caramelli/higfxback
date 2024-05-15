@@ -94,6 +94,27 @@ exit
  
  AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_ERROR([POSIX RT library not found])])
  
+--- udev-171.orig/libudev/libudev-device.c
++++ udev-171/libudev/libudev-device.c
+@@ -1644,7 +1644,7 @@
+ 	return udev_list_get_entry(&udev_device->tags_list);
+ }
+ 
+-int udev_device_has_tag(struct udev_device *udev_device, const char *tag)
++UDEV_EXPORT int udev_device_has_tag(struct udev_device *udev_device, const char *tag)
+ {
+ 	struct udev_list_entry *list_entry;
+ 
+--- udev-171.orig/libudev/libudev.h
++++ udev-171/libudev/libudev.h
+@@ -101,6 +101,7 @@
+ unsigned long long int udev_device_get_seqnum(struct udev_device *udev_device);
+ unsigned long long int udev_device_get_usec_since_initialized(struct udev_device *udev_device);
+ const char *udev_device_get_sysattr_value(struct udev_device *udev_device, const char *sysattr);
++int udev_device_has_tag(struct udev_device *udev_device, const char *tag);
+ 
+ /*
+  * udev_monitor
 --- udev-171.orig/udev/mdevd
 +++ udev-171/udev/mdevd
 @@ -0,0 +1,3 @@
@@ -102,6 +123,15 @@ exit
 +exec udevd -d
 --- udev-171.orig/udev/udevadm.c
 +++ udev-171/udev/udevadm.c
+@@ -63,7 +63,7 @@
+ {
+ 	const struct command *cmd;
+ 
+-	printf("Usage: udevadm [--help] [--version] [--debug] COMMAND [COMMAND OPTIONS]\n");
++	printf("Usage: udevadm [--help] [--version] [--debug] [--scan] COMMAND [COMMAND OPTIONS]\n");
+ 	for (cmd = cmds; cmd->name != NULL; cmd++)
+ 		if (cmd->help != NULL)
+ 			printf("  %-12s %s\n", cmd->name, cmd->help);
 @@ -131,6 +131,7 @@
  	static const struct option options[] = {
  		{ "debug", no_argument, NULL, 'd' },

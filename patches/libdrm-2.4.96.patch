@@ -1,0 +1,86 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-amdgpu --disable-intel --disable-libkms --disable-nouveau --disable-radeon --disable-vmwgfx --enable-install-test-programs --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install tests/.libs/drmdevice $DESTDIR/bin
+install tests/kms/.libs/kms-steal-crtc $DESTDIR/bin
+install tests/kms/.libs/kms-universal-planes $DESTDIR/bin
+install tests/modeprint/.libs/modeprint $DESTDIR/bin
+install tests/modetest/.libs/modetest $DESTDIR/bin
+install tests/proptest/.libs/proptest $DESTDIR/bin
+install tests/vbltest/.libs/vbltest $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 xf86drm.h $DESTDIR/include
+install -m 644 xf86drmMode.h $DESTDIR/include
+install -d $DESTDIR/include/libdrm
+install -m 644 include/drm/drm.h $DESTDIR/include/libdrm
+install -m 644 include/drm/drm_fourcc.h $DESTDIR/include/libdrm
+install -m 644 include/drm/drm_mode.h $DESTDIR/include/libdrm
+install -d $DESTDIR/lib
+install .libs/libdrm.so.2.* $DESTDIR/lib/libdrm.so.2
+ln -sf libdrm.so.2 $DESTDIR/lib/libdrm.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libdrm.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libdrm-build.pc << EOF
+Name: libdrm
+Version: 2.4.96
+Description: Direct Rendering Manager library
+Requires: $REQUIRES
+
+devel=\\
+/include/xf86drm.h \\
+/include/xf86drmMode.h \\
+/include/libdrm/drm.h \\
+/include/libdrm/drm_fourcc.h \\
+/include/libdrm/drm_mode.h \\
+/lib/libdrm.so \\
+/lib/pkgconfig/libdrm.pc
+
+exec=\\
+/bin/drmdevice \\
+/bin/kms-steal-crtc \\
+/bin/kms-universal-planes \\
+/bin/modeprint \\
+/bin/modetest \\
+/bin/proptest \\
+/bin/vbltest \\
+/lib/libdrm.so.2
+EOF
+
+exit
+--- libdrm-2.4.96.orig/tests/modetest/modetest.c
++++ libdrm-2.4.96/tests/modetest/modetest.c
+@@ -442,7 +442,7 @@
+ 		if (connector->count_modes) {
+ 			printf("  modes:\n");
+ 			printf("\tname refresh (Hz) hdisp hss hse htot vdisp "
+-			       "vss vse vtot)\n");
++			       "vss vse vtot\n");
+ 			for (j = 0; j < connector->count_modes; j++)
+ 				dump_mode(&connector->modes[j]);
+ 		}
+--- libdrm-2.4.96.orig/tests/util/kms.c
++++ libdrm-2.4.96/tests/util/kms.c
+@@ -124,6 +124,7 @@
+ }
+ 
+ static const char * const modules[] = {
++	"simpledrm",
+ 	"i915",
+ 	"amdgpu",
+ 	"radeon",

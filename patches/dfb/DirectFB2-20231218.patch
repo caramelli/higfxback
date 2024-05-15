@@ -5,6 +5,11 @@ REQUIRES="meson-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if pkg-config --exists libdrm-build; then
+  DRM=1
+  REQUIRES="$REQUIRES libdrm-build"
+fi
+
 # configure
 sed -i '1s|.*|#!/bin/env python3|' src/core/fluxcomp.py
 meson setup --prefix=/dfb build
@@ -164,6 +169,7 @@ install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_dfvff.
 install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows
 install build/interfaces/IDirectFBWindows/libidirectfbwindows_default.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows
 install -d $DESTDIR/dfb/lib/directfb-2.0-0/systems
+test $DRM && install build/systems/drmkms/libdirectfb_drmkms.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
 install build/systems/dummy/libdirectfb_dummy.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
 install build/systems/fbdev/libdirectfb_fbdev.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
 install -d $DESTDIR/dfb/lib/directfb-2.0-0/wm
@@ -343,6 +349,9 @@ exec=\\
 /dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_dfiff.so \\
 /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_dfvff.so \\
 /dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows/libidirectfbwindows_default.so \\
+EOF
+test $DRM && echo /dfb/lib/directfb-2.0-0/systems/libdirectfb_drmkms.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
 /dfb/lib/directfb-2.0-0/systems/libdirectfb_dummy.so \\
 /dfb/lib/directfb-2.0-0/systems/libdirectfb_fbdev.so \\
 /dfb/lib/directfb-2.0-0/wm/libdirectfbwm_default.so

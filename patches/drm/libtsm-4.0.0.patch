@@ -1,0 +1,42 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxkbcommon-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+rm -f external/xkbcommon-keysyms.h
+./configure --disable-static --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/include
+install -m 644 src/tsm/libtsm.h $DESTDIR/drm/include
+install -d $DESTDIR/drm/lib
+install .libs/libtsm.so.4.* $DESTDIR/drm/lib/libtsm.so.4
+ln -sf libtsm.so.4 $DESTDIR/drm/lib/libtsm.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 src/tsm/libtsm.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/libtsm-build.pc << EOF
+Name: libtsm
+Version: 4.0.0
+Description: Terminal-emulator State Machine library
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/libtsm.h \\
+/drm/lib/libtsm.so \\
+/drm/lib/pkgconfig/libtsm.pc
+
+exec=\\
+/drm/lib/libtsm.so.4
+EOF
+
+exit
