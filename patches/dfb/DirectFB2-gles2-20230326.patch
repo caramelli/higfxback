@@ -1,0 +1,30 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build egl-opengl-stubs-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/gfxdrivers
+install build/libdirectfb_gles2.so $DESTDIR/dfb/lib/directfb-2.0-0/gfxdrivers
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb2-gles2-build.pc << EOF
+Name: DirectFB2-gles2
+Version: 20230326
+Description: OpenGL ES 2.0 GFX driver
+Requires: $REQUIRES
+
+exec=\\
+/dfb/lib/directfb-2.0-0/gfxdrivers/libdirectfb_gles2.so
+EOF
+
+exit

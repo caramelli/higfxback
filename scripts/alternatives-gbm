@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ $# != 2 ]; then
+  echo Usage: $0 \"backend\" \"implementation\"
+  exit 1
+fi
+
+test -f /$1/lib/lib${2}gbm.so.* && ln -sf `basename /$1/lib/lib${2}gbm.so.*` /$1/lib/libgbm.so.1
