@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libdrm-build xorg-server-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists udev-build && REQUIRES="$REQUIRES udev-build"
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/lib/xorg/modules/drivers
+install src/.libs/modesetting_drv.so $DESTDIR/x11/lib/xorg/modules/drivers
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xf86-video-modesetting-build.pc << EOF
+Name: xf86-video-modesetting
+Version: 0.8.1
+Description: DRM modesetting device video driver for the X server
+Requires: $REQUIRES
+
+exec=\\
+/x11/lib/xorg/modules/drivers/modesetting_drv.so
+EOF
+
+exit
+--- xf86-video-modesetting-0.8.1.orig/src/driver.c
++++ xf86-video-modesetting-0.8.1/src/driver.c
+@@ -29,6 +29,8 @@
+  *
+  */
+ 
++#define _GNU_SOURCE /* To get asprintf() declaration. */
++
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #endif

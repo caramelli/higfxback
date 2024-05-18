@@ -2,10 +2,13 @@
 
 killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
+test $SYSTEM && rm -f /dfb/etc/directfbrc
+
 if [ ! -f /dfb/etc/directfbrc ]; then
+  SYSTEM=${SYSTEM-fbdev}
   install -d /dfb/etc
   cat > /dfb/etc/directfbrc << EOF
-system=fbdev
+system=$SYSTEM
 bg-color=c0b090
 EOF
 fi

@@ -4,12 +4,16 @@ killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
 install -d /x11/var/log
 
+test $DDX && rm -f /x11/etc/X11/xorg.conf
+
 if [ ! -f /x11/etc/X11/xorg.conf ]; then
+  DDX=${DDX-fbdev}
   install -d /x11/etc/X11
   cat > /x11/etc/X11/xorg.conf << EOF
 Section "Device"
-  Identifier "fb0"
-  Driver     "fbdev"
+  Identifier "card0"
+  Driver     "$DDX"
+  BusID      "0"
 EndSection
 
 Section "InputDevice"

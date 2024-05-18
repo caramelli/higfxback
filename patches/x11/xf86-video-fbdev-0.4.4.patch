@@ -5,8 +5,8 @@ REQUIRES="autotools-wrappers-lt-build xorg-server-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.63; am-1.11; lt-1.5.26)
-libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I .; autoconf; autoheader; automake -a -c
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal; autoconf; autoheader; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --prefix=/x11
 
 # build
@@ -20,7 +20,7 @@ install src/.libs/fbdev_drv.so $DESTDIR/x11/lib/xorg/modules/drivers
 install -d $DESTDIR/x11/share/pkgconfig
 cat > $DESTDIR/x11/share/pkgconfig/xf86-video-fbdev-build.pc << EOF
 Name: xf86-video-fbdev
-Version: 0.4.1
+Version: 0.4.4
 Description: framebuffer device video driver for the X server
 Requires: $REQUIRES
 
@@ -29,3 +29,13 @@ exec=\\
 EOF
 
 exit
+--- xf86-video-fbdev-0.4.4.orig/configure.ac
++++ xf86-video-fbdev-0.4.4/configure.ac
+@@ -28,6 +28,7 @@
+         [xf86-video-fbdev])
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
+ AC_CONFIG_AUX_DIR(.)
+ 
+ # Initialize Automake
