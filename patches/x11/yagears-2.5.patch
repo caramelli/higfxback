@@ -189,6 +189,60 @@ exit
      SDL_GL_CreateContext(sdl_win);
 --- yagears-2.5.orig/main.c
 +++ yagears-2.5/main.c
+@@ -1292,7 +1292,7 @@
+   #if defined(EGL_X11)
+   if (!strcmp(backend, "egl-x11")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_X11_EXT, x11_dpy, NULL);
+     }
+     else
+@@ -1306,7 +1306,7 @@
+   #if defined(EGL_DIRECTFB)
+   if (!strcmp(backend, "egl-directfb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DIRECTFB_EXT, dfb_dpy, NULL);
+     }
+     else
+@@ -1320,7 +1320,7 @@
+   #if defined(EGL_FBDEV)
+   if (!strcmp(backend, "egl-fbdev")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_FBDEV_EXT, &fb_dpy, NULL);
+     }
+     else
+@@ -1334,7 +1334,7 @@
+   #if defined(EGL_WAYLAND)
+   if (!strcmp(backend, "egl-wayland")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_WAYLAND_EXT, wl_dpy, NULL);
+     }
+     else
+@@ -1348,7 +1348,7 @@
+   #if defined(EGL_XCB)
+   if (!strcmp(backend, "egl-xcb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_XCB_EXT, xcb_dpy, NULL);
+     }
+     else
+@@ -1362,7 +1362,7 @@
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_GBM_KHR)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_GBM_KHR, drm_dpy, NULL);
+     }
+     else
 @@ -1494,6 +1494,8 @@
        goto out;
      }
@@ -198,6 +252,62 @@ exit
      XMapWindow(x11_dpy, x11_win);
  
      XMoveWindow(x11_dpy, x11_win, win_posx, win_posy);
+@@ -1767,7 +1769,7 @@
+   #if defined(EGL_X11)
+   if (!strcmp(backend, "egl-x11")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &x11_win, NULL);
+     }
+     else
+@@ -1780,7 +1782,7 @@
+   #if defined(EGL_DIRECTFB)
+   if (!strcmp(backend, "egl-directfb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, dfb_win, NULL);
+     }
+     else
+@@ -1793,7 +1795,7 @@
+   #if defined(EGL_FBDEV)
+   if (!strcmp(backend, "egl-fbdev")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, fb_win, NULL);
+     }
+     else
+@@ -1806,7 +1808,7 @@
+   #if defined(EGL_WAYLAND)
+   if (!strcmp(backend, "egl-wayland")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, wl_win, NULL);
+     }
+     else
+@@ -1819,7 +1821,7 @@
+   #if defined(EGL_XCB)
+   if (!strcmp(backend, "egl-xcb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &xcb_win, NULL);
+     }
+     else
+@@ -1831,9 +1833,8 @@
+   #endif
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
+-    egl_win = eglCreateWindowSurface(egl_dpy, egl_config, (EGLNativeWindowType)drm_win, NULL);
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_GBM_KHR)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, drm_win, NULL);
+     }
+     else
 --- yagears-2.5.orig/meson.build
 +++ yagears-2.5/meson.build
 @@ -55,12 +55,12 @@

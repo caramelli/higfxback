@@ -3,7 +3,7 @@
 # requires
 REQUIRES="make-build opengl-registry-build"
 
-pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 sh ./Configure --prefix /x11
@@ -31,7 +31,7 @@ install -m 644 glesv2.pc $DESTDIR/x11/lib/pkgconfig
 install -d $DESTDIR/x11/share/pkgconfig
 cat > $DESTDIR/x11/share/pkgconfig/egl-opengl-stubs-build.pc << EOF
 Name: EGL-OpenGL-Stubs
-Version: 0.4
+Version: 0.6
 Description: EGL and OpenGL stubs for linking at build time
 Requires: $REQUIRES
 
@@ -53,8 +53,8 @@ exec=\\
 EOF
 
 exit
---- EGL-OpenGL-Stubs-0.4.orig/Configure
-+++ EGL-OpenGL-Stubs-0.4/Configure
+--- EGL-OpenGL-Stubs-0.6.orig/Configure
++++ EGL-OpenGL-Stubs-0.6/Configure
 @@ -0,0 +1,27 @@
 +#!/bin/sh
 +

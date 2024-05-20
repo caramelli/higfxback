@@ -52,11 +52,26 @@ exit
  #ifndef WIN32_LEAN_AND_MEAN
  #define WIN32_LEAN_AND_MEAN 1
  #endif
---- EGL-Registry-20200106.orig/api/genheaders.py
-+++ EGL-Registry-20200106/api/genheaders.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/python -i
-+#!/usr/bin/env python3
- #
- # Copyright (c) 2013-2017 The Khronos Group Inc.
- #
+--- EGL-Registry-20200106.orig/api/egl.xml
++++ EGL-Registry-20200106/api/egl.xml
+@@ -590,7 +590,7 @@
+         <enum value="0x31D7" name="EGL_PLATFORM_GBM_MESA" alias="EGL_PLATFORM_GBM_KHR"/>
+         <enum value="0x31D8" name="EGL_PLATFORM_WAYLAND_KHR"/>
+         <enum value="0x31D8" name="EGL_PLATFORM_WAYLAND_EXT" alias="EGL_PLATFORM_WAYLAND_KHR"/>
+-            <unused start="0x31DC" end="0x31DC"/>
++        <enum value="0x31DC" name="EGL_PLATFORM_XCB_EXT"/>
+         <enum value="0x31DD" name="EGL_PLATFORM_SURFACELESS_MESA"/>
+             <unused start="0x31DE" end="0x31DF"/>
+     </enums>
+@@ -2540,6 +2540,11 @@
+                 <enum name="EGL_PLATFORM_X11_SCREEN_EXT"/>
+             </require>
+         </extension>
++        <extension name="EGL_EXT_platform_xcb" supported="egl">
++            <require>
++                <enum name="EGL_PLATFORM_XCB_EXT"/>
++            </require>
++        </extension>
+         <extension name="EGL_EXT_protected_content" supported="egl">
+             <require>
+                 <enum name="EGL_PROTECTED_CONTENT_EXT"/>

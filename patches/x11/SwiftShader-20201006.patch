@@ -144,6 +144,46 @@ exit
  
  #include <stdlib.h>
  
+--- SwiftShader-20201006.orig/src/OpenGL/libEGL/libEGL.cpp
++++ SwiftShader-20201006/src/OpenGL/libEGL/libEGL.cpp
+@@ -220,7 +220,8 @@
+ 			"EGL_KHR_platform_gbm "
+ #endif
+ #if defined(USE_X11)
+-			"EGL_KHR_platform_x11 "
++			"EGL_EXT_platform_x11 "
++			"EGL_EXT_platform_xcb "
+ #endif
+ 			"EGL_EXT_client_extensions "
+ 			"EGL_EXT_platform_base");
+@@ -1312,6 +1313,7 @@
+ 		{
+ 		#if defined(USE_X11)
+ 		case EGL_PLATFORM_X11_EXT: break;
++		case EGL_PLATFORM_XCB_EXT: break;
+ 		#endif
+ 		case EGL_PLATFORM_GBM_KHR: break;
+ 		default:
+@@ -1333,18 +1335,13 @@
+ 			return success(HEADLESS_DISPLAY);
+ 		}
+ 		#if defined(USE_X11)
+-		else if(platform == EGL_PLATFORM_X11_EXT)
++		else if(platform == EGL_PLATFORM_X11_EXT || platform == EGL_PLATFORM_XCB_EXT)
+ 		{
+ 			if(!libX11)
+ 			{
+ 				return error(EGL_BAD_PARAMETER, EGL_NO_DISPLAY);
+ 			}
+ 
+-			if(native_display != (void*)EGL_DEFAULT_DISPLAY)
+-			{
+-				return error(EGL_BAD_PARAMETER, EGL_NO_DISPLAY);   // Unimplemented
+-			}
+-
+ 			if(attrib_list && attrib_list[0] != EGL_NONE)
+ 			{
+ 				return error(EGL_BAD_ATTRIBUTE, EGL_NO_DISPLAY);   // Unimplemented
 --- SwiftShader-20201006.orig/src/OpenGL/libGLESv2/utilities.h
 +++ SwiftShader-20201006/src/OpenGL/libGLESv2/utilities.h
 @@ -23,8 +23,11 @@
