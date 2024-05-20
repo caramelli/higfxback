@@ -76,6 +76,31 @@ exit
  PYFILES = genheaders.py reg.py
  REGISTRY = egl.xml
  GENOPTS =
+--- EGL-Registry-20180609.orig/api/egl.xml
++++ EGL-Registry-20180609/api/egl.xml
+@@ -554,7 +554,9 @@
+         <enum value="0x31D7" name="EGL_PLATFORM_GBM_MESA" alias="EGL_PLATFORM_GBM_KHR"/>
+         <enum value="0x31D8" name="EGL_PLATFORM_WAYLAND_KHR"/>
+         <enum value="0x31D8" name="EGL_PLATFORM_WAYLAND_EXT" alias="EGL_PLATFORM_WAYLAND_KHR"/>
+-            <unused start="0x31D9" end="0x31DC"/>
++            <unused start="0x31D9" end="0x31DA"/>
++        <enum value="0x31DB" name="EGL_PLATFORM_DIRECTFB_EXT"/>
++            <unused start="0x31DC" end="0x31DC"/>
+         <enum value="0x31DD" name="EGL_PLATFORM_SURFACELESS_MESA"/>
+             <unused start="0x31DE" end="0x31DF"/>
+     </enums>
+@@ -2365,6 +2367,11 @@
+                 <enum name="EGL_PLATFORM_X11_SCREEN_EXT"/>
+             </require>
+         </extension>
++        <extension name="EGL_EXT_platform_directfb" supported="egl">
++            <require>
++                <enum name="EGL_PLATFORM_DIRECTFB_EXT"/>
++            </require>
++        </extension>
+         <extension name="EGL_EXT_protected_content" supported="egl">
+             <require>
+                 <enum name="EGL_PROTECTED_CONTENT_EXT"/>
 --- EGL-Registry-20180609.orig/api/genheaders.py
 +++ EGL-Registry-20180609/api/genheaders.py
 @@ -75,10 +75,10 @@

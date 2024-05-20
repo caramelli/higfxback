@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
-  EGL_OPENGL="-Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
+  EGL_OPENGL="-Degl-drm=false -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
@@ -159,6 +159,98 @@ exit
  fi
  
  # Vulkan WSIs
+--- yagears-2.4.orig/main.c
++++ yagears-2.4/main.c
+@@ -1294,7 +1294,7 @@
+   #if defined(EGL_X11)
+   if (!strcmp(backend, "egl-x11")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_X11_EXT, x11_dpy, NULL);
+     }
+     else
+@@ -1308,7 +1308,7 @@
+   #if defined(EGL_DIRECTFB)
+   if (!strcmp(backend, "egl-directfb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DIRECTFB_EXT, dfb_dpy, NULL);
+     }
+     else
+@@ -1322,7 +1322,7 @@
+   #if defined(EGL_FBDEV)
+   if (!strcmp(backend, "egl-fbdev")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_FBDEV_EXT, &fb_dpy, NULL);
+     }
+     else
+@@ -1336,7 +1336,7 @@
+   #if defined(EGL_WAYLAND)
+   if (!strcmp(backend, "egl-wayland")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_WAYLAND_EXT, wl_dpy, NULL);
+     }
+     else
+@@ -1350,7 +1350,7 @@
+   #if defined(EGL_XCB)
+   if (!strcmp(backend, "egl-xcb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_XCB_EXT, xcb_dpy, NULL);
+     }
+     else
+@@ -1761,7 +1761,7 @@
+   #if defined(EGL_X11)
+   if (!strcmp(backend, "egl-x11")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &x11_win, NULL);
+     }
+     else
+@@ -1774,7 +1774,7 @@
+   #if defined(EGL_DIRECTFB)
+   if (!strcmp(backend, "egl-directfb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, dfb_win, NULL);
+     }
+     else
+@@ -1787,7 +1787,7 @@
+   #if defined(EGL_FBDEV)
+   if (!strcmp(backend, "egl-fbdev")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, fb_win, NULL);
+     }
+     else
+@@ -1800,7 +1800,7 @@
+   #if defined(EGL_WAYLAND)
+   if (!strcmp(backend, "egl-wayland")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, wl_win, NULL);
+     }
+     else
+@@ -1813,7 +1813,7 @@
+   #if defined(EGL_XCB)
+   if (!strcmp(backend, "egl-xcb")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &xcb_win, NULL);
+     }
+     else
 --- yagears-2.4.orig/meson.build
 +++ yagears-2.4/meson.build
 @@ -54,12 +54,12 @@
