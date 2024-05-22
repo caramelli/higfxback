@@ -1,0 +1,110 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-registry-build make-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C xml
+
+# install
+install -d $DESTDIR/wl/include/GL
+install -m 644 api/GL/gl.h $DESTDIR/wl/include/GL
+install -m 644 api/GL/glext.h $DESTDIR/wl/include/GL
+install -d $DESTDIR/wl/include/GLES
+install -m 644 api/GLES/gl.h $DESTDIR/wl/include/GLES
+install -m 644 api/GLES/glext.h $DESTDIR/wl/include/GLES
+install -m 644 api/GLES/glplatform.h $DESTDIR/wl/include/GLES
+install -d $DESTDIR/wl/include/GLES2
+install -m 644 api/GLES2/gl2.h $DESTDIR/wl/include/GLES2
+install -m 644 api/GLES2/gl2ext.h $DESTDIR/wl/include/GLES2
+install -m 644 api/GLES2/gl2platform.h $DESTDIR/wl/include/GLES2
+install -d $DESTDIR/wl/include/GLES3
+install -m 644 api/GLES3/gl3.h $DESTDIR/wl/include/GLES3
+install -m 644 api/GLES3/gl3platform.h $DESTDIR/wl/include/GLES3
+install -d $DESTDIR/wl/share/opengl/registry
+install -m 644 xml/gl.xml $DESTDIR/wl/share/opengl/registry
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/opengl-registry-build.pc << EOF
+Name: OpenGL-Registry
+Version: 20200929
+Description: OpenGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/GL/gl.h \\
+/wl/include/GL/glext.h \\
+/wl/include/GLES/gl.h \\
+/wl/include/GLES/glext.h \\
+/wl/include/GLES/glplatform.h \\
+/wl/include/GLES2/gl2.h \\
+/wl/include/GLES2/gl2ext.h \\
+/wl/include/GLES2/gl2platform.h \\
+/wl/include/GLES3/gl3.h \\
+/wl/include/GLES3/gl3platform.h \\
+/wl/share/opengl/registry/gl.xml
+EOF
+
+exit
+--- OpenGL-Registry-20200929.orig/xml/Makefile
++++ OpenGL-Registry-20200929/xml/Makefile
+@@ -6,7 +6,7 @@
+ 
+ PYFILES = genheaders.py reg.py
+ GENOPTS =
+-GENHEADERS = ./genheaders.py $(GENOPTS)
++GENHEADERS = python3 ./genheaders.py $(GENOPTS)
+ 
+ # Generate all headers for GL / GLES / WGL / GLX
+ # Different headers depend on different XML registry files
+@@ -19,8 +19,9 @@
+ # platform-specific versions of these headers, where appropriate.
+ 
+ API	   = ../api
+-GLHEADERS  = $(API)/GL/glext.h \
+-	     $(API)/GL/glcorearb.h \
++GLHEADERS  = \
++	     $(API)/GL/gl.h \
++	     $(API)/GL/glext.h \
+ 	     $(API)/GLES/gl.h \
+ 	     $(API)/GLES/glext.h \
+ 	     $(API)/GLES2/gl2.h \
+--- OpenGL-Registry-20200929.orig/xml/genheaders.py
++++ OpenGL-Registry-20200929/xml/genheaders.py
+@@ -56,6 +56,7 @@
+ 
+ allVersions       = allExtensions = '.*'
+ noVersions        = noExtensions = None
++glthrough43Pat    = '1|2|3|4.[0-3]'
+ gl12andLaterPat   = '1\.[2-9]|[234]\.[0-9]'
+ gles2onlyPat      = '2\.[0-9]'
+ gles2through30Pat = '2\.[0-9]|3\.0'
+@@ -191,6 +192,25 @@
+ protectProto = protect
+ 
+ buildList = [
++    # GL compatibility profile - GL/gl.h
++    CGeneratorOptions(
++        filename          = '../api/GL/gl.h',
++        apiname           = 'gl',
++        profile           = 'compatibility',
++        versions          = allVersions,
++        emitversions      = glthrough43Pat,
++        defaultExtensions = None,
++        addExtensions     = None,
++        removeExtensions  = None,
++        prefixText        = prefixStrings + glExtPlatformStrings + genDateCommentString,
++        genFuncPointers   = True,
++        protectFile       = protectFile,
++        protectFeature    = protectFeature,
++        protectProto      = False,
++        protectProtoStr   = 'GL_GLEXT_PROTOTYPES',
++        apicall           = 'GLAPI ',
++        apientry          = 'APIENTRY ',
++        apientryp         = 'APIENTRYP '),
+     # GL API 1.2+ + extensions - GL/glext.h
+     CGeneratorOptions(
+         filename          = '../api/GL/glext.h',

@@ -217,22 +217,21 @@ exit
  const char *
 --- weston-5.0.0.orig/configure.ac
 +++ weston-5.0.0/configure.ac
-@@ -111,14 +111,6 @@
- 
+@@ -112,12 +112,7 @@
  AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
  
--# check for libdrm as a build-time dependency only
+ # check for libdrm as a build-time dependency only
 -# libdrm 2.4.30 introduced drm_fourcc.h.
 -PKG_CHECK_MODULES(LIBDRM, [libdrm >= 2.4.68], [], [AC_MSG_ERROR([
 -     libdrm is a hard build-time dependency for libweston core,
 -     but a sufficient version was not found. However, libdrm
 -     is not a runtime dependency unless you have features
 -     enabled that require it.])])
--
++PKG_CHECK_EXISTS([libdrm >= 2.4.68], [PKG_CHECK_MODULES([LIBDRM], [libdrm])])
+ 
  COMPOSITOR_MODULES="wayland-server >= $WAYLAND_PREREQ_VERSION pixman-1 >= 0.25.2"
  
- AC_CONFIG_FILES([doc/doxygen/tools.doxygen doc/doxygen/tooldev.doxygen])
-@@ -152,9 +144,11 @@
+@@ -152,9 +147,11 @@
  
  COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
  
@@ -323,15 +322,15 @@ exit
  }
 --- weston-5.0.0.orig/libweston/pixel-formats.c
 +++ weston-5.0.0/libweston/pixel-formats.c
-@@ -23,6 +23,8 @@
-  * Author: Daniel Stone <daniels@collabora.com>
-  */
+@@ -25,6 +25,8 @@
+ 
+ #include "config.h"
  
 +#ifdef BUILD_DRM_COMPOSITOR
 +
- #include "config.h"
- 
  #include <endian.h>
+ #include <inttypes.h>
+ #include <stdbool.h>
 @@ -428,3 +430,5 @@
  
  	return height / info->vsub;

@@ -1,0 +1,65 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lxml-build make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C api
+
+# install
+install -d $DESTDIR/wl/include/EGL
+install -m 644 api/EGL/egl.h $DESTDIR/wl/include/EGL
+install -m 644 api/EGL/eglext.h $DESTDIR/wl/include/EGL
+install -m 644 api/EGL/eglplatform.h $DESTDIR/wl/include/EGL
+install -d $DESTDIR/wl/include/KHR
+install -m 644 api/KHR/khrplatform.h $DESTDIR/wl/include/KHR
+install -d $DESTDIR/wl/share/egl/registry
+install -m 644 api/egl.xml $DESTDIR/wl/share/egl/registry
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/egl-registry-build.pc << EOF
+Name: EGL-Registry
+Version: 20200824
+Description: EGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/EGL/egl.h \\
+/wl/include/EGL/eglext.h \\
+/wl/include/EGL/eglplatform.h \\
+/wl/include/KHR/khrplatform.h \\
+/wl/share/egl/registry/egl.xml
+EOF
+
+exit
+--- EGL-Registry-20200824.orig/api/EGL/eglplatform.h
++++ EGL-Registry-20200824/api/EGL/eglplatform.h
+@@ -48,7 +48,13 @@
+  * implementations.
+  */
+ 
+-#if defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
++#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
++
++typedef void *EGLNativeDisplayType;
++typedef void *EGLNativePixmapType;
++typedef void *EGLNativeWindowType;
++
++#elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
+ #ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN 1
+ #endif
+--- EGL-Registry-20200824.orig/api/genheaders.py
++++ EGL-Registry-20200824/api/genheaders.py
+@@ -72,7 +72,7 @@
+     '/*',
+     '** Copyright 2013-2020 The Khronos Group Inc.',
+     '** SPDX-' + 'License-Identifier: Apache-2.0',
+-    '/*',
++    '**',
+     '** This header is generated from the Khronos EGL XML API Registry.',
+     '** The current version of the Registry, generator scripts',
+     '** used to make the header, and the header can be found at',
