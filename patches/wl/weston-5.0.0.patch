@@ -5,9 +5,17 @@ REQUIRES="autotools-wrappers-lt-build cairo-build libxkbcommon-build xkeyboard-c
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build libdrm-build libgbm-stub-build; then
+  DRM=1
+  COMPOSITOR="--disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+  REQUIRES="$REQUIRES egl-opengl-stubs-build libdrm-build libgbm-stub-build"
+else
+  COMPOSITOR="--disable-drm-compositor --disable-egl --disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+fi
+
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=fbdev-backend.so ./configure --disable-drm-compositor --disable-egl --disable-fullscreen-shell --disable-headless-compositor --disable-ivi-shell --disable-wayland-compositor --disable-weston-launch --disable-x11-compositor --disable-xcompose --disable-xwayland --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=fbdev-backend.so ./configure $COMPOSITOR --disable-fullscreen-shell --disable-ivi-shell --disable-weston-launch --disable-xcompose --disable-xwayland --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
 
 # build
 make
@@ -36,7 +44,9 @@ install -d $DESTDIR/wl/lib
 install .libs/libweston-desktop-5.so.0.0.0 $DESTDIR/wl/lib/libweston-desktop-5.so.0
 install .libs/libweston-5.so.0.0.0 $DESTDIR/wl/lib/libweston-5.so.0
 install -d $DESTDIR/wl/lib/libweston-5
+test $DRM && install .libs/drm-backend.so $DESTDIR/wl/lib/libweston-5
 install .libs/fbdev-backend.so $DESTDIR/wl/lib/libweston-5
+test $DRM && install .libs/gl-renderer.so $DESTDIR/wl/lib/libweston-5
 install -d $DESTDIR/wl/lib/weston
 install .libs/desktop-shell.so $DESTDIR/wl/lib/weston
 install weston-desktop-shell $DESTDIR/wl/lib/weston
@@ -78,7 +88,11 @@ exec=\\
 /wl/bin/weston-terminal \\
 /wl/lib/libweston-5.so.0 \\
 /wl/lib/libweston-desktop-5.so.0 \\
-/wl/lib/libweston-5/fbdev-backend.so \\
+EOF
+test $DRM && echo /wl/lib/libweston-5/drm-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+echo /wl/lib/libweston-5/fbdev-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $DRM && echo /wl/lib/libweston-5/gl-renderer.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/lib/weston/desktop-shell.so \\
 /wl/lib/weston/weston-desktop-shell \\
 /wl/lib/weston/weston-keyboard \\
@@ -103,6 +117,34 @@ exit
  
  CLEANFILES = weston.ini				\
  	ivi-shell/weston.ini			\
+@@ -58,6 +59,9 @@
+ 
+ lib_LTLIBRARIES = libweston-@LIBWESTON_MAJOR@.la
+ libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
++if ENABLE_EGL
++libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS += -DEGL_NO_PLATFORM_SPECIFIC_TYPES
++endif
+ libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) \
+ 	$(COMPOSITOR_CFLAGS) $(EGL_CFLAGS) $(LIBDRM_CFLAGS)
+ libweston_@LIBWESTON_MAJOR@_la_LIBADD = $(COMPOSITOR_LIBS) \
+@@ -307,6 +311,7 @@
+ 
+ if ENABLE_EGL
+ libweston_module_LTLIBRARIES += gl-renderer.la
++gl_renderer_la_CPPFLAGS = $(AM_CPPFLAGS) -DEGL_NO_PLATFORM_SPECIFIC_TYPES
+ gl_renderer_la_LDFLAGS = -module -avoid-version
+ gl_renderer_la_LIBADD =				\
+ 	libweston-@LIBWESTON_MAJOR@.la		\
+@@ -1304,6 +1309,9 @@
+ surface_test_la_LDFLAGS = $(test_module_ldflags)
+ surface_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
+ 
++if ENABLE_EGL
++weston_test_la_CPPFLAGS = $(AM_CPPFLAGS) -DEGL_NO_PLATFORM_SPECIFIC_TYPES
++endif
+ weston_test_la_LIBADD = libshared.la $(test_module_libadd)
+ weston_test_la_LDFLAGS = $(test_module_ldflags)
+ weston_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 --- weston-5.0.0.orig/clients/terminal.c
 +++ weston-5.0.0/clients/terminal.c
 @@ -53,6 +53,8 @@

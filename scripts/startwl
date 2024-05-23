@@ -4,11 +4,14 @@ killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
 install -d -m 700 /wl/var/xdg
 
+test $BACKEND && rm -f /wl/etc/xdg/weston/weston.ini
+
 if [ ! -f /wl/etc/xdg/weston/weston.ini ]; then
+  BACKEND=${BACKEND-fbdev}
   install -d /wl/etc/xdg/weston
   cat > /wl/etc/xdg/weston/weston.ini << EOF
 [core]
-backend=fbdev-backend.so
+backend=$BACKEND-backend.so
 [shell]
 panel-position=none
 EOF
