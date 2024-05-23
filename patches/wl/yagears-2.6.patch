@@ -1,61 +1,36 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="directfb2-build libpng-build meson-build tiff-build"
+REQUIRES="egl-opengl-stubs-build libpng-build meson-build tiff-build wayland-build"
 
-PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
-
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
-  GL=1
-  EGL_OPENGL="-Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
-  REQUIRES="$REQUIRES egl-opengl-stubs-build"
-fi
-
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
-  VK=1
-  REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
-fi
-
-test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
-
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
-  SDL2=1
-  REQUIRES="$REQUIRES sdl2-build"
-fi
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/dfb build
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false --prefix=/wl build
 
 # build
 meson compile -C build
 
 # install
-install -d $DESTDIR/dfb/bin
-test $GL && install build/yagears2 $DESTDIR/dfb/bin
-test $GL && test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
-test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
-test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
+install -d $DESTDIR/wl/bin
+install build/yagears2 $DESTDIR/wl/bin
 
 # build.pc
-install -d $DESTDIR/dfb/share/pkgconfig
-cat > $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/yagears2-build.pc << EOF
 Name: yagears
-Version: 2.4
+Version: 2.6
 Description: Yet Another Gears OpenGL / Vulkan demo
 Requires: $REQUIRES
 
 exec=\\
+/wl/bin/yagears2
 EOF
-test $GL && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GL && test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && echo /dfb/bin/yagears2-vk \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && test $SDL2 && echo /dfb/bin/yagears2-vk-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 
 exit
---- yagears-2.4.orig/CMakeLists.txt
-+++ yagears-2.4/CMakeLists.txt
-@@ -60,12 +60,12 @@
+--- yagears-2.6.orig/CMakeLists.txt
++++ yagears-2.6/CMakeLists.txt
+@@ -62,12 +62,12 @@
    pkg_check_modules(GL gl)
    if(GL_FOUND)
      if(ENABLE_GLESV1_CM)
@@ -70,7 +45,7 @@ exit
        else()
          set(ENABLE_GLESV2 OFF)
        endif()
-@@ -82,7 +82,7 @@
+@@ -84,7 +84,7 @@
    if(ENABLE_GLESV1_CM)
      pkg_check_modules(GLESV1_CM glesv1_cm)
      if(GLESV1_CM_FOUND)
@@ -79,7 +54,7 @@ exit
        set(GLESV1_CM_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV1_CM OFF)
-@@ -93,7 +93,7 @@
+@@ -95,7 +95,7 @@
      pkg_check_modules(GLESV2 glesv2)
      find_program(XXD xxd)
      if(GLESV2_FOUND AND XXD)
@@ -88,7 +63,7 @@ exit
        set(GLESV2_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV2 OFF)
-@@ -102,7 +102,7 @@
+@@ -104,7 +104,7 @@
  endif()
  
  if(NOT ENABLE_GL AND NOT ENABLE_GLESV1_CM AND NOT ENABLE_GLESV2)
@@ -97,27 +72,18 @@ exit
  endif()
  
  # OpenGL Backends
-@@ -211,7 +211,7 @@
-     endif()
+@@ -263,7 +263,7 @@
+ set(WAFFLE ${ENABLE_WAFFLE})
  
-     if(ENABLE_EGL_DRM)
--      pkg_check_modules(DRM gbm libdrm libevdev)
-+      pkg_check_modules(DRM dri gbm libdrm libevdev)
-       if(DRM_FOUND)
-         execute_process(COMMAND pkg-config --variable=dridriverdir dri OUTPUT_VARIABLE DRIDRIVERDIR)
-         string(STRIP ${DRIDRIVERDIR} DRIDRIVERDIR)
-@@ -251,7 +251,7 @@
- set(EGL_RPI ${ENABLE_EGL_RPI})
- 
- if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI)
+ if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI AND NOT ENABLE_WAFFLE)
 -  message(FATAL_ERROR "No OpenGL Backends found")
 +  message(WARNING "No OpenGL Backends found")
  endif()
  
  # Vulkan WSIs
---- yagears-2.4.orig/configure.ac
-+++ yagears-2.4/configure.ac
-@@ -125,12 +125,12 @@
+--- yagears-2.6.orig/configure.ac
++++ yagears-2.6/configure.ac
+@@ -131,12 +131,12 @@
    PKG_CHECK_MODULES(GL, gl, , enable_gl=no)
    if test x$enable_gl = xyes; then
      if test x$enable_glesv1_cm = xyes; then
@@ -132,7 +98,7 @@ exit
        else
          enable_glesv2=no
        fi
-@@ -145,7 +145,7 @@
+@@ -151,7 +151,7 @@
    if test x$enable_glesv1_cm = xyes; then
      PKG_CHECK_MODULES(GLESV1_CM, glesv1_cm, , enable_glesv1_cm=no)
      if test x$enable_glesv1_cm = xyes; then
@@ -141,7 +107,7 @@ exit
        GLESV1_CM_LIBS=-ldl
      fi
    fi
-@@ -155,7 +155,7 @@
+@@ -161,7 +161,7 @@
      if test x$enable_glesv2 = xyes; then
        AC_PATH_TOOL(XXD, xxd)
        if test -n "$XXD"; then
@@ -150,7 +116,7 @@ exit
          GLESV2_LIBS=-ldl
        else
          enable_glesv2=no
-@@ -165,7 +165,7 @@
+@@ -171,7 +171,7 @@
  fi
  
  if test x$enable_gl = xno -a x$enable_glesv1_cm = xno -a x$enable_glesv2 = xno; then
@@ -159,27 +125,18 @@ exit
  fi
  
  # OpenGL Backends
-@@ -255,7 +255,7 @@
-     fi
- 
-     if test x$enable_egl_drm = xyes; then
--      PKG_CHECK_MODULES(DRM, gbm libdrm libevdev, , enable_egl_drm=no)
-+      PKG_CHECK_MODULES(DRM, dri gbm libdrm libevdev, , enable_egl_drm=no)
-       if test x$enable_egl_drm = xyes; then
-         DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri`
-         MODVERSION=`$PKG_CONFIG --modversion dri`
-@@ -302,7 +302,7 @@
+@@ -320,7 +320,7 @@
  fi
  
- if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
+ if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno -a x$enable_waffle = xno; then
 -  AC_MSG_ERROR(No OpenGL Backends found)
 +  AC_MSG_WARN(No OpenGL Backends found)
  fi
  
  # Vulkan WSIs
---- yagears-2.4.orig/main.c
-+++ yagears-2.4/main.c
-@@ -1294,7 +1294,7 @@
+--- yagears-2.6.orig/main.c
++++ yagears-2.6/main.c
+@@ -1402,7 +1402,7 @@
    #if defined(EGL_X11)
    if (!strcmp(backend, "egl-x11")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
@@ -188,7 +145,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_X11_EXT, x11_dpy, NULL);
      }
      else
-@@ -1308,7 +1308,7 @@
+@@ -1416,7 +1416,7 @@
    #if defined(EGL_DIRECTFB)
    if (!strcmp(backend, "egl-directfb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
@@ -197,7 +154,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DIRECTFB_EXT, dfb_dpy, NULL);
      }
      else
-@@ -1322,7 +1322,7 @@
+@@ -1430,7 +1430,7 @@
    #if defined(EGL_FBDEV)
    if (!strcmp(backend, "egl-fbdev")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
@@ -206,7 +163,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_FBDEV_EXT, &fb_dpy, NULL);
      }
      else
-@@ -1336,7 +1336,7 @@
+@@ -1444,7 +1444,7 @@
    #if defined(EGL_WAYLAND)
    if (!strcmp(backend, "egl-wayland")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
@@ -215,7 +172,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_WAYLAND_EXT, wl_dpy, NULL);
      }
      else
-@@ -1350,7 +1350,7 @@
+@@ -1458,7 +1458,7 @@
    #if defined(EGL_XCB)
    if (!strcmp(backend, "egl-xcb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
@@ -224,7 +181,16 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_XCB_EXT, xcb_dpy, NULL);
      }
      else
-@@ -1761,7 +1761,7 @@
+@@ -1472,7 +1472,7 @@
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_GBM_KHR)
+-    if (eglGetPlatformDisplayEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglGetPlatformDisplayEXT) {
+       egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_GBM_KHR, drm_dpy, NULL);
+     }
+     else
+@@ -1885,7 +1885,7 @@
    #if defined(EGL_X11)
    if (!strcmp(backend, "egl-x11")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
@@ -233,7 +199,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &x11_win, NULL);
      }
      else
-@@ -1774,7 +1774,7 @@
+@@ -1898,7 +1898,7 @@
    #if defined(EGL_DIRECTFB)
    if (!strcmp(backend, "egl-directfb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
@@ -242,7 +208,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, dfb_win, NULL);
      }
      else
-@@ -1787,7 +1787,7 @@
+@@ -1911,7 +1911,7 @@
    #if defined(EGL_FBDEV)
    if (!strcmp(backend, "egl-fbdev")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
@@ -251,7 +217,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, fb_win, NULL);
      }
      else
-@@ -1800,7 +1800,7 @@
+@@ -1924,7 +1924,7 @@
    #if defined(EGL_WAYLAND)
    if (!strcmp(backend, "egl-wayland")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
@@ -260,7 +226,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, wl_win, NULL);
      }
      else
-@@ -1813,7 +1813,7 @@
+@@ -1937,7 +1937,7 @@
    #if defined(EGL_XCB)
    if (!strcmp(backend, "egl-xcb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
@@ -269,9 +235,20 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &xcb_win, NULL);
      }
      else
---- yagears-2.4.orig/meson.build
-+++ yagears-2.4/meson.build
-@@ -54,12 +54,12 @@
+@@ -1949,9 +1949,8 @@
+   #endif
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
+-    egl_win = eglCreateWindowSurface(egl_dpy, egl_config, (EGLNativeWindowType)drm_win, NULL);
+     #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_GBM_KHR)
+-    if (eglCreatePlatformWindowSurfaceEXT) {
++    if (!getenv("NO_EGL_EXT_PLATFORM") && eglCreatePlatformWindowSurfaceEXT) {
+       egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, drm_win, NULL);
+     }
+     else
+--- yagears-2.6.orig/meson.build
++++ yagears-2.6/meson.build
+@@ -56,12 +56,12 @@
    gl_dep = dependency('gl', required: false)
    if gl_dep.found()
      if enable_glesv1_cm
@@ -286,7 +263,7 @@ exit
        else
          enable_glesv2 = false
        endif
-@@ -78,8 +78,8 @@
+@@ -80,8 +80,8 @@
    if enable_glesv1_cm
      glesv1_cm_dep = dependency('glesv1_cm', required: false)
      if glesv1_cm_dep.found()
@@ -297,7 +274,7 @@ exit
      else
        enable_glesv1_cm = false
      endif
-@@ -89,8 +89,8 @@
+@@ -91,8 +91,8 @@
      glesv2_dep = dependency('glesv2', required: false)
      xxd = find_program('xxd', required: false)
      if glesv2_dep.found() and xxd.found()
@@ -308,7 +285,7 @@ exit
      else
        enable_glesv2 = false
      endif
-@@ -98,7 +98,7 @@
+@@ -100,7 +100,7 @@
  endif
  
  if not enable_gl and not enable_glesv1_cm and not enable_glesv2
@@ -317,7 +294,7 @@ exit
  endif
  
  # OpenGL Backends
-@@ -107,7 +107,7 @@
+@@ -109,7 +109,7 @@
  directfb_dep = []
  if enable_gl
    if enable_gl_x11
@@ -326,7 +303,7 @@ exit
      if cc.has_function('glXCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
        x11_dep = dependency('x11', required: false)
        if not x11_dep.found()
-@@ -120,8 +120,8 @@
+@@ -122,8 +122,8 @@
  
    if enable_gl_directfb
      message('Checking for DirectFBGL module')
@@ -337,7 +314,7 @@ exit
        message('DirectFBGL found')
        directfb_dep = dependency('directfb', required: false)
        if not directfb_dep.found()
-@@ -134,7 +134,7 @@
+@@ -136,7 +136,7 @@
    endif
  
    if enable_gl_fbdev
@@ -346,7 +323,7 @@ exit
      if not cc.has_function('glFBDevCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
        enable_gl_fbdev = false
      endif
-@@ -202,7 +202,7 @@
+@@ -204,7 +204,7 @@
            config_h.set('HAVE_WL_SHELL_SURFACE_SET_POSITION', false, description: 'Have function wl_shell_surface_set_position')
          endif
  
@@ -355,15 +332,7 @@ exit
        endif
      endif
  
-@@ -214,15 +214,15 @@
-     endif
- 
-     if enable_egl_drm
--      drm_dep = [dependency('gbm', required: false), dependency('libdrm', required: false), dependency('libevdev', required: false)]
-+      drm_dep = [dependency('dri', required: false), dependency('gbm', required: false), dependency('libdrm', required: false), dependency('libevdev', required: false)]
-       foreach dep : drm_dep
-         if not dep.found()
-           enable_egl_drm = false
+@@ -223,8 +223,8 @@
          endif
        endforeach
        if enable_egl_drm
@@ -374,16 +343,16 @@ exit
          drimajorversion = modversion.stdout().split('.')[0]
          driminorversion = modversion.stdout().split('.')[1]
          drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
-@@ -254,7 +254,7 @@
- config_h.set('EGL_RPI', enable_egl_rpi, description: 'Support for EGL with Raspberry Pi Dispmanx platform')
+@@ -269,7 +269,7 @@
+ config_h.set('WAFFLE', enable_waffle, description: 'Support for Waffle cross-platform wrapper')
  
- if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi
+ if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi and not enable_waffle
 -  error('No OpenGL Backends found')
 +  warning('No OpenGL Backends found')
  endif
  
  # Vulkan WSIs
-@@ -264,7 +264,7 @@
+@@ -280,7 +280,7 @@
    vulkan_dep = dependency('vulkan', required: false)
    glslang_validator = find_program('glslangValidator', required: false)
    if vulkan_dep.found() and glslang_validator.found()
@@ -392,7 +361,7 @@ exit
  
      if enable_vk_x11
        if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
-@@ -376,7 +376,7 @@
+@@ -405,7 +405,7 @@
  if enable_fltk
    fltk_config = find_program('fltk-config', required: false)
    if fltk_config.found()
@@ -401,7 +370,7 @@ exit
    else
      enable_fltk = false
    endif
-@@ -493,7 +493,7 @@
+@@ -522,7 +522,7 @@
  if enable_wx
    wx_config = find_program('wx-config', required: false)
    if wx_config.found()
@@ -410,7 +379,7 @@ exit
    else
      enable_wx = false
    endif
-@@ -670,7 +670,7 @@
+@@ -701,7 +701,7 @@
  
  if VK_GUI
  executable('yagears2-vk-gui',
