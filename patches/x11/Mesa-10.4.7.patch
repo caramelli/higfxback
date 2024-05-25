@@ -1,61 +1,64 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libxml2-build opengl-registry-build wayland-build"
+REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libxext-build libxml2-build opengl-registry-build"
 
-PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if pkg-config --exists libdrm-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libdrm-build libx11-xcb-build; then
   DRM=1
-  DRI="--disable-glx --disable-nls --with-egl-platforms=wayland,drm --without-dri-drivers"
-  REQUIRES="$REQUIRES libdrm-build"
+  DRI="--disable-nls --with-egl-platforms=x11,drm --without-dri-drivers"
+  REQUIRES="$REQUIRES libdrm-build libx11-xcb-build"
 else
-  DRI="--disable-dri --with-egl-platforms=wayland"
+  DRI="--disable-dri"
 fi
 
-# configure (ac-2.69; am-1.15; lt-2.4.6)
+# configure (ac-2.69; am-1.15; lt-2.4.5)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gles1 --enable-gles2 --with-gallium-drivers=swrast --prefix=/wl
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-xlib-glx --with-gallium-drivers=swrast --prefix=/x11
 
 # build
 make
 
 # install
-install -d $DESTDIR/wl/lib
-install lib/libEGL.so.1 $DESTDIR/wl/lib/libmesaEGL.so.1
-test $DRM && install lib/libgbm.so.1.* $DESTDIR/wl/lib/libmesagbm.so.1
-install lib/libglapi.so.0.* $DESTDIR/wl/lib/libglapi.so.0
-install lib/libGLESv1_CM.so.1.* $DESTDIR/wl/lib/libmesaGLESv1_CM.so.1
-install lib/libGLESv2.so.2.* $DESTDIR/wl/lib/libmesaGLESv2.so.2
-install -d $DESTDIR/wl/lib/egl
-install lib/egl/egl_gallium.so $DESTDIR/wl/lib/egl
-test $DRM && install -d $DESTDIR/wl/lib/dri
-test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/wl/lib/dri
+install -d $DESTDIR/x11/lib
+install lib/libEGL.so.1 $DESTDIR/x11/lib/libmesaEGL.so.1
+test $DRM && install lib/libgbm.so.1.* $DESTDIR/x11/lib/libmesagbm.so.1
+install lib/libGL.so.1 $DESTDIR/x11/lib/libmesaGL.so.1
+install lib/libglapi.so.0.* $DESTDIR/x11/lib/libglapi.so.0
+install lib/libGLESv1_CM.so.1.* $DESTDIR/x11/lib/libmesaGLESv1_CM.so.1
+install lib/libGLESv2.so.2.* $DESTDIR/x11/lib/libmesaGLESv2.so.2
+install -d $DESTDIR/x11/lib/egl
+install lib/egl/egl_gallium.so $DESTDIR/x11/lib/egl
+test $DRM && install -d $DESTDIR/x11/lib/dri
+test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/x11/lib/dri
+test $DRM && install lib/gallium/swrast_dri.so $DESTDIR/x11/lib/dri
 
 # build.pc
-install -d $DESTDIR/wl/share/pkgconfig
-cat > $DESTDIR/wl/share/pkgconfig/mesa-build.pc << EOF
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/mesa-build.pc << EOF
 Name: Mesa
-Version: 10.5.9
+Version: 10.4.7
 Description: Mesa implementation of Khronos specifications
 Requires: $REQUIRES
 
 exec=\\
-/wl/lib/libglapi.so.0 \\
-/wl/lib/libmesaEGL.so.1 \\
+/x11/lib/libglapi.so.0 \\
+/x11/lib/libmesaEGL.so.1 \\
 EOF
-test $DRM && echo /wl/lib/libmesagbm.so.1 \\ >> $DESTDIR/wl/share/pkgconfig/mesa-build.pc
-cat >> $DESTDIR/wl/share/pkgconfig/mesa-build.pc << EOF
-/wl/lib/libmesaGL.so.1 \\
-/wl/lib/libmesaGLESv1_CM.so.1 \\
-/wl/lib/libmesaGLESv2.so.2 \\
+test $DRM && echo /x11/lib/libmesagbm.so.1 \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc << EOF
+/x11/lib/libmesaGL.so.1 \\
+/x11/lib/libmesaGLESv1_CM.so.1 \\
+/x11/lib/libmesaGLESv2.so.2 \\
 EOF
-test $DRM && echo /wl/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/wl/share/pkgconfig/mesa-build.pc
-echo /wl/lib/egl/egl_gallium.so >> $DESTDIR/wl/share/pkgconfig/mesa-build.pc
+test $DRM && echo /x11/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+test $DRM && echo /x11/lib/dri/swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+echo /x11/lib/egl/egl_gallium.so >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
 
 exit
---- mesa-10.5.9.orig/bin/config.rpath
-+++ mesa-10.5.9/bin/config.rpath
+--- Mesa-10.4.7.orig/bin/config.rpath
++++ Mesa-10.4.7/bin/config.rpath
 @@ -0,0 +1,690 @@
 +#! /bin/sh
 +# Output a system dependent set of variables, describing how to set the
@@ -747,9 +750,9 @@ exit
 +hardcode_minus_L="$hardcode_minus_L"
 +
 +EOF
---- mesa-10.5.9.orig/configure.ac
-+++ mesa-10.5.9/configure.ac
-@@ -130,6 +130,9 @@
+--- Mesa-10.4.7.orig/configure.ac
++++ Mesa-10.4.7/configure.ac
+@@ -77,6 +77,9 @@
  
  AC_PROG_INSTALL
  
@@ -759,7 +762,7 @@ exit
  dnl We need a POSIX shell for parts of the build. Assume we have one
  dnl in most cases.
  case "$host_os" in
-@@ -784,6 +787,11 @@
+@@ -720,6 +723,11 @@
          [make GLX library Xlib-based instead of DRI-based @<:@default=disabled@:>@])],
      [enable_xlib_glx="$enableval"],
      [enable_xlib_glx=no])
@@ -771,18 +774,40 @@ exit
  
  AC_ARG_ENABLE([r600-llvm-compiler],
      [AS_HELP_STRING([--enable-r600-llvm-compiler],
-@@ -1383,10 +1391,6 @@
-             if test "x$enable_shared_glapi" = xno; then
-                 AC_MSG_ERROR([egl_dri2 requires --enable-shared-glapi])
-             fi
--        else
--            # Avoid building an "empty" libEGL. Drop/update this
--            # when other backends (haiku?) come along.
--            AC_MSG_ERROR([egl requires --enable-dri])
-         fi
+@@ -790,10 +798,6 @@
+     enable_xlib_glx=no
+ fi
  
-     fi
-@@ -1395,6 +1399,19 @@
+-if test "x$enable_dri$enable_xlib_glx" = xyesyes; then
+-    AC_MSG_ERROR([DRI and Xlib-GLX cannot be built together])
+-fi
+-
+ if test "x$enable_opengl$enable_xlib_glx" = xnoyes; then
+     AC_MSG_ERROR([Xlib-GLX cannot be built without OpenGL])
+ fi
+@@ -813,7 +817,7 @@
+ fi
+ 
+ AM_CONDITIONAL(HAVE_DRI_GLX, test "x$enable_glx" = xyes -a \
+-                                  "x$enable_dri" = xyes)
++                                  "x$enable_xlib_glx" = xno)
+ 
+ # Select which platform-dependent DRI code gets built
+ case "$host_os" in
+@@ -846,12 +850,6 @@
+     ;;
+ esac
+ 
+-# Building Xlib-GLX requires shared glapi to be disabled.
+-if test "x$enable_xlib_glx" = xyes; then
+-    AC_MSG_NOTICE([Shared GLAPI should not used with Xlib-GLX, disabling])
+-    enable_shared_glapi=no
+-fi
+-
+ AM_CONDITIONAL(HAVE_SHARED_GLAPI, test "x$enable_shared_glapi" = xyes)
+ 
+ # Build the pipe-drivers as separate libraries/modules.
+@@ -1324,6 +1322,19 @@
  AC_SUBST([EGL_LIB_DEPS])
  
  dnl
@@ -802,7 +827,20 @@ exit
  dnl XA configuration
  dnl
  if test "x$enable_xa" = xyes; then
-@@ -2258,6 +2275,7 @@
+@@ -1547,7 +1558,11 @@
+ 		;;
+ 
+ 	x11)
+-		PKG_CHECK_MODULES([XCB_DRI2], [x11-xcb xcb xcb-dri2 >= $XCBDRI2_REQUIRED xcb-xfixes])
++		PKG_CHECK_MODULES([X11], [x11])
++
++		if test "x$enable_dri" = xyes; then
++			PKG_CHECK_MODULES([XCB_DRI2], [x11-xcb xcb-dri2 >= 1.7 xcb-xfixes])
++		fi
+ 		;;
+ 
+ 	drm)
+@@ -2165,6 +2180,7 @@
  		src/gallium/drivers/vc4/kernel/Makefile
  		src/gallium/state_trackers/clover/Makefile
  		src/gallium/state_trackers/dri/Makefile
@@ -810,15 +848,7 @@ exit
  		src/gallium/state_trackers/glx/xlib/Makefile
  		src/gallium/state_trackers/nine/Makefile
  		src/gallium/state_trackers/omx/Makefile
-@@ -2270,6 +2288,7 @@
- 		src/gallium/targets/d3dadapter9/Makefile
- 		src/gallium/targets/d3dadapter9/d3d.pc
- 		src/gallium/targets/dri/Makefile
-+		src/gallium/targets/egl-static/Makefile
- 		src/gallium/targets/libgl-xlib/Makefile
- 		src/gallium/targets/omx/Makefile
- 		src/gallium/targets/opencl/Makefile
-@@ -2392,7 +2411,11 @@
+@@ -2303,7 +2319,11 @@
          egl_drivers="$egl_drivers builtin:egl_dri2"
      fi
  
@@ -831,8 +861,8 @@ exit
  fi
  
  echo ""
---- mesa-10.5.9.orig/install-gallium-links.mk
-+++ mesa-10.5.9/install-gallium-links.mk
+--- Mesa-10.4.7.orig/install-gallium-links.mk
++++ Mesa-10.4.7/install-gallium-links.mk
 @@ -13,8 +13,8 @@
  	fi;							\
  	$(MKDIR_P) $$link_dir;					\
@@ -844,8 +874,8 @@ exit
  	for f in $$file_list; do 				\
  		if test -h .libs/$$f; then			\
  			cp -d $$f $$link_dir;			\
---- mesa-10.5.9.orig/m4/gettext.m4
-+++ mesa-10.5.9/m4/gettext.m4
+--- Mesa-10.4.7.orig/m4/gettext.m4
++++ Mesa-10.4.7/m4/gettext.m4
 @@ -0,0 +1,401 @@
 +# gettext.m4 serial 66 (gettext-0.18.2)
 +dnl Copyright (C) 1995-2013 Free Software Foundation, Inc.
@@ -1248,8 +1278,8 @@ exit
 +
 +dnl Usage: AM_GNU_GETTEXT_VERSION([gettext-version])
 +AC_DEFUN([AM_GNU_GETTEXT_VERSION], [])
---- mesa-10.5.9.orig/m4/iconv.m4
-+++ mesa-10.5.9/m4/iconv.m4
+--- Mesa-10.4.7.orig/m4/iconv.m4
++++ Mesa-10.4.7/m4/iconv.m4
 @@ -0,0 +1,268 @@
 +# iconv.m4 serial 18 (gettext-0.18.2)
 +dnl Copyright (C) 2000-2002, 2007-2013 Free Software Foundation, Inc.
@@ -1519,8 +1549,8 @@ exit
 +      ])
 +  fi
 +])
---- mesa-10.5.9.orig/m4/lib-ld.m4
-+++ mesa-10.5.9/m4/lib-ld.m4
+--- Mesa-10.4.7.orig/m4/lib-ld.m4
++++ Mesa-10.4.7/m4/lib-ld.m4
 @@ -0,0 +1,119 @@
 +# lib-ld.m4 serial 6
 +dnl Copyright (C) 1996-2003, 2009-2013 Free Software Foundation, Inc.
@@ -1641,8 +1671,8 @@ exit
 +test -z "$LD" && AC_MSG_ERROR([no acceptable ld found in \$PATH])
 +AC_LIB_PROG_LD_GNU
 +])
---- mesa-10.5.9.orig/m4/lib-link.m4
-+++ mesa-10.5.9/m4/lib-link.m4
+--- Mesa-10.4.7.orig/m4/lib-link.m4
++++ Mesa-10.4.7/m4/lib-link.m4
 @@ -0,0 +1,777 @@
 +# lib-link.m4 serial 26 (gettext-0.18.2)
 +dnl Copyright (C) 2001-2013 Free Software Foundation, Inc.
@@ -2421,8 +2451,8 @@ exit
 +  fi
 +  AC_SUBST([$1])
 +])
---- mesa-10.5.9.orig/m4/lib-prefix.m4
-+++ mesa-10.5.9/m4/lib-prefix.m4
+--- Mesa-10.4.7.orig/m4/lib-prefix.m4
++++ Mesa-10.4.7/m4/lib-prefix.m4
 @@ -0,0 +1,224 @@
 +# lib-prefix.m4 serial 7 (gettext-0.18)
 +dnl Copyright (C) 2001-2005, 2008-2013 Free Software Foundation, Inc.
@@ -2648,8 +2678,8 @@ exit
 +  esac
 +  test -n "$acl_libdirstem2" || acl_libdirstem2="$acl_libdirstem"
 +])
---- mesa-10.5.9.orig/m4/nls.m4
-+++ mesa-10.5.9/m4/nls.m4
+--- Mesa-10.4.7.orig/m4/nls.m4
++++ Mesa-10.4.7/m4/nls.m4
 @@ -0,0 +1,32 @@
 +# nls.m4 serial 5 (gettext-0.18)
 +dnl Copyright (C) 1995-2003, 2005-2006, 2008-2013 Free Software Foundation,
@@ -2683,8 +2713,8 @@ exit
 +  AC_MSG_RESULT([$USE_NLS])
 +  AC_SUBST([USE_NLS])
 +])
---- mesa-10.5.9.orig/m4/po.m4
-+++ mesa-10.5.9/m4/po.m4
+--- Mesa-10.4.7.orig/m4/po.m4
++++ Mesa-10.4.7/m4/po.m4
 @@ -0,0 +1,453 @@
 +# po.m4 serial 21 (gettext-0.18.3)
 +dnl Copyright (C) 1995-2013 Free Software Foundation, Inc.
@@ -3139,8 +3169,8 @@ exit
 +  AC_REQUIRE([AM_XGETTEXT_OPTION_INIT])
 +  XGETTEXT_EXTRA_OPTIONS="$XGETTEXT_EXTRA_OPTIONS $1"
 +])
---- mesa-10.5.9.orig/m4/progtest.m4
-+++ mesa-10.5.9/m4/progtest.m4
+--- Mesa-10.4.7.orig/m4/progtest.m4
++++ Mesa-10.4.7/m4/progtest.m4
 @@ -0,0 +1,91 @@
 +# progtest.m4 serial 7 (gettext-0.18.2)
 +dnl Copyright (C) 1996-2003, 2005, 2008-2013 Free Software Foundation, Inc.
@@ -3233,158 +3263,80 @@ exit
 +fi
 +AC_SUBST([$1])dnl
 +])
---- mesa-10.5.9.orig/src/Makefile.am
-+++ mesa-10.5.9/src/Makefile.am
-@@ -34,7 +34,7 @@
- endif
+--- Mesa-10.4.7.orig/src/egl/drivers/dri2/platform_x11.c
++++ Mesa-10.4.7/src/egl/drivers/dri2/platform_x11.c
+@@ -754,6 +754,7 @@
+ dri2_x11_swap_buffers_msc(_EGLDriver *drv, _EGLDisplay *disp, _EGLSurface *draw,
+                           int64_t msc, int64_t divisor, int64_t remainder)
+ {
++#if XCB_DRI2_MINOR_VERSION >= 3
+    struct dri2_egl_display *dri2_dpy = dri2_egl_display(disp);
+    struct dri2_egl_surface *dri2_surf = dri2_egl_surface(draw);
+    uint32_t msc_hi = msc >> 32;
+@@ -801,6 +802,11 @@
+       (*dri2_dpy->flush->invalidate)(dri2_surf->dri_drawable);
  
- if HAVE_EGL_PLATFORM_WAYLAND
--SUBDIRS += egl/wayland/wayland-egl egl/wayland/wayland-drm
-+SUBDIRS += egl/wayland/wayland-drm
- endif
- 
- if HAVE_EGL_DRIVER_DRI2
---- mesa-10.5.9.orig/src/egl/main/eglarray.h
-+++ mesa-10.5.9/src/egl/main/eglarray.h
-@@ -49,7 +49,7 @@
- _eglCreateArray(const char *name, EGLint init_size);
- 
- 
--extern void
-+PUBLIC void
- _eglDestroyArray(_EGLArray *array, void (*free_cb)(void *));
- 
- 
---- mesa-10.5.9.orig/src/egl/main/eglconfig.h
-+++ mesa-10.5.9/src/egl/main/eglconfig.h
-@@ -162,11 +162,11 @@
+    return swap_count;
++#else
++   struct dri2_egl_surface *dri2_surf = dri2_egl_surface(draw);
++
++   return dri2_copy_region(drv, disp, draw, dri2_surf->region) ? 0 : -1;
++#endif
  }
  
+ static EGLBoolean
+@@ -865,16 +871,20 @@
+ dri2_x11_swap_interval(_EGLDriver *drv, _EGLDisplay *disp, _EGLSurface *surf,
+                        EGLint interval)
+ {
++#if XCB_DRI2_MINOR_VERSION >= 3
+    struct dri2_egl_display *dri2_dpy = dri2_egl_display(disp);
+    struct dri2_egl_surface *dri2_surf = dri2_egl_surface(surf);
++#endif
  
--extern void
-+PUBLIC void
- _eglInitConfig(_EGLConfig *config, _EGLDisplay *dpy, EGLint id);
+    if (interval > surf->Config->MaxSwapInterval)
+       interval = surf->Config->MaxSwapInterval;
+    else if (interval < surf->Config->MinSwapInterval)
+       interval = surf->Config->MinSwapInterval;
  
++#if XCB_DRI2_MINOR_VERSION >= 3
+    if (interval != surf->SwapInterval && dri2_dpy->swap_available)
+       xcb_dri2_swap_interval(dri2_dpy->conn, dri2_surf->drawable, interval);
++#endif
  
--extern EGLConfig
-+PUBLIC EGLConfig
- _eglLinkConfig(_EGLConfig *conf);
+    surf->SwapInterval = interval;
  
+@@ -1031,6 +1041,7 @@
+                          EGLuint64KHR *ust, EGLuint64KHR *msc,
+                          EGLuint64KHR *sbc)
+ {
++#if XCB_DRI2_MINOR_VERSION >= 3
+    struct dri2_egl_display *dri2_dpy = dri2_egl_display(display);
+    struct dri2_egl_surface *dri2_surf = dri2_egl_surface(surface);
+    xcb_dri2_get_msc_cookie_t cookie;
+@@ -1050,6 +1061,9 @@
+    free(reply);
  
-@@ -184,25 +184,25 @@
+    return EGL_TRUE;
++#else
++   return EGL_FALSE;
++#endif
  }
  
+ static struct dri2_egl_display_vtbl dri2_x11_swrast_display_vtbl = {
+--- Mesa-10.4.7.orig/src/egl/main/Makefile.am
++++ Mesa-10.4.7/src/egl/main/Makefile.am
+@@ -47,6 +47,7 @@
  
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglValidateConfig(const _EGLConfig *conf, EGLBoolean for_matching);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglMatchConfig(const _EGLConfig *conf, const _EGLConfig *criteria);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglParseConfigAttribList(_EGLConfig *conf, _EGLDisplay *dpy,
-                           const EGLint *attrib_list);
- 
- 
--extern EGLint
-+PUBLIC EGLint
- _eglCompareConfigs(const _EGLConfig *conf1, const _EGLConfig *conf2,
-                    const _EGLConfig *criteria, EGLBoolean compare_id);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglFilterConfigArray(_EGLArray *array, EGLConfig *configs,
-                       EGLint config_size, EGLint *num_configs,
-                       EGLBoolean (*match)(const _EGLConfig *, void *),
---- mesa-10.5.9.orig/src/egl/main/eglcontext.h
-+++ mesa-10.5.9/src/egl/main/eglcontext.h
-@@ -63,7 +63,7 @@
- };
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglInitContext(_EGLContext *ctx, _EGLDisplay *dpy,
-                 _EGLConfig *config, const EGLint *attrib_list);
- 
-@@ -72,7 +72,7 @@
- _eglQueryContext(_EGLDriver *drv, _EGLDisplay *dpy, _EGLContext *ctx, EGLint attribute, EGLint *value);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglBindContext(_EGLContext *ctx, _EGLSurface *draw, _EGLSurface *read,
-                 _EGLContext **old_ctx,
-                 _EGLSurface **old_draw, _EGLSurface **old_read);
---- mesa-10.5.9.orig/src/egl/main/eglcurrent.h
-+++ mesa-10.5.9/src/egl/main/eglcurrent.h
-@@ -102,15 +102,15 @@
- _eglIsCurrentThreadDummy(void);
- 
- 
--extern _EGLContext *
-+PUBLIC _EGLContext *
- _eglGetAPIContext(EGLenum api);
- 
- 
--extern _EGLContext *
-+PUBLIC _EGLContext *
- _eglGetCurrentContext(void);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglError(EGLint errCode, const char *msg);
- 
- 
---- mesa-10.5.9.orig/src/egl/main/egldisplay.h
-+++ mesa-10.5.9/src/egl/main/egldisplay.h
-@@ -177,11 +177,11 @@
- _eglFindDisplay(_EGLPlatformType plat, void *plat_dpy);
- 
- 
--extern void
-+PUBLIC void
- _eglReleaseDisplayResources(_EGLDriver *drv, _EGLDisplay *dpy);
- 
- 
--extern void
-+PUBLIC void
- _eglCleanupDisplay(_EGLDisplay *disp);
- 
- 
-@@ -189,7 +189,7 @@
- _eglCheckDisplayHandle(EGLDisplay dpy);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglCheckResource(void *res, _EGLResourceType type, _EGLDisplay *dpy);
- 
- 
-@@ -221,11 +221,11 @@
- _eglInitResource(_EGLResource *res, EGLint size, _EGLDisplay *dpy);
- 
- 
--extern void
-+PUBLIC void
- _eglGetResource(_EGLResource *res);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglPutResource(_EGLResource *res);
- 
- 
---- mesa-10.5.9.orig/src/egl/main/egldriver.c
-+++ mesa-10.5.9/src/egl/main/egldriver.c
-@@ -524,6 +524,17 @@
+ if HAVE_EGL_PLATFORM_X11
+ AM_CFLAGS += -DHAVE_X11_PLATFORM
++AM_CFLAGS += $(X11_CFLAGS)
+ AM_CFLAGS += $(XCB_DRI2_CFLAGS)
+ libEGL_la_LIBADD += $(XCB_DRI2_LIBS)
+ endif
+--- Mesa-10.4.7.orig/src/egl/main/egldriver.c
++++ Mesa-10.4.7/src/egl/main/egldriver.c
+@@ -518,6 +518,17 @@
  
  
  /**
@@ -3402,7 +3354,7 @@ exit
   * Add built-in drivers to the module array.
   */
  static void
-@@ -555,6 +566,7 @@
+@@ -549,6 +560,7 @@
         * Add other drivers only when EGL_DRIVER is not set.  The order here
         * decides the priorities.
         */
@@ -3410,116 +3362,9 @@ exit
        _eglAddBuiltInDrivers();
     }
  
---- mesa-10.5.9.orig/src/egl/main/egldriver.h
-+++ mesa-10.5.9/src/egl/main/egldriver.h
-@@ -96,7 +96,7 @@
- _eglBuiltInDriverGLX(const char *args);
- 
- 
--extern _EGLDriver *
-+PUBLIC _EGLDriver *
- _eglMain(const char *args);
- 
- 
-@@ -113,7 +113,7 @@
- 
- 
- /* defined in eglfallbacks.c */
--extern void
-+PUBLIC void
- _eglInitDriverFallbacks(_EGLDriver *drv);
- 
- 
---- mesa-10.5.9.orig/src/egl/main/eglimage.h
-+++ mesa-10.5.9/src/egl/main/eglimage.h
-@@ -80,12 +80,12 @@
- };
- 
- 
--extern EGLint
-+PUBLIC EGLint
- _eglParseImageAttribList(_EGLImageAttribs *attrs, _EGLDisplay *dpy,
-                          const EGLint *attrib_list);
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglInitImage(_EGLImage *img, _EGLDisplay *dpy);
- 
- 
---- mesa-10.5.9.orig/src/egl/main/egllog.h
-+++ mesa-10.5.9/src/egl/main/egllog.h
-@@ -51,7 +51,7 @@
- _eglSetLogLevel(EGLint level);
- 
- 
--extern void
-+PUBLIC void
- _eglLog(EGLint level, const char *fmtStr, ...);
- 
- 
---- mesa-10.5.9.orig/src/egl/main/eglscreen.h
-+++ mesa-10.5.9/src/egl/main/eglscreen.h
-@@ -67,11 +67,11 @@
- };
- 
- 
--extern void
-+PUBLIC void
- _eglInitScreen(_EGLScreen *screen, _EGLDisplay *dpy, EGLint num_modes);
- 
- 
--extern EGLScreenMESA
-+PUBLIC EGLScreenMESA
- _eglLinkScreen(_EGLScreen *screen);
- 
- 
---- mesa-10.5.9.orig/src/egl/main/eglsurface.h
-+++ mesa-10.5.9/src/egl/main/eglsurface.h
-@@ -78,7 +78,7 @@
- };
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglInitSurface(_EGLSurface *surf, _EGLDisplay *dpy, EGLint type,
-                 _EGLConfig *config, const EGLint *attrib_list);
- 
---- mesa-10.5.9.orig/src/egl/main/eglsync.h
-+++ mesa-10.5.9/src/egl/main/eglsync.h
-@@ -48,7 +48,7 @@
- };
- 
- 
--extern EGLBoolean
-+PUBLIC EGLBoolean
- _eglInitSync(_EGLSync *sync, _EGLDisplay *dpy, EGLenum type,
-              const EGLint *attrib_list);
- 
---- mesa-10.5.9.orig/src/egl/wayland/wayland-egl/wayland-egl-priv.h
-+++ mesa-10.5.9/src/egl/wayland/wayland-egl/wayland-egl-priv.h
-@@ -15,7 +15,7 @@
- #include <wayland-client.h>
- 
- struct wl_egl_window {
--	struct wl_surface *surface;
-+	const intptr_t version;
- 
- 	int width;
- 	int height;
-@@ -27,6 +27,9 @@
- 
- 	void *private;
- 	void (*resize_callback)(struct wl_egl_window *, void *);
-+	void (*destroy_window_callback)(void *);
-+
-+  struct wl_surface *surface;
- };
- 
- #ifdef  __cplusplus
---- mesa-10.5.9.orig/src/gallium/Makefile.am
-+++ mesa-10.5.9/src/gallium/Makefile.am
-@@ -144,6 +144,10 @@
+--- Mesa-10.4.7.orig/src/gallium/Makefile.am
++++ Mesa-10.4.7/src/gallium/Makefile.am
+@@ -138,6 +138,10 @@
  SUBDIRS += state_trackers/vega
  endif
  
@@ -3530,8 +3375,8 @@ exit
  if HAVE_X11_DRIVER
  SUBDIRS += state_trackers/glx/xlib targets/libgl-xlib
  endif
---- mesa-10.5.9.orig/src/gallium/drivers/softpipe/Automake.inc
-+++ mesa-10.5.9/src/gallium/drivers/softpipe/Automake.inc
+--- Mesa-10.4.7.orig/src/gallium/drivers/softpipe/Automake.inc
++++ Mesa-10.4.7/src/gallium/drivers/softpipe/Automake.inc
 @@ -2,9 +2,14 @@
  
  TARGET_DRIVERS += swrast
@@ -3547,56 +3392,247 @@ exit
  
  if HAVE_DRI2
  TARGET_DRIVERS += kms_swrast
---- mesa-10.5.9.orig/src/gallium/state_trackers/egl/wayland/native_drm.c
-+++ mesa-10.5.9/src/gallium/state_trackers/egl/wayland/native_drm.c
-@@ -22,6 +22,8 @@
-  * DEALINGS IN THE SOFTWARE.
+--- Mesa-10.4.7.orig/src/gallium/state_trackers/egl/x11/glxinit.c
++++ Mesa-10.4.7/src/gallium/state_trackers/egl/x11/glxinit.c
+@@ -7,6 +7,8 @@
+  * refactoring glxext.c.
   */
  
-+#ifdef HAVE_LIBDRM
++#ifdef GLX_DIRECT_RENDERING
 +
- #include "util/u_memory.h"
- #include "util/u_inlines.h"
+ #include <assert.h>
+ #include <X11/Xlib.h>
+ #include <X11/Xproto.h>
+@@ -22,8 +24,6 @@
  
-@@ -283,4 +285,6 @@
-    return &drmdpy->base;
+ #include "glxinit.h"
+ 
+-#ifdef GLX_DIRECT_RENDERING
+-
+ typedef struct GLXGenericGetString
+ {
+    CARD8 reqType;
+--- Mesa-10.4.7.orig/src/gallium/state_trackers/egl/x11/x11_screen.c
++++ Mesa-10.4.7/src/gallium/state_trackers/egl/x11/x11_screen.c
+@@ -26,7 +26,9 @@
+ #include <fcntl.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#ifdef GLX_DIRECT_RENDERING
+ #include <xf86drm.h>
++#endif
+ #include <X11/Xlibint.h>
+ #include <X11/extensions/XShm.h>
+ 
+@@ -34,7 +36,9 @@
+ #include "egllog.h"
+ 
+ #include "x11_screen.h"
++#ifdef GLX_DIRECT_RENDERING
+ #include "dri2.h"
++#endif
+ #include "glxinit.h"
+ 
+ struct x11_screen {
+--- Mesa-10.4.7.orig/src/gallium/state_trackers/egl/x11/x11_screen.h
++++ Mesa-10.4.7/src/gallium/state_trackers/egl/x11/x11_screen.h
+@@ -27,7 +27,9 @@
+ 
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
++#ifdef GLX_DIRECT_RENDERING
+ #include <X11/extensions/dri2tokens.h>
++#endif
+ #include "GL/gl.h" /* for GL types needed by __GLcontextModes */
+ #include "glcore.h"  /* for __GLcontextModes */
+ #include "pipe/p_compiler.h"
+--- Mesa-10.4.7.orig/src/gallium/state_trackers/glx/xlib/glx_api.c
++++ Mesa-10.4.7/src/gallium/state_trackers/glx/xlib/glx_api.c
+@@ -33,9 +33,6 @@
+ #define GLX_GLXEXT_PROTOTYPES
+ #include "GL/glx.h"
+ 
+-#include <X11/Xmd.h>
+-#include <GL/glxproto.h>
+-
+ #include "xm_api.h"
+ 
+ 
+@@ -650,52 +647,6 @@
  }
  
-+#endif
+ 
+-/**
+- * Fake an error.
+- */
+-static int
+-generate_error(Display *dpy,
+-               unsigned char error_code,
+-               XID resourceid,
+-               unsigned char minor_code,
+-               Bool core)
+-{
+-   XErrorHandler handler;
+-   int major_opcode;
+-   int first_event;
+-   int first_error;
+-   XEvent event;
+-
+-   handler = XSetErrorHandler(NULL);
+-   XSetErrorHandler(handler);
+-   if (!handler) {
+-      return 0;
+-   }
+-
+-   if (!XQueryExtension(dpy, GLX_EXTENSION_NAME, &major_opcode, &first_event, &first_error)) {
+-      major_opcode = 0;
+-      first_event = 0;
+-      first_error = 0;
+-   }
+-
+-   if (!core) {
+-      error_code += first_error;
+-   }
+-
+-   memset(&event, 0, sizeof event);
+-
+-   event.xerror.type = X_Error;
+-   event.xerror.display = dpy;
+-   event.xerror.resourceid = resourceid;
+-   event.xerror.serial = NextRequest(dpy) - 1;
+-   event.xerror.error_code = error_code;
+-   event.xerror.request_code = major_opcode;
+-   event.xerror.minor_code = minor_code;
+-
+-   return handler(dpy, &event.xerror);
+-}
+-
+-
+ /**********************************************************************/
+ /***                  Begin Fake GLX API Functions                  ***/
+ /**********************************************************************/
+@@ -2132,7 +2083,6 @@
+    GLuint width, height;
+    XMesaBuffer xmbuf = XMesaFindBuffer(dpy, draw);
+    if (!xmbuf) {
+-      generate_error(dpy, GLXBadDrawable, draw, X_GLXGetDrawableAttributes, False);
+       return;
+    }
+ 
+@@ -2168,7 +2118,6 @@
+ #endif
+ 
+       default:
+-         generate_error(dpy, BadValue, 0, X_GLXCreateContextAtrribsARB, true);
+          return;
+    }
+ }
+@@ -2762,14 +2711,12 @@
+          break;
+       default:
+          /* bad attribute */
+-         generate_error(dpy, BadValue, 0, X_GLXCreateContextAtrribsARB, True);
+          return NULL;
+       }
+    }
+ 
+    /* check contextFlags */
+    if (contextFlags & ~contextFlagsAll) {
+-      generate_error(dpy, BadValue, 0, X_GLXCreateContextAtrribsARB, True);
+       return NULL;
+    }
+ 
+@@ -2777,14 +2724,12 @@
+    if (profileMask != GLX_CONTEXT_CORE_PROFILE_BIT_ARB &&
+        profileMask != GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB &&
+        profileMask != GLX_CONTEXT_ES_PROFILE_BIT_EXT) {
+-      generate_error(dpy, GLXBadProfileARB, 0, X_GLXCreateContextAtrribsARB, False);
+       return NULL;
+    }
+ 
+    /* check renderType */
+    if (renderType != GLX_RGBA_TYPE &&
+        renderType != GLX_COLOR_INDEX_TYPE) {
+-      generate_error(dpy, BadValue, 0, X_GLXCreateContextAtrribsARB, True);
+       return NULL;
+    }
+ 
+@@ -2797,7 +2742,6 @@
+          (majorVersion == 3 && minorVersion > 3) ||
+          (majorVersion == 4 && minorVersion > 5) ||
+          majorVersion > 4))) {
+-      generate_error(dpy, BadMatch, 0, X_GLXCreateContextAtrribsARB, True);
+       return NULL;
+    }
+    if (profileMask == GLX_CONTEXT_ES_PROFILE_BIT_EXT &&
+@@ -2809,18 +2753,15 @@
+        * different error code for invalid ES versions, but this is what NVIDIA
+        * does and piglit expects.
+        */
+-      generate_error(dpy, GLXBadProfileARB, 0, X_GLXCreateContextAtrribsARB, False);
+       return NULL;
+    }
+ 
+    if ((contextFlags & GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB) &&
+        majorVersion < 3) {
+-      generate_error(dpy, BadMatch, 0, X_GLXCreateContextAtrribsARB, True);
+       return NULL;
+    }
+ 
+    if (renderType == GLX_COLOR_INDEX_TYPE && majorVersion >= 3) {
+-      generate_error(dpy, BadMatch, 0, X_GLXCreateContextAtrribsARB, True);
+       return NULL;
+    }
+ 
+@@ -2829,9 +2770,6 @@
+                         direct,
+                         majorVersion, minorVersion,
+                         profileMask, contextFlags);
+-   if (!ctx) {
+-      generate_error(dpy, GLXBadFBConfig, 0, X_GLXCreateContextAtrribsARB, False);
+-   }
+ 
+    return ctx;
+ }
+--- Mesa-10.4.7.orig/src/gallium/targets/egl-static/Makefile.am
++++ Mesa-10.4.7/src/gallium/targets/egl-static/Makefile.am
+@@ -72,10 +72,11 @@
+ 	$(GALLIUM_COMMON_LIB_DEPS)
+ 
+ if HAVE_EGL_PLATFORM_X11
++AM_CPPFLAGS += $(X11_CFLAGS)
+ AM_CPPFLAGS += $(LIBDRM_CFLAGS)
+ egl_gallium_la_LIBADD += \
+ 	$(top_builddir)/src/gallium/winsys/sw/xlib/libws_xlib.la \
+-	-lX11 -lXext -lXfixes $(LIBDRM_LIBS)
++	$(X11_LIBS) -lXext $(LIBDRM_LIBS)
+ endif
+ 
+ if HAVE_EGL_PLATFORM_WAYLAND
+--- Mesa-10.4.7.orig/src/gallium/targets/libgl-xlib/Makefile.am
++++ Mesa-10.4.7/src/gallium/targets/libgl-xlib/Makefile.am
+@@ -20,6 +20,10 @@
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ # DEALINGS IN THE SOFTWARE.
+ 
++if HAVE_SHARED_GLAPI
++SHARED_GLAPI_LIB = $(top_builddir)/src/mapi/shared-glapi/libglapi.la
++endif
 +
- /* vim: set sw=3 ts=8 sts=3 expandtab: */
---- mesa-10.5.9.orig/src/gallium/state_trackers/egl/wayland/native_wayland.c
-+++ mesa-10.5.9/src/gallium/state_trackers/egl/wayland/native_wayland.c
-@@ -433,10 +433,13 @@
-       _eglLog(_EGL_INFO, "use software fallback");
-       display = wayland_create_shm_display((struct wl_display *) dpy,
-                                            wayland_event_handler);
--   } else {
-+   }
-+#ifdef HAVE_LIBDRM
-+   else {
-       display = wayland_create_drm_display((struct wl_display *) dpy,
-                                            wayland_event_handler);
-    }
-+#endif
- 
-    if (!display)
-       return NULL;
---- mesa-10.5.9.orig/src/gbm/backends/dri/gbm_dri.c
-+++ mesa-10.5.9/src/gbm/backends/dri/gbm_dri.c
-@@ -344,9 +344,6 @@
-    }
- 
-    if (dri->driver == NULL) {
--      fprintf(stderr, "gbm: failed to open any driver (search paths %s)\n",
--              search_paths);
--      fprintf(stderr, "gbm: Last dlopen error: %s\n", dlerror());
-       return NULL;
-    }
- 
---- mesa-10.5.9.orig/src/loader/Makefile.am
-+++ mesa-10.5.9/src/loader/Makefile.am
-@@ -58,3 +58,18 @@
+ GL_MAJOR = 1
+ GL_MINOR = 5
+ GL_TINY = $(MESA_MAJOR)$(MESA_MINOR)0$(MESA_TINY)
+@@ -63,6 +67,7 @@
+ 	$(top_builddir)/src/gallium/drivers/rbug/librbug.la \
+ 	$(top_builddir)/src/gallium/drivers/galahad/libgalahad.la \
+ 	$(top_builddir)/src/mapi/glapi/libglapi.la \
++	$(SHARED_GLAPI_LIB) \
+ 	$(top_builddir)/src/mesa/libmesagallium.la \
+ 	$(top_builddir)/src/gallium/auxiliary/libgallium.la \
+ 	$(GL_LIB_DEPS) \
+--- Mesa-10.4.7.orig/src/loader/Makefile.am
++++ Mesa-10.4.7/src/loader/Makefile.am
+@@ -61,3 +61,18 @@
  libloader_la_LIBADD += \
  	$(LIBDRM_LIBS)
  endif
@@ -3615,17 +3651,9 @@ exit
 +libloader_la_CPPFLAGS += \
 +	-D__NOT_HAVE_RADEON_DRM_H
 +endif
---- mesa-10.5.9.orig/src/loader/loader.c
-+++ mesa-10.5.9/src/loader/loader.c
-@@ -209,7 +209,6 @@
-    pci_id = udev_device_get_property_value(parent, "PCI_ID");
-    if (pci_id == NULL ||
-        sscanf(pci_id, "%x:%x", vendor_id, chip_id) != 2) {
--      log_(_LOADER_WARNING, "MESA-LOADER: malformed or no PCI ID\n");
-       *chip_id = -1;
-       goto out;
-    }
-@@ -489,10 +488,14 @@
+--- Mesa-10.4.7.orig/src/loader/loader.c
++++ Mesa-10.4.7/src/loader/loader.c
+@@ -489,10 +489,14 @@
  #endif
  
  #if !defined(__NOT_HAVE_DRM_H)
@@ -3640,7 +3668,7 @@ exit
  
  static int
  drm_get_pci_id_for_fd(int fd, int *vendor_id, int *chip_id)
-@@ -513,6 +516,7 @@
+@@ -513,6 +517,7 @@
     }
  
     if (strcmp(version->name, "i915") == 0) {
@@ -3648,7 +3676,7 @@ exit
        struct drm_i915_getparam gp;
        int ret;
  
-@@ -526,8 +530,10 @@
+@@ -526,8 +531,10 @@
           log_(_LOADER_WARNING, "MESA-LOADER: failed to get param for i915\n");
  	 *chip_id = -1;
        }
@@ -3659,7 +3687,7 @@ exit
        struct drm_radeon_info info;
        int ret;
  
-@@ -541,6 +547,7 @@
+@@ -541,6 +548,7 @@
           log_(_LOADER_WARNING, "MESA-LOADER: failed to get info for radeon\n");
  	 *chip_id = -1;
        }
@@ -3667,8 +3695,8 @@ exit
     }
     else if (strcmp(version->name, "nouveau") == 0) {
        *vendor_id = 0x10de;
---- mesa-10.5.9.orig/src/loader/pci_id_driver_map.c
-+++ mesa-10.5.9/src/loader/pci_id_driver_map.c
+--- Mesa-10.4.7.orig/src/loader/pci_id_driver_map.c
++++ Mesa-10.4.7/src/loader/pci_id_driver_map.c
 @@ -23,7 +23,7 @@
  
  int is_nouveau_vieux(int fd);
@@ -3678,9 +3706,9 @@ exit
  
  #include <xf86drm.h>
  #include <nouveau_drm.h>
---- mesa-10.5.9.orig/src/mesa/drivers/dri/common/xmlpool/Makefile.am
-+++ mesa-10.5.9/src/mesa/drivers/dri/common/xmlpool/Makefile.am
-@@ -69,9 +69,14 @@
+--- Mesa-10.4.7.orig/src/mesa/drivers/dri/common/xmlpool/Makefile.am
++++ Mesa-10.4.7/src/mesa/drivers/dri/common/xmlpool/Makefile.am
+@@ -60,9 +60,14 @@
  	-rm -rf $(LANGS)
  
  # Default target options.h
@@ -3695,3 +3723,24 @@ exit
  
  # Update .mo files from the corresponding .po files.
  %/LC_MESSAGES/options.mo: %.po
+--- Mesa-10.4.7.orig/src/mesa/drivers/x11/Makefile.am
++++ Mesa-10.4.7/src/mesa/drivers/x11/Makefile.am
+@@ -23,6 +23,10 @@
+ # GLX extension.  All rendering is converted to Xlib calls.  No hardware
+ # acceleration.
+ 
++if HAVE_SHARED_GLAPI
++SHARED_GLAPI_LIB = $(top_builddir)/src/mapi/shared-glapi/libglapi.la
++endif
++
+ AM_CPPFLAGS = \
+ 	-I$(top_srcdir)/include \
+ 	-I$(top_srcdir)/src/mapi \
+@@ -60,6 +64,7 @@
+ lib@GL_LIB@_la_LIBADD = \
+ 	$(top_builddir)/src/mesa/libmesa.la \
+ 	$(top_builddir)/src/mapi/glapi/libglapi.la \
++	$(SHARED_GLAPI_LIB) \
+ 	$(GL_LIB_DEPS)
+ 
+ lib@GL_LIB@_la_LDFLAGS = \

@@ -7,36 +7,48 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 # configure (ac-2.67; am-1.11; lt-2.2.6b)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-composite --disable-damage --disable-dpms --disable-dri2 --disable-glx --disable-record --disable-resource --disable-screensaver --disable-shape --disable-static --disable-sync --disable-xevie --disable-xfixes --disable-xfree86-dri --disable-xinerama --disable-xprint --disable-xv --disable-xvmc --prefix=/x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-composite --disable-damage --disable-dpms --disable-glx --disable-record --disable-resource --disable-screensaver --disable-static --disable-sync --disable-xevie --disable-xfree86-dri --disable-xinerama --disable-xprint --disable-xv --disable-xvmc --prefix=/x11
 
 # build
 make
 
 # install
 install -d $DESTDIR/x11/include/xcb
+install -m 644 src/dri2.h $DESTDIR/x11/include/xcb
 install -m 644 src/randr.h $DESTDIR/x11/include/xcb
 install -m 644 src/render.h $DESTDIR/x11/include/xcb
+install -m 644 src/shape.h $DESTDIR/x11/include/xcb
 install -m 644 src/shm.h $DESTDIR/x11/include/xcb
 install -m 644 src/xcb.h $DESTDIR/x11/include/xcb
 install -m 644 src/xcbext.h $DESTDIR/x11/include/xcb
+install -m 644 src/xfixes.h $DESTDIR/x11/include/xcb
 install -m 644 src/xproto.h $DESTDIR/x11/include/xcb
 install -m 644 src/xtest.h $DESTDIR/x11/include/xcb
 install -d $DESTDIR/x11/lib
 install src/.libs/libxcb.so.1.* $DESTDIR/x11/lib/libxcb.so.1
 ln -sf libxcb.so.1 $DESTDIR/x11/lib/libxcb.so
+install src/.libs/libxcb-dri2.so.0.* $DESTDIR/x11/lib/libxcb-dri2.so.0
+ln -sf libxcb-dri2.so.0 $DESTDIR/x11/lib/libxcb-dri2.so
 install src/.libs/libxcb-randr.so.0.* $DESTDIR/x11/lib/libxcb-randr.so.0
 ln -sf libxcb-randr.so.0 $DESTDIR/x11/lib/libxcb-randr.so
 install src/.libs/libxcb-render.so.0.* $DESTDIR/x11/lib/libxcb-render.so.0
 ln -sf libxcb-render.so.0 $DESTDIR/x11/lib/libxcb-render.so
+install src/.libs/libxcb-shape.so.0.* $DESTDIR/x11/lib/libxcb-shape.so.0
+ln -sf libxcb-shape.so.0 $DESTDIR/x11/lib/libxcb-shape.so
 install src/.libs/libxcb-shm.so.0.* $DESTDIR/x11/lib/libxcb-shm.so.0
 ln -sf libxcb-shm.so.0 $DESTDIR/x11/lib/libxcb-shm.so
+install src/.libs/libxcb-xfixes.so.0.* $DESTDIR/x11/lib/libxcb-xfixes.so.0
+ln -sf libxcb-xfixes.so.0 $DESTDIR/x11/lib/libxcb-xfixes.so
 install src/.libs/libxcb-xtest.so.0.* $DESTDIR/x11/lib/libxcb-xtest.so.0
 ln -sf libxcb-xtest.so.0 $DESTDIR/x11/lib/libxcb-xtest.so
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 xcb.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-dri2.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 xcb-randr.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 xcb-render.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-shape.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 xcb-shm.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 xcb-xfixes.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 xcb-xtest.pc $DESTDIR/x11/lib/pkgconfig
 
 # build.pc
@@ -48,29 +60,41 @@ Description: X C-language Binding library
 Requires: $REQUIRES
 
 devel=\\
+/x11/include/xcb/dri2.h \\
 /x11/include/xcb/randr.h \\
 /x11/include/xcb/render.h \\
+/x11/include/xcb/shape.h \\
 /x11/include/xcb/shm.h \\
 /x11/include/xcb/xcb.h \\
 /x11/include/xcb/xcbext.h \\
+/x11/include/xcb/xfixes.h \\
 /x11/include/xcb/xproto.h \\
 /x11/include/xcb/xtest.h \\
 /x11/lib/libxcb.so \\
 /x11/lib/libxcb-randr.so \\
+/x11/lib/libxcb-dri2.so \\
 /x11/lib/libxcb-render.so \\
+/x11/lib/libxcb-shape.so \\
 /x11/lib/libxcb-shm.so \\
+/x11/lib/libxcb-xfixes.so \\
 /x11/lib/libxcb-xtest.so \\
 /x11/lib/pkgconfig/xcb.pc \\
+/x11/lib/pkgconfig/xcb-dri2.pc \\
 /x11/lib/pkgconfig/xcb-randr.pc \\
 /x11/lib/pkgconfig/xcb-render.pc \\
+/x11/lib/pkgconfig/xcb-shape.pc \\
 /x11/lib/pkgconfig/xcb-shm.pc \\
+/x11/lib/pkgconfig/xcb-xfixes.pc \\
 /x11/lib/pkgconfig/xcb-xtest.pc
 
 exec=\\
 /x11/lib/libxcb.so.1 \\
+/x11/lib/libxcb-dri2.so.0 \\
 /x11/lib/libxcb-randr.so.0 \\
 /x11/lib/libxcb-render.so.0 \\
+/x11/lib/libxcb-shape.so.0 \\
 /x11/lib/libxcb-shm.so.0 \\
+/x11/lib/libxcb-xfixes.so.0 \\
 /x11/lib/libxcb-xtest.so.0
 EOF
 
