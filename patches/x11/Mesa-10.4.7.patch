@@ -28,11 +28,11 @@ install lib/libGL.so.1 $DESTDIR/x11/lib/libmesaGL.so.1
 install lib/libglapi.so.0.* $DESTDIR/x11/lib/libglapi.so.0
 install lib/libGLESv1_CM.so.1.* $DESTDIR/x11/lib/libmesaGLESv1_CM.so.1
 install lib/libGLESv2.so.2.* $DESTDIR/x11/lib/libmesaGLESv2.so.2
-install -d $DESTDIR/x11/lib/egl
-install lib/egl/egl_gallium.so $DESTDIR/x11/lib/egl
 test $DRM && install -d $DESTDIR/x11/lib/dri
 test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/x11/lib/dri
 test $DRM && install lib/gallium/swrast_dri.so $DESTDIR/x11/lib/dri
+install -d $DESTDIR/x11/lib/egl
+install lib/egl/egl_gallium.so $DESTDIR/x11/lib/egl
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -3630,6 +3630,54 @@ exit
  	$(top_builddir)/src/mesa/libmesagallium.la \
  	$(top_builddir)/src/gallium/auxiliary/libgallium.la \
  	$(GL_LIB_DEPS) \
+--- Mesa-10.4.7.orig/src/gbm/backends/dri/gbm_dri.c
++++ Mesa-10.4.7/src/gbm/backends/dri/gbm_dri.c
+@@ -336,9 +336,6 @@
+    }
+ 
+    if (dri->driver == NULL) {
+-      fprintf(stderr, "gbm: failed to open any driver (search paths %s)\n",
+-              search_paths);
+-      fprintf(stderr, "gbm: Last dlopen error: %s\n", dlerror());
+       return NULL;
+    }
+ 
+@@ -404,8 +401,7 @@
+ }
+ 
+ static int
+-dri_screen_create_dri2(struct gbm_dri_device *dri,
+-                       const char *driver_name)
++dri_screen_create_dri2(struct gbm_dri_device *dri, char *driver_name)
+ {
+    const __DRIextension **extensions;
+    int ret = 0;
+@@ -416,7 +412,6 @@
+ 
+    ret = dri_load_driver(dri);
+    if (ret) {
+-      fprintf(stderr, "failed to load driver: %s\n", dri->base.driver_name);
+       return ret;
+    };
+ 
+@@ -495,7 +490,7 @@
+ static int
+ dri_screen_create(struct gbm_dri_device *dri)
+ {
+-   const char *driver_name;
++   char *driver_name;
+ 
+    driver_name = loader_get_driver_for_fd(dri->base.base.fd, 0);
+    if (!driver_name)
+@@ -507,7 +502,7 @@
+ static int
+ dri_screen_create_sw(struct gbm_dri_device *dri)
+ {
+-   const char *driver_name;
++   char *driver_name;
+    int ret;
+ 
+    driver_name = strdup("kms_swrast");
 --- Mesa-10.4.7.orig/src/loader/Makefile.am
 +++ Mesa-10.4.7/src/loader/Makefile.am
 @@ -61,3 +61,18 @@
@@ -3653,7 +3701,15 @@ exit
 +endif
 --- Mesa-10.4.7.orig/src/loader/loader.c
 +++ Mesa-10.4.7/src/loader/loader.c
-@@ -489,10 +489,14 @@
+@@ -209,7 +209,6 @@
+    pci_id = udev_device_get_property_value(parent, "PCI_ID");
+    if (pci_id == NULL ||
+        sscanf(pci_id, "%x:%x", vendor_id, chip_id) != 2) {
+-      log_(_LOADER_WARNING, "MESA-LOADER: malformed or no PCI ID\n");
+       *chip_id = -1;
+       goto out;
+    }
+@@ -489,10 +488,14 @@
  #endif
  
  #if !defined(__NOT_HAVE_DRM_H)
@@ -3668,7 +3724,7 @@ exit
  
  static int
  drm_get_pci_id_for_fd(int fd, int *vendor_id, int *chip_id)
-@@ -513,6 +517,7 @@
+@@ -513,6 +516,7 @@
     }
  
     if (strcmp(version->name, "i915") == 0) {
@@ -3676,7 +3732,7 @@ exit
        struct drm_i915_getparam gp;
        int ret;
  
-@@ -526,8 +531,10 @@
+@@ -526,8 +530,10 @@
           log_(_LOADER_WARNING, "MESA-LOADER: failed to get param for i915\n");
  	 *chip_id = -1;
        }
@@ -3687,7 +3743,7 @@ exit
        struct drm_radeon_info info;
        int ret;
  
-@@ -541,6 +548,7 @@
+@@ -541,6 +547,7 @@
           log_(_LOADER_WARNING, "MESA-LOADER: failed to get info for radeon\n");
  	 *chip_id = -1;
        }

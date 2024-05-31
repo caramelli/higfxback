@@ -27,10 +27,10 @@ test $DRM && install lib/libgbm.so.1.* $DESTDIR/wl/lib/libmesagbm.so.1
 install lib/libglapi.so.0.* $DESTDIR/wl/lib/libglapi.so.0
 install lib/libGLESv1_CM.so.1.* $DESTDIR/wl/lib/libmesaGLESv1_CM.so.1
 install lib/libGLESv2.so.2.* $DESTDIR/wl/lib/libmesaGLESv2.so.2
-install -d $DESTDIR/wl/lib/egl
-install lib/egl/egl_gallium.so $DESTDIR/wl/lib/egl
 test $DRM && install -d $DESTDIR/wl/lib/dri
 test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/wl/lib/dri
+install -d $DESTDIR/wl/lib/egl
+install lib/egl/egl_gallium.so $DESTDIR/wl/lib/egl
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -3593,6 +3593,14 @@ exit
 -      fprintf(stderr, "gbm: Last dlopen error: %s\n", dlerror());
        return NULL;
     }
+ 
+@@ -423,7 +420,6 @@
+ 
+    ret = dri_load_driver(dri);
+    if (ret) {
+-      fprintf(stderr, "failed to load driver: %s\n", dri->base.driver_name);
+       return ret;
+    };
  
 --- mesa-10.5.9.orig/src/loader/Makefile.am
 +++ mesa-10.5.9/src/loader/Makefile.am

@@ -1,13 +1,21 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libdrm-build libxml2-build opengl-registry-build"
+REQUIRES="autotools-wrappers-lt-build bison-build directfb2-build gcc-g++-build libxml2-build opengl-registry-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libdrm-build; then
+  DRM=1
+  DRI="--disable-glx --disable-nls --with-egl-platforms=directfb,drm --without-dri-drivers"
+  REQUIRES="$REQUIRES libdrm-build"
+else
+  DRI="--disable-dri --with-egl-platforms=directfb"
+fi
+
 # configure (ac-2.69; am-1.14; lt-2.4.2)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gallium-llvm --disable-glx --disable-nls --enable-gles1 --enable-gles2 --with-egl-platforms=drm --with-gallium-drivers=swrast --without-dri-drivers --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gles1 --enable-gles2 --with-gallium-drivers=swrast --prefix=/dfb
 
 # build
 make
@@ -15,12 +23,14 @@ make
 # install
 install -d $DESTDIR/dfb/lib
 install lib/libEGL.so.1 $DESTDIR/dfb/lib/libmesaEGL.so.1
-install lib/libgbm.so.1.* $DESTDIR/dfb/lib/libmesagbm.so.1
+test $DRM && install lib/libgbm.so.1.* $DESTDIR/dfb/lib/libmesagbm.so.1
 install lib/libglapi.so.0.* $DESTDIR/dfb/lib/libglapi.so.0
 install lib/libGLESv1_CM.so.1.* $DESTDIR/dfb/lib/libmesaGLESv1_CM.so.1
 install lib/libGLESv2.so.2.* $DESTDIR/dfb/lib/libmesaGLESv2.so.2
-install -d $DESTDIR/dfb/lib/dri
-install lib/gallium/kms_swrast_dri.so $DESTDIR/dfb/lib/dri
+test $DRM && install -d $DESTDIR/dfb/lib/dri
+test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/dfb/lib/dri
+install -d $DESTDIR/dfb/lib/egl
+install lib/egl/egl_gallium.so $DESTDIR/dfb/lib/egl
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -33,12 +43,15 @@ Requires: $REQUIRES
 exec=\\
 /dfb/lib/libglapi.so.0 \\
 /dfb/lib/libmesaEGL.so.1 \\
-/dfb/lib/libmesagbm.so.1 \\
+EOF
+test $DRM && echo /dfb/lib/libmesagbm.so.1 \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc << EOF
 /dfb/lib/libmesaGL.so.1 \\
 /dfb/lib/libmesaGLESv1_CM.so.1 \\
 /dfb/lib/libmesaGLESv2.so.2 \\
-/dfb/lib/dri/kms_swrast_dri.so
 EOF
+test $DRM && echo /dfb/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
+echo /dfb/lib/egl/egl_gallium.so >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
 
 exit
 --- Mesa-10.3.7.orig/bin/config.rpath
@@ -746,6 +759,46 @@ exit
  dnl We need a POSIX shell for parts of the build. Assume we have one
  dnl in most cases.
  case "$host_os" in
+@@ -1569,6 +1572,10 @@
+ 			AC_MSG_ERROR([EGL platform drm requires libdrm >= $LIBDRM_REQUIRED])
+ 		;;
+ 
++	directfb)
++		PKG_CHECK_MODULES([DIRECTFB], [directfb])
++		;;
++
+ 	android|fbdev|gdi|null)
+ 		;;
+ 
+@@ -1599,6 +1606,7 @@
+ AM_CONDITIONAL(HAVE_EGL_PLATFORM_X11, echo "$egl_platforms" | grep -q 'x11')
+ AM_CONDITIONAL(HAVE_EGL_PLATFORM_WAYLAND, echo "$egl_platforms" | grep -q 'wayland')
+ AM_CONDITIONAL(HAVE_EGL_PLATFORM_DRM, echo "$egl_platforms" | grep -q 'drm')
++AM_CONDITIONAL(HAVE_EGL_PLATFORM_DIRECTFB, echo "$egl_platforms" | grep -q 'directfb')
+ AM_CONDITIONAL(HAVE_EGL_PLATFORM_FBDEV, echo "$egl_platforms" | grep -q 'fbdev')
+ AM_CONDITIONAL(HAVE_EGL_PLATFORM_NULL, echo "$egl_platforms" | grep -q 'null')
+ 
+@@ -2260,6 +2268,7 @@
+ 		src/gallium/winsys/nouveau/drm/Makefile
+ 		src/gallium/winsys/radeon/drm/Makefile
+ 		src/gallium/winsys/svga/drm/Makefile
++		src/gallium/winsys/sw/directfb/Makefile
+ 		src/gallium/winsys/sw/dri/Makefile
+ 		src/gallium/winsys/sw/fbdev/Makefile
+ 		src/gallium/winsys/sw/kms-dri/Makefile
+--- Mesa-10.3.7.orig/install-gallium-links.mk
++++ Mesa-10.3.7/install-gallium-links.mk
+@@ -13,8 +13,8 @@
+ 	fi;							\
+ 	$(MKDIR_P) $$link_dir;					\
+ 	file_list=$(dri_LTLIBRARIES:%.la=.libs/%.so);		\
+-	file_list+=$(egl_LTLIBRARIES:%.la=.libs/%.$(LIB_EXT)*);	\
+-	file_list+=$(lib_LTLIBRARIES:%.la=.libs/%.$(LIB_EXT)*);	\
++	file_list=$$file_list$(egl_LTLIBRARIES:%.la=.libs/%.$(LIB_EXT)*);	\
++	file_list=$$file_list$(lib_LTLIBRARIES:%.la=.libs/%.$(LIB_EXT)*);	\
+ 	for f in $$file_list; do 				\
+ 		if test -h .libs/$$f; then			\
+ 			cp -d $$f $$link_dir;			\
 --- Mesa-10.3.7.orig/m4/gettext.m4
 +++ Mesa-10.3.7/m4/gettext.m4
 @@ -0,0 +1,401 @@
@@ -3135,6 +3188,546 @@ exit
 +fi
 +AC_SUBST([$1])dnl
 +])
+--- Mesa-10.3.7.orig/src/egl/main/Makefile.am
++++ Mesa-10.3.7/src/egl/main/Makefile.am
+@@ -64,6 +64,10 @@
+ libEGL_la_LIBADD += ../../gbm/libgbm.la
+ endif
+ 
++if HAVE_EGL_PLATFORM_DIRECTFB
++AM_CFLAGS += -DHAVE_DIRECTFB_PLATFORM
++endif
++
+ if HAVE_EGL_PLATFORM_FBDEV
+ AM_CFLAGS += -DHAVE_FBDEV_PLATFORM
+ endif
+--- Mesa-10.3.7.orig/src/egl/main/egldisplay.c
++++ Mesa-10.3.7/src/egl/main/egldisplay.c
+@@ -73,6 +73,7 @@
+    { _EGL_PLATFORM_X11, "x11" },
+    { _EGL_PLATFORM_WAYLAND, "wayland" },
+    { _EGL_PLATFORM_DRM, "drm" },
++   { _EGL_PLATFORM_DIRECTFB, "directfb" },
+    { _EGL_PLATFORM_FBDEV, "fbdev" },
+    { _EGL_PLATFORM_NULL, "null" },
+    { _EGL_PLATFORM_ANDROID, "android" }
+--- Mesa-10.3.7.orig/src/egl/main/egldisplay.h
++++ Mesa-10.3.7/src/egl/main/egldisplay.h
+@@ -43,6 +43,7 @@
+    _EGL_PLATFORM_X11,
+    _EGL_PLATFORM_WAYLAND,
+    _EGL_PLATFORM_DRM,
++   _EGL_PLATFORM_DIRECTFB,
+    _EGL_PLATFORM_FBDEV,
+    _EGL_PLATFORM_NULL,
+    _EGL_PLATFORM_ANDROID,
+--- Mesa-10.3.7.orig/src/gallium/Makefile.am
++++ Mesa-10.3.7/src/gallium/Makefile.am
+@@ -97,6 +97,10 @@
+ SUBDIRS += winsys/sw/kms-dri
+ endif
+ 
++if HAVE_EGL_PLATFORM_DIRECTFB
++SUBDIRS += winsys/sw/directfb
++endif
++
+ if HAVE_EGL_PLATFORM_FBDEV
+ SUBDIRS += winsys/sw/fbdev
+ endif
+--- Mesa-10.3.7.orig/src/gallium/state_trackers/egl/Makefile.am
++++ Mesa-10.3.7/src/gallium/state_trackers/egl/Makefile.am
+@@ -76,6 +76,15 @@
+ 	-DHAVE_DRM_BACKEND
+ endif
+ 
++if HAVE_EGL_PLATFORM_DIRECTFB
++libegl_la_SOURCES += $(directfb_FILES)
++AM_CFLAGS += \
++	$(DIRECTFB_CFLAGS)
++AM_CPPFLAGS += \
++	-I$(top_srcdir)/src/gallium/winsys/sw \
++	-DHAVE_DIRECTFB_BACKEND
++endif
++
+ if HAVE_EGL_PLATFORM_FBDEV
+ libegl_la_SOURCES += $(fbdev_FILES)
+ AM_CPPFLAGS += \
+--- Mesa-10.3.7.orig/src/gallium/state_trackers/egl/Makefile.sources
++++ Mesa-10.3.7/src/gallium/state_trackers/egl/Makefile.sources
+@@ -14,6 +14,9 @@
+ 	drm/modeset.c \
+ 	drm/native_drm.c
+ 
++directfb_FILES := \
++	directfb/native_directfb.c
++
+ fbdev_FILES := \
+ 	fbdev/native_fbdev.c
+ 
+--- Mesa-10.3.7.orig/src/gallium/state_trackers/egl/common/egl_g3d.c
++++ Mesa-10.3.7/src/gallium/state_trackers/egl/common/egl_g3d.c
+@@ -125,6 +125,12 @@
+          nplat = native_get_drm_platform(&egl_g3d_native_event_handler);
+ #endif
+          break;
++      case _EGL_PLATFORM_DIRECTFB:
++         plat_name = "DIRECTFB";
++#ifdef HAVE_DIRECTFB_BACKEND
++         nplat = native_get_directfb_platform(&egl_g3d_native_event_handler);
++#endif
++         break;
+       case _EGL_PLATFORM_FBDEV:
+          plat_name = "FBDEV";
+ #ifdef HAVE_FBDEV_BACKEND
+--- Mesa-10.3.7.orig/src/gallium/state_trackers/egl/common/native.h
++++ Mesa-10.3.7/src/gallium/state_trackers/egl/common/native.h
+@@ -327,6 +327,9 @@
+ native_get_drm_platform(const struct native_event_handler *event_handler);
+ 
+ const struct native_platform *
++native_get_directfb_platform(const struct native_event_handler *event_handler);
++
++const struct native_platform *
+ native_get_fbdev_platform(const struct native_event_handler *event_handler);
+ 
+ const struct native_platform *
+--- Mesa-10.3.7.orig/src/gallium/state_trackers/egl/directfb/native_directfb.c
++++ Mesa-10.3.7/src/gallium/state_trackers/egl/directfb/native_directfb.c
+@@ -0,0 +1,434 @@
++/*
++ * Mesa 3-D graphics library
++ *
++ * Copyright (C) 2013 The DirectFB Open Source Project
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included
++ * in all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#include <directfb.h>
++
++#include "util/u_memory.h"
++
++#include "common/native_helper.h"
++#include "directfb/directfb_sw_winsys.h"
++
++struct directfb_display {
++   struct native_display base;
++   IDirectFB *dfb;
++   boolean own_dpy;
++   const struct native_event_handler *event_handler;
++   struct native_config config;
++};
++
++struct directfb_surface {
++   struct native_surface base;
++   struct directfb_display *dfbdpy;
++   IDirectFBSurface *surface;
++   unsigned int server_stamp;
++   unsigned int client_stamp;
++   struct resource_surface *rsurf;
++};
++
++static INLINE struct directfb_display *
++directfb_display(const struct native_display *ndpy)
++{
++   return (struct directfb_display *) ndpy;
++}
++
++static INLINE struct directfb_surface *
++directfb_surface(const struct native_surface *nsurf)
++{
++   return (struct directfb_surface *) nsurf;
++}
++
++static void
++directfb_surface_update_geometry(struct native_surface *nsurf)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++   int w, h;
++
++   dfbsurf->surface->GetSize(dfbsurf->surface, &w, &h);
++   if (resource_surface_set_size(dfbsurf->rsurf, w, h))
++      dfbsurf->server_stamp++;
++}
++
++static boolean
++directfb_surface_update_buffers(struct native_surface *nsurf,
++                                uint buffer_mask)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++
++   if (dfbsurf->client_stamp != dfbsurf->server_stamp) {
++      directfb_surface_update_geometry(&dfbsurf->base);
++      dfbsurf->client_stamp = dfbsurf->server_stamp;
++   }
++
++   return resource_surface_add_resources(dfbsurf->rsurf, buffer_mask);
++}
++
++static void
++directfb_surface_invalidate(struct native_surface *nsurf)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++   struct directfb_display *dfbdpy = dfbsurf->dfbdpy;
++
++   dfbsurf->server_stamp++;
++   dfbdpy->event_handler->invalid_surface(&dfbdpy->base,
++                                          &dfbsurf->base,
++                                          dfbsurf->server_stamp);
++}
++
++static boolean
++directfb_surface_flush_frontbuffer(struct native_surface *nsurf)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++   boolean ret;
++
++   ret = resource_surface_present(dfbsurf->rsurf,
++                                  NATIVE_ATTACHMENT_FRONT_LEFT,
++                                  dfbsurf->surface);
++
++   /* force buffers to be updated in next validation call */
++   directfb_surface_invalidate(&dfbsurf->base);
++
++   return ret;
++}
++
++static boolean
++directfb_surface_swap_buffers(struct native_surface *nsurf)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++   boolean ret;
++
++   ret = resource_surface_present(dfbsurf->rsurf,
++                                  NATIVE_ATTACHMENT_BACK_LEFT,
++                                  dfbsurf->surface);
++
++   resource_surface_swap_buffers(dfbsurf->rsurf,
++                                 NATIVE_ATTACHMENT_FRONT_LEFT,
++                                 NATIVE_ATTACHMENT_BACK_LEFT,
++                                 TRUE);
++
++   /* the front/back buffers have been swapped */
++   directfb_surface_invalidate(&dfbsurf->base);
++
++   return ret;
++}
++
++static boolean
++directfb_surface_validate(struct native_surface *nsurf,
++                          uint attachment_mask,
++                          unsigned int *seq_num,
++                          struct pipe_resource **textures,
++                          int *width,
++                          int *height)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++
++   if (!directfb_surface_update_buffers(&dfbsurf->base, attachment_mask))
++      return FALSE;
++
++   if (seq_num)
++      *seq_num = dfbsurf->client_stamp;
++
++   if (textures)
++      resource_surface_get_resources(dfbsurf->rsurf, textures, attachment_mask);
++
++   resource_surface_get_size(dfbsurf->rsurf, (uint *) width, (uint *) height);
++
++   return TRUE;
++}
++
++static boolean
++directfb_surface_present(struct native_surface *nsurf,
++                         const struct native_present_control *ctrl)
++{
++   boolean ret;
++
++   if (ctrl->preserve || ctrl->swap_interval)
++      return FALSE;
++
++   switch (ctrl->natt) {
++   case NATIVE_ATTACHMENT_FRONT_LEFT:
++      ret = directfb_surface_flush_frontbuffer(nsurf);
++      break;
++   case NATIVE_ATTACHMENT_BACK_LEFT:
++      ret = directfb_surface_swap_buffers(nsurf);
++      break;
++   default:
++      ret = FALSE;
++      break;
++   }
++
++   return ret;
++}
++
++static void
++directfb_surface_wait(struct native_surface *nsurf)
++{
++   /* no-op */
++}
++
++static void
++directfb_surface_destroy(struct native_surface *nsurf)
++{
++   struct directfb_surface *dfbsurf = directfb_surface(nsurf);
++
++   dfbsurf->surface->Release(dfbsurf->surface);
++
++   resource_surface_destroy(dfbsurf->rsurf);
++   FREE(dfbsurf);
++}
++
++static struct native_surface *
++directfb_display_create_window_surface(struct native_display *ndpy,
++                                       EGLNativeWindowType win,
++                                       const struct native_config *nconf)
++{
++   struct directfb_display *dfbdpy = directfb_display(ndpy);
++   struct directfb_surface *dfbsurf;
++   DFBResult ret;
++   DFBSurfacePixelFormat pixelformat;
++
++   IDirectFBSurface *surface = (IDirectFBSurface *) win;
++   if (!surface)
++      return NULL;
++
++   ret = surface->GetPixelFormat(surface, &pixelformat);
++   if (ret)
++      return NULL;
++
++   switch (pixelformat) {
++   case DSPF_RGB16:
++   case DSPF_RGB32:
++   case DSPF_ARGB:
++      break;
++   default:
++      return NULL;
++   }
++
++   dfbsurf = CALLOC_STRUCT(directfb_surface);
++   if (!dfbsurf)
++      return NULL;
++
++   ret = surface->GetSubSurface(surface, NULL, &dfbsurf->surface);
++   if (ret) {
++      FREE(dfbsurf);
++      return NULL;
++   }
++
++   dfbsurf->dfbdpy = dfbdpy;
++   dfbsurf->rsurf = resource_surface_create(dfbdpy->base.screen,
++                                            nconf->color_format,
++                                            PIPE_BIND_RENDER_TARGET |
++                                            PIPE_BIND_DISPLAY_TARGET);
++   if (!dfbsurf->rsurf) {
++      FREE(dfbsurf);
++      return NULL;
++   }
++
++   directfb_surface_update_geometry(&dfbsurf->base);
++
++   dfbsurf->base.destroy = directfb_surface_destroy;
++   dfbsurf->base.present = directfb_surface_present;
++   dfbsurf->base.validate = directfb_surface_validate;
++   dfbsurf->base.wait = directfb_surface_wait;
++
++   return &dfbsurf->base;
++}
++
++static const struct native_config **
++directfb_display_get_configs(struct native_display *ndpy, int *num_configs)
++{
++   struct directfb_display *dfbdpy = directfb_display(ndpy);
++   const struct native_config **configs;
++
++   configs = MALLOC(sizeof(*configs));
++   if (configs) {
++      configs[0] = &dfbdpy->config;
++      if (num_configs)
++         *num_configs = 1;
++   }
++
++   return configs;
++}
++
++static int
++directfb_display_get_param(struct native_display *ndpy,
++                           enum native_param_type param)
++{
++   int val;
++
++   switch (param) {
++   case NATIVE_PARAM_PRESERVE_BUFFER:
++      val = 1;
++      break;
++   case NATIVE_PARAM_USE_NATIVE_BUFFER:
++   case NATIVE_PARAM_MAX_SWAP_INTERVAL:
++   default:
++      val = 0;
++      break;
++   }
++
++   return val;
++}
++
++static void
++directfb_display_destroy(struct native_display *ndpy)
++{
++   struct directfb_display *dfbdpy = directfb_display(ndpy);
++
++   if (dfbdpy->own_dpy)
++     dfbdpy->dfb->Release(dfbdpy->dfb);
++
++   ndpy_uninit(&dfbdpy->base);
++   FREE(dfbdpy);
++}
++
++static boolean
++directfb_display_init_screen(struct native_display *ndpy)
++{
++   struct directfb_display *dfbdpy = directfb_display(ndpy);
++   struct sw_winsys *ws;
++
++   ws = directfb_create_sw_winsys(dfbdpy->dfb);
++   if (!ws)
++      return FALSE;
++
++   dfbdpy->base.screen = dfbdpy->event_handler->new_sw_screen(&dfbdpy->base,
++                                                              ws);
++   if (!dfbdpy->base.screen) {
++      if (ws->destroy)
++         ws->destroy(ws);
++      return FALSE;
++   }
++
++   return TRUE;
++}
++
++static boolean
++directfb_display_init_config(struct native_display *ndpy)
++{
++   struct directfb_display *dfbdpy = directfb_display(ndpy);
++   struct native_config *nconf = &dfbdpy->config;
++   DFBResult ret;
++   IDirectFBDisplayLayer *layer;
++   DFBDisplayLayerConfig layer_config;
++   enum pipe_format format;
++
++   ret = dfbdpy->dfb->GetDisplayLayer(dfbdpy->dfb, DLID_PRIMARY, &layer);
++   if (ret)
++      return FALSE;
++
++   ret = layer->GetConfiguration(layer, &layer_config);
++   if (ret) {
++      layer->Release(layer);
++      return FALSE;
++   }
++
++   switch (layer_config.pixelformat) {
++   case DSPF_RGB16:
++      format = PIPE_FORMAT_B5G6R5_UNORM;
++      break;
++   case DSPF_RGB32:
++      format = PIPE_FORMAT_B8G8R8X8_UNORM;
++      break;
++   case DSPF_ARGB:
++      format = PIPE_FORMAT_B8G8R8A8_UNORM;
++      break;
++   default:
++      return FALSE;
++   }
++
++   layer->Release(layer);
++
++   nconf->color_format = format;
++   nconf->buffer_mask = (1 << NATIVE_ATTACHMENT_BACK_LEFT) |
++                        (1 << NATIVE_ATTACHMENT_FRONT_LEFT);
++   nconf->window_bit = TRUE;
++   nconf->color_format = format;
++
++   return TRUE;
++}
++
++static struct native_display *
++directfb_display_create(void *dpy,
++                        const struct native_event_handler *event_handler)
++{
++   struct directfb_display *dfbdpy;
++   IDirectFB *dfb;
++
++   dfbdpy = CALLOC_STRUCT(directfb_display);
++   if (!dfbdpy)
++      return NULL;
++
++   if (dpy == NULL) {
++      if (DirectFBInit(NULL, NULL))
++         goto fail;
++
++      if (DirectFBCreate(&dfb))
++         goto fail;
++
++       dfbdpy->own_dpy = TRUE;
++   }
++   else
++      dfb = dpy;
++
++   dfbdpy->dfb = dfb;
++   dfbdpy->event_handler = event_handler;
++
++   if (!directfb_display_init_config(&dfbdpy->base)) {
++      if (dfbdpy->own_dpy)
++        dfbdpy->dfb->Release(dfbdpy->dfb);
++      goto fail;
++   }
++
++   dfbdpy->base.init_screen = directfb_display_init_screen;
++   dfbdpy->base.destroy = directfb_display_destroy;
++   dfbdpy->base.get_param = directfb_display_get_param;
++   dfbdpy->base.get_configs = directfb_display_get_configs;
++   dfbdpy->base.create_window_surface = directfb_display_create_window_surface;
++
++   return &dfbdpy->base;
++
++fail:
++   FREE(dfbdpy);
++   return NULL;
++}
++
++static const struct native_event_handler *directfb_event_handler;
++
++static struct native_display *
++native_create_display(void *dpy, boolean use_sw)
++{
++   return directfb_display_create(dpy, directfb_event_handler);
++}
++
++static const struct native_platform directfb_platform = {
++   "DirectFB",
++   native_create_display
++};
++
++const struct native_platform *
++native_get_directfb_platform(const struct native_event_handler *event_handler)
++{
++   directfb_event_handler = event_handler;
++   return &directfb_platform;
++}
 --- Mesa-10.3.7.orig/src/gallium/targets/dri/Makefile.am
 +++ Mesa-10.3.7/src/gallium/targets/dri/Makefile.am
 @@ -48,6 +48,7 @@
@@ -3145,6 +3738,298 @@ exit
  	$(SELINUX_LIBS) \
  	$(EXPAT_LIBS) \
  	$(LIBDRM_LIBS) \
+--- Mesa-10.3.7.orig/src/gallium/targets/egl-static/Makefile.am
++++ Mesa-10.3.7/src/gallium/targets/egl-static/Makefile.am
+@@ -94,6 +94,12 @@
+ 	$(LIBDRM_LIBS)
+ endif
+ 
++if HAVE_EGL_PLATFORM_DIRECTFB
++egl_gallium_la_LIBADD += \
++	$(top_builddir)/src/gallium/winsys/sw/directfb/libws_directfb.la \
++	$(DIRECTFB_LIBS)
++endif
++
+ if HAVE_EGL_PLATFORM_FBDEV
+ egl_gallium_la_LIBADD += $(top_builddir)/src/gallium/winsys/sw/fbdev/libfbdev.la
+ endif
+--- Mesa-10.3.7.orig/src/gallium/winsys/sw/directfb/Makefile.am
++++ Mesa-10.3.7/src/gallium/winsys/sw/directfb/Makefile.am
+@@ -0,0 +1,31 @@
++# Copyright © 2013 The DirectFB Open Source Project
++#
++# Permission is hereby granted, free of charge, to any person obtaining a
++# copy of this software and associated documentation files (the "Software"),
++# to deal in the Software without restriction, including without limitation
++# the rights to use, copy, modify, merge, publish, distribute, sublicense,
++# and/or sell copies of the Software, and to permit persons to whom the
++# Software is furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice (including the next
++# paragraph) shall be included in all copies or substantial portions of the
++# Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++# NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
++# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++# DEALINGS IN THE SOFTWARE.
++
++include $(top_srcdir)/src/gallium/Automake.inc
++
++AM_CFLAGS = \
++	$(GALLIUM_WINSYS_CFLAGS) \
++	$(DIRECTFB_CFLAGS)
++
++noinst_LTLIBRARIES = libws_directfb.la
++
++libws_directfb_la_SOURCES = directfb_sw_winsys.c
+--- Mesa-10.3.7.orig/src/gallium/winsys/sw/directfb/directfb_sw_winsys.c
++++ Mesa-10.3.7/src/gallium/winsys/sw/directfb/directfb_sw_winsys.c
+@@ -0,0 +1,204 @@
++/*
++ * Mesa 3-D graphics library
++ *
++ * Copyright (C) 2013 The DirectFB Open Source Project
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included
++ * in all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#include "util/u_memory.h"
++#include "state_tracker/sw_winsys.h"
++
++#include "directfb_sw_winsys.h"
++
++struct directfb_sw_displaytarget
++{
++   enum pipe_format format;
++
++   IDirectFBSurface *surface;
++
++   void *map;
++};
++
++struct directfb_sw_winsys
++{
++   struct sw_winsys base;
++
++   IDirectFB *dfb;
++};
++
++static INLINE struct directfb_sw_displaytarget *
++directfb_sw_displaytarget(struct sw_displaytarget *dt)
++{
++   return (struct directfb_sw_displaytarget *) dt;
++}
++
++static INLINE struct directfb_sw_winsys *
++directfb_sw_winsys(struct sw_winsys *ws)
++{
++   return (struct directfb_sw_winsys *) ws;
++}
++
++static void
++directfb_displaytarget_display(struct sw_winsys *ws,
++                               struct sw_displaytarget *dt,
++                               void *context_private,
++                               struct pipe_box *box)
++{
++   struct directfb_sw_displaytarget *dfbdt = directfb_sw_displaytarget(dt);
++   IDirectFBSurface *surface = context_private;
++
++   surface->StretchBlit(surface, dfbdt->surface, NULL, NULL);
++
++   surface->Flip(surface, NULL, DSFLIP_NONE);
++}
++
++static void
++directfb_displaytarget_unmap(struct sw_winsys *ws,
++                             struct sw_displaytarget *dt)
++{
++   struct directfb_sw_displaytarget *dfbdt = directfb_sw_displaytarget(dt);
++
++   dfbdt->surface->Unlock(dfbdt->surface);
++}
++
++static void *
++directfb_displaytarget_map(struct sw_winsys *ws,
++                           struct sw_displaytarget *dt,
++                           unsigned flags)
++{
++   struct directfb_sw_displaytarget *dfbdt = directfb_sw_displaytarget(dt);
++   int pitch;
++
++   dfbdt->surface->Lock(dfbdt->surface, DSLF_READ|DSLF_WRITE, &dfbdt->map, &pitch);
++
++   return dfbdt->map;
++}
++
++static void
++directfb_displaytarget_destroy(struct sw_winsys *ws,
++                               struct sw_displaytarget *dt)
++{
++   struct directfb_sw_displaytarget *dfbdt = directfb_sw_displaytarget(dt);
++
++   dfbdt->surface->Release(dfbdt->surface);
++
++   FREE(dfbdt);
++}
++
++static struct sw_displaytarget *
++directfb_displaytarget_create(struct sw_winsys *ws,
++                              unsigned tex_usage,
++                              enum pipe_format format,
++                              unsigned width,
++                              unsigned height,
++                              unsigned alignment,
++                              unsigned *stride)
++{
++   struct directfb_sw_winsys *dfbws = directfb_sw_winsys(ws);
++   struct directfb_sw_displaytarget *dfbdt;
++   DFBResult ret;
++   DFBSurfaceDescription desc;
++   void *ptr;
++   int pitch;
++
++   dfbdt = CALLOC_STRUCT(directfb_sw_displaytarget);
++   if (!dfbdt)
++      return NULL;
++
++   desc.flags = DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT;
++   desc.width = width;
++   desc.height = height;
++
++   switch (format) {
++   case PIPE_FORMAT_B5G6R5_UNORM: /* 16bit RGB */
++      desc.pixelformat = DSPF_RGB16;
++      break;
++   case PIPE_FORMAT_B8G8R8X8_UNORM: /* 24bit RGB */
++      desc.pixelformat = DSPF_RGB32;
++      break;
++   case PIPE_FORMAT_B8G8R8A8_UNORM: /* 32bit ARGB */
++      desc.pixelformat = DSPF_ARGB;
++      break;
++   default:
++      return NULL;
++   }
++
++   ret = dfbws->dfb->CreateSurface(dfbws->dfb, &desc, &dfbdt->surface);
++   if (ret) {
++      FREE(dfbdt);
++      return NULL;
++   }
++
++   dfbdt->surface->Lock(dfbdt->surface, DSLF_WRITE, &ptr, &pitch);
++
++   *stride = pitch;
++
++   dfbdt->surface->Unlock(dfbdt->surface);
++
++   return (struct sw_displaytarget *)dfbdt;
++}
++
++static boolean
++directfb_is_displaytarget_format_supported(struct sw_winsys *ws,
++                                           unsigned tex_usage,
++                                           enum pipe_format format)
++{
++   switch (format) {
++   case PIPE_FORMAT_B5G6R5_UNORM: /* 16bit RGB */
++   case PIPE_FORMAT_B8G8R8X8_UNORM: /* 24bit RGB */
++   case PIPE_FORMAT_B8G8R8A8_UNORM: /* 32bit ARGB */
++      return TRUE;
++   default:
++      return FALSE;
++   }
++}
++
++static void
++directfb_destroy(struct sw_winsys *ws)
++{
++   struct directfb_sw_winsys *dfbws = directfb_sw_winsys(ws);
++
++   FREE(dfbws);
++}
++
++struct sw_winsys *
++directfb_create_sw_winsys(IDirectFB *dfb)
++{
++   struct directfb_sw_winsys *dfbws;
++
++   dfbws = CALLOC_STRUCT(directfb_sw_winsys);
++   if (!dfbws)
++      return NULL;
++
++   dfbws->dfb = dfb;
++
++   dfbws->base.destroy = directfb_destroy;
++   dfbws->base.is_displaytarget_format_supported =
++      directfb_is_displaytarget_format_supported;
++
++   dfbws->base.displaytarget_create = directfb_displaytarget_create;
++   dfbws->base.displaytarget_destroy = directfb_displaytarget_destroy;
++   dfbws->base.displaytarget_map = directfb_displaytarget_map;
++   dfbws->base.displaytarget_unmap = directfb_displaytarget_unmap;
++
++   dfbws->base.displaytarget_display = directfb_displaytarget_display;
++
++   return &dfbws->base;
++}
+--- Mesa-10.3.7.orig/src/gallium/winsys/sw/directfb/directfb_sw_winsys.h
++++ Mesa-10.3.7/src/gallium/winsys/sw/directfb/directfb_sw_winsys.h
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (C) 2013 The DirectFB Open Source Project
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included
++ * in all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef DIRECTFB_SW_WINSYS
++#define DIRECTFB_SW_WINSYS
++
++#include <directfb.h>
++
++struct sw_winsys;
++
++struct sw_winsys *
++directfb_create_sw_winsys(IDirectFB *dfb);
++
++#endif /* DIRECTFB_SW_WINSYS */
 --- Mesa-10.3.7.orig/src/gbm/backends/dri/gbm_dri.c
 +++ Mesa-10.3.7/src/gbm/backends/dri/gbm_dri.c
 @@ -336,9 +336,6 @@
