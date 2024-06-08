@@ -33,6 +33,8 @@ test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/x11/lib/dri
 test $DRM && install lib/gallium/swrast_dri.so $DESTDIR/x11/lib/dri
 install -d $DESTDIR/x11/lib/egl
 install lib/egl/egl_gallium.so $DESTDIR/x11/lib/egl
+test $DRM && install -d $DESTDIR/x11/lib/pkgconfig
+test $DRM && install -m 644 src/mesa/drivers/dri/dri.pc $DESTDIR/x11/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -54,7 +56,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc << EOF
 EOF
 test $DRM && echo /x11/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
 test $DRM && echo /x11/lib/dri/swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
-echo /x11/lib/egl/egl_gallium.so >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+echo /x11/lib/egl/egl_gallium.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+test $DRM && echo /x11/lib/pkgconfig/dri.pc \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/mesa-build.pc
 
 exit
 --- Mesa-10.4.7.orig/bin/config.rpath
@@ -3594,6 +3598,16 @@ exit
  
     return ctx;
  }
+--- Mesa-10.4.7.orig/src/gallium/targets/dri/Makefile.am
++++ Mesa-10.4.7/src/gallium/targets/dri/Makefile.am
+@@ -48,6 +48,7 @@
+ 	$(top_builddir)/src/gallium/drivers/noop/libnoop.la \
+ 	$(top_builddir)/src/gallium/drivers/rbug/librbug.la \
+ 	$(top_builddir)/src/gallium/drivers/trace/libtrace.la \
++	$(top_builddir)/src/mapi/shared-glapi/libglapi.la \
+ 	$(SELINUX_LIBS) \
+ 	$(EXPAT_LIBS) \
+ 	$(LIBDRM_LIBS) \
 --- Mesa-10.4.7.orig/src/gallium/targets/egl-static/Makefile.am
 +++ Mesa-10.4.7/src/gallium/targets/egl-static/Makefile.am
 @@ -72,10 +72,11 @@

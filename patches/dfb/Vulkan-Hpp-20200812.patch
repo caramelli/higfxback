@@ -33,17 +33,41 @@ EOF
 exit
 --- Vulkan-Hpp-20200812.orig/CMakeLists.txt
 +++ Vulkan-Hpp-20200812/CMakeLists.txt
-@@ -91,18 +91,20 @@
+@@ -62,12 +62,12 @@
+ 
+ if (NOT DEFINED VulkanRegistry_DIR)
+   if (DEFINED VULKAN_HPP_VULKAN_HEADERS_SRC_DIR)
+-    set(VulkanRegistry_DIR VULKAN_HPP_VULKAN_HEADERS_SRC_DIR)
++    set(VulkanRegistry_DIR "${VULKAN_HPP_VULKAN_HEADERS_SRC_DIR}/registry")
+   else()
+-    set(VulkanRegistry_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers")
++    set(VulkanRegistry_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/registry")
+   endif()
+ endif()
+-file(TO_NATIVE_PATH ${VulkanRegistry_DIR}/registry/vk.xml vk_spec)
++file(TO_NATIVE_PATH ${VulkanRegistry_DIR}/vk.xml vk_spec)
+ string(REPLACE "\\" "\\\\" vk_spec ${vk_spec})
+ add_definitions(-DVK_SPEC="${vk_spec}")
+ 
+@@ -91,17 +91,19 @@
    VulkanHppGenerator.cpp
  )
  
 -if (NOT DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
 -  set(VULKAN_HPP_TINYXML2_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2")
+-endif()
+-
+-set(TINYXML2_SOURCES
+-  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
+-)
 +if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2)
 +  if (NOT DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
 +    set(VULKAN_HPP_TINYXML2_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2")
 +  endif()
-+
+ 
+-set(TINYXML2_HEADERS
+-  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
+-)
 +  set(TINYXML2_SOURCES
 +    ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
 +  )
@@ -51,19 +75,10 @@ exit
 +  set(TINYXML2_HEADERS
 +    ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
 +  )
- endif()
++endif()
  
--set(TINYXML2_SOURCES
--  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
--)
--
--set(TINYXML2_HEADERS
--  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
--)
--
  source_group(headers FILES ${HEADERS})
  source_group(sources FILES ${SOURCES})
- 
 @@ -118,7 +120,11 @@
  
  set_property(TARGET VulkanHppGenerator PROPERTY CXX_STANDARD 14)

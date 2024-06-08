@@ -1,0 +1,79 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build tinyxml2-build vulkan-headers-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -rf tinyxml2
+rm -rf Vulkan-Headers
+cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DVulkanRegistry_DIR=`PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=pkgdatadir vulkan-registry` -DCMAKE_INSTALL_INCLUDEDIR=/wl/include -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/wl/include/vulkan
+install -m 644 vulkan/vulkan.hpp $DESTDIR/wl/include/vulkan
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/vulkan-hpp-build.pc << EOF
+Name: Vulkan-Hpp
+Version: 20201104
+Description: Vulkan C++ API Header
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/vulkan/vulkan.hpp
+EOF
+
+exit
+--- Vulkan-Hpp-20201104.orig/CMakeLists.txt
++++ Vulkan-Hpp-20201104/CMakeLists.txt
+@@ -85,18 +85,20 @@
+   VulkanHppGenerator.cpp
+ )
+ 
+-if (NOT DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
+-  set(VULKAN_HPP_TINYXML2_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2")
++if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2)
++  if (NOT DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
++    set(VULKAN_HPP_TINYXML2_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2")
++  endif()
++
++  set(TINYXML2_SOURCES
++    ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
++  )
++
++  set(TINYXML2_HEADERS
++    ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
++  )
+ endif()
+ 
+-set(TINYXML2_SOURCES
+-  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
+-)
+-
+-set(TINYXML2_HEADERS
+-  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
+-)
+-
+ source_group(headers FILES ${HEADERS})
+ source_group(sources FILES ${SOURCES})
+ 
+@@ -118,7 +120,11 @@
+   target_compile_options(VulkanHppGenerator PRIVATE -Wall -Wextra -pedantic -Werror)
+ endif(MSVC)
+ 
+-target_include_directories(VulkanHppGenerator PRIVATE ${VULKAN_HPP_TINYXML2_SRC_DIR})
++if (DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
++  target_include_directories(VulkanHppGenerator PRIVATE ${VULKAN_HPP_TINYXML2_SRC_DIR})
++else()
++  target_link_libraries(VulkanHppGenerator tinyxml2)
++endif()
+ 
+ option (VULKAN_HPP_RUN_GENERATOR "Run the HPP generator" OFF)
+ if (VULKAN_HPP_RUN_GENERATOR)

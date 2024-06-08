@@ -31,6 +31,8 @@ test $DRM && install -d $DESTDIR/dfb/lib/dri
 test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/dfb/lib/dri
 install -d $DESTDIR/dfb/lib/egl
 install lib/egl/egl_gallium.so $DESTDIR/dfb/lib/egl
+test $DRM && install -d $DESTDIR/dfb/lib/pkgconfig
+test $DRM && install -m 644 src/mesa/drivers/dri/dri.pc $DESTDIR/dfb/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -51,7 +53,9 @@ cat >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc << EOF
 /dfb/lib/libmesaGLESv2.so.2 \\
 EOF
 test $DRM && echo /dfb/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
-echo /dfb/lib/egl/egl_gallium.so >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
+echo /dfb/lib/egl/egl_gallium.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
+test $DRM && echo /dfb/lib/pkgconfig/dri.pc \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
 
 exit
 --- Mesa-10.3.7.orig/bin/config.rpath

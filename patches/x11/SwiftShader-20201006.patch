@@ -131,6 +131,22 @@ exit
  
  	std::unique_ptr<block_size_descriptor> bsd(new block_size_descriptor);
  	init_block_size_descriptor(xBlockSize, yBlockSize, zBlockSize, bsd.get());
+--- SwiftShader-20201006.orig/src/Device/CMakeLists.txt
++++ SwiftShader-20201006/src/Device/CMakeLists.txt
+@@ -77,6 +77,13 @@
+         ${SWIFTSHADER_LINK_FLAGS}
+ )
+ 
++if(NOT TARGET astc-encoder AND SWIFTSHADER_ENABLE_ASTC)
++    target_compile_definitions(vk_device
++        PUBLIC
++            "SWIFTSHADER_ENABLE_ASTC"
++    )
++endif()
++
+ target_link_libraries(vk_device
+     PUBLIC
+         vk_pipeline
 --- SwiftShader-20201006.orig/src/OpenGL/compiler/OutputASM.cpp
 +++ SwiftShader-20201006/src/OpenGL/compiler/OutputASM.cpp
 @@ -23,8 +23,8 @@

@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
-  EGL_OPENGL="-Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
+  EGL_OPENGL="-Degl-drm=false -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
@@ -97,16 +97,34 @@ exit
  endif()
  
  # OpenGL Backends
-@@ -211,7 +211,7 @@
-     endif()
- 
+@@ -213,14 +213,18 @@
      if(ENABLE_EGL_DRM)
--      pkg_check_modules(DRM gbm libdrm libevdev)
-+      pkg_check_modules(DRM dri gbm libdrm libevdev)
+       pkg_check_modules(DRM gbm libdrm libevdev)
        if(DRM_FOUND)
-         execute_process(COMMAND pkg-config --variable=dridriverdir dri OUTPUT_VARIABLE DRIDRIVERDIR)
-         string(STRIP ${DRIDRIVERDIR} DRIDRIVERDIR)
-@@ -251,7 +251,7 @@
+-        execute_process(COMMAND pkg-config --variable=dridriverdir dri OUTPUT_VARIABLE DRIDRIVERDIR)
+-        string(STRIP ${DRIDRIVERDIR} DRIDRIVERDIR)
+-        execute_process(COMMAND pkg-config --modversion dri OUTPUT_VARIABLE MODVERSION)
+-        string(STRIP ${MODVERSION} MODVERSION)
+-        string(REGEX REPLACE "([0-9]+).([0-9]+).([0-9]+)" \\1 DRIMAJORVERSION ${MODVERSION})
+-        string(REGEX REPLACE "([0-9]+).([0-9]+).([0-9]+)" \\2 DRIMINORVERSION ${MODVERSION})
+-        list(APPEND DRM_CFLAGS -DDRI_DRIVERDIR="${DRIDRIVERDIR}" -DDRI_MAJOR_VERSION=${DRIMAJORVERSION} -DDRI_MINOR_VERSION=${DRIMINORVERSION})
+-        list(APPEND DRM_LDFLAGS -ldl)
++        pkg_check_modules(DRI dri)
++        if(DRI_FOUND)
++          execute_process(COMMAND pkg-config --variable=dridriverdir dri OUTPUT_VARIABLE DRIDRIVERDIR)
++          string(STRIP ${DRIDRIVERDIR} DRIDRIVERDIR)
++          execute_process(COMMAND pkg-config --modversion dri OUTPUT_VARIABLE MODVERSION)
++          string(STRIP ${MODVERSION} MODVERSION)
++          string(REGEX REPLACE "([0-9]+).([0-9]+).([0-9]+)" \\1 DRIMAJORVERSION ${MODVERSION})
++          string(REGEX REPLACE "([0-9]+).([0-9]+).([0-9]+)" \\2 DRIMINORVERSION ${MODVERSION})
++          list(APPEND DRM_CFLAGS -DDRI_DRIVERDIR="${DRIDRIVERDIR}" -DDRI_MAJOR_VERSION=${DRIMAJORVERSION} -DDRI_MINOR_VERSION=${DRIMINORVERSION})
++          list(APPEND DRM_LDFLAGS -ldl)
++          set(HAVE_DRI ON)
++        endif()
+       else()
+         set(ENABLE_EGL_DRM OFF)
+       endif()
+@@ -251,7 +255,7 @@
  set(EGL_RPI ${ENABLE_EGL_RPI})
  
  if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI)
@@ -115,6 +133,18 @@ exit
  endif()
  
  # Vulkan WSIs
+--- yagears-2.4.orig/config.h.cmake
++++ yagears-2.4/config.h.cmake
+@@ -43,6 +43,9 @@
+ /* Support for GTK+ graphical user interface */
+ #cmakedefine GTK
+ 
++/* Have Direct Rendering Infrastructure */
++#cmakedefine HAVE_DRI
++
+ /* Have function wl_shell_surface_set_position */
+ #cmakedefine HAVE_WL_SHELL_SURFACE_SET_POSITION
+ 
 --- yagears-2.4.orig/configure.ac
 +++ yagears-2.4/configure.ac
 @@ -125,12 +125,12 @@
@@ -159,16 +189,30 @@ exit
  fi
  
  # OpenGL Backends
-@@ -255,7 +255,7 @@
+@@ -257,12 +257,16 @@
+     if test x$enable_egl_drm = xyes; then
+       PKG_CHECK_MODULES(DRM, gbm libdrm libevdev, , enable_egl_drm=no)
+       if test x$enable_egl_drm = xyes; then
+-        DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri`
+-        MODVERSION=`$PKG_CONFIG --modversion dri`
+-        DRIMAJORVERSION=`echo $MODVERSION | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+-        DRI_MINOR_VERSION=`echo $MODVERSION | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+-        DRM_CFLAGS="$DRM_CFLAGS -DDRI_DRIVERDIR=\\\"$DRIDRIVERDIR\\\" -DDRI_MAJOR_VERSION=$DRIMAJORVERSION -DDRI_MINOR_VERSION=$DRI_MINOR_VERSION"
+-        DRM_LIBS="$DRM_LIBS -ldl"
++        PKG_CHECK_MODULES(DRI, dri, have_dri=yes, have_dri=no)
++        if test x$have_dri = xyes; then
++          DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri`
++          MODVERSION=`$PKG_CONFIG --modversion dri`
++          DRIMAJORVERSION=`echo $MODVERSION | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
++          DRIMINORVERSION=`echo $MODVERSION | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
++          DRM_CFLAGS="$DRM_CFLAGS -DDRI_DRIVERDIR=\\\"$DRIDRIVERDIR\\\" -DDRI_MAJOR_VERSION=$DRIMAJORVERSION -DDRI_MINOR_VERSION=$DRIMINORVERSION"
++          DRM_LIBS="$DRM_LIBS -ldl"
++          AC_DEFINE(HAVE_DRI, 1, Have Direct Rendering Infrastructure)
++        fi
+       fi
      fi
  
-     if test x$enable_egl_drm = xyes; then
--      PKG_CHECK_MODULES(DRM, gbm libdrm libevdev, , enable_egl_drm=no)
-+      PKG_CHECK_MODULES(DRM, dri gbm libdrm libevdev, , enable_egl_drm=no)
-       if test x$enable_egl_drm = xyes; then
-         DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri`
-         MODVERSION=`$PKG_CONFIG --modversion dri`
-@@ -302,7 +302,7 @@
+@@ -302,7 +306,7 @@
  fi
  
  if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
@@ -179,7 +223,79 @@ exit
  # Vulkan WSIs
 --- yagears-2.4.orig/main.c
 +++ yagears-2.4/main.c
-@@ -1294,7 +1294,7 @@
+@@ -62,13 +62,14 @@
+ #include <xcb/xcb.h>
+ #endif
+ #if defined(EGL_DRM)
+-#include <dlfcn.h>
+ #include <fcntl.h>
+ #include <gbm.h>
+-#include <limits.h>
+ #include <xf86drm.h>
+ #include <xf86drmMode.h>
+ #include <libevdev/libevdev.h>
++#ifdef HAVE_DRI
++#include <dlfcn.h>
++#include <limits.h>
+ 
+ struct __DRIextensionRec {
+   char *name;
+@@ -116,6 +117,7 @@
+   int (*queryImage)(struct __DRIimageRec *, int, int *);
+ };
+ #endif
++#endif
+ #if defined(EGL_RPI)
+ #include <fcntl.h>
+ #include <termios.h>
+@@ -551,6 +553,7 @@
+ #define drm_surface gbm_surface
+ #define drm_bo gbm_bo
+ 
++#ifdef HAVE_DRI
+ struct drm_display {
+   struct drm_display *(*dummy)(int);
+   int fd;
+@@ -663,6 +666,7 @@
+ {
+   drmModeRmFB(bo->display->fd, (uintptr_t)data);
+ }
++#endif
+ 
+ static void gbm_destroy_user_data(struct gbm_bo *bo, void *data)
+ {
+@@ -848,9 +852,11 @@
+   struct drm_display *drm_dpy = NULL;
+   struct drm_surface *drm_win = NULL;
+   int drm_fd = -1;
++  #ifdef HAVE_DRI
+   char drm_driver_path[PATH_MAX];
+   struct __DRIcoreExtensionRec **drm_driver_extensions = NULL;
+   struct __DRIextensionRec *drm_extensions[] = { &image_loader_extension.base, NULL };
++  #endif
+   drmModeResPtr drm_resources = NULL;
+   drmModeConnectorPtr drm_connector = NULL;
+   drmModeEncoderPtr drm_encoder = NULL;
+@@ -1128,6 +1134,7 @@
+       }
+     }
+ 
++    #ifdef HAVE_DRI
+     if (getenv("NO_GBM")) {
+       drm_dpy = calloc(1, sizeof(struct drm_display));
+       if (!drm_dpy) {
+@@ -1175,7 +1182,9 @@
+       drm_dpy->bo_create = drm_bo_create;
+       drm_dpy->bo_destroy = drm_bo_destroy;
+     }
+-    else {
++    else
++    #endif
++    {
+       drm_dpy = gbm_create_device(drm_fd);
+       if (!drm_dpy) {
+         printf("gbm_create_device failed\n");
+@@ -1294,7 +1303,7 @@
    #if defined(EGL_X11)
    if (!strcmp(backend, "egl-x11")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
@@ -188,7 +304,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_X11_EXT, x11_dpy, NULL);
      }
      else
-@@ -1308,7 +1308,7 @@
+@@ -1308,7 +1317,7 @@
    #if defined(EGL_DIRECTFB)
    if (!strcmp(backend, "egl-directfb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
@@ -197,7 +313,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DIRECTFB_EXT, dfb_dpy, NULL);
      }
      else
-@@ -1322,7 +1322,7 @@
+@@ -1322,7 +1331,7 @@
    #if defined(EGL_FBDEV)
    if (!strcmp(backend, "egl-fbdev")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
@@ -206,7 +322,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_FBDEV_EXT, &fb_dpy, NULL);
      }
      else
-@@ -1336,7 +1336,7 @@
+@@ -1336,7 +1345,7 @@
    #if defined(EGL_WAYLAND)
    if (!strcmp(backend, "egl-wayland")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
@@ -215,7 +331,7 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_WAYLAND_EXT, wl_dpy, NULL);
      }
      else
-@@ -1350,7 +1350,7 @@
+@@ -1350,7 +1359,7 @@
    #if defined(EGL_XCB)
    if (!strcmp(backend, "egl-xcb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
@@ -224,7 +340,33 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_XCB_EXT, xcb_dpy, NULL);
      }
      else
-@@ -1761,7 +1761,7 @@
+@@ -1642,6 +1651,7 @@
+   #endif
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
++    #ifdef HAVE_DRI
+     if (getenv("NO_GBM")) {
+       drm_win = calloc(1, sizeof(struct drm_surface));
+       if (!drm_win) {
+@@ -1650,11 +1660,13 @@
+       }
+ 
+       drm_win->display = drm_dpy;
+-      drm_win->width = win_width;
+-      drm_win->height = win_height;
++      drm_win->width = drm_connector->modes[0].hdisplay;
++      drm_win->height = drm_connector->modes[0].vdisplay;
+     }
+-    else {
+-      drm_win = gbm_surface_create(drm_dpy, win_width, win_height, GBM_BO_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
++    else
++    #endif
++    {
++      drm_win = gbm_surface_create(drm_dpy, drm_connector->modes[0].hdisplay, drm_connector->modes[0].vdisplay, GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
+       if (!drm_win) {
+         printf("gbm_surface_create failed\n");
+         goto out;
+@@ -1761,7 +1773,7 @@
    #if defined(EGL_X11)
    if (!strcmp(backend, "egl-x11")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
@@ -233,7 +375,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &x11_win, NULL);
      }
      else
-@@ -1774,7 +1774,7 @@
+@@ -1774,7 +1786,7 @@
    #if defined(EGL_DIRECTFB)
    if (!strcmp(backend, "egl-directfb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
@@ -242,7 +384,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, dfb_win, NULL);
      }
      else
-@@ -1787,7 +1787,7 @@
+@@ -1787,7 +1799,7 @@
    #if defined(EGL_FBDEV)
    if (!strcmp(backend, "egl-fbdev")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
@@ -251,7 +393,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, fb_win, NULL);
      }
      else
-@@ -1800,7 +1800,7 @@
+@@ -1800,7 +1812,7 @@
    #if defined(EGL_WAYLAND)
    if (!strcmp(backend, "egl-wayland")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
@@ -260,7 +402,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, wl_win, NULL);
      }
      else
-@@ -1813,7 +1813,7 @@
+@@ -1813,7 +1825,7 @@
    #if defined(EGL_XCB)
    if (!strcmp(backend, "egl-xcb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
@@ -269,6 +411,114 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &xcb_win, NULL);
      }
      else
+@@ -2063,35 +2075,47 @@
+     #if defined(EGL_DRM)
+     if (!strcmp(backend, "egl-drm")) {
+       if (redisplay) {
+-        if (drm_bo) {
+-          if (getenv("NO_GBM")) {
+-            drm_dpy->surface_release_buffer(drm_win, drm_bo);
+-          }
+-          else {
+-            gbm_surface_release_buffer(drm_win, drm_bo);
+-          }
+-        }
++        #ifdef HAVE_DRI
+         if (getenv("NO_GBM")) {
+           drm_bo = drm_dpy->surface_lock_front_buffer(drm_win);
+         }
+-        else {
++        else
++        #endif
++        {
+           drm_bo = gbm_surface_lock_front_buffer(drm_win);
+         }
+         if (drm_bo) {
+-          drm_fb_id = getenv("NO_GBM") ? (uintptr_t)drm_bo->user_data : (uintptr_t)gbm_bo_get_user_data(drm_bo);
+-          if(!drm_fb_id) {
+-            drmModeAddFB(drm_fd, win_width, win_height, 24, 32, getenv("NO_GBM") ? drm_bo->stride : gbm_bo_get_stride(drm_bo), getenv("NO_GBM") ? drm_bo->handle : gbm_bo_get_handle(drm_bo).u32, &drm_fb_id);
+-            drmModeSetCrtc(drm_fd, drm_encoder->crtc_id, drm_fb_id, 0, 0, &drm_connector->connector_id, 1, &drm_connector->modes[0]);
+-            if (getenv("NO_GBM")) {
++          #ifdef HAVE_DRI
++          if (getenv("NO_GBM")) {
++            drm_fb_id = (uintptr_t)drm_bo->user_data;
++            if (!drm_fb_id) {
++              drmModeAddFB(drm_fd, drm_bo->width, drm_bo->height, 24, 32, drm_bo->stride, drm_bo->handle, &drm_fb_id);
++              drmModeSetCrtc(drm_fd, drm_crtc->crtc_id, drm_fb_id, 0, 0, &drm_connector->connector_id, 1, &drm_connector->modes[0]);
+               drm_bo->user_data = (void *)(uintptr_t)drm_fb_id;
+               drm_bo->destroy_user_data = drm_destroy_user_data;
+             }
+-            else {
++          }
++          else
++          #endif
++          {
++            drm_fb_id = (uintptr_t)gbm_bo_get_user_data(drm_bo);
++            if (!drm_fb_id) {
++              drmModeAddFB(drm_fd, gbm_bo_get_width(drm_bo), gbm_bo_get_height(drm_bo), 24, 32, gbm_bo_get_stride(drm_bo), gbm_bo_get_handle(drm_bo).u32, &drm_fb_id);
++              drmModeSetCrtc(drm_fd, drm_crtc->crtc_id, drm_fb_id, 0, 0, &drm_connector->connector_id, 1, &drm_connector->modes[0]);
+               gbm_bo_set_user_data(drm_bo, (void *)(uintptr_t)drm_fb_id, gbm_destroy_user_data);
+             }
+           }
+-          drmModePageFlip(drm_fd, drm_encoder->crtc_id, drm_fb_id, DRM_MODE_PAGE_FLIP_EVENT, NULL);
++          drmModePageFlip(drm_fd, drm_crtc->crtc_id, drm_fb_id, DRM_MODE_PAGE_FLIP_EVENT, NULL);
+           drmHandleEvent(drm_fd, &drm_context);
++          #ifdef HAVE_DRI
++          if (getenv("NO_GBM")) {
++            drm_dpy->surface_release_buffer(drm_win, drm_bo);
++          }
++          else
++          #endif
++          {
++            gbm_surface_release_buffer(drm_win, drm_bo);
++          }
+         }
+         if (!animate) {
+           redisplay = 0;
+@@ -2397,10 +2421,13 @@
+     }
+ 
+     if (drm_win) {
++      #ifdef HAVE_DRI
+       if (getenv("NO_GBM")) {
+         free(drm_win);
+       }
+-      else {
++      else
++      #endif
++      {
+         gbm_surface_destroy(drm_win);
+       }
+     }
+@@ -2423,8 +2450,9 @@
+     }
+ 
+     if (drm_dpy) {
++      #ifdef HAVE_DRI
+       if (getenv("NO_GBM")) {
+-        if (!drm_dpy->screen) {
++        if (drm_dpy->screen) {
+           for (opt = 0; drm_dpy->driver_configs[opt]; opt++)
+             free(drm_dpy->driver_configs[opt]);
+           free(drm_dpy->driver_configs);
+@@ -2432,13 +2460,15 @@
+           drm_dpy->core->destroyScreen(drm_dpy->screen);
+         }
+ 
+-        if (!drm_dpy->driver) {
++        if (drm_dpy->driver) {
+           dlclose(drm_dpy->driver);
+         }
+ 
+         free(drm_dpy);
+       }
+-      else {
++      else
++      #endif
++      {
+         gbm_device_destroy(drm_dpy);
+       }
+     }
 --- yagears-2.4.orig/meson.build
 +++ yagears-2.4/meson.build
 @@ -54,12 +54,12 @@
@@ -355,26 +605,28 @@ exit
        endif
      endif
  
-@@ -214,15 +214,15 @@
-     endif
- 
-     if enable_egl_drm
--      drm_dep = [dependency('gbm', required: false), dependency('libdrm', required: false), dependency('libevdev', required: false)]
-+      drm_dep = [dependency('dri', required: false), dependency('gbm', required: false), dependency('libdrm', required: false), dependency('libevdev', required: false)]
-       foreach dep : drm_dep
-         if not dep.found()
-           enable_egl_drm = false
+@@ -221,11 +221,15 @@
          endif
        endforeach
        if enable_egl_drm
 -        dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri').stdout().strip()
 -        modversion = run_command('pkg-config', '--modversion', 'dri')
-+        dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri', check: true).stdout().strip()
-+        modversion = run_command('pkg-config', '--modversion', 'dri', check: true)
-         drimajorversion = modversion.stdout().split('.')[0]
-         driminorversion = modversion.stdout().split('.')[1]
-         drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
-@@ -254,7 +254,7 @@
+-        drimajorversion = modversion.stdout().split('.')[0]
+-        driminorversion = modversion.stdout().split('.')[1]
+-        drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
++        dri_dep = dependency('dri', required: false)
++        if dri_dep.found()
++          dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri', check: true).stdout().strip()
++          modversion = run_command('pkg-config', '--modversion', 'dri', check: true)
++          drimajorversion = modversion.stdout().split('.')[0]
++          driminorversion = modversion.stdout().split('.')[1]
++          drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
++          config_h.set('HAVE_DRI', true, description: 'Have Direct Rendering Infrastructure')
++        endif
+       endif
+     endif
+ 
+@@ -254,7 +258,7 @@
  config_h.set('EGL_RPI', enable_egl_rpi, description: 'Support for EGL with Raspberry Pi Dispmanx platform')
  
  if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi
@@ -383,7 +635,7 @@ exit
  endif
  
  # Vulkan WSIs
-@@ -264,7 +264,7 @@
+@@ -264,7 +268,7 @@
    vulkan_dep = dependency('vulkan', required: false)
    glslang_validator = find_program('glslangValidator', required: false)
    if vulkan_dep.found() and glslang_validator.found()
@@ -392,7 +644,7 @@ exit
  
      if enable_vk_x11
        if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
-@@ -376,7 +376,7 @@
+@@ -376,7 +380,7 @@
  if enable_fltk
    fltk_config = find_program('fltk-config', required: false)
    if fltk_config.found()
@@ -401,7 +653,7 @@ exit
    else
      enable_fltk = false
    endif
-@@ -493,7 +493,7 @@
+@@ -493,7 +497,7 @@
  if enable_wx
    wx_config = find_program('wx-config', required: false)
    if wx_config.found()
@@ -410,7 +662,7 @@ exit
    else
      enable_wx = false
    endif
-@@ -670,7 +670,7 @@
+@@ -670,7 +674,7 @@
  
  if VK_GUI
  executable('yagears2-vk-gui',
