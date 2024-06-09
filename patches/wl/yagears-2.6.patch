@@ -5,15 +5,28 @@ REQUIRES="egl-opengl-stubs-build libpng-build meson-build tiff-build wayland-bui
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  EGL_OPENGL="-Degl-drm=false -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
+  VK=1
+  VULKAN="-Dvk-d2d=false"
+  REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
+fi
+
 # configure
-PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup -Degl-fbdev=false -Dgl=false -Dglesv1_cm=false --prefix=/wl build
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup $EGL_OPENGL $VULKAN --prefix=/wl build
 
 # build
 meson compile -C build
 
 # install
 install -d $DESTDIR/wl/bin
-install build/yagears2 $DESTDIR/wl/bin
+test $GL && install build/yagears2 $DESTDIR/wl/bin
+test $VK && install build/yagears2-vk $DESTDIR/wl/bin
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -24,8 +37,10 @@ Description: Yet Another Gears OpenGL / Vulkan demo
 Requires: $REQUIRES
 
 exec=\\
-/wl/bin/yagears2
 EOF
+test $GL && echo /wl/bin/yagears2 \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $VK && echo /wl/bin/yagears2-vk \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 
 exit
 --- yagears-2.6.orig/CMakeLists.txt

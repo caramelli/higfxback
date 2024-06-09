@@ -1,0 +1,190 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loader-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCUBE_WSI_SELECTION=WAYLAND -DGLSLANG_INSTALL_DIR=`dirname $(dirname $(which glslangValidator))` -DCMAKE_INSTALL_PREFIX=/wl -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/wl/bin
+install build/cube/vkcube $DESTDIR/wl/bin/vkcube-wayland
+install build/cube/vkcubepp $DESTDIR/wl/bin/vkcubepp-wayland
+install build/vulkaninfo/vulkaninfo $DESTDIR/wl/bin
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/vulkan-tools-build.pc << EOF
+Name: Vulkan-Tools
+Version: 1.2.160
+Description: A collection of Vulkan utilities
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/vkcube-wayland \\
+/wl/bin/vkcubepp-wayland \\
+/wl/bin/vulkaninfo
+EOF
+
+exit
+--- Vulkan-Tools-1.2.160.orig/CMakeLists.txt
++++ Vulkan-Tools-1.2.160/CMakeLists.txt
+@@ -27,7 +27,7 @@
+ 
+ # find_package(), include() and global project settings --------------------------------------------------------------------------
+ 
+-find_package(PythonInterp 3 QUIET)
++find_package(Python3 QUIET)
+ 
+ # User-interface declarations ----------------------------------------------------------------------------------------------------
+ # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
+@@ -148,9 +148,9 @@
+ endif()
+ 
+ # Optional codegen target
+-if(PYTHONINTERP_FOUND)
++if(Python3_Interpreter_FOUND)
+     add_custom_target(VulkanTools_generated_source
+-                      COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
++                      COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
+                               ${VulkanRegistry_DIR} --incremental
+                       )
+ else()
+--- Vulkan-Tools-1.2.160.orig/cmake/FindWayland.cmake
++++ Vulkan-Tools-1.2.160/cmake/FindWayland.cmake
+@@ -49,11 +49,13 @@
+ 
+   include(FindPackageHandleStandardArgs)
+ 
++  set(FPHSA_NAME_MISMATCHED TRUE)
+   FIND_PACKAGE_HANDLE_STANDARD_ARGS(WAYLAND_CLIENT  DEFAULT_MSG  WAYLAND_CLIENT_LIBRARIES  WAYLAND_CLIENT_INCLUDE_DIR)
+   FIND_PACKAGE_HANDLE_STANDARD_ARGS(WAYLAND_SERVER  DEFAULT_MSG  WAYLAND_SERVER_LIBRARIES  WAYLAND_SERVER_INCLUDE_DIR)
+   FIND_PACKAGE_HANDLE_STANDARD_ARGS(WAYLAND_EGL     DEFAULT_MSG  WAYLAND_EGL_LIBRARIES     WAYLAND_EGL_INCLUDE_DIR)
+   FIND_PACKAGE_HANDLE_STANDARD_ARGS(WAYLAND_CURSOR  DEFAULT_MSG  WAYLAND_CURSOR_LIBRARIES  WAYLAND_CURSOR_INCLUDE_DIR)
+   FIND_PACKAGE_HANDLE_STANDARD_ARGS(WAYLAND         DEFAULT_MSG  WAYLAND_LIBRARIES         WAYLAND_INCLUDE_DIR)
++  unset(FPHSA_NAME_MISMATCHED)
+ 
+   MARK_AS_ADVANCED(
+         WAYLAND_INCLUDE_DIR         WAYLAND_LIBRARIES
+--- Vulkan-Tools-1.2.160.orig/cube/CMakeLists.txt
++++ Vulkan-Tools-1.2.160/cube/CMakeLists.txt
+@@ -31,12 +31,12 @@
+     message(STATUS "Using cmake find_program to look for glslangValidator")
+     if(WIN32)
+         execute_process(
+-            COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-windows-x64-Release.zip)
++            COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-windows-x64-Release.zip)
+         set(GLSLANG_VALIDATOR_NAME "glslangValidator.exe")
+     elseif(APPLE)
+-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-osx-Release.zip)
++        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-osx-Release.zip)
+     elseif(UNIX AND NOT APPLE) # i.e. Linux
+-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
++        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
+     endif()
+     if (WIN32)
+         set(PLATFORM_DIR "${PROJECT_SOURCE_DIR}/glslang/windows/bin")
+--- Vulkan-Tools-1.2.160.orig/cube/cube.c
++++ Vulkan-Tools-1.2.160/cube/cube.c
+@@ -3810,6 +3810,8 @@
+     memset(demo, 0, sizeof(*demo));
+     demo->presentMode = VK_PRESENT_MODE_FIFO_KHR;
+     demo->frameCount = INT32_MAX;
++    demo->width = 500;
++    demo->height = 500;
+     /* For cube demo we just grab the first physical device by default */
+     demo->gpu_number = 0;
+ 
+@@ -3845,6 +3847,16 @@
+             i++;
+             continue;
+         }
++        if (strcmp(argv[i], "--width") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->width) == 1 && demo->width > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--height") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->height) == 1 && demo->height > 0) {
++            i++;
++            continue;
++        }
+         if (strcmp(argv[i], "--suppress_popups") == 0) {
+             demo->suppress_popups = true;
+             continue;
+@@ -3872,6 +3884,7 @@
+             "\t[--incremental_present] [--display_timing]\n"
+             "\t[--gpu_number <index of physical device>]\n"
+             "\t[--present_mode <present mode enum>]\n"
++            "\t[--width <width>] [--height <height>]\n"
+             "\t<present_mode_enum>\n"
+             "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = %d\n"
+             "\t\tVK_PRESENT_MODE_MAILBOX_KHR = %d\n"
+@@ -3900,9 +3913,6 @@
+ 
+     demo_init_vk(demo);
+ 
+-    demo->width = 500;
+-    demo->height = 500;
+-
+     demo->spin_angle = 4.0f;
+     demo->spin_increment = 0.2f;
+     demo->pause = false;
+--- Vulkan-Tools-1.2.160.orig/cube/cube.cpp
++++ Vulkan-Tools-1.2.160/cube/cube.cpp
+@@ -939,6 +939,8 @@
+ 
+     presentMode = vk::PresentModeKHR::eFifo;
+     frameCount = UINT32_MAX;
++    width = 500;
++    height = 500;
+     use_xlib = false;
+     /* For cube demo we just grab the first physical device by default */
+     gpu_number = 0;
+@@ -970,6 +972,16 @@
+             i++;
+             continue;
+         }
++        if (strcmp(argv[i], "--width") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &width) == 1 && width > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--height") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &height) == 1 && height > 0) {
++            i++;
++            continue;
++        }
+         if (strcmp(argv[i], "--suppress_popups") == 0) {
+             suppress_popups = true;
+             continue;
+@@ -984,11 +996,12 @@
+               << "\t[--break] [--c <framecount>] [--suppress_popups]\n"
+               << "\t[--gpu_number <index of physical device>]\n"
+               << "\t[--present_mode <present mode enum>]\n"
++              << "\t[--width <width>] [--height <height>]\n"
+               << "\t<present_mode_enum>\n"
+               << "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = " << VK_PRESENT_MODE_IMMEDIATE_KHR << "\n"
+               << "\t\tVK_PRESENT_MODE_MAILBOX_KHR = " << VK_PRESENT_MODE_MAILBOX_KHR << "\n"
+               << "\t\tVK_PRESENT_MODE_FIFO_KHR = " << VK_PRESENT_MODE_FIFO_KHR << "\n"
+-              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR;
++              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR << "\n";
+ 
+ #if defined(_WIN32)
+         if (!suppress_popups) MessageBox(NULL, usage.str().c_str(), "Usage Error", MB_OK);
+@@ -1005,9 +1018,6 @@
+ 
+     init_vk();
+ 
+-    width = 500;
+-    height = 500;
+-
+     spin_angle = 4.0f;
+     spin_increment = 0.2f;
+     pause = false;

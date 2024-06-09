@@ -7,16 +7,14 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
   XCB=1
+  if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build; then
+    XLIB=1
+  else
+    BUILD_WSI=-DBUILD_WSI_XLIB_SUPPORT=OFF
+  fi
 else
   XLIB=1
   BUILD_WSI="-DBUILD_WSI_XCB_SUPPORT=OFF -DCUBE_WSI_SELECTION=XLIB"
-fi
-
-if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build; then
-  XLIB=1
-else
-  XCB=1
-  BUILD_WSI=-DBUILD_WSI_XLIB_SUPPORT=OFF
 fi
 
 # configure
