@@ -16,9 +16,10 @@ if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists vulkan-headers-build
 fi
 
 # configure
+GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf other_include
 rm -rf other_lib
-cmake $GL $VK -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -DKTX_FEATURE_TESTS=OFF -B build
+cmake $GL $VK -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -DKTX_FEATURE_TESTS=OFF -B build -G "$GENERATOR"
 
 # build
 cmake --build build

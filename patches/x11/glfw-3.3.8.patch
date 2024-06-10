@@ -51,7 +51,7 @@ install build/tests/tearing $DESTDIR/x11/share/glfw3/examples
 install build/tests/threads $DESTDIR/x11/share/glfw3/examples
 install build/tests/timeout $DESTDIR/x11/share/glfw3/examples
 install build/tests/title $DESTDIR/x11/share/glfw3/examples
-install build/tests/triangle-vulkan $DESTDIR/x11/share/glfw3/examples
+test $VK && install build/tests/triangle-vulkan $DESTDIR/x11/share/glfw3/examples
 install build/tests/windows $DESTDIR/x11/share/glfw3/examples
 
 # build.pc
@@ -148,17 +148,18 @@ exit
      endif()
 --- glfw-3.3.8.orig/examples/CMakeLists.txt
 +++ glfw-3.3.8/examples/CMakeLists.txt
-@@ -58,6 +58,10 @@
- set_target_properties(${GUI_ONLY_BINARIES} ${CONSOLE_BINARIES} PROPERTIES
-                       FOLDER "GLFW3/Examples")
+@@ -46,6 +46,11 @@
+ add_executable(splitview WIN32 MACOSX_BUNDLE splitview.c ${ICON} ${GLAD_GL})
+ add_executable(wave WIN32 MACOSX_BUNDLE wave.c ${ICON} ${GLAD_GL})
  
 +find_path(STB_INCLUDE_PATH stb/stb_image_write.h)
 +if (STB_INCLUDE_PATH)
 +    target_include_directories(offscreen PRIVATE ${STB_INCLUDE_PATH}/stb)
 +endif()
- if (GLFW_USE_OSMESA)
-     target_compile_definitions(offscreen PRIVATE USE_NATIVE_OSMESA)
- endif()
++
+ target_link_libraries(particles "${CMAKE_THREAD_LIBS_INIT}")
+ if (RT_LIBRARY)
+     target_link_libraries(particles "${RT_LIBRARY}")
 --- glfw-3.3.8.orig/src/glfw3.pc.in
 +++ glfw-3.3.8/src/glfw3.pc.in
 @@ -8,6 +8,6 @@

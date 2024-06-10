@@ -6,16 +6,25 @@ REQUIRES="autotools-wrappers-lt-build cairo-build libxkbcommon-build xkeyboard-c
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build libdrm-build libgbm-stub-build; then
-  DRM=1
   COMPOSITOR="--disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+  DEFAULT_BACKEND=drm
+  DRM=1
+  GL=1
   REQUIRES="$REQUIRES egl-opengl-stubs-build libdrm-build libgbm-stub-build"
 else
-  COMPOSITOR="--disable-drm-compositor --disable-egl --disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+  COMPOSITOR="--disable-drm-compositor --disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+  DEFAULT_BACKEND=fbdev
+  if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+    GL=1
+    REQUIRES="$REQUIRES egl-opengl-stubs-build"
+  else
+    COMPOSITOR="$COMPOSITOR --disable-egl"
+  fi
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=fbdev-backend.so ./configure $COMPOSITOR --disable-fullscreen-shell --disable-ivi-shell --disable-weston-launch --disable-xcompose --disable-xwayland --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=$DEFAULT_BACKEND-backend.so ./configure $COMPOSITOR --disable-fullscreen-shell --disable-ivi-shell --disable-weston-launch --disable-xcompose --disable-xwayland --enable-autotools --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
 
 # build
 make
@@ -23,6 +32,7 @@ make
 # install
 install -d $DESTDIR/wl/bin
 install .libs/weston $DESTDIR/wl/bin
+install wcap-decode $DESTDIR/wl/bin
 install weston-clickdot $DESTDIR/wl/bin
 install weston-cliptest $DESTDIR/wl/bin
 install weston-confine $DESTDIR/wl/bin
@@ -35,18 +45,21 @@ install weston-info $DESTDIR/wl/bin
 install weston-presentation-shm $DESTDIR/wl/bin
 install weston-resizor $DESTDIR/wl/bin
 install weston-scaler $DESTDIR/wl/bin
+install weston-screenshooter $DESTDIR/wl/bin
 install weston-simple-damage $DESTDIR/wl/bin
+test $GL && install weston-simple-egl $DESTDIR/wl/bin
 install weston-simple-shm $DESTDIR/wl/bin
 install weston-smoke $DESTDIR/wl/bin
 install weston-stacking $DESTDIR/wl/bin
+test $GL && install weston-subsurfaces $DESTDIR/wl/bin
 install weston-terminal $DESTDIR/wl/bin
 install -d $DESTDIR/wl/lib
-install .libs/libweston-desktop-5.so.0.0.0 $DESTDIR/wl/lib/libweston-desktop-5.so.0
-install .libs/libweston-5.so.0.0.0 $DESTDIR/wl/lib/libweston-5.so.0
-install -d $DESTDIR/wl/lib/libweston-5
-test $DRM && install .libs/drm-backend.so $DESTDIR/wl/lib/libweston-5
-install .libs/fbdev-backend.so $DESTDIR/wl/lib/libweston-5
-test $DRM && install .libs/gl-renderer.so $DESTDIR/wl/lib/libweston-5
+install .libs/libweston-desktop-6.so.0.0.0 $DESTDIR/wl/lib/libweston-desktop-6.so.0
+install .libs/libweston-6.so.0.0.0 $DESTDIR/wl/lib/libweston-6.so.0
+install -d $DESTDIR/wl/lib/libweston-6
+test $DRM && install .libs/drm-backend.so $DESTDIR/wl/lib/libweston-6
+install .libs/fbdev-backend.so $DESTDIR/wl/lib/libweston-6
+test $DRM && install .libs/gl-renderer.so $DESTDIR/wl/lib/libweston-6
 install -d $DESTDIR/wl/lib/weston
 install .libs/desktop-shell.so $DESTDIR/wl/lib/weston
 install weston-desktop-shell $DESTDIR/wl/lib/weston
@@ -63,11 +76,12 @@ install -m 644 data/terminal.png $DESTDIR/wl/share/weston
 install -d $DESTDIR/wl/share/pkgconfig
 cat > $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 Name: weston
-Version: 5.0.0
+Version: 6.0.0
 Description: Reference implementation of a Wayland compositor
 Requires: $REQUIRES
 
 exec=\\
+/wl/bin/wcap-decode \\
 /wl/bin/weston \\
 /wl/bin/weston-clickdot \\
 /wl/bin/weston-cliptest \\
@@ -81,17 +95,24 @@ exec=\\
 /wl/bin/weston-presentation-shm \\
 /wl/bin/weston-resizor \\
 /wl/bin/weston-scaler \\
+/wl/bin/weston-screenshooter \\
 /wl/bin/weston-simple-damage \\
+EOF
+test $GL && echo /wl/bin/weston-simple-egl \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/bin/weston-simple-shm \\
 /wl/bin/weston-smoke \\
 /wl/bin/weston-stacking \\
-/wl/bin/weston-terminal \\
-/wl/lib/libweston-5.so.0 \\
-/wl/lib/libweston-desktop-5.so.0 \\
 EOF
-test $DRM && echo /wl/lib/libweston-5/drm-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
-echo /wl/lib/libweston-5/fbdev-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
-test $DRM && echo /wl/lib/libweston-5/gl-renderer.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $GL && echo /wl/bin/weston-subsurfaces \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/bin/weston-terminal \\
+/wl/lib/libweston-6.so.0 \\
+/wl/lib/libweston-desktop-6.so.0 \\
+EOF
+test $DRM && echo /wl/lib/libweston-6/drm-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+echo /wl/lib/libweston-6/fbdev-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $DRM && echo /wl/lib/libweston-6/gl-renderer.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/lib/weston/desktop-shell.so \\
 /wl/lib/weston/weston-desktop-shell \\
@@ -105,8 +126,8 @@ cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 EOF
 
 exit
---- weston-5.0.0.orig/Makefile.am
-+++ weston-5.0.0/Makefile.am
+--- weston-6.0.0.orig/Makefile.am
++++ weston-6.0.0/Makefile.am
 @@ -41,7 +41,8 @@
  	-I$(top_builddir)/protocol		\
  	-DLIBWESTON_MODULEDIR='"$(libweston_moduledir)"' \
@@ -120,14 +141,14 @@ exit
 @@ -58,6 +59,9 @@
  
  lib_LTLIBRARIES = libweston-@LIBWESTON_MAJOR@.la
- libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
+ libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS)
 +if ENABLE_EGL
 +libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS += -DEGL_NO_PLATFORM_SPECIFIC_TYPES
 +endif
  libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) \
  	$(COMPOSITOR_CFLAGS) $(EGL_CFLAGS) $(LIBDRM_CFLAGS)
  libweston_@LIBWESTON_MAJOR@_la_LIBADD = $(COMPOSITOR_LIBS) \
-@@ -307,6 +311,7 @@
+@@ -335,6 +339,7 @@
  
  if ENABLE_EGL
  libweston_module_LTLIBRARIES += gl-renderer.la
@@ -135,18 +156,8 @@ exit
  gl_renderer_la_LDFLAGS = -module -avoid-version
  gl_renderer_la_LIBADD =				\
  	libweston-@LIBWESTON_MAJOR@.la		\
-@@ -1304,6 +1309,9 @@
- surface_test_la_LDFLAGS = $(test_module_ldflags)
- surface_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
- 
-+if ENABLE_EGL
-+weston_test_la_CPPFLAGS = $(AM_CPPFLAGS) -DEGL_NO_PLATFORM_SPECIFIC_TYPES
-+endif
- weston_test_la_LIBADD = libshared.la $(test_module_libadd)
- weston_test_la_LDFLAGS = $(test_module_ldflags)
- weston_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
---- weston-5.0.0.orig/clients/terminal.c
-+++ weston-5.0.0/clients/terminal.c
+--- weston-6.0.0.orig/clients/terminal.c
++++ weston-6.0.0/clients/terminal.c
 @@ -53,6 +53,8 @@
  static int option_maximize;
  static char *option_font;
@@ -200,9 +211,9 @@ exit
  	weston_config_section_get_string(s, "term", &option_term, "xterm");
  	weston_config_destroy(config);
  
---- weston-5.0.0.orig/clients/window.c
-+++ weston-5.0.0/clients/window.c
-@@ -1297,19 +1297,6 @@
+--- weston-6.0.0.orig/clients/window.c
++++ weston-6.0.0/clients/window.c
+@@ -1293,19 +1293,6 @@
  	"0426c94ea35c87780ff01dc239897213"
  };
  
@@ -222,7 +233,7 @@ exit
  struct cursor_alternatives {
  	const char **names;
  	size_t count;
-@@ -1329,9 +1316,6 @@
+@@ -1325,9 +1312,6 @@
  	{xterms, ARRAY_LENGTH(xterms)},
  	{hand1s, ARRAY_LENGTH(hand1s)},
  	{watches, ARRAY_LENGTH(watches)},
@@ -232,21 +243,21 @@ exit
  };
  
  static void
-@@ -4725,6 +4709,12 @@
+@@ -4718,6 +4702,12 @@
  }
  
  void
 +window_set_position(struct window *window, int32_t x, int32_t y)
 +{
-+	zxdg_toplevel_v6_set_position(window->xdg_toplevel, x, y);
++	xdg_toplevel_set_position(window->xdg_toplevel, x, y);
 +}
 +
 +void
  window_set_title(struct window *window, const char *title)
  {
  	free(window->title);
---- weston-5.0.0.orig/clients/window.h
-+++ weston-5.0.0/clients/window.h
+--- weston-6.0.0.orig/clients/window.h
++++ weston-6.0.0/clients/window.h
 @@ -500,6 +500,9 @@
  	struct window *window, window_locked_pointer_motion_handler_t handler);
  
@@ -257,9 +268,9 @@ exit
  window_set_title(struct window *window, const char *title);
  
  const char *
---- weston-5.0.0.orig/configure.ac
-+++ weston-5.0.0/configure.ac
-@@ -112,12 +112,7 @@
+--- weston-6.0.0.orig/configure.ac
++++ weston-6.0.0/configure.ac
+@@ -129,12 +129,7 @@
  AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
  
  # check for libdrm as a build-time dependency only
@@ -273,7 +284,7 @@ exit
  
  COMPOSITOR_MODULES="wayland-server >= $WAYLAND_PREREQ_VERSION pixman-1 >= 0.25.2"
  
-@@ -152,9 +147,11 @@
+@@ -168,9 +163,11 @@
  
  COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
  
@@ -288,8 +299,8 @@ exit
  
  AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
  	      enable_setuid_install=yes)
---- weston-5.0.0.orig/desktop-shell/shell.c
-+++ weston-5.0.0/desktop-shell/shell.c
+--- weston-6.0.0.orig/desktop-shell/shell.c
++++ weston-6.0.0/desktop-shell/shell.c
 @@ -104,6 +104,7 @@
  
  	struct desktop_shell *shell;
@@ -298,7 +309,7 @@ exit
  	int32_t saved_x, saved_y;
  	bool saved_position_valid;
  	bool saved_rotation_valid;
-@@ -2377,6 +2378,8 @@
+@@ -2397,6 +2398,8 @@
  	weston_surface_set_label_func(surface, shell_surface_get_label);
  
  	shsurf->shell = (struct desktop_shell *) shell;
@@ -307,7 +318,7 @@ exit
  	shsurf->unresponsive = 0;
  	shsurf->saved_position_valid = false;
  	shsurf->saved_rotation_valid = false;
-@@ -2902,6 +2905,20 @@
+@@ -2922,6 +2925,20 @@
  	shsurf->xwayland.is_set = true;
  }
  
@@ -328,7 +339,7 @@ exit
  static const struct weston_desktop_api shell_desktop_api = {
  	.struct_size = sizeof(struct weston_desktop_api),
  	.surface_added = desktop_surface_added,
-@@ -2915,6 +2932,7 @@
+@@ -2935,6 +2952,7 @@
  	.ping_timeout = desktop_surface_ping_timeout,
  	.pong = desktop_surface_pong,
  	.set_xwayland_position = desktop_surface_set_xwayland_position,
@@ -336,7 +347,7 @@ exit
  };
  
  /* ************************ *
-@@ -4213,6 +4231,7 @@
+@@ -4234,6 +4252,7 @@
  	struct weston_output *output, *target_output = NULL;
  	struct weston_seat *seat;
  	pixman_rectangle32_t area;
@@ -344,7 +355,7 @@ exit
  
  	/* As a heuristic place the new window on the same output as the
  	 * pointer. Falling back to the output containing 0, 0.
-@@ -4253,11 +4272,15 @@
+@@ -4274,11 +4293,15 @@
  	range_x = area.width - view->surface->width;
  	range_y = area.height - view->surface->height;
  
@@ -362,9 +373,20 @@ exit
  
  	weston_view_set_position(view, x, y);
  }
---- weston-5.0.0.orig/libweston/pixel-formats.c
-+++ weston-5.0.0/libweston/pixel-formats.c
-@@ -25,6 +25,8 @@
+--- weston-6.0.0.orig/libweston/compositor-drm.c
++++ weston-6.0.0/libweston/compositor-drm.c
+@@ -2625,7 +2625,7 @@
+ 	struct drm_output_state *output_state, *tmp;
+ 	struct drm_plane *plane;
+ 	drmModeAtomicReq *req = drmModeAtomicAlloc();
+-	uint32_t flags;
++	uint32_t flags = 0;
+ 	int ret = 0;
+ 
+ 	if (!req)
+--- weston-6.0.0.orig/libweston/pixel-formats.c
++++ weston-6.0.0/libweston/pixel-formats.c
+@@ -26,6 +26,8 @@
  
  #include "config.h"
  
@@ -373,63 +395,80 @@ exit
  #include <endian.h>
  #include <inttypes.h>
  #include <stdbool.h>
-@@ -428,3 +430,5 @@
+@@ -472,3 +474,22 @@
  
  	return height / info->vsub;
  }
 +
++#else
++
++#include "wayland-util.h"
++#include "pixel-formats.h"
++
++WL_EXPORT const struct pixel_format_info *
++pixel_format_get_info(uint32_t format)
++{
++	return NULL;
++}
++
++WL_EXPORT const struct pixel_format_info *
++pixel_format_get_info_shm(uint32_t format)
++{
++	return NULL;
++}
++
 +#endif
---- weston-5.0.0.orig/libweston-desktop/internal.h
-+++ weston-5.0.0/libweston-desktop/internal.h
+--- weston-6.0.0.orig/libweston-desktop/internal.h
++++ weston-6.0.0/libweston-desktop/internal.h
 @@ -86,6 +86,11 @@
  					 struct weston_desktop_surface *surface,
  					 int32_t x, int32_t y);
  
 +void
 +weston_desktop_api_set_position(struct weston_desktop *desktop,
-+					 struct weston_desktop_surface *surface,
-+					 int32_t x, int32_t y);
++				struct weston_desktop_surface *surface,
++				int32_t x, int32_t y);
 +
  struct weston_desktop_seat *
  weston_desktop_seat_from_seat(struct weston_seat *wseat);
  
---- weston-5.0.0.orig/libweston-desktop/libweston-desktop.c
-+++ weston-5.0.0/libweston-desktop/libweston-desktop.c
-@@ -242,3 +242,12 @@
+--- weston-6.0.0.orig/libweston-desktop/libweston-desktop.c
++++ weston-6.0.0/libweston-desktop/libweston-desktop.c
+@@ -252,3 +252,12 @@
  		desktop->api.set_xwayland_position(surface, x, y,
  						   desktop->user_data);
  }
 +
 +void
 +weston_desktop_api_set_position(struct weston_desktop *desktop,
-+					 struct weston_desktop_surface *surface,
-+					 int32_t x, int32_t y)
++				struct weston_desktop_surface *surface,
++				int32_t x, int32_t y)
 +{
 +	if (desktop->api.set_position != NULL)
 +		desktop->api.set_position(surface, x, y);
 +}
---- weston-5.0.0.orig/libweston-desktop/libweston-desktop.h
-+++ weston-5.0.0/libweston-desktop/libweston-desktop.h
+--- weston-6.0.0.orig/libweston-desktop/libweston-desktop.h
++++ weston-6.0.0/libweston-desktop/libweston-desktop.h
 @@ -113,6 +113,9 @@
  	 */
  	void (*set_xwayland_position)(struct weston_desktop_surface *surface,
  				      int32_t x, int32_t y, void *user_data);
 +
 +	void (*set_position)(struct weston_desktop_surface *surface,
-+				      int32_t x, int32_t y);
++			     int32_t x, int32_t y);
  };
  
  void
---- weston-5.0.0.orig/libweston-desktop/wl-shell.c
-+++ weston-5.0.0/libweston-desktop/wl-shell.c
+--- weston-6.0.0.orig/libweston-desktop/wl-shell.c
++++ weston-6.0.0/libweston-desktop/wl-shell.c
 @@ -387,6 +387,19 @@
  	weston_desktop_surface_set_app_id(surface, class_);
  }
  
 +static void
 +weston_desktop_wl_shell_surface_protocol_set_position(struct wl_client *wl_client,
-+						   struct wl_resource *resource,
-+						   int32_t x, int32_t y)
++						      struct wl_resource *resource,
++						      int32_t x, int32_t y)
 +{
 +	struct weston_desktop_surface *dsurface =
 +		wl_resource_get_user_data(resource);
@@ -450,8 +489,8 @@ exit
  };
  
  static const struct weston_desktop_surface_implementation weston_desktop_wl_shell_surface_internal_implementation = {
---- weston-5.0.0.orig/libweston-desktop/xdg-shell-v6.c
-+++ weston-5.0.0/libweston-desktop/xdg-shell-v6.c
+--- weston-6.0.0.orig/libweston-desktop/xdg-shell-v6.c
++++ weston-6.0.0/libweston-desktop/xdg-shell-v6.c
 @@ -550,6 +550,19 @@
  }
  
@@ -480,8 +519,38 @@ exit
  };
  
  static void
---- weston-5.0.0.orig/shared/cairo-util.c
-+++ weston-5.0.0/shared/cairo-util.c
+--- weston-6.0.0.orig/libweston-desktop/xdg-shell.c
++++ weston-6.0.0/libweston-desktop/xdg-shell.c
+@@ -568,6 +568,19 @@
+ }
+ 
+ static void
++weston_desktop_xdg_toplevel_protocol_set_position(struct wl_client *wl_client,
++						  struct wl_resource *resource,
++						  int32_t x, int32_t y)
++{
++	struct weston_desktop_surface *dsurface =
++		wl_resource_get_user_data(resource);
++	struct weston_desktop_xdg_toplevel *toplevel =
++		weston_desktop_surface_get_implementation_data(dsurface);
++
++	weston_desktop_api_set_position(toplevel->base.desktop, dsurface, x, y);
++}
++
++static void
+ weston_desktop_xdg_toplevel_send_configure(struct weston_desktop_xdg_toplevel *toplevel,
+ 					   struct weston_desktop_xdg_toplevel_configure *configure)
+ {
+@@ -771,6 +784,7 @@
+ 	.set_fullscreen      = weston_desktop_xdg_toplevel_protocol_set_fullscreen,
+ 	.unset_fullscreen    = weston_desktop_xdg_toplevel_protocol_unset_fullscreen,
+ 	.set_minimized       = weston_desktop_xdg_toplevel_protocol_set_minimized,
++	.set_position        = weston_desktop_xdg_toplevel_protocol_set_position,
+ };
+ 
+ static void
+--- weston-6.0.0.orig/shared/cairo-util.c
++++ weston-6.0.0/shared/cairo-util.c
 @@ -391,7 +391,7 @@
  	if (t == NULL)
  		return NULL;
@@ -491,9 +560,9 @@ exit
  	t->width = 6;
  	t->titlebar_height = 27;
  	t->frame_radius = 3;
---- weston-5.0.0.orig/shared/config-parser.c
-+++ weston-5.0.0/shared/config-parser.c
-@@ -97,7 +97,7 @@
+--- weston-6.0.0.orig/shared/config-parser.c
++++ weston-6.0.0/shared/config-parser.c
+@@ -96,7 +96,7 @@
  
  	/* For each $XDG_CONFIG_DIRS: weston/<config_file> */
  	if (!config_dirs)

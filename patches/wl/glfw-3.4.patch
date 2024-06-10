@@ -1,0 +1,381 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build egl-opengl-stubs-build stb-build wayland-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists vulkan-loader-build; then
+  VK=1
+  REQUIRES="$REQUIRES vulkan-loader-build"
+fi
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -f deps/nuklear.h
+rm -f deps/stb_image_write.h
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DGLFW_BUILD_X11=OFF -DCMAKE_INSTALL_PREFIX=/wl -DCMAKE_INSTALL_RPATH=/wl/lib -DUSE_XCOMPOSE=OFF -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/wl/bin
+install build/tests/glfwinfo $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/GLFW
+install -m 644 include/GLFW/glfw3.h $DESTDIR/wl/include/GLFW
+install -d $DESTDIR/wl/lib
+install build/src/libglfw.so.3.* $DESTDIR/wl/lib/libglfw.so.3
+ln -sf libglfw.so.3 $DESTDIR/wl/lib/libglfw.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/src/glfw3.pc $DESTDIR/wl/lib/pkgconfig
+install -d $DESTDIR/wl/share/glfw3/examples
+install build/examples/boing $DESTDIR/wl/share/glfw3/examples
+install build/examples/gears $DESTDIR/wl/share/glfw3/examples
+install build/examples/offscreen $DESTDIR/wl/share/glfw3/examples
+install build/examples/particles $DESTDIR/wl/share/glfw3/examples
+install build/examples/sharing $DESTDIR/wl/share/glfw3/examples
+install build/examples/splitview $DESTDIR/wl/share/glfw3/examples
+install build/examples/triangle-opengl $DESTDIR/wl/share/glfw3/examples
+install build/examples/wave $DESTDIR/wl/share/glfw3/examples
+install build/examples/windows $DESTDIR/wl/share/glfw3/examples
+install build/tests/allocator $DESTDIR/wl/share/glfw3/examples
+install build/tests/clipboard $DESTDIR/wl/share/glfw3/examples
+install build/tests/cursor $DESTDIR/wl/share/glfw3/examples
+install build/tests/empty $DESTDIR/wl/share/glfw3/examples
+install build/tests/events $DESTDIR/wl/share/glfw3/examples
+install build/tests/icon $DESTDIR/wl/share/glfw3/examples
+install build/tests/iconify $DESTDIR/wl/share/glfw3/examples
+install build/tests/monitors $DESTDIR/wl/share/glfw3/examples
+install build/tests/msaa $DESTDIR/wl/share/glfw3/examples
+install build/tests/reopen $DESTDIR/wl/share/glfw3/examples
+install build/tests/tearing $DESTDIR/wl/share/glfw3/examples
+install build/tests/threads $DESTDIR/wl/share/glfw3/examples
+install build/tests/timeout $DESTDIR/wl/share/glfw3/examples
+install build/tests/title $DESTDIR/wl/share/glfw3/examples
+test $VK && install build/tests/triangle-vulkan $DESTDIR/wl/share/glfw3/examples
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/glfw-build.pc << EOF
+Name: glfw
+Version: 3.4
+Description: OpenGL Framework
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/GLFW/glfw3.h \\
+/wl/lib/libglfw.so \\
+/wl/lib/pkgconfig/glfw3.pc
+
+exec=\\
+/wl/bin/glfwinfo \\
+/wl/lib/libglfw.so.3 \\
+/wl/share/glfw3/examples/allocator \\
+/wl/share/glfw3/examples/boing \\
+/wl/share/glfw3/examples/clipboard \\
+/wl/share/glfw3/examples/cursor \\
+/wl/share/glfw3/examples/empty \\
+/wl/share/glfw3/examples/events \\
+/wl/share/glfw3/examples/gears \\
+/wl/share/glfw3/examples/icon \\
+/wl/share/glfw3/examples/iconify \\
+/wl/share/glfw3/examples/monitors \\
+/wl/share/glfw3/examples/msaa \\
+/wl/share/glfw3/examples/offscreen \\
+/wl/share/glfw3/examples/particles \\
+/wl/share/glfw3/examples/reopen \\
+/wl/share/glfw3/examples/sharing \\
+/wl/share/glfw3/examples/splitview \\
+/wl/share/glfw3/examples/tearing \\
+/wl/share/glfw3/examples/threads \\
+/wl/share/glfw3/examples/timeout \\
+/wl/share/glfw3/examples/title \\
+/wl/share/glfw3/examples/triangle-opengl \\
+EOF
+test $VK && echo /wl/share/glfw3/examples/triangle-vulkan \\ >> $DESTDIR/wl/share/pkgconfig/glfw-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/glfw-build.pc << EOF
+/wl/share/glfw3/examples/wave \\
+/wl/share/glfw3/examples/windows
+EOF
+
+exit
+--- glfw-3.4.orig/CMake/glfw3.pc.in
++++ glfw-3.4/CMake/glfw3.pc.in
+@@ -8,6 +8,6 @@
+ Version: @GLFW_VERSION@
+ URL: https://www.glfw.org/
+ Requires.private: @GLFW_PKG_CONFIG_REQUIRES_PRIVATE@
+-Libs: -L${libdir} -l@GLFW_LIB_NAME@@GLFW_LIB_NAME_SUFFIX@
++Libs: -L${libdir} -Wl,-rpath,${libdir} -l@GLFW_LIB_NAME@@GLFW_LIB_NAME_SUFFIX@
+ Libs.private: @GLFW_PKG_CONFIG_LIBS_PRIVATE@
+ Cflags: -I${includedir}
+--- glfw-3.4.orig/CMakeLists.txt
++++ glfw-3.4/CMakeLists.txt
+@@ -41,6 +41,7 @@
+                        "WIN32" OFF)
+ cmake_dependent_option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON
+                        "MSVC" OFF)
++cmake_dependent_option(USE_XCOMPOSE "Use XCompose" ON "GLFW_BUILD_WAYLAND" OFF)
+ 
+ set(GLFW_LIBRARY_TYPE "${GLFW_LIBRARY_TYPE}" CACHE STRING
+     "Library type override for GLFW (SHARED, STATIC, OBJECT, or empty to follow BUILD_SHARED_LIBS)")
+--- glfw-3.4.orig/examples/CMakeLists.txt
++++ glfw-3.4/examples/CMakeLists.txt
+@@ -37,6 +37,11 @@
+ add_executable(wave WIN32 MACOSX_BUNDLE wave.c ${ICON} ${GLAD_GL})
+ add_executable(windows WIN32 MACOSX_BUNDLE windows.c ${ICON} ${GLAD_GL})
+ 
++find_path(STB_INCLUDE_PATH stb/stb_image_write.h)
++if (STB_INCLUDE_PATH)
++    target_include_directories(offscreen PRIVATE ${STB_INCLUDE_PATH}/stb)
++endif()
++
+ target_link_libraries(particles Threads::Threads)
+ if (RT_LIBRARY)
+     target_link_libraries(particles "${RT_LIBRARY}")
+--- glfw-3.4.orig/src/CMakeLists.txt
++++ glfw-3.4/src/CMakeLists.txt
+@@ -52,6 +52,9 @@
+ 
+ if (GLFW_BUILD_WAYLAND)
+     target_compile_definitions(glfw PRIVATE _GLFW_WAYLAND)
++    if (USE_XCOMPOSE)
++        target_compile_definitions(glfw PRIVATE HAVE_XKBCOMMON_COMPOSE_H)
++    endif()
+     target_sources(glfw PRIVATE wl_platform.h xkb_unicode.h wl_init.c
+                                 wl_monitor.c wl_window.c xkb_unicode.c)
+ endif()
+--- glfw-3.4.orig/src/linux_joystick.c
++++ glfw-3.4/src/linux_joystick.c
+@@ -25,6 +25,8 @@
+ //
+ //========================================================================
+ 
++#define _GNU_SOURCE
++
+ #include "internal.h"
+ 
+ #if defined(GLFW_BUILD_LINUX_JOYSTICK)
+--- glfw-3.4.orig/src/posix_time.c
++++ glfw-3.4/src/posix_time.c
+@@ -25,6 +25,8 @@
+ //
+ //========================================================================
+ 
++#define _GNU_SOURCE
++
+ #include "internal.h"
+ 
+ #if defined(GLFW_BUILD_POSIX_TIMER)
+--- glfw-3.4.orig/src/wl_init.c
++++ glfw-3.4/src/wl_init.c
+@@ -24,6 +24,8 @@
+ //
+ //========================================================================
+ 
++#define _GNU_SOURCE
++
+ #include "internal.h"
+ 
+ #if defined(_GLFW_WAYLAND)
+@@ -690,6 +692,7 @@
+         _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_state_key_get_layout");
+     _glfw.wl.xkb.state_mod_index_is_active = (PFN_xkb_state_mod_index_is_active)
+         _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_state_mod_index_is_active");
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+     _glfw.wl.xkb.compose_table_new_from_locale = (PFN_xkb_compose_table_new_from_locale)
+         _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_compose_table_new_from_locale");
+     _glfw.wl.xkb.compose_table_unref = (PFN_xkb_compose_table_unref)
+@@ -704,6 +707,7 @@
+         _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_compose_state_get_status");
+     _glfw.wl.xkb.compose_state_get_one_sym = (PFN_xkb_compose_state_get_one_sym)
+         _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_compose_state_get_one_sym");
++#endif
+ 
+     if (!_glfw.wl.xkb.context_new ||
+         !_glfw.wl.xkb.context_unref ||
+@@ -717,8 +721,15 @@
+         !_glfw.wl.xkb.state_key_get_syms ||
+         !_glfw.wl.xkb.state_update_mask ||
+         !_glfw.wl.xkb.state_key_get_layout ||
+-        !_glfw.wl.xkb.state_mod_index_is_active ||
+-        !_glfw.wl.xkb.compose_table_new_from_locale ||
++        !_glfw.wl.xkb.state_mod_index_is_active)
++    {
++        _glfwInputError(GLFW_PLATFORM_ERROR,
++                        "Wayland: Failed to load all entry points from libxkbcommon");
++        return GLFW_FALSE;
++    }
++
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
++    if (!_glfw.wl.xkb.compose_table_new_from_locale ||
+         !_glfw.wl.xkb.compose_table_unref ||
+         !_glfw.wl.xkb.compose_state_new ||
+         !_glfw.wl.xkb.compose_state_unref ||
+@@ -730,6 +741,7 @@
+                         "Wayland: Failed to load all entry points from libxkbcommon");
+         return GLFW_FALSE;
+     }
++#endif
+ 
+     if (_glfw.hints.init.wl.libdecorMode == GLFW_WAYLAND_PREFER_LIBDECOR)
+         _glfw.wl.libdecor.handle = _glfwPlatformLoadModule("libdecor-0.so.0");
+@@ -914,8 +926,10 @@
+         _glfw.wl.egl.handle = NULL;
+     }
+ 
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+     if (_glfw.wl.xkb.composeState)
+         xkb_compose_state_unref(_glfw.wl.xkb.composeState);
++#endif
+     if (_glfw.wl.xkb.keymap)
+         xkb_keymap_unref(_glfw.wl.xkb.keymap);
+     if (_glfw.wl.xkb.state)
+--- glfw-3.4.orig/src/wl_platform.h
++++ glfw-3.4/src/wl_platform.h
+@@ -26,7 +26,9 @@
+ 
+ #include <wayland-client-core.h>
+ #include <xkbcommon/xkbcommon.h>
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+ #include <xkbcommon/xkbcommon-compose.h>
++#endif
+ 
+ #include <stdbool.h>
+ 
+@@ -194,6 +196,7 @@
+ #define xkb_state_key_get_layout _glfw.wl.xkb.state_key_get_layout
+ #define xkb_state_mod_index_is_active _glfw.wl.xkb.state_mod_index_is_active
+ 
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+ typedef struct xkb_compose_table* (* PFN_xkb_compose_table_new_from_locale)(struct xkb_context*, const char*, enum xkb_compose_compile_flags);
+ typedef void (* PFN_xkb_compose_table_unref)(struct xkb_compose_table*);
+ typedef struct xkb_compose_state* (* PFN_xkb_compose_state_new)(struct xkb_compose_table*, enum xkb_compose_state_flags);
+@@ -208,6 +211,7 @@
+ #define xkb_compose_state_feed _glfw.wl.xkb.compose_state_feed
+ #define xkb_compose_state_get_status _glfw.wl.xkb.compose_state_get_status
+ #define xkb_compose_state_get_one_sym _glfw.wl.xkb.compose_state_get_one_sym
++#endif
+ 
+ struct libdecor;
+ struct libdecor_frame;
+@@ -474,7 +478,9 @@
+         struct xkb_keymap*      keymap;
+         struct xkb_state*       state;
+ 
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+         struct xkb_compose_state* composeState;
++#endif
+ 
+         xkb_mod_index_t         controlIndex;
+         xkb_mod_index_t         altIndex;
+@@ -498,6 +504,7 @@
+         PFN_xkb_state_key_get_layout state_key_get_layout;
+         PFN_xkb_state_mod_index_is_active state_mod_index_is_active;
+ 
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+         PFN_xkb_compose_table_new_from_locale compose_table_new_from_locale;
+         PFN_xkb_compose_table_unref compose_table_unref;
+         PFN_xkb_compose_state_new compose_state_new;
+@@ -505,6 +512,7 @@
+         PFN_xkb_compose_state_feed compose_state_feed;
+         PFN_xkb_compose_state_get_status compose_state_get_status;
+         PFN_xkb_compose_state_get_one_sym compose_state_get_one_sym;
++#endif
+     } xkb;
+ 
+     _GLFWwindow*                pointerFocus;
+--- glfw-3.4.orig/src/wl_window.c
++++ glfw-3.4/src/wl_window.c
+@@ -1164,6 +1164,7 @@
+     return GLFW_KEY_UNKNOWN;
+ }
+ 
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+ static xkb_keysym_t composeSymbol(xkb_keysym_t sym)
+ {
+     if (sym == XKB_KEY_NoSymbol || !_glfw.wl.xkb.composeState)
+@@ -1183,6 +1184,7 @@
+             return sym;
+     }
+ }
++#endif
+ 
+ static void inputText(_GLFWwindow* window, uint32_t scancode)
+ {
+@@ -1191,7 +1193,11 @@
+ 
+     if (xkb_state_key_get_syms(_glfw.wl.xkb.state, keycode, &keysyms) == 1)
+     {
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+         const xkb_keysym_t keysym = composeSymbol(keysyms[0]);
++#else
++        const xkb_keysym_t keysym = keysyms[0];
++#endif
+         const uint32_t codepoint = _glfwKeySym2Unicode(keysym);
+         if (codepoint != GLFW_INVALID_CODEPOINT)
+         {
+@@ -1639,8 +1645,10 @@
+ {
+     struct xkb_keymap* keymap;
+     struct xkb_state* state;
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+     struct xkb_compose_table* composeTable;
+     struct xkb_compose_state* composeState;
++#endif
+ 
+     char* mapStr;
+     const char* locale;
+@@ -1689,6 +1697,7 @@
+     if (!locale)
+         locale = "C";
+ 
++#ifdef HAVE_XKBCOMMON_COMPOSE_H
+     composeTable =
+         xkb_compose_table_new_from_locale(_glfw.wl.xkb.context, locale,
+                                           XKB_COMPOSE_COMPILE_NO_FLAGS);
+@@ -1708,6 +1717,7 @@
+         _glfwInputError(GLFW_PLATFORM_ERROR,
+                         "Wayland: Failed to create XKB compose table");
+     }
++#endif
+ 
+     xkb_keymap_unref(_glfw.wl.xkb.keymap);
+     xkb_state_unref(_glfw.wl.xkb.state);
+--- glfw-3.4.orig/tests/CMakeLists.txt
++++ glfw-3.4/tests/CMakeLists.txt
+@@ -30,16 +30,18 @@
+ add_executable(cursor cursor.c ${GLAD_GL})
+ 
+ add_executable(empty WIN32 MACOSX_BUNDLE empty.c ${TINYCTHREAD} ${GLAD_GL})
+-add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
+ add_executable(icon WIN32 MACOSX_BUNDLE icon.c ${GLAD_GL})
++if(EXISTS deps/nuklear.h)
++add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
+ add_executable(inputlag WIN32 MACOSX_BUNDLE inputlag.c ${GETOPT} ${GLAD_GL})
+ add_executable(joysticks WIN32 MACOSX_BUNDLE joysticks.c ${GLAD_GL})
++add_executable(window WIN32 MACOSX_BUNDLE window.c ${GLAD_GL})
++endif()
+ add_executable(tearing WIN32 MACOSX_BUNDLE tearing.c ${GLAD_GL})
+ add_executable(threads WIN32 MACOSX_BUNDLE threads.c ${TINYCTHREAD} ${GLAD_GL})
+ add_executable(timeout WIN32 MACOSX_BUNDLE timeout.c ${GLAD_GL})
+ add_executable(title WIN32 MACOSX_BUNDLE title.c ${GLAD_GL})
+ add_executable(triangle-vulkan WIN32 triangle-vulkan.c ${GLAD_VULKAN})
+-add_executable(window WIN32 MACOSX_BUNDLE window.c ${GLAD_GL})
+ 
+ target_link_libraries(empty Threads::Threads)
+ target_link_libraries(threads Threads::Threads)
+@@ -48,8 +50,12 @@
+     target_link_libraries(threads "${RT_LIBRARY}")
+ endif()
+ 
++if(EXISTS deps/nuklear.h)
+ set(GUI_ONLY_BINARIES empty gamma icon inputlag joysticks tearing threads
+     timeout title triangle-vulkan window)
++else()
++set(GUI_ONLY_BINARIES empty icon tearing threads timeout title triangle-vulkan)
++endif()
+ set(CONSOLE_BINARIES allocator clipboard events msaa glfwinfo iconify monitors
+     reopen cursor)
+ 

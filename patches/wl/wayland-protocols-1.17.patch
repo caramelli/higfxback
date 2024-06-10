@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-am-build wayland-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.15)
+# configure (ac-2.69; am-1.16)
 aclocal; autoconf; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --with-noarch-pkgconfigdir=/wl/lib/pkgconfig --prefix=/wl
 
@@ -19,6 +19,8 @@ install -d $DESTDIR/wl/share/wayland-protocols/stable/presentation-time
 install -m 644 stable/presentation-time/presentation-time.xml $DESTDIR/wl/share/wayland-protocols/stable/presentation-time
 install -d $DESTDIR/wl/share/wayland-protocols/stable/viewporter
 install -m 644 stable/viewporter/viewporter.xml $DESTDIR/wl/share/wayland-protocols/stable/viewporter
+install -d $DESTDIR/wl/share/wayland-protocols/stable/xdg-shell
+install -m 644 stable/xdg-shell/xdg-shell.xml $DESTDIR/wl/share/wayland-protocols/stable/xdg-shell
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/fullscreen-shell
 install -m 644 unstable/fullscreen-shell/fullscreen-shell-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/fullscreen-shell
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/input-method
@@ -27,6 +29,8 @@ install -d $DESTDIR/wl/share/wayland-protocols/unstable/input-timestamps
 install -m 644 unstable/input-timestamps/input-timestamps-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/input-timestamps
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/linux-dmabuf
 install -m 644 unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/linux-dmabuf
+install -d $DESTDIR/wl/share/wayland-protocols/unstable/linux-explicit-synchronization
+install -m 644 unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/linux-explicit-synchronization
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/relative-pointer
 install -m 644 unstable/relative-pointer/relative-pointer-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/relative-pointer
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/pointer-constraints
@@ -35,6 +39,8 @@ install -d $DESTDIR/wl/share/wayland-protocols/unstable/tablet
 install -m 644 unstable/tablet/tablet-unstable-v2.xml $DESTDIR/wl/share/wayland-protocols/unstable/tablet
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/text-input
 install -m 644 unstable/text-input/text-input-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/text-input
+install -d $DESTDIR/wl/share/wayland-protocols/unstable/xdg-output
+install -m 644 unstable/xdg-output/xdg-output-unstable-v1.xml $DESTDIR/wl/share/wayland-protocols/unstable/xdg-output
 install -d $DESTDIR/wl/share/wayland-protocols/unstable/xdg-shell
 install -m 644 unstable/xdg-shell/xdg-shell-unstable-v6.xml $DESTDIR/wl/share/wayland-protocols/unstable/xdg-shell
 
@@ -42,7 +48,7 @@ install -m 644 unstable/xdg-shell/xdg-shell-unstable-v6.xml $DESTDIR/wl/share/wa
 install -d $DESTDIR/wl/share/pkgconfig
 cat > $DESTDIR/wl/share/pkgconfig/wayland-protocols-build.pc << EOF
 Name: wayland-protocols
-Version: 1.16.0
+Version: 1.17
 Description: Additional Wayland protocols
 Requires: $REQUIRES
 
@@ -51,20 +57,23 @@ devel=\\
 /wl/share/pkgconfig/wayland-protocols-build.pc \\
 /wl/share/wayland-protocols/stable/presentation-time/presentation-time.xml \\
 /wl/share/wayland-protocols/stable/viewporter/viewporter.xml \\
+/wl/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \\
 /wl/share/wayland-protocols/unstable/fullscreen-shell/fullscreen-shell-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/input-method/input-method-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/input-timestamps/input-timestamps-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml \\
+/wl/share/wayland-protocols/unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/relative-pointer/relative-pointer-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/tablet/tablet-unstable-v2.xml \\
 /wl/share/wayland-protocols/unstable/text-input/text-input-unstable-v1.xml \\
+/wl/share/wayland-protocols/unstable/xdg-output/xdg-output-unstable-v1.xml \\
 /wl/share/wayland-protocols/unstable/xdg-shell/xdg-shell-unstable-v6.xml
 EOF
 
 exit
---- wayland-protocols-1.16.orig/configure.ac
-+++ wayland-protocols-1.16/configure.ac
+--- wayland-protocols-1.17.orig/configure.ac
++++ wayland-protocols-1.17/configure.ac
 @@ -11,8 +11,6 @@
          [wayland-protocols],
          [http://wayland.freedesktop.org/])
@@ -74,8 +83,25 @@ exit
  AC_SUBST([WAYLAND_PROTOCOLS_VERSION], [wayland_protocols_version])
  
  AC_ARG_VAR([wayland_scanner], [The wayland-scanner executable])
---- wayland-protocols-1.16.orig/unstable/xdg-shell/xdg-shell-unstable-v6.xml
-+++ wayland-protocols-1.16/unstable/xdg-shell/xdg-shell-unstable-v6.xml
+--- wayland-protocols-1.17.orig/stable/xdg-shell/xdg-shell.xml
++++ wayland-protocols-1.17/stable/xdg-shell/xdg-shell.xml
+@@ -975,6 +975,14 @@
+       </description>
+     </request>
+ 
++    <request name="set_position">
++      <description summary="set surface position">
++	Set a position for the surface.
++      </description>
++      <arg name="x" type="int"/>
++      <arg name="y" type="int"/>
++    </request>
++
+     <event name="configure">
+       <description summary="suggest a surface change">
+ 	This configure event asks the client to resize its toplevel surface or
+--- wayland-protocols-1.17.orig/unstable/xdg-shell/xdg-shell-unstable-v6.xml
++++ wayland-protocols-1.17/unstable/xdg-shell/xdg-shell-unstable-v6.xml
 @@ -872,6 +872,14 @@
        </description>
      </request>
