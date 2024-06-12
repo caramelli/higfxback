@@ -134,6 +134,50 @@ exit
  target_link_libraries(particles Threads::Threads)
  if (RT_LIBRARY)
      target_link_libraries(particles "${RT_LIBRARY}")
+--- glfw-3.4.orig/examples/triangle-opengl.c
++++ glfw-3.4/examples/triangle-opengl.c
+@@ -49,11 +49,10 @@
+ };
+ 
+ static const char* vertex_shader_text =
+-"#version 330\n"
+ "uniform mat4 MVP;\n"
+-"in vec3 vCol;\n"
+-"in vec2 vPos;\n"
+-"out vec3 color;\n"
++"attribute vec3 vCol;\n"
++"attribute vec2 vPos;\n"
++"varying vec3 color;\n"
+ "void main()\n"
+ "{\n"
+ "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
+@@ -61,12 +60,10 @@
+ "}\n";
+ 
+ static const char* fragment_shader_text =
+-"#version 330\n"
+-"in vec3 color;\n"
+-"out vec4 fragment;\n"
++"varying vec3 color;\n"
+ "void main()\n"
+ "{\n"
+-"    fragment = vec4(color, 1.0);\n"
++"    gl_FragColor = vec4(color, 1.0);\n"
+ "}\n";
+ 
+ static void error_callback(int error, const char* description)
+@@ -87,9 +84,8 @@
+     if (!glfwInit())
+         exit(EXIT_FAILURE);
+ 
+-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
++    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
++    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+ 
+     GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
+     if (!window)
 --- glfw-3.4.orig/src/CMakeLists.txt
 +++ glfw-3.4/src/CMakeLists.txt
 @@ -52,6 +52,9 @@

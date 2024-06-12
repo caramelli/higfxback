@@ -1,0 +1,116 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-glesv1-cm --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install yagears $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/yagears-build.pc << EOF
+Name: yagears
+Version: 0.8
+Description: Yet Another Gears OpenGL demo
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/yagears
+EOF
+
+exit
+--- yagears-0.8.orig/configure.ac
++++ yagears-0.8/configure.ac
+@@ -1,6 +1,7 @@
+ AC_INIT(yagears, 0.8)
+ 
+ AC_CONFIG_HEADERS(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE
+ 
+@@ -88,10 +89,13 @@
+   if test x$enable_gl_x11 = xyes; then
+     save_LIBS=$LIBS
+     LIBS="$LIBS `$PKG_CONFIG --libs-only-L gl 2> /dev/null`"
+-    AC_CHECK_LIB(GL, glXCreateContext,
+-                 AC_DEFINE(GL_X11, 1, Support for OpenGL Extension to Xlib) X11_LIBS=-lX11,
+-                 enable_gl_x11=no)
++    AC_CHECK_LIB(GL, glXCreateContext, , enable_gl_x11=no)
+     LIBS=$save_LIBS
++    if test x$enable_gl_x11 = xyes; then
++      PKG_CHECK_MODULES(X11, x11,
++                        AC_DEFINE(GL_X11, 1, Support for OpenGL Extension to Xlib),
++                        enable_gl_x11=no)
++    fi
+   fi
+ 
+   if test x$enable_gl_directfb = xyes; then
+@@ -126,10 +130,15 @@
+    test x$enable_egl_wayland = xyes || test x$enable_egl_drm; then
+   PKG_CHECK_MODULES(EGL, egl, enable_egl=yes, enable_egl=no)
+   if test x$enable_egl = xyes; then
++    EGL_CFLAGS="$EGL_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
+     if test x$enable_egl_x11 = xyes; then
+-      PKG_CHECK_MODULES(X11, x11,
+-                        AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform),
+-                        enable_egl_x11=no)
++      if test x$enable_gl_x11 = xyes; then
++        AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform)
++      else
++        PKG_CHECK_MODULES(X11, x11,
++                          AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform),
++                          enable_egl_x11=no)
++      fi
+     fi
+     if test x$enable_egl_directfb = xyes; then
+       if test x$enable_gl_directfb = xyes; then
+@@ -151,7 +160,7 @@
+     if test x$enable_egl_drm = xyes; then
+       AC_MSG_CHECKING(for DRI driver)
+       DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri 2> /dev/null`
+-      if test -d $DRIDRIVERDIR; then
++      if test -d "$DRIDRIVERDIR"; then
+         AC_MSG_RESULT(yes)
+         PKG_CHECK_MODULES(DRM, libdrm libevdev,
+                           AC_DEFINE(EGL_DRM, 1, Support for EGL with DRM platform),
+--- yagears-0.8.orig/main.c
++++ yagears-0.8/main.c
+@@ -39,6 +39,9 @@
+ #include <directfbgl.h>
+ #endif
+ #if defined(GL_FBDEV)
++#include <fcntl.h>
++#include <sys/mman.h>
++#include <linux/input.h>
+ #include <GL/glfbdev.h>
+ #endif
+ 
+@@ -1002,7 +1005,7 @@
+   #if defined(EGL_FBDEV)
+   if (!strcmp(backend, "egl-fbdev")) {
+     setenv("EGL_PLATFORM", "fbdev", 1);
+-    egl_dpy = eglGetDisplay((EGLNativeDisplayType)fb_dpy);
++    egl_dpy = eglGetDisplay((EGLNativeDisplayType)(long)fb_dpy);
+   }
+   #endif
+   #if defined(EGL_WAYLAND)
+@@ -1155,7 +1158,7 @@
+   }
+   #endif
+   #if defined(GL_FBDEV) || defined(EGL_FBDEV)
+-  if (!strcmp(backend, "gl-fbdev")) {
++  if (!strcmp(backend, "gl-fbdev") || !strcmp(backend, "egl-fbdev")) {
+     fb_win = calloc(1, sizeof(struct fb_window));
+     if (!fb_win) {
+       printf("fb_window calloc failed: %s\n", strerror(errno));

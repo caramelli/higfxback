@@ -1,0 +1,279 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build libx11-build tiff-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
+  GLFW=1
+  REQUIRES="$REQUIRES glfw-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl-build; then
+  SDL=1
+  REQUIRES="$REQUIRES sdl-build"
+fi
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-egl-drm --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1-cm --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install yagears $DESTDIR/x11/bin
+test $GLFW || test $SDL && install yagears-gui $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/yagears-build.pc << EOF
+Name: yagears
+Version: 1.0
+Description: Yet Another Gears OpenGL demo
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/yagears \\
+EOF
+test $GLFW || test $SDL && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+
+exit
+--- yagears-1.0.orig/configure.ac
++++ yagears-1.0/configure.ac
+@@ -1,6 +1,7 @@
+ AC_INIT(yagears, 1.0)
+ 
+ AC_CONFIG_HEADERS(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE
+ 
+@@ -134,6 +135,7 @@
+    test x$enable_egl_wayland = xyes || test x$enable_egl_drm || test x$enable_egl_rpi; then
+   PKG_CHECK_MODULES(EGL, egl, enable_egl=yes, enable_egl=no)
+   if test x$enable_egl = xyes; then
++    EGL_CFLAGS="$EGL_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
+     if test x$enable_egl_x11 = xyes; then
+       if test x$enable_gl_x11 = xyes; then
+         AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform)
+@@ -175,8 +177,12 @@
+                         AC_DEFINE(EGL_DRM, 1, Support for EGL with DRM platform),
+                         enable_egl_drm=no)
+       if test x$enable_egl_drm = xyes; then
+-        DRM_CFLAGS="$DRM_CFLAGS -DDRI_DRIVERDIR=\\\"`$PKG_CONFIG --variable=dridriverdir dri`\\\" -DDRI_MAJOR_VERSION=`$PKG_CONFIG --modversion dri | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'` -DDRI_MINOR_VERSION=`$PKG_CONFIG --modversion dri | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`"
+-        DRM_LIBS="$DRM_LIBS -ldl"
++        PKG_CHECK_MODULES(DRI, dri, have_dri=yes, have_dri=no)
++        if test x$have_dri = xyes; then
++          DRM_CFLAGS="$DRM_CFLAGS -DDRI_DRIVERDIR=\\\"`$PKG_CONFIG --variable=dridriverdir dri`\\\" -DDRI_MAJOR_VERSION=`$PKG_CONFIG --modversion dri | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'` -DDRI_MINOR_VERSION=`$PKG_CONFIG --modversion dri | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`"
++          DRM_LIBS="$DRM_LIBS -ldl"
++          AC_DEFINE(HAVE_DRI, 1, Have Direct Rendering Infrastructure)
++        fi
+       fi
+     fi
+     if test x$enable_egl_rpi = xyes; then
+--- yagears-1.0.orig/main.c
++++ yagears-1.0/main.c
+@@ -59,13 +59,14 @@
+ #include <xkbcommon/xkbcommon.h>
+ #endif
+ #if defined(EGL_DRM)
+-#include <dlfcn.h>
+ #include <fcntl.h>
+ #include <gbm.h>
+-#include <limits.h>
+ #include <xf86drm.h>
+ #include <xf86drmMode.h>
+ #include <libevdev/libevdev.h>
++#ifdef HAVE_DRI
++#include <dlfcn.h>
++#include <limits.h>
+ 
+ struct __DRIextensionRec {
+   char *name;
+@@ -113,6 +114,7 @@
+   int (*queryImage)(struct __DRIimageRec *, int, int *);
+ };
+ #endif
++#endif
+ #if defined(EGL_RPI)
+ #include <fcntl.h>
+ #include <termios.h>
+@@ -457,6 +459,7 @@
+ #define drm_surface gbm_surface
+ #define drm_bo gbm_bo
+ 
++#ifdef HAVE_DRI
+ struct drm_display {
+   struct drm_display *(*dummy)(int);
+   int fd;
+@@ -569,6 +572,7 @@
+ {
+   drmModeRmFB(bo->display->fd, (uintptr_t)data);
+ }
++#endif
+ 
+ static void gbm_destroy_user_data(struct gbm_bo *bo, void *data)
+ {
+@@ -726,9 +730,11 @@
+   #if defined(EGL_DRM)
+   int drm_fd = -1;
+   struct drm_display *drm_dpy = NULL;
++  #ifdef HAVE_DRI
+   char drm_driver_path[PATH_MAX];
+   struct __DRIcoreExtensionRec **drm_driver_extensions = NULL;
+   struct __DRIextensionRec *drm_extensions[] = { &image_loader_extension.base, NULL };
++  #endif
+   drmModeResPtr drm_resources = NULL;
+   drmModeConnectorPtr drm_connector = NULL;
+   drmModeEncoderPtr drm_encoder = NULL;
+@@ -988,6 +994,7 @@
+       }
+     }
+ 
++    #ifdef HAVE_DRI
+     if (getenv("NO_GBM")) {
+       drm_dpy = calloc(1, sizeof(struct drm_display));
+       if (!drm_dpy) {
+@@ -1035,7 +1042,9 @@
+       drm_dpy->bo_create = drm_bo_create;
+       drm_dpy->bo_destroy = drm_bo_destroy;
+     }
+-    else {
++    else
++    #endif
++    {
+       drm_dpy = gbm_create_device(drm_fd);
+       if (!drm_dpy) {
+         printf("gbm_create_device failed\n");
+@@ -1343,6 +1352,7 @@
+   #endif
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
++    #ifdef HAVE_DRI
+     if (getenv("NO_GBM")) {
+       drm_win = calloc(1, sizeof(struct drm_surface));
+       if (!drm_win) {
+@@ -1354,8 +1364,10 @@
+       drm_win->width = win_width;
+       drm_win->height = win_height;
+     }
+-    else {
+-      drm_win = gbm_surface_create(drm_dpy, win_width, win_height, GBM_BO_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
++    else
++    #endif
++    {
++      drm_win = gbm_surface_create(drm_dpy, drm_connector->modes[0].hdisplay, drm_connector->modes[0].vdisplay, GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
+       if (!drm_win) {
+         printf("gbm_surface_create failed\n");
+         goto out;
+@@ -1775,35 +1787,47 @@
+     #if defined(EGL_DRM)
+     if (!strcmp(backend, "egl-drm")) {
+       if (redisplay) {
+-        if (drm_bo) {
+-          if (getenv("NO_GBM")) {
+-            drm_dpy->surface_release_buffer(drm_win, drm_bo);
+-          }
+-          else {
+-            gbm_surface_release_buffer(drm_win, drm_bo);
+-          }
+-        }
++        #ifdef HAVE_DRI
+         if (getenv("NO_GBM")) {
+           drm_bo = drm_dpy->surface_lock_front_buffer(drm_win);
+         }
+-        else {
++        else
++        #endif
++        {
+           drm_bo = gbm_surface_lock_front_buffer(drm_win);
+         }
+         if (drm_bo) {
+-          drm_fb_id = getenv("NO_GBM") ? (uintptr_t)drm_bo->user_data : (uintptr_t)gbm_bo_get_user_data(drm_bo);
+-          if(!drm_fb_id) {
+-            drmModeAddFB(drm_fd, win_width, win_height, 24, 32, getenv("NO_GBM") ? drm_bo->stride : gbm_bo_get_stride(drm_bo), getenv("NO_GBM") ? drm_bo->handle : gbm_bo_get_handle(drm_bo).u32, &drm_fb_id);
+-            drmModeSetCrtc(drm_fd, drm_encoder->crtc_id, drm_fb_id, 0, 0, &drm_connector->connector_id, 1, &drm_connector->modes[0]);
+-            if (getenv("NO_GBM")) {
++          #ifdef HAVE_DRI
++          if (getenv("NO_GBM")) {
++            drm_fb_id = (uintptr_t)drm_bo->user_data;
++            if (!drm_fb_id) {
++              drmModeAddFB(drm_fd, drm_bo->width, drm_bo->height, 24, 32, drm_bo->stride, drm_bo->handle, &drm_fb_id);
++              drmModeSetCrtc(drm_fd, drm_crtc->crtc_id, drm_fb_id, 0, 0, &drm_connector->connector_id, 1, &drm_connector->modes[0]);
+               drm_bo->user_data = (void *)(uintptr_t)drm_fb_id;
+               drm_bo->destroy_user_data = drm_destroy_user_data;
+             }
+-            else {
++          }
++          else
++          #endif
++          {
++            drm_fb_id = (uintptr_t)gbm_bo_get_user_data(drm_bo);
++            if (!drm_fb_id) {
++              drmModeAddFB(drm_fd, gbm_bo_get_width(drm_bo), gbm_bo_get_height(drm_bo), 24, 32, gbm_bo_get_stride(drm_bo), gbm_bo_get_handle(drm_bo).u32, &drm_fb_id);
++              drmModeSetCrtc(drm_fd, drm_crtc->crtc_id, drm_fb_id, 0, 0, &drm_connector->connector_id, 1, &drm_connector->modes[0]);
+               gbm_bo_set_user_data(drm_bo, (void *)(uintptr_t)drm_fb_id, gbm_destroy_user_data);
+             }
+           }
+           drmModePageFlip(drm_fd, drm_encoder->crtc_id, drm_fb_id, DRM_MODE_PAGE_FLIP_EVENT, NULL);
+           drmHandleEvent(drm_fd, &drm_context);
++          #ifdef HAVE_DRI
++          if (getenv("NO_GBM")) {
++            drm_dpy->surface_release_buffer(drm_win, drm_bo);
++          }
++          else
++          #endif
++          {
++            gbm_surface_release_buffer(drm_win, drm_bo);
++          }
+         }
+         if (!animate) {
+           redisplay = 0;
+@@ -2108,10 +2132,13 @@
+   #if defined(EGL_DRM)
+   if (!strcmp(backend, "egl-drm")) {
+     if (drm_win) {
++      #ifdef HAVE_DRI
+       if (getenv("NO_GBM")) {
+         free(drm_win);
+       }
+-      else {
++      else
++      #endif
++      {
+         gbm_surface_destroy(drm_win);
+       }
+     }
+@@ -2134,8 +2161,9 @@
+     }
+ 
+     if (drm_dpy) {
++      #ifdef HAVE_DRI
+       if (getenv("NO_GBM")) {
+-        if (!drm_dpy->screen) {
++        if (drm_dpy->screen) {
+           for (opt = 0; drm_dpy->driver_configs[opt]; opt++)
+             free(drm_dpy->driver_configs[opt]);
+           free(drm_dpy->driver_configs);
+@@ -2143,13 +2171,15 @@
+           drm_dpy->core->destroyScreen(drm_dpy->screen);
+         }
+ 
+-        if (!drm_dpy->driver) {
++        if (drm_dpy->driver) {
+           dlclose(drm_dpy->driver);
+         }
+ 
+         free(drm_dpy);
+       }
+-      else {
++      else
++      #endif
++      {
+         gbm_device_destroy(drm_dpy);
+       }
+     }

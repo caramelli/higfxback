@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="egl-opengl-stubs-build libpng-build meson-build tiff-build wayland-build"
+REQUIRES="libpng-build meson-build tiff-build wayland-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -17,6 +17,13 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glslang-build vulkan-
   REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
 fi
 
+test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
+  GLFW=1
+  REQUIRES="$REQUIRES glfw-build"
+fi
+
 # configure
 PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup $EGL_OPENGL $VULKAN --prefix=/wl build
 
@@ -26,7 +33,9 @@ meson compile -C build
 # install
 install -d $DESTDIR/wl/bin
 test $GL && install build/yagears2 $DESTDIR/wl/bin
+test $GL && test $GLFW && install build/yagears2-gui $DESTDIR/wl/bin
 test $VK && install build/yagears2-vk $DESTDIR/wl/bin
+test $VK && test $GLFW && install build/yagears2-vk-gui $DESTDIR/wl/bin
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -39,7 +48,9 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /wl/bin/yagears2 \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $GL && test $GLFW && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $VK && echo /wl/bin/yagears2-vk \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $VK && test $GLFW && echo /wl/bin/yagears2-vk-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 
 exit
