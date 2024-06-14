@@ -5,14 +5,19 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-b
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.14; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-egl-drm --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1-cm --prefix=/wl
-
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   GLFW=1
   REQUIRES="$REQUIRES glfw-build"
 fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-egl-drm --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1-cm --prefix=/wl
 
 # build
 make
@@ -20,7 +25,7 @@ make
 # install
 install -d $DESTDIR/wl/bin
 install yagears $DESTDIR/wl/bin
-test $GLFW && install yagears-gui $DESTDIR/x11/bin
+test $GLFW || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -33,7 +38,7 @@ Requires: $REQUIRES
 exec=\\
 /wl/bin/yagears
 EOF
-test $GLFW && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+test $GLFW || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 
 exit
@@ -70,6 +75,17 @@ exit
        fi
      fi
  
+--- yagears-1.1.orig/gui.cc
++++ yagears-1.1/gui.cc
+@@ -1331,7 +1331,7 @@
+         SDL_Idle();
+         #endif
+       SDL_Event event;
+-      while (SDL_PollEvent(&event))
++      if (SDL_PollEvent(&event))
+         #if SDL_VERSION_ATLEAST(2, 0, 0)
+         SDL_KeyDownEvent(sdl_win, &event, &sdl_idle_id);
+         #else
 --- yagears-1.1.orig/main.c
 +++ yagears-1.1/main.c
 @@ -62,13 +62,14 @@

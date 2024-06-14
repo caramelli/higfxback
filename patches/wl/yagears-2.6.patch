@@ -24,6 +24,11 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   REQUIRES="$REQUIRES glfw-build"
 fi
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
 # configure
 PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup $EGL_OPENGL $VULKAN --prefix=/wl build
 
@@ -33,9 +38,9 @@ meson compile -C build
 # install
 install -d $DESTDIR/wl/bin
 test $GL && install build/yagears2 $DESTDIR/wl/bin
-test $GL && test $GLFW && install build/yagears2-gui $DESTDIR/wl/bin
+test $GL && test $GLFW || test $SDL2 && install build/yagears2-gui $DESTDIR/wl/bin
 test $VK && install build/yagears2-vk $DESTDIR/wl/bin
-test $VK && test $GLFW && install build/yagears2-vk-gui $DESTDIR/wl/bin
+test $VK && test $GLFW || test $SDL2 && install build/yagears2-vk-gui $DESTDIR/wl/bin
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -48,9 +53,9 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /wl/bin/yagears2 \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
-test $GL && test $GLFW && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $GL && test $GLFW || test $SDL2 && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $VK && echo /wl/bin/yagears2-vk \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
-test $VK && test $GLFW && echo /wl/bin/yagears2-vk-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $VK && test $GLFW || test $SDL2 && echo /wl/bin/yagears2-vk-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 
 exit
@@ -228,6 +233,17 @@ exit
  fi
  
  # Vulkan WSIs
+--- yagears-2.6.orig/gui.cc
++++ yagears-2.6/gui.cc
+@@ -1331,7 +1331,7 @@
+         SDL_Idle();
+         #endif
+       SDL_Event event;
+-      while (SDL_PollEvent(&event))
++      if (SDL_PollEvent(&event))
+         #if SDL_VERSION_ATLEAST(2, 0, 0)
+         SDL_KeyDownEvent(sdl_win, &event, &sdl_idle_id);
+         #else
 --- yagears-2.6.orig/main.c
 +++ yagears-2.6/main.c
 @@ -61,13 +61,14 @@
@@ -692,3 +708,14 @@ exit
             dependencies: [vulkan_dep, png_dep, tiff_dep, glfw_dep, sdl_dep],
             install: true)
  endif
+--- yagears-2.6.orig/vk-gui.cc
++++ yagears-2.6/vk-gui.cc
+@@ -489,7 +489,7 @@
+       if (sdl_idle_id)
+         SDL_Idle(sdl_win);
+       SDL_Event event;
+-      while (SDL_PollEvent(&event))
++      if (SDL_PollEvent(&event))
+         SDL_KeyDownEvent(sdl_win, &event, &sdl_idle_id);
+       if (event.type == SDL_USEREVENT)
+         break;
