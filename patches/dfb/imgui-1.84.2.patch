@@ -38,14 +38,14 @@ install -m 644 imgui.cpp $DESTDIR/dfb/include/imgui
 install -m 644 imgui.h $DESTDIR/dfb/include/imgui
 install -m 644 imgui_draw.cpp $DESTDIR/dfb/include/imgui
 install -m 644 imgui_internal.h $DESTDIR/dfb/include/imgui
+install -m 644 imgui_tables.cpp $DESTDIR/dfb/include/imgui
+install -m 644 imgui_widgets.cpp $DESTDIR/dfb/include/imgui
 test $GL && install -m 644 backends/imgui_impl_opengl3.cpp $DESTDIR/dfb/include/imgui
 test $GL && install -m 644 backends/imgui_impl_opengl3.h $DESTDIR/dfb/include/imgui
 test $VK && install -m 644 backends/imgui_impl_vulkan.cpp $DESTDIR/dfb/include/imgui
 test $VK && install -m 644 backends/imgui_impl_vulkan.h $DESTDIR/dfb/include/imgui
 test $SDL2 && install -m 644 backends/imgui_impl_sdl.cpp $DESTDIR/dfb/include/imgui
 test $SDL2 && install -m 644 backends/imgui_impl_sdl.h $DESTDIR/dfb/include/imgui
-install -m 644 imgui_tables.cpp $DESTDIR/dfb/include/imgui
-install -m 644 imgui_widgets.cpp $DESTDIR/dfb/include/imgui
 install -d $DESTDIR/dfb/share/imgui
 install -m 644 imgui_demo.cpp $DESTDIR/dfb/share/imgui
 test $GL && test $SDL2 && install examples/example_sdl_opengl3/example_sdl_opengl3 $DESTDIR/dfb/share/imgui
@@ -63,7 +63,6 @@ devel=\\
 /dfb/include/imgui/imconfig.h \\
 /dfb/include/imgui/imgui.cpp \\
 /dfb/include/imgui/imgui.h \\
-/dfb/include/imgui/imgui_demo.cpp \\
 /dfb/include/imgui/imgui_draw.cpp \\
 EOF
 test $GL && echo /dfb/include/imgui/imgui_impl_opengl3.cpp \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
@@ -206,11 +205,10 @@ exit
  
 --- imgui-1.84.2.orig/imgui_widgets.cpp
 +++ imgui-1.84.2/imgui_widgets.cpp
-@@ -3749,7 +3749,12 @@
+@@ -3749,7 +3749,11 @@
  #define STB_TEXTEDIT_K_SHIFT        0x400000
  
  #define STB_TEXTEDIT_IMPLEMENTATION
-+#define STB_TEXTEDIT_IMPLEMENTATION
 +#ifdef IMGUI_STB_TEXTEDIT_FILENAME
 +#include IMGUI_STB_TEXTEDIT_FILENAME
 +#else

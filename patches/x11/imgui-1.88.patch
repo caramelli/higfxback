@@ -45,6 +45,8 @@ install -m 644 imgui.cpp $DESTDIR/x11/include/imgui
 install -m 644 imgui.h $DESTDIR/x11/include/imgui
 install -m 644 imgui_draw.cpp $DESTDIR/x11/include/imgui
 install -m 644 imgui_internal.h $DESTDIR/x11/include/imgui
+install -m 644 imgui_tables.cpp $DESTDIR/x11/include/imgui
+install -m 644 imgui_widgets.cpp $DESTDIR/x11/include/imgui
 test $GL && install -m 644 backends/imgui_impl_opengl2.cpp $DESTDIR/x11/include/imgui
 test $GL && install -m 644 backends/imgui_impl_opengl2.h $DESTDIR/x11/include/imgui
 test $GL && install -m 644 backends/imgui_impl_opengl3.cpp $DESTDIR/x11/include/imgui
@@ -55,8 +57,6 @@ test $GLFW && install -m 644 backends/imgui_impl_glfw.cpp $DESTDIR/x11/include/i
 test $GLFW && install -m 644 backends/imgui_impl_glfw.h $DESTDIR/x11/include/imgui
 test $SDL2 && install -m 644 backends/imgui_impl_sdl.cpp $DESTDIR/x11/include/imgui
 test $SDL2 && install -m 644 backends/imgui_impl_sdl.h $DESTDIR/x11/include/imgui
-install -m 644 imgui_tables.cpp $DESTDIR/x11/include/imgui
-install -m 644 imgui_widgets.cpp $DESTDIR/x11/include/imgui
 install -d $DESTDIR/x11/share/imgui
 install -m 644 imgui_demo.cpp $DESTDIR/x11/share/imgui
 test $GL && test $GLFW && install examples/example_glfw_opengl2/example_glfw_opengl2 $DESTDIR/x11/share/imgui
@@ -76,7 +76,6 @@ devel=\\
 /x11/include/imgui/imconfig.h \\
 /x11/include/imgui/imgui.cpp \\
 /x11/include/imgui/imgui.h \\
-/x11/include/imgui/imgui_demo.cpp \\
 /x11/include/imgui/imgui_draw.cpp \\
 EOF
 test $GL && echo /x11/include/imgui/imgui_impl_opengl2.cpp \\ >> $DESTDIR/x11/share/pkgconfig/imgui-build.pc
@@ -153,7 +152,7 @@ exit
 +SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp
 +OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 +
-+CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -g -Wall -Wformat
 +CXXFLAGS += `pkg-config --cflags glfw3`
 +LIBS = `pkg-config --libs glfw3` -lvulkan
@@ -232,7 +231,7 @@ exit
 +SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp
 +OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 +
-+CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -g -Wall -Wformat
 +CXXFLAGS += `pkg-config --cflags sdl2`
 +LIBS = `pkg-config --libs sdl2` -lvulkan
@@ -273,11 +272,10 @@ exit
  
 --- imgui-1.88.orig/imgui_widgets.cpp
 +++ imgui-1.88/imgui_widgets.cpp
-@@ -3762,7 +3762,12 @@
+@@ -3762,7 +3762,11 @@
  #define STB_TEXTEDIT_K_SHIFT        0x400000
  
  #define STB_TEXTEDIT_IMPLEMENTATION
-+#define STB_TEXTEDIT_IMPLEMENTATION
 +#ifdef IMGUI_STB_TEXTEDIT_FILENAME
 +#include IMGUI_STB_TEXTEDIT_FILENAME
 +#else
