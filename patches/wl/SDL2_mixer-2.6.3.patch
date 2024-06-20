@@ -1,0 +1,56 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libvorbis-build sdl2-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; lt-2.2.6)
+libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
+PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --disable-music-ogg-stb --disable-static --enable-music-ogg-vorbis --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install build/.libs/playmus $DESTDIR/wl/bin
+install build/.libs/playwave $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/SDL2
+install -m 644 include/SDL_mixer.h $DESTDIR/wl/include/SDL2
+install -d $DESTDIR/wl/lib
+install build/.libs/libSDL2_mixer-2.0.so.0.* $DESTDIR/wl/lib/libSDL2_mixer-2.0.so.0
+ln -sf libSDL2_mixer-2.0.so.0 $DESTDIR/wl/lib/libSDL2_mixer.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 SDL2_mixer.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/sdl2_mixer-build.pc << EOF
+Name: SDL2_mixer
+Version: 2.6.3
+Description: Audio mixer library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/SDL2/SDL_mixer.h \\
+/wl/lib/libSDL2_mixer.so \\
+/wl/lib/pkgconfig/SDL2_mixer.pc
+
+exec=\\
+/wl/bin/playmus \\
+/wl/bin/playwave \\
+/wl/lib/libSDL2_mixer-2.0.so.0
+EOF
+
+exit
+--- SDL2_mixer-2.6.3.orig/configure.ac
++++ SDL2_mixer-2.6.3/configure.ac
+@@ -12,6 +12,7 @@
+         [SDL2_mixer])
+ AC_CONFIG_SRCDIR([src/mixer.c])
+ AC_CONFIG_AUX_DIR(build-scripts)
++AC_CONFIG_MACRO_DIR(acinclude)
+ 
+ AC_SUBST([MAJOR_VERSION], MAJOR_VERSION_MACRO)
+ AC_SUBST([MINOR_VERSION], MINOR_VERSION_MACRO)
