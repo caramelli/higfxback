@@ -5,10 +5,11 @@ REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libxext-build li
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libdrm-build libx11-xcb-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libdrm-build; then
+  PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires libx11-build | grep -q libxcb-build || { echo libX11 with XCB support required; exit 1; }
   DRM=1
   DRI="--disable-nls --with-egl-platforms=x11,drm --without-dri-drivers"
-  REQUIRES="$REQUIRES libdrm-build libx11-xcb-build"
+  REQUIRES="$REQUIRES libdrm-build"
 else
   DRI="--disable-dri"
 fi

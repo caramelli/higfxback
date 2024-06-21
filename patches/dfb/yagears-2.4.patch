@@ -19,6 +19,8 @@ fi
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
+  test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+  test $VK && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q vulkan-loader-build || { echo SDL2 with Vulkan support required; exit 1; }
   SDL2=1
   REQUIRES="$REQUIRES sdl2-build"
 fi
@@ -133,6 +135,122 @@ exit
  endif()
  
  # Vulkan WSIs
+@@ -576,9 +580,17 @@
+ 
+ # Build rules
+ 
+-set(GL ${ENABLE_GL})
+-set(GLESV1_CM ${ENABLE_GLESV1_CM})
+-set(GLESV2 ${ENABLE_GLESV2})
++set(PNG ${ENABLE_PNG})
++set(TIFF ${ENABLE_TIFF})
++
++if(ENABLE_GL OR ENABLE_GLESV1_CM OR ENABLE_GLESV2)
++  set(GL ${ENABLE_GL})
++  set(GLESV1_CM ${ENABLE_GLESV1_CM})
++  set(GLESV2 ${ENABLE_GLESV2})
++  set(OPENGL ON)
++else()
++  set(OPENGL OFF)
++endif()
+ 
+ if(ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB)
+   set(VK ON)
+@@ -588,7 +600,7 @@
+ 
+ set(MOSAIC ${ENABLE_GLUT})
+ 
+-if(ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX)
++if((ENABLE_GL OR ENABLE_GLESV1_CM OR ENABLE_GLESV2) AND (ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX))
+   set(GUI ON)
+ else()
+   set(GUI OFF)
+@@ -600,9 +612,15 @@
+   set(VK_GUI OFF)
+ endif()
+ 
+-set(PNG ${ENABLE_PNG})
+-set(TIFF ${ENABLE_TIFF})
++if(PNG)
++set(PNG_SOURCE png_image.c)
++endif()
++
++if(TIFF)
++set(TIFF_SOURCE tiff_image.c)
++endif()
+ 
++if(OPENGL)
+ if(GL)
+ set(GL_SOURCE gl_gears.c)
+ endif()
+@@ -620,14 +638,6 @@
+ set(GLESV2_SOURCE glesv2_gears.c)
+ endif()
+ 
+-if(PNG)
+-set(PNG_SOURCE png_image.c)
+-endif()
+-
+-if(TIFF)
+-set(TIFF_SOURCE tiff_image.c)
+-endif()
+-
+ add_library(yagears gears_engine.c ${GL_SOURCE} ${GLESV1_CM_SOURCE} ${GLESV2_SOURCE} ${VERT_XXD_FILE} ${FRAG_XXD_FILE} image_loader.c ${PNG_SOURCE} ${TIFF_SOURCE})
+ target_compile_options(yagears PRIVATE ${GL_CFLAGS} ${GLESV1_CM_CFLAGS} ${GLESV2_CFLAGS} ${PNG_CFLAGS} ${TIFF_CFLAGS})
+ target_link_libraries(yagears ${GL_LDFLAGS} ${GLESV1_CM_LDFLAGS} ${GLESV2_LDFLAGS} ${PNG_LDFLAGS} ${TIFF_LDFLAGS})
+@@ -636,6 +646,7 @@
+ target_compile_options(yagears2 PRIVATE ${EGL_CFLAGS} ${X11_CFLAGS} ${DIRECTFB_CFLAGS} ${WAYLAND_EGL_CFLAGS} ${XCB_CFLAGS} ${DRM_CFLAGS} ${RPI_CFLAGS})
+ target_link_libraries(yagears2 -Wl,--whole-archive yagears -Wl,--no-whole-archive ${EGL_LDFLAGS} ${X11_LDFLAGS} ${DIRECTFB_LDFLAGS} ${WAYLAND_EGL_LDFLAGS} ${XCB_LDFLAGS} ${DRM_LDFLAGS} ${RPI_LDFLAGS})
+ install(TARGETS yagears2 DESTINATION ${CMAKE_INSTALL_BINDIR})
++endif()
+ 
+ if(VK)
+ add_custom_command(OUTPUT vert.spv COMMAND ${GLSLANG_VALIDATOR} ${CMAKE_SOURCE_DIR}/vulkan_gears.vert -V -x DEPENDS ${CMAKE_SOURCE_DIR}/vulkan_gears.vert)
+--- yagears-2.4.orig/Makefile.am
++++ yagears-2.4/Makefile.am
+@@ -1,5 +1,15 @@
++bin_PROGRAMS =
+ BUILT_SOURCES =
+ 
++if PNG
++PNG_SOURCE = png_image.c
++endif
++
++if TIFF
++TIFF_SOURCE = tiff_image.c
++endif
++
++if OPENGL
+ if GL
+ GL_SOURCE = gl_gears.c
+ endif
+@@ -19,24 +29,17 @@
+ GLESV2_SOURCE = glesv2_gears.c
+ endif
+ 
+-if PNG
+-PNG_SOURCE = png_image.c
+-endif
+-
+-if TIFF
+-TIFF_SOURCE = tiff_image.c
+-endif
+-
+ noinst_LTLIBRARIES    = libyagears.la
+ libyagears_la_SOURCES = gears_engine.c $(GL_SOURCE) $(GLESV1_CM_SOURCE) $(GLESV2_SOURCE) image_loader.c $(PNG_SOURCE) $(TIFF_SOURCE)
+ libyagears_la_CFLAGS  = @GL_CFLAGS@ @GLESV1_CM_CFLAGS@ @GLESV2_CFLAGS@ @PNG_CFLAGS@ @TIFF_CFLAGS@
+ libyagears_la_LIBADD  = @GL_LIBS@ @GLESV1_CM_LIBS@ @GLESV2_LIBS@ @PNG_LIBS@ @TIFF_LIBS@
+ 
+-bin_PROGRAMS     = yagears2
++bin_PROGRAMS    += yagears2
+ yagears2_SOURCES = main.c
+ yagears2_CFLAGS  = @EGL_CFLAGS@ @X11_CFLAGS@ @DIRECTFB_CFLAGS@ @WAYLAND_EGL_CFLAGS@ @XCB_CFLAGS@ @DRM_CFLAGS@ @RPI_CFLAGS@
+ yagears2_LDFLAGS = -Wl,--whole-archive,.libs/libyagears.a,--no-whole-archive
+ yagears2_LDADD   = libyagears.la @EGL_LIBS@ @X11_LIBS@ @DIRECTFB_LIBS@ @WAYLAND_EGL_LIBS@ @XCB_LIBS@ @DRM_LIBS@ @RPI_LIBS@
++endif
+ 
+ if VK
+ vert.spv: vulkan_gears.vert
 --- yagears-2.4.orig/config.h.cmake
 +++ yagears-2.4/config.h.cmake
 @@ -43,6 +43,9 @@
@@ -147,7 +265,15 @@ exit
  
 --- yagears-2.4.orig/configure.ac
 +++ yagears-2.4/configure.ac
-@@ -125,12 +125,12 @@
+@@ -1,6 +1,7 @@
+ AC_INIT(yagears, 2.4)
+ 
+ AC_CONFIG_HEADERS(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE
+ LT_INIT
+@@ -125,12 +126,12 @@
    PKG_CHECK_MODULES(GL, gl, , enable_gl=no)
    if test x$enable_gl = xyes; then
      if test x$enable_glesv1_cm = xyes; then
@@ -162,7 +288,7 @@ exit
        else
          enable_glesv2=no
        fi
-@@ -145,7 +145,7 @@
+@@ -145,7 +146,7 @@
    if test x$enable_glesv1_cm = xyes; then
      PKG_CHECK_MODULES(GLESV1_CM, glesv1_cm, , enable_glesv1_cm=no)
      if test x$enable_glesv1_cm = xyes; then
@@ -171,7 +297,7 @@ exit
        GLESV1_CM_LIBS=-ldl
      fi
    fi
-@@ -155,7 +155,7 @@
+@@ -155,7 +156,7 @@
      if test x$enable_glesv2 = xyes; then
        AC_PATH_TOOL(XXD, xxd)
        if test -n "$XXD"; then
@@ -180,7 +306,7 @@ exit
          GLESV2_LIBS=-ldl
        else
          enable_glesv2=no
-@@ -165,7 +165,7 @@
+@@ -165,7 +166,7 @@
  fi
  
  if test x$enable_gl = xno -a x$enable_glesv1_cm = xno -a x$enable_glesv2 = xno; then
@@ -189,7 +315,7 @@ exit
  fi
  
  # OpenGL Backends
-@@ -257,12 +257,16 @@
+@@ -257,12 +258,16 @@
      if test x$enable_egl_drm = xyes; then
        PKG_CHECK_MODULES(DRM, gbm libdrm libevdev, , enable_egl_drm=no)
        if test x$enable_egl_drm = xyes; then
@@ -212,7 +338,7 @@ exit
        fi
      fi
  
-@@ -302,7 +306,7 @@
+@@ -302,7 +307,7 @@
  fi
  
  if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
@@ -221,6 +347,31 @@ exit
  fi
  
  # Vulkan WSIs
+@@ -575,19 +580,20 @@
+ 
+ # Build rules
+ 
++AM_CONDITIONAL(PNG, test x$enable_png = xyes)
++AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
++
+ AM_CONDITIONAL(GL, test x$enable_gl = xyes)
+ AM_CONDITIONAL(GLESV1_CM, test x$enable_glesv1_cm = xyes)
+ AM_CONDITIONAL(GLESV2, test x$enable_glesv2 = xyes)
++AM_CONDITIONAL(OPENGL, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes)
+ 
+ AM_CONDITIONAL(VK, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes)
+ 
+ AM_CONDITIONAL(MOSAIC, test x$enable_glut = xyes)
+ 
+-AM_CONDITIONAL(GUI, test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
++AM_CONDITIONAL(GUI, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes && test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
+ 
+ AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes)
+ 
+-AM_CONDITIONAL(PNG, test x$enable_png = xyes)
+-AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
+-
+ AC_OUTPUT(Makefile)
 --- yagears-2.4.orig/main.c
 +++ yagears-2.4/main.c
 @@ -62,13 +62,14 @@
@@ -662,7 +813,82 @@ exit
    else
      enable_wx = false
    endif
-@@ -670,7 +674,7 @@
+@@ -575,9 +579,17 @@
+ 
+ # Build rules
+ 
+-GL = enable_gl
+-GLESV1_CM = enable_glesv1_cm
+-GLESV2 = enable_glesv2
++PNG = enable_png
++TIFF = enable_tiff
++
++if enable_gl or enable_glesv1_cm or enable_glesv2
++  GL = enable_gl
++  GLESV1_CM = enable_glesv1_cm
++  GLESV2 = enable_glesv2
++  OPENGL = true
++else
++  OPENGL = false
++endif
+ 
+ if enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb
+   VK = true
+@@ -587,7 +599,7 @@
+ 
+ MOSAIC = enable_glut
+ 
+-if enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx
++if (enable_gl or enable_glesv1_cm or enable_glesv2) and (enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx)
+   GUI = true
+ else
+   GUI = false
+@@ -599,9 +611,17 @@
+   VK_GUI = false
+ endif
+ 
+-PNG = enable_png
+-TIFF = enable_tiff
++png_source = []
++if PNG
++png_source = 'png_image.c'
++endif
++
++tiff_source = []
++if TIFF
++tiff_source = 'tiff_image.c'
++endif
+ 
++if OPENGL
+ gl_source = []
+ if GL
+ gl_source = 'gl_gears.c'
+@@ -622,16 +642,6 @@
+ glesv2_source = 'glesv2_gears.c'
+ endif
+ 
+-png_source = []
+-if PNG
+-png_source = 'png_image.c'
+-endif
+-
+-tiff_source = []
+-if TIFF
+-tiff_source = 'tiff_image.c'
+-endif
+-
+ libyagears = static_library('yagears',
+                             'gears_engine.c', gl_source, glesv1_cm_source, glesv2_source, vert_xxd_file, frag_xxd_file, 'image_loader.c', png_source, tiff_source,
+                             dependencies: [gl_dep, glesv1_cm_dep, glesv2_dep, png_dep, tiff_dep])
+@@ -641,6 +651,7 @@
+            dependencies: [egl_dep, x11_dep, directfb_dep, wayland_egl_dep, xcb_dep, drm_dep, rpi_dep],
+            link_whole: libyagears,
+            install: true)
++endif
+ 
+ if VK
+ vert_spv_file = custom_target('vert_spv', command: [glslang_validator, '@INPUT@', '-V', '-x'], input: 'vulkan_gears.vert', output: 'vert.spv')
+@@ -670,7 +681,7 @@
  
  if VK_GUI
  executable('yagears2-vk-gui',

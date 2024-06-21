@@ -11,6 +11,7 @@ if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
 fi
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl-build; then
+  PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build || { echo SDL with OpenGL support required; exit 1; }
   SDL=1
   REQUIRES="$REQUIRES sdl-build"
 fi

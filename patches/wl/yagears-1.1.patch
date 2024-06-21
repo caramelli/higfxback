@@ -11,6 +11,7 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
 fi
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
+  PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
   SDL2=1
   REQUIRES="$REQUIRES sdl2-build"
 fi

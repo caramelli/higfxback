@@ -18,11 +18,14 @@ fi
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
+  test $VK && PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires glfw-build | grep -q vulkan-loader-build || { echo GLFW with Vulkan support required; exit 1; }
   GLFW=1
   REQUIRES="$REQUIRES glfw-build"
 fi
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl2-build; then
+  test $GL && PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+  test $VK && PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q vulkan-loader-build || { echo SDL2 with Vulkan support required; exit 1; }
   SDL2=1
   REQUIRES="$REQUIRES sdl2-build"
 fi

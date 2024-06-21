@@ -5,8 +5,10 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build gcc-g++-build sdl2_
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+
 # configure (ac-2.69; am-1.15; lt-2.4.2)
-libtoolize --ltdl -c -f; aclocal; autoconf; autoheader -f; ln -sf README.md README; automake -a -c
+libtoolize --ltdl -c -f; aclocal; autoconf; autoheader -f; cp README.md README; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --disable-static --with-highscore-prefix=/wl/var/games/pinball --prefix=/wl
 
 # build

@@ -18,6 +18,8 @@ fi
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
+  test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+  test $VK && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q vulkan-loader-build || { echo SDL2 with Vulkan support required; exit 1; }
   SDL2=1
   REQUIRES="$REQUIRES sdl2-build"
 fi

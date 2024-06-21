@@ -60,7 +60,10 @@ install -m 644 include/SDL_messagebox.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_misc.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_mouse.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_mutex.h $DESTDIR/x11/include/SDL2
-install -m 644 include/SDL_opengles2.h $DESTDIR/x11/include/SDL2
+test $GL && install -m 644 include/SDL_opengl.h $DESTDIR/x11/include/SDL2
+test $GL && install -m 644 include/SDL_opengl_glext.h $DESTDIR/x11/include/SDL2
+test $GL && install -m 644 include/SDL_opengles.h $DESTDIR/x11/include/SDL2
+test $GL && install -m 644 include/SDL_opengles2.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_pixels.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_platform.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_power.h $DESTDIR/x11/include/SDL2
@@ -79,7 +82,7 @@ install -m 644 include/SDL_timer.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_touch.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_version.h $DESTDIR/x11/include/SDL2
 install -m 644 include/SDL_video.h $DESTDIR/x11/include/SDL2
-install -m 644 include/SDL_vulkan.h $DESTDIR/x11/include/SDL2
+test $VK && install -m 644 include/SDL_vulkan.h $DESTDIR/x11/include/SDL2
 install -d $DESTDIR/x11/lib
 install ./build/.libs/libSDL2-2.0.so.0.* $DESTDIR/x11/lib/libSDL2-2.0.so.0
 ln -sf libSDL2-2.0.so.0 $DESTDIR/x11/lib/libSDL2.so
@@ -202,7 +205,12 @@ devel=\\
 /x11/include/SDL2/SDL_misc.h \\
 /x11/include/SDL2/SDL_mouse.h \\
 /x11/include/SDL2/SDL_mutex.h \\
-/x11/include/SDL2/SDL_opengles2.h \\
+EOF
+test $GL && echo /x11/include/SDL2/SDL_opengl.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $GL && echo /x11/include/SDL2/SDL_opengl_glext.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $GL && echo /x11/include/SDL2/SDL_opengles.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $GL && echo /x11/include/SDL2/SDL_opengles2.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/include/SDL2/SDL_pixels.h \\
 /x11/include/SDL2/SDL_platform.h \\
 /x11/include/SDL2/SDL_power.h \\
@@ -221,7 +229,9 @@ devel=\\
 /x11/include/SDL2/SDL_touch.h \\
 /x11/include/SDL2/SDL_version.h \\
 /x11/include/SDL2/SDL_video.h \\
-/x11/include/SDL2/SDL_vulkan.h \\
+EOF
+test $VK && echo /x11/include/SDL2/SDL_vulkan.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/lib/libSDL2.so \\
 /x11/lib/pkgconfig/sdl2.pc
 
