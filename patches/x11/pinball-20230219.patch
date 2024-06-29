@@ -114,7 +114,35 @@ exit
  LT_CONFIG_LTDL_DIR([libltdl])
  
  AC_CANONICAL_HOST
-@@ -150,9 +150,9 @@
+@@ -39,6 +39,8 @@
+ LT_INIT
+ LTDL_INIT
+ 
++PKG_PROG_PKG_CONFIG
++
+ AC_SUBST(INCLTDL)
+ AC_SUBST(LIBLTDL)
+ 
+@@ -122,15 +124,11 @@
+ 	[enable_gles=no])
+ if test "x$enable_gles" = "xyes"; then
+   MATHLIB="-lm"
+-  AC_CHECK_HEADER(
+-      [GLES/gl.h],
+-      [ac_cv_search_glLoadMatrixx="none required"],
++  PKG_CHECK_MODULES(
++      [GL], [glesv1_cm],
++      [],
+       [AC_MSG_ERROR(*** OpenGL ES headers not found on system!)]
+   )
+-  AC_ARG_WITH(gles-library,
+-  	[AS_HELP_STRING([--with-gles-library=LIBRARY],[OpenGL ES library @<:@default=GLESv1_CM@:>@])],
+-  	GL_LIBS=-l"$withval",
+-  	GL_LIBS="-lGLESv1_CM")
+   AC_DEFINE(HAVE_OPENGLES, [1], [Support for OpenGL ES])
+ else
+ case "$target" in
+@@ -150,9 +148,9 @@
          ;;
      *)
          MATHLIB="-lm"

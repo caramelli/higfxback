@@ -372,6 +372,16 @@ exit
 -AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
 -
  AC_OUTPUT(Makefile)
+--- yagears-2.4.orig/gui.cc
++++ yagears-2.4/gui.cc
+@@ -1229,6 +1229,7 @@
+   #if defined(SDL)
+   if (!strcmp(toolkit, "sdl")) {
+     #if SDL_VERSION_ATLEAST(2, 0, 0)
++    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, gears_engine_version(gears_engine) ? SDL_GL_CONTEXT_PROFILE_ES : 0);
+     sdl_win = SDL_CreateWindow("yagears", win_posx, win_posy, win_width, win_height, SDL_WINDOW_OPENGL);
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gears_engine_version(gears_engine));
+     SDL_GL_CreateContext(sdl_win);
 --- yagears-2.4.orig/main.c
 +++ yagears-2.4/main.c
 @@ -62,13 +62,14 @@

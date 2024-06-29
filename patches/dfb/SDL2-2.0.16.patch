@@ -399,6 +399,24 @@ exit
  SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
  SDL_DYNAPI_PROC(double,SDL_trunc,(double a),(a),return)
  SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
+--- SDL2-2.0.16.orig/src/render/SDL_render.c
++++ SDL2-2.0.16/src/render/SDL_render.c
+@@ -101,12 +101,12 @@
+ #if SDL_VIDEO_RENDER_METAL
+     &METAL_RenderDriver,
+ #endif
+-#if SDL_VIDEO_RENDER_OGL
+-    &GL_RenderDriver,
+-#endif
+ #if SDL_VIDEO_RENDER_OGL_ES2
+     &GLES2_RenderDriver,
+ #endif
++#if SDL_VIDEO_RENDER_OGL
++    &GL_RenderDriver,
++#endif
+ #if SDL_VIDEO_RENDER_OGL_ES
+     &GLES_RenderDriver,
+ #endif
 --- SDL2-2.0.16.orig/src/render/opengles/SDL_glesfuncs.h
 +++ SDL2-2.0.16/src/render/opengles/SDL_glesfuncs.h
 @@ -27,10 +27,13 @@
@@ -468,7 +486,29 @@ exit
          }
      }
  
-@@ -255,8 +261,9 @@
+@@ -174,11 +180,19 @@
+ {
+     SDL_DFB_WINDOWDATA(window);
+     DirectFB_GLContext *context;
++    char gles_version[2];
+ 
+     SDL_DFB_ALLOC_CLEAR(context, sizeof(DirectFB_GLContext));
+ 
+-    SDL_DFB_CHECKERR(windata->surface->GetGL(windata->surface,
+-                                             &context->context));
++    if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
++        sprintf(gles_version, "%d", _this->gl_config.major_version);
++        DirectFBSetOption("gles", gles_version);
++    }
++    else
++        DirectFBSetOption("gles", "0");
++
++    SDL_DFB_CHECKERR(windata->window_surface->GetGL(windata->window_surface,
++                                                    &context->context));
+ 
+     if (!context->context)
+         return NULL;
+@@ -255,8 +269,9 @@
      for (p = _this->gl_data->firstgl; p != NULL; p = p->next)
          if (p->sdl_window == window && p->is_locked)
          {
@@ -480,12 +520,39 @@ exit
          }
  
      SDL_DFB_CHECKERR(windata->window_surface->Flip(windata->window_surface,NULL,  DSFLIP_PIPELINE |DSFLIP_BLIT | DSFLIP_ONSYNC ));
+@@ -308,8 +323,8 @@
+         if (p->sdl_window == window)
+         {
+             SDL_DFB_WINDOWDATA(window);
+-            SDL_DFB_CHECK(windata->surface->GetGL(windata->surface,
+-                                             &p->context));
++            SDL_DFB_CHECK(windata->window_surface->GetGL(windata->window_surface,
++                                                         &p->context));
+             if (p->is_locked)
+                 SDL_DFB_CHECK(p->context->Lock(p->context));
+             }
 --- SDL2-2.0.16.orig/src/video/directfb/SDL_DirectFB_video.c
 +++ SDL2-2.0.16/src/video/directfb/SDL_DirectFB_video.c
-@@ -227,13 +227,7 @@
-             DirectFBSetOption("disable-module", "x11input");
-     }
+@@ -211,29 +211,12 @@
+ {
+     IDirectFB *dfb = NULL;
+     DFB_DeviceData *devdata = NULL;
+-    DFBResult ret;
  
+     SDL_DFB_ALLOC_CLEAR(devdata, sizeof(*devdata));
+ 
+     SDL_DFB_CHECKERR(DirectFBInit(NULL, NULL));
+ 
+-    /* avoid switching to the framebuffer when we
+-     * are running X11 */
+-    ret = readBoolEnv(DFBENV_USE_X11_CHECK , 1);
+-    if (ret) {
+-        if (SDL_getenv("DISPLAY"))
+-            DirectFBSetOption("system", "x11");
+-        else
+-            DirectFBSetOption("disable-module", "x11input");
+-    }
+-
 -    devdata->use_linux_input = readBoolEnv(DFBENV_USE_LINUX_INPUT, 1);       /* default: on */
 -
 -    if (!devdata->use_linux_input)
@@ -504,10 +571,18 @@ exit
  
  #if (DFB_VERSION_ATLEAST(1,0,0))
 -#ifdef SDL_VIDEO_OPENGL
-+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_OPENGL_ES
++#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
  #define SDL_DIRECTFB_OPENGL 1
  #endif
  #else
+@@ -70,7 +70,6 @@
+ 
+ #define DFBENV_USE_YUV_UNDERLAY     "SDL_DIRECTFB_YUV_UNDERLAY"     /* Default: off */
+ #define DFBENV_USE_YUV_DIRECT       "SDL_DIRECTFB_YUV_DIRECT"       /* Default: off */
+-#define DFBENV_USE_X11_CHECK        "SDL_DIRECTFB_X11_CHECK"        /* Default: on  */
+ #define DFBENV_USE_LINUX_INPUT      "SDL_DIRECTFB_LINUX_INPUT"      /* Default: on  */
+ #define DFBENV_USE_WM               "SDL_DIRECTFB_WM"       /* Default: off  */
+ 
 --- SDL2-2.0.16.orig/src/video/directfb/SDL_DirectFB_window.c
 +++ SDL2-2.0.16/src/video/directfb/SDL_DirectFB_window.c
 @@ -90,7 +90,7 @@
@@ -724,6 +799,19 @@ exit
  
      if (!background_front || !background_back || !button || !axis) {
          SDL_DestroyRenderer(screen);
+--- SDL2-2.0.16.orig/test/testgl2.c
++++ SDL2-2.0.16/test/testgl2.c
+@@ -256,6 +256,10 @@
+     }
+ 
+     /* Set OpenGL parameters */
++#ifdef __LINUX__
++    SDL_setenv("SDL_OPENGL_LIBRARY", "libGL.so.1", 1);
++#endif
++
+     state->window_flags |= SDL_WINDOW_OPENGL;
+     state->gl_red_size = 5;
+     state->gl_green_size = 5;
 --- SDL2-2.0.16.orig/test/testgles.c
 +++ SDL2-2.0.16/test/testgles.c
 @@ -24,9 +24,49 @@
@@ -733,7 +821,7 @@ exit
 +typedef struct GLES_Context
 +{
 +#define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
-+#define SDL_PROC_OES SDL_PROC
++#define SDL_PROC_OES(...)
 +#include "../src/render/opengles/SDL_glesfuncs.h"
 +#undef SDL_PROC
 +#undef SDL_PROC_OES
@@ -766,7 +854,7 @@ exit
 +    } while ( 0 );
 +#endif /* __SDL_NOGETPROCADDR__ */
 +
-+#define SDL_PROC_OES SDL_PROC
++#define SDL_PROC_OES(...)
 +
 +#include "../src/render/opengles/SDL_glesfuncs.h"
 +#undef SDL_PROC
@@ -804,7 +892,18 @@ exit
  }
  
  int
-@@ -188,6 +228,13 @@
+@@ -154,6 +194,10 @@
+     }
+ 
+     /* Set OpenGL parameters */
++#ifdef __LINUX__
++    SDL_setenv("SDL_OPENGL_LIBRARY", "libGLESv1_CM.so.1", 1);
++#endif
++
+     state->window_flags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+     state->gl_red_size = 5;
+     state->gl_green_size = 5;
+@@ -188,6 +232,13 @@
          }
      }
  
@@ -818,7 +917,7 @@ exit
      if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
          SDL_GL_SetSwapInterval(1);
      } else {
-@@ -197,10 +244,10 @@
+@@ -197,10 +248,10 @@
      SDL_GetCurrentDisplayMode(0, &mode);
      SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
      SDL_Log("\n");
@@ -833,7 +932,7 @@ exit
      SDL_Log("\n");
  
      status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-@@ -271,15 +318,15 @@
+@@ -271,15 +322,15 @@
          }
  
          aspectAdjust = (4.0f / 3.0f) / ((float)state->window_w / state->window_h);
@@ -858,7 +957,7 @@ exit
      }
  
      /* Main render loop */
-@@ -302,7 +349,7 @@
+@@ -302,7 +353,7 @@
                                      break;
                                  }
                                  /* Change view port to the new window dimensions */
@@ -880,6 +979,17 @@ exit
  
  #ifdef HAVE_OPENGLES2
  
+@@ -526,6 +528,10 @@
+     }
+ 
+     /* Set OpenGL parameters */
++#ifdef __LINUX__
++    SDL_setenv("SDL_OPENGL_LIBRARY", "libGLESv2.so.2", 1);
++#endif
++
+     state->window_flags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+     state->gl_red_size = 5;
+     state->gl_green_size = 5;
 --- SDL2-2.0.16.orig/test/testiconv.c
 +++ SDL2-2.0.16/test/testiconv.c
 @@ -53,7 +53,7 @@

@@ -6,25 +6,25 @@ REQUIRES="bison-build make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /fb
+sh ./Configure --prefix
 
 # build
 make
 
 # install
-install -d $DESTDIR/fb/bin
-install fbset $DESTDIR/fb/bin
+install -d $DESTDIR/bin
+install fbset $DESTDIR/bin
 
 # build.pc
-install -d $DESTDIR/fb/share/pkgconfig
-cat > $DESTDIR/fb/share/pkgconfig/fbset-build.pc << EOF
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/fbset-build.pc << EOF
 Name: fbset
 Version: 2.1
 Description: Framebuffer setup utility
 Requires: $REQUIRES
 
 exec=\\
-/fb/bin/fbset
+/bin/fbset
 EOF
 
 exit

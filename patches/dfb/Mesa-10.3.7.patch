@@ -15,7 +15,7 @@ fi
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gles1 --enable-gles2 --with-gallium-drivers=swrast --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/dfb
 
 # build
 make
@@ -24,6 +24,7 @@ make
 install -d $DESTDIR/dfb/lib
 install lib/libEGL.so.1 $DESTDIR/dfb/lib/libmesaEGL.so.1
 test $DRM && install lib/libgbm.so.1.* $DESTDIR/dfb/lib/libmesagbm.so.1
+install lib/gallium/libGL.so.1.* $DESTDIR/dfb/lib/libmesaGL.so.1
 install lib/libglapi.so.0.* $DESTDIR/dfb/lib/libglapi.so.0
 install lib/libGLESv1_CM.so.1.* $DESTDIR/dfb/lib/libmesaGLESv1_CM.so.1
 install lib/libGLESv2.so.2.* $DESTDIR/dfb/lib/libmesaGLESv2.so.2
@@ -753,6 +754,15 @@ exit
 +EOF
 --- Mesa-10.3.7.orig/configure.ac
 +++ Mesa-10.3.7/configure.ac
+@@ -23,7 +23,7 @@
+ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+ 
+ dnl Set internal versions
+-OSMESA_VERSION=8
++OSMESA_VERSION=1
+ AC_SUBST([OSMESA_VERSION])
+ 
+ dnl Versions for external dependencies
 @@ -76,6 +76,9 @@
  
  AC_PROG_INSTALL

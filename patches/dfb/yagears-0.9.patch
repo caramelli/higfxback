@@ -1,0 +1,118 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
+  PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-egl-drm --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1-cm --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install yagears $DESTDIR/dfb/bin
+test $SDL2 && install yagears-gui $DESTDIR/dfb/bin
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/yagears-build.pc << EOF
+Name: yagears
+Version: 0.9
+Description: Yet Another Gears OpenGL demo
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/yagears \\
+EOF
+test $SDL2 && echo /dfb/bin/yagears-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
+
+exit
+--- yagears-0.9.orig/configure.ac
++++ yagears-0.9/configure.ac
+@@ -1,6 +1,7 @@
+ AC_INIT(yagears, 0.9)
+ 
+ AC_CONFIG_HEADERS(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE
+ 
+@@ -88,10 +89,13 @@
+   if test x$enable_gl_x11 = xyes; then
+     save_LIBS=$LIBS
+     LIBS="$LIBS `$PKG_CONFIG --libs-only-L gl`"
+-    AC_CHECK_LIB(GL, glXCreateContext,
+-                 AC_DEFINE(GL_X11, 1, Support for OpenGL Extension to Xlib) X11_LIBS=-lX11,
+-                 enable_gl_x11=no)
++    AC_CHECK_LIB(GL, glXCreateContext, , enable_gl_x11=no)
+     LIBS=$save_LIBS
++    if test x$enable_gl_x11 = xyes; then
++      PKG_CHECK_MODULES(X11, x11,
++                        AC_DEFINE(GL_X11, 1, Support for OpenGL Extension to Xlib),
++                        enable_gl_x11=no)
++    fi
+   fi
+ 
+   if test x$enable_gl_directfb = xyes; then
+@@ -126,10 +130,15 @@
+    test x$enable_egl_wayland = xyes || test x$enable_egl_drm; then
+   PKG_CHECK_MODULES(EGL, egl, enable_egl=yes, enable_egl=no)
+   if test x$enable_egl = xyes; then
++    EGL_CFLAGS="$EGL_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
+     if test x$enable_egl_x11 = xyes; then
+-      PKG_CHECK_MODULES(X11, x11,
+-                        AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform),
+-                        enable_egl_x11=no)
++      if test x$enable_gl_x11 = xyes; then
++        AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform)
++      else
++        PKG_CHECK_MODULES(X11, x11,
++                          AC_DEFINE(EGL_X11, 1, Support for EGL with Xlib platform),
++                          enable_egl_x11=no)
++      fi
+     fi
+     if test x$enable_egl_directfb = xyes; then
+       if test x$enable_gl_directfb = xyes; then
+@@ -161,7 +170,7 @@
+     if test x$enable_egl_drm = xyes; then
+       AC_MSG_CHECKING(for DRI driver)
+       DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri 2> /dev/null`
+-      if test -d $DRIDRIVERDIR; then
++      if test -d "$DRIDRIVERDIR"; then
+         AC_MSG_RESULT(yes)
+         PKG_CHECK_MODULES(DRM, libdrm libevdev,
+                           AC_DEFINE(EGL_DRM, 1, Support for EGL with DRM platform),
+--- yagears-0.9.orig/gui.cc
++++ yagears-0.9/gui.cc
+@@ -1052,6 +1052,7 @@
+   #if defined(SDL)
+   if (!strcmp(toolkit, "sdl")) {
+     #if SDL_VERSION_ATLEAST(2, 0, 0)
++    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, gears_engine_version(gears_engine) ? SDL_GL_CONTEXT_PROFILE_ES : 0);
+     sdl_win = SDL_CreateWindow(NULL, win_posx, win_posy, win_width, win_height, SDL_WINDOW_OPENGL);
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gears_engine_version(gears_engine));
+     SDL_GL_CreateContext(sdl_win);
+--- yagears-0.9.orig/main.c
++++ yagears-0.9/main.c
+@@ -1269,6 +1269,10 @@
+   #endif
+   #if defined(GL_DIRECTFB)
+   if (!strcmp(backend, "gl-directfb")) {
++    c = alloca(2);
++    sprintf(c, "%d", gears_engine_version(gears_engine));
++    DirectFBSetOption("gles", c);
++
+     err = dfb_win->GetGL(dfb_win, &dfb_ctx);
+     if (err) {
+       printf("GetGL failed: %s\n", DirectFBErrorString(err));

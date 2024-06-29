@@ -1,0 +1,143 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libpng-build sdl2-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
+pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
+pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
+
+# configure (ac-2.69; am-1.14; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c --foreign
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-static --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install .libs/showimage $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/SDL2
+install -m 644 SDL_image.h $DESTDIR/dfb/include/SDL2
+install -d $DESTDIR/dfb/lib
+install .libs/libSDL2_image-2.0.so.0.* $DESTDIR/dfb/lib/libSDL2_image-2.0.so.0
+ln -sf libSDL2_image-2.0.so.0 $DESTDIR/dfb/lib/libSDL2_image.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 SDL2_image.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/sdl2_image-build.pc << EOF
+Name: SDL2_image
+Version: 2.0.2
+Description: Image loading library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/SDL2/SDL_image.h \\
+/dfb/lib/libSDL2_image.so \\
+/dfb/lib/pkgconfig/SDL2_image.pc
+
+exec=\\
+/dfb/bin/showimage \\
+/dfb/lib/libSDL2_image-2.0.so.0
+EOF
+
+exit
+--- SDL2_image-2.0.2.orig/configure.in
++++ SDL2_image-2.0.2/configure.in
+@@ -1,5 +1,6 @@
+ dnl Process this file with autoconf to produce a configure script.
+ AC_INIT(README.txt)
++AC_CONFIG_MACRO_DIR([acinclude])
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 
+--- SDL2_image-2.0.2.orig/showimage.c
++++ SDL2_image-2.0.2/showimage.c
+@@ -54,6 +54,7 @@
+ 
+ int main(int argc, char *argv[])
+ {
++    SDL_Surface *surface;
+     SDL_Window *window;
+     SDL_Renderer *renderer;
+     SDL_Texture *texture;
+@@ -68,7 +69,7 @@
+         return(1);
+     }
+ 
+-    flags = SDL_WINDOW_HIDDEN;
++    flags = 0;
+     for ( i=1; argv[i]; ++i ) {
+         if ( strcmp(argv[i], "-fullscreen") == 0 ) {
+             SDL_ShowCursor(0);
+@@ -81,11 +82,6 @@
+         return(2);
+     }
+ 
+-    if (SDL_CreateWindowAndRenderer(0, 0, flags, &window, &renderer) < 0) {
+-        fprintf(stderr, "SDL_CreateWindowAndRenderer() failed: %s\n", SDL_GetError());
+-        return(2);
+-    }
+-
+     for ( i=1; argv[i]; ++i ) {
+         if ( strcmp(argv[i], "-fullscreen") == 0 ) {
+             continue;
+@@ -97,31 +93,30 @@
+             continue;
+         }
+ 
++
+         /* Open the image file */
+-        texture = IMG_LoadTexture(renderer, argv[i]);
+-        if (!texture) {
++        surface = IMG_Load(argv[i]);
++        if (!surface) {
+             fprintf(stderr, "Couldn't load %s: %s\n", argv[i], SDL_GetError());
+             continue;
+         }
+-        SDL_QueryTexture(texture, NULL, NULL, &w, &h);
++        SDL_CreateWindowAndRenderer(surface->w, surface->h, flags, &window, &renderer);
++        texture = SDL_CreateTextureFromSurface(renderer, surface);
++        SDL_FreeSurface(surface);
+ 
+         /* Save the image file, if desired */
+         if ( saveFile ) {
+-            SDL_Surface *surface = IMG_Load(argv[i]);
++            surface = IMG_Load(argv[i]);
+             if (surface) {
+                 if ( IMG_SavePNG(surface, saveFile) < 0 ) {
+                     fprintf(stderr, "Couldn't save %s: %s\n", saveFile, SDL_GetError());
+                 }
++                SDL_FreeSurface(surface);
+             } else {
+                 fprintf(stderr, "Couldn't load %s: %s\n", argv[i], SDL_GetError());
+             }
+         }
+ 
+-        /* Show the window */
+-        SDL_SetWindowTitle(window, argv[i]);
+-        SDL_SetWindowSize(window, w, h);
+-        SDL_ShowWindow(window);
+-
+         done = 0;
+         while ( ! done ) {
+             while ( SDL_PollEvent(&event) ) {
+@@ -172,12 +167,10 @@
+             SDL_Delay(100);
+         }
+         SDL_DestroyTexture(texture);
++        SDL_DestroyRenderer(renderer);
++        SDL_DestroyWindow(window);
+     }
+ 
+-
+-    SDL_DestroyRenderer(renderer);
+-    SDL_DestroyWindow(window);
+-
+     /* We're done! */
+     SDL_Quit();
+     return(0);
