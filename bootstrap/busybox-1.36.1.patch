@@ -1,0 +1,24 @@
+--- busybox-1.36.1.orig/include/applets.src.h
++++ busybox-1.36.1/include/applets.src.h
+@@ -83,6 +83,7 @@
+ #if ENABLE_INSTALL_NO_USR
+ # define BB_DIR_USR_BIN BB_DIR_BIN
+ # define BB_DIR_USR_SBIN BB_DIR_SBIN
++# define BB_DIR_SBIN BB_DIR_BIN
+ #endif
+ 
+ 
+--- busybox-1.36.1.orig/util-linux/mount.c
++++ busybox-1.36.1/util-linux/mount.c
+@@ -1898,9 +1898,8 @@
+ 	*end = ':';
+ 	dotted = xmalloc_sockaddr2dotted_noport(&lsa->u.sa);
+ 	if (ENABLE_FEATURE_CLEAN_UP) free(lsa);
+-	opts = xasprintf("%s%saddr=%s",
+-		filteropts ? filteropts : "",
+-		filteropts ? "," : "",
++	opts = xasprintf("%s,addr=%s",
++		filteropts ? filteropts : "nolock",
+ 		dotted
+ 	);
+ 	if (ENABLE_FEATURE_CLEAN_UP) free(dotted);

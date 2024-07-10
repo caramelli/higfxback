@@ -1,0 +1,26 @@
+--- gcc-4.7.4.orig/configure
++++ gcc-4.7.4/configure
+@@ -5198,9 +5198,9 @@
+   gmplibs="-L$with_mpfr_lib $gmplibs"
+ fi
+ if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
+-  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir $gmplibs"
+-  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
+-  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir"
++  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir $gmplibs"
++  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr/src -I$$s/mpfr/src '"$gmpinc"
++  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr/src --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir"
+   # Do not test the mpfr version.  Assume that it is sufficient, since
+   # it is in the source tree, and the library has not been built yet
+   # but it would be included on the link line in the version check below
+--- gcc-4.7.4.orig/gcc/Makefile.in
++++ gcc-4.7.4/gcc/Makefile.in
+@@ -4190,7 +4190,7 @@
+ 	    sysroot_headers_suffix=`echo $${ml} | sed -e 's/;.*$$//'`; \
+ 	    multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
+ 	    fix_dir=include-fixed$${multi_dir}; \
+-	    if ! $(inhibit_libc) && test ! -d ${SYSTEM_HEADER_DIR}; then \
++	    if ! $(inhibit_libc) && test ! -d ${SYSTEM_HEADER_DIR} && [ $(build) = $(host) ]; then \
+ 	      echo The directory that should contain system headers does not exist: >&2 ; \
+ 	      echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
+ 	      tooldir_sysinc=`echo "${gcc_tooldir}/sys-include" | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`; \
