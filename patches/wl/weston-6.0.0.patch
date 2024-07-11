@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build cairo-build libxkbcommon-build xkeyboard-config-build wayland-protocols-build"
+REQUIRES="autotools-wrappers-lt-build cairo-build libinput-build libxkbcommon-build xkeyboard-config-build wayland-protocols-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -384,6 +384,16 @@ exit
  	int ret = 0;
  
  	if (!req)
+--- weston-6.0.0.orig/libweston/launcher-direct.c
++++ weston-6.0.0/libweston/launcher-direct.c
+@@ -157,7 +157,6 @@
+ 	if (kd_mode != KD_TEXT) {
+ 		weston_log("%s is already in graphics mode, "
+ 			   "is another display server running?\n", tty_device);
+-		goto err_close;
+ 	}
+ 
+ 	ioctl(launcher->tty, VT_ACTIVATE, minor(buf.st_rdev));
 --- weston-6.0.0.orig/libweston/pixel-formats.c
 +++ weston-6.0.0/libweston/pixel-formats.c
 @@ -26,6 +26,8 @@

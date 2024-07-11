@@ -2,6 +2,10 @@
 
 killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
+REQUIRES="dfbterm-build directfb2-tools-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || return
+
 test $SYSTEM && rm -f /dfb/etc/directfbrc
 
 if [ ! -f /dfb/etc/directfbrc ]; then

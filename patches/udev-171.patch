@@ -94,6 +94,16 @@ exit
  
  AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_ERROR([POSIX RT library not found])])
  
+--- udev-171.orig/extras/mtd_probe/mtd_probe.h
++++ udev-171/extras/mtd_probe/mtd_probe.h
+@@ -18,6 +18,7 @@
+  */
+ 
+ #include <mtd/mtd-user.h>
++#include <stdint.h>
+ 
+ /* Full oob structure as written on the flash */
+ struct sm_oob {
 --- udev-171.orig/libudev/libudev-device.c
 +++ udev-171/libudev/libudev-device.c
 @@ -1644,7 +1644,7 @@

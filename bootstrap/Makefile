@@ -117,9 +117,10 @@ rootfs: linux busybox binutils gcc syslinux
 	@install $(BINUTILS)/build/ld/ld-new rootfs/bin/ld
 	@install $(BINUTILS)/build/gprof/gprof rootfs/bin
 	@install $(GCC)/build/gcc/xgcc rootfs/bin/gcc
+	@ln -sf gcc rootfs/bin/cc
 	@install $(GCC)/build/gcc/cpp rootfs/bin
 	@install $(GCC)/build/gcc/gcov rootfs/bin
-	@ln -sf gcc rootfs/bin/cc
+	@install $(STAGING_DIR)/bin/getconf rootfs/bin
 	@install $(SYSLINUX)/extlinux/extlinux rootfs/bin
 	@install -d rootfs/boot
 	@install $(LINUX)/arch/x86/boot/bzImage rootfs/boot/bzImage
@@ -128,7 +129,8 @@ rootfs: linux busybox binutils gcc syslinux
 	@echo none /proc proc defaults 0 0 > rootfs/etc/fstab
 	@echo none /sys sysfs defaults 0 0 >> rootfs/etc/fstab
 	@echo none /dev tmpfs defaults 0 0 >> rootfs/etc/fstab
-	@echo none /var/run tmpfs defaults 0 0 >> rootfs/etc/fstab
+	@echo none /run tmpfs defaults 0 0 >> rootfs/etc/fstab
+	@echo root::0:root > rootfs/etc/group
 	@echo root::0:0:root:/root:/bin/sh > rootfs/etc/passwd
 	@echo null:2345:sysinit:/etc/init.d/rcS > rootfs/etc/inittab
 	@echo tty1:2345:respawn:getty tty1 9600 >> rootfs/etc/inittab
@@ -328,6 +330,7 @@ rootfs: linux busybox binutils gcc syslinux
 	@install -d rootfs/mnt/share
 	@install -d rootfs/proc
 	@install -d rootfs/root
+	@install -d rootfs/run
 	@install -d rootfs/sys
 	@install -d rootfs/share/busybox
 	@echo '#!/bin/sh' > rootfs/share/busybox/default.script
@@ -344,7 +347,8 @@ rootfs: linux busybox binutils gcc syslinux
 	@install -m 644 $(SYSLINUX)/core/isolinux.bin rootfs/share/syslinux
 	@install -m 644 $(SYSLINUX)/mbr/mbr.bin rootfs/share/syslinux
 	@install -d rootfs/tmp
-	@install -d rootfs/var/run
+	@install -d rootfs/var
+	@ln -sf /run rootfs/var/run
 	@find rootfs -type f -exec file {} \; | grep -v crt | grep ELF | cut -d: -f1 | xargs $(HOST)-strip
 	@tar -C rootfs -czf rootfs.tgz .
 
@@ -385,7 +389,7 @@ initrd: busybox syslinux
 	@genext2fs -b 8192 -d initrd initrd.ext2
 
 .PHONY: iso
-iso: initrd rootfs
+iso:
 	@echo Create ISO image
 	@test -d iso || mkdir iso
 	@install -m 644 $(SYSLINUX)/core/isolinux.bin iso

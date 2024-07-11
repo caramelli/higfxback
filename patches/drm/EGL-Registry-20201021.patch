@@ -1,0 +1,45 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lxml-build make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C api
+
+# install
+install -d $DESTDIR/drm/include/EGL
+install -m 644 api/EGL/egl.h $DESTDIR/drm/include/EGL
+install -m 644 api/EGL/eglext.h $DESTDIR/drm/include/EGL
+install -m 644 api/EGL/eglplatform.h $DESTDIR/drm/include/EGL
+install -d $DESTDIR/drm/include/KHR
+install -m 644 api/KHR/khrplatform.h $DESTDIR/drm/include/KHR
+install -d $DESTDIR/drm/share/egl/registry
+install -m 644 api/egl.xml $DESTDIR/drm/share/egl/registry
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/egl-registry-build.pc << EOF
+Name: EGL-Registry
+Version: 20201021
+Description: EGL API Registry
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/EGL/egl.h \\
+/drm/include/EGL/eglext.h \\
+/drm/include/EGL/eglplatform.h \\
+/drm/include/KHR/khrplatform.h \\
+/drm/share/egl/registry/egl.xml
+EOF
+
+exit
+--- EGL-Registry-20201021.orig/api/genheaders.py
++++ EGL-Registry-20201021/api/genheaders.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python -i
++#!/usr/bin/env python3
+ #
+ # Copyright 2013-2020 The Khronos Group Inc.
+ # SPDX-License-Identifier: Apache-2.0

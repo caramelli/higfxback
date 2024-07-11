@@ -2,6 +2,10 @@
 
 killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
+REQUIRES="bash-build kmscon-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || return
+
 export PATH=/bin:/drm/bin
 
-kmscon --font-engine unifont -l /bin/bash -- --rcfile <(echo "export PS1='\e[0;32mkmscon>\e[0m '")
+kmscon --xkb-layout fr --font-engine unifont -l /bin/bash -- --rcfile <(echo "export PS1='\e[0;32mkmscon>\e[0m '")

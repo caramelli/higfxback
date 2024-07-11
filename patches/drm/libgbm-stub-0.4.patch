@@ -1,0 +1,67 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix /drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/include
+install -m 644 gbm.h $DESTDIR/drm/include
+install -d $DESTDIR/drm/lib
+install libgbm.so.1 $DESTDIR/drm/lib/libstubgbm.so.1
+ln -sf libstubgbm.so.1 $DESTDIR/drm/lib/libgbm.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 gbm.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/libgbm-stub-build.pc << EOF
+Name: libgbm-stub
+Version: 0.4
+Description: GBM stub for linking at build time
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/gbm.h \\
+/drm/lib/libgbm.so \\
+/drm/lib/pkgconfig/gbm.pc
+
+exec=\\
+/drm/lib/libstubgbm.so.1
+EOF
+
+exit
+--- libgbm-stub-0.4.orig/Configure
++++ libgbm-stub-0.4/Configure
+@@ -0,0 +1,24 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" gbm.pc

@@ -96,6 +96,7 @@ ln -sf libpython3.7.so.1 $DESTDIR/lib/libpython3.7.so
 install -d $DESTDIR/lib/pkgconfig
 install -m 644 Misc/python.pc $DESTDIR/lib/pkgconfig/python3.pc
 install -d $DESTDIR/lib/python3
+install -m 644 `cat pybuilddir.txt`/_sysconfigdata__linux_`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.py $DESTDIR/lib/python3.7
 install -m 644 Lib/__future__.py $DESTDIR/lib/python3
 install -m 644 Lib/_collections_abc.py $DESTDIR/lib/python3
 install -m 644 Lib/_compat_pickle.py $DESTDIR/lib/python3
@@ -406,6 +407,7 @@ exec=\\
 /lib/python3/_compat_pickle.py \\
 /lib/python3/_compression.py \\
 /lib/python3/_sitebuiltins.py \\
+/lib/python3/_sysconfigdata__linux_`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.py \\
 /lib/python3/_weakrefset.py \\
 /lib/python3/abc.py \\
 /lib/python3/argparse.py \\

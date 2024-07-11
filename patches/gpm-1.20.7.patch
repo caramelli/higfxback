@@ -161,3 +161,51 @@ exit
 +
 +Libs: -L${libdir} -lgpm
 +Cflags: -I${includedir}
+--- gpm-1.20.7.orig/src/mice.c
++++ gpm-1.20.7/src/mice.c
+@@ -254,6 +254,35 @@
+    }
+    return 0;
+ }
++
++static int M_usbtablet (Gpm_Event * state, unsigned char *data)
++{
++   struct input_event thisevent;
++   (void) memcpy (&thisevent, data, sizeof (struct input_event));
++   state->dx = state->dy = state->wdx = state->wdy = 0;
++   if (thisevent.type == EV_ABS) {
++      if (thisevent.code == REL_X) {
++         state->x = thisevent.value * (win.ws_col + 1) / 32767;
++         realposx = thisevent.value * REALPOS_MAX / 32767;
++      } else if (thisevent.code == REL_Y) {
++         state->y = thisevent.value * (win.ws_row + 1) / 32767;
++         realposy = thisevent.value * REALPOS_MAX / 3267;
++      }
++   } else if (thisevent.type == EV_REL) {
++      if (thisevent.code == REL_WHEEL)
++         state->wdy = thisevent.value;
++      else if (thisevent.code == REL_HWHEEL)
++         state->wdx = thisevent.value;
++   } else if (thisevent.type == EV_KEY) {
++      switch (thisevent.code) {
++         case BTN_LEFT:    state->buttons ^= GPM_B_LEFT;    break;
++         case BTN_MIDDLE:  state->buttons ^= GPM_B_MIDDLE;  break;
++         case BTN_RIGHT:   state->buttons ^= GPM_B_RIGHT;   break;
++         case BTN_SIDE:    state->buttons ^= GPM_B_MIDDLE;  break;
++      }
++   }
++   return 0;
++}
+ #endif /* HAVE_LINUX_INPUT_H */
+ 
+ static int M_ms(Gpm_Event *state,  unsigned char *data)
+@@ -2404,6 +2433,9 @@
+    {"evdev", "Linux Event Device",
+             "", M_evdev, I_empty, STD_FLG,
+                         {0x00, 0x00, 0x00, 0x00} , 16, 16, 0, 0, NULL},
++   {"usbtablet", "USB Tablet (QEMU or VirtualBox)",
++            "", M_usbtablet, I_empty, STD_FLG,
++                        {0x00, 0x00, 0x00, 0x00} , 24, 24, 0, 1, NULL},
+ #endif /* HAVE_LINUX_INPUT_H */
+    {"exps2",   "IntelliMouse Explorer (ps2) - 3 buttons, wheel unused",
+            "ExplorerPS/2", M_imps2, I_exps2, STD_FLG,

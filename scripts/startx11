@@ -2,6 +2,12 @@
 
 killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
+REQUIRES="ttf-bitstream-vera-build twm-build xdpyinfo-build xf86-input-evdev-build xf86-video-fbdev-build xkbcomp-build xterm-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists xf86-video-modesetting-build && REQUIRES="$REQUIRES xf86-video-modesetting-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || return
+
 install -d /x11/var/log
 
 test $DDX && rm -f /x11/etc/X11/xorg.conf
@@ -20,6 +26,7 @@ Section "InputDevice"
   Identifier "keyboard"
   Driver     "evdev"
   Option     "Device" "/dev/input/event0"
+  Option     "XkbLayout" "fr"
 EndSection
 
 Section "InputDevice"
