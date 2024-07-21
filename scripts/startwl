@@ -4,7 +4,7 @@ killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
 
 REQUIRES="weston-build"
 
-PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || return
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || return
 
 install -d -m 700 /wl/var/xdg
 
@@ -16,8 +16,10 @@ if [ ! -f /wl/etc/xdg/weston/weston.ini ]; then
   cat > /wl/etc/xdg/weston/weston.ini << EOF
 [core]
 backend=$BACKEND-backend.so
+
 [keyboard]
 keymap_layout=fr
+
 [shell]
 panel-position=none
 EOF

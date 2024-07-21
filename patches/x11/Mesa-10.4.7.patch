@@ -10,13 +10,14 @@ if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libdrm-build; then
   DRM=1
   DRI="--disable-nls --with-egl-platforms=x11,drm --without-dri-drivers"
   REQUIRES="$REQUIRES libdrm-build"
+  pkg-config --exists libudev-zero-build && REQUIRES="$REQUIRES libudev-zero-build" || SYSFS=--enable-sysfs
 else
   DRI="--disable-dri"
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.5)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-xlib-glx --with-gallium-drivers=swrast --prefix=/x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-xlib-glx $SYSFS --with-gallium-drivers=swrast --prefix=/x11
 
 # build
 make
@@ -812,6 +813,15 @@ exit
  AM_CONDITIONAL(HAVE_SHARED_GLAPI, test "x$enable_shared_glapi" = xyes)
  
  # Build the pipe-drivers as separate libraries/modules.
+@@ -932,7 +930,7 @@
+ case "x$enable_glx$enable_xlib_glx" in
+ xyesyes)
+     # Xlib-based GLX
+-    dri_modules="x11 xext xcb"
++    dri_modules="x11 xext"
+     PKG_CHECK_MODULES([XLIBGL], [$dri_modules])
+     GL_PC_REQ_PRIV="$GL_PC_REQ_PRIV $dri_modules"
+     X11_INCLUDES="$X11_INCLUDES $XLIBGL_CFLAGS"
 @@ -1324,6 +1322,19 @@
  AC_SUBST([EGL_LIB_DEPS])
  

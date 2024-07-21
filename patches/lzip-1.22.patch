@@ -1,0 +1,30 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install lzip $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/lzip-build.pc << EOF
+Name: lzip
+Version: 1.22
+Description: Lzip file format compressor / decompressor
+Requires: $REQUIRES
+
+devel=\\
+/bin/lzip
+EOF
+
+exit

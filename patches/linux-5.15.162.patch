@@ -1,0 +1,37 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="bc-build bison-build elfutils-build gcc-g++-build make-build ncurses-build openssl-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+make `uname -m`_defconfig fragment-`uname -m`.config
+
+# build
+make
+
+# install
+install -d $DESTDIR/boot
+install arch/`uname -m`/boot/bzImage $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/linux-build.pc << EOF
+Name: linux
+Version: 5.15.162
+Description: Linux kernel
+Requires: $REQUIRES
+
+exec=\\
+/boot/bzImage
+EOF
+
+exit
+--- linux-5.15.162.orig/arch/x86/configs/fragment-x86_64.config
++++ linux-5.15.162/arch/x86/configs/fragment-x86_64.config
+@@ -0,0 +1,4 @@
++CONFIG_SYSFB_SIMPLEFB=y
++CONFIG_DRM_SIMPLEDRM=y
++CONFIG_FB=y
++CONFIG_FB_VESA=y

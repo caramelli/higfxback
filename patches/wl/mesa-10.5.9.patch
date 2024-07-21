@@ -9,13 +9,14 @@ if pkg-config --exists libdrm-build; then
   DRM=1
   DRI="--disable-glx --disable-nls --with-egl-platforms=wayland,drm --without-dri-drivers"
   REQUIRES="$REQUIRES libdrm-build"
+  pkg-config --exists libudev-zero-build && REQUIRES="$REQUIRES libudev-zero-build" || SYSFS=--enable-sysfs
 else
   DRI="--disable-dri --with-egl-platforms=wayland"
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/wl
+PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 $SYSFS --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/wl
 
 # build
 make

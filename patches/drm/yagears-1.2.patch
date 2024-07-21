@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libdrm-build libevdev-build libgbm-stub-build libpng-build tiff-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1-cm --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install yagears $DESTDIR/drm/bin
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/yagears-build.pc << EOF
+Name: yagears
+Version: 1.2
+Description: Yet Another Gears OpenGL demo
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/yagears
+EOF
+
+exit

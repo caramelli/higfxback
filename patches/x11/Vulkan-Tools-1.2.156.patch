@@ -5,9 +5,9 @@ REQUIRES="cmake3-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loade
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires vulkan-loader-build | grep -q libxcb-build; then
   XCB=1
-  if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build; then
+  if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires vulkan-loader-build | grep -q libx11-build; then
     XLIB=1
   else
     BUILD_WSI=-DBUILD_WSI_XLIB_SUPPORT=OFF
@@ -95,8 +95,8 @@ exit
 +# This will define:
 +#
 +#   X11_FOUND       - True if libX11 is found
-+#   X11_INCLUDE_DIR - Include directory for DirectFB
-+#   X11_LIBRARIES   - Link these to use DirectFB
++#   X11_INCLUDE_DIR - Include directory for libX11
++#   X11_LIBRARIES   - Link these to use libX11
 +#
 +# Redistribution and use is allowed according to the terms of the BSD license.
 +# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
@@ -351,6 +351,20 @@ exit
      spin_angle = 4.0f;
      spin_increment = 0.2f;
      pause = false;
+--- Vulkan-Tools-1.2.156.orig/icd/CMakeLists.txt
++++ Vulkan-Tools-1.2.156/icd/CMakeLists.txt
+@@ -27,7 +27,10 @@
+     endif()
+ 
+     if(BUILD_WSI_XLIB_SUPPORT)
+-        add_definitions(-DVK_USE_PLATFORM_XLIB_KHR -DVK_USE_PLATFORM_XLIB_KHX -DVK_USE_PLATFORM_XLIB_XRANDR_EXT)
++        add_definitions(-DVK_USE_PLATFORM_XLIB_KHR -DVK_USE_PLATFORM_XLIB_KHX)
++        if(BUILD_WSI_XLIB_XRANDR_SUPPORT)
++            add_definitions(-DVK_USE_PLATFORM_XLIB_XRANDR_EXT)
++        endif()
+     endif()
+ 
+     if(BUILD_WSI_WAYLAND_SUPPORT)
 --- Vulkan-Tools-1.2.156.orig/vulkaninfo/CMakeLists.txt
 +++ Vulkan-Tools-1.2.156/vulkaninfo/CMakeLists.txt
 @@ -17,6 +17,10 @@

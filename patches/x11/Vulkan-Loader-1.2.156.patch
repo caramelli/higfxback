@@ -12,9 +12,14 @@ else
   BUILD_WSI=-DBUILD_WSI_XCB_SUPPORT=OFF
 fi
 
-if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libx11-build; then
   XLIB=1
-  REQUIRES="$REQUIRES libxrandr-build"
+  REQUIRES="$REQUIRES libx11-build"
+  if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build; then
+    REQUIRES="$REQUIRES libxrandr-build"
+  else
+    BUILD_WSI="$BUILD_WSI -DBUILD_WSI_XLIB_XRANDR_SUPPORT=OFF"
+  fi
 else
   BUILD_WSI=-DBUILD_WSI_XLIB_SUPPORT=OFF
 fi
@@ -63,7 +68,15 @@ exit
  
  if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
      option(BUILD_TESTS "Build Tests" ON)
-@@ -192,9 +192,9 @@
+@@ -120,6 +120,7 @@
+ if(UNIX AND NOT APPLE) # i.e.: Linux
+     option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
+     option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
++    option(BUILD_WSI_XLIB_XRANDR_SUPPORT "Build Xlib Xrandr WSI support" ON)
+     option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
+     option(BUILD_WSI_DIRECTFB_SUPPORT "Build DirectFB WSI support" OFF)
+ 
+@@ -192,9 +193,9 @@
  endif()
  
  # Optional codegen target
@@ -83,8 +96,8 @@ exit
 +# This will define:
 +#
 +#   X11_FOUND       - True if libX11 is found
-+#   X11_INCLUDE_DIR - Include directory for DirectFB
-+#   X11_LIBRARIES   - Link these to use DirectFB
++#   X11_INCLUDE_DIR - Include directory for libX11
++#   X11_LIBRARIES   - Link these to use libX11
 +#
 +# Redistribution and use is allowed according to the terms of the BSD license.
 +# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
@@ -103,7 +116,19 @@ exit
 +mark_as_advanced(X11_INCLUDE_DIR X11_LIBRARIES)
 --- Vulkan-Loader-1.2.156.orig/loader/CMakeLists.txt
 +++ Vulkan-Loader-1.2.156/loader/CMakeLists.txt
-@@ -254,7 +254,7 @@
+@@ -47,7 +47,10 @@
+     endif()
+ 
+     if(BUILD_WSI_XLIB_SUPPORT)
+-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_XLIB_KHR VK_USE_PLATFORM_XLIB_XRANDR_EXT)
++        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_XLIB_KHR)
++        if(BUILD_WSI_XLIB_XRANDR_SUPPORT)
++            set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_XLIB_XRANDR_EXT)
++        endif()
+     endif()
+ 
+     if(BUILD_WSI_WAYLAND_SUPPORT)
+@@ -254,7 +257,7 @@
                                       "1"
                                       VERSION
                                       "${VulkanHeaders_VERSION_MAJOR}.${VulkanHeaders_VERSION_MINOR}.${VulkanHeaders_VERSION_PATCH}")

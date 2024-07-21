@@ -101,6 +101,8 @@ rootfs: linux busybox binutils gcc syslinux
 	@for l in `sort $(BUSYBOX)/busybox.links`; do ln -sf busybox rootfs$$l; done
 	@echo 'loadkmap < /share/busybox/$$1.kmap' > rootfs/bin/loadkeys
 	@chmod 755 rootfs/bin/loadkeys
+	@echo mdev -d > rootfs/bin/mdevd
+	@chmod 755 rootfs/bin/mdevd
 	@install $(BINUTILS)/build/binutils/elfedit rootfs/bin
 	@install $(BINUTILS)/build/binutils/readelf rootfs/bin
 	@install $(BINUTILS)/build/binutils/addr2line rootfs/bin
@@ -144,6 +146,12 @@ rootfs: linux busybox binutils gcc syslinux
 	@echo mount -a >> rootfs/etc/init.d/rcS
 	@echo mkdir /dev/pts >> rootfs/etc/init.d/rcS
 	@echo mount -t devpts none /dev/pts >> rootfs/etc/init.d/rcS
+	@echo mdevd >> rootfs/etc/init.d/rcS
+	@echo mdev -s >> rootfs/etc/init.d/rcS
+	@echo ln -sf /proc/self/fd /dev/fd >> rootfs/etc/init.d/rcS
+	@echo ln -sf /proc/self/fd/0 /dev/stdin >> rootfs/etc/init.d/rcS
+	@echo ln -sf /proc/self/fd/1 /dev/stdout >> rootfs/etc/init.d/rcS
+	@echo ln -sf /proc/self/fd/2 /dev/stderr >> rootfs/etc/init.d/rcS
 	@echo loadkeys fr >> rootfs/etc/init.d/rcS
 	@chmod 755 rootfs/etc/init.d/rcS
 	@install -d rootfs/include

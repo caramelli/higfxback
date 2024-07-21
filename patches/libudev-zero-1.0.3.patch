@@ -1,0 +1,139 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --soversion 0 --prefix
+
+# build
+make
+make libudev.pc
+
+# install
+install -d $DESTDIR/include
+install -m 644 udev.h $DESTDIR/include/libudev.h
+install -d $DESTDIR/lib
+install libudev.so.0 $DESTDIR/lib
+ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libudev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libudev-zero-build.pc << EOF
+Name: libudev-zero
+Version: 1.0.3
+Description: Daemonless Userspace Device management library
+Requires: $REQUIRES
+
+devel=\\
+/include/libudev.h \\
+/lib/libudev.so \\
+/lib/pkgconfig/libudev.pc
+
+exec=\\
+/lib/libudev.so.0 \\
+EOF
+
+exit
+--- libudev-zero-1.0.3.orig/Configure
++++ libudev-zero-1.0.3/Configure
+@@ -0,0 +1,30 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++SOVERSION=1
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --soversion)
++      SOVERSION=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^SOVERSION =/s#=.*#= $SOVERSION#" Makefile
+--- libudev-zero-1.0.3.orig/Makefile
++++ libudev-zero-1.0.3/Makefile
+@@ -2,13 +2,14 @@
+ .POSIX:
+ 
+ PREFIX = /usr/local
++SOVERSION = 1
+ LIBDIR = ${PREFIX}/lib
+ INCLUDEDIR = ${PREFIX}/include
+ PKGCONFIGDIR = ${LIBDIR}/pkgconfig
+ XCFLAGS = ${CPPFLAGS} ${CFLAGS} -std=c99 -fPIC -pthread -D_XOPEN_SOURCE=700 \
+ 		  -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wstrict-prototypes \
+ 		  -Wno-unused-parameter
+-XLDFLAGS = ${LDFLAGS} -shared -Wl,-soname,libudev.so.1
++XLDFLAGS = ${LDFLAGS} -shared -Wl,-soname,libudev.so.${SOVERSION}
+ XARFLAGS = -rc
+ AR = ar
+ 
+@@ -19,7 +20,7 @@
+ 	  udev_monitor.o \
+ 	  udev_enumerate.o
+ 
+-all: libudev.so.1 libudev.a
++all: libudev.so.${SOVERSION} libudev.a
+ 
+ .c.o:
+ 	${CC} ${XCFLAGS} -c -o $@ $<
+@@ -27,7 +28,7 @@
+ libudev.a: ${OBJ}
+ 	${AR} ${XARFLAGS} $@ ${OBJ}
+ 
+-libudev.so.1: ${OBJ}
++libudev.so.${SOVERSION}: ${OBJ}
+ 	${CC} ${XCFLAGS} -o $@ ${OBJ} ${XLDFLAGS}
+ 
+ libudev.pc: libudev.pc.in
+@@ -54,10 +55,10 @@
+ 	mkdir -p ${DESTDIR}${PKGCONFIGDIR}
+ 	cp -f libudev.pc ${DESTDIR}${PKGCONFIGDIR}/libudev.pc
+ 
+-install-shared: libudev.so.1 install-headers install-pkgconfig
++install-shared: libudev.so.${SOVERSION} install-headers install-pkgconfig
+ 	mkdir -p ${DESTDIR}${LIBDIR}
+-	cp -f libudev.so.1 ${DESTDIR}${LIBDIR}/libudev.so.1
+-	ln -fs libudev.so.1 ${DESTDIR}${LIBDIR}/libudev.so
++	cp -f libudev.so.${SOVERSION} ${DESTDIR}${LIBDIR}/libudev.so.${SOVERSION}
++	ln -fs libudev.so.${SOVERSION} ${DESTDIR}${LIBDIR}/libudev.so
+ 
+ install-static: libudev.a install-headers install-pkgconfig
+ 	mkdir -p ${DESTDIR}${LIBDIR}
+@@ -68,12 +69,12 @@
+ uninstall:
+ 	rm -f ${DESTDIR}${LIBDIR}/libudev.a \
+           ${DESTDIR}${LIBDIR}/libudev.so \
+-          ${DESTDIR}${LIBDIR}/libudev.so.1 \
++          ${DESTDIR}${LIBDIR}/libudev.so.${SOVERSION} \
+           ${DESTDIR}${PKGCONFIGDIR}/libudev.pc \
+           ${DESTDIR}${INCLUDEDIR}/libudev.h
+ 
+ clean:
+-	rm -f libudev.so.1 libudev.a libudev.pc ${OBJ}
++	rm -f libudev.so.${SOVERSION} libudev.a libudev.pc ${OBJ}
+ 
+ .PHONY: all clean install-headers install-pkgconfig install-shared \
+ 	install-static install uninstall

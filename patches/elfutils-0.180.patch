@@ -1,0 +1,99 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build xz-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16)
+aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --disable-debuginfod --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/addr2line $DESTDIR/bin/eu-addr2line
+install src/ar $DESTDIR/bin/eu-ar
+install src/elfclassify $DESTDIR/bin/eu-elfclassify
+install src/elfcmp $DESTDIR/bin/eu-elfcmp
+install src/elfcompress $DESTDIR/bin/eu-elfcompress
+install src/elflint $DESTDIR/bin/eu-elflint
+install src/findtextrel $DESTDIR/bin/eu-findtextrel
+install src/make-debug-archive $DESTDIR/bin/eu-make-debug-archive
+install src/nm $DESTDIR/bin/eu-nm
+install src/objdump $DESTDIR/bin/eu-objdump
+install src/ranlib $DESTDIR/bin/eu-ranlib
+install src/readelf $DESTDIR/bin/eu-readelf
+install src/size $DESTDIR/bin/eu-size
+install src/stack $DESTDIR/bin/eu-stack
+install src/strings $DESTDIR/bin/eu-strings
+install src/strip $DESTDIR/bin/eu-strip
+install src/unstrip $DESTDIR/bin/eu-unstrip
+install -d $DESTDIR/include
+install -m 644 libdw/dwarf.h $DESTDIR/include
+install -m 644 libelf/gelf.h $DESTDIR/include
+install -m 644 libelf/libelf.h $DESTDIR/include
+install -d $DESTDIR/include/elfutils
+install -m 644 version.h $DESTDIR/include/elfutils
+install -m 644 libdw/libdw.h $DESTDIR/include/elfutils
+install -m 644 libdwelf/libdwelf.h $DESTDIR/include/elfutils
+install -m 644 libdwfl/libdwfl.h $DESTDIR/include/elfutils
+install -d $DESTDIR/lib
+install libasm/libasm.so $DESTDIR/lib/libasm.so.1
+ln -sf libasm.so.1 $DESTDIR/lib/libasm.so
+install libdw/libdw.so $DESTDIR/lib/libdw.so.1
+ln -sf libdw.so.1 $DESTDIR/lib/libdw.so
+install libelf/libelf.so $DESTDIR/lib/libelf.so.1
+ln -sf libelf.so.1 $DESTDIR/lib/libelf.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 config/libdw.pc $DESTDIR/lib/pkgconfig
+install -m 644 config/libelf.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/elfutils-build.pc << EOF
+Name: elfutils
+Version: 0.180
+Description: libraries and tools for ELF files and DWARF data
+Requires: $REQUIRES
+
+devel=\\
+/include/dwarf.h \\
+/include/gelf.h \\
+/include/libelf.h \\
+/include/elfutils/libdw.h \\
+/include/elfutils/libdwelf.h \\
+/include/elfutils/libdwfl.h \\
+/include/elfutils/version.h \\
+/lib/libasm.so \\
+/lib/libdw.so \\
+/lib/libelf.so \\
+/lib/pkgconfig/libdw.pc \\
+/lib/pkgconfig/libelf.pc
+
+exec=\\
+/bin/eu-addr2line \\
+/bin/eu-ar \\
+/bin/eu-elfclassify \\
+/bin/eu-elfcmp \\
+/bin/eu-elfcompress \\
+/bin/eu-elflint \\
+/bin/eu-findtextrel \\
+/bin/eu-make-debug-archive \\
+/bin/eu-nm \\
+/bin/eu-objdump \\
+/bin/eu-ranlib \\
+/bin/eu-readelf \\
+/bin/eu-size \\
+/bin/eu-stack \\
+/bin/eu-strings \\
+/bin/eu-strip \\
+/bin/eu-unstrip \\
+/lib/libasm.so.1 \\
+/lib/libdw.so.1 \\
+/lib/libelf.so.1
+EOF
+
+exit

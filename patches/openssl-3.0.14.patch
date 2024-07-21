@@ -1,0 +1,209 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build perl-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+perl ./Configure --libdir=lib --openssldir=/etc/ssl --prefix=/
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install apps/openssl $DESTDIR/bin
+install -d $DESTDIR/include/openssl
+install -m 644 include/openssl/asn1.h $DESTDIR/include/openssl
+install -m 644 include/openssl/asn1err.h $DESTDIR/include/openssl
+install -m 644 include/openssl/async.h $DESTDIR/include/openssl
+install -m 644 include/openssl/asyncerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/bio.h $DESTDIR/include/openssl
+install -m 644 include/openssl/bioerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/bn.h $DESTDIR/include/openssl
+install -m 644 include/openssl/bnerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/buffer.h $DESTDIR/include/openssl
+install -m 644 include/openssl/buffererr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/comp.h $DESTDIR/include/openssl
+install -m 644 include/openssl/comperr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/conf.h $DESTDIR/include/openssl
+install -m 644 include/openssl/conferr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/conftypes.h $DESTDIR/include/openssl
+install -m 644 include/openssl/configuration.h $DESTDIR/include/openssl
+install -m 644 include/openssl/core.h $DESTDIR/include/openssl
+install -m 644 include/openssl/core_dispatch.h $DESTDIR/include/openssl
+install -m 644 include/openssl/crypto.h $DESTDIR/include/openssl
+install -m 644 include/openssl/cryptoerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/cryptoerr_legacy.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ct.h $DESTDIR/include/openssl
+install -m 644 include/openssl/cterr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/des.h $DESTDIR/include/openssl
+install -m 644 include/openssl/dh.h $DESTDIR/include/openssl
+install -m 644 include/openssl/dherr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/dsa.h $DESTDIR/include/openssl
+install -m 644 include/openssl/dsaerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/dtls1.h $DESTDIR/include/openssl
+install -m 644 include/openssl/e_os2.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ec.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ecerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/engine.h $DESTDIR/include/openssl
+install -m 644 include/openssl/engineerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/err.h $DESTDIR/include/openssl
+install -m 644 include/openssl/evp.h $DESTDIR/include/openssl
+install -m 644 include/openssl/evperr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/hmac.h $DESTDIR/include/openssl
+install -m 644 include/openssl/http.h $DESTDIR/include/openssl
+install -m 644 include/openssl/lhash.h $DESTDIR/include/openssl
+install -m 644 include/openssl/macros.h $DESTDIR/include/openssl
+install -m 644 include/openssl/md4.h $DESTDIR/include/openssl
+install -m 644 include/openssl/md5.h $DESTDIR/include/openssl
+install -m 644 include/openssl/objects.h $DESTDIR/include/openssl
+install -m 644 include/openssl/objectserr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/obj_mac.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ocsp.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ocsperr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/opensslconf.h $DESTDIR/include/openssl
+install -m 644 include/openssl/opensslv.h $DESTDIR/include/openssl
+install -m 644 include/openssl/params.h $DESTDIR/include/openssl
+install -m 644 include/openssl/pem.h $DESTDIR/include/openssl
+install -m 644 include/openssl/pemerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/pkcs7.h $DESTDIR/include/openssl
+install -m 644 include/openssl/pkcs7err.h $DESTDIR/include/openssl
+install -m 644 include/openssl/pkcs12.h $DESTDIR/include/openssl
+install -m 644 include/openssl/pkcs12err.h $DESTDIR/include/openssl
+install -m 644 include/openssl/prov_ssl.h $DESTDIR/include/openssl
+install -m 644 include/openssl/rand.h $DESTDIR/include/openssl
+install -m 644 include/openssl/randerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/rsa.h $DESTDIR/include/openssl
+install -m 644 include/openssl/rsaerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/safestack.h $DESTDIR/include/openssl
+install -m 644 include/openssl/sha.h $DESTDIR/include/openssl
+install -m 644 include/openssl/srtp.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ssl.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ssl2.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ssl3.h $DESTDIR/include/openssl
+install -m 644 include/openssl/sslerr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/sslerr_legacy.h $DESTDIR/include/openssl
+install -m 644 include/openssl/stack.h $DESTDIR/include/openssl
+install -m 644 include/openssl/symhacks.h $DESTDIR/include/openssl
+install -m 644 include/openssl/tls1.h $DESTDIR/include/openssl
+install -m 644 include/openssl/types.h $DESTDIR/include/openssl
+install -m 644 include/openssl/ui.h $DESTDIR/include/openssl
+install -m 644 include/openssl/uierr.h $DESTDIR/include/openssl
+install -m 644 include/openssl/x509.h $DESTDIR/include/openssl
+install -m 644 include/openssl/x509_vfy.h $DESTDIR/include/openssl
+install -m 644 include/openssl/x509err.h $DESTDIR/include/openssl
+install -m 644 include/openssl/x509v3.h $DESTDIR/include/openssl
+install -m 644 include/openssl/x509v3err.h $DESTDIR/include/openssl
+install -d $DESTDIR/lib
+install libcrypto.so.3 $DESTDIR/lib
+ln -sf libcrypto.so.3 $DESTDIR/lib/libcrypto.so
+install libssl.so.3 $DESTDIR/lib
+ln -sf libssl.so.3 $DESTDIR/lib/libssl.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libcrypto.pc $DESTDIR/lib/pkgconfig
+install -m 644 libssl.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/openssl-build.pc << EOF
+Name: openssl
+Version: 3.0.14
+Description: Secure Sockets Layer libraries and tool for using various cryptography functions
+Requires: $REQUIRES
+
+devel=\\
+/include/openssl/asn1.h \\
+/include/openssl/asn1err.h \\
+/include/openssl/async.h \\
+/include/openssl/asyncerr.h \\
+/include/openssl/bio.h \\
+/include/openssl/bioerr.h \\
+/include/openssl/bn.h \\
+/include/openssl/bnerr.h \\
+/include/openssl/buffer.h \\
+/include/openssl/buffererr.h \\
+/include/openssl/comp.h \\
+/include/openssl/comperr.h \\
+/include/openssl/conf.h \\
+/include/openssl/conferr.h \\
+/include/openssl/configuration.h \\
+/include/openssl/conftypes.h \\
+/include/openssl/core.h \\
+/include/openssl/core_dispatch.h \\
+/include/openssl/crypto.h \\
+/include/openssl/cryptoerr.h \\
+/include/openssl/cryptoerr_legacy.h \\
+/include/openssl/ct.h \\
+/include/openssl/cterr.h \\
+/include/openssl/des.h \\
+/include/openssl/dh.h \\
+/include/openssl/dherr.h \\
+/include/openssl/dsa.h \\
+/include/openssl/dsaerr.h \\
+/include/openssl/dtls1.h \\
+/include/openssl/e_os2.h \\
+/include/openssl/ec.h \\
+/include/openssl/ecerr.h \\
+/include/openssl/engine.h \\
+/include/openssl/engineerr.h \\
+/include/openssl/err.h \\
+/include/openssl/evp.h \\
+/include/openssl/evperr.h \\
+/include/openssl/hmac.h \\
+/include/openssl/http.h \\
+/include/openssl/lhash.h \\
+/include/openssl/macros.h \\
+/include/openssl/md4.h \\
+/include/openssl/md5.h \\
+/include/openssl/obj_mac.h \\
+/include/openssl/objects.h \\
+/include/openssl/objectserr.h \\
+/include/openssl/ocsp.h \\
+/include/openssl/ocsperr.h \\
+/include/openssl/opensslconf.h \\
+/include/openssl/opensslv.h \\
+/include/openssl/params.h \\
+/include/openssl/pem.h \\
+/include/openssl/pemerr.h \\
+/include/openssl/pkcs7.h \\
+/include/openssl/pkcs7err.h \\
+/include/openssl/pkcs12.h \\
+/include/openssl/pkcs12err.h \\
+/include/openssl/prov_ssl.h \\
+/include/openssl/rand.h \\
+/include/openssl/randerr.h \\
+/include/openssl/rsa.h \\
+/include/openssl/rsaerr.h \\
+/include/openssl/safestack.h \\
+/include/openssl/sha.h \\
+/include/openssl/srtp.h \\
+/include/openssl/ssl.h \\
+/include/openssl/ssl2.h \\
+/include/openssl/ssl3.h \\
+/include/openssl/sslerr.h \\
+/include/openssl/sslerr_legacy.h \\
+/include/openssl/stack.h \\
+/include/openssl/symhacks.h \\
+/include/openssl/tls1.h \\
+/include/openssl/types.h \\
+/include/openssl/ui.h \\
+/include/openssl/uierr.h \\
+/include/openssl/x509.h \\
+/include/openssl/x509_vfy.h \\
+/include/openssl/x509err.h \\
+/include/openssl/x509v3.h \\
+/include/openssl/x509v3err.h \\
+/lib/libcrypto.so \\
+/lib/libssl.so \\
+/lib/pkgconfig/libcrypto.pc \\
+/lib/pkgconfig/libssl.pc
+
+exec=\\
+/bin/openssl \\
+/lib/libcrypto.so.3 \\
+/lib/libssl.so.3
+EOF
+
+exit

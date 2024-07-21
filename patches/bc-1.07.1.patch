@@ -1,0 +1,40 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build ed-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14)
+aclocal; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install bc/bc $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/bc-build.pc << EOF
+Name: bc
+Version: 1.07.1
+Description: GNU basic calculator
+Requires: $REQUIRES
+
+exec=\\
+/bin/bc
+EOF
+
+exit
+--- bc-1.07.1.orig/doc/Makefile.am
++++ bc-1.07.1/doc/Makefile.am
+@@ -6,6 +6,3 @@
+ MAINTAINERCLEANFILES = Makefile.in
+ 
+ dist_man_MANS = bc.1 dc.1
+-
+-bc.dvi bc.pdf bc.html $(srcdir)/bc.info \
+-dc.dvi dc.pdf dc.html $(srcdir)/dc.info :  texi-ver.incl

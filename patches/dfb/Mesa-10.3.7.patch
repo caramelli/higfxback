@@ -9,13 +9,14 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libdrm-build; then
   DRM=1
   DRI="--disable-glx --disable-nls --with-egl-platforms=directfb,drm --without-dri-drivers"
   REQUIRES="$REQUIRES libdrm-build"
+  pkg-config --exists libudev-zero-build && REQUIRES="$REQUIRES libudev-zero-build" || SYSFS=--enable-sysfs
 else
   DRI="--disable-dri --with-egl-platforms=directfb"
 fi
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 $SYSFS --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/dfb
 
 # build
 make
