@@ -1,0 +1,519 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libdrm-build make-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+if pkg-config --exists x264-build; then
+  X264=--enable-libx264
+  REQUIRES="$REQUIRES x264-build"
+fi
+
+if pkg-config --exists x265-build; then
+  X265=--enable-libx265
+  REQUIRES="$REQUIRES x265-build"
+fi
+
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
+# configure
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-libdrm --enable-gpl --enable-shared $X264 $X265 --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install ffmpeg $DESTDIR/drm/bin
+install ffprobe $DESTDIR/drm/bin
+install -d $DESTDIR/drm/include/libavcodec
+install -m 644 libavcodec/avcodec.h $DESTDIR/drm/include/libavcodec
+install -m 644 libavcodec/avfft.h $DESTDIR/drm/include/libavcodec
+install -m 644 libavcodec/version.h $DESTDIR/drm/include/libavcodec
+install -d $DESTDIR/drm/include/libavdevice
+install -m 644 libavdevice/avdevice.h $DESTDIR/drm/include/libavdevice
+install -m 644 libavdevice/version.h $DESTDIR/drm/include/libavdevice
+install -d $DESTDIR/drm/include/libavfilter
+install -m 644 libavfilter/avfilter.h $DESTDIR/drm/include/libavfilter
+install -m 644 libavfilter/buffersink.h $DESTDIR/drm/include/libavfilter
+install -m 644 libavfilter/buffersrc.h $DESTDIR/drm/include/libavfilter
+install -m 644 libavfilter/version.h $DESTDIR/drm/include/libavfilter
+install -d $DESTDIR/drm/include/libavformat
+install -m 644 libavformat/avformat.h $DESTDIR/drm/include/libavformat
+install -m 644 libavformat/avio.h $DESTDIR/drm/include/libavformat
+install -m 644 libavformat/version.h $DESTDIR/drm/include/libavformat
+install -d $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/attributes.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/avassert.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/avconfig.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/avstring.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/avutil.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/base64.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/bprint.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/bswap.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/buffer.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/channel_layout.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/common.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/cpu.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/dict.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/display.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/error.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/eval.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/ffversion.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/fifo.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/frame.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/imgutils.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/intfloat.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/intreadwrite.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/log.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/lzo.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/macros.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/mathematics.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/md5.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/mem.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/opt.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/parseutils.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/pixdesc.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/pixfmt.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/rational.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/samplefmt.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/sha.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/time.h $DESTDIR/drm/include/libavutil
+install -m 644 libavutil/version.h $DESTDIR/drm/include/libavutil
+install -d $DESTDIR/drm/include/libpostproc
+install -m 644 libpostproc/postprocess.h $DESTDIR/drm/include/libpostproc
+install -m 644 libpostproc/version.h $DESTDIR/drm/include/libpostproc
+install -d $DESTDIR/drm/include/libswresample
+install -m 644 libswresample/swresample.h $DESTDIR/drm/include/libswresample
+install -m 644 libswresample/version.h $DESTDIR/drm/include/libswresample
+install -d $DESTDIR/drm/include/libswscale
+install -m 644 libswscale/swscale.h $DESTDIR/drm/include/libswscale
+install -m 644 libswscale/version.h $DESTDIR/drm/include/libswscale
+install -d $DESTDIR/drm/lib
+install libavcodec/libavcodec.so.58 $DESTDIR/drm/lib
+ln -sf libavcodec.so.58 $DESTDIR/drm/lib/libavcodec.so
+install libavdevice/libavdevice.so.58 $DESTDIR/drm/lib
+ln -sf libavdevice.so.58 $DESTDIR/drm/lib/libavdevice.so
+install libavfilter/libavfilter.so.7 $DESTDIR/drm/lib
+ln -sf libavfilter.so.7 $DESTDIR/drm/lib/libavfilter.so
+install libavformat/libavformat.so.58 $DESTDIR/drm/lib
+ln -sf libavformat.so.58 $DESTDIR/drm/lib/libavformat.so
+install libavutil/libavutil.so.56 $DESTDIR/drm/lib
+ln -sf libavutil.so.56 $DESTDIR/drm/lib/libavutil.so
+install libpostproc/libpostproc.so.55 $DESTDIR/drm/lib
+ln -sf libpostproc.so.55 $DESTDIR/drm/lib/libpostproc.so
+install libswresample/libswresample.so.3 $DESTDIR/drm/lib
+ln -sf libswresample.so.3 $DESTDIR/drm/lib/libswresample.so
+install libswscale/libswscale.so.5 $DESTDIR/drm/lib
+ln -sf libswscale.so.5 $DESTDIR/drm/lib/libswscale.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 libavcodec/libavcodec.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libavdevice/libavdevice.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libavfilter/libavfilter.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libavformat/libavformat.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libavutil/libavutil.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libpostproc/libpostproc.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libswresample/libswresample.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 libswscale/libswscale.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/ffmpeg-build.pc << EOF
+Name: ffmpeg
+Version: 4.1.11
+Description: A collection of libraries and tools to process multimedia content
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/libavcodec/avcodec.h \\
+/drm/include/libavcodec/avfft.h \\
+/drm/include/libavcodec/version.h \\
+/drm/include/libavdevice/avdevice.h \\
+/drm/include/libavdevice/version.h \\
+/drm/include/libavfilter/avfilter.h \\
+/drm/include/libavfilter/buffersink.h \\
+/drm/include/libavfilter/buffersrc.h \\
+/drm/include/libavfilter/version.h \\
+/drm/include/libavformat/avformat.h \\
+/drm/include/libavformat/avio.h \\
+/drm/include/libavformat/version.h \\
+/drm/include/libavutil/attributes.h \\
+/drm/include/libavutil/avassert.h \\
+/drm/include/libavutil/avconfig.h \\
+/drm/include/libavutil/avstring.h \\
+/drm/include/libavutil/avutil.h \\
+/drm/include/libavutil/base64.h \\
+/drm/include/libavutil/bprint.h \\
+/drm/include/libavutil/bswap.h \\
+/drm/include/libavutil/buffer.h \\
+/drm/include/libavutil/channel_layout.h \\
+/drm/include/libavutil/common.h \\
+/drm/include/libavutil/cpu.h \\
+/drm/include/libavutil/dict.h \\
+/drm/include/libavutil/display.h \\
+/drm/include/libavutil/error.h \\
+/drm/include/libavutil/eval.h \\
+/drm/include/libavutil/ffversion.h \\
+/drm/include/libavutil/fifo.h \\
+/drm/include/libavutil/frame.h \\
+/drm/include/libavutil/imgutils.h \\
+/drm/include/libavutil/intfloat.h \\
+/drm/include/libavutil/intreadwrite.h \\
+/drm/include/libavutil/log.h \\
+/drm/include/libavutil/lzo.h \\
+/drm/include/libavutil/macros.h \\
+/drm/include/libavutil/mathematics.h \\
+/drm/include/libavutil/md5.h \\
+/drm/include/libavutil/mem.h \\
+/drm/include/libavutil/opt.h \\
+/drm/include/libavutil/parseutils.h \\
+/drm/include/libavutil/pixdesc.h \\
+/drm/include/libavutil/pixfmt.h \\
+/drm/include/libavutil/rational.h \\
+/drm/include/libavutil/samplefmt.h \\
+/drm/include/libavutil/sha.h \\
+/drm/include/libavutil/time.h \\
+/drm/include/libavutil/version.h \\
+/drm/include/libpostproc/postprocess.h \\
+/drm/include/libpostproc/version.h \\
+/drm/include/libswresample/swresample.h \\
+/drm/include/libswresample/version.h \\
+/drm/include/libswscale/swscale.h \\
+/drm/include/libswscale/version.h \\
+/drm/lib/libavcodec.so \\
+/drm/lib/libavdevice.so \\
+/drm/lib/libavfilter.so \\
+/drm/lib/libavformat.so \\
+/drm/lib/libavutil.so \\
+/drm/lib/libpostproc.so \\
+/drm/lib/libswresample.so \\
+/drm/lib/libswscale.so \\
+/drm/lib/pkgconfig/libavcodec.pc \\
+/drm/lib/pkgconfig/libavdevice.pc \\
+/drm/lib/pkgconfig/libavfilter.pc \\
+/drm/lib/pkgconfig/libavformat.pc \\
+/drm/lib/pkgconfig/libavutil.pc \\
+/drm/lib/pkgconfig/libpostproc.pc \\
+/drm/lib/pkgconfig/libswresample.pc \\
+/drm/lib/pkgconfig/libswscale.pc
+
+exec=\\
+/drm/bin/ffmpeg \\
+/drm/bin/ffprobe \\
+/drm/lib/libavcodec.so.58 \\
+/drm/lib/libavdevice.so.58 \\
+/drm/lib/libavfilter.so.7 \\
+/drm/lib/libavformat.so.58 \\
+/drm/lib/libavutil.so.56 \\
+/drm/lib/libpostproc.so.55 \\
+/drm/lib/libswresample.so.3 \\
+/drm/lib/libswscale.so.5
+EOF
+
+exit
+--- ffmpeg-4.1.11.orig/configure
++++ ffmpeg-4.1.11/configure
+@@ -3265,6 +3265,7 @@
+ iec61883_indev_deps="libiec61883"
+ jack_indev_deps="libjack"
+ jack_indev_deps_any="sem_timedwait dispatch_dispatch_h"
++kmsdumb_outdev_deps="libdrm"
+ kmsgrab_indev_deps="libdrm"
+ lavfi_indev_deps="avfilter"
+ libcdio_indev_deps="libcdio"
+--- ffmpeg-4.1.11.orig/doc/outdevs.texi
++++ ffmpeg-4.1.11/doc/outdevs.texi
+@@ -216,6 +216,21 @@
+ 
+ See also @url{http://linux-fbdev.sourceforge.net/}, and fbset(1).
+ 
++@section kmsdumb
++
++KMS/DRM output device.
++
++This output device allows one to show a video stream using KMS/DRM dumb buffer.
++Only bgr0 pixel format is supported (the most common format with KMS/DRM).
++To enable this output device you need to configure FFmpeg with
++@code{--enable-libdrm}.
++
++@subsection Examples
++Play a file on KMS/DRM device @file{/dev/dri/card0}.
++@example
++ffmpeg -re -i INPUT -pix_fmt bgr0 -f kmsdumb /dev/dri/card0
++@end example
++
+ @section libndi_newtek
+ 
+ The libndi_newtek output device provides playback capabilities for using NDI (Network
+--- ffmpeg-4.1.11.orig/libavdevice/Makefile
++++ ffmpeg-4.1.11/libavdevice/Makefile
+@@ -32,6 +32,7 @@
+ OBJS-$(CONFIG_GDIGRAB_INDEV)             += gdigrab.o
+ OBJS-$(CONFIG_IEC61883_INDEV)            += iec61883.o
+ OBJS-$(CONFIG_JACK_INDEV)                += jack.o timefilter.o
++OBJS-$(CONFIG_KMSDUMB_OUTDEV)            += kmsdumb.o
+ OBJS-$(CONFIG_KMSGRAB_INDEV)             += kmsgrab.o
+ OBJS-$(CONFIG_LAVFI_INDEV)               += lavfi.o
+ OBJS-$(CONFIG_OPENAL_INDEV)              += openal-dec.o
+--- ffmpeg-4.1.11.orig/libavdevice/alldevices.c
++++ ffmpeg-4.1.11/libavdevice/alldevices.c
+@@ -40,6 +40,7 @@
+ extern AVInputFormat  ff_gdigrab_demuxer;
+ extern AVInputFormat  ff_iec61883_demuxer;
+ extern AVInputFormat  ff_jack_demuxer;
++extern AVOutputFormat ff_kmsdumb_muxer;
+ extern AVInputFormat  ff_kmsgrab_demuxer;
+ extern AVInputFormat  ff_lavfi_demuxer;
+ extern AVInputFormat  ff_openal_demuxer;
+--- ffmpeg-4.1.11.orig/libavdevice/kmsdumb.c
++++ ffmpeg-4.1.11/libavdevice/kmsdumb.c
+@@ -0,0 +1,246 @@
++/*
++ * KMS/DRM ouput device
++ *
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <fcntl.h>
++#include <sys/mman.h>
++#include <unistd.h>
++#include <xf86drm.h>
++#include <xf86drmMode.h>
++
++#include "avdevice.h"
++
++typedef struct {
++    AVClass *class;
++    int fd;
++    uint32_t connector_id;
++    uint32_t encoder_id;
++    uint32_t crtc_id;
++    drmModeCrtc *crtc;
++    drmModeModeInfo mode_info;
++    uint32_t handle;
++    uint32_t width;
++    uint32_t height;
++    uint32_t pitch;
++    uint32_t size;
++    uint32_t fb_id;
++    uint8_t *data;
++} KMSDumbContext;
++
++static av_cold int kmsdumb_write_trailer(AVFormatContext *s)
++{
++    KMSDumbContext *kmsdumb = s->priv_data;
++    struct drm_mode_destroy_dumb dreq;
++
++    if (kmsdumb->data) {
++        munmap(kmsdumb->data, kmsdumb->size);
++        kmsdumb->data = NULL;
++    }
++
++    if (kmsdumb->fb_id) {
++        drmModeRmFB(kmsdumb->fd, kmsdumb->fb_id);
++        kmsdumb->fb_id = 0;
++    }
++
++    if (kmsdumb->handle) {
++        memset(&dreq, 0, sizeof(struct drm_mode_destroy_dumb));
++        dreq.handle = kmsdumb->handle;
++        drmIoctl(kmsdumb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
++        kmsdumb->handle = 0;
++    }
++
++    if (kmsdumb->crtc) {
++        drmModeSetCrtc(kmsdumb->fd,
++                       kmsdumb->crtc->crtc_id, kmsdumb->crtc->buffer_id,
++                       kmsdumb->crtc->x, kmsdumb->crtc->y,
++                       &kmsdumb->connector_id, 1, &kmsdumb->crtc->mode);
++        drmModeFreeCrtc(kmsdumb->crtc);
++        kmsdumb->crtc = NULL;
++    }
++
++    close(kmsdumb->fd);
++
++    return 0;
++}
++
++static av_cold int kmsdumb_write_header(AVFormatContext *s)
++{
++    KMSDumbContext *kmsdumb = s->priv_data;
++    drmModeRes *res;
++    drmModeConnector *connector;
++    drmModeEncoder *encoder;
++    struct drm_mode_create_dumb creq;
++    struct drm_mode_map_dumb mreq;
++    int err;
++
++    if (s->nb_streams > 1 ||
++        s->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO ||
++        s->streams[0]->codecpar->codec_id != AV_CODEC_ID_RAWVIDEO) {
++        av_log(s, AV_LOG_ERROR, "Only supports one rawvideo stream\n");
++        return AVERROR(EINVAL);
++    }
++
++    if (s->streams[0]->codecpar->format != AV_PIX_FMT_BGR0) {
++        av_log(s, AV_LOG_ERROR, "Unsupported pixel format."
++               " Only AV_PIX_FMT_BGR0 is currently supported.\n");
++        return AVERROR(EINVAL);
++    }
++
++    if ((kmsdumb->fd = avpriv_open(s->url, O_RDWR)) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to open DRM device '%s': %s\n", s->url, av_err2str(err));
++        return err;
++    }
++
++    res = drmModeGetResources(kmsdumb->fd);
++    if (!res) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to get resources: %s\n", av_err2str(err));
++        goto fail;
++    }
++    kmsdumb->connector_id = res->connectors[0];
++    drmModeFreeResources(res);
++
++    connector = drmModeGetConnector(kmsdumb->fd, kmsdumb->connector_id);
++    if (!connector) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to get connector: %s\n", av_err2str(err));
++        goto fail;
++    }
++    kmsdumb->encoder_id = connector->encoder_id;
++    memcpy(&kmsdumb->mode_info, &connector->modes[0], sizeof(drmModeModeInfo));
++    drmModeFreeConnector(connector);
++
++    encoder = drmModeGetEncoder(kmsdumb->fd, kmsdumb->encoder_id);
++    if (!encoder) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to get encoder: %s\n", av_err2str(err));
++        goto fail;
++    }
++    kmsdumb->crtc_id = encoder->crtc_id;
++    drmModeFreeEncoder(encoder);
++
++    kmsdumb->crtc = drmModeGetCrtc(kmsdumb->fd, kmsdumb->crtc_id);
++    if (!kmsdumb->crtc) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to get CRTC: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    memset(&creq, 0, sizeof(struct drm_mode_create_dumb));
++    creq.width = kmsdumb->mode_info.hdisplay;
++    creq.height = kmsdumb->mode_info.vdisplay;
++    creq.bpp = 32;
++    if (drmIoctl(kmsdumb->fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to create dumb buffer: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    kmsdumb->handle = creq.handle;
++    kmsdumb->width = creq.width;
++    kmsdumb->height = creq.height;
++    kmsdumb->pitch = creq.pitch;
++    kmsdumb->size = creq.size;
++
++    if (drmModeAddFB(kmsdumb->fd, kmsdumb->width, kmsdumb->height, 24, 32,
++                     kmsdumb->pitch, kmsdumb->handle, &kmsdumb->fb_id) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to create framebuffer object: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    memset(&mreq, 0, sizeof(struct drm_mode_map_dumb));
++    mreq.handle = kmsdumb->handle;
++    if (drmIoctl(kmsdumb->fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to map dumb buffer: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    kmsdumb->data = mmap(NULL, kmsdumb->size, PROT_WRITE, MAP_SHARED,
++                         kmsdumb->fd, mreq.offset);
++    if (kmsdumb->data == MAP_FAILED) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to mmap dumb buffer: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    return 0;
++  fail:
++    kmsdumb_write_trailer(s);
++    return err;
++}
++
++static int kmsdumb_write_packet(AVFormatContext *s, AVPacket *pkt)
++{
++    KMSDumbContext *kmsdumb = s->priv_data;
++    uint32_t video_width = s->streams[0]->codecpar->width;
++    uint32_t video_height = s->streams[0]->codecpar->height;
++    uint32_t disp_height = FFMIN(kmsdumb->height, video_height);
++    uint32_t bytes_to_copy = FFMIN(kmsdumb->width, video_width) * 4;
++    uint32_t video_pitch = video_width * 4;
++    uint8_t *pin = pkt->data;
++    uint8_t *pout = kmsdumb->data;
++    int i, err;
++
++    for (i = 0; i < disp_height; i++) {
++        memcpy(pout, pin, bytes_to_copy);
++        pout += kmsdumb->pitch;
++        pin += video_pitch;
++    }
++
++    if (drmModeSetCrtc(kmsdumb->fd, kmsdumb->crtc_id, kmsdumb->fb_id, 0, 0,
++                       &kmsdumb->connector_id, 1, &kmsdumb->mode_info) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR, "Failed to set CRTC: %s\n", av_err2str(err));
++        return err;
++    }
++
++    return 0;
++}
++
++static const AVClass kmsdumb_class = {
++    .class_name = "kmsdumb outdev",
++    .item_name  = av_default_item_name,
++    .version    = LIBAVUTIL_VERSION_INT,
++    .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
++};
++
++AVOutputFormat ff_kmsdumb_muxer = {
++    .name           = "kmsdumb",
++    .long_name      = NULL_IF_CONFIG_SMALL("KMS/DRM dumb buffer"),
++    .priv_data_size = sizeof(KMSDumbContext),
++    .audio_codec    = AV_CODEC_ID_NONE,
++    .video_codec    = AV_CODEC_ID_RAWVIDEO,
++    .write_header   = kmsdumb_write_header,
++    .write_packet   = kmsdumb_write_packet,
++    .write_trailer  = kmsdumb_write_trailer,
++    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
++    .priv_class     = &kmsdumb_class,
++};

@@ -130,7 +130,6 @@ rootfs: linux busybox binutils gcc syslinux
 	@install -d rootfs/etc
 	@echo none /proc proc defaults 0 0 > rootfs/etc/fstab
 	@echo none /sys sysfs defaults 0 0 >> rootfs/etc/fstab
-	@echo none /dev tmpfs defaults 0 0 >> rootfs/etc/fstab
 	@echo none /run tmpfs defaults 0 0 >> rootfs/etc/fstab
 	@echo root::0:root > rootfs/etc/group
 	@echo root::0:0:root:/root:/bin/sh > rootfs/etc/passwd
