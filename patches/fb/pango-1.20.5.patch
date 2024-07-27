@@ -15,6 +15,7 @@ make
 # install
 install -d $DESTDIR/fb/bin
 install pango/.libs/pango-querymodules $DESTDIR/fb/bin
+install -d $DESTDIR/fb/etc/pango
 install -d $DESTDIR/fb/include/pango-1.0/pango
 install -m 644 pango/pango.h $DESTDIR/fb/include/pango-1.0/pango
 install -m 644 pango/pango-attributes.h $DESTDIR/fb/include/pango-1.0/pango
@@ -57,6 +58,7 @@ install -d $DESTDIR/fb/lib/pkgconfig
 install -m 644 pango.pc $DESTDIR/fb/lib/pkgconfig
 install -m 644 pangocairo.pc $DESTDIR/fb/lib/pkgconfig
 install -m 644 pangoft2.pc $DESTDIR/fb/lib/pkgconfig
+LD_LIBRARY_PATH=$DESTDIR/fb/lib $DESTDIR/fb/bin/pango-querymodules > $DESTDIR/fb/etc/pango/pango.modules
 
 # build.pc
 install -d $DESTDIR/fb/share/pkgconfig

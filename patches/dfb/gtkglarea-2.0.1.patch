@@ -1,0 +1,513 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build gtk2-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.10; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/include/gtkgl-2.0/gtkgl
+install -m 644 gtkgl/gdkgl.h $DESTDIR/dfb/include/gtkgl-2.0/gtkgl
+install -m 644 gtkgl/gtkglarea.h $DESTDIR/dfb/include/gtkgl-2.0/gtkgl
+install -d $DESTDIR/dfb/lib
+install gtkgl/.libs/libgtkgl-2.0.so.1.* $DESTDIR/dfb/lib/libgtkgl-2.0.so.1
+ln -sf libgtkgl-2.0.so.1 $DESTDIR/dfb/lib/libgtkgl-2.0.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 gtkgl-2.0.pc $DESTDIR/dfb/lib/pkgconfig
+install -d $DESTDIR/dfb/share/gtk-2.0/tests
+install -m 644 examples/alien.lwo $DESTDIR/dfb/share/gtk-2.0/tests
+install -m 644 examples/penguin.lwo $DESTDIR/dfb/share/gtk-2.0/tests
+install examples/.libs/gtkglarea_demo $DESTDIR/dfb/share/gtk-2.0/tests
+install examples/.libs/shaders $DESTDIR/dfb/share/gtk-2.0/tests
+install examples/.libs/simple $DESTDIR/dfb/share/gtk-2.0/tests
+install examples/.libs/viewlw $DESTDIR/dfb/share/gtk-2.0/tests
+install examples/.libs/zktor $DESTDIR/dfb/share/gtk-2.0/tests
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/gtkglarea2-build.pc << EOF
+Name: gtkglarea
+Version: 2.0.1
+Description: GTK OpenGL widget
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/gtkgl-2.0/gtkgl/gdkgl.h \\
+/dfb/include/gtkgl-2.0/gtkgl/gtkglarea.h \\
+/dfb/lib/libgtkgl-2.0.so \\
+/dfb/lib/pkgconfig/gtkgl-2.0.pc
+
+exec=\\
+/dfb/lib/libgtkgl-2.0.so.1 \\
+/dfb/share/gtk-2.0/tests/alien.lwo \\
+/dfb/share/gtk-2.0/tests/gtkglarea_demo \\
+/dfb/share/gtk-2.0/tests/penguin.lwo \\
+/dfb/share/gtk-2.0/tests/shaders \\
+/dfb/share/gtk-2.0/tests/simple \\
+/dfb/share/gtk-2.0/tests/viewlw \\
+/dfb/share/gtk-2.0/tests/zktor
+EOF
+
+exit
+--- gtkglarea-2.0.1.orig/configure.ac
++++ gtkglarea-2.0.1/configure.ac
+@@ -2,6 +2,7 @@
+ AC_INIT(gtkglarea, 2.0.1)
+ AC_CONFIG_AUX_DIR(.auto)
+ AC_CONFIG_HEADER(config.h)
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([no-define])
+ 
+ #shared library versioning
+@@ -109,7 +110,7 @@
+ if test "x$with_lib_GL" = "xyes"; then
+ 
+  if test "x$have_GL" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lGLU -lGL"
++  GL_LIBS="$GL_LDOPTS -lGL"
+  else
+   AC_MSG_ERROR([Missing GL library])
+  fi
+@@ -117,9 +118,9 @@
+ elif test "x$with_lib_MesaGL" = "xyes"; then
+ 
+  if test "x$have_MesaGL" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lMesaGLU -lMesaGL"
++  GL_LIBS="$GL_LDOPTS -lMesaGL"
+  elif test "x$have_MesaGL_pthread" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lMesaGLU -lMesaGL -lpthread"
++  GL_LIBS="$GL_LDOPTS -lMesaGL -lpthread"
+  else
+   AC_MSG_ERROR([Missing MesaGL library])
+  fi
+@@ -127,7 +128,7 @@
+ elif test "x$with_lib_opengl32" = "xyes"; then
+ 
+  if test "x$have_opengl32" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lglu32 -lopengl32"
++  GL_LIBS="$GL_LDOPTS -lopengl32"
+  else
+   AC_MSG_ERROR([Missing OpenGL32 library])
+  fi
+@@ -135,13 +136,13 @@
+ else
+ 
+  if test "x$have_opengl32" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lglu32 -lopengl32"
++  GL_LIBS="$GL_LDOPTS -lopengl32"
+  elif test "x$have_GL" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lGLU -lGL"
++  GL_LIBS="$GL_LDOPTS -lGL"
+  elif test "x$have_MesaGL" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lMesaGLU -lMesaGL"
++  GL_LIBS="$GL_LDOPTS -lMesaGL"
+  elif test "x$have_MesaGL_pthread" = "xyes"; then
+-  GL_LIBS="$GL_LDOPTS -lMesaGLU -lMesaGL -lpthread"
++  GL_LIBS="$GL_LDOPTS -lMesaGL -lpthread"
+  else
+   AC_MSG_ERROR([You need GL or MesaGL libraries])
+  fi
+--- gtkglarea-2.0.1.orig/examples/Makefile.am
++++ gtkglarea-2.0.1/examples/Makefile.am
+@@ -9,7 +9,7 @@
+ noinst_PROGRAMS = simple zktor viewlw glpixmap gdkfont $(shader_programs) gtkglarea_demo
+ 
+ INCLUDES = -I$(top_srcdir)
+-LDADD = $(top_builddir)/gtkgl/libgtkgl-2.0.la $(GTK_LIBS) $(GL_LIBS)
++LDADD = $(top_builddir)/gtkgl/libgtkgl-2.0.la $(GTK_LIBS) $(GL_LIBS) -lm
+ 
+ simple_SOURCES   = simple.c
+ zktor_SOURCES    = zktor.c
+--- gtkglarea-2.0.1.orig/examples/gdkfont.c
++++ gtkglarea-2.0.1/examples/gdkfont.c
+@@ -22,7 +22,6 @@
+ #include <gtkgl/gtkglarea.h>
+ 
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ 
+ #include <string.h>
+ 
+--- gtkglarea-2.0.1.orig/examples/glpixmap.c
++++ gtkglarea-2.0.1/examples/glpixmap.c
+@@ -25,7 +25,6 @@
+ #include <windows.h>
+ #endif
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ 
+ #include <gdk/gdk.h>
+ #include <gtkgl/gdkgl.h>
+@@ -79,7 +78,7 @@
+   if (gdk_gl_pixmap_make_current(glpixmap, context)) {
+     glMatrixMode(GL_PROJECTION);
+     glLoadIdentity();
+-    gluOrtho2D(0,100,100,0);
++    glOrtho(0,100,100,0,-1,1);
+     glMatrixMode(GL_MODELVIEW);
+     glLoadIdentity();
+ 
+@@ -91,9 +90,10 @@
+     glVertex2f(10,90);
+     glVertex2f(90,90);
+     glEnd();
++
++    gdk_gl_pixmap_unref(glpixmap);
+   }
+   gdk_gl_context_unref(context);
+-  gdk_gl_pixmap_unref(glpixmap);
+ 
+ 
+   /* pixmapwidget */
+--- gtkglarea-2.0.1.orig/examples/gtkglarea_demo.c
++++ gtkglarea-2.0.1/examples/gtkglarea_demo.c
+@@ -43,7 +43,6 @@
+ #endif
+ 
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ #include <gtk/gtk.h>
+ #include <gtkgl/gtkglarea.h>
+ 
+@@ -308,6 +307,9 @@
+ 
+ gint glarea_draw (GtkWidget* widget, GdkEventExpose* event) {
+ 
++  int w = widget->allocation.width;
++  int h = widget->allocation.height;
++
+   /* Draw only on the last expose event. */
+ 
+   if (event->count > 0) {
+@@ -330,6 +332,13 @@
+     /* Insert your drawing code here. */
+     /*                                */
+ 
++    glColor3f (1, 1, 1);
++    glBegin (GL_TRIANGLES);
++    glVertex2f (10, 10);
++    glVertex2f (10, (h>>1) - 10);
++    glVertex2f ((w>>1) - 10, (h>>1) - 10);
++    glEnd();
++
+     /* Swap the back and front buffers. Using doublebuffers */
+     /* is definitely recommended! Take a look at the red    */
+     /* book if you don't already have an understanding of   */
+@@ -373,7 +382,7 @@
+     glViewport (0, 0, w, h);
+     glMatrixMode (GL_PROJECTION);
+     glLoadIdentity ();
+-    gluOrtho2D (-(w>>1), (w>>1), -(h>>1), h>>1);
++    glOrtho (0, w>>1, h>>1, 0, -1, 1);
+     glMatrixMode (GL_MODELVIEW);
+ 
+   }
+--- gtkglarea-2.0.1.orig/examples/shaders.c
++++ gtkglarea-2.0.1/examples/shaders.c
+@@ -30,7 +30,6 @@
+ #endif
+ 
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ #include <gtk/gtk.h>
+ #include <gtkgl/gtkglarea.h>
+ 
+@@ -60,9 +59,9 @@
+   "void main()"
+   "{"
+   "  gl_TexCoord[0] = gl_MultiTexCoord0;"
+-  "  float r = float(gl_Vertex.x + 100) / 100.0;"
+-  "  float g = float(gl_Vertex.y + 100) / 100.0;"
+-  "  color = vec4(1 - r, 1 - g, 0, 1);"
++  "  float r = float(gl_Vertex.x + 100.0) / 100.0;"
++  "  float g = float(gl_Vertex.y + 100.0) / 100.0;"
++  "  color = vec4(1.0 - r, 1.0 - g, 0, 1);"
+   "  gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;"
+   "}";
+ 
+@@ -82,8 +81,8 @@
+   "    fact_x = -1;"
+   "  if(gl_TexCoord[0].y > 0.5)"
+   "    fact_y = -1;"
+-  "  coord.x = fact_x * gl_TexCoord[0].x * 2.0;"
+-  "  coord.y = fact_y * gl_TexCoord[0].y * 2.0;"
++  "  coord.x = float(fact_x) * gl_TexCoord[0].x * 2.0;"
++  "  coord.y = float(fact_y) * gl_TexCoord[0].y * 2.0;"
+   "  gl_FragColor = texture2D(tex, coord) + color;"
+   "}";
+ 
+@@ -332,7 +331,7 @@
+     glViewport (0, 0, w, h);
+     glMatrixMode (GL_PROJECTION);
+     glLoadIdentity ();
+-    gluOrtho2D (-(w>>1), (w>>1), -(h>>1), h>>1);
++    glOrtho (-(w>>1), w>>1, -(h>>1), h>>1, -1, 1);
+     glMatrixMode (GL_MODELVIEW);
+ 
+   }
+--- gtkglarea-2.0.1.orig/examples/viewlw.c
++++ gtkglarea-2.0.1/examples/viewlw.c
+@@ -22,7 +22,6 @@
+ #include <gtk/gtk.h>
+ #include <gtkgl/gtkglarea.h>
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ 
+ 
+ #include "trackball.h"
+@@ -100,6 +99,13 @@
+   GtkGLArea *glarea = GTK_GL_AREA(widget);
+   mesh_info *info = (mesh_info*)gtk_object_get_data(GTK_OBJECT(widget), "mesh_info");
+ 
++  GLdouble zNear  = 1;
++  GLdouble zFar   = 100;
++  GLdouble top    = tan(info->zoom * M_PI / 360.0) * zNear;
++  GLdouble bottom = -top;
++  GLdouble right  = top * VIEW_ASPECT;
++  GLdouble left   = -right;
++
+   /* draw only last expose */
+   if (event->count > 0) {
+     return TRUE;
+@@ -116,7 +122,7 @@
+     /* view */
+     glMatrixMode(GL_PROJECTION);
+     glLoadIdentity();
+-    gluPerspective(info->zoom, VIEW_ASPECT, 1,100);
++    glFrustum(left, right, bottom, top, zNear, zFar);
+     glMatrixMode(GL_MODELVIEW);
+ 
+     /* draw object */
+--- gtkglarea-2.0.1.orig/examples/zktor.c
++++ gtkglarea-2.0.1/examples/zktor.c
+@@ -30,7 +30,6 @@
+ #include <gdk/gdkkeysyms.h>
+ #include <gtkgl/gtkglarea.h>
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ 
+ #ifndef M_PI
+ #define M_PI 3.14
+@@ -509,7 +508,7 @@
+   /* view */
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+-  gluOrtho2D(-115,115,-115,115);
++  glOrtho(-115,115,-115,115,-1,1);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+ 
+--- gtkglarea-2.0.1.orig/gtkgl/gdkgl.c
++++ gtkglarea-2.0.1/gtkgl/gdkgl.c
+@@ -36,6 +36,8 @@
+ #elif defined GDK_WINDOWING_QUARTZ
+ #   define PLATFORM "GDK_WINDOWING_QUARTZ"
+ #elif defined GDK_WINDOWING_DIRECTFB
++#   include <gdk/gdkdirectfb.h>
++#   include <directfbgl.h>
+ #   define PLATFORM "GDK_WINDOWING_DIRECTFB"
+ #endif
+ 
+@@ -54,6 +56,8 @@
+ #elif defined GDK_WINDOWING_X11
+   Display    *xdisplay;
+   GLXContext  glxcontext;
++#elif defined GDK_WINDOWING_DIRECTFB
++  IDirectFBGL *dfbgl;
+ #endif
+ };
+ 
+@@ -106,7 +110,7 @@
+ 
+ gint gdk_gl_query(void)
+ {
+-#if defined GDK_WINDOWING_WIN32
++#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_DIRECTFB
+   return TRUE;
+ #elif defined GDK_WINDOWING_X11
+   return (glXQueryExtension(GDK_DISPLAY(),NULL,NULL) == True) ? TRUE : FALSE;
+@@ -119,10 +123,10 @@
+ gchar *gdk_gl_get_info()
+ {
+   char const *vendor, *version, *extensions;
+-#if defined GDK_WINDOWING_WIN32
+-  vendor = glGetString (GL_VENDOR);
+-  version = glGetString (GL_VERSION);
+-  extensions = glGetString (GL_EXTENSIONS);
++#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_DIRECTFB
++  vendor = (const char*)glGetString (GL_VENDOR);
++  version = (const char*)glGetString (GL_VERSION);
++  extensions = (const char*)glGetString (GL_EXTENSIONS);
+ #elif defined GDK_WINDOWING_X11
+   vendor = glXGetClientString(GDK_DISPLAY(), GLX_VENDOR);
+   version = glXGetClientString(GDK_DISPLAY(), GLX_VERSION);
+@@ -139,7 +143,7 @@
+ 
+ GdkVisual *gdk_gl_choose_visual(int *attrlist)
+ {
+-#if defined GDK_WINDOWING_WIN32
++#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_DIRECTFB
+   return gdk_visual_get_system ();
+ #elif defined GDK_WINDOWING_X11
+   Display *dpy;
+@@ -246,6 +250,12 @@
+     glXDestroyContext(context->xdisplay, context->glxcontext);
+   }
+   context->glxcontext = NULL;
++#elif defined GDK_WINDOWING_DIRECTFB
++  if (context->dfbgl) {
++    context->dfbgl->Unlock(context->dfbgl);
++    context->dfbgl->Release(context->dfbgl);
++  }
++  context->dfbgl = NULL;
+ #endif
+ 
+   (* glcontext_parent_class->finalize)(object);
+@@ -267,7 +277,7 @@
+ GdkGLContext *
+ gdk_gl_context_new(GdkVisual *visual)
+ {
+-#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_X11
++#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_X11 || defined GDK_WINDOWING_DIRECTFB
+   return gdk_gl_context_share_new(visual, NULL, FALSE);
+ #else
+   g_warning ("gdk_gl_context_new not implemented on " PLATFORM);
+@@ -279,7 +289,7 @@
+ GdkGLContext *
+ gdk_gl_context_share_new(GdkVisual *visual, GdkGLContext *sharelist, gint direct)
+ {
+-#if defined GDK_WINDOWING_WIN32
++#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_DIRECTFB
+   GdkGLContext *context;
+ #elif defined GDK_WINDOWING_X11
+   Display *dpy;
+@@ -341,7 +351,7 @@
+ 
+ GdkGLContext *gdk_gl_context_attrlist_share_new(int *attrlist, GdkGLContext *sharelist, gint direct)
+ {
+-#if defined GDK_WINDOWING_WIN32
++#if defined GDK_WINDOWING_WIN32 || defined GDK_WINDOWING_DIRECTFB
+   GdkGLContext *context;
+ #elif defined GDK_WINDOWING_X11
+   GdkVisual *visual;
+@@ -371,6 +381,14 @@
+     return NULL;
+ 
+   return gdk_gl_context_share_new(visual, sharelist, direct);
++#elif defined GDK_WINDOWING_DIRECTFB
++  DirectFBSetOption("gles", "0");
++
++  context = g_object_new(GDK_TYPE_GL_CONTEXT, NULL);
++  if (!context)
++    return NULL;
++
++  return context;
+ #endif
+ }
+ 
+@@ -430,12 +448,27 @@
+       return (glXMakeCurrent(context->xdisplay, GDK_WINDOW_XWINDOW(drawable), context->glxcontext) == True) ? TRUE : FALSE;
+     }
+ #endif
++#elif defined GDK_WINDOWING_DIRECTFB
++  if (!context->dfbgl) {
++    IDirectFBSurface *surface = gdk_directfb_surface_lookup(drawable);
++    if (surface->GetGL(surface, &context->dfbgl)) {
++      g_warning ("gdk_gl_make_current: GetGL failed");
++      return FALSE;
++    }
++  }
++
++  if (drawable)
++    context->dfbgl->Lock(context->dfbgl);
++  else
++    context->dfbgl->Unlock(context->dfbgl);
++
++  return TRUE;
+ #else
+   g_warning ("gdk_gl_make_current not implemented on " PLATFORM);
+ #endif
+ }
+ 
+-void gdk_gl_swap_buffers(GdkDrawable *drawable)
++void gdk_gl_swap_buffers(GdkDrawable *drawable, GdkGLContext *context)
+ {
+ #if defined GDK_WINDOWING_WIN32
+   HDC   hdc;
+@@ -456,6 +489,8 @@
+   ReleaseDC (hwnd, hdc);
+ #elif defined GDK_WINDOWING_X11
+   glXSwapBuffers(GDK_WINDOW_XDISPLAY(drawable), GDK_WINDOW_XWINDOW(drawable));
++#elif defined GDK_WINDOWING_DIRECTFB
++  context->dfbgl->SwapBuffers(context->dfbgl);
+ #else
+   g_warning ("gdk_gl_swap_buffers not implemented on " PLATFORM);
+ #endif
+@@ -533,6 +568,8 @@
+     glXWaitX();
+   }
+   pixmap->front_left = NULL;
++#elif defined GDK_WINDOWING_DIRECTFB
++  GDK_DFB_UNUSED_P(pixmap);
+ #endif
+ 
+   (* glcontext_parent_class->finalize)(object);
+@@ -553,7 +590,7 @@
+ gdk_gl_pixmap_new(GdkVisual *visual, GdkPixmap *pixmap)
+ {
+   GdkGLPixmap *glpixmap;
+-#ifndef GDK_WINDOWING_WIN32
++#if defined GDK_WINDOWING_X11
+   Display *dpy;
+   XVisualInfo *vi;
+   Pixmap xpixmap;
+@@ -561,7 +598,7 @@
+   Window root_return;
+   unsigned int w_ret, h_ret, bw_ret, depth_ret;
+   int x_ret, y_ret;
+-#elif defined GDK_WINDOWING_X11
++#elif defined GDK_WINDOWING_WIN32
+ #else
+   g_warning ("gdk_gl_pixmap_new not implemented on " PLATFORM);
+   return NULL;
+@@ -608,11 +645,11 @@
+ 
+ gint gdk_gl_pixmap_make_current(GdkGLPixmap *glpixmap, GdkGLContext *context)
+ {
+-#ifndef GDK_WINDOWING_WIN32
++#if defined GDK_WINDOWING_X11
+   Display  *dpy;
+   GLXPixmap glxpixmap;
+   GLXContext glxcontext;
+-#elif defined GDK_WINDOWING_X11
++#elif defined GDK_WINDOWING_WIN32
+ #else
+   g_warning ("gdk_gl_pixmap_make_current not implemented on " PLATFORM);
+   return 0;
+--- gtkglarea-2.0.1.orig/gtkgl/gdkgl.h
++++ gtkglarea-2.0.1/gtkgl/gdkgl.h
+@@ -91,7 +91,7 @@
+ GdkGLContext *gdk_gl_context_attrlist_share_new(int *attrlist, GdkGLContext *sharelist, gint direct);
+ 
+ gint          gdk_gl_make_current(GdkDrawable *drawable, GdkGLContext *context);
+-void          gdk_gl_swap_buffers(GdkDrawable *drawable);
++void          gdk_gl_swap_buffers(GdkDrawable *drawable, GdkGLContext *context);
+ 
+ 
+ void          gdk_gl_wait_gdk(void);
+--- gtkglarea-2.0.1.orig/gtkgl/gtkglarea.c
++++ gtkglarea-2.0.1/gtkgl/gtkglarea.c
+@@ -189,5 +189,5 @@
+   g_return_if_fail(GTK_IS_GL_AREA(gl_area));
+   g_return_if_fail(GTK_WIDGET_REALIZED(gl_area));
+ 
+-  gdk_gl_swap_buffers(GTK_WIDGET(gl_area)->window);
++  gdk_gl_swap_buffers(GTK_WIDGET(gl_area)->window, gl_area->glcontext);
+ }

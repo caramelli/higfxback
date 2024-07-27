@@ -15,6 +15,7 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install pango/.libs/pango-querymodules $DESTDIR/x11/bin
+install -d $DESTDIR/x11/etc/pango
 install -d $DESTDIR/x11/include/pango-1.0/pango
 install -m 644 pango/pango.h $DESTDIR/x11/include/pango-1.0/pango
 install -m 644 pango/pango-attributes.h $DESTDIR/x11/include/pango-1.0/pango
@@ -58,6 +59,7 @@ install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 pango.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 pangocairo.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 pangoft2.pc $DESTDIR/x11/lib/pkgconfig
+LD_LIBRARY_PATH=$DESTDIR/x11/lib $DESTDIR/x11/bin/pango-querymodules > $DESTDIR/x11/etc/pango/pango.modules
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig

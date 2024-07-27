@@ -2029,7 +2029,7 @@ exit
 +      GdkWindowObject       *grab_priv;
 +      GdkWindowImplDirectFB *grab_impl;
 +
-+      GDK_DFB_UNUSED_P (grab_impl) ;
++      GDK_DFB_UNUSED_P (grab_impl);
 +
 +      grab_priv = GDK_WINDOW_OBJECT (_gdk_directfb_pointer_grab_window);
 +      grab_impl = GDK_WINDOW_IMPL_DIRECTFB (grab_priv->impl);
@@ -2098,7 +2098,7 @@ exit
 +      GdkWindowObject       *grab_priv;
 +      GdkWindowImplDirectFB *grab_impl;
 +
-+      GDK_DFB_UNUSED_P (grab_impl) ;
++      GDK_DFB_UNUSED_P (grab_impl);
 +
 +      grab_priv = GDK_WINDOW_OBJECT (_gdk_directfb_pointer_grab_window);
 +      grab_impl = GDK_WINDOW_IMPL_DIRECTFB (grab_priv->impl);
@@ -2185,7 +2185,7 @@ exit
 +      GdkWindowObject       *grab_priv;
 +      GdkWindowImplDirectFB *grab_impl;
 +
-+      GDK_DFB_UNUSED_P (grab_impl) ;
++      GDK_DFB_UNUSED_P (grab_impl);
 +
 +      grab_priv = GDK_WINDOW_OBJECT (_gdk_directfb_keyboard_grab_window);
 +      grab_impl = GDK_WINDOW_IMPL_DIRECTFB (grab_priv->impl);
@@ -2234,7 +2234,7 @@ exit
 +      GdkWindowObject       *grab_priv;
 +      GdkWindowImplDirectFB *grab_impl;
 +
-+      GDK_DFB_UNUSED_P (grab_impl) ;
++      GDK_DFB_UNUSED_P (grab_impl);
 +
 +      grab_priv = GDK_WINDOW_OBJECT (_gdk_directfb_keyboard_grab_window);
 +      grab_impl = GDK_WINDOW_IMPL_DIRECTFB (grab_priv->impl);
@@ -11410,13 +11410,6 @@ exit
  
    for (i = 0; available_depths[i]; i++)
      if (available_depths[i] == visual->depth)
-@@ -494,6 +548,3 @@
- 
-   return (GdkVisualDirectFB *) visual;
- }
--
--#define __GDK_VISUAL_X11_C__
--#include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkwindow-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkwindow-directfb.c
 @@ -31,105 +31,160 @@
@@ -12073,20 +12066,23 @@ exit
  
    if (parent_private)
      parent_private->children = g_list_prepend (parent_private->children,
-@@ -572,9 +652,12 @@
+@@ -572,9 +652,14 @@
  {
    g_return_val_if_fail (attributes != NULL, NULL);
  
 +  D_DEBUG_AT( GDKDFB_Window, "%s( %p )\n", __FUNCTION__, parent );
 +
    return gdk_directfb_window_new (parent, attributes, attributes_mask,
-                                   DWCAPS_NONE, DWOP_NONE, DSCAPS_NONE);
+-                                  DWCAPS_NONE, DWOP_NONE, DSCAPS_NONE);
++                                  DWCAPS_NONE, DWOP_NONE,
++                                  direct_config_get_value ("gles") ?
++                                  DSCAPS_GL : DSCAPS_NONE);
  }
 +
  void
  _gdk_windowing_window_destroy_foreign (GdkWindow *window)
  {
-@@ -582,10 +665,9 @@
+@@ -582,10 +667,9 @@
     * so reparent it to the root window, and then send
     * it a delete event, as if we were a WM
     */
@@ -12098,7 +12094,7 @@ exit
  void
  _gdk_windowing_window_destroy (GdkWindow *window,
                                 gboolean   recursing,
-@@ -596,38 +678,44 @@
+@@ -596,38 +680,44 @@
  
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -12163,7 +12159,7 @@ exit
  }
  
  /* This function is called when the window is really gone.
-@@ -637,10 +725,12 @@
+@@ -637,10 +727,12 @@
  {
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -12177,7 +12173,7 @@ exit
  
        _gdk_window_destroy (window, TRUE);
      }
-@@ -653,7 +743,7 @@
+@@ -653,7 +745,7 @@
  {
    while (window && window != _gdk_parent_root)
      {
@@ -12186,7 +12182,7 @@ exit
  
        if ((parent == _gdk_parent_root) && GDK_WINDOW_IS_MAPPED (window))
          return window;
-@@ -664,75 +754,43 @@
+@@ -664,75 +756,43 @@
    return _gdk_parent_root;
  }
  
@@ -12277,7 +12273,7 @@ exit
    if (private->accept_focus != accept_focus)
      private->accept_focus = accept_focus;
  
-@@ -740,16 +798,17 @@
+@@ -740,16 +800,17 @@
  
  void
  gdk_window_set_focus_on_map (GdkWindow *window,
@@ -12300,7 +12296,7 @@ exit
    if (private->focus_on_map != focus_on_map)
      private->focus_on_map = focus_on_map;
  }
-@@ -759,6 +818,8 @@
+@@ -759,6 +820,8 @@
  {
    GdkWindowObject *parent;
  
@@ -12309,7 +12305,7 @@ exit
    parent = GDK_WINDOW_OBJECT (window)->parent;
  
    if (parent->children->data == window)
-@@ -775,6 +836,8 @@
+@@ -775,6 +838,8 @@
  {
    GdkWindowObject *parent;
  
@@ -12318,7 +12314,7 @@ exit
    parent = GDK_WINDOW_OBJECT (window)->parent;
  
    parent->children = g_list_remove (parent->children, window);
-@@ -787,7 +850,7 @@
+@@ -787,7 +852,7 @@
    while (GDK_WINDOW_IS_MAPPED (private))
      {
        if (private->parent)
@@ -12327,7 +12323,7 @@ exit
        else
          return TRUE;
      }
-@@ -804,7 +867,9 @@
+@@ -804,7 +869,9 @@
    if (!GDK_WINDOW_IS_MAPPED (private))
      return;
  
@@ -12338,7 +12334,7 @@ exit
    if (event_win)
      gdk_directfb_event_make (event_win, GDK_MAP);
  
-@@ -812,257 +877,14 @@
+@@ -812,257 +879,14 @@
      send_map_events (list->data);
  }
  
@@ -12598,7 +12594,7 @@ exit
  
    private = GDK_WINDOW_OBJECT (window);
    impl = GDK_WINDOW_IMPL_DIRECTFB (private->impl);
-@@ -1078,10 +900,6 @@
+@@ -1078,10 +902,6 @@
          {
            send_map_events (private);
  
@@ -12609,7 +12605,7 @@ exit
            if (private->input_only)
              return;
  
-@@ -1092,11 +910,10 @@
+@@ -1092,11 +912,10 @@
    if (impl->window)
      {
        if (gdk_directfb_apply_focus_opacity)
@@ -12624,7 +12620,7 @@ exit
      }
  }
  
-@@ -1105,6 +922,8 @@
+@@ -1105,6 +924,8 @@
  {
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -12633,7 +12629,7 @@ exit
    show_window_internal (window, FALSE);
  }
  
-@@ -1113,6 +932,8 @@
+@@ -1113,6 +934,8 @@
  {
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -12642,7 +12638,7 @@ exit
    show_window_internal (window, TRUE);
  }
  
-@@ -1121,21 +942,20 @@
+@@ -1121,21 +944,20 @@
  {
    GdkWindowObject       *private;
    GdkWindowImplDirectFB *impl;
@@ -12667,7 +12663,7 @@ exit
        private->state |= GDK_WINDOW_STATE_WITHDRAWN;
  
        if (!private->input_only && private->parent)
-@@ -1149,12 +969,7 @@
+@@ -1149,12 +971,7 @@
  
        event_win = gdk_directfb_other_event_window (window, GDK_UNMAP);
        if (event_win)
@@ -12681,7 +12677,7 @@ exit
  
        if (window == _gdk_directfb_pointer_grab_window)
          gdk_pointer_ungrab (GDK_CURRENT_TIME);
-@@ -1187,32 +1002,25 @@
+@@ -1187,32 +1004,25 @@
  
    if (impl->window)
      {
@@ -12723,7 +12719,7 @@ exit
          }
      }
  }
-@@ -1237,21 +1045,21 @@
+@@ -1237,21 +1047,21 @@
        GdkWindowChildHandlerData *data;
  
        data = g_object_get_data (G_OBJECT (private->parent),
@@ -12752,7 +12748,7 @@ exit
  {
    GdkWindowObject       *private;
    GdkWindowImplDirectFB *impl;
-@@ -1261,7 +1069,7 @@
+@@ -1261,7 +1071,7 @@
    g_return_if_fail (GDK_IS_WINDOW (window));
  
    private = GDK_WINDOW_OBJECT (window);
@@ -12761,7 +12757,7 @@ exit
  
    private->x = x;
    private->y = y;
-@@ -1271,15 +1079,18 @@
+@@ -1271,15 +1081,18 @@
  
    if (!private->input_only)
      {
@@ -12789,7 +12785,7 @@ exit
  
        parent_impl = GDK_WINDOW_IMPL_DIRECTFB (GDK_WINDOW_OBJECT (private->parent)->impl);
  
-@@ -1287,19 +1098,20 @@
+@@ -1287,19 +1100,20 @@
          {
            DFBRectangle rect = { x, y, width, height };
  
@@ -12817,7 +12813,7 @@ exit
      }
  }
  
-@@ -1324,8 +1136,8 @@
+@@ -1324,8 +1138,8 @@
      height = 1;
  
    if (private->destroyed ||
@@ -12828,7 +12824,7 @@ exit
      return;
  
    if (private->parent && (private->parent->window_type != GDK_WINDOW_CHILD))
-@@ -1340,36 +1152,31 @@
+@@ -1340,36 +1154,31 @@
          return;
      }
  
@@ -12875,7 +12871,7 @@ exit
          }
      }
  }
-@@ -1380,9 +1187,9 @@
+@@ -1380,9 +1189,9 @@
                       gint       x,
                       gint       y)
  {
@@ -12888,7 +12884,7 @@ exit
    GdkWindowImplDirectFB *impl;
    GdkWindowImplDirectFB *parent_impl;
    GdkVisual             *visual;
-@@ -1395,17 +1202,17 @@
+@@ -1395,17 +1204,17 @@
    if (!new_parent)
      new_parent = _gdk_parent_root;
  
@@ -12912,7 +12908,7 @@ exit
  
    if (old_parent_private)
      {
-@@ -1413,66 +1220,78 @@
+@@ -1413,66 +1222,78 @@
          g_list_remove (old_parent_private->children, window);
      }
  
@@ -13044,7 +13040,7 @@ exit
  }
  
  void
-@@ -1490,22 +1309,23 @@
+@@ -1490,22 +1311,23 @@
    gint                     dx = 0;
    gint                     dy = 0;
  
@@ -13077,7 +13073,7 @@ exit
  
    bg_pixmap = private->bg_pixmap;
  
-@@ -1519,36 +1339,42 @@
+@@ -1519,36 +1341,42 @@
      }
  
    if (bg_pixmap == GDK_NO_BG)
@@ -13126,7 +13122,7 @@ exit
  
    if (gc)
      g_object_unref (gc);
-@@ -1561,22 +1387,21 @@
+@@ -1561,22 +1389,21 @@
                                      gint       width,
                                      gint       height)
  {
@@ -13157,7 +13153,7 @@ exit
  
    rect.x = x;
    rect.y = y;
-@@ -1586,7 +1411,10 @@
+@@ -1586,7 +1413,10 @@
    g_return_if_fail (GDK_IS_WINDOW (window));
  
    if (GDK_WINDOW_DESTROYED (window))
@@ -13169,7 +13165,7 @@ exit
  
    _gdk_windowing_window_clear_area (window, x, y, width, height);
  
-@@ -1598,6 +1426,8 @@
+@@ -1598,6 +1428,8 @@
  {
    GdkWindowImplDirectFB *impl;
  
@@ -13178,7 +13174,7 @@ exit
    g_return_if_fail (GDK_IS_WINDOW (window));
  
    if (GDK_WINDOW_DESTROYED (window))
-@@ -1611,7 +1441,7 @@
+@@ -1611,7 +1443,7 @@
  
        ret = impl->window->RaiseToTop (impl->window);
        if (ret)
@@ -13187,7 +13183,7 @@ exit
        else
          gdk_directfb_window_raise (window);
      }
-@@ -1627,6 +1457,8 @@
+@@ -1627,6 +1459,8 @@
  {
    GdkWindowImplDirectFB *impl;
  
@@ -13196,7 +13192,7 @@ exit
    g_return_if_fail (GDK_IS_WINDOW (window));
  
    if (GDK_WINDOW_DESTROYED (window))
-@@ -1640,7 +1472,7 @@
+@@ -1640,7 +1474,7 @@
  
        ret = impl->window->LowerToBottom (impl->window);
        if (ret)
@@ -13205,7 +13201,7 @@ exit
        else
          gdk_directfb_window_lower (window);
      }
-@@ -1661,12 +1493,7 @@
+@@ -1661,12 +1495,7 @@
                        gint       max_height,
                        gint       flags)
  {
@@ -13219,7 +13215,7 @@ exit
  }
  
  void
-@@ -1674,53 +1501,28 @@
+@@ -1674,53 +1503,28 @@
                                 GdkGeometry    *geometry,
                                 GdkWindowHints  geom_mask)
  {
@@ -13279,7 +13275,7 @@ exit
  }
  
  void
-@@ -1729,7 +1531,7 @@
+@@ -1729,7 +1533,7 @@
  {
    GdkWindowObject *private;
    GdkWindowObject *root;
@@ -13288,7 +13284,7 @@ exit
  
    g_return_if_fail (GDK_IS_WINDOW (window));
    g_return_if_fail (GDK_IS_WINDOW (parent));
-@@ -1738,7 +1540,8 @@
+@@ -1738,7 +1542,8 @@
    root    = GDK_WINDOW_OBJECT (_gdk_parent_root);
  
    g_return_if_fail (GDK_WINDOW (private->parent) == _gdk_parent_root);
@@ -13298,7 +13294,7 @@ exit
  
    root->children = g_list_remove (root->children, window);
  
-@@ -1750,8 +1553,8 @@
+@@ -1750,8 +1555,8 @@
  }
  
  void
@@ -13309,7 +13305,7 @@ exit
  {
    GdkWindowObject *private;
  
-@@ -1759,15 +1562,18 @@
+@@ -1759,15 +1564,18 @@
  
    g_return_if_fail (color != NULL);
  
@@ -13331,7 +13327,7 @@ exit
  }
  
  void
-@@ -1775,32 +1581,40 @@
+@@ -1775,32 +1583,40 @@
                              GdkPixmap *pixmap,
                              gint       parent_relative)
  {
@@ -13383,7 +13379,7 @@ exit
      }
  }
  
-@@ -1813,6 +1627,9 @@
+@@ -1813,6 +1629,9 @@
  
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -13393,7 +13389,7 @@ exit
    impl = GDK_WINDOW_IMPL_DIRECTFB (GDK_WINDOW_OBJECT (window)->impl);
    old_cursor = impl->cursor;
  
-@@ -1821,12 +1638,7 @@
+@@ -1821,12 +1640,7 @@
  
    if (gdk_window_at_pointer (NULL, NULL) == window)
      {
@@ -13407,7 +13403,7 @@ exit
      }
    else if (impl->window)
      {
-@@ -1857,29 +1669,29 @@
+@@ -1857,29 +1671,29 @@
    g_return_if_fail (GDK_IS_WINDOW (window));
  
    private = GDK_WINDOW_OBJECT (window);
@@ -13444,7 +13440,7 @@ exit
  {
    GdkWindowObject         *private;
    GdkDrawableImplDirectFB *impl;
-@@ -1902,9 +1714,11 @@
+@@ -1902,9 +1716,11 @@
        impl->abs_y += parent_impl->abs_y;
      }
  
@@ -13457,7 +13453,7 @@ exit
      }
  }
  
-@@ -1922,9 +1736,9 @@
+@@ -1922,9 +1738,9 @@
        impl = GDK_DRAWABLE_IMPL_DIRECTFB (GDK_WINDOW_OBJECT (window)->impl);
  
        if (x)
@@ -13469,7 +13465,7 @@ exit
  
        return TRUE;
      }
-@@ -1949,7 +1763,7 @@
+@@ -1949,7 +1765,7 @@
  
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -13478,7 +13474,7 @@ exit
    if (x)
      *x = 0;
    if (y)
-@@ -1958,8 +1772,9 @@
+@@ -1958,8 +1774,9 @@
    if (GDK_WINDOW_DESTROYED (window))
      return;
  
@@ -13490,7 +13486,7 @@ exit
    if (rover->destroyed)
      return;
  
-@@ -1972,9 +1787,9 @@
+@@ -1972,9 +1789,9 @@
  GdkWindow *
  _gdk_windowing_window_get_pointer (GdkDisplay      *display,
                                     GdkWindow       *window,
@@ -13503,7 +13499,7 @@ exit
  {
    GdkWindow               *retval = NULL;
    gint                     rx, ry, wx, wy;
-@@ -2004,13 +1819,13 @@
+@@ -2004,13 +1821,13 @@
  GdkWindow *
  _gdk_windowing_window_at_pointer (GdkDisplay *display,
                                    gint       *win_x,
@@ -13519,7 +13515,7 @@ exit
  
    if (win_x)
      wx = *win_x;
-@@ -2036,13 +1851,12 @@
+@@ -2036,13 +1853,12 @@
                              gint             *y,
                              GdkModifierType  *mask)
  {
@@ -13538,7 +13534,7 @@ exit
  }
  
  GdkEventMask
-@@ -2052,8 +1866,8 @@
+@@ -2052,8 +1868,8 @@
  
    if (GDK_WINDOW_DESTROYED (window))
      return 0;
@@ -13549,7 +13545,7 @@ exit
  }
  
  void
-@@ -2062,12 +1876,10 @@
+@@ -2062,12 +1878,10 @@
  {
    g_return_if_fail (GDK_IS_WINDOW (window));
  
@@ -13565,7 +13561,7 @@ exit
  }
  
  void
-@@ -2076,14 +1888,16 @@
+@@ -2076,14 +1890,16 @@
                                 gint       x,
                                 gint       y)
  {
@@ -13585,7 +13581,7 @@ exit
  }
  
  void
-@@ -2092,38 +1906,30 @@
+@@ -2092,38 +1908,30 @@
                                   gint       offset_x,
                                   gint       offset_y)
  {
@@ -13631,7 +13627,7 @@ exit
  }
  
  void
-@@ -2132,24 +1938,14 @@
+@@ -2132,24 +1940,14 @@
                       GdkPixmap *pixmap,
                       GdkBitmap *mask)
  {
@@ -13658,7 +13654,7 @@ exit
  }
  
  void
-@@ -2177,23 +1973,13 @@
+@@ -2177,23 +1975,13 @@
  void
  gdk_window_stick (GdkWindow *window)
  {
@@ -13684,7 +13680,7 @@ exit
  }
  
  void
-@@ -2214,11 +2000,11 @@
+@@ -2214,11 +2002,11 @@
    if (impl->window && GDK_WINDOW_IS_MAPPED (window))
      {
        if (gdk_directfb_apply_focus_opacity &&
@@ -13700,7 +13696,7 @@ exit
      }
  }
  
-@@ -2236,63 +2022,64 @@
+@@ -2236,63 +2024,64 @@
    toplevel = gdk_directfb_window_find_toplevel (window);
    if (toplevel != _gdk_parent_root)
      {
@@ -13789,7 +13785,7 @@ exit
  }
  
  void
-@@ -2317,56 +2104,31 @@
+@@ -2317,56 +2106,31 @@
  
  void
  gdk_window_set_skip_taskbar_hint (GdkWindow *window,
@@ -13855,7 +13851,7 @@ exit
  }
  
  void
-@@ -2386,7 +2148,7 @@
+@@ -2386,7 +2150,7 @@
  
  gboolean
  gdk_window_get_decorations (GdkWindow       *window,
@@ -13864,7 +13860,7 @@ exit
  {
    GdkWMDecoration *dec;
  
-@@ -2398,6 +2160,7 @@
+@@ -2398,6 +2162,7 @@
        *decorations = *dec;
        return TRUE;
      }
@@ -13872,7 +13868,7 @@ exit
    return FALSE;
  }
  
-@@ -2405,46 +2168,38 @@
+@@ -2405,46 +2170,38 @@
  gdk_window_set_functions (GdkWindow     *window,
                            GdkWMFunction  functions)
  {
@@ -13925,7 +13921,7 @@ exit
  
    return FALSE;
  }
-@@ -2457,12 +2212,7 @@
+@@ -2457,12 +2214,7 @@
                                gint           root_y,
                                guint32        timestamp)
  {
@@ -13939,7 +13935,7 @@ exit
  }
  
  void
-@@ -2472,25 +2222,9 @@
+@@ -2472,25 +2224,9 @@
                              gint       root_y,
                              guint32    timestamp)
  {
@@ -13966,7 +13962,7 @@ exit
  void
  gdk_window_get_frame_extents (GdkWindow    *window,
                                GdkRectangle *rect)
-@@ -2506,8 +2240,9 @@
+@@ -2506,8 +2242,9 @@
  
    private = GDK_WINDOW_OBJECT (window);
  
@@ -13978,7 +13974,7 @@ exit
    if (GDK_WINDOW_DESTROYED (window))
      return;
  
-@@ -2523,16 +2258,16 @@
+@@ -2523,16 +2260,16 @@
   * Given a directfb window and a subsurface of that window
   * create a gdkwindow child wrapper
   */
@@ -13999,7 +13995,7 @@ exit
  
    g_return_val_if_fail (parent != NULL, NULL);
  
-@@ -2542,8 +2277,8 @@
+@@ -2542,8 +2279,8 @@
    parent_impl = GDK_WINDOW_IMPL_DIRECTFB (parent_private->impl);
    private->parent = parent_private;
  
@@ -14010,7 +14006,7 @@ exit
  
    impl = GDK_WINDOW_IMPL_DIRECTFB (private->impl);
    impl->drawable.wrapper = GDK_DRAWABLE (window);
-@@ -2551,205 +2286,198 @@
+@@ -2551,205 +2288,198 @@
    private->x = x;
    private->y = y;
  
@@ -14323,7 +14319,7 @@ exit
  }
  
  void
-@@ -2758,218 +2486,234 @@
+@@ -2758,218 +2488,234 @@
                            gint        x,
                            gint        y)
  {
@@ -14697,7 +14693,7 @@ exit
      }
  }
  
-@@ -2977,77 +2721,131 @@
+@@ -2977,77 +2723,131 @@
  gdk_window_impl_directfb_end_paint (GdkPaintable *paintable)
  {
    GdkDrawableImplDirectFB *impl;

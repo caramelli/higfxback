@@ -5,6 +5,11 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-b
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gtkglarea2-build; then
+  GTK2=1
+  REQUIRES="$REQUIRES gtkglarea2-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
   PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
   SDL2=1
@@ -21,7 +26,7 @@ make
 # install
 install -d $DESTDIR/dfb/bin
 install yagears $DESTDIR/dfb/bin
-test $SDL2 && install yagears-gui $DESTDIR/dfb/bin
+test $GTK2 || test $SDL2 && install yagears-gui $DESTDIR/dfb/bin
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -34,7 +39,7 @@ Requires: $REQUIRES
 exec=\\
 /dfb/bin/yagears \\
 EOF
-test $SDL2 && echo /dfb/bin/yagears-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
+test $GTK2 || test $SDL2 && echo /dfb/bin/yagears-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
 
 exit

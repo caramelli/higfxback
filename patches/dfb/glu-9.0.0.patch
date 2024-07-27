@@ -1,0 +1,73 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build gcc-g++-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.68; am-1.12; lt-2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/include/GL
+install -m 644 include/GL/glu.h $DESTDIR/dfb/include/GL
+install -d $DESTDIR/dfb/lib
+install .libs/libGLU.so.1.* $DESTDIR/dfb/lib/libGLU.so.1
+ln -sf libGLU.so.1 $DESTDIR/dfb/lib/libGLU.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 glu.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/glu-build.pc << EOF
+Name: glu
+Version: 9.0.0
+Description: OpenGL Utility library
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/GL/glu.h \\
+/dfb/lib/libGLU.so \\
+/dfb/lib/pkgconfig/glu.pc
+
+exec=\\
+/dfb/lib/libGLU.so.1
+EOF
+
+exit
+--- glu-9.0.0.orig/configure.ac
++++ glu-9.0.0/configure.ac
+@@ -23,6 +23,7 @@
+ AC_INIT([glu],
+         [9.0.0],
+         [https://bugs.freedesktop.org/enter_bug.cgi?product=Mesa&component=GLU])
++AC_CONFIG_MACRO_DIR([m4])
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AC_CANONICAL_HOST
+ 
+--- glu-9.0.0.orig/src/libutil/error.c
++++ glu-9.0.0/src/libutil/error.c
+@@ -30,6 +30,7 @@
+ 
+ #include "gluos.h"
+ #include "gluint.h"
++#include <stddef.h>
+ #include <GL/glu.h>
+ 
+ 
+@@ -47,8 +48,10 @@
+    { GL_STACK_OVERFLOW, "stack overflow" },
+    { GL_STACK_UNDERFLOW, "stack underflow" },
+    { GL_OUT_OF_MEMORY, "out of memory" },
++#ifdef GL_TABLE_TOO_LARGE
+    { GL_TABLE_TOO_LARGE, "table too large" },
+-#ifdef GL_EXT_framebuffer_object
++#endif
++#ifdef GL_INVALID_FRAMEBUFFER_OPERATION_EXT
+    { GL_INVALID_FRAMEBUFFER_OPERATION_EXT, "invalid framebuffer operation" },
+ #endif
+    /* GLU */
