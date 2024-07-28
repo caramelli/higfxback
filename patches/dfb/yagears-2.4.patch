@@ -18,6 +18,11 @@ fi
 
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
+if test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gtkglarea2-build; then
+  GTK2=1
+  REQUIRES="$REQUIRES gtkglarea2-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
   test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
   test $VK && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q vulkan-loader-build || { echo SDL2 with Vulkan support required; exit 1; }
@@ -34,7 +39,7 @@ meson compile -C build
 # install
 install -d $DESTDIR/dfb/bin
 test $GL && install build/yagears2 $DESTDIR/dfb/bin
-test $GL && test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
+test $GL && test $GTK2 || test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
 test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
 test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
 
@@ -49,7 +54,7 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GL && test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && test $GTK2 || test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 test $VK && echo /dfb/bin/yagears2-vk \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 test $VK && test $SDL2 && echo /dfb/bin/yagears2-vk-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
@@ -374,7 +379,17 @@ exit
  AC_OUTPUT(Makefile)
 --- yagears-2.4.orig/gui.cc
 +++ yagears-2.4/gui.cc
-@@ -1229,6 +1229,7 @@
+@@ -1196,7 +1196,8 @@
+     gtk_gl_area_set_has_depth_buffer(GTK_GL_AREA(gtk_glarea), TRUE);
+     g_signal_connect(gtk_glarea, "render", G_CALLBACK(gtk_render), NULL);
+     #else
+-    int gdk_glconfig[] = { GDK_GL_RGBA, GDK_GL_DOUBLEBUFFER, GDK_GL_DEPTH_SIZE, 1, GDK_GL_NONE };
++    int gdk_glconfig[] = { GDK_GL_RGBA, GDK_GL_DOUBLEBUFFER, GDK_GL_DEPTH_SIZE, 1, GDK_GL_NONE, GDK_GL_NONE };
++    if (gears_engine_version(gears_engine)) gdk_glconfig[4] = GDK_GL_USE_ES;
+     gtk_glarea = gtk_gl_area_new(gdk_glconfig);
+     #if GTK_CHECK_VERSION(3,0,0)
+     g_signal_connect(gtk_glarea, "draw", G_CALLBACK(gtk_render), NULL);
+@@ -1229,6 +1230,7 @@
    #if defined(SDL)
    if (!strcmp(toolkit, "sdl")) {
      #if SDL_VERSION_ATLEAST(2, 0, 0)

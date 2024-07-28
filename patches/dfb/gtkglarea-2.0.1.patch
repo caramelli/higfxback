@@ -397,12 +397,41 @@ exit
    GdkGLContext *context;
  #elif defined GDK_WINDOWING_X11
    GdkVisual *visual;
-@@ -371,6 +381,14 @@
+@@ -371,6 +381,43 @@
      return NULL;
  
    return gdk_gl_context_share_new(visual, sharelist, direct);
 +#elif defined GDK_WINDOWING_DIRECTFB
-+  DirectFBSetOption("gles", "0");
++  gboolean use_es = FALSE;
++
++  while (*attrlist != GDK_GL_NONE) {
++    switch (*attrlist) {
++    case GDK_GL_USE_ES:
++      use_es = TRUE;
++      break;
++    case GDK_GL_BUFFER_SIZE:
++    case GDK_GL_LEVEL:
++    case GDK_GL_AUX_BUFFERS:
++    case GDK_GL_RED_SIZE:
++    case GDK_GL_GREEN_SIZE:
++    case GDK_GL_BLUE_SIZE:
++    case GDK_GL_ALPHA_SIZE:
++    case GDK_GL_DEPTH_SIZE:
++    case GDK_GL_STENCIL_SIZE:
++    case GDK_GL_ACCUM_RED_SIZE:
++    case GDK_GL_ACCUM_GREEN_SIZE:
++    case GDK_GL_ACCUM_BLUE_SIZE:
++    case GDK_GL_ACCUM_ALPHA_SIZE:
++      ++attrlist;
++      break;
++    default:
++       break;
++    }
++
++    ++attrlist;
++  }
++
++  DirectFBSetOption("gles", use_es ? "2" : "0");
 +
 +  context = g_object_new(GDK_TYPE_GL_CONTEXT, NULL);
 +  if (!context)
@@ -412,7 +441,7 @@ exit
  #endif
  }
  
-@@ -430,12 +448,27 @@
+@@ -430,12 +477,27 @@
        return (glXMakeCurrent(context->xdisplay, GDK_WINDOW_XWINDOW(drawable), context->glxcontext) == True) ? TRUE : FALSE;
      }
  #endif
@@ -441,7 +470,7 @@ exit
  {
  #if defined GDK_WINDOWING_WIN32
    HDC   hdc;
-@@ -456,6 +489,8 @@
+@@ -456,6 +518,8 @@
    ReleaseDC (hwnd, hdc);
  #elif defined GDK_WINDOWING_X11
    glXSwapBuffers(GDK_WINDOW_XDISPLAY(drawable), GDK_WINDOW_XWINDOW(drawable));
@@ -450,7 +479,7 @@ exit
  #else
    g_warning ("gdk_gl_swap_buffers not implemented on " PLATFORM);
  #endif
-@@ -533,6 +568,8 @@
+@@ -533,6 +597,8 @@
      glXWaitX();
    }
    pixmap->front_left = NULL;
@@ -459,7 +488,7 @@ exit
  #endif
  
    (* glcontext_parent_class->finalize)(object);
-@@ -553,7 +590,7 @@
+@@ -553,7 +619,7 @@
  gdk_gl_pixmap_new(GdkVisual *visual, GdkPixmap *pixmap)
  {
    GdkGLPixmap *glpixmap;
@@ -468,7 +497,7 @@ exit
    Display *dpy;
    XVisualInfo *vi;
    Pixmap xpixmap;
-@@ -561,7 +598,7 @@
+@@ -561,7 +627,7 @@
    Window root_return;
    unsigned int w_ret, h_ret, bw_ret, depth_ret;
    int x_ret, y_ret;
@@ -477,7 +506,7 @@ exit
  #else
    g_warning ("gdk_gl_pixmap_new not implemented on " PLATFORM);
    return NULL;
-@@ -608,11 +645,11 @@
+@@ -608,11 +674,11 @@
  
  gint gdk_gl_pixmap_make_current(GdkGLPixmap *glpixmap, GdkGLContext *context)
  {
@@ -491,8 +520,29 @@ exit
  #else
    g_warning ("gdk_gl_pixmap_make_current not implemented on " PLATFORM);
    return 0;
+@@ -715,9 +781,6 @@
+ 
+   while (*p) {
+     switch (*p) {
+-    case GDK_GL_USE_GL:
+-      pfd->dwFlags |= PFD_SUPPORT_OPENGL;
+-      break;
+     case GDK_GL_BUFFER_SIZE:
+       pfd->cColorBits = *(++p);
+       break;
 --- gtkglarea-2.0.1.orig/gtkgl/gdkgl.h
 +++ gtkglarea-2.0.1/gtkgl/gdkgl.h
+@@ -39,8 +39,8 @@
+  * attributes with these, but then you lose portability.
+  */
+ enum _GDK_GL_CONFIGS {
+-        GDK_GL_NONE             = 0,
+-	GDK_GL_USE_GL		= 1,
++	GDK_GL_NONE             = 0,
++	GDK_GL_USE_ES		= 1,
+ 	GDK_GL_BUFFER_SIZE	= 2,
+ 	GDK_GL_LEVEL		= 3,
+ 	GDK_GL_RGBA		= 4,
 @@ -91,7 +91,7 @@
  GdkGLContext *gdk_gl_context_attrlist_share_new(int *attrlist, GdkGLContext *sharelist, gint direct);
  
