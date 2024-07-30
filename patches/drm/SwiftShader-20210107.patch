@@ -1,9 +1,9 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="astc-encoder-build cmake3-build gcc-g++-build llvm-build marl-build spirv-tools-build vulkan-headers-build wayland-build"
+REQUIRES="astc-encoder-build cmake3-build gcc-g++-build libdrm-build llvm-build marl-build spirv-tools-build vulkan-headers-build"
 
-PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
@@ -13,34 +13,34 @@ rm -rf third_party/llvm-10.0
 rm -rf third_party/marl
 rm -rf third_party/SPIRV-Headers
 rm -rf third_party/SPIRV-Tools
-cmake -DSWIFTSHADER_BUILD_EGL=OFF -DSWIFTSHADER_BUILD_GLES_CM=OFF -DSWIFTSHADER_BUILD_GLESv2=OFF -DSWIFTSHADER_BUILD_PVR=OFF -DSWIFTSHADER_BUILD_TESTS=OFF -DSWIFTSHADER_BUILD_WSI_WAYLAND=ON -DCMAKE_INSTALL_PREFIX=/wl -B build -G "$GENERATOR"
+cmake -DSWIFTSHADER_BUILD_EGL=OFF -DSWIFTSHADER_BUILD_GLES_CM=OFF -DSWIFTSHADER_BUILD_GLESv2=OFF -DSWIFTSHADER_BUILD_PVR=OFF -DSWIFTSHADER_BUILD_TESTS=OFF -DSWIFTSHADER_BUILD_WSI_D2D=ON -DCMAKE_INSTALL_PREFIX=/drm -B build -G "$GENERATOR"
 
 # build
 cmake --build build
 
 # install
-install -d $DESTDIR/wl/etc/vulkan/icd.d
-install -m 644 build/Linux/vk_swiftshader_icd.json $DESTDIR/wl/etc/vulkan/icd.d/swiftshader_icd.json
-install -d $DESTDIR/wl/lib
-install build/Linux/libvk_swiftshader.so $DESTDIR/wl/lib
+install -d $DESTDIR/drm/etc/vulkan/icd.d
+install -m 644 build/Linux/vk_swiftshader_icd.json $DESTDIR/drm/etc/vulkan/icd.d/swiftshader_icd.json
+install -d $DESTDIR/drm/lib
+install build/Linux/libvk_swiftshader.so $DESTDIR/drm/lib
 
 # build.pc
-install -d $DESTDIR/wl/share/pkgconfig
-cat > $DESTDIR/wl/share/pkgconfig/swiftshader-build.pc << EOF
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/swiftshader-build.pc << EOF
 Name: SwiftShader
-Version: 20201123
+Version: 20210107
 Description: CPU-based implementation of Vulkan
 Requires: $REQUIRES
 
 exec=\\
-/wl/etc/vulkan/icd.d/swiftshader_icd.json \\
-/wl/lib/libvk_swiftshader.so
+/drm/etc/vulkan/icd.d/swiftshader_icd.json \\
+/drm/lib/libvk_swiftshader.so
 EOF
 
 exit
---- SwiftShader-20201123.orig/CMakeLists.txt
-+++ SwiftShader-20201123/CMakeLists.txt
-@@ -604,6 +604,10 @@
+--- SwiftShader-20210107.orig/CMakeLists.txt
++++ SwiftShader-20210107/CMakeLists.txt
+@@ -624,6 +624,10 @@
  endif()
  unset(USE_EXCEPTIONS)
  
@@ -51,7 +51,7 @@ exit
  ###########################################################
  # libbacktrace and boost
  ###########################################################
-@@ -615,8 +619,10 @@
+@@ -635,8 +639,10 @@
  ###########################################################
  # LLVM
  ###########################################################
@@ -64,7 +64,7 @@ exit
  
  ###########################################################
  # Subzero
-@@ -630,9 +636,11 @@
+@@ -650,9 +656,11 @@
  # marl
  ###########################################################
  if(BUILD_MARL)
@@ -79,7 +79,7 @@ exit
  endif()
  
  if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
-@@ -651,8 +659,10 @@
+@@ -671,8 +679,10 @@
  # astc-encoder
  ###########################################################
  if(SWIFTSHADER_ENABLE_ASTC)
@@ -92,7 +92,7 @@ exit
  endif()
  
  ###########################################################
-@@ -745,7 +755,7 @@
+@@ -769,7 +779,7 @@
  endif(SWIFTSHADER_BUILD_GLES_CM)
  
  if(SWIFTSHADER_BUILD_VULKAN)
@@ -101,8 +101,8 @@ exit
          # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
          set(SPIRV-Headers_SOURCE_DIR "${THIRD_PARTY_DIR}/SPIRV-Headers")
          set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
---- SwiftShader-20201123.orig/src/Device/ASTC_Decoder.cpp
-+++ SwiftShader-20201123/src/Device/ASTC_Decoder.cpp
+--- SwiftShader-20210107.orig/src/Device/ASTC_Decoder.cpp
++++ SwiftShader-20210107/src/Device/ASTC_Decoder.cpp
 @@ -109,7 +109,11 @@
  #ifdef SWIFTSHADER_ENABLE_ASTC
  	build_quantization_mode_table();
@@ -115,8 +115,8 @@ exit
  
  	std::unique_ptr<block_size_descriptor> bsd(new block_size_descriptor);
  	init_block_size_descriptor(xBlockSize, yBlockSize, zBlockSize, bsd.get());
---- SwiftShader-20201123.orig/src/Device/CMakeLists.txt
-+++ SwiftShader-20201123/src/Device/CMakeLists.txt
+--- SwiftShader-20210107.orig/src/Device/CMakeLists.txt
++++ SwiftShader-20210107/src/Device/CMakeLists.txt
 @@ -77,6 +77,13 @@
          ${SWIFTSHADER_LINK_FLAGS}
  )
@@ -131,8 +131,8 @@ exit
  target_link_libraries(vk_device
      PUBLIC
          vk_pipeline
---- SwiftShader-20201123.orig/src/Pipeline/CMakeLists.txt
-+++ SwiftShader-20201123/src/Pipeline/CMakeLists.txt
+--- SwiftShader-20210107.orig/src/Pipeline/CMakeLists.txt
++++ SwiftShader-20210107/src/Pipeline/CMakeLists.txt
 @@ -57,9 +57,7 @@
  )
  
@@ -153,9 +153,29 @@ exit
  set_target_properties(vk_pipeline PROPERTIES
      POSITION_INDEPENDENT_CODE 1
      FOLDER "SwiftShader VK"
---- SwiftShader-20201123.orig/src/Reactor/CMakeLists.txt
-+++ SwiftShader-20201123/src/Reactor/CMakeLists.txt
-@@ -136,8 +136,16 @@
+--- SwiftShader-20210107.orig/src/Pipeline/SpirvShaderInstructions.inl
++++ SwiftShader-20210107/src/Pipeline/SpirvShaderInstructions.inl
+@@ -375,7 +375,7 @@
+ DECORATE_OP(T, OpSubgroupAnyKHR)
+ DECORATE_OP(T, OpSubgroupAllEqualKHR)
+ DECORATE_OP(T, OpSubgroupReadInvocationKHR)
+-DECORATE_OP(T, OpTypeRayQueryKHR)
++DECORATE_OP(T, OpTypeRayQueryProvisionalKHR)
+ DECORATE_OP(T, OpRayQueryInitializeKHR)
+ DECORATE_OP(T, OpRayQueryTerminateKHR)
+ DECORATE_OP(T, OpRayQueryGenerateIntersectionKHR)
+@@ -579,8 +579,3 @@
+ DECORATE_OP(T, OpRayQueryGetIntersectionObjectToWorldKHR)
+ DECORATE_OP(T, OpRayQueryGetIntersectionWorldToObjectKHR)
+ DECORATE_OP(T, OpAtomicFAddEXT)
+-DECORATE_OP(T, OpTraceRayKHR)
+-DECORATE_OP(T, OpExecuteCallableKHR)
+-DECORATE_OP(T, OpConvertUToAccelerationStructureKHR)
+-DECORATE_OP(T, OpIgnoreIntersectionKHR)
+-DECORATE_OP(T, OpTerminateRayKHR)
+--- SwiftShader-20210107.orig/src/Reactor/CMakeLists.txt
++++ SwiftShader-20210107/src/Reactor/CMakeLists.txt
+@@ -138,8 +138,16 @@
          ${ROOT_PROJECT_COMPILE_OPTIONS}
  )
  
@@ -177,8 +197,8 @@ exit
 +            ${REACTOR_PRIVATE_LINK_LIBRARIES}
 +    )
 +endif()
---- SwiftShader-20201123.orig/src/Vulkan/CMakeLists.txt
-+++ SwiftShader-20201123/src/Vulkan/CMakeLists.txt
+--- SwiftShader-20210107.orig/src/Vulkan/CMakeLists.txt
++++ SwiftShader-20210107/src/Vulkan/CMakeLists.txt
 @@ -215,16 +215,8 @@
      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vk_swiftshader> ${CMAKE_BINARY_DIR}/bin/${VULKAN_API_LIBRARY_NAME}
  )
@@ -198,8 +218,8 @@ exit
  configure_file(
      "vk_swiftshader_icd.json.tmpl"
      "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json"
---- SwiftShader-20201123.orig/src/Vulkan/VkStringify.cpp
-+++ SwiftShader-20201123/src/Vulkan/VkStringify.cpp
+--- SwiftShader-20210107.orig/src/Vulkan/VkStringify.cpp
++++ SwiftShader-20210107/src/Vulkan/VkStringify.cpp
 @@ -16,8 +16,8 @@
  
  #include "System/Debug.hpp"
@@ -211,9 +231,9 @@ exit
  #define VULKAN_HPP_NO_EXCEPTIONS
  #define VULKAN_HPP_NAMESPACE vkhpp
  #include <vulkan/vulkan.hpp>
---- SwiftShader-20201123.orig/src/Vulkan/VulkanPlatform.hpp
-+++ SwiftShader-20201123/src/Vulkan/VulkanPlatform.hpp
-@@ -49,9 +49,8 @@
+--- SwiftShader-20210107.orig/src/Vulkan/VulkanPlatform.hpp
++++ SwiftShader-20210107/src/Vulkan/VulkanPlatform.hpp
+@@ -49,19 +49,13 @@
  	typedef VkNonDispatchableHandle<object##Ptr> object; \
  	template class VkNonDispatchableHandle<object##Ptr>;
  
@@ -225,8 +245,18 @@ exit
  
  namespace vk {
  // Here we define constants that used to be in the Vulkan headers, but are not part of the spec.
---- SwiftShader-20201123.orig/src/Vulkan/vk_ext_provoking_vertex.h
-+++ SwiftShader-20201123/src/Vulkan/vk_ext_provoking_vertex.h
+ // See: https://github.com/KhronosGroup/Vulkan-Docs/issues/1230
+ 
+-// When updating the Vulkan Headers we use, go through each constant below and make sure they are valid.
+-// Once that's done, update SwiftShaderVulkanHeaderVersion.
+-constexpr int SwiftShaderVulkanHeaderVersion = 160;
+-static_assert(SwiftShaderVulkanHeaderVersion == VK_HEADER_VERSION, "Please validate/update constants below upon upgrading Vulkan headers");
+-
+ constexpr auto VK_PIPELINE_BIND_POINT_RANGE_SIZE = (VK_PIPELINE_BIND_POINT_COMPUTE - VK_PIPELINE_BIND_POINT_GRAPHICS + 1);
+ constexpr auto VK_IMAGE_VIEW_TYPE_END_RANGE = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+ 
+--- SwiftShader-20210107.orig/src/Vulkan/vk_ext_provoking_vertex.h
++++ SwiftShader-20210107/src/Vulkan/vk_ext_provoking_vertex.h
 @@ -0,0 +1,56 @@
 +// Copyright 2019 The SwiftShader Authors. All Rights Reserved.
 +//
@@ -284,8 +314,8 @@ exit
 +    VkProvokingVertexModeEXT    provokingVertexMode;
 +} VkPipelineRasterizationProvokingVertexStateCreateInfoEXT;
 +
---- SwiftShader-20201123.orig/src/Vulkan/vk_google_filtering_precision.h
-+++ SwiftShader-20201123/src/Vulkan/vk_google_filtering_precision.h
+--- SwiftShader-20210107.orig/src/Vulkan/vk_google_filtering_precision.h
++++ SwiftShader-20210107/src/Vulkan/vk_google_filtering_precision.h
 @@ -0,0 +1,41 @@
 +// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
 +//
