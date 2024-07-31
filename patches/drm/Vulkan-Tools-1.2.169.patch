@@ -1,0 +1,109 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loader-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/drm/lib/pkgconfig cmake -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCUBE_WSI_SELECTION=DISPLAY -DGLSLANG_INSTALL_DIR=`dirname $(dirname $(which glslangValidator))` -DCMAKE_INSTALL_PREFIX=/drm -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/drm/bin
+install build/cube/vkcube $DESTDIR/drm/bin/vkcube-display
+install build/cube/vkcubepp $DESTDIR/drm/bin/vkcubepp-display
+install build/vulkaninfo/vulkaninfo $DESTDIR/drm/bin
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/vulkan-tools-build.pc << EOF
+Name: Vulkan-Tools
+Version: 1.2.169
+Description: A collection of Vulkan utilities
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/vkcube-display \\
+/drm/bin/vkcubepp-display \\
+/drm/bin/vulkaninfo
+EOF
+
+exit
+--- Vulkan-Tools-1.2.169.orig/CMakeLists.txt
++++ Vulkan-Tools-1.2.169/CMakeLists.txt
+@@ -27,7 +27,7 @@
+ 
+ # find_package(), include() and global project settings --------------------------------------------------------------------------
+ 
+-find_package(PythonInterp 3 QUIET)
++find_package(Python3 QUIET)
+ 
+ # User-interface declarations ----------------------------------------------------------------------------------------------------
+ # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
+@@ -148,9 +148,9 @@
+ endif()
+ 
+ # Optional codegen target
+-if(PYTHONINTERP_FOUND)
++if(Python3_Interpreter_FOUND)
+     add_custom_target(VulkanTools_generated_source
+-                      COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
++                      COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
+                               ${VulkanRegistry_DIR} --incremental
+                       )
+ else()
+--- Vulkan-Tools-1.2.169.orig/cube/CMakeLists.txt
++++ Vulkan-Tools-1.2.169/cube/CMakeLists.txt
+@@ -31,12 +31,12 @@
+     message(STATUS "Using cmake find_program to look for glslangValidator")
+     if(WIN32)
+         execute_process(
+-            COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-windows-x64-Release.zip)
++            COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-windows-x64-Release.zip)
+         set(GLSLANG_VALIDATOR_NAME "glslangValidator.exe")
+     elseif(APPLE)
+-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-osx-Release.zip)
++        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-osx-Release.zip)
+     elseif(UNIX AND NOT APPLE) # i.e. Linux
+-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
++        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
+     endif()
+     if (WIN32)
+         set(PLATFORM_DIR "${PROJECT_SOURCE_DIR}/glslang/windows/bin")
+--- Vulkan-Tools-1.2.169.orig/vulkaninfo/CMakeLists.txt
++++ Vulkan-Tools-1.2.169/vulkaninfo/CMakeLists.txt
+@@ -17,6 +17,10 @@
+ 
+ # CMakeLists.txt file for building Vulkaninfo
+ 
++if (NOT WIN32)
++    find_package(Threads REQUIRED)
++endif()
++
+ if(WIN32)
+     add_executable(vulkaninfo vulkaninfo.cpp vulkaninfo.rc)
+ elseif(APPLE)
+@@ -32,7 +36,7 @@
+ target_include_directories(vulkaninfo PRIVATE ${CMAKE_SOURCE_DIR}/vulkaninfo/generated)
+ 
+ if (NOT WIN32)
+-    target_link_libraries(vulkaninfo ${CMAKE_DL_LIBS})
++    target_link_libraries(vulkaninfo ${CMAKE_DL_LIBS} Threads::Threads)
+ endif()
+ 
+ if(UNIX AND NOT APPLE) # i.e. Linux
+@@ -69,6 +73,10 @@
+         target_link_libraries(vulkaninfo ${DIRECTFB_LIBRARIES})
+         target_compile_definitions(vulkaninfo PRIVATE -DVK_USE_PLATFORM_DIRECTFB_EXT -DVK_NO_PROTOTYPES)
+     endif()
++
++    if(NOT BUILD_WSI_XCB_SUPPORT AND NOT BUILD_WSI_XLIB_SUPPORT AND NOT BUILD_WSI_WAYLAND_SUPPORT AND NOT BUILD_WSI_DIRECTFB_SUPPORT)
++        target_link_libraries(vulkaninfo Vulkan::Vulkan)
++    endif()
+ endif()
+ 
+ if(APPLE)
