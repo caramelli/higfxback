@@ -3163,6 +3163,37 @@ exit
 +fi
 +AC_SUBST([$1])dnl
 +])
+--- mesa-10.6.9.orig/src/egl/main/eglglobals.c
++++ mesa-10.6.9/src/egl/main/eglglobals.c
+@@ -56,7 +56,7 @@
+       true, /* EGL_EXT_platform_base */
+       true, /* EGL_EXT_platform_x11 */
+       true, /* EGL_EXT_platform_wayland */
+-      true, /* EGL_MESA_platform_gbm */
++      true, /* EGL_KHR_platform_gbm */
+       true, /* EGL_KHR_client_get_all_proc_addresses */
+    },
+ 
+@@ -65,7 +65,7 @@
+    " EGL_EXT_platform_base"
+    " EGL_EXT_platform_x11"
+    " EGL_EXT_platform_wayland"
+-   " EGL_MESA_platform_gbm"
++   " EGL_KHR_platform_gbm"
+    " EGL_KHR_client_get_all_proc_addresses"
+ };
+ 
+--- mesa-10.6.9.orig/src/egl/main/eglglobals.h
++++ mesa-10.6.9/src/egl/main/eglglobals.h
+@@ -55,7 +55,7 @@
+       bool EXT_platform_base;
+       bool EXT_platform_x11;
+       bool EXT_platform_wayland;
+-      bool MESA_platform_gbm;
++      bool KHR_platform_gbm;
+       bool KHR_get_all_proc_addresses;
+    } ClientExtensions;
+ 
 --- mesa-10.6.9.orig/src/gbm/backends/dri/gbm_dri.c
 +++ mesa-10.6.9/src/gbm/backends/dri/gbm_dri.c
 @@ -344,9 +344,6 @@
