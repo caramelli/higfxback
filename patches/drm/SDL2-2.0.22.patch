@@ -1,0 +1,889 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libdrm-build libgbm-stub-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists vulkan-loader-build; then
+  VK=1
+  REQUIRES="$REQUIRES vulkan-loader-build"
+fi
+
+# configure (ac-2.69; lt-2.4.6)
+libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
+cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
+rm -rf src/video/khronos
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --prefix=/drm
+cd test; SDL_CFLAGS="-I../include -I/drm/include" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/drm/lib" ./configure -with-testdatadir=/drm/share/SDL2/test; cd -
+
+# build
+make
+make -C test
+
+# install
+install -d $DESTDIR/drm/include/SDL2
+install -m 644 include/begin_code.h $DESTDIR/drm/include/SDL2
+install -m 644 include/close_code.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_assert.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_atomic.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_audio.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_blendmode.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_clipboard.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_config.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_cpuinfo.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_endian.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_error.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_events.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_filesystem.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_gamecontroller.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_gesture.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_haptic.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_hidapi.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_hints.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_joystick.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_keyboard.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_keycode.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_loadso.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_locale.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_log.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_main.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_messagebox.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_misc.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_mouse.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_mutex.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_opengl.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_opengl_glext.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_opengles.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_opengles2.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_pixels.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_platform.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_power.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_quit.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_rect.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_render.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_rwops.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_scancode.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_sensor.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_shape.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_stdinc.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_surface.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_system.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_thread.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_timer.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_touch.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_version.h $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_video.h $DESTDIR/drm/include/SDL2
+test $VK && install -m 644 include/SDL_vulkan.h $DESTDIR/drm/include/SDL2
+install -d $DESTDIR/drm/lib
+install ./build/.libs/libSDL2-2.0.so.0.* $DESTDIR/drm/lib/libSDL2-2.0.so.0
+ln -sf libSDL2-2.0.so.0 $DESTDIR/drm/lib/libSDL2.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 sdl2.pc $DESTDIR/drm/lib/pkgconfig
+install -d $DESTDIR/drm/share/SDL2/test
+install -m 644 test/axis.bmp $DESTDIR/drm/share/SDL2/test
+install -m 644 test/button.bmp $DESTDIR/drm/share/SDL2/test
+install test/checkkeys $DESTDIR/drm/share/SDL2/test
+install test/checkkeysthreads $DESTDIR/drm/share/SDL2/test
+install test/controllermap $DESTDIR/drm/share/SDL2/test
+install -m 644 test/controllermap.bmp $DESTDIR/drm/share/SDL2/test
+install -m 644 test/controllermap_back.bmp $DESTDIR/drm/share/SDL2/test
+install test/loopwave $DESTDIR/drm/share/SDL2/test
+install test/loopwavequeue $DESTDIR/drm/share/SDL2/test
+install -m 644 test/icon.bmp $DESTDIR/drm/share/SDL2/test
+install -m 644 test/moose.dat $DESTDIR/drm/share/SDL2/test
+install -m 644 test/sample.bmp $DESTDIR/drm/share/SDL2/test
+install -m 644 test/sample.wav $DESTDIR/drm/share/SDL2/test
+install test/testatomic $DESTDIR/drm/share/SDL2/test
+install test/testaudiocapture $DESTDIR/drm/share/SDL2/test
+install test/testaudiohotplug $DESTDIR/drm/share/SDL2/test
+install test/testaudioinfo $DESTDIR/drm/share/SDL2/test
+install test/testautomation $DESTDIR/drm/share/SDL2/test
+install test/testbounds $DESTDIR/drm/share/SDL2/test
+install test/testcustomcursor $DESTDIR/drm/share/SDL2/test
+install test/testdisplayinfo $DESTDIR/drm/share/SDL2/test
+install test/testdraw2 $DESTDIR/drm/share/SDL2/test
+install test/testdrawchessboard $DESTDIR/drm/share/SDL2/test
+install test/testdropfile $DESTDIR/drm/share/SDL2/test
+install test/testerror $DESTDIR/drm/share/SDL2/test
+install test/testevdev $DESTDIR/drm/share/SDL2/test
+install test/testfile $DESTDIR/drm/share/SDL2/test
+install test/testfilesystem $DESTDIR/drm/share/SDL2/test
+install test/testgamecontroller $DESTDIR/drm/share/SDL2/test
+install test/testgeometry $DESTDIR/drm/share/SDL2/test
+install test/testgesture $DESTDIR/drm/share/SDL2/test
+install test/testgl2 $DESTDIR/drm/share/SDL2/test
+install test/testgles $DESTDIR/drm/share/SDL2/test
+install test/testgles2 $DESTDIR/drm/share/SDL2/test
+install test/testhaptic $DESTDIR/drm/share/SDL2/test
+install test/testhittesting $DESTDIR/drm/share/SDL2/test
+install test/testhotplug $DESTDIR/drm/share/SDL2/test
+install test/testiconv $DESTDIR/drm/share/SDL2/test
+install test/testime $DESTDIR/drm/share/SDL2/test
+install test/testintersections $DESTDIR/drm/share/SDL2/test
+install test/testjoystick $DESTDIR/drm/share/SDL2/test
+install test/testkeys $DESTDIR/drm/share/SDL2/test
+install test/testloadso $DESTDIR/drm/share/SDL2/test
+install test/testlocale $DESTDIR/drm/share/SDL2/test
+install test/testlock $DESTDIR/drm/share/SDL2/test
+install test/testmouse $DESTDIR/drm/share/SDL2/test
+install test/testmultiaudio $DESTDIR/drm/share/SDL2/test
+install test/testoverlay2 $DESTDIR/drm/share/SDL2/test
+install test/testplatform $DESTDIR/drm/share/SDL2/test
+install test/testpower $DESTDIR/drm/share/SDL2/test
+install test/testqsort $DESTDIR/drm/share/SDL2/test
+install test/testrelative $DESTDIR/drm/share/SDL2/test
+install test/testrendercopyex $DESTDIR/drm/share/SDL2/test
+install test/testrendertarget $DESTDIR/drm/share/SDL2/test
+install test/testresample $DESTDIR/drm/share/SDL2/test
+install test/testrumble $DESTDIR/drm/share/SDL2/test
+install test/testscale $DESTDIR/drm/share/SDL2/test
+install test/testsem $DESTDIR/drm/share/SDL2/test
+install test/testsensor $DESTDIR/drm/share/SDL2/test
+install test/testsprite2 $DESTDIR/drm/share/SDL2/test
+install test/testspriteminimal $DESTDIR/drm/share/SDL2/test
+install test/teststreaming $DESTDIR/drm/share/SDL2/test
+install test/testsurround $DESTDIR/drm/share/SDL2/test
+install test/testthread $DESTDIR/drm/share/SDL2/test
+install test/testtimer $DESTDIR/drm/share/SDL2/test
+install test/testurl $DESTDIR/drm/share/SDL2/test
+install test/testver $DESTDIR/drm/share/SDL2/test
+install test/testviewport $DESTDIR/drm/share/SDL2/test
+test $VK && install test/testvulkan $DESTDIR/drm/share/SDL2/test
+install test/testwm2 $DESTDIR/drm/share/SDL2/test
+install test/testyuv $DESTDIR/drm/share/SDL2/test
+install -m 644 test/testyuv.bmp $DESTDIR/drm/share/SDL2/test
+install test/torturethread $DESTDIR/drm/share/SDL2/test
+install -m 644 test/unifont-13.0.06.hex $DESTDIR/drm/share/SDL2/test
+install -m 644 test/utf8.txt $DESTDIR/drm/share/SDL2/test
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/sdl2-build.pc << EOF
+Name: SDL2
+Version: 2.0.22
+Description: Simple DirectMedia Layer library
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/SDL2/begin_code.h \\
+/drm/include/SDL2/close_code.h \\
+/drm/include/SDL2/SDL.h \\
+/drm/include/SDL2/SDL_assert.h \\
+/drm/include/SDL2/SDL_atomic.h \\
+/drm/include/SDL2/SDL_audio.h \\
+/drm/include/SDL2/SDL_blendmode.h \\
+/drm/include/SDL2/SDL_clipboard.h \\
+/drm/include/SDL2/SDL_config.h \\
+/drm/include/SDL2/SDL_cpuinfo.h \\
+/drm/include/SDL2/SDL_endian.h \\
+/drm/include/SDL2/SDL_error.h \\
+/drm/include/SDL2/SDL_events.h \\
+/drm/include/SDL2/SDL_filesystem.h \\
+/drm/include/SDL2/SDL_gamecontroller.h \\
+/drm/include/SDL2/SDL_gesture.h \\
+/drm/include/SDL2/SDL_haptic.h \\
+/drm/include/SDL2/SDL_hidapi.h \\
+/drm/include/SDL2/SDL_hints.h \\
+/drm/include/SDL2/SDL_joystick.h \\
+/drm/include/SDL2/SDL_keyboard.h \\
+/drm/include/SDL2/SDL_keycode.h \\
+/drm/include/SDL2/SDL_loadso.h \\
+/drm/include/SDL2/SDL_locale.h \\
+/drm/include/SDL2/SDL_log.h \\
+/drm/include/SDL2/SDL_main.h \\
+/drm/include/SDL2/SDL_messagebox.h \\
+/drm/include/SDL2/SDL_misc.h \\
+/drm/include/SDL2/SDL_mouse.h \\
+/drm/include/SDL2/SDL_mutex.h \\
+/drm/include/SDL2/SDL_opengl.h \\
+/drm/include/SDL2/SDL_opengl_glext.h \\
+/drm/include/SDL2/SDL_opengles.h \\
+/drm/include/SDL2/SDL_opengles2.h \\
+/drm/include/SDL2/SDL_pixels.h \\
+/drm/include/SDL2/SDL_platform.h \\
+/drm/include/SDL2/SDL_power.h \\
+/drm/include/SDL2/SDL_quit.h \\
+/drm/include/SDL2/SDL_rect.h \\
+/drm/include/SDL2/SDL_render.h \\
+/drm/include/SDL2/SDL_rwops.h \\
+/drm/include/SDL2/SDL_scancode.h \\
+/drm/include/SDL2/SDL_sensor.h \\
+/drm/include/SDL2/SDL_shape.h \\
+/drm/include/SDL2/SDL_stdinc.h \\
+/drm/include/SDL2/SDL_surface.h \\
+/drm/include/SDL2/SDL_system.h \\
+/drm/include/SDL2/SDL_thread.h \\
+/drm/include/SDL2/SDL_timer.h \\
+/drm/include/SDL2/SDL_touch.h \\
+/drm/include/SDL2/SDL_version.h \\
+/drm/include/SDL2/SDL_video.h \\
+EOF
+test $VK && echo /drm/include/SDL2/SDL_vulkan.h \\ >> $DESTDIR/drm/share/pkgconfig/sdl2-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/sdl2-build.pc << EOF
+/drm/lib/libSDL2.so \\
+/drm/lib/pkgconfig/sdl2.pc
+
+exec=\\
+/drm/lib/libSDL2-2.0.so.0 \\
+/drm/share/SDL2/test/axis.bmp \\
+/drm/share/SDL2/test/button.bmp \\
+/drm/share/SDL2/test/checkkeys \\
+/drm/share/SDL2/test/checkkeysthreads \\
+/drm/share/SDL2/test/controllermap \\
+/drm/share/SDL2/test/controllermap.bmp \\
+/drm/share/SDL2/test/controllermap_back.bmp \\
+/drm/share/SDL2/test/icon.bmp \\
+/drm/share/SDL2/test/loopwave \\
+/drm/share/SDL2/test/loopwavequeue \\
+/drm/share/SDL2/test/moose.dat \\
+/drm/share/SDL2/test/sample.bmp \\
+/drm/share/SDL2/test/sample.wav \\
+/drm/share/SDL2/test/testatomic \\
+/drm/share/SDL2/test/testaudiocapture \\
+/drm/share/SDL2/test/testaudiohotplug \\
+/drm/share/SDL2/test/testaudioinfo \\
+/drm/share/SDL2/test/testautomation \\
+/drm/share/SDL2/test/testbounds \\
+/drm/share/SDL2/test/testcustomcursor \\
+/drm/share/SDL2/test/testdisplayinfo \\
+/drm/share/SDL2/test/testdraw2 \\
+/drm/share/SDL2/test/testdrawchessboard \\
+/drm/share/SDL2/test/testdropfile \\
+/drm/share/SDL2/test/testerror \\
+/drm/share/SDL2/test/testevdev \\
+/drm/share/SDL2/test/testfile \\
+/drm/share/SDL2/test/testfilesystem \\
+/drm/share/SDL2/test/testgamecontroller \\
+/drm/share/SDL2/test/testgeometry \\
+/drm/share/SDL2/test/testgesture \\
+/drm/share/SDL2/test/testgl2 \\
+/drm/share/SDL2/test/testgles \\
+/drm/share/SDL2/test/testgles2 \\
+/drm/share/SDL2/test/testhaptic \\
+/drm/share/SDL2/test/testhittesting \\
+/drm/share/SDL2/test/testhotplug \\
+/drm/share/SDL2/test/testiconv \\
+/drm/share/SDL2/test/testime \\
+/drm/share/SDL2/test/testintersections \\
+/drm/share/SDL2/test/testjoystick \\
+/drm/share/SDL2/test/testkeys \\
+/drm/share/SDL2/test/testloadso \\
+/drm/share/SDL2/test/testlocale \\
+/drm/share/SDL2/test/testlock \\
+/drm/share/SDL2/test/testmouse \\
+/drm/share/SDL2/test/testmultiaudio \\
+/drm/share/SDL2/test/testoverlay2 \\
+/drm/share/SDL2/test/testplatform \\
+/drm/share/SDL2/test/testpower \\
+/drm/share/SDL2/test/testqsort \\
+/drm/share/SDL2/test/testrelative \\
+/drm/share/SDL2/test/testrendercopyex \\
+/drm/share/SDL2/test/testrendertarget \\
+/drm/share/SDL2/test/testresample \\
+/drm/share/SDL2/test/testrumble \\
+/drm/share/SDL2/test/testscale \\
+/drm/share/SDL2/test/testsem \\
+/drm/share/SDL2/test/testsensor \\
+/drm/share/SDL2/test/testsprite2 \\
+/drm/share/SDL2/test/testspriteminimal \\
+/drm/share/SDL2/test/teststreaming \\
+/drm/share/SDL2/test/testsurround \\
+/drm/share/SDL2/test/testthread \\
+/drm/share/SDL2/test/testtimer \\
+/drm/share/SDL2/test/testurl \\
+/drm/share/SDL2/test/testver \\
+/drm/share/SDL2/test/testviewport \\
+EOF
+test $VK && echo /drm/share/SDL2/test/testvulkan \\ >> $DESTDIR/drm/share/pkgconfig/sdl2-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/sdl2-build.pc << EOF
+/drm/share/SDL2/test/testwm2 \\
+/drm/share/SDL2/test/testyuv \\
+/drm/share/SDL2/test/testyuv.bmp \\
+/drm/share/SDL2/test/torturethread \\
+/drm/share/SDL2/test/unifont-13.0.06.hex \\
+/drm/share/SDL2/test/utf8.txt
+EOF
+
+exit
+--- SDL2-2.0.22.orig/configure.ac
++++ SDL2-2.0.22/configure.ac
+@@ -77,7 +77,7 @@
+     *-*-nto-qnx*)
+         ;;
+     *)
+-        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
++        INCLUDE="$INCLUDE -idirafter $prefix/include"
+         ;;
+ esac
+ 
+@@ -912,8 +912,8 @@
+         LIBS="$alsa_save_LIBS"
+         if test x$have_alsa = xyes; then
+             AC_ARG_ENABLE(alsa-shared,
+-[AS_HELP_STRING([--enable-alsa-shared], [dynamically load ALSA audio support [default=yes]])],
+-                          , enable_alsa_shared=yes)
++[AS_HELP_STRING([--enable-alsa-shared], [dynamically load ALSA audio support [default=no]])],
++                          , enable_alsa_shared=no)
+             alsa_lib=[`find_lib "libasound.so.*" "$ALSA_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+ 
+             AC_DEFINE(SDL_AUDIO_DRIVER_ALSA, 1, [ ])
+@@ -2302,7 +2302,7 @@
+         video_kmsdrm=no
+ 
+         PKG_CHECK_MODULES([LIBDRM], [libdrm >= 1.4.82], libdrm_avail=yes, libdrm_avail=no)
+-        PKG_CHECK_MODULES([LIBGBM], [gbm >= 11.1.0], libgbm_avail=yes, libgbm_avail=no)
++        PKG_CHECK_MODULES([LIBGBM], [gbm], libgbm_avail=yes, libgbm_avail=no)
+ 
+         if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
+             video_kmsdrm=yes
+@@ -2310,8 +2310,8 @@
+ 
+         if test x$video_kmsdrm = xyes; then
+             AC_ARG_ENABLE(kmsdrm-shared,
+-[AS_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [default=yes]])],
+-                , enable_kmsdrm_shared=yes)
++[AS_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [default=no]])],
++                , enable_kmsdrm_shared=no)
+ 
+             AC_DEFINE(SDL_VIDEO_DRIVER_KMSDRM, 1, [ ])
+             SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
+@@ -2653,6 +2653,12 @@
+             # For reasons I am totally unable to see, I get an undefined macro error if
+             # I put this in the AC_TRY_COMPILE.
+             AC_MSG_WARN([Vulkan does not work on this configuration.])
++        else
++            AC_MSG_CHECKING(for Vulkan headers)
++            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
++              #include <vulkan/vulkan.h>
++            ]],[])], [],[enable_video_vulkan=no])
++            AC_MSG_RESULT($enable_video_vulkan)
+         fi
+     fi
+     if test x$have_loadso != xyes; then
+--- SDL2-2.0.22.orig/include/SDL.h
++++ SDL2-2.0.22/include/SDL.h
+@@ -48,7 +48,6 @@
+ #include "SDL_loadso.h"
+ #include "SDL_log.h"
+ #include "SDL_messagebox.h"
+-#include "SDL_metal.h"
+ #include "SDL_mutex.h"
+ #include "SDL_power.h"
+ #include "SDL_render.h"
+--- SDL2-2.0.22.orig/src/dynapi/SDL_dynapi_procs.h
++++ SDL2-2.0.22/src/dynapi/SDL_dynapi_procs.h
+@@ -780,8 +780,6 @@
+ SDL_DYNAPI_PROC(size_t,SDL_RWwrite,(SDL_RWops *a, const void *b, size_t c, size_t d),(a,b,c,d),return)
+ SDL_DYNAPI_PROC(int,SDL_RWclose,(SDL_RWops *a),(a),return)
+ SDL_DYNAPI_PROC(void*,SDL_LoadFile,(const char *a, size_t *b),(a,b),return)
+-SDL_DYNAPI_PROC(SDL_MetalView,SDL_Metal_CreateView,(SDL_Window *a),(a),return)
+-SDL_DYNAPI_PROC(void,SDL_Metal_DestroyView,(SDL_MetalView a),(a),)
+ SDL_DYNAPI_PROC(int,SDL_LockTextureToSurface,(SDL_Texture *a, const SDL_Rect *b, SDL_Surface **c),(a,b,c),return)
+ SDL_DYNAPI_PROC(SDL_bool,SDL_HasARMSIMD,(void),(),return)
+ SDL_DYNAPI_PROC(char*,SDL_strtokr,(char *a, const char *b, char **c),(a,b,c),return)
+@@ -818,7 +816,6 @@
+ SDL_DYNAPI_PROC(char*,SDL_GetErrorMsg,(char *a, int b),(a,b),return)
+ SDL_DYNAPI_PROC(void,SDL_LockSensors,(void),(),)
+ SDL_DYNAPI_PROC(void,SDL_UnlockSensors,(void),(),)
+-SDL_DYNAPI_PROC(void*,SDL_Metal_GetLayer,(SDL_MetalView a),(a),return)
+ SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
+ SDL_DYNAPI_PROC(double,SDL_trunc,(double a),(a),return)
+ SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
+--- SDL2-2.0.22.orig/src/render/opengles/SDL_glesfuncs.h
++++ SDL2-2.0.22/src/render/opengles/SDL_glesfuncs.h
+@@ -29,9 +29,11 @@
+ SDL_PROC(void, glColor4f, (GLfloat, GLfloat, GLfloat, GLfloat))
+ SDL_PROC(void, glColorPointer, (GLint, GLenum, GLsizei, const GLvoid *))
+ SDL_PROC(void, glDeleteTextures, (GLsizei, const GLuint *))
++SDL_PROC(void, glDepthFunc, (GLenum))
+ SDL_PROC(void, glDisable, (GLenum))
+ SDL_PROC(void, glDisableClientState, (GLenum array))
+ SDL_PROC(void, glDrawArrays, (GLenum, GLint, GLsizei))
++SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *))
+ SDL_PROC_OES(void, glDrawTexfOES, (GLfloat, GLfloat, GLfloat, GLfloat, GLfloat))
+ SDL_PROC(void, glEnable, (GLenum))
+ SDL_PROC(void, glEnableClientState, (GLenum))
+@@ -40,12 +42,14 @@
+ SDL_PROC(void, glGenTextures, (GLsizei, GLuint *))
+ SDL_PROC(GLenum, glGetError, (void))
+ SDL_PROC(void, glGetIntegerv, (GLenum, GLint *))
++SDL_PROC(const GLubyte *, glGetString, (GLenum))
+ SDL_PROC(void, glLoadIdentity, (void))
+ SDL_PROC(void, glMatrixMode, (GLenum))
+ SDL_PROC(void, glOrthof, (GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat))
+ SDL_PROC(void, glPixelStorei, (GLenum, GLint))
+ SDL_PROC(void, glReadPixels, (GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid*))
+ SDL_PROC(void, glScissor, (GLint, GLint, GLsizei, GLsizei))
++SDL_PROC(void, glShadeModel, (GLenum))
+ SDL_PROC(void, glTexCoordPointer, (GLint, GLenum, GLsizei, const GLvoid *))
+ SDL_PROC(void, glTexEnvf, (GLenum, GLenum, GLfloat))
+ SDL_PROC(void, glTexImage2D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *))
+@@ -57,6 +61,7 @@
+ SDL_PROC_OES(void, glBindFramebufferOES, (GLenum, GLuint))
+ SDL_PROC_OES(void, glFramebufferTexture2DOES, (GLenum, GLenum, GLenum, GLuint, GLint))
+ SDL_PROC_OES(GLenum, glCheckFramebufferStatusOES, (GLenum))
++SDL_PROC(void, glRotatef, (GLfloat, GLfloat, GLfloat, GLfloat))
+ SDL_PROC_OES(void, glDeleteFramebuffersOES, (GLsizei, const GLuint*))
+ 
+ /* vi: set ts=4 sw=4 expandtab: */
+--- SDL2-2.0.22.orig/src/video/SDL_vulkan_internal.h
++++ SDL2-2.0.22/src/video/SDL_vulkan_internal.h
+@@ -56,7 +56,7 @@
+ #endif
+ 
+ #define VK_NO_PROTOTYPES
+-#include "./khronos/vulkan/vulkan.h"
++#include <vulkan/vulkan.h>
+ 
+ #include "SDL_vulkan.h"
+ 
+--- SDL2-2.0.22.orig/src/video/kmsdrm/SDL_kmsdrmvulkan.c
++++ SDL2-2.0.22/src/video/kmsdrm/SDL_kmsdrmvulkan.c
+@@ -310,8 +310,7 @@
+         );
+ 
+         /* Is this device a real GPU that supports API version 1 at least? */
+-        if (device_props->apiVersion >= 1 && 
+-           (device_props->deviceType == 1 || device_props->deviceType == 2))
++        if (device_props->apiVersion >= 1)
+         {
+             gpu = physical_devices[i];
+             valid_gpu = SDL_TRUE;
+@@ -404,12 +403,6 @@
+         }
+     }
+ 
+-    /* Just in case we get here without a display_mode. */
+-    if (!display_mode) {
+-            SDL_SetError("Vulkan couldn't get a display mode.");
+-            goto clean;
+-    }
+-
+     /* Get the list of the physical device planes. */
+     vkGetPhysicalDeviceDisplayPlanePropertiesKHR(gpu, &plane_count, NULL);
+     if (plane_count == 0) {
+--- SDL2-2.0.22.orig/test/Makefile.in
++++ SDL2-2.0.22/test/Makefile.in
+@@ -4,7 +4,7 @@
+ 
+ CC      = @CC@
+ EXE	= @EXE@
+-CFLAGS  = @CFLAGS@ -g
++CFLAGS  = @CFLAGS@ -g -DTESTDATADIR=\"@TESTDATADIR@\"
+ LIBS	= @LIBS@
+ 
+ TARGETS = \
+@@ -74,7 +74,7 @@
+ 	torturethread$(EXE) \
+ 
+ 
+-@OPENGL_TARGETS@ += testgl2$(EXE) testshader$(EXE)
++@OPENGL_TARGETS@ += testgl2$(EXE)
+ @OPENGLES1_TARGETS@ += testgles$(EXE)
+ @OPENGLES2_TARGETS@ += testgles2$(EXE)
+ 
+@@ -178,7 +178,7 @@
+ 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+ 
+ testgles$(EXE): $(srcdir)/testgles.c
+-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
++	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+ 
+ testgles2$(EXE): $(srcdir)/testgles2.c
+ 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+--- SDL2-2.0.22.orig/test/configure.ac
++++ SDL2-2.0.22/test/configure.ac
+@@ -210,6 +210,12 @@
+    LIBS="$LIBS $LIBUNWIND_LIBS"
+ fi
+ 
++AC_ARG_WITH(testdatadir,
++            [AS_HELP_STRING([--with-testdatadir], [test data directory])],
++            [TESTDATADIR=$with_testdatadir],
++            [TESTDATADIR=.])
++AC_SUBST(TESTDATADIR)
++
+ dnl Finally create all the generated files
+ AC_CONFIG_FILES([Makefile])
+ AC_OUTPUT
+--- SDL2-2.0.22.orig/test/controllermap.c
++++ SDL2-2.0.22/test/controllermap.c
+@@ -392,10 +392,10 @@
+     Uint32 alpha_ticks = 0;
+     SDL_JoystickID nJoystickID;
+ 
+-    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
+-    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE);
+-    button = LoadTexture(screen, "button.bmp", SDL_TRUE);
+-    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
++    background_front = LoadTexture(screen, TESTDATADIR"/controllermap.bmp", SDL_FALSE);
++    background_back = LoadTexture(screen, TESTDATADIR"/controllermap_back.bmp", SDL_FALSE);
++    button = LoadTexture(screen, TESTDATADIR"/button.bmp", SDL_TRUE);
++    axis = LoadTexture(screen, TESTDATADIR"/axis.bmp", SDL_TRUE);
+     SDL_RaiseWindow(window);
+ 
+     /* scale for platforms that don't give you the window size you asked for. */
+--- SDL2-2.0.22.orig/test/loopwave.c
++++ SDL2-2.0.22/test/loopwave.c
+@@ -128,7 +128,7 @@
+     if (argc > 1) {
+         SDL_strlcpy(filename, argv[1], sizeof(filename));
+     } else {
+-        SDL_strlcpy(filename, "sample.wav", sizeof(filename));
++        SDL_strlcpy(filename, TESTDATADIR"/sample.wav", sizeof(filename));
+     }
+     /* Load the wave file into memory */
+     if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
+--- SDL2-2.0.22.orig/test/loopwavequeue.c
++++ SDL2-2.0.22/test/loopwavequeue.c
+@@ -88,7 +88,7 @@
+     if (argc > 1) {
+         SDL_strlcpy(filename, argv[1], sizeof(filename));
+     } else {
+-        SDL_strlcpy(filename, "sample.wav", sizeof(filename));
++        SDL_strlcpy(filename, TESTDATADIR"/sample.wav", sizeof(filename));
+     }
+     /* Load the wave file into memory */
+     if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
+--- SDL2-2.0.22.orig/test/testaudiohotplug.c
++++ SDL2-2.0.22/test/testaudiohotplug.c
+@@ -154,7 +154,7 @@
+     if (argc > 1) {
+         SDL_strlcpy(filename, argv[1], sizeof(filename));
+     } else {
+-        SDL_strlcpy(filename, "sample.wav", sizeof(filename));
++        SDL_strlcpy(filename, TESTDATADIR"/sample.wav", sizeof(filename));
+     }
+     /* Load the wave file into memory */
+     if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == NULL) {
+--- SDL2-2.0.22.orig/test/testgamecontroller.c
++++ SDL2-2.0.22/test/testgamecontroller.c
+@@ -634,10 +634,10 @@
+     /* scale for platforms that don't give you the window size you asked for. */
+     SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+ 
+-    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
+-    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE);
+-    button = LoadTexture(screen, "button.bmp", SDL_TRUE);
+-    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
++    background_front = LoadTexture(screen, TESTDATADIR"/controllermap.bmp", SDL_FALSE);
++    background_back = LoadTexture(screen, TESTDATADIR"/controllermap_back.bmp", SDL_FALSE);
++    button = LoadTexture(screen, TESTDATADIR"/button.bmp", SDL_TRUE);
++    axis = LoadTexture(screen, TESTDATADIR"/axis.bmp", SDL_TRUE);
+ 
+     if (!background_front || !background_back || !button || !axis) {
+         SDL_DestroyRenderer(screen);
+--- SDL2-2.0.22.orig/test/testgles.c
++++ SDL2-2.0.22/test/testgles.c
+@@ -24,9 +24,49 @@
+ 
+ #include "SDL_opengles.h"
+ 
++typedef struct GLES_Context
++{
++#define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
++#define SDL_PROC_OES(...)
++#include "../src/render/opengles/SDL_glesfuncs.h"
++#undef SDL_PROC
++#undef SDL_PROC_OES
++} GLES_Context;
++
+ static SDLTest_CommonState *state;
+ static SDL_GLContext *context = NULL;
+ static int depth = 16;
++static GLES_Context ctx;
++
++static int LoadContext(GLES_Context * data)
++{
++#if SDL_VIDEO_DRIVER_UIKIT
++#define __SDL_NOGETPROCADDR__
++#elif SDL_VIDEO_DRIVER_ANDROID
++#define __SDL_NOGETPROCADDR__
++#elif SDL_VIDEO_DRIVER_PANDORA
++#define __SDL_NOGETPROCADDR__
++#endif
++
++#if defined __SDL_NOGETPROCADDR__
++#define SDL_PROC(ret,func,params) data->func=func;
++#else
++#define SDL_PROC(ret,func,params) \
++    do { \
++        data->func = SDL_GL_GetProcAddress(#func); \
++        if ( ! data->func ) { \
++            return SDL_SetError("Couldn't load GLES function %s: %s", #func, SDL_GetError()); \
++        } \
++    } while ( 0 );
++#endif /* __SDL_NOGETPROCADDR__ */
++
++#define SDL_PROC_OES(...)
++
++#include "../src/render/opengles/SDL_glesfuncs.h"
++#undef SDL_PROC
++#undef SDL_PROC_OES
++    return 0;
++}
+ 
+ /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
+ static void
+@@ -85,18 +125,18 @@
+ 
+ 
+     /* Do our drawing, too. */
+-    glClearColor(0.0, 0.0, 0.0, 1.0);
+-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
++    ctx.glClearColor(0.0, 0.0, 0.0, 1.0);
++    ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
+     /* Draw the cube */
+-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, color);
+-    glEnableClientState(GL_COLOR_ARRAY);
+-    glVertexPointer(3, GL_FLOAT, 0, cube);
+-    glEnableClientState(GL_VERTEX_ARRAY);
+-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
++    ctx.glColorPointer(4, GL_UNSIGNED_BYTE, 0, color);
++    ctx.glEnableClientState(GL_COLOR_ARRAY);
++    ctx.glVertexPointer(3, GL_FLOAT, 0, cube);
++    ctx.glEnableClientState(GL_VERTEX_ARRAY);
++    ctx.glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
+ 
+-    glMatrixMode(GL_MODELVIEW);
+-    glRotatef(5.0, 1.0, 1.0, 1.0);
++    ctx.glMatrixMode(GL_MODELVIEW);
++    ctx.glRotatef(5.0, 1.0, 1.0, 1.0);
+ }
+ 
+ int
+@@ -188,6 +228,13 @@
+         }
+     }
+ 
++    /* Important: call this *after* creating the context */
++    if (LoadContext(&ctx) < 0) {
++        SDL_Log("Could not load GLES functions\n");
++        quit(2);
++        return 0;
++    }
++
+     if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
+         SDL_GL_SetSwapInterval(1);
+     } else {
+@@ -197,10 +244,10 @@
+     SDL_GetCurrentDisplayMode(0, &mode);
+     SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
+     SDL_Log("\n");
+-    SDL_Log("Vendor     : %s\n", glGetString(GL_VENDOR));
+-    SDL_Log("Renderer   : %s\n", glGetString(GL_RENDERER));
+-    SDL_Log("Version    : %s\n", glGetString(GL_VERSION));
+-    SDL_Log("Extensions : %s\n", glGetString(GL_EXTENSIONS));
++    SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
++    SDL_Log("Renderer   : %s\n", ctx.glGetString(GL_RENDERER));
++    SDL_Log("Version    : %s\n", ctx.glGetString(GL_VERSION));
++    SDL_Log("Extensions : %s\n", ctx.glGetString(GL_EXTENSIONS));
+     SDL_Log("\n");
+ 
+     status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
+@@ -271,15 +318,15 @@
+         }
+ 
+         aspectAdjust = (4.0f / 3.0f) / ((float)state->window_w / state->window_h);
+-        glViewport(0, 0, state->window_w, state->window_h);
+-        glMatrixMode(GL_PROJECTION);
+-        glLoadIdentity();
+-        glOrthof(-2.0, 2.0, -2.0 * aspectAdjust, 2.0 * aspectAdjust, -20.0, 20.0);
+-        glMatrixMode(GL_MODELVIEW);
+-        glLoadIdentity();
+-        glEnable(GL_DEPTH_TEST);
+-        glDepthFunc(GL_LESS);
+-        glShadeModel(GL_SMOOTH);
++        ctx.glViewport(0, 0, state->window_w, state->window_h);
++        ctx.glMatrixMode(GL_PROJECTION);
++        ctx.glLoadIdentity();
++        ctx.glOrthof(-2.0, 2.0, -2.0 * aspectAdjust, 2.0 * aspectAdjust, -20.0, 20.0);
++        ctx.glMatrixMode(GL_MODELVIEW);
++        ctx.glLoadIdentity();
++        ctx.glEnable(GL_DEPTH_TEST);
++        ctx.glDepthFunc(GL_LESS);
++        ctx.glShadeModel(GL_SMOOTH);
+     }
+ 
+     /* Main render loop */
+@@ -302,7 +349,7 @@
+                                     break;
+                                 }
+                                 /* Change view port to the new window dimensions */
+-                                glViewport(0, 0, event.window.data1, event.window.data2);
++                                ctx.glViewport(0, 0, event.window.data1, event.window.data2);
+                                 /* Update window content */
+                                 Render();
+                                 SDL_GL_SwapWindow(state->windows[i]);
+--- SDL2-2.0.22.orig/test/testiconv.c
++++ SDL2-2.0.22/test/testiconv.c
+@@ -54,7 +54,7 @@
+     /* Enable standard application logging */
+     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+ 
+-    fname = (argc < 2) ? "utf8.txt" : argv[1];
++    fname = (argc < 2) ? TESTDATADIR"/utf8.txt" : argv[1];
+     file = fopen(fname, "rb");
+     if (!file) {
+         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
+--- SDL2-2.0.22.orig/test/testime.c
++++ SDL2-2.0.22/test/testime.c
+@@ -633,7 +633,7 @@
+ {
+     int i, done;
+     SDL_Event event;
+-    const char *fontname = DEFAULT_FONT;
++    const char *fontname = TESTDATADIR"/"DEFAULT_FONT;
+ 
+     /* Enable standard application logging */
+     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+--- SDL2-2.0.22.orig/test/testmultiaudio.c
++++ SDL2-2.0.22/test/testmultiaudio.c
+@@ -180,7 +180,7 @@
+     if (devcount < 1) {
+         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!\n");
+     } else {
+-        const char *file = (argc < 2) ? "sample.wav" : argv[1];
++        const char *file = (argc < 2) ? TESTDATADIR"/sample.wav" : argv[1];
+ 
+         /* Load the wave file into memory */
+         if (SDL_LoadWAV(file, &spec, &sound, &soundlen) == NULL) {
+--- SDL2-2.0.22.orig/test/testoverlay2.c
++++ SDL2-2.0.22/test/testoverlay2.c
+@@ -315,7 +315,7 @@
+     }
+ 
+     /* load the trojan moose images */
+-    handle = SDL_RWFromFile("moose.dat", "rb");
++    handle = SDL_RWFromFile(TESTDATADIR"/moose.dat", "rb");
+     if (handle == NULL) {
+         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
+         SDL_free(RawMooseData);
+--- SDL2-2.0.22.orig/test/testrendercopyex.c
++++ SDL2-2.0.22/test/testrendercopyex.c
+@@ -186,8 +186,8 @@
+ 
+         drawstate->window = state->windows[i];
+         drawstate->renderer = state->renderers[i];
+-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE);
+-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE);
++        drawstate->sprite = LoadTexture(drawstate->renderer, TESTDATADIR"/icon.bmp", SDL_TRUE);
++        drawstate->background = LoadTexture(drawstate->renderer, TESTDATADIR"/sample.bmp", SDL_FALSE);
+         if (!drawstate->sprite || !drawstate->background) {
+             quit(2);
+         }
+--- SDL2-2.0.22.orig/test/testrendertarget.c
++++ SDL2-2.0.22/test/testrendertarget.c
+@@ -292,11 +292,11 @@
+         drawstate->window = state->windows[i];
+         drawstate->renderer = state->renderers[i];
+         if (test_composite) {
+-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", SDL_TRUE);
++            drawstate->sprite = LoadTexture(drawstate->renderer, TESTDATADIR"/icon-alpha.bmp", SDL_TRUE);
+         } else {
+-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE);
++            drawstate->sprite = LoadTexture(drawstate->renderer, TESTDATADIR"/icon.bmp", SDL_TRUE);
+         }
+-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE);
++        drawstate->background = LoadTexture(drawstate->renderer, TESTDATADIR"/sample.bmp", SDL_FALSE);
+         if (!drawstate->sprite || !drawstate->background) {
+             quit(2);
+         }
+--- SDL2-2.0.22.orig/test/testscale.c
++++ SDL2-2.0.22/test/testscale.c
+@@ -176,8 +176,8 @@
+ 
+         drawstate->window = state->windows[i];
+         drawstate->renderer = state->renderers[i];
+-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE);
+-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE);
++        drawstate->sprite = LoadTexture(drawstate->renderer, TESTDATADIR"/icon.bmp", SDL_TRUE);
++        drawstate->background = LoadTexture(drawstate->renderer, TESTDATADIR"/sample.bmp", SDL_FALSE);
+         if (!drawstate->sprite || !drawstate->background) {
+             quit(2);
+         }
+--- SDL2-2.0.22.orig/test/testsprite2.c
++++ SDL2-2.0.22/test/testsprite2.c
+@@ -464,7 +464,7 @@
+ {
+     int i;
+     Uint64 seed;
+-    const char *icon = "icon.bmp";
++    const char *icon = TESTDATADIR"/icon.bmp";
+ 
+     /* Initialize parameters */
+     num_sprites = NUM_SPRITES;
+--- SDL2-2.0.22.orig/test/testspriteminimal.c
++++ SDL2-2.0.22/test/testspriteminimal.c
+@@ -132,7 +132,8 @@
+ 
+     /* Check for events */
+     while (SDL_PollEvent(&event)) {
+-        if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN) {
++        if (event.type == SDL_QUIT ||
++            event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+             done = 1;
+         }
+     }
+@@ -158,7 +159,7 @@
+         quit(2);
+     }
+ 
+-    if (LoadSprite("icon.bmp") < 0) {
++    if (LoadSprite(TESTDATADIR"/icon.bmp") < 0) {
+         quit(2);
+     }
+ 
+--- SDL2-2.0.22.orig/test/teststreaming.c
++++ SDL2-2.0.22/test/teststreaming.c
+@@ -138,7 +138,7 @@
+     }
+ 
+     /* load the moose images */
+-    handle = SDL_RWFromFile("moose.dat", "rb");
++    handle = SDL_RWFromFile(TESTDATADIR"/moose.dat", "rb");
+     if (handle == NULL) {
+         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
+         quit(2);
+--- SDL2-2.0.22.orig/test/testviewport.c
++++ SDL2-2.0.22/test/testviewport.c
+@@ -229,7 +229,7 @@
+         quit(2);
+     }
+ 
+-    if (LoadSprite("icon.bmp", state->renderers[0]) < 0) {
++    if (LoadSprite(TESTDATADIR"/icon.bmp", state->renderers[0]) < 0) {
+         quit(2);
+     }
+ 
+--- SDL2-2.0.22.orig/test/testvulkan.c
++++ SDL2-2.0.22/test/testvulkan.c
+@@ -27,12 +27,7 @@
+ #else
+ 
+ #define VK_NO_PROTOTYPES
+-#ifdef HAVE_VULKAN_H
+ #include <vulkan/vulkan.h>
+-#else
+-/* SDL includes a copy for building on systems without the Vulkan SDK */
+-#include "../src/video/khronos/vulkan/vulkan.h"
+-#endif
+ #include "SDL_vulkan.h"
+ 
+ #ifndef UINT64_MAX /* VS2008 */
+--- SDL2-2.0.22.orig/test/testyuv.c
++++ SDL2-2.0.22/test/testyuv.c
+@@ -329,7 +329,7 @@
+     if (argv[arg]) {
+         filename = argv[arg];
+     } else {
+-        filename = "testyuv.bmp";
++        filename = TESTDATADIR"/testyuv.bmp";
+     }
+     original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24, 0);
+     if (!original) {

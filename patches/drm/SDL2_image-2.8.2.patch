@@ -1,0 +1,49 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libpng-build sdl2-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
+pkg-config --exists libavif-build && REQUIRES="$REQUIRES libavif-build"
+pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
+pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
+
+# configure (ac-2.71; am-1.16; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig ./configure --disable-static --disable-stb-image --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install .libs/showimage $DESTDIR/drm/bin
+install -d $DESTDIR/drm/include/SDL2
+install -m 644 include/SDL_image.h $DESTDIR/drm/include/SDL2
+install -d $DESTDIR/drm/lib
+install .libs/libSDL2_image-2.0.so.0.* $DESTDIR/drm/lib/libSDL2_image-2.0.so.0
+ln -sf libSDL2_image-2.0.so.0 $DESTDIR/drm/lib/libSDL2_image.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 SDL2_image.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/sdl2_image-build.pc << EOF
+Name: SDL2_image
+Version: 2.8.2
+Description: Image loading library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/SDL2/SDL_image.h \\
+/drm/lib/libSDL2_image.so \\
+/drm/lib/pkgconfig/SDL2_image.pc
+
+exec=\\
+/drm/bin/showimage \\
+/drm/lib/libSDL2_image-2.0.so.0
+EOF
+
+exit

@@ -7,6 +7,11 @@ PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
 if pkg-config --exists x264-build; then
   X264=--enable-libx264
   REQUIRES="$REQUIRES x264-build"
@@ -28,6 +33,7 @@ make
 # install
 install -d $DESTDIR/drm/bin
 install ffmpeg $DESTDIR/drm/bin
+test $SDL2 && install ffplay $DESTDIR/drm/bin
 install ffprobe $DESTDIR/drm/bin
 install -d $DESTDIR/drm/include/libavcodec
 install -m 644 libavcodec/avcodec.h $DESTDIR/drm/include/libavcodec
@@ -202,6 +208,9 @@ devel=\\
 
 exec=\\
 /drm/bin/ffmpeg \\
+EOF
+test $SDL2 && echo /drm/bin/ffplay \\ >> $DESTDIR/drm/share/pkgconfig/ffmpeg-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/ffmpeg-build.pc << EOF
 /drm/bin/ffprobe \\
 /drm/lib/libavcodec.so.58 \\
 /drm/lib/libavdevice.so.58 \\
