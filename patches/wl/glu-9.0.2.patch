@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build gcc-g++-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/include/GL
+install -m 644 include/GL/glu.h $DESTDIR/wl/include/GL
+install -d $DESTDIR/wl/lib
+install .libs/libGLU.so.1.* $DESTDIR/wl/lib/libGLU.so.1
+ln -sf libGLU.so.1 $DESTDIR/wl/lib/libGLU.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 glu.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/glu-build.pc << EOF
+Name: glu
+Version: 9.0.2
+Description: OpenGL Utility library
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/GL/glu.h \\
+/wl/lib/libGLU.so \\
+/wl/lib/pkgconfig/glu.pc
+
+exec=\\
+/wl/lib/libGLU.so.1
+EOF
+
+exit
+--- glu-9.0.2.orig/configure.ac
++++ glu-9.0.2/configure.ac
+@@ -23,6 +23,7 @@
+ AC_INIT([glu],
+         [9.0.2],
+         [https://gitlab.freedesktop.org/mesa/glu/issues])
++AC_CONFIG_MACRO_DIR([m4])
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AC_CANONICAL_HOST
+ 

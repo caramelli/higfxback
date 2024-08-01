@@ -10,6 +10,11 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   REQUIRES="$REQUIRES glfw-build"
 fi
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
   PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
   SDL2=1
@@ -26,7 +31,7 @@ make
 # install
 install -d $DESTDIR/wl/bin
 install yagears $DESTDIR/wl/bin
-test $GLFW || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
+test $GLFW || test $GLUT || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -39,7 +44,7 @@ Requires: $REQUIRES
 exec=\\
 /wl/bin/yagears \\
 EOF
-test $GLFW || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 
 exit

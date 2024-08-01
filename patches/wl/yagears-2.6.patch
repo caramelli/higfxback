@@ -25,6 +25,11 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   REQUIRES="$REQUIRES glfw-build"
 fi
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
   test $GL && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
   test $VK && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q vulkan-loader-build || { echo SDL2 with Vulkan support required; exit 1; }
@@ -41,7 +46,7 @@ meson compile -C build
 # install
 install -d $DESTDIR/wl/bin
 test $GL && install build/yagears2 $DESTDIR/wl/bin
-test $GL && test $GLFW || test $SDL2 && install build/yagears2-gui $DESTDIR/wl/bin
+test $GL && test $GLFW || test $GLUT || test $SDL2 && install build/yagears2-gui $DESTDIR/wl/bin
 test $VK && install build/yagears2-vk $DESTDIR/wl/bin
 test $VK && test $GLFW || test $SDL2 && install build/yagears2-vk-gui $DESTDIR/wl/bin
 
@@ -56,7 +61,7 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /wl/bin/yagears2 \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
-test $GL && test $GLFW || test $SDL2 && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $GL && test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $VK && echo /wl/bin/yagears2-vk \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $VK && test $GLFW || test $SDL2 && echo /wl/bin/yagears2-vk-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears2-build.pc

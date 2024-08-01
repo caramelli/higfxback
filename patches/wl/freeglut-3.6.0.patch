@@ -1,0 +1,261 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build egl-opengl-stubs-build libxkbcommon-build wayland-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DFREEGLUT_BUILD_STATIC_LIBS=OFF -DFREEGLUT_WAYLAND=ON -DCMAKE_INSTALL_PREFIX=/wl -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/wl/include/GL
+install -m 644 include/GL/freeglut_std.h $DESTDIR/wl/include/GL/glut.h
+install -d $DESTDIR/wl/lib
+install build/lib/libglut.so.3.* $DESTDIR/wl/lib/libglut.so.3
+ln -sf libglut.so.3 $DESTDIR/wl/lib/libglut.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/freeglut.pc $DESTDIR/wl/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/glut-build.pc << EOF
+Name: freeglut
+Version: 3.6.0
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/GL/glut.h \\
+/wl/lib/libglut.so \\
+/wl/lib/pkgconfig/glut.pc
+
+exec=\\
+/wl/lib/libglut.so.3
+EOF
+
+exit
+--- freeglut-3.6.0.orig/CMakeLists.txt
++++ freeglut-3.6.0/CMakeLists.txt
+@@ -349,7 +349,7 @@
+       FIND_LIBRARY(GLES2_LIBRARY GLESv2 HINTS ${_OPENGL_LIBDIR})
+       LIST(APPEND LIBS ${EGL_LIBRARY} ${GLES1_LIBRARY} ${GLES2_LIBRARY})
+     endif()
+-ELSE()
++ELSEIF(NOT FREEGLUT_WAYLAND)
+     # On OS X, we need to link against the X11 OpenGL libraries, NOT the Cocoa OpenGL libraries.
+     # To do that, you need to manually find two of the libraries before calling FindOpenGL
+     if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+@@ -357,8 +357,6 @@
+       get_filename_component(X11_LIB_PATH ${X11_Xi_LIB} DIRECTORY)
+ 
+       find_library(OPENGL_gl_LIBRARY NAME GL HINTS ${X11_LIB_PATH})
+-      find_path(OPENGL_GLU_INCLUDE_DIR NAMES GL/glu.h OpenGL/glu.h HINTS ${X11_Xi_INCLUDE_PATH})
+-      find_library(OPENGL_glu_LIBRARY NAME GLU HINTS ${X11_LIB_PATH})
+     endif()
+ 
+     if(NOT CMAKE_VERSION VERSION_LESS "3.10")
+@@ -369,33 +367,16 @@
+       LIST(APPEND LIBS ${OPENGL_gl_LIBRARY})
+       INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
+     endif()
+-
+-    if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+-      # CMake 3.29 properly locates the include directory for glu.h in the OPENGL_GLU_INCLUDE_DIR variable for us.
+-      if(CMAKE_VERSION VERSION_LESS "3.29")
+-        FIND_PATH(OPENGL_GLU_INCLUDE_DIR NAMES GL/glu.h OpenGL/glu.h HINTS ${OPENGL_INCLUDE_DIR})
+-      endif()
+-      if(NOT OPENGL_GLU_INCLUDE_DIR)
+-        message(FATAL_ERROR "Failed to find the glu.h header file.")
+-      endif()
+-      INCLUDE_DIRECTORIES(${OPENGL_GLU_INCLUDE_DIR})
+-    endif()
+ ENDIF()
+ 
+ # For Wayland: compile with -DFREEGLUT_WAYLAND and pull EGL
+ IF(FREEGLUT_WAYLAND)
+   ADD_DEFINITIONS(-DFREEGLUT_WAYLAND)
+   INCLUDE(FindPkgConfig)
+-  if(NOT CMAKE_VERSION VERSION_LESS "3.10")
+-    FIND_PACKAGE(OpenGL REQUIRED COMPONENTS EGL OpenGL)
+-    LIST(APPEND LIBS OpenGL::EGL OpenGL::OpenGL)
+-  else()
+-    FIND_PACKAGE(OpenGL REQUIRED)
+-    LIST(GET ${OPENGL_LIBRARIES} 0 _OPENGL_LIB)
+-    GET_FILENAME_COMPONENT(_OPENGL_LIBDIR ${_OPENGL_LIB} DIRECTORY)
+-    FIND_LIBRARY(EGL_LIBRARY EGL HINTS ${_OPENGL_LIBDIR})
+-    LIST(APPEND LIBS ${EGL_LIBRARY})
+-  endif()
++  PKG_CHECK_MODULES(EGL REQUIRED egl)
++  LIST(APPEND LIBS ${EGL_LINK_LIBRARIES})
++  PKG_CHECK_MODULES(OpenGL REQUIRED gl)
++  LIST(APPEND LIBS ${OpenGL_LINK_LIBRARIES})
+   if(NOT CMAKE_VERSION VERSION_LESS "3.6")
+     PKG_CHECK_MODULES(wayland-client REQUIRED IMPORTED_TARGET wayland-client)
+     PKG_CHECK_MODULES(wayland-cursor REQUIRED IMPORTED_TARGET wayland-cursor)
+@@ -641,13 +622,6 @@
+ option( FREEGLUT_BUILD_DEMOS "Build FreeGLUT demos." ON )
+ 
+ set(DEMO_LIBS ${LIBS})
+-if (FREEGLUT_BUILD_DEMOS)
+-    if (OPENGL_GLU_FOUND)
+-        list(APPEND DEMO_LIBS ${OPENGL_glu_LIBRARY})
+-    else()
+-        message(FATAL_ERROR "Failed to find the GLU library which is required to build the demos.")
+-    endif()
+-endif()
+ 
+ # lib m for math, not needed on windows
+ IF (NOT WIN32)
+--- freeglut-3.6.0.orig/include/GL/freeglut_std.h
++++ freeglut-3.6.0/include/GL/freeglut_std.h
+@@ -142,10 +142,8 @@
+ #       define GL_SILENCE_DEPRECATION
+ #   endif
+ #   include <OpenGL/gl.h>
+-#   include <OpenGL/glu.h>
+ #else
+ #   include <GL/gl.h>
+-#   include <GL/glu.h>
+ #endif
+ 
+ /*
+--- freeglut-3.6.0.orig/progs/demos/indexed_color/idxcol.c
++++ freeglut-3.6.0/progs/demos/indexed_color/idxcol.c
+@@ -9,6 +9,7 @@
+  */
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <math.h>
+ #include <GL/freeglut.h>
+ 
+ void display(void);
+@@ -127,11 +128,18 @@
+ 
+ void reshape(int x, int y)
+ {
++	GLdouble zNear  = 0.5;
++	GLdouble zFar   = 500.0;
++	GLdouble top    = tan(50.0 * M_PI / 360.0) * zNear;
++	GLdouble bottom = -top;
++	GLdouble right  = top * x / y;
++	GLdouble left   = -right;
++
+ 	glViewport(0, 0, x, y);
+ 
+ 	glMatrixMode(GL_PROJECTION);
+ 	glLoadIdentity();
+-	gluPerspective(50.0, (float)x / y, 0.5, 500.0);
++	glFrustum(left, right, bottom, top, zNear, zFar);
+ }
+ 
+ void keyb(unsigned char key, int x, int y)
+--- freeglut-3.6.0.orig/progs/demos/resizer/resizer.c
++++ freeglut-3.6.0/progs/demos/resizer/resizer.c
+@@ -248,7 +248,7 @@
+     glViewport(0,0,width,height);
+     glMatrixMode(GL_PROJECTION);
+     glLoadIdentity();
+-    gluOrtho2D(0,width,0,height);
++    glOrtho(0,width,0,height,-1,1);
+ 
+     if (win==nWindow && nChildWindow!=-1)
+     {
+--- freeglut-3.6.0.orig/progs/demos/subwin/subwin.c
++++ freeglut-3.6.0/progs/demos/subwin/subwin.c
+@@ -85,7 +85,6 @@
+ 
+     glMatrixMode(GL_PROJECTION);
+     glLoadIdentity();
+-	/*gluOrtho2D(0, width, 0, height);*/
+ 
+     glMatrixMode(GL_MODELVIEW);
+     glLoadIdentity() ;
+--- freeglut-3.6.0.orig/src/wayland/fg_init_wl.c
++++ freeglut-3.6.0/src/wayland/fg_init_wl.c
+@@ -35,6 +35,35 @@
+ void fgPlatformCloseInputDevices( void );
+ 
+ 
++static void fghOutputGeometry( void *data,
++                               struct wl_output *output,
++                               int x,
++                               int y,
++                               int physical_width,
++                               int physical_height,
++                               int subpixel,
++                               const char* make,
++                               const char* model,
++                               int transform )
++{
++}
++static void fghOutputMode( void* data,
++                           struct wl_output* output,
++                           unsigned int flags,
++                           int width,
++                           int height,
++                           int refresh )
++{
++    fgDisplay.ScreenWidth = width;
++    fgDisplay.ScreenHeight = height;
++}
++static const struct wl_output_listener fghOutputListener =
++{
++    fghOutputGeometry,
++    fghOutputMode,
++};
++
++
+ static void fghRegistryGlobal( void* data,
+                                struct wl_registry* registry,
+                                uint32_t id,
+@@ -43,7 +72,14 @@
+ {
+     SFG_PlatformDisplay* pDisplay = data;
+ 
+-    if ( ! strcmp( interface, "wl_compositor" ) )
++    if ( ! strcmp( interface, "wl_output" ) )
++    {
++      pDisplay->output = wl_registry_bind ( registry, id,
++                                            &wl_output_interface, 1 );
++      wl_output_add_listener ( pDisplay->output,
++                               &fghOutputListener, NULL );
++    }
++    else if ( ! strcmp( interface, "wl_compositor" ) )
+       pDisplay->compositor = wl_registry_bind ( registry, id,
+                                                 &wl_compositor_interface, 1 );
+     else if ( ! strcmp( interface, "wl_shell" ) )
+--- freeglut-3.6.0.orig/src/wayland/fg_internal_wl.h
++++ freeglut-3.6.0/src/wayland/fg_internal_wl.h
+@@ -30,8 +30,8 @@
+ 
+ 
+ /* -- PLATFORM-SPECIFIC INCLUDES ------------------------------------------- */
+-#include "egl/fg_internal_egl.h"
+ #include <wayland-egl.h>
++#include "egl/fg_internal_egl.h"
+ #include <wayland-client.h>
+ #include <wayland-cursor.h>
+ #include <xkbcommon/xkbcommon.h>
+@@ -46,6 +46,7 @@
+ 
+     struct wl_display* display;        /* The display we are being run in    */
+     struct wl_registry* registry;      /* The global interface registry      */
++    struct wl_output* output;          /* The output                         */
+     struct wl_compositor* compositor;  /* The compositor                     */
+     struct wl_shell* shell;            /* The shell, AKA window manager      */
+     struct wl_seat* seat;              /* The seat, references input devices */
+--- freeglut-3.6.0.orig/src/wayland/fg_main_wl.c
++++ freeglut-3.6.0/src/wayland/fg_main_wl.c
+@@ -139,6 +139,7 @@
+ 
+ float fgPlatformGetColor(int idx, int comp)
+ {
++    return -1.0f;
+ }
+ 
+ void fgPlatformCopyColormap(int win)
