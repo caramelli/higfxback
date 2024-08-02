@@ -10,6 +10,11 @@ if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
   REQUIRES="$REQUIRES glfw-build"
 fi
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gtkglarea2-build; then
   GTK2=1
   REQUIRES="$REQUIRES gtkglarea2-build"
@@ -31,7 +36,7 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install yagears $DESTDIR/x11/bin
-test $GLFW || test $GTK2 || test $SDL && install yagears-gui $DESTDIR/x11/bin
+test $GLFW || test $GLUT || test $GTK2 || test $SDL && install yagears-gui $DESTDIR/x11/bin
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -44,7 +49,7 @@ Requires: $REQUIRES
 exec=\\
 /x11/bin/yagears \\
 EOF
-test $GLFW || test $GTK2 || test $SDL && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+test $GLFW || test $GLUT || test $GTK2 || test $SDL && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 
 exit

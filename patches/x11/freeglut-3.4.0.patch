@@ -1,0 +1,205 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build egl-opengl-stubs-build libx11-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/x11/lib/pkgconfig pkg-config --exists libxi-build && REQUIRES="$REQUIRES libxi-build"
+PKG_CONFIG_PATH=/x11/lib/pkgconfig pkg-config --exists libxrandr-build && REQUIRES="$REQUIRES libxrandr-build"
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/x11/lib/pkgconfig cmake -DFREEGLUT_BUILD_STATIC_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/x11/include/GL
+install -m 644 include/GL/freeglut_std.h $DESTDIR/x11/include/GL/glut.h
+install -d $DESTDIR/x11/lib
+install build/lib/libglut.so.3.* $DESTDIR/x11/lib/libglut.so.3
+ln -sf libglut.so.3 $DESTDIR/x11/lib/libglut.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 build/freeglut.pc $DESTDIR/x11/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/glut-build.pc << EOF
+Name: freeglut
+Version: 3.4.0
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GL/glut.h \\
+/x11/lib/libglut.so \\
+/x11/lib/pkgconfig/glut.pc
+
+exec=\\
+/x11/lib/libglut.so.3
+EOF
+
+exit
+--- freeglut-3.4.0.orig/CMakeLists.txt
++++ freeglut-3.4.0/CMakeLists.txt
+@@ -258,23 +258,25 @@
+ 
+ INCLUDE(CheckIncludeFiles)
+ IF(UNIX AND NOT(ANDROID OR BLACKBERRY OR FREEGLUT_WAYLAND))
+-    FIND_PACKAGE(X11 REQUIRED)
+-    INCLUDE_DIRECTORIES(${X11_X11_INCLUDE_PATH})
+-    LIST(APPEND LIBS ${X11_X11_LIB})
++    FIND_PACKAGE(PkgConfig)
++    PKG_CHECK_MODULES(X11 REQUIRED x11)
++    INCLUDE_DIRECTORIES(${X11_INCLUDE_DIRS})
++    LIST(APPEND LIBS ${X11_LINK_LIBRARIES})
++    PKG_CHECK_MODULES(X11_Xrandr xrandr)
+     IF(X11_Xrandr_FOUND)
+         SET(HAVE_X11_EXTENSIONS_XRANDR_H TRUE)
+-        LIST(APPEND LIBS ${X11_Xrandr_LIB})
++        LIST(APPEND LIBS ${X11_Xrandr_LINK_LIBRARIES})
+     ENDIF()
++    PKG_CHECK_MODULES(X11_Xxf86vm xxf86vm)
+     IF(X11_xf86vmode_FOUND)
+         SET(HAVE_X11_EXTENSIONS_XF86VMODE_H TRUE)
+-        LIST(APPEND LIBS ${X11_Xxf86vm_LIB})
++        LIST(APPEND LIBS ${X11_Xxf86vm_LINK_LIBRARIES})
+     ENDIF()
++    PKG_CHECK_MODULES(X11_Xinput xi)
+     IF(X11_Xinput_FOUND)
+         # Needed for multi-touch:
+-        CHECK_INCLUDE_FILES("${X11_Xinput_INCLUDE_PATH}/X11/extensions/XInput2.h" HAVE_X11_EXTENSIONS_XINPUT2_H)
+-        LIST(APPEND LIBS ${X11_Xinput_LIB})
+-    ELSE()
+-        MESSAGE(FATAL_ERROR "Missing X11's XInput2.h (X11/extensions/XInput2.h)")
++        SET(HAVE_X11_EXTENSIONS_XINPUT2_H TRUE)
++        LIST(APPEND LIBS ${X11_Xinput_LINK_LIBRARIES})
+     ENDIF()
+ ENDIF()
+ 
+@@ -304,9 +306,9 @@
+       find_library(OPENGL_glu_LIBRARY NAME GLU HINTS ${X11_LIB_PATH})
+     endif()
+ 
+-    FIND_PACKAGE(OpenGL REQUIRED)
+-    LIST(APPEND LIBS ${OPENGL_gl_LIBRARY})
+-    INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
++    PKG_CHECK_MODULES(OpenGL REQUIRED gl)
++    LIST(APPEND LIBS ${OpenGL_LINK_LIBRARIES})
++    INCLUDE_DIRECTORIES(${OpenGL_INCLUDE_DIRS})
+ ENDIF()
+ 
+ # For Wayland: compile with -DFREEGLUT_WAYLAND and pull EGL
+@@ -547,7 +549,7 @@
+ # Optionally build demos, on by default.
+ option( FREEGLUT_BUILD_DEMOS "Build FreeGLUT demos." ON )
+ 
+-SET(DEMO_LIBS ${OPENGL_glu_LIBRARY} ${LIBS})
++SET(DEMO_LIBS ${LIBS})
+ # lib m for math, not needed on windows
+ IF (NOT WIN32)
+     LIST(APPEND DEMO_LIBS m)
+--- freeglut-3.4.0.orig/include/GL/freeglut_std.h
++++ freeglut-3.4.0/include/GL/freeglut_std.h
+@@ -101,7 +101,6 @@
+ 
+ /* Drag in other Windows libraries as required by FreeGLUT */
+ #   if FREEGLUT_LIB_PRAGMAS
+-#       pragma comment (lib, "glu32.lib")    /* link OpenGL Utility lib     */
+ #       pragma comment (lib, "opengl32.lib") /* link Microsoft OpenGL lib   */
+ #       pragma comment (lib, "gdi32.lib")    /* link Windows GDI lib        */
+ #       pragma comment (lib, "winmm.lib")    /* link Windows MultiMedia lib */
+@@ -138,10 +137,8 @@
+ #   include <GLES2/gl2.h>
+ #elif __APPLE__
+ #   include <OpenGL/gl.h>
+-#   include <OpenGL/glu.h>
+ #else
+ #   include <GL/gl.h>
+-#   include <GL/glu.h>
+ #endif
+ 
+ /*
+--- freeglut-3.4.0.orig/progs/demos/indexed_color/idxcol.c
++++ freeglut-3.4.0/progs/demos/indexed_color/idxcol.c
+@@ -9,6 +9,7 @@
+  */
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <math.h>
+ #include <GL/freeglut.h>
+ 
+ void display(void);
+@@ -127,11 +128,18 @@
+ 
+ void reshape(int x, int y)
+ {
++	GLdouble zNear  = 0.5;
++	GLdouble zFar   = 500.0;
++	GLdouble top    = tan(50.0 * M_PI / 360.0) * zNear;
++	GLdouble bottom = -top;
++	GLdouble right  = top * x / y;
++	GLdouble left   = -right;
++
+ 	glViewport(0, 0, x, y);
+ 
+ 	glMatrixMode(GL_PROJECTION);
+ 	glLoadIdentity();
+-	gluPerspective(50.0, (float)x / y, 0.5, 500.0);
++	glFrustum(left, right, bottom, top, zNear, zFar);
+ }
+ 
+ void keyb(unsigned char key, int x, int y)
+--- freeglut-3.4.0.orig/progs/demos/resizer/resizer.c
++++ freeglut-3.4.0/progs/demos/resizer/resizer.c
+@@ -248,7 +248,7 @@
+     glViewport(0,0,width,height);
+     glMatrixMode(GL_PROJECTION);
+     glLoadIdentity();
+-    gluOrtho2D(0,width,0,height);
++    glOrtho(0,width,0,height,-1,1);
+ 
+     if (win==nWindow && nChildWindow!=-1)
+     {
+--- freeglut-3.4.0.orig/progs/demos/subwin/subwin.c
++++ freeglut-3.4.0/progs/demos/subwin/subwin.c
+@@ -85,7 +85,6 @@
+ 
+     glMatrixMode(GL_PROJECTION);
+     glLoadIdentity();
+-	/*gluOrtho2D(0, width, 0, height);*/
+ 
+     glMatrixMode(GL_MODELVIEW);
+     glLoadIdentity() ;
+--- freeglut-3.4.0.orig/src/x11/fg_internal_x11.h
++++ freeglut-3.4.0/src/x11/fg_internal_x11.h
+@@ -39,7 +39,9 @@
+ #include <X11/Xutil.h>
+ #include <X11/Xatom.h>
+ #include <X11/keysym.h>
+-#include <X11/extensions/XInput.h>
++#ifdef HAVE_X11_EXTENSIONS_XINPUT2_H
++#    include <X11/extensions/XInput.h>
++#endif
+ #ifdef HAVE_X11_EXTENSIONS_XF86VMODE_H
+ #    include <X11/extensions/xf86vmode.h>
+ #endif
+--- freeglut-3.4.0.orig/src/x11/fg_xinput_x11.c
++++ freeglut-3.4.0/src/x11/fg_xinput_x11.c
+@@ -41,12 +41,12 @@
+ 	mask.mask_len = 2;
+ 	mask.mask = flags;
+ 
+-	XISetMask(mask.mask, XI_Enter);
++	/*XISetMask(mask.mask, XI_Enter);
+ 	XISetMask(mask.mask, XI_Motion);
+ 	XISetMask(mask.mask, XI_ButtonPress);
+ 	XISetMask(mask.mask, XI_ButtonRelease);
+ 	XISetMask(mask.mask, XI_Leave);
+-	/*XISetMask(mask.mask, XI_KeyPress);
++	XISetMask(mask.mask, XI_KeyPress);
+ 	XISetMask(mask.mask, XI_KeyRelease);
+ 	XISetMask(mask.mask, XI_DeviceChanged);
+ 	XISetMask(mask.mask, XI_RawEvent);
