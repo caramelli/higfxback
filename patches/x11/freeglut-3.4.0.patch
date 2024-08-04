@@ -17,29 +17,36 @@ cmake --build build
 
 # install
 install -d $DESTDIR/x11/include/GL
-install -m 644 include/GL/freeglut_std.h $DESTDIR/x11/include/GL/glut.h
+install -m 644 include/GL/freeglut_std.h $DESTDIR/x11/include/GL/freeglut.h
+ln -sf freeglut.h $INSTALL_DIR/x11/include/GL/glut.h
 install -d $DESTDIR/x11/lib
-install build/lib/libglut.so.3.* $DESTDIR/x11/lib/libglut.so.3
-ln -sf libglut.so.3 $DESTDIR/x11/lib/libglut.so
+install build/lib/libglut.so.3.* $DESTDIR/x11/lib/libfreeglut.so.3
+ln -sf libfreeglut.so.3 $DESTDIR/x11/lib/libglut.so
+ln -sf libfreeglut.so.3 $DESTDIR/x11/lib/libglut.so.3
 install -d $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/freeglut.pc $DESTDIR/x11/lib/pkgconfig/glut.pc
+install -m 644 build/freeglut.pc $DESTDIR/x11/lib/pkgconfig
+ln -sf freeglut.pc $INSTALL_DIR/x11/lib/pkgconfig/glut.pc
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
-cat > $DESTDIR/x11/share/pkgconfig/glut-build.pc << EOF
+cat > $DESTDIR/x11/share/pkgconfig/freeglut-build.pc << EOF
 Name: freeglut
 Version: 3.4.0
 Description: OpenGL Utility Toolkit
 Requires: $REQUIRES
 
 devel=\\
+/x11/include/GL/freeglut.h \\
 /x11/include/GL/glut.h \\
 /x11/lib/libglut.so \\
+/x11/lib/pkgconfig/freeglut.pc \\
 /x11/lib/pkgconfig/glut.pc
 
 exec=\\
+/x11/lib/libfreeglut.so.3 \\
 /x11/lib/libglut.so.3
 EOF
+ln -sf freeglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
 
 exit
 --- freeglut-3.4.0.orig/CMakeLists.txt
@@ -101,6 +108,17 @@ exit
  # lib m for math, not needed on windows
  IF (NOT WIN32)
      LIST(APPEND DEMO_LIBS m)
+--- freeglut-3.4.0.orig/freeglut.pc.in
++++ freeglut-3.4.0/freeglut.pc.in
+@@ -2,7 +2,7 @@
+ libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+ includedir=${prefix}/include
+ 
+-Name: glut
++Name: FreeGLUT
+ Description: A freely licensed and improved alternative to the GLUT library
+ Version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+ Libs: -L${libdir} -l@PC_LIBNAME@
 --- freeglut-3.4.0.orig/include/GL/freeglut_std.h
 +++ freeglut-3.4.0/include/GL/freeglut_std.h
 @@ -101,7 +101,6 @@

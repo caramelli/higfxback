@@ -14,12 +14,15 @@ cmake --build build
 
 # install
 install -d $DESTDIR/wl/include/GL
-install -m 644 include/GL/freeglut_std.h $DESTDIR/wl/include/GL/glut.h
+install -m 644 include/GL/freeglut_std.h $DESTDIR/wl/include/GL/freeglut.h
+ln -sf freeglut.h $INSTALL_DIR/wl/include/GL/glut.h
 install -d $DESTDIR/wl/lib
-install build/lib/libglut.so.3.* $DESTDIR/wl/lib/libglut.so.3
-ln -sf libglut.so.3 $DESTDIR/wl/lib/libglut.so
+install build/lib/libglut.so.3.* $DESTDIR/wl/lib/libfreeglut.so.3
+ln -sf libfreeglut.so.3 $DESTDIR/wl/lib/libglut.so.3
+ln -sf libfreeglut.so.3 $DESTDIR/wl/lib/libglut.so
 install -d $DESTDIR/wl/lib/pkgconfig
-install -m 644 build/freeglut.pc $DESTDIR/wl/lib/pkgconfig/glut.pc
+install -m 644 build/freeglut.pc $DESTDIR/wl/lib/pkgconfig
+ln -sf freeglut.pc $INSTALL_DIR/wl/lib/pkgconfig/glut.pc
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -30,11 +33,14 @@ Description: OpenGL Utility Toolkit
 Requires: $REQUIRES
 
 devel=\\
+/wl/include/GL/freeglut.h \\
 /wl/include/GL/glut.h \\
 /wl/lib/libglut.so \\
+/wl/lib/pkgconfig/freeglut.pc \\
 /wl/lib/pkgconfig/glut.pc
 
 exec=\\
+/wl/lib/libfreeglut.so.3 \\
 /wl/lib/libglut.so.3
 EOF
 
@@ -111,6 +117,17 @@ exit
  
  # lib m for math, not needed on windows
  IF (NOT WIN32)
+--- freeglut-3.6.0.orig/freeglut.pc.in
++++ freeglut-3.6.0/freeglut.pc.in
+@@ -2,7 +2,7 @@
+ libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+ includedir=${prefix}/include
+ 
+-Name: glut
++Name: FreeGLUT
+ Description: A freely licensed and improved alternative to the GLUT library
+ Version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+ Libs: -L${libdir} -l@PC_LIBNAME@
 --- freeglut-3.6.0.orig/include/GL/freeglut_std.h
 +++ freeglut-3.6.0/include/GL/freeglut_std.h
 @@ -101,7 +101,6 @@

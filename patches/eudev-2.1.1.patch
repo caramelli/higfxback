@@ -1,0 +1,158 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-gudev --prefix= --disable-keymap --disable-static --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/udev/mdevd $DESTDIR/bin
+install src/udev/udevd $DESTDIR/bin
+install src/udev/udevadm $DESTDIR/bin
+ln -sf udevadm $DESTDIR/bin/mdev
+install -d $DESTDIR/etc/udev
+install -m 644 src/udev/udev.conf $DESTDIR/etc/udev
+install -d $DESTDIR/etc/udev/rules.d
+cat > $DESTDIR/etc/udev/rules.d/udev.rules << EOF
+SUBSYSTEM=="input", IMPORT{program}="input_id %p"
+EOF
+install -d $DESTDIR/include
+install -m 644 src/libudev/libudev.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/libudev/.libs/libudev.so.0.* $DESTDIR/lib/libudev.so.0
+ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
+install -d $DESTDIR/lib/udev
+install src/ata_id/ata_id $DESTDIR/lib/udev
+install src/cdrom_id/cdrom_id $DESTDIR/lib/udev
+install src/scsi_id/scsi_id $DESTDIR/lib/udev
+install src/v4l_id/v4l_id $DESTDIR/lib/udev
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/libudev/libudev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
+Name: eudev
+Version: 2.1.1
+Description: Neutral Userspace Device management
+Requires: $REQUIRES
+
+devel=\\
+/include/libudev.h \\
+/lib/libudev.so \\
+/lib/pkgconfig/libudev.pc
+
+exec=\\
+/bin/mdevd \\
+/bin/udevd \\
+/bin/udevadm \\
+/etc/udev/udev.conf \\
+/etc/udev/rules.d/udev.rules \\
+/lib/libudev.so.0 \\
+/lib/udev/ata_id \\
+/lib/udev/cdrom_id \\
+/lib/udev/firmware \\
+/lib/udev/input_id \\
+/lib/udev/path_id \\
+/lib/udev/scsi_id \\
+/lib/udev/usb_id \\
+/lib/udev/v4l_id
+EOF
+ln -sf eudev-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
+
+exit
+--- eudev-2.1.1.orig/configure.ac
++++ eudev-2.1.1/configure.ac
+@@ -164,7 +164,7 @@
+ 
+ # pkgconfigdir paths
+ AC_SUBST([pkgconfiglibdir], [${libdir}/pkgconfig])
+-AC_SUBST([sharepkgconfigdir],[${datadir}/pkgconfig])
++PKG_NOARCH_INSTALLDIR
+ 
+ # gudev paths
+ AC_SUBST([libgudev_includedir],[${includedir}/gudev-1.0/gudev])
+--- eudev-2.1.1.orig/src/libudev/Makefile.am
++++ eudev-2.1.1/src/libudev/Makefile.am
+@@ -1,6 +1,6 @@
+ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+ 
+-LIBUDEV_CURRENT=7
++LIBUDEV_CURRENT=6
+ LIBUDEV_REVISION=0
+ LIBUDEV_AGE=6
+ 
+--- eudev-2.1.1.orig/src/mtd_probe/mtd_probe.h
++++ eudev-2.1.1/src/mtd_probe/mtd_probe.h
+@@ -18,6 +18,7 @@
+  */
+ 
+ #include <mtd/mtd-user.h>
++#include <stdint.h>
+ 
+ /* Full oob structure as written on the flash */
+ struct sm_oob {
+--- eudev-2.1.1.orig/src/udev/Makefile.am
++++ eudev-2.1.1/src/udev/Makefile.am
+@@ -89,7 +89,7 @@
+ dist_udevconf_DATA = \
+ 	udev.conf
+ 
+-sharepkgconfig_DATA = \
++noarch_pkgconfig_DATA = \
+ 	udev.pc
+ 
+ EXTRA_DIST = \
+--- eudev-2.1.1.orig/src/udev/mdevd
++++ eudev-2.1.1/src/udev/mdevd
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++exec udevd -d
+--- eudev-2.1.1.orig/src/udev/udevadm.c
++++ eudev-2.1.1/src/udev/udevadm.c
+@@ -65,7 +65,7 @@
+ static int adm_help(struct udev *udev, int argc, char *argv[]) {
+         unsigned int i;
+ 
+-        fprintf(stderr, "Usage: udevadm [--help] [--version] [--debug] COMMAND [COMMAND OPTIONS]\n");
++        fprintf(stderr, "Usage: udevadm [--help] [--version] [--debug] [--scan] COMMAND [COMMAND OPTIONS]\n");
+         for (i = 0; i < ELEMENTSOF(udevadm_cmds); i++)
+                 if (udevadm_cmds[i]->help != NULL)
+                         printf("  %-12s %s\n", udevadm_cmds[i]->name, udevadm_cmds[i]->help);
+@@ -85,6 +85,7 @@
+         static const struct option options[] = {
+                 { "debug", no_argument, NULL, 'd' },
+                 { "help", no_argument, NULL, 'h' },
++                { "scan", no_argument, NULL, 's' },
+                 { "version", no_argument, NULL, 'V' },
+                 {}
+         };
+@@ -100,7 +101,7 @@
+         udev_set_log_fn(udev, udev_main_log);
+         mac_selinux_init("/dev");
+ 
+-        while ((c = getopt_long(argc, argv, "+dhV", options, NULL)) >= 0)
++        while ((c = getopt_long(argc, argv, "+dhsV", options, NULL)) >= 0)
+                 switch (c) {
+ 
+                 case 'd':
+@@ -112,6 +113,10 @@
+                         rc = adm_help(udev, argc, argv);
+                         goto out;
+ 
++                case 's':
++                        rc = run_command(udev, udevadm_cmds[1], argc, argv);
++                        goto out;
++
+                 case 'V':
+                         rc = adm_version(udev, argc, argv);
+                         goto out;

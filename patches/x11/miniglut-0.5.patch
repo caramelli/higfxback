@@ -1,0 +1,404 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-opengl-stubs-build libx11-build make-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --disable-static --prefix /x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/GL
+install -m 644 miniglut.h $DESTDIR/x11/include/GL
+ln -sf miniglut.h $INSTALL_DIR/x11/include/GL/glut.h
+install -d $DESTDIR/x11/lib
+install libglut.so.3 $DESTDIR/x11/lib/libminiglut.so.3
+ln -sf libminiglut.so.3 $DESTDIR/x11/lib/libglut.so
+ln -sf libminiglut.so.3 $DESTDIR/x11/lib/libglut.so.3
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 glut.pc $DESTDIR/x11/lib/pkgconfig/miniglut.pc
+ln -sf miniglut.pc $INSTALL_DIR/x11/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/miniglut-build.pc << EOF
+Name: miniglut
+Version: 0.5
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GL/miniglut.h \\
+/x11/include/GL/glut.h \\
+/x11/lib/pkgconfig/miniglut.pc \\
+/x11/lib/pkgconfig/glut.pc
+
+exec=\\
+/x11/lib/libminiglut.so.3 \\
+/x11/lib/libglut.so.3
+EOF
+ln -sf miniglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
+
+exit
+--- miniglut-0.5.orig/Configure
++++ miniglut-0.5/Configure
+@@ -0,0 +1,27 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      NOSTATIC=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makefile
+--- miniglut-0.5.orig/Makefile
++++ miniglut-0.5/Makefile
+@@ -1,10 +1,19 @@
+ PREFIX = /usr/local
+ 
++NOSTATIC ?= 
++
+ olib = miniglut.o
+ otest = test.o
+-alib = libminiglut.a
++alib = libglut.a
++solib = libglut.so.3
+ bin = test
+ 
++ifeq "$(NOSTATIC)" ""
++LIB := $(alib)
++else
++LIB := $(solib)
++endif
++
+ CFLAGS = -pedantic -Wall -g
+ 
+ isx86 ?= $(shell uname -m | sed 's/x86_64/x86/; s/i.86/x86/')
+@@ -19,8 +28,13 @@
+ 	LDFLAGS = -mconsole -lopengl32 -lgdi32 -lwinmm
+ else
+ 	ifeq ($(sys)-$(isx86), Linux-x86)
+-		CFLAGS += -I/usr/X11R6/include
+-		LDFLAGS = -L/usr/X11R6/lib -lX11 -lGL
++		CFLAGS += -I$(PREFIX)/include
++		LDFLAGS = -L$(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lGL
++		ifeq "$(NOSTATIC)" "yes"
++		CFLAGS += -fPIC
++		else
++		LDFLAGS += -lX11
++		endif
+ 	else
+ 		# for other UNIX or non-x86 where sys_ and trig functions are not
+ 		# implemented, just use libc
+@@ -32,29 +46,45 @@
+ 	endif
+ endif
+ 
+-$(bin): $(otest) $(alib)
+-	$(CC) -o $@ $(otest) $(alib) $(LDFLAGS)
++$(bin): $(otest) $(LIB) glut.pc
++	$(CC) -o $@ $(otest) $(LIB) $(LDFLAGS)
+ 
+ $(alib): $(olib)
+ 	$(AR) rcs $@ $(olib)
+ 
++$(solib): $(olib)
++	$(CC) -shared -shared -Wl,-soname,$@ $^ -o $@ $(LDFLAGS) -lX11
++
++glut.pc: glut.pc.in
++	@sed 's,@prefix@,$(PREFIX),' glut.pc.in > $@
++
+ %.w32.o: %.c
+ 	$(CC) -o $@ $(CFLAGS) -c $<
+ 
+ .PHONY: clean
+ clean:
+-	rm -f $(alib) $(olib) $(otest) $(bin)
++	rm -f glut.pc $(LIB) $(olib) $(otest) $(bin)
+ 
+ .PHONY: install
+-install: $(alib)
+-	mkdir -p $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib
+-	cp miniglut.h $(DESTDIR)$(PREFIX)/include/miniglut.h
+-	cp $(alib) $(DESTDIR)$(PREFIX)/lib/libminiglut.a
++install: $(LIB) glut.pc
++	mkdir -p $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib/pkgconfig
++	cp miniglut.h $(DESTDIR)$(PREFIX)/include/GL/glut.h
++	chmod 644 $(DESTDIR)$(PREFIX)/include/GL/glut.h
++	cp $(LIB) $(DESTDIR)$(PREFIX)/lib
++	if test -z "$(NOSTATIC)"; then \
++		chmod 644 $(DESTDIR)$(PREFIX)/lib/$(LIB); \
++	else \
++		chmod 755 $(DESTDIR)$(PREFIX)/lib/$(LIB); \
++		ln -sf $(LIB) $(DESTDIR)$(PREFIX)/lib/libglut.so; \
++	fi
++	cp glut.pc $(DESTDIR)$(PREFIX)/lib/pkgconfig
++	chmod 644 $(DESTDIR)$(PREFIX)/lib/pkgconfig/glut.pc
+ 
+ .PHONY: uninstall
+ uninstall:
+-	rm -f $(DESTDIR)$(PREFIX)/include/miniglut.h
+-	rm -f $(DESTDIR)$(PREFIX)/lib/libminiglut.a
++	rm -f $(DESTDIR)$(PREFIX)/include/glut.h
++	rm -f $(DESTDIR)$(PREFIX)/lib/libglut.*
++	rm -f $(DESTDIR)$(PREFIX)/lib/glut.pc
+ 
+ .PHONY: cross
+ cross:
+--- miniglut-0.5.orig/glut.pc.in
++++ miniglut-0.5/glut.pc.in
+@@ -0,0 +1,9 @@
++prefix=@prefix@
++includedir=${prefix}/include
++libdir=${prefix}/lib
++
++Name: MiniGLUT
++Description: Minimal implementation of GLUT (OpenGL Utility Toolkit)
++Version: 0.5
++Libs: -L${libdir} -lglut
++Cflags: -I${includedir}
+--- miniglut-0.5.orig/miniglut.c
++++ miniglut-0.5/miniglut.c
+@@ -119,6 +119,8 @@
+ static int upd_pending;
+ static int modstate;
+ 
++static void *user_data;
++
+ void glutInit(int *argc, char **argv)
+ {
+ #ifdef BUILD_X11
+@@ -198,11 +200,30 @@
+ 	create_window(title);
+ }
+ 
+-void glutExit(void)
++void glutSetWindowData(void *data)
++{
++	user_data = data;
++}
++
++void *glutGetWindowData(void)
++{
++	return user_data;
++}
++
++void glutDestroyWindow(int window)
++{
++	cleanup();
++}
++
++void glutLeaveMainLoop(void)
+ {
+ 	quit = 1;
+ }
+ 
++void glutExit(void)
++{
++}
++
+ void glutMainLoop(void)
+ {
+ 	while(!quit) {
+@@ -489,12 +510,12 @@
+ 	if(!upd_pending && !cb_idle) {
+ 		XNextEvent(dpy, &ev);
+ 		handle_event(&ev);
+-		if(quit) goto end;
++		if(quit) return;
+ 	}
+ 	while(XPending(dpy)) {
+ 		XNextEvent(dpy, &ev);
+ 		handle_event(&ev);
+-		if(quit) goto end;
++		if(quit) return;
+ 	}
+ 
+ 	if(cb_idle) {
+@@ -505,11 +526,6 @@
+ 		upd_pending = 0;
+ 		cb_display();
+ 	}
+-
+-end:
+-	if(quit) {
+-		cleanup();
+-	}
+ }
+ 
+ static void cleanup(void)
+@@ -524,6 +540,48 @@
+ static KeySym translate_keysym(KeySym sym)
+ {
+ 	switch(sym) {
++	case XK_Home:
++		return GLUT_KEY_HOME;
++	case XK_Left:
++		return GLUT_KEY_LEFT + 255;
++	case XK_Up:
++		return GLUT_KEY_UP + 255;
++	case XK_Right:
++		return GLUT_KEY_RIGHT + 255;
++	case XK_Down:
++		return GLUT_KEY_DOWN + 255;
++	case XK_Page_Up:
++		return GLUT_KEY_PAGE_UP + 255;
++	case XK_Page_Down:
++		return GLUT_KEY_PAGE_DOWN + 255;
++	case XK_End:
++		return GLUT_KEY_END + 255;
++	case XK_Insert:
++		return GLUT_KEY_INSERT + 255;
++	case XK_F1:
++		return GLUT_KEY_F1 + 255;
++	case XK_F2:
++		return GLUT_KEY_F2 + 255;
++	case XK_F3:
++		return GLUT_KEY_F3 + 255;
++	case XK_F4:
++		return GLUT_KEY_F4 + 255;
++	case XK_F5:
++		return GLUT_KEY_F5 + 255;
++	case XK_F6:
++		return GLUT_KEY_F6 + 255;
++	case XK_F7:
++		return GLUT_KEY_F7 + 255;
++	case XK_F8:
++		return GLUT_KEY_F8 + 255;
++	case XK_F9:
++		return GLUT_KEY_F9 + 255;
++	case XK_F10:
++		return GLUT_KEY_F10 + 255;
++	case XK_F11:
++		return GLUT_KEY_F11 + 255;
++	case XK_F12:
++		return GLUT_KEY_F12 + 255;
+ 	case XK_Escape:
+ 		return 27;
+ 	case XK_BackSpace:
+@@ -626,9 +684,9 @@
+ 			}
+ 		} else {
+ 			if(ev->type == KeyPress) {
+-				if(cb_skeydown) cb_skeydown(sym, ev->xkey.x, ev->xkey.y);
++				if(cb_skeydown) cb_skeydown(sym - 255, ev->xkey.x, ev->xkey.y);
+ 			} else {
+-				if(cb_skeyup) cb_skeyup(sym, ev->xkey.x, ev->xkey.y);
++				if(cb_skeyup) cb_skeyup(sym - 255, ev->xkey.x, ev->xkey.y);
+ 			}
+ 		}
+ 		break;
+--- miniglut-0.5.orig/miniglut.h
++++ miniglut-0.5/miniglut.h
+@@ -47,20 +47,20 @@
+ #define GLUT_SRGB			0x200
+ 
+ enum { GLUT_LEFT_BUTTON, GLUT_MIDDLE_BUTTON, GLUT_RIGHT_BUTTON };
+-enum { GLUT_UP, GLUT_DOWN };
++enum { GLUT_DOWN, GLUT_UP };
+ enum { GLUT_NOT_VISIBLE, GLUT_VISIBLE };
+ enum { GLUT_LEFT, GLUT_ENTERED };
+ 
+ /* cursors */
+ enum {
+-	GLUT_CURSOR_INHERIT,
+-	GLUT_CURSOR_LEFT_ARROW,
+-	GLUT_CURSOR_NONE
++	GLUT_CURSOR_INHERIT = 0x0064,
++	GLUT_CURSOR_LEFT_ARROW = 0x0001,
++	GLUT_CURSOR_NONE = 0x0065
+ };
+ 
+ /* glutGet */
+ enum {
+-	GLUT_WINDOW_X,
++	GLUT_WINDOW_X = 0x0064,
+ 	GLUT_WINDOW_Y,
+ 	GLUT_WINDOW_WIDTH,
+ 	GLUT_WINDOW_HEIGHT,
+@@ -71,21 +71,21 @@
+ 	GLUT_WINDOW_GREEN_SIZE,
+ 	GLUT_WINDOW_BLUE_SIZE,
+ 	GLUT_WINDOW_ALPHA_SIZE,
+-	GLUT_WINDOW_DOUBLEBUFFER,
++	GLUT_WINDOW_DOUBLEBUFFER = 0x0073,
+ 	GLUT_WINDOW_RGBA,
+-	GLUT_WINDOW_NUM_SAMPLES,
++	GLUT_WINDOW_NUM_SAMPLES = 0x0078,
+ 	GLUT_WINDOW_STEREO,
+-	GLUT_WINDOW_SRGB,
+-	GLUT_WINDOW_CURSOR,
+-	GLUT_SCREEN_WIDTH,
++	GLUT_WINDOW_SRGB = 0x007D,
++	GLUT_WINDOW_CURSOR = 0x007A,
++	GLUT_SCREEN_WIDTH = 0x00C8,
+ 	GLUT_SCREEN_HEIGHT,
+-	GLUT_INIT_DISPLAY_MODE,
+-	GLUT_INIT_WINDOW_X,
++	GLUT_INIT_DISPLAY_MODE = 0x01F8,
++	GLUT_INIT_WINDOW_X = 0x01F4,
+ 	GLUT_INIT_WINDOW_Y,
+ 	GLUT_INIT_WINDOW_WIDTH,
+ 	GLUT_INIT_WINDOW_HEIGHT,
+-	GLUT_ELAPSED_TIME,
+-	GLUT_WINDOW_COLORMAP_SIZE
++	GLUT_ELAPSED_TIME = 0x02BC,
++	GLUT_WINDOW_COLORMAP_SIZE = 0x0077
+ };
+ 
+ enum {
+@@ -95,16 +95,16 @@
+ };
+ 
+ enum {
+-	GLUT_KEY_HOME = 0xff50,
+-	GLUT_KEY_LEFT = 0xff51,
++	GLUT_KEY_HOME = 0x006A,
++	GLUT_KEY_LEFT = 0x0064,
+ 	GLUT_KEY_UP,
+ 	GLUT_KEY_RIGHT,
+ 	GLUT_KEY_DOWN,
+ 	GLUT_KEY_PAGE_UP,
+ 	GLUT_KEY_PAGE_DOWN,
+-	GLUT_KEY_END = 0xff57,
+-	GLUT_KEY_INSERT = 0xff63,
+-	GLUT_KEY_F1 = 0xffbe,
++	GLUT_KEY_END = 0x006B,
++	GLUT_KEY_INSERT,
++	GLUT_KEY_F1 = 0x0001,
+ 	GLUT_KEY_F2,
+ 	GLUT_KEY_F3,
+ 	GLUT_KEY_F4,
+@@ -147,7 +147,8 @@
+ void glutInitWindowPosition(int x, int y);
+ void glutInitWindowSize(int xsz, int ysz);
+ void glutInitDisplayMode(unsigned int mode);
+-void glutCreateWindow(const char *title);
++int  glutCreateWindow(const char *title);
++void glutDestroyWindow(int window);
+ 
+ void glutExit(void);
+ void glutMainLoop(void);

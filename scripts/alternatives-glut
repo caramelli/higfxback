@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ $# != 2 ]; then
+  echo Usage: $0 \"backend\" \"implementation\"
+  exit 1
+fi
+
+test -f /$1/include/GL/${2}glut.h && ln -sf ${2}glut.h /$1/include/GL/glut.h
+test -f /$1/lib/lib${2}glut.so && ln -sf lib${2}glut.so.3 /$1/lib/libglut.so
+test -f /$1/lib/lib${2}glut.so.3 && ln -sf lib${2}glut.so.3 /$1/lib/libglut.so.3
+test -f /$1/lib/pkgconfig/${2}glut.pc && ln -sf ${2}glut.pc /$1/lib/pkgconfig/glut.pc
