@@ -34,6 +34,7 @@ Requires: $REQUIRES
 devel=\\
 /x11/include/GL/miniglut.h \\
 /x11/include/GL/glut.h \\
+/x11/lib/libglut.so \\
 /x11/lib/pkgconfig/miniglut.pc \\
 /x11/lib/pkgconfig/glut.pc
 
@@ -191,8 +192,19 @@ exit
  void glutInit(int *argc, char **argv)
  {
  #ifdef BUILD_X11
-@@ -198,11 +200,30 @@
+@@ -193,16 +195,40 @@
+ 	init_mode = mode;
+ }
+ 
+-void glutCreateWindow(const char *title)
++void glutInitContextProfile(int profile)
++{
++}
++
++int glutCreateWindow(const char *title)
+ {
  	create_window(title);
++	return 1;
  }
  
 -void glutExit(void)
@@ -223,7 +235,7 @@ exit
  void glutMainLoop(void)
  {
  	while(!quit) {
-@@ -489,12 +510,12 @@
+@@ -489,12 +515,12 @@
  	if(!upd_pending && !cb_idle) {
  		XNextEvent(dpy, &ev);
  		handle_event(&ev);
@@ -238,7 +250,7 @@ exit
  	}
  
  	if(cb_idle) {
-@@ -505,11 +526,6 @@
+@@ -505,11 +531,6 @@
  		upd_pending = 0;
  		cb_display();
  	}
@@ -250,7 +262,7 @@ exit
  }
  
  static void cleanup(void)
-@@ -524,6 +540,48 @@
+@@ -524,6 +545,48 @@
  static KeySym translate_keysym(KeySym sym)
  {
  	switch(sym) {
@@ -299,7 +311,7 @@ exit
  	case XK_Escape:
  		return 27;
  	case XK_BackSpace:
-@@ -626,9 +684,9 @@
+@@ -626,9 +689,9 @@
  			}
  		} else {
  			if(ev->type == KeyPress) {

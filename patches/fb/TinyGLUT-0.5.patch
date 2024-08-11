@@ -1,0 +1,56 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/include/GL
+install -m 644 glut.h $DESTDIR/fb/include/GL/tinyglut.h
+ln -sf tinyglut.h $INSTALL_DIR/fb/include/GL/glut.h
+install -d $DESTDIR/fb/lib
+install .libs/libglut.so.3.* $DESTDIR/fb/lib/libtinyglut.so.3
+ln -sf libtinyglut.so.3 $DESTDIR/fb/lib/libglut.so
+ln -sf libtinyglut.so.3 $DESTDIR/fb/lib/libglut.so.3
+install -d $DESTDIR/fb/lib/glut/backends
+install .libs/egl_plugin.so $DESTDIR/fb/lib/glut/backends
+install .libs/glfbdev_plugin.so $DESTDIR/fb/lib/glut/backends
+install -d $DESTDIR/fb/lib/glut/platforms
+install .libs/fbdev_plugin.so $DESTDIR/fb/lib/glut/platforms
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 glut.pc $DESTDIR/fb/lib/pkgconfig/tinyglut.pc
+ln -sf tinyglut.pc $INSTALL_DIR/fb/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/tinyglut-build.pc << EOF
+Name: TinyGLUT
+Version: 0.5
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/GL/tinyglut.h \\
+/fb/include/GL/glut.h \\
+/fb/lib/libglut.so \\
+/fb/lib/glut/backends/egl_plugin.so \\
+/fb/lib/glut/backends/glfbdev_plugin.so \\
+/fb/lib/glut/platforms/fbdev_plugin.so \\
+/fb/lib/pkgconfig/tinyglut.pc \\
+/fb/lib/pkgconfig/glut.pc
+
+exec=\\
+/fb/lib/libtinyglut.so.3 \\
+/fb/lib/libglut.so.3
+EOF
+ln -sf tinyglut-build.pc $DESTDIR/fb/share/pkgconfig/glut-build.pc
+
+exit

@@ -32,6 +32,7 @@ make
 install -d $DESTDIR/wl/bin
 install yagears $DESTDIR/wl/bin
 test $GLFW || test $GLUT || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
+test $GLUT && install yagears-mosaic $DESTDIR/wl/bin
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -45,6 +46,7 @@ exec=\\
 /wl/bin/yagears \\
 EOF
 test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+test $GLUT && echo /wl/bin/yagears-mosaic \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 
 exit
@@ -83,7 +85,28 @@ exit
  
 --- yagears-1.1.orig/gui.cc
 +++ yagears-1.1/gui.cc
-@@ -1229,6 +1229,7 @@
+@@ -37,8 +37,12 @@
+ #include <GLFW/glfw3.h>
+ #endif
+ #if defined(GLUT)
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
+ #include <GL/glut.h>
+ extern "C" {
++void glutInitContextProfile(int);
+ void glutLeaveMainLoop();
+ void glutExit();
+ }
+@@ -1178,6 +1182,7 @@
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+     glutInitWindowSize(win_width, win_height);
+     glutInitWindowPosition(win_posx, win_posy);
++    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
+     glut_win = glutCreateWindow("yagears");
+     glutDisplayFunc(glutDisplay);
+     glutIdleFunc(glutIdle);
+@@ -1229,6 +1234,7 @@
    #if defined(SDL)
    if (!strcmp(toolkit, "sdl")) {
      #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -91,7 +114,7 @@ exit
      sdl_win = SDL_CreateWindow("yagears", win_posx, win_posy, win_width, win_height, SDL_WINDOW_OPENGL);
      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gears_engine_version(gears_engine));
      SDL_GL_CreateContext(sdl_win);
-@@ -1331,7 +1332,7 @@
+@@ -1331,7 +1337,7 @@
          SDL_Idle();
          #endif
        SDL_Event event;
@@ -303,3 +326,24 @@ exit
          gbm_device_destroy(drm_dpy);
        }
      }
+--- yagears-1.1.orig/mosaic.c
++++ yagears-1.1/mosaic.c
+@@ -24,6 +24,10 @@
+ #include "config.h"
+ 
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++void glutInitContextProfile(int);
+ void glutSetWindowData(void *data);
+ void *glutGetWindowData();
+ void glutLeaveMainLoop();
+@@ -196,6 +200,7 @@
+     for (j = 0; j < COLS; j++) {
+       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
+       glutInitWindowPosition(win_posx, win_posy);
++      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
+       glut_win[i * COLS + j] = glutCreateWindow(NULL);
+       glutSetWindowData((void *)(long)(i * COLS + j));
+       glutDisplayFunc(glutDisplay);

@@ -191,6 +191,41 @@ exit
  
      glMatrixMode(GL_MODELVIEW);
      glLoadIdentity() ;
+--- freeglut-3.4.0.orig/src/fg_init.c
++++ freeglut-3.4.0/src/fg_init.c
+@@ -79,7 +79,7 @@
+                       { -1, -1, GL_TRUE },    /* GameModeSize */
+                       -1,                     /* GameModeDepth */
+                       -1,                     /* GameModeRefresh */
+-                      GLUT_ACTION_EXIT,       /* ActionOnWindowClose */
++                      GLUT_ACTION_GLUTMAINLOOP_RETURNS, /* ActionOnWindowClose */
+                       GLUT_EXEC_STATE_INIT,   /* ExecState */
+                       NULL,                   /* ProgramName */
+                       GL_FALSE,               /* JoysticksInitialised */
+@@ -288,7 +288,7 @@
+     fgState.UseCurrentContext   = GL_FALSE;
+     fgState.GLDebugSwitch       = GL_FALSE;
+     fgState.XSyncSwitch         = GL_FALSE;
+-    fgState.ActionOnWindowClose = GLUT_ACTION_EXIT;
++    fgState.ActionOnWindowClose = GLUT_ACTION_GLUTMAINLOOP_RETURNS;
+     fgState.ExecState           = GLUT_EXEC_STATE_INIT;
+ 
+     fgState.KeyRepeat       = GLUT_KEY_REPEAT_ON;
+--- freeglut-3.4.0.orig/src/fg_main.c
++++ freeglut-3.4.0/src/fg_main.c
+@@ -523,9 +523,11 @@
+      * Save the "ActionOnWindowClose" because "fgDeinitialize" resets it.
+      */
+     action = fgState.ActionOnWindowClose;
+-    fgDeinitialize( );
+     if( action == GLUT_ACTION_EXIT )
++    {
++        fgDeinitialize( );
+         exit( 0 );
++    }
+ }
+ 
+ /*
 --- freeglut-3.4.0.orig/src/x11/fg_internal_x11.h
 +++ freeglut-3.4.0/src/x11/fg_internal_x11.h
 @@ -39,7 +39,9 @@

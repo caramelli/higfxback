@@ -5,6 +5,11 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-b
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
 # configure (ac-2.69; am-1.13; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-glesv1-cm --prefix=/fb
@@ -15,6 +20,8 @@ make
 # install
 install -d $DESTDIR/fb/bin
 install yagears $DESTDIR/fb/bin
+test $GLUT && install yagears-gui $DESTDIR/fb/bin
+test $GLUT && install yagears-mosaic $DESTDIR/fb/bin
 
 # build.pc
 install -d $DESTDIR/fb/share/pkgconfig
@@ -25,8 +32,11 @@ Description: Yet Another Gears OpenGL demo
 Requires: $REQUIRES
 
 exec=\\
-/fb/bin/yagears
+/fb/bin/yagears \\
 EOF
+test $GLUT && echo /fb/bin/yagears-gui \\ >> $DESTDIR/fb/share/pkgconfig/yagears-build.pc
+test $GLUT && echo /fb/bin/yagears-mosaic \\ >> $DESTDIR/fb/share/pkgconfig/yagears-build.pc
+sed -i '$ s/ \\//' $DESTDIR/fb/share/pkgconfig/yagears-build.pc
 
 exit
 --- yagears-0.8.orig/configure.ac
@@ -84,6 +94,31 @@ exit
          AC_MSG_RESULT(yes)
          PKG_CHECK_MODULES(DRM, libdrm libevdev,
                            AC_DEFINE(EGL_DRM, 1, Support for EGL with DRM platform),
+--- yagears-0.8.orig/gui.cc
++++ yagears-0.8/gui.cc
+@@ -35,6 +35,14 @@
+ #endif
+ #if defined(GLUT)
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++extern "C" {
++void glutInitContextProfile(int);
++void glutLeaveMainLoop();
++void glutExit();
++}
+ #endif
+ #if defined(GTK)
+ #include <gtk/gtkgl.h>
+@@ -659,6 +667,7 @@
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+     glutInitWindowSize(win_width, win_height);
+     glutInitWindowPosition(win_posx, win_posy);
++    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
+     glut_win = glutCreateWindow(NULL);
+     glutDisplayFunc(glutDisplay);
+     glutIdleFunc(glutIdle);
 --- yagears-0.8.orig/main.c
 +++ yagears-0.8/main.c
 @@ -39,6 +39,9 @@
@@ -114,3 +149,49 @@ exit
      fb_win = calloc(1, sizeof(struct fb_window));
      if (!fb_win) {
        printf("fb_window calloc failed: %s\n", strerror(errno));
+--- yagears-0.8.orig/mosaic.c
++++ yagears-0.8/mosaic.c
+@@ -22,6 +22,14 @@
+ */
+ 
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++void glutInitContextProfile(int);
++void glutSetWindowData(void *data);
++void *glutGetWindowData();
++void glutLeaveMainLoop();
++void glutExit();
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -78,7 +86,7 @@
+ 
+ static void glutDisplay()
+ {
+-  int n = (int)glutGetWindowData();
++  int n = (long)glutGetWindowData();
+ 
+   if (animate) { if (frames) rotate(n); else t_rate = t_rot = current_time(); }
+   gears_engine_draw(gears_engine[n], view_tz[n], view_rx[n], view_ry[n], model_rz[n]);
+@@ -117,7 +125,7 @@
+ 
+ static void glutSpecial(int key, int x, int y)
+ {
+-  int n = (int)glutGetWindowData();
++  int n = (long)glutGetWindowData();
+ 
+   switch (key) {
+     case GLUT_KEY_PAGE_DOWN:
+@@ -192,8 +200,9 @@
+     for (j = 0; j < COLS; j++) {
+       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
+       glutInitWindowPosition(win_posx, win_posy);
++      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
+       glut_win[i * COLS + j] = glutCreateWindow(NULL);
+-      glutSetWindowData((void *)(i * COLS + j));
++      glutSetWindowData((void *)(long)(i * COLS + j));
+       glutDisplayFunc(glutDisplay);
+       glutIdleFunc(glutIdle);
+       glutKeyboardFunc(glutKeyboard);

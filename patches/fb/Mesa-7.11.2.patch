@@ -3,7 +3,7 @@
 # requires
 REQUIRES="autotools-wrappers-ac-build bison-build gcc-g++-build libxml2-build makedepend-build opengl-registry-build"
 
-pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68)
 cat m4/* acinclude.m4 > aclocal.m4; autoconf
@@ -386,6 +386,16 @@ exit
  egl_LIBS += $(TOP)/src/gallium/winsys/sw/fbdev/libfbdev.a
  endif
  
+--- Mesa-7.11.2.orig/src/gallium/targets/egl-static/egl.c
++++ Mesa-7.11.2/src/gallium/targets/egl-static/egl.c
+@@ -32,6 +32,7 @@
+ 
+ #ifdef HAVE_LIBUDEV
+ #include <stdio.h>
++#include <sys/stat.h>
+ #include <libudev.h>
+ #define DRIVER_MAP_GALLIUM_ONLY
+ #include "pci_ids/pci_id_driver_map.h"
 --- Mesa-7.11.2.orig/src/mesa/drivers/fbdev/Makefile
 +++ Mesa-7.11.2/src/mesa/drivers/fbdev/Makefile
 @@ -5,6 +5,11 @@
@@ -416,7 +426,32 @@ exit
  clean:
 --- Mesa-7.11.2.orig/src/mesa/drivers/fbdev/glfbdev.c
 +++ Mesa-7.11.2/src/mesa/drivers/fbdev/glfbdev.c
-@@ -272,7 +272,7 @@
+@@ -62,6 +62,13 @@
+ #include "tnl/t_pipeline.h"
+ #include "drivers/common/driverfuncs.h"
+ 
++struct fb_window {
++  int width;
++  int height;
++  int posx;
++  int posy;
++};
++
+ 
+ /**
+  * Pixel formats we support:
+@@ -112,6 +119,10 @@
+    struct gl_renderbuffer Base;
+    GLubyte *bottom;                /* pointer to last row */
+    GLuint rowStride;               /* in bytes */
++   GLuint winWidth;
++   GLuint winHeight;
++   GLuint winPosx;
++   GLuint winPosy;
+    GLboolean mallocedBuffer;
+ };
+ 
+@@ -272,7 +283,7 @@
  /**********************************************************************/
  
  
@@ -425,7 +460,7 @@ exit
  glFBDevGetString( int str )
  {
     switch (str) {
-@@ -280,13 +280,15 @@
+@@ -280,13 +291,15 @@
        return "Mesa Project";
     case GLFBDEV_VERSION:
        return "1.0.1";
@@ -442,7 +477,7 @@ exit
  glFBDevGetProcAddress( const char *procName )
  {
     struct name_address {
-@@ -310,6 +312,7 @@
+@@ -310,6 +323,7 @@
        { "glFBDevGetContextAttrib", (GLFBDevProc) glFBDevGetContextAttrib },
        { "glFBDevGetCurrentContext", (GLFBDevProc) glFBDevGetCurrentContext },
        { "glFBDevMakeCurrent", (GLFBDevProc) glFBDevMakeCurrent },
@@ -450,7 +485,7 @@ exit
        { NULL, NULL }
     };
     const struct name_address *entry;
-@@ -322,7 +325,7 @@
+@@ -322,7 +336,7 @@
  }
  
  
@@ -459,7 +494,7 @@ exit
  glFBDevCreateVisual( const struct fb_fix_screeninfo *fixInfo,
                       const struct fb_var_screeninfo *varInfo,
                       const int *attribs )
-@@ -384,6 +387,9 @@
+@@ -384,6 +398,9 @@
     greenBits = varInfo->green.length;
     blueBits  = varInfo->blue.length;
     alphaBits = varInfo->transp.length;
@@ -469,7 +504,7 @@ exit
  
     if (fixInfo->visual == FB_VISUAL_TRUECOLOR ||
         fixInfo->visual == FB_VISUAL_DIRECTCOLOR) {
-@@ -433,7 +439,7 @@
+@@ -433,7 +450,7 @@
  }
  
  
@@ -478,7 +513,7 @@ exit
  glFBDevDestroyVisual( GLFBDevVisualPtr visual )
  {
     if (visual)
-@@ -441,13 +447,15 @@
+@@ -441,13 +458,15 @@
  }
  
  
@@ -499,7 +534,18 @@ exit
  }
  
  
-@@ -547,7 +555,7 @@
+@@ -528,6 +547,10 @@
+       rb->Base.DataType = GL_UNSIGNED_BYTE;
+       rb->Base.Data = bufferStart;
+ 
++      rb->winPosx = 0;
++      rb->winPosy = 0;
++      rb->winWidth = visual->var.xres;
++      rb->winHeight = visual->var.yres;
+       rb->rowStride = visual->var.xres_virtual * visual->var.bits_per_pixel / 8;
+       rb->bottom = (GLubyte *) bufferStart
+                  + (visual->var.yres - 1) * rb->rowStride;
+@@ -547,7 +570,7 @@
     return rb;
  }
  
@@ -508,7 +554,7 @@ exit
  glFBDevCreateBuffer( const struct fb_fix_screeninfo *fixInfo,
                       const struct fb_var_screeninfo *varInfo,
                       const GLFBDevVisualPtr visual,
-@@ -629,7 +637,7 @@
+@@ -629,7 +652,7 @@
  }
  
  
@@ -517,7 +563,7 @@ exit
  glFBDevDestroyBuffer( GLFBDevBufferPtr buffer )
  {
     if (buffer) {
-@@ -647,7 +655,7 @@
+@@ -647,7 +670,7 @@
  }
  
  
@@ -526,7 +572,7 @@ exit
  glFBDevGetBufferAttrib( const GLFBDevBufferPtr buffer, int attrib)
  {
     (void) buffer;
-@@ -656,7 +664,7 @@
+@@ -656,7 +679,7 @@
  }
  
  
@@ -535,7 +581,7 @@ exit
  glFBDevGetCurrentDrawBuffer( void )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -667,7 +675,7 @@
+@@ -667,7 +690,7 @@
  }
  
  
@@ -544,7 +590,7 @@ exit
  glFBDevGetCurrentReadBuffer( void )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -678,7 +686,7 @@
+@@ -678,7 +701,7 @@
  }
  
  
@@ -553,7 +599,26 @@ exit
  glFBDevSwapBuffers( GLFBDevBufferPtr buffer )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -702,7 +710,7 @@
+@@ -686,8 +709,9 @@
+       buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
+    struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)
+       buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
++   int i;
+ 
+-   if (!buffer || !buffer->visual->glvisual.doubleBufferMode)
++   if (!buffer || !backrb)
+       return;
+ 
+    /* check if swapping currently bound buffer */
+@@ -698,11 +722,14 @@
+ 
+    ASSERT(frontrb->Base.Data);
+    ASSERT(backrb->Base.Data);
+-   memcpy(frontrb->Base.Data, backrb->Base.Data, buffer->size);
++   for (i = 0; i < frontrb->winHeight; i++)
++      memcpy(frontrb->Base.Data + (frontrb->winPosy + i) * frontrb->rowStride + frontrb->winPosx * buffer->bytesPerPixel,
++             backrb->Base.Data + (backrb->winHeight - frontrb->winHeight + i) * backrb->rowStride,
++             frontrb->winWidth * buffer->bytesPerPixel);
  }
  
  
@@ -562,7 +627,7 @@ exit
  glFBDevCreateContext( const GLFBDevVisualPtr visual, GLFBDevContextPtr share )
  {
     GLFBDevContextPtr ctx;
-@@ -756,7 +764,7 @@
+@@ -756,7 +783,7 @@
  }
  
  
@@ -571,7 +636,7 @@ exit
  glFBDevDestroyContext( GLFBDevContextPtr context )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -779,7 +787,7 @@
+@@ -779,7 +806,7 @@
  }
  
  
@@ -580,7 +645,7 @@ exit
  glFBDevGetContextAttrib( const GLFBDevContextPtr context, int attrib)
  {
     (void) context;
-@@ -788,7 +796,7 @@
+@@ -788,7 +815,7 @@
  }
  
  
@@ -589,7 +654,7 @@ exit
  glFBDevGetCurrentContext( void )
  {
     GET_CURRENT_CONTEXT(ctx);
-@@ -796,7 +804,7 @@
+@@ -796,7 +823,7 @@
  }
  
  
@@ -598,13 +663,28 @@ exit
  glFBDevMakeCurrent( GLFBDevContextPtr context,
                      GLFBDevBufferPtr drawBuffer,
                      GLFBDevBufferPtr readBuffer )
-@@ -825,4 +833,9 @@
+@@ -825,4 +852,24 @@
     return 1;
  }
  
++
 +void PUBLIC
 +glFBDevSetWindow( GLFBDevBufferPtr buffer, void *window )
 +{
++   struct GLFBDevRenderbufferRec *frontrb = (struct GLFBDevRenderbufferRec *)buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
++   struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
++   struct fb_window *win = (struct fb_window *)window;
++
++   if (!frontrb)
++      return;
++
++   if (win->width + win->posx <= backrb->winWidth)
++      frontrb->winWidth = win->width;
++   else
++      frontrb->winWidth = backrb->winWidth - win->posx;
++   frontrb->winHeight = win->height;
++   frontrb->winPosx = win->posx;
++   frontrb->winPosy = win->posy;
 +}
 +
  #endif /* USE_GLFBDEV_DRIVER */

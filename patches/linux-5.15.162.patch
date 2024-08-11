@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="bc-build bison-build elfutils-build gcc-g++-build make-build ncurses-build openssl-build"
+REQUIRES="bison-build elfutils-build findutils-build gcc-g++-build make-build ncurses-build openssl-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -13,7 +13,7 @@ make
 
 # install
 install -d $DESTDIR/boot
-install arch/`uname -m`/boot/bzImage $DESTDIR/bin
+install arch/`uname -m`/boot/bzImage $DESTDIR/boot
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -35,3 +35,13 @@ exit
 +CONFIG_DRM_SIMPLEDRM=y
 +CONFIG_FB=y
 +CONFIG_FB_VESA=y
+--- linux-5.15.162.orig/drivers/video/fbdev/core/fbcon.c
++++ linux-5.15.162/drivers/video/fbdev/core/fbcon.c
+@@ -2117,6 +2117,7 @@
+ 	 */
+ 	info->var.activate = var.activate;
+ 	var.vmode |= info->var.vmode & ~FB_VMODE_MASK;
++	memcpy(var.reserved, info->var.reserved, sizeof(var.reserved));
+ 	fb_set_var(info, &var);
+ 	ops->var = info->var;
+ 

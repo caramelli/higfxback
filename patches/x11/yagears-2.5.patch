@@ -37,12 +37,12 @@ if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
   REQUIRES="$REQUIRES glfw-build"
 fi
 
-if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glut-build; then
+if test $GL && PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glut-build; then
   GLUT=1
   REQUIRES="$REQUIRES glut-build"
 fi
 
-if test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gtkglarea2-build; then
+if test $GL && PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists gtkglarea2-build; then
   GTK2=1
   REQUIRES="$REQUIRES gtkglarea2-build"
 fi
@@ -64,6 +64,7 @@ meson compile -C build
 install -d $DESTDIR/x11/bin
 test $GL && install build/yagears2 $DESTDIR/x11/bin
 test $GL && test $GLFW || test $GLUT || test $GTK2 || test $SDL2 && install build/yagears2-gui $DESTDIR/x11/bin
+test $GLUT && install build/yagears2-mosaic $DESTDIR/x11/bin
 test $VK && install build/yagears2-vk $DESTDIR/x11/bin
 test $VK && test $GLFW || test $SDL2 && install build/yagears2-vk-gui $DESTDIR/x11/bin
 
@@ -79,6 +80,7 @@ exec=\\
 EOF
 test $GL && echo /x11/bin/yagears2 \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 test $GL && test $GLFW || test $GLUT || test $GTK2 || test $SDL2 && echo /x11/bin/yagears2-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $GLUT && echo /x11/bin/yagears2-mosaic \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 test $VK && echo /x11/bin/yagears2-vk \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 test $VK && test $GLFW || test $SDL2 && echo /x11/bin/yagears2-vk-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
@@ -403,7 +405,27 @@ exit
  AC_OUTPUT(Makefile)
 --- yagears-2.5.orig/gui.cc
 +++ yagears-2.5/gui.cc
-@@ -1229,6 +1229,7 @@
+@@ -38,7 +38,11 @@
+ #endif
+ #if defined(GLUT)
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
+ extern "C" {
++void glutInitContextProfile(int);
+ void glutLeaveMainLoop();
+ void glutExit();
+ }
+@@ -1178,6 +1182,7 @@
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+     glutInitWindowSize(win_width, win_height);
+     glutInitWindowPosition(win_posx, win_posy);
++    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
+     glut_win = glutCreateWindow("yagears");
+     glutDisplayFunc(glutDisplay);
+     glutIdleFunc(glutIdle);
+@@ -1229,6 +1234,7 @@
    #if defined(SDL)
    if (!strcmp(toolkit, "sdl")) {
      #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -960,3 +982,24 @@ exit
             dependencies: [vulkan_dep, png_dep, tiff_dep, glfw_dep, sdl_dep],
             install: true)
  endif
+--- yagears-2.5.orig/mosaic.c
++++ yagears-2.5/mosaic.c
+@@ -24,6 +24,10 @@
+ #include "config.h"
+ 
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++void glutInitContextProfile(int);
+ void glutSetWindowData(void *data);
+ void *glutGetWindowData();
+ void glutLeaveMainLoop();
+@@ -196,6 +200,7 @@
+     for (j = 0; j < COLS; j++) {
+       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
+       glutInitWindowPosition(win_posx, win_posy);
++      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
+       glut_win[i * COLS + j] = glutCreateWindow(NULL);
+       glutSetWindowData((void *)(long)(i * COLS + j));
+       glutDisplayFunc(glutDisplay);
