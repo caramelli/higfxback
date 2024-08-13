@@ -1,0 +1,502 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build glu-build libxi-build libxmu-build makedepend-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69)
+cat m4/* acinclude.m4 > aclocal.m4; autoconf
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/GL
+install -m 644 include/GL/glut.h $DESTDIR/x11/include/GL/mesaglut.h
+ln -sf mesaglut.h $INSTALL_DIR/x11/include/GL/glut.h
+install -d $DESTDIR/x11/lib
+install lib/libglut.so.3.* $DESTDIR/x11/lib/libmesaglut.so.3
+ln -sf libmesaglut.so.3 $DESTDIR/x11/lib/libglut.so
+ln -sf libmesaglut.so.3 $DESTDIR/x11/lib/libglut.so.3
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 src/glut/glx/glut.pc $DESTDIR/x11/lib/pkgconfig/mesaglut.pc
+ln -sf mesaglut.pc $INSTALL_DIR/x11/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/mesaglut-build.pc << EOF
+Name: MesaGLUT
+Version: 20130123
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GL/glut.h \\
+/x11/include/GL/mesaglut.h \\
+/x11/lib/libglut.so \\
+/x11/lib/pkgconfig/glut.pc \\
+/x11/lib/pkgconfig/mesaglut.pc
+
+exec=\\
+/x11/lib/libglut.so.3 \\
+/x11/lib/libmesaglut.so.3
+EOF
+ln -sf mesaglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
+
+exit
+--- MesaGLUT-20130123.orig/configs/autoconf.in
++++ MesaGLUT-20130123/configs/autoconf.in
+@@ -75,6 +75,7 @@
+ 
+ # Library/program dependencies
+ GL_LIB_DEPS = $(EXTRA_LIB_PATH) @GL_LIB_DEPS@
++GLUT_LIB_DEPS = $(EXTRA_LIB_PATH) -l$(GLU_LIB) -l$(GL_LIB) @GLUT_LIB_DEPS@
+ 
+ # Autoconf directories
+ prefix = @prefix@
+--- MesaGLUT-20130123.orig/configure.ac
++++ MesaGLUT-20130123/configure.ac
+@@ -373,8 +373,8 @@
+ dnl GLUT configuration
+ dnl
+ SRC_DIRS="$SRC_DIRS glut/glx"
++PKG_CHECK_MODULES([GLUT],[x11 xmu xi],x11_pkgconfig=yes,x11_pkgconfig=no)
+ if test "$x11_pkgconfig" = yes; then
+-    PKG_CHECK_MODULES([GLUT],[x11 xmu xi])
+     GLUT_PC_REQ_PRIV="x11 xmu xi"
+     GLUT_LIB_DEPS="$GLUT_LIBS"
+ else
+--- MesaGLUT-20130123.orig/include/GL/glut.h
++++ MesaGLUT-20130123/include/GL/glut.h
+@@ -15,7 +15,6 @@
+ #endif
+ 
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -31,11 +30,9 @@
+    define GLUT_USE_SGI_OPENGL in your compile preprocessor options.  */
+ #  ifdef GLUT_USE_SGI_OPENGL
+ #   pragma comment (lib, "opengl.lib")    /* link with SGI OpenGL for Windows lib */
+-#   pragma comment (lib, "glu.lib")       /* link with SGI OpenGL Utility lib */
+ #   pragma comment (lib, "glut.lib")      /* link with Win32 GLUT for SGI OpenGL lib */
+ #  else
+ #   pragma comment (lib, "opengl32.lib")  /* link with Microsoft OpenGL lib */
+-#   pragma comment (lib, "glu32.lib")     /* link with Microsoft OpenGL Utility lib */
+ #   pragma comment (lib, "glut32.lib")    /* link with Win32 GLUT lib */
+ #  endif
+ # endif
+@@ -449,6 +446,7 @@
+ 
+ /* GLUT initialization sub-API. */
+ GLUTAPI void GLUTAPIENTRY glutInit(int *argcp, char **argv);
++GLUTAPI void GLUTAPIENTRY glutExit(void);
+ #if defined(_WIN32) && !defined(GLUT_DISABLE_ATEXIT_HACK)
+ GLUTAPI void GLUTAPIENTRY __glutInitWithExit(int *argcp, char **argv, void (__cdecl *exitfunc)(int));
+ #ifndef GLUT_BUILDING_LIB
+@@ -462,6 +460,7 @@
+ GLUTAPI void GLUTAPIENTRY glutInitWindowPosition(int x, int y);
+ GLUTAPI void GLUTAPIENTRY glutInitWindowSize(int width, int height);
+ GLUTAPI void GLUTAPIENTRY glutMainLoop(void);
++GLUTAPI void GLUTAPIENTRY glutLeaveMainLoop(void);
+ 
+ /* GLUT window sub-API. */
+ GLUTAPI int GLUTAPIENTRY glutCreateWindow(const char *title);
+@@ -480,6 +479,8 @@
+ GLUTAPI void GLUTAPIENTRY glutSwapBuffers(void);
+ GLUTAPI int GLUTAPIENTRY glutGetWindow(void);
+ GLUTAPI void GLUTAPIENTRY glutSetWindow(int win);
++GLUTAPI void *GLUTAPIENTRY glutGetWindowData(void);
++GLUTAPI void GLUTAPIENTRY glutSetWindowData(void *data);
+ GLUTAPI void GLUTAPIENTRY glutSetWindowTitle(const char *title);
+ GLUTAPI void GLUTAPIENTRY glutSetIconTitle(const char *title);
+ GLUTAPI void GLUTAPIENTRY glutPositionWindow(int x, int y);
+--- MesaGLUT-20130123.orig/m4/pkg.m4
++++ MesaGLUT-20130123/m4/pkg.m4
+@@ -0,0 +1,157 @@
++# pkg.m4 - Macros to locate and utilise pkg-config.            -*- Autoconf -*-
++# serial 1 (pkg-config-0.24)
++# 
++# Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
++#
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 2 of the License, or
++# (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++# General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++#
++# As a special exception to the GNU General Public License, if you
++# distribute this file as part of a program that contains a
++# configuration script generated by Autoconf, you may include it under
++# the same distribution terms that you use for the rest of that program.
++
++# PKG_PROG_PKG_CONFIG([MIN-VERSION])
++# ----------------------------------
++AC_DEFUN([PKG_PROG_PKG_CONFIG],
++[m4_pattern_forbid([^_?PKG_[A-Z_]+$])
++m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
++AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])
++AC_ARG_VAR([PKG_CONFIG_PATH], [directories to add to pkg-config's search path])
++AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's built-in search path])
++
++if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
++	AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
++fi
++if test -n "$PKG_CONFIG"; then
++	_pkg_min_version=m4_default([$1], [0.9.0])
++	AC_MSG_CHECKING([pkg-config is at least version $_pkg_min_version])
++	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
++		AC_MSG_RESULT([yes])
++	else
++		AC_MSG_RESULT([no])
++		PKG_CONFIG=""
++	fi
++fi[]dnl
++])# PKG_PROG_PKG_CONFIG
++
++# PKG_CHECK_EXISTS(MODULES, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
++#
++# Check to see whether a particular set of modules exists.  Similar
++# to PKG_CHECK_MODULES(), but does not set variables or print errors.
++#
++# Please remember that m4 expands AC_REQUIRE([PKG_PROG_PKG_CONFIG])
++# only at the first occurence in configure.ac, so if the first place
++# it's called might be skipped (such as if it is within an "if", you
++# have to call PKG_CHECK_EXISTS manually
++# --------------------------------------------------------------
++AC_DEFUN([PKG_CHECK_EXISTS],
++[AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
++if test -n "$PKG_CONFIG" && \
++    AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
++  m4_default([$2], [:])
++m4_ifvaln([$3], [else
++  $3])dnl
++fi])
++
++# _PKG_CONFIG([VARIABLE], [COMMAND], [MODULES])
++# ---------------------------------------------
++m4_define([_PKG_CONFIG],
++[if test -n "$$1"; then
++    pkg_cv_[]$1="$$1"
++ elif test -n "$PKG_CONFIG"; then
++    PKG_CHECK_EXISTS([$3],
++                     [pkg_cv_[]$1=`$PKG_CONFIG --[]$2 "$3" 2>/dev/null`],
++		     [pkg_failed=yes])
++ else
++    pkg_failed=untried
++fi[]dnl
++])# _PKG_CONFIG
++
++# _PKG_SHORT_ERRORS_SUPPORTED
++# -----------------------------
++AC_DEFUN([_PKG_SHORT_ERRORS_SUPPORTED],
++[AC_REQUIRE([PKG_PROG_PKG_CONFIG])
++if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
++        _pkg_short_errors_supported=yes
++else
++        _pkg_short_errors_supported=no
++fi[]dnl
++])# _PKG_SHORT_ERRORS_SUPPORTED
++
++
++# PKG_CHECK_MODULES(VARIABLE-PREFIX, MODULES, [ACTION-IF-FOUND],
++# [ACTION-IF-NOT-FOUND])
++#
++#
++# Note that if there is a possibility the first call to
++# PKG_CHECK_MODULES might not happen, you should be sure to include an
++# explicit call to PKG_PROG_PKG_CONFIG in your configure.ac
++#
++#
++# --------------------------------------------------------------
++AC_DEFUN([PKG_CHECK_MODULES],
++[AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
++AC_ARG_VAR([$1][_CFLAGS], [C compiler flags for $1, overriding pkg-config])dnl
++AC_ARG_VAR([$1][_LIBS], [linker flags for $1, overriding pkg-config])dnl
++
++pkg_failed=no
++AC_MSG_CHECKING([for $1])
++
++_PKG_CONFIG([$1][_CFLAGS], [cflags], [$2])
++_PKG_CONFIG([$1][_LIBS], [libs], [$2])
++
++m4_define([_PKG_TEXT], [Alternatively, you may set the environment variables $1[]_CFLAGS
++and $1[]_LIBS to avoid the need to call pkg-config.
++See the pkg-config man page for more details.])
++
++if test $pkg_failed = yes; then
++   	AC_MSG_RESULT([no])
++        _PKG_SHORT_ERRORS_SUPPORTED
++        if test $_pkg_short_errors_supported = yes; then
++	        $1[]_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "$2" 2>&1`
++        else 
++	        $1[]_PKG_ERRORS=`$PKG_CONFIG --print-errors "$2" 2>&1`
++        fi
++	# Put the nasty error message in config.log where it belongs
++	echo "$$1[]_PKG_ERRORS" >&AS_MESSAGE_LOG_FD
++
++	m4_default([$4], [AC_MSG_ERROR(
++[Package requirements ($2) were not met:
++
++$$1_PKG_ERRORS
++
++Consider adjusting the PKG_CONFIG_PATH environment variable if you
++installed software in a non-standard prefix.
++
++_PKG_TEXT])dnl
++        ])
++elif test $pkg_failed = untried; then
++     	AC_MSG_RESULT([no])
++	m4_default([$4], [AC_MSG_FAILURE(
++[The pkg-config script could not be found or is too old.  Make sure it
++is in your PATH or set the PKG_CONFIG environment variable to the full
++path to pkg-config.
++
++_PKG_TEXT
++
++To get pkg-config, see <http://pkg-config.freedesktop.org/>.])dnl
++        ])
++else
++	$1[]_CFLAGS=$pkg_cv_[]$1[]_CFLAGS
++	$1[]_LIBS=$pkg_cv_[]$1[]_LIBS
++        AC_MSG_RESULT([yes])
++	$3
++fi[]dnl
++])# PKG_CHECK_MODULES
+--- MesaGLUT-20130123.orig/src/glut/glx/Makefile
++++ MesaGLUT-20130123/src/glut/glx/Makefile
+@@ -87,7 +87,7 @@
+ 
+ ##### TARGETS #####
+ 
+-default: $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME)
++default: $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME) glut.pc
+ 
+ 
+ # Make the library
+@@ -135,6 +135,6 @@
+ 	@ rm -f depend
+ 	@ touch depend
+ 	@ $(MKDEP) $(MKDEP_OPTIONS) -I$(TOP)/include $(SOURCES) \
+-		> /dev/null 
++		> /dev/null 2>/dev/null
+ 
+-include depend
++-include depend
+--- MesaGLUT-20130123.orig/src/glut/glx/glut.pc.in
++++ MesaGLUT-20130123/src/glut/glx/glut.pc.in
+@@ -3,7 +3,7 @@
+ libdir=@INSTALL_LIB_DIR@
+ includedir=@INSTALL_INC_DIR@
+ 
+-Name: glut
++Name: MesaGLUT
+ Description: Mesa OpenGL Utility Toolkit library
+ Requires: gl glu
+ Requires.private: @GLUT_PC_REQ_PRIV@
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_event.c
++++ MesaGLUT-20130123/src/glut/glx/glut_event.c
+@@ -103,6 +103,8 @@
+ unsigned int __glutModifierMask = (unsigned int) ~0;
+ int __glutWindowDamaged = 0;
+ 
++int __glutLoop;
++
+ void GLUTAPIENTRY
+ glutIdleFunc(GLUTidleCB idleFunc)
+ {
+@@ -1375,7 +1377,8 @@
+   if (!__glutWindowListSize)
+     __glutFatalUsage(
+       "main loop entered with no windows created.");
+-  for (;;) {
++  __glutLoop = 1;
++  while (__glutLoop) {
+     __glutProcessWindowWorkLists();
+     if (__glutIdleFunc || __glutWindowWorkList) {
+       idleWait();
+@@ -1388,4 +1391,10 @@
+     }
+   }
+ }
++
++void GLUTAPIENTRY
++glutLeaveMainLoop(void)
++{
++  __glutLoop = 0;
++}
+ /* ENDCENTRY */
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_glxext.c
++++ MesaGLUT-20130123/src/glut/glx/glut_glxext.c
+@@ -49,6 +49,7 @@
+ 
+ 
+ 
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_video_resize)
+ /*
+  * Wrapping of GLX extension functions.
+  * Technically, we should do a runtime test to see if we've got the
+@@ -174,9 +175,11 @@
+   return 0;
+ #endif   
+ }
++#endif   
+ 
+ 
+ 
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_fbconfig)
+ GLXContext
+ __glut_glXCreateContextWithConfigSGIX(Display *dpy, GLXFBConfigSGIX config,
+                                       int render_type, GLXContext share_list,
+@@ -249,6 +252,7 @@
+   return 0;
+ #endif
+ }
++#endif
+ 
+ 
+ 
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_init.c
++++ MesaGLUT-20130123/src/glut/glx/glut_init.c
+@@ -346,6 +346,12 @@
+   __glutPPMFile = getenv("GLUT_PPM_FILE");
+ }
+ 
++void GLUTAPIENTRY
++glutExit()
++{
++  XCloseDisplay(__glutDisplay);
++}
++
+ #ifdef _WIN32
+ void GLUTAPIENTRY 
+ __glutInitWithExit(int *argcp, char **argv, void (__cdecl *exitfunc)(int))
+@@ -390,4 +396,10 @@
+   __glutDisplayMode = mask;
+ }
+ 
++GLUTAPI void GLUTAPIENTRY glutInitContextProfile(int profile);
++void GLUTAPIENTRY
++glutInitContextProfile(int profile)
++{
++}
++
+ /* ENDCENTRY */
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_menu.c
++++ MesaGLUT-20130123/src/glut/glx/glut_menu.c
+@@ -26,7 +26,7 @@
+ #include "glutint.h"
+ #include "layerutil.h"
+ 
+-void (CDECL *__glutMenuStatusFunc) (int, int, int);
++void (GLUTAPIENTRYV *__glutMenuStatusFunc) (int, int, int);
+ GLUTmenuItem *__glutItemSelected;
+ GLUTmenu **__glutMenuList = NULL;
+ 
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_shapes.c
++++ MesaGLUT-20130123/src/glut/glx/glut_shapes.c
+@@ -47,6 +47,8 @@
+ #include <math.h>
+ #include "glutint.h"
+ 
++#include <GL/glu.h>
++
+ /* Some <math.h> files do not define M_PI... */
+ #ifndef M_PI
+ #define M_PI 3.14159265358979323846
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_util.c
++++ MesaGLUT-20130123/src/glut/glx/glut_util.c
+@@ -12,6 +12,8 @@
+ 
+ #include "glutint.h"
+ 
++#include <GL/glu.h>
++
+ /* strdup is actually not a standard ANSI C or POSIX routine
+    so implement a private one for GLUT.  OpenVMS does not have a
+    strdup; Linux's standard libc doesn't declare strdup by default
+--- MesaGLUT-20130123.orig/src/glut/glx/glut_win.c
++++ MesaGLUT-20130123/src/glut/glx/glut_win.c
+@@ -193,6 +193,18 @@
+   }
+   __glutSetWindow(window);
+ }
++
++void *GLUTAPIENTRY
++glutGetWindowData(void)
++{
++  return __glutCurrentWindow->data;
++}
++
++void GLUTAPIENTRY
++glutSetWindowData(void *data)
++{
++  __glutCurrentWindow->data = data;
++}
+ /* ENDCENTRY */
+ 
+ static int
+@@ -737,7 +749,7 @@
+   textprop.value = (unsigned char *) title;
+   textprop.encoding = XA_STRING;
+   textprop.format = 8;
+-  textprop.nitems = strlen(title);
++  textprop.nitems = title ? strlen(title) : 0;
+ #if defined(_WIN32)
+   SetWindowText(win, title);
+   if (__glutIconic) {
+@@ -879,6 +891,7 @@
+       GLUT_COLORMAP_WORK);
+   }
+ #endif
++  __glutSetWindow(__glutWindowList[__glutWindowListSize - 1]);
+   __glutDestroyWindow(window, window);
+   XFlush(__glutDisplay);
+ }
+--- MesaGLUT-20130123.orig/src/glut/glx/glutint.h
++++ MesaGLUT-20130123/src/glut/glx/glutint.h
+@@ -412,6 +412,7 @@
+   GLUTjoystickFCB fjoystick;  /* joystick */
+ #endif
+ #endif
++  void *data;
+ };
+ 
+ struct _GLUToverlay {
+@@ -749,6 +750,7 @@
+ #if !defined(_WIN32)
+ /* private routines from glut_glxext.c */
+ extern int __glutIsSupportedByGLX(char *);
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_video_resize)
+ extern int __glut_glXBindChannelToWindowSGIX(Display *dpy, int screen,
+                                              int channel, Window window);
+ extern int __glut_glXChannelRectSGIX(Display *dpy, int screen, int channel,
+@@ -761,6 +763,8 @@
+                                             int *dw, int *dh);
+ extern int __glut_glXChannelRectSyncSGIX(Display *dpy, int screen, int channel,
+                                          GLenum synctype);
++#endif
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_fbconfig)
+ extern GLXContext __glut_glXCreateContextWithConfigSGIX(Display *dpy,
+                                                         GLXFBConfigSGIX config,
+                                                         int render_type,
+@@ -773,6 +777,7 @@
+ extern GLXFBConfigSGIX __glut_glXGetFBConfigFromVisualSGIX(Display *dpy,
+                                                            XVisualInfo *vis);
+ #endif
++#endif
+ 
+ /* private routines from glut_input.c */
+ extern void  __glutUpdateInputDeviceMask(GLUTwindow * window);
