@@ -441,13 +441,14 @@ exit
  #endif
  }
  
-@@ -430,12 +477,27 @@
+@@ -430,16 +477,34 @@
        return (glXMakeCurrent(context->xdisplay, GDK_WINDOW_XWINDOW(drawable), context->glxcontext) == True) ? TRUE : FALSE;
      }
  #endif
 +#elif defined GDK_WINDOWING_DIRECTFB
 +  if (!context->dfbgl) {
 +    IDirectFBSurface *surface = gdk_directfb_surface_lookup(drawable);
++
 +    if (surface->GetGL(surface, &context->dfbgl)) {
 +      g_warning ("gdk_gl_make_current: GetGL failed");
 +      return FALSE;
@@ -470,16 +471,23 @@ exit
  {
  #if defined GDK_WINDOWING_WIN32
    HDC   hdc;
-@@ -456,6 +518,8 @@
+   HWND  hwnd;
++#elif defined GDK_WINDOWING_DIRECTFB
++  IDirectFBSurface *surface = gdk_directfb_surface_lookup(drawable);
+ #endif
+ 
+   g_return_if_fail (GDK_IS_DRAWABLE(drawable));
+@@ -456,6 +521,9 @@
    ReleaseDC (hwnd, hdc);
  #elif defined GDK_WINDOWING_X11
    glXSwapBuffers(GDK_WINDOW_XDISPLAY(drawable), GDK_WINDOW_XWINDOW(drawable));
 +#elif defined GDK_WINDOWING_DIRECTFB
-+  context->dfbgl->SwapBuffers(context->dfbgl);
++    context->dfbgl->SwapBuffers(context->dfbgl);
++    surface->Flip(surface, NULL, DSFLIP_WAITFORSYNC);
  #else
    g_warning ("gdk_gl_swap_buffers not implemented on " PLATFORM);
  #endif
-@@ -533,6 +597,8 @@
+@@ -533,6 +601,8 @@
      glXWaitX();
    }
    pixmap->front_left = NULL;
@@ -488,7 +496,7 @@ exit
  #endif
  
    (* glcontext_parent_class->finalize)(object);
-@@ -553,7 +619,7 @@
+@@ -553,7 +623,7 @@
  gdk_gl_pixmap_new(GdkVisual *visual, GdkPixmap *pixmap)
  {
    GdkGLPixmap *glpixmap;
@@ -497,7 +505,7 @@ exit
    Display *dpy;
    XVisualInfo *vi;
    Pixmap xpixmap;
-@@ -561,7 +627,7 @@
+@@ -561,7 +631,7 @@
    Window root_return;
    unsigned int w_ret, h_ret, bw_ret, depth_ret;
    int x_ret, y_ret;
@@ -506,7 +514,7 @@ exit
  #else
    g_warning ("gdk_gl_pixmap_new not implemented on " PLATFORM);
    return NULL;
-@@ -608,11 +674,11 @@
+@@ -608,11 +678,11 @@
  
  gint gdk_gl_pixmap_make_current(GdkGLPixmap *glpixmap, GdkGLContext *context)
  {
@@ -520,7 +528,7 @@ exit
  #else
    g_warning ("gdk_gl_pixmap_make_current not implemented on " PLATFORM);
    return 0;
-@@ -715,9 +781,6 @@
+@@ -715,9 +785,6 @@
  
    while (*p) {
      switch (*p) {

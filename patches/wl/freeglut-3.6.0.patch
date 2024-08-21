@@ -14,8 +14,11 @@ cmake --build build
 
 # install
 install -d $DESTDIR/wl/include/GL
-install -m 644 include/GL/freeglut_std.h $DESTDIR/wl/include/GL/freeglut.h
+install -m 644 include/GL/freeglut.h $DESTDIR/wl/include/GL
 ln -sf freeglut.h $INSTALL_DIR/wl/include/GL/glut.h
+install -m 644 include/GL/freeglut_ext.h $DESTDIR/wl/include/GL
+install -m 644 include/GL/freeglut_std.h $DESTDIR/wl/include/GL
+install -m 644 include/GL/freeglut_ucall.h $DESTDIR/wl/include/GL
 install -d $DESTDIR/wl/lib
 install build/lib/libglut.so.3.* $DESTDIR/wl/lib/libfreeglut.so.3
 ln -sf libfreeglut.so.3 $DESTDIR/wl/lib/libglut.so.3
@@ -34,6 +37,9 @@ Requires: $REQUIRES
 
 devel=\\
 /wl/include/GL/freeglut.h \\
+/wl/include/GL/freeglut_ext.h \\
+/wl/include/GL/freeglut_std.h \\
+/wl/include/GL/freeglut_ucall.h \\
 /wl/include/GL/glut.h \\
 /wl/lib/libglut.so \\
 /wl/lib/pkgconfig/freeglut.pc \\

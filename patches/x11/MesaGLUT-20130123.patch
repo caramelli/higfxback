@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build glu-build libxi-build libxmu-build makedepend-build"
+REQUIRES="autotools-wrappers-ac-build egl-opengl-stubs-build glu-build libxi-build libxmu-build makedepend-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -48,17 +48,110 @@ ln -sf mesaglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
 exit
 --- MesaGLUT-20130123.orig/configs/autoconf.in
 +++ MesaGLUT-20130123/configs/autoconf.in
-@@ -75,6 +75,7 @@
+@@ -13,8 +13,6 @@
+ ARCH_FLAGS = @ARCH_FLAGS@
+ PIC_FLAGS = @PIC_FLAGS@
+ DEFINES = @DEFINES@
+-API_DEFINES = @API_DEFINES@
+-SHARED_GLAPI = @SHARED_GLAPI@
+ CFLAGS_NOVISIBILITY = @CPPFLAGS@ @CFLAGS@ \
+ 	$(OPT_FLAGS) $(PIC_FLAGS) $(ARCH_FLAGS) $(DEFINES)
+ CXXFLAGS_NOVISIBILITY = @CPPFLAGS@ @CXXFLAGS@ \
+@@ -23,15 +21,11 @@
+ CXXFLAGS = $(CXXFLAGS_NOVISIBILITY) @VISIBILITY_CXXFLAGS@
+ LDFLAGS = @LDFLAGS@
+ EXTRA_LIB_PATH = @EXTRA_LIB_PATH@
+-X11_LIBS = @X11_LIBS@
+-X11_CFLAGS = @X11_CFLAGS@
+ GLUT_CFLAGS = @GLUT_CFLAGS@
+ 
+ # dlopen
+ DLOPEN_LIBS = @DLOPEN_LIBS@
+ 
+-# Source selection
+-
+ # Misc tools and flags
+ MAKE = @MAKE@
+ SHELL = @SHELL@
+@@ -43,38 +37,26 @@
+ # Python and flags (generally only needed by the developers)
+ PYTHON2 = @PYTHON2@
+ 
+-# Flex and Bison for GLSL compiler
+-FLEX = @FLEX@
+-BISON = @BISON@
+-
+ # Library names (base name)
+ GL_LIB = GL
+ GLU_LIB = GLU
+ GLUT_LIB = glut
+-GLAPI_LIB = glapi
+ 
+ # Library names (actual file names)
+-GL_LIB_NAME = @GL_LIB_NAME@
+-GLU_LIB_NAME = @GLU_LIB_NAME@
+ GLUT_LIB_NAME = @GLUT_LIB_NAME@
+-GLAPI_LIB_NAME = @GLAPI_LIB_NAME@
+ 
+ # Globs used to install the lib and all symlinks
+-GL_LIB_GLOB = @GL_LIB_GLOB@
+-GLU_LIB_GLOB = @GLU_LIB_GLOB@
+ GLUT_LIB_GLOB = @GLUT_LIB_GLOB@
+-GLAPI_LIB_GLOB = @GLAPI_LIB_GLOB@
+ 
+ # Directories to build
+ LIB_DIR = @LIB_DIR@
+ SRC_DIRS = @SRC_DIRS@
+-GLU_DIRS = @GLU_DIRS@
+ 
+ # Dependencies
+ X11_INCLUDES = @X11_INCLUDES@
  
  # Library/program dependencies
- GL_LIB_DEPS = $(EXTRA_LIB_PATH) @GL_LIB_DEPS@
+-GL_LIB_DEPS = $(EXTRA_LIB_PATH) @GL_LIB_DEPS@
 +GLUT_LIB_DEPS = $(EXTRA_LIB_PATH) -l$(GLU_LIB) -l$(GL_LIB) @GLUT_LIB_DEPS@
  
  # Autoconf directories
  prefix = @prefix@
+@@ -88,13 +70,6 @@
+ INSTALL_INC_DIR = $(includedir)
+ 
+ # pkg-config substitutions
+-GL_PC_REQ_PRIV = @GL_PC_REQ_PRIV@
+-GL_PC_LIB_PRIV = @GL_PC_LIB_PRIV@
+-GL_PC_CFLAGS = @GL_PC_CFLAGS@
+-GLU_PC_REQ = @GLU_PC_REQ@
+-GLU_PC_REQ_PRIV = @GLU_PC_REQ_PRIV@
+-GLU_PC_LIB_PRIV = @GLU_PC_LIB_PRIV@
+-GLU_PC_CFLAGS = @GLU_PC_CFLAGS@
+ GLUT_PC_REQ_PRIV = @GLUT_PC_REQ_PRIV@
+ GLUT_PC_LIB_PRIV = @GLUT_PC_LIB_PRIV@
+ GLUT_PC_CFLAGS = @GLUT_PC_CFLAGS@
 --- MesaGLUT-20130123.orig/configure.ac
 +++ MesaGLUT-20130123/configure.ac
-@@ -373,8 +373,8 @@
+@@ -338,20 +338,10 @@
+     DEFINES="$DEFINES -DTEXTURE_FLOAT_ENABLED"
+ fi
+ 
+-GL_LIB_NAME='lib$(GL_LIB).'${LIB_EXTENSION}
+-GLU_LIB_NAME='lib$(GLU_LIB).'${LIB_EXTENSION}
+ GLUT_LIB_NAME='lib$(GLUT_LIB).'${LIB_EXTENSION}
+-
+-GL_LIB_GLOB=${LIB_PREFIX_GLOB}'$(GL_LIB)'${LIB_VERSION_SEPARATOR}'*'${LIB_EXTENSION}'*'
+-GLU_LIB_GLOB=${LIB_PREFIX_GLOB}'$(GLU_LIB)'${LIB_VERSION_SEPARATOR}'*'${LIB_EXTENSION}'*'
+-GLUT_LIB_GLOB=${LIB_PREFIX_GLOB}'$(GLUT_LIB)'${LIB_VERSION_SEPARATOR}'*'${LIB_EXTENSION}'*'
+-
+-AC_SUBST([GL_LIB_NAME])
+-AC_SUBST([GLU_LIB_NAME])
+ AC_SUBST([GLUT_LIB_NAME])
+ 
+-AC_SUBST([GL_LIB_GLOB])
+-AC_SUBST([GLU_LIB_GLOB])
++GLUT_LIB_GLOB=${LIB_PREFIX_GLOB}'$(GLUT_LIB)'${LIB_VERSION_SEPARATOR}'*'${LIB_EXTENSION}'*'
+ AC_SUBST([GLUT_LIB_GLOB])
+ 
+ dnl PIC code macro
+@@ -373,8 +363,8 @@
  dnl GLUT configuration
  dnl
  SRC_DIRS="$SRC_DIRS glut/glx"
@@ -68,6 +161,23 @@ exit
      GLUT_PC_REQ_PRIV="x11 xmu xi"
      GLUT_LIB_DEPS="$GLUT_LIBS"
  else
+@@ -389,16 +379,7 @@
+ GLUT_LIB_DEPS="$GLUT_LIB_DEPS -lm"
+ GLUT_PC_LIB_PRIV="$GLUT_PC_LIB_PRIV -lm"
+ 
+-# If static, empty GLUT_LIB_DEPS and add libs for programs to link
+-if test "$enable_static" = no; then
+-    GLUT_MESA_DEPS='-l$(GLU_LIB) -l$(GL_LIB)'
+-else
+-    APP_LIB_DEPS="$APP_LIB_DEPS $GLUT_LIB_DEPS"
+-    GLUT_LIB_DEPS=""
+-    GLUT_MESA_DEPS=""
+-fi
+ AC_SUBST([GLUT_LIB_DEPS])
+-AC_SUBST([GLUT_MESA_DEPS])
+ AC_SUBST([GLUT_CFLAGS])
+ AC_SUBST([GLUT_PC_REQ_PRIV])
+ AC_SUBST([GLUT_PC_LIB_PRIV])
 --- MesaGLUT-20130123.orig/include/GL/glut.h
 +++ MesaGLUT-20130123/include/GL/glut.h
 @@ -15,7 +15,6 @@

@@ -18,6 +18,11 @@ fi
 
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
+if test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
 if test $GL && PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gtkglarea2-build; then
   GTK2=1
   REQUIRES="$REQUIRES gtkglarea2-build"
@@ -39,7 +44,8 @@ meson compile -C build
 # install
 install -d $DESTDIR/dfb/bin
 test $GL && install build/yagears2 $DESTDIR/dfb/bin
-test $GL && test $GTK2 || test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
+test $GL && test $GLUT || test $GTK2 || test $SDL2 && install build/yagears2-gui $DESTDIR/dfb/bin
+test $GLUT && install build/yagears2-mosaic $DESTDIR/dfb/bin
 test $VK && install build/yagears2-vk $DESTDIR/dfb/bin
 test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/dfb/bin
 
@@ -54,7 +60,8 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GL && test $GTK2 || test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && test $GLUT || test $GTK2 || test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GLUT && echo /dfb/bin/yagears2-mosaic \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 test $VK && echo /dfb/bin/yagears2-vk \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 test $VK && test $SDL2 && echo /dfb/bin/yagears2-vk-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
@@ -379,7 +386,27 @@ exit
  AC_OUTPUT(Makefile)
 --- yagears-2.4.orig/gui.cc
 +++ yagears-2.4/gui.cc
-@@ -1196,7 +1196,8 @@
+@@ -38,7 +38,11 @@
+ #endif
+ #if defined(GLUT)
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
+ extern "C" {
++void glutInitContextProfile(int);
+ void glutLeaveMainLoop();
+ void glutExit();
+ }
+@@ -1178,6 +1182,7 @@
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+     glutInitWindowSize(win_width, win_height);
+     glutInitWindowPosition(win_posx, win_posy);
++    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
+     glut_win = glutCreateWindow("yagears");
+     glutDisplayFunc(glutDisplay);
+     glutIdleFunc(glutIdle);
+@@ -1196,7 +1201,8 @@
      gtk_gl_area_set_has_depth_buffer(GTK_GL_AREA(gtk_glarea), TRUE);
      g_signal_connect(gtk_glarea, "render", G_CALLBACK(gtk_render), NULL);
      #else
@@ -389,7 +416,7 @@ exit
      gtk_glarea = gtk_gl_area_new(gdk_glconfig);
      #if GTK_CHECK_VERSION(3,0,0)
      g_signal_connect(gtk_glarea, "draw", G_CALLBACK(gtk_render), NULL);
-@@ -1229,6 +1230,7 @@
+@@ -1229,6 +1235,7 @@
    #if defined(SDL)
    if (!strcmp(toolkit, "sdl")) {
      #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -516,7 +543,20 @@ exit
        egl_dpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_XCB_EXT, xcb_dpy, NULL);
      }
      else
-@@ -1642,6 +1651,7 @@
+@@ -1500,8 +1509,11 @@
+   if (!strcmp(backend, "gl-directfb") || !strcmp(backend, "egl-directfb")) {
+     memset(&dfb_desc, 0, sizeof(DFBWindowDescription));
+     dfb_desc.flags = DWDESC_SURFACE_CAPS | DWDESC_WIDTH | DWDESC_HEIGHT | DWDESC_POSX | DWDESC_POSY;
+-    dfb_desc.surface_caps = dfb_attr;
+     dfb_desc.width = win_width;
++    dfb_desc.surface_caps = dfb_attr;
++    if (getenv("DSCAPS_GL")) {
++      dfb_desc.surface_caps |= DSCAPS_GL;
++    }
+     dfb_desc.height = win_height;
+     dfb_desc.posx = win_posx;
+     dfb_desc.posy = win_posy;
+@@ -1642,6 +1654,7 @@
    #endif
    #if defined(EGL_DRM)
    if (!strcmp(backend, "egl-drm")) {
@@ -524,7 +564,7 @@ exit
      if (getenv("NO_GBM")) {
        drm_win = calloc(1, sizeof(struct drm_surface));
        if (!drm_win) {
-@@ -1650,11 +1660,13 @@
+@@ -1650,11 +1663,13 @@
        }
  
        drm_win->display = drm_dpy;
@@ -542,7 +582,7 @@ exit
        if (!drm_win) {
          printf("gbm_surface_create failed\n");
          goto out;
-@@ -1761,7 +1773,7 @@
+@@ -1761,7 +1776,7 @@
    #if defined(EGL_X11)
    if (!strcmp(backend, "egl-x11")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_X11_EXT)
@@ -551,7 +591,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &x11_win, NULL);
      }
      else
-@@ -1774,7 +1786,7 @@
+@@ -1774,7 +1789,7 @@
    #if defined(EGL_DIRECTFB)
    if (!strcmp(backend, "egl-directfb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_DIRECTFB_EXT)
@@ -560,7 +600,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, dfb_win, NULL);
      }
      else
-@@ -1787,7 +1799,7 @@
+@@ -1787,7 +1802,7 @@
    #if defined(EGL_FBDEV)
    if (!strcmp(backend, "egl-fbdev")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_FBDEV_EXT)
@@ -569,7 +609,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, fb_win, NULL);
      }
      else
-@@ -1800,7 +1812,7 @@
+@@ -1800,7 +1815,7 @@
    #if defined(EGL_WAYLAND)
    if (!strcmp(backend, "egl-wayland")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_WAYLAND_EXT)
@@ -578,7 +618,7 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, wl_win, NULL);
      }
      else
-@@ -1813,7 +1825,7 @@
+@@ -1813,7 +1828,7 @@
    #if defined(EGL_XCB)
    if (!strcmp(backend, "egl-xcb")) {
      #if defined(EGL_EXT_platform_base) && defined(EGL_PLATFORM_XCB_EXT)
@@ -587,7 +627,23 @@ exit
        egl_win = eglCreatePlatformWindowSurfaceEXT(egl_dpy, egl_config, &xcb_win, NULL);
      }
      else
-@@ -2063,35 +2075,47 @@
+@@ -2010,8 +2025,13 @@
+     #endif
+     #if defined(GL_DIRECTFB) || defined(EGL_DIRECTFB)
+     if (!strcmp(backend, "gl-directfb") || !strcmp(backend, "egl-directfb")) {
+-      if (!animate && redisplay) {
+-        redisplay = 0;
++      if (redisplay) {
++        if (getenv("DSCAPS_GL")) {
++          dfb_win->Flip(dfb_win, NULL, DSFLIP_WAITFORSYNC);
++        }
++        if (!animate) {
++          redisplay = 0;
++        }
+       }
+ 
+       memset(&dfb_event, 0, sizeof(DFBWindowEvent));
+@@ -2063,35 +2083,47 @@
      #if defined(EGL_DRM)
      if (!strcmp(backend, "egl-drm")) {
        if (redisplay) {
@@ -651,7 +707,7 @@ exit
          }
          if (!animate) {
            redisplay = 0;
-@@ -2397,10 +2421,13 @@
+@@ -2397,10 +2429,13 @@
      }
  
      if (drm_win) {
@@ -666,7 +722,7 @@ exit
          gbm_surface_destroy(drm_win);
        }
      }
-@@ -2423,8 +2450,9 @@
+@@ -2423,8 +2458,9 @@
      }
  
      if (drm_dpy) {
@@ -677,7 +733,7 @@ exit
            for (opt = 0; drm_dpy->driver_configs[opt]; opt++)
              free(drm_dpy->driver_configs[opt]);
            free(drm_dpy->driver_configs);
-@@ -2432,13 +2460,15 @@
+@@ -2432,13 +2468,15 @@
            drm_dpy->core->destroyScreen(drm_dpy->screen);
          }
  
@@ -922,3 +978,24 @@ exit
             dependencies: [vulkan_dep, png_dep, tiff_dep, glfw_dep, sdl_dep],
             install: true)
  endif
+--- yagears-2.4.orig/mosaic.c
++++ yagears-2.4/mosaic.c
+@@ -24,6 +24,10 @@
+ #include "config.h"
+ 
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++void glutInitContextProfile(int);
+ void glutSetWindowData(void *data);
+ void *glutGetWindowData();
+ void glutLeaveMainLoop();
+@@ -196,6 +200,7 @@
+     for (j = 0; j < COLS; j++) {
+       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
+       glutInitWindowPosition(win_posx, win_posy);
++      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
+       glut_win[i * COLS + j] = glutCreateWindow(NULL);
+       glutSetWindowData((void *)(long)(i * COLS + j));
+       glutDisplayFunc(glutDisplay);

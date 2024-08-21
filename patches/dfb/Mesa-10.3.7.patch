@@ -3308,7 +3308,7 @@ exit
  const struct native_platform *
 --- Mesa-10.3.7.orig/src/gallium/state_trackers/egl/directfb/native_directfb.c
 +++ Mesa-10.3.7/src/gallium/state_trackers/egl/directfb/native_directfb.c
-@@ -0,0 +1,434 @@
+@@ -0,0 +1,442 @@
 +/*
 + * Mesa 3-D graphics library
 + *
@@ -3517,6 +3517,7 @@ exit
 +   struct directfb_surface *dfbsurf;
 +   DFBResult ret;
 +   DFBSurfacePixelFormat pixelformat;
++   DFBSurfaceCapabilities caps;
 +
 +   IDirectFBSurface *surface = (IDirectFBSurface *) win;
 +   if (!surface)
@@ -3539,10 +3540,17 @@ exit
 +   if (!dfbsurf)
 +      return NULL;
 +
-+   ret = surface->GetSubSurface(surface, NULL, &dfbsurf->surface);
-+   if (ret) {
-+      FREE(dfbsurf);
-+      return NULL;
++   surface->GetCapabilities(surface, &caps);
++   if (caps & DSCAPS_GL) {
++      surface->AddRef(surface);
++      dfbsurf->surface = surface;
++   }
++   else {
++      ret = surface->GetSubSurface(surface, NULL, &dfbsurf->surface);
++      if (ret) {
++         FREE(dfbsurf);
++         return NULL;
++      }
 +   }
 +
 +   dfbsurf->dfbdpy = dfbdpy;
@@ -3804,7 +3812,7 @@ exit
 +libws_directfb_la_SOURCES = directfb_sw_winsys.c
 --- Mesa-10.3.7.orig/src/gallium/winsys/sw/directfb/directfb_sw_winsys.c
 +++ Mesa-10.3.7/src/gallium/winsys/sw/directfb/directfb_sw_winsys.c
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,207 @@
 +/*
 + * Mesa 3-D graphics library
 + *
@@ -3870,10 +3878,13 @@ exit
 +{
 +   struct directfb_sw_displaytarget *dfbdt = directfb_sw_displaytarget(dt);
 +   IDirectFBSurface *surface = context_private;
++   DFBSurfaceCapabilities caps;
 +
-+   surface->StretchBlit(surface, dfbdt->surface, NULL, NULL);
++   surface->Blit(surface, dfbdt->surface, NULL, 0, 0);
 +
-+   surface->Flip(surface, NULL, DSFLIP_NONE);
++   surface->GetCapabilities(surface, &caps);
++   if (!(caps & DSCAPS_GL))
++      surface->Flip(surface, NULL, DSFLIP_WAITFORSYNC);
 +}
 +
 +static void

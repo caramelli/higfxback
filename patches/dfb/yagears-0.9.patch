@@ -5,6 +5,11 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-b
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gtkglarea2-build; then
   GTK2=1
   REQUIRES="$REQUIRES gtkglarea2-build"
@@ -26,7 +31,8 @@ make
 # install
 install -d $DESTDIR/dfb/bin
 install yagears $DESTDIR/dfb/bin
-test $GTK2 || test $SDL2 && install yagears-gui $DESTDIR/dfb/bin
+test $GLUT || $GTK2 || test $SDL2 && install yagears-gui $DESTDIR/dfb/bin
+test $GLUT && install yagears-mosaic $DESTDIR/fb/bin
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -39,7 +45,8 @@ Requires: $REQUIRES
 exec=\\
 /dfb/bin/yagears \\
 EOF
-test $GTK2 || test $SDL2 && echo /dfb/bin/yagears-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
+test $GLUT || test $GTK2 || test $SDL2 && echo /dfb/bin/yagears-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
+test $GLUT && echo /dfb/bin/yagears-mosaic \\ >> $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears-build.pc
 
 exit
@@ -100,7 +107,27 @@ exit
                            AC_DEFINE(EGL_DRM, 1, Support for EGL with DRM platform),
 --- yagears-0.9.orig/gui.cc
 +++ yagears-0.9/gui.cc
-@@ -1021,7 +1021,8 @@
+@@ -41,7 +41,11 @@
+ #endif
+ #if defined(GLUT)
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
+ extern "C" {
++void glutInitContextProfile(int);
+ void glutLeaveMainLoop();
+ void glutExit();
+ }
+@@ -1004,6 +1008,7 @@
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+     glutInitWindowSize(win_width, win_height);
+     glutInitWindowPosition(win_posx, win_posy);
++    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
+     glut_win = glutCreateWindow(NULL);
+     glutDisplayFunc(glutDisplay);
+     glutIdleFunc(glutIdle);
+@@ -1021,7 +1026,8 @@
      gtk_gl_area_set_has_depth_buffer(GTK_GL_AREA(gtk_glarea), TRUE);
      g_signal_connect(gtk_glarea, "render", G_CALLBACK(gtk_render), NULL);
      #else
@@ -110,7 +137,7 @@ exit
      gtk_glarea = gtk_gl_area_new(gdk_glconfig);
      #if GTK_CHECK_VERSION(3,0,0)
      g_signal_connect(gtk_glarea, "draw", G_CALLBACK(gtk_render), NULL);
-@@ -1052,6 +1053,7 @@
+@@ -1052,6 +1058,7 @@
    #if defined(SDL)
    if (!strcmp(toolkit, "sdl")) {
      #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -120,7 +147,17 @@ exit
      SDL_GL_CreateContext(sdl_win);
 --- yagears-0.9.orig/main.c
 +++ yagears-0.9/main.c
-@@ -1269,6 +1269,10 @@
+@@ -1137,6 +1137,9 @@
+     memset(&dfb_desc, 0, sizeof(DFBWindowDescription));
+     dfb_desc.flags = DWDESC_SURFACE_CAPS | DWDESC_WIDTH | DWDESC_HEIGHT | DWDESC_POSX | DWDESC_POSY;
+     dfb_desc.surface_caps = dfb_attr;
++    if (getenv("DSCAPS_GL")) {
++      dfb_desc.surface_caps |= DSCAPS_GL;
++    }
+     dfb_desc.width = win_width;
+     dfb_desc.height = win_height;
+     dfb_desc.posx = win_posx;
+@@ -1269,6 +1272,10 @@
    #endif
    #if defined(GL_DIRECTFB)
    if (!strcmp(backend, "gl-directfb")) {
@@ -131,3 +168,65 @@ exit
      err = dfb_win->GetGL(dfb_win, &dfb_ctx);
      if (err) {
        printf("GetGL failed: %s\n", DirectFBErrorString(err));
+@@ -1506,8 +1513,13 @@
+     #endif
+     #if defined(GL_DIRECTFB) || defined(EGL_DIRECTFB)
+     if (!strcmp(backend, "gl-directfb") || !strcmp(backend, "egl-directfb")) {
+-      if (!animate && redisplay) {
+-        redisplay = 0;
++      if (redisplay) {
++        if (getenv("DSCAPS_GL")) {
++          dfb_win->Flip(dfb_win, NULL, DSFLIP_WAITFORSYNC);
++        }
++        if (!animate) {
++          redisplay = 0;
++        }
+       }
+ 
+       if (!dfb_event_buffer->GetEvent(dfb_event_buffer, (DFBEvent *)&dfb_event)) {
+--- yagears-0.9.orig/mosaic.c
++++ yagears-0.9/mosaic.c
+@@ -22,6 +22,14 @@
+ */
+ 
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++void glutInitContextProfile(int);
++void glutSetWindowData(void *data);
++void *glutGetWindowData();
++void glutLeaveMainLoop();
++void glutExit();
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -78,7 +86,7 @@
+ 
+ static void glutDisplay()
+ {
+-  int n = (int)glutGetWindowData();
++  int n = (long)glutGetWindowData();
+ 
+   if (animate) { if (frames) rotate(n); else t_rate = t_rot = current_time(); }
+   gears_engine_draw(gears_engine[n], view_tz[n], view_rx[n], view_ry[n], model_rz[n]);
+@@ -117,7 +125,7 @@
+ 
+ static void glutSpecial(int key, int x, int y)
+ {
+-  int n = (int)glutGetWindowData();
++  int n = (long)glutGetWindowData();
+ 
+   switch (key) {
+     case GLUT_KEY_PAGE_DOWN:
+@@ -192,8 +200,9 @@
+     for (j = 0; j < COLS; j++) {
+       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
+       glutInitWindowPosition(win_posx, win_posy);
++      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
+       glut_win[i * COLS + j] = glutCreateWindow(NULL);
+-      glutSetWindowData((void *)(i * COLS + j));
++      glutSetWindowData((void *)(long)(i * COLS + j));
+       glutDisplayFunc(glutDisplay);
+       glutIdleFunc(glutIdle);
+       glutKeyboardFunc(glutKeyboard);

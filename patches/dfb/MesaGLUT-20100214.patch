@@ -1,0 +1,1950 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-opengl-stubs-build glu-build make-build makedepend-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig make linux-directfb
+
+# install
+install -d $DESTDIR/dfb/include/GL
+install -m 644 include/GL/glut.h $DESTDIR/dfb/include/GL/mesaglut.h
+ln -sf mesaglut.h $INSTALL_DIR/dfb/include/GL/glut.h
+install -d $DESTDIR/dfb/lib
+install lib/libglut.so.3.* $DESTDIR/dfb/lib/libmesaglut.so.3
+ln -sf libmesaglut.so.3 $DESTDIR/dfb/lib/libglut.so
+ln -sf libmesaglut.so.3 $DESTDIR/dfb/lib/libglut.so.3
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 src/glut/directfb/glut.pc $DESTDIR/dfb/lib/pkgconfig/mesaglut.pc
+ln -sf mesaglut.pc $INSTALL_DIR/dfb/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/mesaglut-build.pc << EOF
+Name: MesaGLUT
+Version: 20100214
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/GL/glut.h \\
+/dfb/include/GL/mesaglut.h \\
+/dfb/lib/libglut.so \\
+/dfb/lib/pkgconfig/glut.pc \\
+/dfb/lib/pkgconfig/mesaglut.pc
+
+exec=\\
+/dfb/lib/libglut.so.3 \\
+/dfb/lib/libmesaglut.so.3
+EOF
+ln -sf mesaglut-build.pc $DESTDIR/dfb/share/pkgconfig/glut-build.pc
+
+exit
+--- MesaGLUT-20100214.orig/Makefile
++++ MesaGLUT-20100214/Makefile
+@@ -0,0 +1,57 @@
++# Top-level Mesa makefile
++
++TOP = .
++
++SUBDIRS = src
++
++
++# The git command below generates an empty string when we're not
++# building in a GIT tree (i.e., building from a release tarball).
++default: $(TOP)/configs/current
++	@for dir in $(SUBDIRS) ; do \
++		if [ -d $$dir ] ; then \
++			(cd $$dir && $(MAKE)) || exit 1 ; \
++		fi \
++	done
++
++all: default
++
++clean:
++	-@for dir in $(SUBDIRS) ; do \
++		if [ -d $$dir ] ; then \
++			(cd $$dir && $(MAKE) clean) ; \
++		fi \
++	done
++
++realclean: clean
++	-rm -rf lib*
++	-rm -f $(TOP)/configs/current
++
++install:
++	@for dir in $(SUBDIRS) ; do \
++		if [ -d $$dir ] ; then \
++			(cd $$dir && $(MAKE) install) || exit 1 ; \
++		fi \
++	done
++
++$(TOP)/configs/current:
++	@echo
++	@echo "Please choose a configuration from the following list:"
++	@ls -1 $(TOP)/configs | grep -v default
++	@echo
++	@echo "Then type 'make <config>'"
++	@echo
++	@echo "(ignore the following error message)"
++	@exit 1
++
++linux-directfb \
++linux-x11 :
++	@ if test -L configs/current; then \
++		if ! cmp configs/$@ configs/current > /dev/null; then \
++			echo "Please run 'make realclean' before changing configs" ; \
++			exit 1 ; \
++		fi ; \
++	else \
++		cd configs && ln -s $@ current ; \
++	fi
++	$(MAKE) default
+--- MesaGLUT-20100214.orig/bin/minstall
++++ MesaGLUT-20100214/bin/minstall
+@@ -0,0 +1,112 @@
++#!/bin/sh
++
++
++# A minimal replacement for 'install' that supports installing symbolic links.
++# Only a limited number of options are supported:
++# -d dir          Create a directory
++# -m mode         Sets a file's mode when installing
++
++
++# If these commands aren't portable, we'll need some "if (arch)" type stuff
++SYMLINK="ln -s"
++MKDIR="mkdir -p"
++RM="rm -f"
++
++MODE=""
++
++if [ "$1" = "-d" ] ; then
++	# make a directory path
++	$MKDIR "$2"
++	exit 0
++fi
++
++if [ "$1" = "-m" ] ; then
++	# set file mode
++	MODE=$2
++	shift 2
++fi
++
++# install file(s) into destination
++if [ $# -ge 2 ] ; then
++
++	# Last cmd line arg is the dest dir
++	for FILE in $@ ; do
++		DESTDIR="$FILE"
++	done
++
++	# Loop over args, moving them to DEST directory
++	I=1
++	for FILE in $@ ; do
++		if [ $I = $# ] ; then
++			# stop, don't want to install $DEST into $DEST
++			exit 0
++		fi
++
++                DEST=$DESTDIR
++
++                # On CYGWIN, because DLLs are loaded by the native Win32 loader,
++                # they are installed in the executable path.  Stub libraries used
++                # only for linking are installed in the library path
++                case `uname` in
++                    CYGWIN*)
++                        case $FILE in
++                            *.dll)
++                                DEST="$DEST/../bin"
++                                ;;
++                            *)
++                                ;;
++                        esac
++	                ;;
++                    *)
++                        ;;
++                esac
++
++		PWDSAVE=`pwd`
++
++		# determine file's type
++		if [ -h "$FILE" ] ; then
++			#echo $FILE is a symlink
++			# Unfortunately, cp -d isn't universal so we have to
++			# use a work-around.
++
++			# Use ls -l to find the target that the link points to
++			LL=`ls -l "$FILE"`
++			for L in $LL ; do
++				TARGET=$L
++			done
++			#echo $FILE is a symlink pointing to $TARGET
++
++			FILE=`basename "$FILE"`
++			# Go to $DEST and make the link
++			cd "$DEST"        # pushd
++				$RM "$FILE"
++				$SYMLINK "$TARGET" "$FILE"
++			cd "$PWDSAVE"     # popd
++
++		elif [ -f "$FILE" ] ; then
++			#echo "$FILE" is a regular file
++			# Only copy if the files differ
++			if ! cmp -s $FILE $DEST/`basename $FILE`; then
++				$RM "$DEST/`basename $FILE`"
++				cp "$FILE" "$DEST"
++			fi
++			if [ $MODE ] ; then
++				FILE=`basename "$FILE"`
++				chmod $MODE "$DEST/$FILE"
++			fi
++		else
++			echo "Unknown type of argument: " "$FILE"
++			exit 1
++		fi
++
++		I=`expr $I + 1`
++	done
++
++	exit 0
++fi
++
++# If we get here, we didn't find anything to do
++echo "Usage:"
++echo "  install -d dir                      Create named directory"
++echo "  install [-m mode] file [...] dest   Install files in destination"
++
+--- MesaGLUT-20100214.orig/bin/mklib
++++ MesaGLUT-20100214/bin/mklib
+@@ -0,0 +1,1012 @@
++#!/bin/sh
++
++# Make a shared library.
++# This script should be useful for projects other than Mesa.
++# Improvements/fixes are welcome.
++
++
++# Copyright (C) 1999-2006  Brian Paul   All Rights Reserved.
++#
++# Permission is hereby granted, free of charge, to any person obtaining a
++# copy of this software and associated documentation files (the "Software"),
++# to deal in the Software without restriction, including without limitation
++# the rights to use, copy, modify, merge, publish, distribute, sublicense,
++# and/or sell copies of the Software, and to permit persons to whom the
++# Software is furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice shall be included
++# in all copies or substantial portions of the Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++# BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
++# AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
++# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++
++# Clear CDPATH as the 'cd' command will echo stuff
++# to stdout if it is set
++unset CDPATH
++
++# Given a list of files, look for .a archives and unpack them.
++# Return the original list of files minus the .a files plus the unpacked files.
++# first param:  name of a temp directory (to be deleted when finished)
++# remaining params:  list of .o and .a files
++expand_archives() {
++    DIR=$1
++    shift
++    FILES=$@
++    NEWFILES=""
++    ORIG_DIR=`pwd`
++    mkdir -p "$DIR"
++    cd "$DIR"
++    for FILE in $FILES ; do
++        case $FILE in
++            *.a)
++                # extract the .o files from this .a archive
++                case $FILE in
++                    /*) ;;
++                    *)  FILE="$ORIG_DIR/$FILE" ;;
++                esac
++                MEMBERS=`ar t $FILE`
++                ar x $FILE
++                for MEMBER in $MEMBERS ; do
++                    NEWFILES="$NEWFILES $DIR/$MEMBER"
++                done
++                ;;
++            *)
++                # other file type, just add to list
++                NEWFILES="$NEWFILES $FILE"
++                ;;
++        esac
++    done
++    cd "$ORIG_DIR"
++    echo $NEWFILES
++}
++
++
++# Make static library with 'ar'
++# params:
++#    options to ar
++#    1 or 0 to indicate if ranlib should be run
++#    libname to make
++#    list of object files
++# Return name of library we made
++# Example: "make_ar_static_lib -ru 1 libfoo.a foo.o bar.o"
++make_ar_static_lib() {
++    OPTS=$1
++    shift;
++    RANLIB=$1
++    shift;
++    LIBNAME=$1
++    shift;
++    OBJECTS=$@
++
++    # remove existing lib, if present
++    rm -f ${LIBNAME}
++
++    # make static lib
++    ar ${OPTS} ${LIBNAME} ${OBJECTS}
++
++    # run ranlib
++    if [ ${RANLIB} = 1 ] ; then
++        ranlib ${LIBNAME}
++    fi
++
++    echo ${LIBNAME}
++}
++
++
++# Print usage info.
++usage() {
++    echo 'Usage: mklib [options] objects'
++    echo 'Create a shared library from object files.'
++    echo '  -o LIBRARY    specifies the name of the resulting library, without'
++    echo '                the leading "lib" or any suffix.'
++    echo '                (eg: "-o GL" might result in "libGL.so" being made)'
++    echo '  -major N      specifies major version number (default is 1)'
++    echo '  -minor N      specifies minor version number (default is 0)'
++    echo '  -patch N      specifies patch version number (default is 0)'
++    echo '  -lLIBRARY     specifies a dependency on LIBRARY'
++    echo '  -LDIR         search in DIR for library dependencies at build time'
++    echo '  -RDIR         search in DIR for library dependencies at run time'
++    echo '  -linker L     explicity specify the linker program to use (eg: gcc, g++)'
++    echo '                Not observed on all systems at this time.'
++    echo '  -ldflags OPT  specify any additional linker flags in OPT'
++    echo '  -cplusplus    link with C++ runtime'
++    echo '  -static       make a static library (default is dynamic/shared)'
++    echo '  -dlopen       make a shared library suitable for dynamic loading'
++    echo '  -install DIR  put resulting library file(s) in DIR'
++    echo '  -arch ARCH    override using `uname` to determine host system'
++    echo '  -archopt OPT  specify an extra achitecture-specific option OPT'
++    echo '  -altopts OPTS alternate options to override all others'
++    echo "  -noprefix     don't prefix library name with 'lib' nor add any suffix"
++    echo '  -exports FILE only export the symbols listed in FILE'
++    echo '  -id NAME      Sets the id of the dylib (Darwin)'
++    echo '  -h, --help    display this information and exit'
++}
++
++
++#
++# Option defaults
++#
++LIBNAME=""
++MAJOR=1
++MINOR=0
++PATCH=""
++DEPS=""
++LINK=""
++LDFLAGS=""
++CPLUSPLUS=0
++STATIC=0
++DLOPEN=0
++INSTALLDIR="."
++ARCH="auto"
++ARCHOPT=""
++NOPREFIX=0
++EXPORTS=""
++ID=""
++
++#
++# Parse arguments
++#
++while true
++do
++    case $1 in
++	'-h' | '--help')
++	    usage
++	    exit 1
++	    ;;
++	'-o')
++	    shift 1;
++	    LIBNAME=$1
++	    ;;
++	'-major')
++	    shift 1;
++	    MAJOR=$1
++	    ;;
++	'-minor')
++	    shift 1;
++	    MINOR=$1
++	    ;;
++	'-patch')
++	    shift 1;
++	    PATCH=$1
++	    ;;
++	'-linker')
++	    shift 1;
++	    LINK=$1
++	    ;;
++	'-ldflags')
++	    shift 1;
++	    LDFLAGS=$1
++	    ;;
++	-l*)
++	    DEPS="$DEPS $1"
++	    ;;
++	-L*)
++	    DEPS="$DEPS $1"
++	    ;;
++	-R*)
++	    DEPS="$DEPS $1"
++	    ;;
++	-Wl*)
++            DEPS="$DEPS $1"
++            ;;
++	-pthread)
++	    # this is a special case (see bugzilla 10876)
++	    DEPS="$DEPS $1"
++	    ;;
++	'-pthread')
++	    DEPS="$DEPS -pthread"
++	    ;;
++	'-cplusplus')
++	    CPLUSPLUS=1
++	    ;;
++	'-static')
++	    STATIC=1
++	    ;;
++	'-dlopen')
++	    DLOPEN=1
++	    ;;
++	'-install')
++	    shift 1;
++	    INSTALLDIR=$1
++	    ;;
++	'-arch')
++	    shift 1;
++	    ARCH=$1
++	    ;;
++	'-archopt')
++	    shift 1;
++	    ARCHOPT=$1
++	    ;;
++	'-altopts')
++            shift 1;
++            ALTOPTS=$1
++            ;;
++	'-noprefix')
++	    NOPREFIX=1
++	    ;;
++	'-exports')
++	    shift 1;
++	    EXPORTS=$1
++	    ;;
++	'-id')
++	    shift 1;
++	    ID=$1
++	    ;;
++	-*)
++	    echo "mklib: Unknown option: " $1 ;
++	    exit 1
++	    ;;
++	*)
++	    # This should be the first object file, stop parsing
++	    break
++    esac
++    shift 1
++done
++OBJECTS=$@
++
++
++if [ ${ARCH} = "auto" ] ; then
++    ARCH=`uname`
++fi
++
++
++if [ $STATIC = 1 ]; then
++    # filter out linker options inside object list
++    NEWOBJECTS=""
++    for OBJ in $OBJECTS ; do
++	case $OBJ in
++	    -Wl,*)
++		echo "mklib: warning: ignoring $OBJ for static library"
++		;;
++	    *)
++		NEWOBJECTS="$NEWOBJECTS $OBJ"
++		;;
++	esac
++    done
++    OBJECTS=$NEWOBJECTS
++fi
++
++
++#
++# Error checking
++#
++if [ "x${LIBNAME}" = "x" ] ; then
++    echo "mklib: Error: no library name specified (-h for help)"
++    exit 1
++fi
++if [ "x${OBJECTS}" = "x" ] ; then
++    echo "mklib: Error: no object files specified (-h for help)"
++    exit 1
++fi
++
++
++#
++# Debugging info
++#
++if [  ]  ; then
++    echo "-----------------"
++    echo ARCH is $ARCH
++    echo LIBNAME is $LIBNAME
++    echo MAJOR is $MAJOR
++    echo MINOR is $MINOR
++    echo PATCH is $PATCH
++    echo DEPS are $DEPS
++    echo "EXPORTS in" $EXPORTS
++    echo ID is $ID
++    echo "-----------------"
++fi
++
++
++#
++# OK, make the library now
++#
++case $ARCH in
++
++    'Linux' | 'OpenBSD' | 'DragonFly' | 'GNU' | GNU/* | 'NetBSD')
++	# we assume gcc
++
++	if [ "x$LINK" = "x" ] ; then
++	    # -linker was not specified so set default link command now
++            if [ $CPLUSPLUS = 1 ] ; then
++                LINK=g++
++            else
++                LINK=gcc
++            fi
++	fi
++
++	if [ $NOPREFIX = 1 ] ; then
++	    # No "lib" or ".so" part
++	    echo "mklib: Making" $ARCH "shared library: " ${LIBNAME}
++	    case $ARCH in 'Linux' | 'GNU' | GNU/*)
++		OPTS="-Xlinker -Bsymbolic -shared"
++	    ;;
++	    *)
++		OPTS="-shared"
++	    ;;
++	    esac
++
++	    # Check if objects are 32-bit and we're running in 64-bit
++	    # environment.  If so, pass -m32 flag to linker.
++	    set ${OBJECTS}
++	    ABI32=`file $1 | grep 32-bit`
++	    if [ "${ABI32}" -a `uname -m` = "x86_64" ] ; then
++		OPTS="-m32 ${OPTS}"
++	    fi
++
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++            rm -f ${LIBNAME}
++            # make lib
++            ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS}
++            # finish up
++            FINAL_LIBS="${LIBNAME}"
++        elif [ $STATIC = 1 ] ; then
++	    # make a static .a library
++            LIBNAME="lib${LIBNAME}.a"     # prefix with "lib", suffix with ".a"
++            echo "mklib: Making" $ARCH "static library: " ${LIBNAME}
++            OPTS="-ru"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++	    # expand .a into .o files
++	    NEW_OBJECTS=`expand_archives ${LIBNAME}.obj $OBJECTS`
++
++            # make static lib
++	    FINAL_LIBS=`make_ar_static_lib ${OPTS} 1 ${LIBNAME} ${NEW_OBJECTS}`
++
++	    # remove temporary extracted .o files
++	    rm -rf ${LIBNAME}.obj
++        else
++	    # make dynamic library
++	    LIBNAME="lib${LIBNAME}"     # prefix with "lib"
++	    case $ARCH in 'Linux' | 'GNU' | GNU/*)
++		OPTS="-Xlinker -Bsymbolic -shared -Wl,-soname,${LIBNAME}.so.${MAJOR}"
++	    ;;
++	    *)
++		OPTS="-shared -Wl,-soname,${LIBNAME}.so.${MAJOR}"
++	    ;;
++	    esac
++	    if [ $EXPORTS ] ; then
++		#OPTS="${OPTS} -Xlinker --retain-symbols-file ${EXPORTS}"
++		# Make the 'exptmp' file for --version-script option
++		echo "{" > exptmp
++		echo "global:" >> exptmp
++		sed 's/$/;/' ${EXPORTS} >> exptmp
++		echo "local:" >> exptmp
++		echo "*;" >> exptmp
++		echo "};" >> exptmp
++		OPTS="${OPTS} -Xlinker --version-script=exptmp"
++		# exptmp is removed below
++	    fi
++
++	    # Check if objects are 32-bit and we're running in 64-bit
++	    # environment.  If so, pass -m32 flag to linker.
++	    set ${OBJECTS}
++	    ABI32=`file $1 | grep 32-bit`
++	    if [ "${ABI32}" -a `uname -m` = "x86_64" ] ; then
++		OPTS="-m32 ${OPTS}"
++	    fi
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++	    if [ x${PATCH} = "x" ] ; then
++		VERSION="${MAJOR}.${MINOR}"
++	    else
++		VERSION="${MAJOR}.${MINOR}.${PATCH}"
++	    fi
++
++            echo "mklib: Making" $ARCH "shared library: " ${LIBNAME}.so.${VERSION}
++
++            # rm any old libs
++            rm -f ${LIBNAME}.so.${VERSION}
++            rm -f ${LIBNAME}.so.${MAJOR}
++            rm -f ${LIBNAME}.so
++
++            # make lib
++            ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME}.so.${VERSION} ${OBJECTS} ${DEPS}
++            # make usual symlinks
++            ln -s ${LIBNAME}.so.${VERSION} ${LIBNAME}.so.${MAJOR}
++            ln -s ${LIBNAME}.so.${MAJOR} ${LIBNAME}.so
++            # finish up
++            FINAL_LIBS="${LIBNAME}.so.${VERSION} ${LIBNAME}.so.${MAJOR} ${LIBNAME}.so"
++#	    rm -f exptmp
++        fi
++	;;
++
++    'SunOS')
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    echo "mklib: Making SunOS static library: " ${LIBNAME}
++	    FINAL_LIBS=`make_ar_static_lib -ruc 0 ${LIBNAME} ${OBJECTS}`
++	else
++	    if [ $NOPREFIX = 0 ] ; then
++		LIBNAME="lib${LIBNAME}.so"
++	    fi
++	    echo "mklib: Making SunOS shared library: " ${LIBNAME}
++
++	    if [ "x$LINK" = "x" ] ; then
++		# -linker was not specified, choose default linker now
++		if [ $CPLUSPLUS = 1 ] ; then
++		    # determine linker and options for C++ code
++		    if [ `which c++` ] ; then
++			# use Sun c++
++			LINK="c++"
++		    elif [ `type g++` ] ; then
++			# use g++
++			LINK="g++"
++		    else
++			echo "mklib: warning: can't find C++ compiler, trying CC."
++			LINK="CC"
++		    fi
++		else
++		    # use native Sun linker for C code
++		    LINK="ld"
++		fi
++	    fi
++
++	    # linker options
++	    if [ ${LINK} = "ld" -o ${LINK} = "cc" -o ${LINK} = "CC" ] ; then
++		# SunOS tools, -G to make shared libs
++		OPTS="-G"
++	    else
++		# gcc linker
++		# Check if objects are 32-bit and we're running in 64-bit
++		# environment.  If so, pass -m32 flag to linker.
++		set ${OBJECTS}
++		ABI32=`file $1 | grep 32-bit`
++		if [ "${ABI32}" ] ; then
++		    OPTS="-m32 -shared -Wl,-Bdynamic"
++		else
++		    OPTS="-m64 -shared -Wl,-Bdynamic"
++		fi
++	    fi
++
++	    # If using Sun C++ compiler, need to tell it not to add runpaths
++	    # that are specific to the build machine
++	    if [ ${LINK} = "CC" ] ; then
++		OPTS="${OPTS} -norunpath"
++	    fi
++
++	    # Solaris linker requires explicitly listing the Standard C & C++
++	    # libraries in the link path when building shared objects
++	    if [ ${LINK} = "CC" ] ; then
++		DEPS="${DEPS} -lCrun"
++	    fi
++	    DEPS="${DEPS} -lc"
++
++	    if [ $EXPORTS ] ; then
++		# Make the 'mapfile.scope' linker mapfile
++		echo "{" > mapfile.scope
++		echo "global:" >> mapfile.scope
++		sed 's/$/;/' ${EXPORTS} >> mapfile.scope
++		echo "local:" >> mapfile.scope
++		echo "    *;" >> mapfile.scope
++		echo "};" >> mapfile.scope
++		OPTS="${OPTS} -Wl,-Mmapfile.scope"
++	    fi
++
++	    # Check if objects are 64-bit
++	    # file says: ELF 64-bit MSB relocatable SPARCV9 Version 1
++	    set ${OBJECTS}
++	    if [ ${LINK} = "cc" -o ${LINK} = "CC" ] ; then
++		ABI64=`file $1 | grep "ELF 64-bit"`
++		if [ "${ABI64}" ] ; then
++		    case `uname -p` in
++			sparc)	    OPTS="${OPTS} -xarch=v9" ;;
++			i386)	    OPTS="${OPTS} -xarch=amd64" ;;
++		    esac
++		fi
++	    fi
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++	    # for debug:
++	    #echo "mklib: linker is" ${LINK} ${OPTS}
++	    if [ $NOPREFIX = 1 ] ; then
++		rm -f ${LIBNAME}
++		${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS}
++		FINAL_LIBS="${LIBNAME}"
++	    else
++		rm -f ${LIBNAME}.${MAJOR} ${LIBNAME}
++		${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME}.${MAJOR} -h ${LIBNAME}.${MAJOR} ${OBJECTS} ${DEPS}
++		ln -s ${LIBNAME}.${MAJOR} ${LIBNAME}
++		FINAL_LIBS="${LIBNAME}.${MAJOR} ${LIBNAME}"
++	    fi
++	fi
++	;;
++
++    'FreeBSD')
++	# we assume gcc
++
++	if [ "x$LINK" = "x" ] ; then
++	    # -linker was not specified so set default link command now
++            if [ $CPLUSPLUS = 1 ] ; then
++                LINK=g++
++            else
++                LINK=gcc
++            fi
++	fi
++
++	if [ $NOPREFIX = 1 ] ; then
++	    # No "lib" or ".so" part
++	    echo "mklib: Making FreeBSD shared library: " ${LIBNAME}
++	    OPTS="-shared"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++	    rm -f ${LIBNAME}
++	    ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS}
++	    FINAL_LIBS=${LIBNAME}
++        elif [ $STATIC = 1 ] ; then
++	    # make a static .a library
++	    STLIB="lib${LIBNAME}.a"
++	    echo "mklib: Making FreeBSD static library: " ${STLIB}
++
++	    # expand .a into .o files
++	    NEW_OBJECTS=`expand_archives ${STLIB}.obj $OBJECTS`
++
++	    FINAL_LIBS=`make_ar_static_lib cq 1 ${STLIB} ${NEW_OBJECTS}`
++
++	    # remove temporary extracted .o files
++	    rm -rf ${STLIB}.obj
++	else
++	    # make dynamic library
++	    SHLIB="lib${LIBNAME}.so.${MAJOR}"
++	    OPTS="-shared -Wl,-soname,${SHLIB}"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++	    echo "mklib: Making FreeBSD shared library: " ${SHLIB}
++	    rm -f ${SHLIB}
++	    ${LINK} ${OPTS} ${LDFLAGS} -o ${SHLIB} ${OBJECTS} ${DEPS}
++	    ln -sf ${SHLIB} "lib${LIBNAME}.so"
++	    FINAL_LIBS="${SHLIB} lib${LIBNAME}.so"
++	fi
++	;;
++
++    'IRIX' | 'IRIX64')
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    FINAL_LIBS=`make_ar_static_lib rc 0 ${LIBNAME} ${OBJECTS}`
++	else
++	    LIBNAME="lib${LIBNAME}.so"  # prefix with "lib", suffix with ".so"
++
++	    # examine first object to determine ABI
++    	    set ${OBJECTS}
++	    ABI_O32=`file $1 | grep 'ELF 32-bit'`
++	    ABI_N32=`file $1 | grep 'ELF N32'`
++	    ABI_N64=`file $1 | grep 'ELF 64-bit'`
++	    if [ "${ABI_O32}" ] ; then
++		OPTS="-32 -shared -all"
++		ABI="o32-bit"
++	    elif [ "${ABI_N32}" ] ; then
++		OPTS="-n32 -shared -all"
++		ABI="n32-bit"
++	    elif [ "${ABI_N64}" ] ; then
++		OPTS="-64 -shared -all"
++		ABI="64-bit"
++	    else
++		echo "Error: Unexpected IRIX ABI!"
++		exit 1
++	    fi
++
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++	    if [ $CPLUSPLUS = 1 ] ; then
++		LINK="CC"
++	    else
++		LINK="ld"
++	    fi
++
++	    echo "mklib: Making IRIX " ${ABI} " shared library: " ${LIBNAME}
++	    ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS}
++	    FINAL_LIBS=${LIBNAME}
++	fi
++	;;
++
++    'linux-cygwin')
++	LIBNAME="lib${LIBNAME}.a"
++	echo "mklib: Making linux-cygwin library: " ${LIBNAME}
++	rm -f ${LIBNAME}
++	gnuwin32ar ruv ${LIBNAME} ${OBJECTS}
++	FINAL_LIBS=${LIBNAME}
++	;;
++
++    'HP-UX')
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    echo "mklib: Making HP-UX static library: " ${LIBNAME}
++    	    FINAL_LIBS=`make_ar_static_lib -ruv 0 ${LIBNAME} ${OBJECTS}`
++	else
++            # HP uses a .2 for their current GL/GLU libraries
++	    if [ ${LIBNAME} = "GL" -o ${LIBNAME} = "GLU" ] ; then
++	       MAJOR=2
++	    fi
++	    RUNLIB="lib${LIBNAME}.${MAJOR}"
++	    DEVLIB="lib${LIBNAME}.sl"
++	    echo "mklib: Making HP-UX shared library: " ${RUNLIB} ${DEVLIB}
++	    ld -b -o ${RUNLIB} +b ${RUNLIB} ${OBJECTS} ${DEPS}
++	    ln -s ${RUNLIB} ${DEVLIB}
++	    FINAL_LIBS="${RUNLIB} ${DEVLIB}"
++	fi
++	;;
++
++    'AIX' )
++	# examine first object to determine ABI
++    	set ${OBJECTS}
++	ABI_64=`file $1 | grep '64-bit'`
++	if [ "${ABI_64}" ] ; then
++	    X64="-X64"
++	    Q64="-q64"
++	    OFILE=shr_64.o
++	else
++	    OFILE=shr.o  #Want to be consistent with the IBM libGL.a
++	fi
++
++	if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    echo "mklib: Making AIX static library: " ${LIBNAME}
++    	    FINAL_LIBS=`make_ar_static_lib -ruv 0 ${LIBNAME} ${OBJECTS}`
++	else
++	    EXPFILE="lib${LIBNAME}.exp"
++	    LIBNAME="lib${LIBNAME}.a"  # shared objects are still stored in the .a libraries
++	    OPTS="-bE:${EXPFILE} -bM:SRE -bnoentry ${Q64}"
++	    rm -f ${EXPFILE} ${OFILE}
++	    NM="/bin/nm -eC ${X64}"
++	    echo "#! /usr/lib/${LIBNAME}" > ${EXPFILE}
++	    ${NM} ${OBJECTS} | awk '{
++	    if ((($2 == "T") || ($2 == "D") || ($2 == "B")) \
++	    && ( substr($1,1,1) != ".")) {
++		    if (substr ($1, 1, 7) != "__sinit" &&
++			    substr ($1, 1, 7) != "__sterm") {
++			    if (substr ($1, 1, 5) == "__tf1")
++				print (substr ($1, 7))
++			    else if (substr ($1, 1, 5) == "__tf9")
++				print (substr ($1, 15))
++			    else
++				print $1
++			}
++		}
++	    }' | sort -u >> ${EXPFILE}
++
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++            # On AIX a shared library is linked differently when
++            # you want to dlopen the file
++	    if [ $DLOPEN = "1" ] ; then
++		cc -G ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS}
++	    else
++		cc ${OPTS} ${LDFLAGS} -o ${OFILE} ${OBJECTS} ${DEPS}
++		ar ${X64} -r ${LIBNAME} ${OFILE}
++	    fi
++
++            FINAL_LIBS="${LIBNAME}"
++        fi
++        ;;
++
++    'OpenSTEP')
++	LIBNAME="lib${LIBNAME}.a"
++	echo "mklib: Making OpenSTEP static library: " ${LIBNAME}
++	libtool -static -o ${LIBNAME} - ${OBJECTS}
++	FINAL_LIBS=${LIBNAME}
++	;;
++
++    'OSF1')
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    echo "mklib: Making OSF/1 static library: " ${LIBNAME}
++    	    FINAL_LIBS=`make_ar_static_lib -ruv 0 ${LIBNAME} ${OBJECTS}`
++	else
++	    VERSION="${MAJOR}.${MINOR}"
++	    LIBNAME="lib${LIBNAME}.so"
++	    echo "mklib: Making OSF/1 shared library: " ${LIBNAME}
++	    if [ "x$LINK" = "x" ] ; then
++		if [ $CPLUSPLUS = 1 ] ; then
++		    LINK=cxx
++		else
++		    LINK=cc
++		fi
++	    fi
++	    rm -f ${LIBNAME}.${VERSION}
++	    ${LINK} -o ${LIBNAME}.${VERSION} -shared -set_version ${VERSION} -soname ${LIBNAME}.${VERSION} -expect_unresolved \* -all ${OBJECTS} ${DEPS}
++	    ln -sf ${LIBNAME}.${VERSION} ${LIBNAME}
++	    FINAL_LIBS="${LIBNAME} ${LIBNAME}.${VERSION}"
++	fi
++	;;
++
++    'Darwin')
++        if [ $STATIC = 1 ] ; then
++            LIBNAME="lib${LIBNAME}.a"
++            echo "mklib: Making Darwin static library: " ${LIBNAME}
++            OPTS="-ruvs"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++            # expand .a into .o files
++            NEW_OBJECTS=`expand_archives ${LIBNAME}.obj $OBJECTS`
++
++            # make static lib
++            FINAL_LIBS=`make_ar_static_lib ${OPTS} 1 ${LIBNAME} ${NEW_OBJECTS}`
++
++            # remove temporary extracted .o files
++            rm -rf ${LIBNAME}.obj
++
++            FINAL_LIBS=${LIBNAME}
++        else
++            # On Darwin a .bundle is used for a library that you want to dlopen
++            if [ $DLOPEN = "1" ] ; then
++                LIBSUFFIX="bundle"
++                OPTS="${ARCHOPT} -bundle -multiply_defined suppress"
++            else
++                LIBSUFFIX="dylib"
++                if [ -z "$ID" ] ; then
++                    ID="lib${LIBNAME}.${MAJOR}.${LIBSUFFIX}"
++                fi
++                OPTS="${ARCHOPT} -dynamiclib -multiply_defined suppress -current_version ${MAJOR}.${MINOR}.0 -compatibility_version ${MAJOR}.${MINOR}.0 -install_name ${ID}"
++            fi
++
++            if [ ${EXPORTS} ] ; then
++                if [ -f ${EXPORTS}".darwin" ] ; then
++                    EXPORTS=$EXPORTS".darwin"
++                fi
++                OPTS="${OPTS} -exported_symbols_list ${EXPORTS}"
++            fi
++
++            LINKNAME="lib${LIBNAME}.${LIBSUFFIX}"
++            LIBNAME="lib${LIBNAME}.${MAJOR}.${LIBSUFFIX}"
++
++	    # examine first object to determine ABI
++    	    set ${OBJECTS}
++            ABIS=`lipo -info $1 | sed s/.*://`
++            for ABI in $ABIS; do
++                OPTS="${OPTS} -arch ${ABI}"
++            done
++
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++	    # determine linker
++	    if [ $CPLUSPLUS = 1 ] ; then
++		LINK="g++"
++	    else
++		LINK="cc"
++	    fi
++
++            echo "mklib: Making Darwin shared library: " ${LIBNAME}
++
++            ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS}
++            ln -s ${LIBNAME} ${LINKNAME}
++            FINAL_LIBS="${LIBNAME} ${LINKNAME}"
++        fi
++        ;;
++
++    'LynxOS')
++	LIBNAME="lib${LIBNAME}.a"
++	echo "mklib: Making LynxOS static library: " ${LIBNAME}
++        FINAL_LIBS=`make_ar_static_lib -ru 0 ${LIBNAME} ${OBJECTS}`
++	;;
++
++    'BeOS')
++        if [ $STATIC = 1 ] ; then
++            LIBNAME="lib${LIBNAME}.a"
++            echo "mklib: Making BeOS static library: " ${LIBNAME}
++            FINAL_LIBS=`make_ar_static_lib -cru 0 ${LIBNAME} ${OBJECTS}`
++        else
++	    LIBNAME="lib${LIBNAME}.so"
++	    echo "mklib: Making BeOS shared library: " ${LIBNAME}
++	    gcc -nostart -Xlinker "-soname=${LIBNAME}" -L/Be/develop/lib/x86 -lbe ${DEPS} ${OBJECTS} -o "${LIBNAME}"
++	    mimeset -f "${LIBNAME}"
++	    # XXX remove the Mesa3D stuff here since mklib isn't mesa-specific.
++	    setversion "${LIBNAME}" -app ${MAJOR} ${MINOR} ${PATCH} -short "Powered by Mesa3D!" -long "Powered by Mesa3D!"
++	fi
++	FINAL_LIBS=${LIBNAME}
++	;;
++
++    'QNX')
++	LIBNAME="lib${LIBNAME}.a"
++	echo "mklib: Making QNX library: " ${LIBNAME}
++	wlib ${LIBNAME} ${OBJECTS}
++	FINAL_LIBS=${LIBNAME}
++	;;
++
++    'MorphOS')
++	LIBNAME="lib${LIBNAME}.a"
++	echo "mklib: Making MorphOS library: " ${LIBNAME}
++	ppc-morphos-ar rc ${LIBNAME} ${OBJECTS}
++	FINAL_LIBS="${LIBNAME}"
++	;;
++
++    'icc' | 'icc-istatic')
++	# Intel C compiler
++	# This should get merged into the Linux code, above, since this isn't
++	# really a different architecture.
++	LIBNAME="lib${LIBNAME}"     # prefix with "lib"
++
++        if [ $STATIC = 1 ] ; then
++            echo "mklib: Making Intel ICC static library: " ${LIBNAME}.a
++            LINK="ar"
++            OPTS="-ruv"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++            # make lib
++            ${LINK} ${OPTS} ${LIBNAME}.a ${OBJECTS}
++            # finish up
++            FINAL_LIBS="${LIBNAME}.a"
++        else
++            if [ $ARCH = icc-istatic ] ; then
++                 OPTS="-shared -i-static -cxxlib-icc"
++            else
++                 OPTS="-shared"
++            fi
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++            VERSION="${MAJOR}.${MINOR}.${PATCH}"
++            echo "mklib: Making Intel ICC shared library: " ${LIBNAME}.so.${VERSION}
++
++            if [ $CPLUSPLUS = 1 ] ; then
++                LINK="icpc"
++            else
++                LINK="icc"
++            fi
++            # rm any old libs
++            rm -f ${LIBNAME}.so.${VERSION}
++            rm -f ${LIBNAME}.so.${MAJOR}
++            rm -f ${LIBNAME}.so
++            # make lib
++            ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME}.so.${VERSION} ${OBJECTS} ${DEPS}
++            # make usual symlinks
++            ln -s ${LIBNAME}.so.${VERSION} ${LIBNAME}.so.${MAJOR}
++            ln -s ${LIBNAME}.so.${MAJOR} ${LIBNAME}.so
++            # finish up
++            FINAL_LIBS="${LIBNAME}.so.${VERSION} ${LIBNAME}.so.${MAJOR} ${LIBNAME}.so"
++        fi
++	;;
++
++    'aix-gcc')
++	# AIX with gcc
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    echo "mklib: Making AIX GCC static library: " ${LIBNAME}
++            FINAL_LIBS=`make_ar_static_lib ru 0 ${LIBNAME} ${OBJECTS}`
++	else
++	    LIBNAME="lib${LIBNAME}.so"  # prefix with "lib", suffix with ".so"
++	    echo "mklib: Making AIX GCC shared library: " ${LIBNAME}
++	    # remove old lib
++	    rm -f ${LIBNAME}
++	    # make the lib
++	    gcc -shared -Wl,-G ${OBJECTS} ${DEPS} -o ${LIBNAME}
++	    # NOTE: the application linking with this library must specify
++	    # the -Wl,-brtl flags to gcc
++	    FINAL_LIBS=${LIBNAME}
++	fi
++	;;
++
++    'ultrix')
++	# XXX untested
++        if [ $STATIC = 0 ] ; then
++	    echo "mklib: Warning shared libs not supported on Ultrix"
++	fi
++	LIBNAME="lib${LIBNAME}.a"
++	echo "mklib: Making static library for Ultrix: " ${LIBNAME}
++        FINAL_LIBS=`make_ar_static_lib ru 0 ${LIBNAME} ${OBJECTS}`
++	;;
++
++     CYGWIN*)
++	# GCC-based environment
++
++	if [ "x$LINK" = "x" ] ; then
++	    # -linker was not specified so set default link command now
++            if [ $CPLUSPLUS = 1 ] ; then
++                LINK=g++
++            else
++                LINK=gcc
++            fi
++	fi
++
++	if [ $NOPREFIX = 1 ] ; then
++	    # No "lib" or ".so" part
++	    echo "mklib: Making CYGWIN shared library: " ${LIBNAME}
++	    OPTS="-shared -Wl,--enable-auto-image-base"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++	    rm -f ${LIBNAME}
++	    ${LINK} ${OPTS} ${LDFLAGS} -o ${LIBNAME} ${OBJECTS} ${DEPS} || exit $?
++	    FINAL_LIBS=${LIBNAME}
++        else
++	CYGNAME="cyg${LIBNAME}"     # prefix with "cyg"
++	LIBNAME="lib${LIBNAME}"     # prefix with "lib"
++
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME=${LIBNAME}.a
++            echo "mklib: Making CYGWIN static library: " ${LIBNAME}
++            OPTS="-ru"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++
++            # expand .a into .o files
++            NEW_OBJECTS=`expand_archives ${LIBNAME}.obj $OBJECTS`
++
++            FINAL_LIBS=`make_ar_static_lib ${OPTS} 1 ${LIBNAME} ${NEW_OBJECTS}`
++
++            # remove temporary extracted .o files
++            rm -rf ${LIBNAME}.obj
++        else
++	    OPTS="-shared -Wl,--enable-auto-image-base -Wl,-export-all -Wl,--out-implib=${LIBNAME}-${MAJOR}.dll.a"
++            if [ "${ALTOPTS}" ] ; then
++                OPTS=${ALTOPTS}
++            fi
++            echo "mklib: Making CYGWIN shared library: " ${CYGNAME}-${MAJOR}.dll
++
++            # rm any old libs
++            rm -f ${CYGNAME}-${MAJOR}.dll
++            rm -f ${LIBNAME}-${MAJOR}.dll.a
++            rm -f ${LIBNAME}.dll.a
++            rm -f ${LIBNAME}.a
++
++            # make lib
++            ${LINK} ${OPTS} ${LDFLAGS} -o ${CYGNAME}-${MAJOR}.dll ${OBJECTS} ${DEPS} || exit $?
++            # make usual symlinks
++            ln -s ${LIBNAME}-${MAJOR}.dll.a ${LIBNAME}.dll.a
++            # finish up
++            FINAL_LIBS="${LIBNAME}-${MAJOR}.dll.a ${LIBNAME}.dll.a"
++	    # special case for installing in bin
++            FINAL_BINS="${CYGNAME}-${MAJOR}.dll"
++        fi
++        fi
++	;;
++
++    'example')
++	# If you're adding support for a new architecture, you can
++	# start with this:
++        if [ $STATIC = 1 ] ; then
++	    LIBNAME="lib${LIBNAME}.a"
++	    echo "mklib: Making static library for example arch: " ${LIBNAME}
++            FINAL_LIBS=`make_ar_static_lib rv 0 ${LIBNAME} ${OBJECTS}`
++	else
++	    LIBNAME="lib${LIBNAME}.so"  # prefix with "lib", suffix with ".so"
++	    echo "mklib: Making shared library for example arch: " ${LIBNAME}
++	    ld -o ${LIBNAME} ${OBJECTS} ${DEPS}
++	    FINAL_LIBS="${LIBNAME}"
++	fi
++	;;
++
++    *)
++	echo "mklib: ERROR: Don't know how to make a static/shared library for" ${ARCH}
++	echo "mklib: Please add necessary commands to mklib script."
++	;;
++esac
++
++
++#
++# Put library files into installation directory if specified.
++#
++if [ ${INSTALLDIR} != "." ] ; then
++    echo "mklib: Installing" ${FINAL_LIBS} "in" ${INSTALLDIR}
++    test -d ${INSTALLDIR} || mkdir -p ${INSTALLDIR}
++    mv ${FINAL_LIBS} ${INSTALLDIR}/
++
++    if [ "x${FINAL_BINS}" != "x" ] ; then
++        echo "mklib: Installing" ${FINAL_BINS} "in" ${INSTALLDIR}
++        mv ${FINAL_BINS} ${INSTALLDIR}/
++    fi
++fi
+--- MesaGLUT-20100214.orig/configs/default
++++ MesaGLUT-20100214/configs/default
+@@ -0,0 +1,49 @@
++# Default/template configuration
++
++# This is included by other config files which may override some
++# of these variables.
++# Think of this as a base class from which configs are derived.
++
++
++CONFIG_NAME = default
++
++# Compiler and flags
++CC = cc
++CFLAGS = 
++LDFLAGS = 
++
++# Misc tools and flags
++MKLIB = $(SHELL) $(TOP)/bin/mklib
++MKLIB_OPTIONS = 
++MKDEP = makedepend
++MKDEP_OPTIONS = -fdepend
++
++# Use MINSTALL for installing libraries, INSTALL for everything else
++MINSTALL = $(SHELL) $(TOP)/bin/minstall
++INSTALL = $(MINSTALL)
++
++# Library names (base name)
++GLUT_LIB = glut
++
++# Library names (actual file names)
++GLUT_LIB_NAME = lib$(GLUT_LIB).so
++
++# globs used to install the lib and all symlinks
++GLUT_LIB_GLOB = $(GLUT_LIB_NAME)*
++
++# Directories to build
++LIB_DIR = lib
++SRC_DIRS = 
++
++# Library dependencies
++GLUT_LIB_DEPS   = $(EXTRA_LIB_PATH) -L$(TOP)/$(LIB_DIR) -l$(GLU_LIB) -l$(GL_LIB)
++
++# Installation directories (for make install)
++INSTALL_DIR = /usr/local
++INSTALL_LIB_DIR = $(INSTALL_DIR)/$(LIB_DIR)
++INSTALL_INC_DIR = $(INSTALL_DIR)/include
++
++# pkg-config substitutions
++GLUT_PC_REQ_PRIV = 
++GLUT_PC_LIB_PRIV = -lm
++GLUT_PC_CFLAGS = 
+--- MesaGLUT-20100214.orig/configs/linux-directfb
++++ MesaGLUT-20100214/configs/linux-directfb
+@@ -0,0 +1,16 @@
++# Configuration for DirectFB
++
++include $(TOP)/configs/default
++
++CONFIG_NAME = linux-directfb
++
++DIRECTFB_INCLUDES = $(shell pkg-config --cflags-only-I directfb)
++
++CFLAGS = -O2 -g -Wall -fPIC
++
++# Directories
++SRC_DIRS = glut/directfb
++
++# Library/program dependencies
++GLUT_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL -lGLU $(shell pkg-config --libs directfb) -lm
++GLUT_PC_REQ_PRIV = directfb
+--- MesaGLUT-20100214.orig/configs/linux-x11
++++ MesaGLUT-20100214/configs/linux-x11
+@@ -0,0 +1,16 @@
++# Configuration for X11
++
++include $(TOP)/configs/default
++
++CONFIG_NAME = linux-x11
++
++X11_INCLUDES = $(shell pkg-config --cflags-only-I x11 xmu xi)
++
++CFLAGS = -O2 -g -Wall -fPIC
++
++# Directories
++SRC_DIRS = glut/glx
++
++# Library/program dependencies
++GLUT_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL -lGLU $(shell pkg-config --libs x11 xmu xi) -lm
++GLUT_PC_REQ_PRIV = x11 xmu xi
+--- MesaGLUT-20100214.orig/include/GL/glut.h
++++ MesaGLUT-20100214/include/GL/glut.h
+@@ -15,7 +15,6 @@
+ #endif
+ 
+ #include <GL/gl.h>
+-#include <GL/glu.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -31,11 +30,9 @@
+    define GLUT_USE_SGI_OPENGL in your compile preprocessor options.  */
+ #  ifdef GLUT_USE_SGI_OPENGL
+ #   pragma comment (lib, "opengl.lib")    /* link with SGI OpenGL for Windows lib */
+-#   pragma comment (lib, "glu.lib")       /* link with SGI OpenGL Utility lib */
+ #   pragma comment (lib, "glut.lib")      /* link with Win32 GLUT for SGI OpenGL lib */
+ #  else
+ #   pragma comment (lib, "opengl32.lib")  /* link with Microsoft OpenGL lib */
+-#   pragma comment (lib, "glu32.lib")     /* link with Microsoft OpenGL Utility lib */
+ #   pragma comment (lib, "glut32.lib")    /* link with Win32 GLUT lib */
+ #  endif
+ # endif
+@@ -447,14 +444,21 @@
+ #define GLUT_CURSOR_FULL_CROSSHAIR	102
+ #endif
+ 
++/* glutInitContextProfile parameters. */
++#define GLUT_CORE_PROFILE		1
++#define GLUT_COMPATIBILITY_PROFILE	2
++#define GLUT_ES_PROFILE			4
++
+ /* GLUT initialization sub-API. */
+ GLUTAPI void GLUTAPIENTRY glutInit(int *argcp, char **argv);
++GLUTAPI void GLUTAPIENTRY glutExit(void);
+ #if defined(_WIN32) && !defined(GLUT_DISABLE_ATEXIT_HACK)
+ GLUTAPI void GLUTAPIENTRY __glutInitWithExit(int *argcp, char **argv, void (__cdecl *exitfunc)(int));
+ #ifndef GLUT_BUILDING_LIB
+ #define glutInit(__argcp, __argv) __glutInitWithExit(__argcp, __argv, exit)
+ #endif
+ #endif
++GLUTAPI void GLUTAPIENTRY glutInitContextProfile(int profile);
+ GLUTAPI void GLUTAPIENTRY glutInitDisplayMode(unsigned int mode);
+ #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 9)
+ GLUTAPI void GLUTAPIENTRY glutInitDisplayString(const char *string);
+@@ -462,6 +466,7 @@
+ GLUTAPI void GLUTAPIENTRY glutInitWindowPosition(int x, int y);
+ GLUTAPI void GLUTAPIENTRY glutInitWindowSize(int width, int height);
+ GLUTAPI void GLUTAPIENTRY glutMainLoop(void);
++GLUTAPI void GLUTAPIENTRY glutLeaveMainLoop(void);
+ 
+ /* GLUT window sub-API. */
+ GLUTAPI int GLUTAPIENTRY glutCreateWindow(const char *title);
+@@ -480,6 +485,8 @@
+ GLUTAPI void GLUTAPIENTRY glutSwapBuffers(void);
+ GLUTAPI int GLUTAPIENTRY glutGetWindow(void);
+ GLUTAPI void GLUTAPIENTRY glutSetWindow(int win);
++GLUTAPI void *GLUTAPIENTRY glutGetWindowData(void);
++GLUTAPI void GLUTAPIENTRY glutSetWindowData(void *data);
+ GLUTAPI void GLUTAPIENTRY glutSetWindowTitle(const char *title);
+ GLUTAPI void GLUTAPIENTRY glutSetIconTitle(const char *title);
+ GLUTAPI void GLUTAPIENTRY glutPositionWindow(int x, int y);
+--- MesaGLUT-20100214.orig/src/Makefile
++++ MesaGLUT-20100214/src/Makefile
+@@ -0,0 +1,40 @@
++# src/Makefile
++
++TOP = ..
++
++include $(TOP)/configs/current
++
++SUBDIRS = $(SRC_DIRS)
++
++
++default: message $(TOP)/$(LIB_DIR) subdirs
++
++
++message:
++	@echo "Making sources for" $(CONFIG_NAME)
++
++
++subdirs:
++	@for dir in $(SUBDIRS) ; do \
++		if [ -d $$dir ] ; then \
++			(cd $$dir && $(MAKE)) || exit 1; \
++		fi \
++	done
++
++install: $(TOP)/$(LIB_DIR)
++	@for dir in $(SUBDIRS) ; do \
++		if [ -d $$dir ] ; then \
++			(cd $$dir && $(MAKE) install) || exit 1 ; \
++		fi \
++	done
++
++$(TOP)/$(LIB_DIR):
++	-@test -d $(TOP)/$(LIB_DIR) || mkdir -p $(TOP)/$(LIB_DIR)
++
++
++clean:
++	-@for dir in $(SUBDIRS) ; do \
++		if [ -d $$dir ] ; then \
++			(cd $$dir && $(MAKE) clean) ; \
++		fi \
++	done
+--- MesaGLUT-20100214.orig/src/glut/directfb/Makefile
++++ MesaGLUT-20100214/src/glut/directfb/Makefile
+@@ -9,9 +9,7 @@
+ GLUT_MINOR = 7
+ GLUT_TINY = 1
+ 
+-INCLUDES = -I$(TOP)/include -I$(MARK) $(shell pkg-config --cflags directfb)
+-
+-GLUT_LIB_DEPS += $(shell pkg-config --libs directfb)
++INCLUDES = -I$(TOP)/include -I$(MARK)
+ 
+ CORE_SOURCES = \
+ 	callback.c \
+@@ -48,15 +46,12 @@
+ ##### RULES #####
+ 
+ .c.o:
+-	$(CC) -c $(INCLUDES) $(CFLAGS) $(DEFINES) $< -o $@
+-
+-.S.o:
+-	$(CC) -c $(INCLUDES) $(CFLAGS) $(DEFINES)  $< -o $@
++	$(CC) -c $(INCLUDES) $(DIRECTFB_INCLUDES) $(CFLAGS) $(DEFINES) $< -o $@
+ 
+ 
+ ##### TARGETS #####
+ 
+-default: depend $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME)
++default: depend $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME) glut.pc
+ 
+ 
+ # Make the library
+@@ -67,12 +62,34 @@
+ 		$(MKLIB_OPTIONS) $(OBJECTS)
+ 
+ 
++# glut pkgconfig file
++pcedit = sed \
++	-e 's,@INSTALL_DIR@,$(INSTALL_DIR),' \
++	-e 's,@INSTALL_LIB_DIR@,$(INSTALL_LIB_DIR),' \
++	-e 's,@INSTALL_INC_DIR@,$(INSTALL_INC_DIR),' \
++	-e 's,@VERSION@,$(GLUT_MAJOR).$(GLUT_MINOR).$(GLUT_TINY),' \
++	-e 's,@GLUT_PC_REQ_PRIV@,$(GLUT_PC_REQ_PRIV),' \
++	-e 's,@GLUT_PC_LIB_PRIV@,$(GLUT_PC_LIB_PRIV),' \
++	-e 's,@GLUT_PC_CFLAGS@,$(GLUT_PC_CFLAGS),' \
++	-e 's,@GLUT_LIB@,$(GLUT_LIB),'
++glut.pc: glut.pc.in
++	$(pcedit) $< > $@
++
++install: glut.pc
++	$(INSTALL) -d $(DESTDIR)$(INSTALL_INC_DIR)/GL
++	$(INSTALL) -d $(DESTDIR)$(INSTALL_LIB_DIR)
++	$(INSTALL) -d $(DESTDIR)$(INSTALL_LIB_DIR)/pkgconfig
++	$(INSTALL) -m 644 $(TOP)/include/GL/glut.h $(DESTDIR)$(INSTALL_INC_DIR)/GL
++	$(MINSTALL) $(TOP)/$(LIB_DIR)/$(GLUT_LIB_GLOB) $(DESTDIR)$(INSTALL_LIB_DIR)
++	$(INSTALL) -m 644 glut.pc $(DESTDIR)$(INSTALL_LIB_DIR)/pkgconfig
++
++
+ # Run 'make -f Makefile.solo dep' to update the dependencies if you change
+ # what's included by any source file.
+ depend: $(SOURCES) 
+ 	rm -f depend
+ 	touch depend
+-	$(MKDEP) $(MKDEP_OPTIONS) $(INCLUDES) $(SOURCES) > /dev/null 
++	$(MKDEP) $(MKDEP_OPTIONS) $(INCLUDES) $(SOURCES) > /dev/null 2>/dev/null
+ 
+ # Emacs tags
+ tags:
+@@ -82,6 +99,6 @@
+ # Remove .o and backup files
+ clean: depend
+ 	-rm -f depend depend.bak
+-	-rm -f *.o *~ *.o *~ *.so libglut.so.3.7
++	-rm -f *.pc $(OBJECTS)
+ 
+-include depend
++-include depend
+--- MesaGLUT-20100214.orig/src/glut/directfb/events.c
++++ MesaGLUT-20100214/src/glut/directfb/events.c
+@@ -28,6 +28,8 @@
+ 
+ static int g_ignore_key_repeat = 0;
+ 
++static GLboolean g_loop;
++
+ /*****************************************************************************/
+ 
+ 
+@@ -437,7 +439,9 @@
+      
+      __glutHandleWindows();
+      
+-     while (GL_TRUE) {
++     g_loop = GL_TRUE;
++
++     while (g_loop) {
+           DFBEvent evt, prev;
+           
+           g_idle = GL_TRUE;
+@@ -490,3 +494,9 @@
+      }
+ }
+ 
++
++void GLUTAPIENTRY
++glutLeaveMainLoop( void )
++{
++     g_loop = GL_FALSE;
++}
+--- MesaGLUT-20100214.orig/src/glut/directfb/ext.c
++++ MesaGLUT-20100214/src/glut/directfb/ext.c
+@@ -182,16 +182,16 @@
+      while (extensions && *extensions) {
+           GLubyte *next;
+           
+-          next = strchr( extensions, ' ' );
++          next = (GLubyte *) strchr( (const char *) extensions, ' ' );
+           if (next) {
+                if (length == (int)(next - extensions)) {
+-                    if (!strncmp( extensions, name, length ))
++                    if (!strncmp( (const char *) extensions, name, length ))
+                          return 1;
+                }
+                extensions = next+1;
+           }
+           else {
+-               if (!strcmp( extensions, name ))
++               if (!strcmp( (const char *) extensions, name ))
+                     return 1;
+                break; 
+           }
+--- MesaGLUT-20100214.orig/src/glut/directfb/glut.pc.in
++++ MesaGLUT-20100214/src/glut/directfb/glut.pc.in
+@@ -0,0 +1,13 @@
++prefix=@INSTALL_DIR@
++exec_prefix=${prefix}
++libdir=@INSTALL_LIB_DIR@
++includedir=@INSTALL_INC_DIR@
++
++Name: MesaGLUT
++Description: Mesa OpenGL Utility Toolkit library
++Requires: gl glu
++Requires.private: @GLUT_PC_REQ_PRIV@
++Version: @VERSION@
++Libs: -L${libdir} -l@GLUT_LIB@
++Libs.private: @GLUT_PC_LIB_PRIV@
++Cflags: -I${includedir} @GLUT_PC_CFLAGS@
+--- MesaGLUT-20100214.orig/src/glut/directfb/init.c
++++ MesaGLUT-20100214/src/glut/directfb/init.c
+@@ -98,6 +98,13 @@
+ }
+ 
+ 
++void GLUTAPIENTRY
++glutExit( void )
++{
++     __glutExit();
++}
++
++
+ void GLUTAPIENTRY 
+ glutInitDisplayMode( unsigned int mode )
+ {
+@@ -126,3 +133,9 @@
+ {
+ }
+ 
++
++void GLUTAPIENTRY
++glutInitContextProfile( int profile )
++{
++     DirectFBSetOption( "gles", profile == GLUT_ES_PROFILE ? "2" : "0" );
++}
+--- MesaGLUT-20100214.orig/src/glut/directfb/models.c
++++ MesaGLUT-20100214/src/glut/directfb/models.c
+@@ -48,7 +48,7 @@
+ #include <GL/gl.h>
+ #include <GL/glu.h>
+ 
+-#include "internal.h"
++#include "GL/glut.h"
+ 
+ /* Some <math.h> files do not define M_PI... */
+ #ifndef M_PI
+@@ -63,8 +63,6 @@
+ initQuadObj(void)
+ {
+   quadObj = gluNewQuadric();
+-  if (!quadObj)
+-    __glutFatalError("out of memory");
+ }
+ 
+ /* CENTRY */
+@@ -153,7 +151,7 @@
+ 
+   for (i = 5; i >= 0; i--) {
+     glBegin(type);
+-/*     glNormal3fv(&n[i][0]); */
++    glNormal3fv(&n[i][0]);
+     glVertex3fv(&v[faces[i][0]][0]);
+     glVertex3fv(&v[faces[i][1]][0]);
+     glVertex3fv(&v[faces[i][2]][0]);
+@@ -206,9 +204,9 @@
+       sinPhi = sin(phi);
+       dist = R + r * cosPhi;
+ 
+-/*       glNormal3f(cosTheta1 * cosPhi, -sinTheta1 * cosPhi, sinPhi); */
++      glNormal3f(cosTheta1 * cosPhi, -sinTheta1 * cosPhi, sinPhi);
+       glVertex3f(cosTheta1 * dist, -sinTheta1 * dist, r * sinPhi);
+-/*       glNormal3f(cosTheta * cosPhi, -sinTheta * cosPhi, sinPhi); */
++      glNormal3f(cosTheta * cosPhi, -sinTheta * cosPhi, sinPhi);
+       glVertex3f(cosTheta * dist, -sinTheta * dist,  r * sinPhi);
+     }
+     glEnd();
+@@ -223,10 +221,10 @@
+ glutWireTorus(GLdouble innerRadius, GLdouble outerRadius,
+   GLint nsides, GLint rings)
+ {
+-/*   glPushAttrib(GL_POLYGON_BIT); */
+-/*   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); */
++  glPushAttrib(GL_POLYGON_BIT);
++  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+   doughnut(innerRadius, outerRadius, nsides, rings);
+-/*   glPopAttrib(); */
++  glPopAttrib();
+ }
+ 
+ void GLUTAPIENTRY
+@@ -299,7 +297,6 @@
+ 
+   d = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+   if (d == 0.0) {
+-/*    __glutWarning("normalize: zero length vector"); */
+     v[0] = d = 1.0;
+   }
+   d = 1 / d;
+@@ -319,7 +316,7 @@
+   normalize(n0);
+ 
+   glBegin(shadeType);
+-/*   glNormal3fv(n0); */
++  glNormal3fv(n0);
+   glVertex3fv(&dodec[a][0]);
+   glVertex3fv(&dodec[b][0]);
+   glVertex3fv(&dodec[c][0]);
+@@ -378,7 +375,7 @@
+   normalize(q1);
+ 
+   glBegin(shadeType);
+-/*   glNormal3fv(q1); */
++  glNormal3fv(q1);
+   glVertex3fv(n1);
+   glVertex3fv(n2);
+   glVertex3fv(n3);
+--- MesaGLUT-20100214.orig/src/glut/directfb/window.c
++++ MesaGLUT-20100214/src/glut/directfb/window.c
+@@ -118,12 +118,13 @@
+           DFBWindowDescription dsc;
+      
+           dsc.flags  = DWDESC_CAPS | DWDESC_POSX | DWDESC_POSY | 
+-                       DWDESC_WIDTH | DWDESC_HEIGHT;
++                       DWDESC_WIDTH | DWDESC_HEIGHT | DWDESC_SURFACE_CAPS;
+           dsc.caps   = DWCAPS_NONE;
+           dsc.posx   = g_xpos;
+           dsc.posy   = g_ypos;
+           dsc.width  = g_width;
+           dsc.height = g_height;
++          dsc.surface_caps = DSCAPS_GL;
+ 
+           if (g_display_mode & GLUT_DOUBLE)
+                dsc.caps |= DWCAPS_DOUBLEBUFFER;
+@@ -465,6 +466,7 @@
+ glutSwapBuffers( void )
+ {
+      if (g_current) {
++          g_current->gl->SwapBuffers( g_current->gl );
+           g_current->gl->Unlock( g_current->gl );    
+           g_current->surface->Flip( g_current->surface, NULL, 0 );    
+           g_current->gl->Lock( g_current->gl );
+@@ -496,6 +498,24 @@
+ }
+ 
+ 
++void *GLUTAPIENTRY
++glutGetWindowData( void )
++{
++     void *data;
++
++     g_current->window->GetProperty( g_current->window, "data", &data );
++
++     return data;
++}
++
++
++void GLUTAPIENTRY
++glutSetWindowData( void *data )
++{
++     g_current->window->SetProperty( g_current->window, "data", data, NULL );
++}
++
++
+ void GLUTAPIENTRY 
+ glutSetWindowTitle( const char *title )
+ {
+--- MesaGLUT-20100214.orig/src/glut/glx/Makefile
++++ MesaGLUT-20100214/src/glut/glx/Makefile
+@@ -81,13 +81,13 @@
+ ##### RULES #####
+ 
+ .c.o:
+-	$(CC) -c -I$(TOP)/include $(X11_INCLUDES) $(CFLAGS) $(GLUT_CFLAGS) $<
++	$(CC) -c -I$(TOP)/include $(X11_INCLUDES) $(CFLAGS) $(DEFINES) $<
+ 
+ 
+ 
+ ##### TARGETS #####
+ 
+-default: $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME)
++default: $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME) glut.pc
+ 
+ 
+ # Make the library
+@@ -135,6 +135,6 @@
+ 	@ rm -f depend
+ 	@ touch depend
+ 	@ $(MKDEP) $(MKDEP_OPTIONS) -I$(TOP)/include $(SOURCES) \
+-		> /dev/null 
++		> /dev/null 2>/dev/null
+ 
+-include depend
++-include depend
+--- MesaGLUT-20100214.orig/src/glut/glx/glut.pc.in
++++ MesaGLUT-20100214/src/glut/glx/glut.pc.in
+@@ -3,7 +3,7 @@
+ libdir=@INSTALL_LIB_DIR@
+ includedir=@INSTALL_INC_DIR@
+ 
+-Name: glut
++Name: MesaGLUT
+ Description: Mesa OpenGL Utility Toolkit library
+ Requires: gl glu
+ Requires.private: @GLUT_PC_REQ_PRIV@
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_event.c
++++ MesaGLUT-20100214/src/glut/glx/glut_event.c
+@@ -103,6 +103,8 @@
+ unsigned int __glutModifierMask = (unsigned int) ~0;
+ int __glutWindowDamaged = 0;
+ 
++int __glutLoop;
++
+ void GLUTAPIENTRY
+ glutIdleFunc(GLUTidleCB idleFunc)
+ {
+@@ -1373,7 +1375,8 @@
+   if (!__glutWindowListSize)
+     __glutFatalUsage(
+       "main loop entered with no windows created.");
+-  for (;;) {
++  __glutLoop = 1;
++  while (__glutLoop) {
+     __glutProcessWindowWorkLists();
+     if (__glutIdleFunc || __glutWindowWorkList) {
+       idleWait();
+@@ -1386,4 +1389,10 @@
+     }
+   }
+ }
++
++void GLUTAPIENTRY
++glutLeaveMainLoop(void)
++{
++  __glutLoop = 0;
++}
+ /* ENDCENTRY */
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_glxext.c
++++ MesaGLUT-20100214/src/glut/glx/glut_glxext.c
+@@ -177,6 +177,7 @@
+ 
+ 
+ 
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_fbconfig)
+ GLXContext
+ __glut_glXCreateContextWithConfigSGIX(Display *dpy, GLXFBConfigSGIX config,
+                                       int render_type, GLXContext share_list,
+@@ -249,6 +250,7 @@
+   return 0;
+ #endif
+ }
++#endif
+ 
+ 
+ 
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_init.c
++++ MesaGLUT-20100214/src/glut/glx/glut_init.c
+@@ -346,6 +346,12 @@
+   __glutPPMFile = getenv("GLUT_PPM_FILE");
+ }
+ 
++void GLUTAPIENTRY
++glutExit()
++{
++  XCloseDisplay(__glutDisplay);
++}
++
+ #ifdef _WIN32
+ void GLUTAPIENTRY 
+ __glutInitWithExit(int *argcp, char **argv, void (__cdecl *exitfunc)(int))
+@@ -390,4 +396,9 @@
+   __glutDisplayMode = mask;
+ }
+ 
++void GLUTAPIENTRY
++glutInitContextProfile(int profile)
++{
++}
++
+ /* ENDCENTRY */
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_menu.c
++++ MesaGLUT-20100214/src/glut/glx/glut_menu.c
+@@ -26,7 +26,7 @@
+ #include "glutint.h"
+ #include "layerutil.h"
+ 
+-void (CDECL *__glutMenuStatusFunc) (int, int, int);
++void (GLUTAPIENTRYV *__glutMenuStatusFunc) (int, int, int);
+ GLUTmenuItem *__glutItemSelected;
+ GLUTmenu **__glutMenuList = NULL;
+ 
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_shapes.c
++++ MesaGLUT-20100214/src/glut/glx/glut_shapes.c
+@@ -47,6 +47,8 @@
+ #include <math.h>
+ #include "glutint.h"
+ 
++#include <GL/glu.h>
++
+ /* Some <math.h> files do not define M_PI... */
+ #ifndef M_PI
+ #define M_PI 3.14159265358979323846
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_util.c
++++ MesaGLUT-20100214/src/glut/glx/glut_util.c
+@@ -12,6 +12,8 @@
+ 
+ #include "glutint.h"
+ 
++#include <GL/glu.h>
++
+ /* strdup is actually not a standard ANSI C or POSIX routine
+    so implement a private one for GLUT.  OpenVMS does not have a
+    strdup; Linux's standard libc doesn't declare strdup by default
+--- MesaGLUT-20100214.orig/src/glut/glx/glut_win.c
++++ MesaGLUT-20100214/src/glut/glx/glut_win.c
+@@ -193,6 +193,18 @@
+   }
+   __glutSetWindow(window);
+ }
++
++void *GLUTAPIENTRY
++glutGetWindowData(void)
++{
++  return __glutCurrentWindow->data;
++}
++
++void GLUTAPIENTRY
++glutSetWindowData(void *data)
++{
++  __glutCurrentWindow->data = data;
++}
+ /* ENDCENTRY */
+ 
+ static int
+@@ -737,7 +749,7 @@
+   textprop.value = (unsigned char *) title;
+   textprop.encoding = XA_STRING;
+   textprop.format = 8;
+-  textprop.nitems = strlen(title);
++  textprop.nitems = title ? strlen(title) : 0;
+ #if defined(_WIN32)
+   SetWindowText(win, title);
+   if (__glutIconic) {
+@@ -879,6 +891,7 @@
+       GLUT_COLORMAP_WORK);
+   }
+ #endif
++  __glutSetWindow(__glutWindowList[__glutWindowListSize - 1]);
+   __glutDestroyWindow(window, window);
+   XFlush(__glutDisplay);
+ }
+--- MesaGLUT-20100214.orig/src/glut/glx/glutint.h
++++ MesaGLUT-20100214/src/glut/glx/glutint.h
+@@ -412,6 +412,7 @@
+   GLUTjoystickFCB fjoystick;  /* joystick */
+ #endif
+ #endif
++  void *data;
+ };
+ 
+ struct _GLUToverlay {
+@@ -749,6 +750,7 @@
+ #if !defined(_WIN32)
+ /* private routines from glut_glxext.c */
+ extern int __glutIsSupportedByGLX(char *);
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_video_resize)
+ extern int __glut_glXBindChannelToWindowSGIX(Display *dpy, int screen,
+                                              int channel, Window window);
+ extern int __glut_glXChannelRectSGIX(Display *dpy, int screen, int channel,
+@@ -761,6 +763,8 @@
+                                             int *dw, int *dh);
+ extern int __glut_glXChannelRectSyncSGIX(Display *dpy, int screen, int channel,
+                                          GLenum synctype);
++#endif
++#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_fbconfig)
+ extern GLXContext __glut_glXCreateContextWithConfigSGIX(Display *dpy,
+                                                         GLXFBConfigSGIX config,
+                                                         int render_type,
+@@ -773,6 +777,7 @@
+ extern GLXFBConfigSGIX __glut_glXGetFBConfigFromVisualSGIX(Display *dpy,
+                                                            XVisualInfo *vis);
+ #endif
++#endif
+ 
+ /* private routines from glut_input.c */
+ extern void  __glutUpdateInputDeviceMask(GLUTwindow * window);
