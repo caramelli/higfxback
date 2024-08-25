@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-opengl-stubs-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists check-build libfiu-build && REQUIRES="$REQUIRES check-build libfiu-build"
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup -Dfbdev=false --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/include/GL
+install -m 644 glut.h $DESTDIR/dfb/include/GL/tinyglut.h
+ln -sf tinyglut.h $DESTDIR/dfb/include/GL/glut.h
+install -d $DESTDIR/dfb/lib
+install build/libglut.so.3.*[!p] $DESTDIR/dfb/lib/libtinyglut.so.3
+ln -sf libtinyglut.so.3 $DESTDIR/dfb/lib/libglut.so
+ln -sf libtinyglut.so.3 $DESTDIR/dfb/lib/libglut.so.3
+install -d $DESTDIR/dfb/lib/glut/backends
+install build/dfbgl_plugin.so $DESTDIR/dfb/lib/glut/backends
+install build/egl_plugin.so $DESTDIR/dfb/lib/glut/backends
+install -d $DESTDIR/dfb/lib/glut/platforms
+install build/directfb_plugin.so $DESTDIR/dfb/lib/glut/platforms
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/glut.pc $DESTDIR/dfb/lib/pkgconfig/tinyglut.pc
+ln -sf tinyglut.pc $DESTDIR/dfb/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/tinyglut-build.pc << EOF
+Name: TinyGLUT
+Version: 0.6
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/GL/glut.h \\
+/dfb/include/GL/tinyglut.h \\
+/dfb/lib/libglut.so \\
+/dfb/lib/glut/backends/dfbgl_plugin.so \\
+/dfb/lib/glut/backends/egl_plugin.so \\
+/dfb/lib/glut/platforms/directfb_plugin.so \\
+/dfb/lib/pkgconfig/glut.pc \\
+/dfb/lib/pkgconfig/tinyglut.pc
+
+exec=\\
+/dfb/lib/libglut.so.3 \\
+/dfb/lib/libtinyglut.so.3
+EOF
+ln -sf tinyglut-build.pc $DESTDIR/dfb/share/pkgconfig/glut-build.pc
+
+exit

@@ -1,0 +1,46 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gawk-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install checkmk/checkmk $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 check_stdint.h $DESTDIR/include
+install -m 644 src/check.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libcheck.so.0.* $DESTDIR/lib/libcheck.so.0
+ln -sf libcheck.so.0 $DESTDIR/lib/libcheck.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 check.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/check-build.pc << EOF
+Name: check
+Version: 0.15.2
+Description: A unit testing framework for C
+Requires: $REQUIRES
+
+devel=\\
+/include/check.h \\
+/include/check_stdint.h \\
+/lib/libcheck.so \\
+/lib/pkgconfig/check.pc
+
+exec=\\
+/bin/checkmk \\
+/lib/libcheck.so.0
+EOF
+
+exit

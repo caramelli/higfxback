@@ -5,6 +5,8 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build"
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+pkg-config --exists check-build libfiu-build && REQUIRES="$REQUIRES check-build libfiu-build"
+
 # configure (ac-2.71; am-1.16; lt-2.4.7)
 libtoolize -c -f; aclocal; autoconf; automake -a -c
 PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --prefix=/fb
@@ -15,7 +17,7 @@ make
 # install
 install -d $DESTDIR/fb/include/GL
 install -m 644 glut.h $DESTDIR/fb/include/GL/tinyglut.h
-ln -sf tinyglut.h $INSTALL_DIR/fb/include/GL/glut.h
+ln -sf tinyglut.h $DESTDIR/fb/include/GL/glut.h
 install -d $DESTDIR/fb/lib
 install .libs/libglut.so.3.* $DESTDIR/fb/lib/libtinyglut.so.3
 ln -sf libtinyglut.so.3 $DESTDIR/fb/lib/libglut.so
@@ -27,7 +29,7 @@ install -d $DESTDIR/fb/lib/glut/platforms
 install .libs/fbdev_plugin.so $DESTDIR/fb/lib/glut/platforms
 install -d $DESTDIR/fb/lib/pkgconfig
 install -m 644 glut.pc $DESTDIR/fb/lib/pkgconfig/tinyglut.pc
-ln -sf tinyglut.pc $INSTALL_DIR/fb/lib/pkgconfig/glut.pc
+ln -sf tinyglut.pc $DESTDIR/fb/lib/pkgconfig/glut.pc
 
 # build.pc
 install -d $DESTDIR/fb/share/pkgconfig
@@ -54,3 +56,60 @@ EOF
 ln -sf tinyglut-build.pc $DESTDIR/fb/share/pkgconfig/glut-build.pc
 
 exit
+--- TinyGLUT-0.5.orig/glut-tests.c
++++ TinyGLUT-0.5/glut-tests.c
+@@ -50,27 +50,32 @@
+   event.code = REL_X;
+   event.value = 1;
+   write(uinput_mouse, &event, sizeof(struct input_event));
+-  sleep(1);
+   event.code = REL_Y;
+   event.value = 1;
+   write(uinput_mouse, &event, sizeof(struct input_event));
+-  sleep(1);
++  event.type = EV_SYN;
++  event.code = SYN_REPORT;
++  write(uinput_mouse, &event, sizeof(struct input_event));
+ 
+   event.type = EV_KEY;
+   event.code = KEY_F1;
+   event.value = 1;
+   write(uinput_keyboard, &event, sizeof(struct input_event));
+-  sleep(1);
+   event.value = 0;
+   write(uinput_keyboard, &event, sizeof(struct input_event));
+-  sleep(1);
++  event.type = EV_SYN;
++  event.code = SYN_REPORT;
++  write(uinput_keyboard, &event, sizeof(struct input_event));
++
++  event.type = EV_KEY;
+   event.code = KEY_ESC;
+   event.value = 1;
+   write(uinput_keyboard, &event, sizeof(struct input_event));
+-  sleep(1);
+   event.value = 0;
+   write(uinput_keyboard, &event, sizeof(struct input_event));
+-  sleep(1);
++  event.type = EV_SYN;
++  event.code = SYN_REPORT;
++  write(uinput_keyboard, &event, sizeof(struct input_event));
+ }
+ 
+ static void glutReshape(int width, int height)
+@@ -117,14 +122,10 @@
+   ck_assert_int_eq(glutGetError(), GLUT_DISPLAY_EXIST);
+   glutExit();
+ 
+-  char *backend = getenv("GLUT_BACKEND");
+-  unsetenv("GLUT_BACKEND");
+-  glutInit(NULL, NULL);
+-  ck_assert_int_eq(glutGetError(), GLUT_BAD_BACKEND);
+   setenv("GLUT_BACKEND", "none", 1);
+   glutInit(NULL, NULL);
+   ck_assert_int_eq(glutGetError(), GLUT_BAD_BACKEND);
+-  setenv("GLUT_BACKEND", backend, 1);
++  unsetenv("GLUT_BACKEND");
+ 
+   fiu_enable("BACKEND_ENOMEM", 1, NULL, FIU_ONETIME);
+   glutInit(NULL, NULL);

@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-lt-build bison-build directfb2-build gcc-g++-build 
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libdrm-build; then
+if pkg-config --exists libdrm-build; then
   DRM=1
   DRI="--disable-glx --disable-nls --with-egl-platforms=directfb,drm --without-dri-drivers"
   REQUIRES="$REQUIRES libdrm-build"
@@ -774,7 +774,17 @@ exit
  dnl We need a POSIX shell for parts of the build. Assume we have one
  dnl in most cases.
  case "$host_os" in
-@@ -1569,6 +1572,10 @@
+@@ -1321,9 +1324,6 @@
+     if test "x$enable_egl" = xno; then
+         AC_MSG_ERROR([cannot enable egl_gallium without EGL])
+     fi
+-    if test "x$have_libdrm" != xyes; then
+-        AC_MSG_ERROR([egl_gallium requires libdrm >= $LIBDRM_REQUIRED])
+-    fi
+ 
+     GALLIUM_STATE_TRACKERS_DIRS="egl $GALLIUM_STATE_TRACKERS_DIRS"
+     GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS egl-static"
+@@ -1569,6 +1569,10 @@
  			AC_MSG_ERROR([EGL platform drm requires libdrm >= $LIBDRM_REQUIRED])
  		;;
  
@@ -785,7 +795,7 @@ exit
  	android|fbdev|gdi|null)
  		;;
  
-@@ -1599,6 +1606,7 @@
+@@ -1599,6 +1603,7 @@
  AM_CONDITIONAL(HAVE_EGL_PLATFORM_X11, echo "$egl_platforms" | grep -q 'x11')
  AM_CONDITIONAL(HAVE_EGL_PLATFORM_WAYLAND, echo "$egl_platforms" | grep -q 'wayland')
  AM_CONDITIONAL(HAVE_EGL_PLATFORM_DRM, echo "$egl_platforms" | grep -q 'drm')
@@ -793,7 +803,7 @@ exit
  AM_CONDITIONAL(HAVE_EGL_PLATFORM_FBDEV, echo "$egl_platforms" | grep -q 'fbdev')
  AM_CONDITIONAL(HAVE_EGL_PLATFORM_NULL, echo "$egl_platforms" | grep -q 'null')
  
-@@ -2260,6 +2268,7 @@
+@@ -2260,6 +2265,7 @@
  		src/gallium/winsys/nouveau/drm/Makefile
  		src/gallium/winsys/radeon/drm/Makefile
  		src/gallium/winsys/svga/drm/Makefile
@@ -4127,6 +4137,22 @@ exit
 +endif
 --- Mesa-10.3.7.orig/src/loader/loader.c
 +++ Mesa-10.3.7/src/loader/loader.c
+@@ -64,6 +64,7 @@
+  *    Rob Clark <robclark@freedesktop.org>
+  */
+ 
++#include <sys/stat.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -80,7 +81,6 @@
+ #endif
+ #endif
+ #ifdef HAVE_SYSFS
+-#include <sys/stat.h>
+ #include <sys/types.h>
+ #endif
+ #include "loader.h"
 @@ -209,7 +209,6 @@
     pci_id = udev_device_get_property_value(parent, "PCI_ID");
     if (pci_id == NULL ||

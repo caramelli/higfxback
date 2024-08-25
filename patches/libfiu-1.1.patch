@@ -1,0 +1,354 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build python3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install preload/run/fiu-run $DESTDIR/bin
+install utils/fiu-ctrl $DESTDIR/bin
+install utils/fiu-ls $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 libfiu/fiu.h $DESTDIR/include
+install -m 644 libfiu/fiu-control.h $DESTDIR/include
+install -m 644 libfiu/fiu-local.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libfiu/libfiu.so.1.* $DESTDIR/lib/libfiu.so.1
+ln -sf libfiu.so.1 $DESTDIR/lib/libfiu.so
+install preload/posix/fiu_posix_preload.so $DESTDIR/lib
+install preload/run/fiu_run_preload.so $DESTDIR/lib
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libfiu/libfiu.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libfiu-build.pc << EOF
+Name: libfiu
+Version: 1.1
+Description: fault injection in userspace
+Requires: $REQUIRES
+
+devel=\\
+/include/fiu.h \\
+/include/fiu-control.h \\
+/include/fiu-local.h \\
+/lib/libfiu.so \\
+/lib/pkgconfig/libfiu.pc
+
+exec=\\
+/bin/fiu-ctrl \\
+/bin/fiu-ls \\
+/bin/fiu-run \\
+/lib/fiu_posix_preload.so \\
+/lib/fiu_run_preload.so \\
+/lib/libfiu.so.1
+EOF
+
+exit
+--- libfiu-1.1.orig/Configure
++++ libfiu-1.1/Configure
+@@ -0,0 +1,26 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "s#('PREFIX'.*#('PREFIX', '$PREFIX')#" bindings/python/setup.py
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" libfiu/Makefile
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" preload/posix/Makefile
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" preload/run/Makefile
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" utils/Makefile
+--- libfiu-1.1.orig/bindings/python/setup.py
++++ libfiu-1.1/bindings/python/setup.py
+@@ -20,8 +20,8 @@
+         build_py.run(self)
+ 
+     def generate_fiu_ctrl(self):
+-        prefix = os.environ.get('PREFIX', '/usr/local/')
+-        plibpath = os.environ.get('PLIBPATH', prefix + '/lib/')
++        prefix = os.environ.get('PREFIX', '/usr/local')
++        plibpath = os.environ.get('PLIBPATH', prefix + '/lib')
+ 
+         contents = open('fiu_ctrl.in.py', 'rt').read()
+         contents = contents.replace('@@PLIBPATH@@', plibpath)
+--- libfiu-1.1.orig/libfiu/Makefile
++++ libfiu-1.1/libfiu/Makefile
+@@ -23,9 +23,6 @@
+ # prefix for installing the binaries
+ PREFIX=/usr/local
+ 
+-# prefix for eventual location of binaries
+-DESTDIR=$(PREFIX)
+-
+ # install utility, we assume it's GNU/BSD compatible
+ INSTALL=install
+ 
+@@ -40,7 +37,7 @@
+ endif
+ 
+ LIB_VER=1.1
+-LIB_SO_VER=0
++LIB_SO_VER=1
+ 
+ 
+ # We attempt to detect if we have the extensions we use in backtrace.c by just
+@@ -61,7 +58,7 @@
+ libfiu.pc: build-flags libfiu.pc.in
+ 	@echo "generating libfiu.pc"
+ 	@cat libfiu.pc.in | \
+-		sed 's@++DESTDIR++@$(DESTDIR)@g' | \
++		sed 's@++PREFIX++@$(PREFIX)@g' | \
+ 		sed 's@++LIB_VER++@$(LIB_VER)@g' \
+ 		> libfiu.pc
+ 
+@@ -80,39 +77,39 @@
+ 
+ 
+ install-lib: libs libfiu.pc
+-	$(INSTALL) -d $(PREFIX)/lib
+-	$(INSTALL) -m 0755 libfiu.so.$(LIB_VER) $(PREFIX)/lib
+-	ln -fs libfiu.so.$(LIB_VER) $(PREFIX)/lib/libfiu.so
+-	ln -fs libfiu.so.$(LIB_VER) $(PREFIX)/lib/libfiu.so.$(LIB_SO_VER)
+-	$(INSTALL) -m 0755 libfiu.a $(PREFIX)/lib
+-	$(INSTALL) -d $(PREFIX)/include
+-	$(INSTALL) -m 0644 fiu.h $(PREFIX)/include
+-	$(INSTALL) -m 0644 fiu-control.h $(PREFIX)/include
+-	$(INSTALL) -m 0644 fiu-local.h $(PREFIX)/include
+-	$(INSTALL) -d $(PREFIX)/lib/pkgconfig
+-	$(INSTALL) -m 644 libfiu.pc $(PREFIX)/lib/pkgconfig
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib
++	$(INSTALL) -m 0755 libfiu.so.$(LIB_VER) $(DESTDIR)$(PREFIX)/lib
++	ln -fs libfiu.so.$(LIB_VER) $(DESTDIR)$(PREFIX)/lib/libfiu.so
++	ln -fs libfiu.so.$(LIB_VER) $(DESTDIR)$(PREFIX)/lib/libfiu.so.$(LIB_SO_VER)
++	$(INSTALL) -m 0755 libfiu.a $(DESTDIR)$(PREFIX)/lib
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/include
++	$(INSTALL) -m 0644 fiu.h $(DESTDIR)$(PREFIX)/include
++	$(INSTALL) -m 0644 fiu-control.h $(DESTDIR)$(PREFIX)/include
++	$(INSTALL) -m 0644 fiu-local.h $(DESTDIR)$(PREFIX)/include
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
++	$(INSTALL) -m 644 libfiu.pc $(DESTDIR)$(PREFIX)/lib/pkgconfig
+ 	@echo
+ 	@echo "Please run ldconfig to update your library cache"
+ 	@echo
+ 
+ install-man:
+-	$(INSTALL) -d $(PREFIX)/share/man/man3
+-	$(INSTALL) -m 0644 libfiu.3 $(PREFIX)/share/man/man3/
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/share/man/man3
++	$(INSTALL) -m 0644 libfiu.3 $(DESTDIR)$(PREFIX)/share/man/man3/
+ 
+ install: install-lib install-man
+ 
+ uninstall-lib:
+-	$(RM) $(PREFIX)/lib/libfiu.so
+-	$(RM) $(PREFIX)/lib/libfiu.so.$(LIB_VER)
+-	$(RM) $(PREFIX)/lib/libfiu.so.$(LIB_SO_VER)
+-	$(RM) $(PREFIX)/lib/libfiu.a
+-	$(RM) $(PREFIX)/include/fiu.h
+-	$(RM) $(PREFIX)/include/fiu-control.h
+-	$(RM) $(PREFIX)/include/fiu-local.h
+-	$(RM) $(PREFIX)/lib/pkgconfig/libfiu.pc
++	$(RM) $(DESTDIR)$(PREFIX)/lib/libfiu.so
++	$(RM) $(DESTDIR)$(PREFIX)/lib/libfiu.so.$(LIB_VER)
++	$(RM) $(DESTDIR)$(PREFIX)/lib/libfiu.so.$(LIB_SO_VER)
++	$(RM) $(DESTDIR)$(PREFIX)/lib/libfiu.a
++	$(RM) $(DESTDIR)$(PREFIX)/include/fiu.h
++	$(RM) $(DESTDIR)$(PREFIX)/include/fiu-control.h
++	$(RM) $(DESTDIR)$(PREFIX)/include/fiu-local.h
++	$(RM) $(DESTDIR)$(PREFIX)/lib/pkgconfig/libfiu.pc
+ 
+ uninstall-man:
+-	$(RM) $(PREFIX)/share/man/man3/libfiu.3
++	$(RM) $(DESTDIR)$(PREFIX)/share/man/man3/libfiu.3
+ 
+ uninstall: uninstall-lib uninstall-man
+ 
+--- libfiu-1.1.orig/libfiu/libfiu.pc.in
++++ libfiu-1.1/libfiu/libfiu.pc.in
+@@ -1,5 +1,4 @@
+-
+-prefix=++DESTDIR++
++prefix=++PREFIX++
+ libdir=${prefix}/lib
+ includedir=${prefix}/include
+ 
+@@ -9,4 +8,3 @@
+ Version: ++LIB_VER++
+ Libs: -L${libdir} -lfiu
+ Cflags: -I${includedir}
+-
+--- libfiu-1.1.orig/preload/posix/Makefile
++++ libfiu-1.1/preload/posix/Makefile
+@@ -34,11 +34,11 @@
+ 
+ ifneq ($(V), 1)
+ 	NICE_CC = @echo "  CC  $@"; $(CC)
+-	NICE_GEN = @echo "  GEN $@"; ./generate
++	NICE_GEN = @echo "  GEN $@"; python3 ./generate
+ 	Q = @
+ else
+ 	NICE_CC = $(CC)
+-	NICE_GEN = ./generate
++	NICE_GEN = python3 ./generate
+ 	Q =
+ endif
+ 
+@@ -115,11 +115,11 @@
+ 	$(Q) for i in $(GEN_FL); do cat $$i >> function_list; done
+ 
+ install: fiu_posix_preload.so
+-	$(INSTALL) -d $(PREFIX)/lib
+-	$(INSTALL) -m 0755 fiu_posix_preload.so $(PREFIX)/lib
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib
++	$(INSTALL) -m 0755 fiu_posix_preload.so $(DESTDIR)$(PREFIX)/lib
+ 
+ uninstall:
+-	$(RM) $(PREFIX)/lib/fiu_posix_preload.so
++	$(RM) $(DESTDIR)$(PREFIX)/lib/fiu_posix_preload.so
+ 
+ clean:
+ 	rm -f $(OBJS) $(GEN_OBJS:.o=.c) $(GEN_FL)
+--- libfiu-1.1.orig/preload/run/Makefile
++++ libfiu-1.1/preload/run/Makefile
+@@ -70,17 +70,17 @@
+ 	chmod +x fiu-run
+ 
+ install: fiu_run_preload.so fiu-run
+-	$(INSTALL) -d $(PREFIX)/lib
+-	$(INSTALL) -m 0755 fiu_run_preload.so $(PREFIX)/lib
+-	$(INSTALL) -d $(PREFIX)/bin
+-	$(INSTALL) -m 0755 fiu-run $(PREFIX)/bin
+-	$(INSTALL) -d $(PREFIX)/share/man/man1
+-	$(INSTALL) -m 0644 fiu-run.1 $(PREFIX)/share/man/man1/
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib
++	$(INSTALL) -m 0755 fiu_run_preload.so $(DESTDIR)$(PREFIX)/lib
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
++	$(INSTALL) -m 0755 fiu-run $(DESTDIR)$(PREFIX)/bin
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/share/man/man1
++	$(INSTALL) -m 0644 fiu-run.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+ 
+ uninstall:
+-	$(RM) $(PREFIX)/lib/fiu_run_preload.so
+-	$(RM) $(PREFIX)/bin/fiu-run
+-	$(RM) $(PREFIX)/share/man/man1/fiu-run.1
++	$(RM) $(DESTDIR)$(PREFIX)/lib/fiu_run_preload.so
++	$(RM) $(DESTDIR)$(PREFIX)/bin/fiu-run
++	$(RM) $(DESTDIR)$(PREFIX)/share/man/man1/fiu-run.1
+ 
+ clean:
+ 	rm -f $(OBJS) fiu_run_preload.so fiu-run build-flags
+--- libfiu-1.1.orig/preload/run/fiu-run.in
++++ libfiu-1.1/preload/run/fiu-run.in
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env bash
++#!/bin/env bash
+ 
+ # This script aims to make the use of the fiu_run_preload library a little
+ # easier by providing a more friendly user interface, and abstracting the
+--- libfiu-1.1.orig/tests/Makefile
++++ libfiu-1.1/tests/Makefile
+@@ -16,13 +16,13 @@
+ 	NICE_RUN = @echo "  RUN $<"; \
+ 		   LD_LIBRARY_PATH=../libfiu/ \
+ 		   LD_PRELOAD=./libs/fiu_run_preload.so:./libs/fiu_posix_preload.so
+-	NICE_PY = @echo "  PY  $<"; ./wrap-python 3
++	NICE_PY = @echo "  PY  $<"; python3 ./wrap-python 3
+ 	NICE_LN = @echo "  LN $@"; ln -f
+ else
+ 	NICE_CC = $(CC)
+ 	NICE_RUN = LD_LIBRARY_PATH=../libfiu/ \
+ 		   LD_PRELOAD=./libs/fiu_run_preload.so:./libs/fiu_posix_preload.so
+-	NICE_PY = ./wrap-python 3
++	NICE_PY = python3 ./wrap-python 3
+ 	NICE_LN = ln -f
+ endif
+ 
+--- libfiu-1.1.orig/tests/generated/Makefile
++++ libfiu-1.1/tests/generated/Makefile
+@@ -17,13 +17,13 @@
+ 		   LD_LIBRARY_PATH=../../libfiu/ \
+ 		   LD_PRELOAD="../../preload/run/fiu_run_preload.so \
+ 		   	../../preload/posix/fiu_posix_preload.so"
+-	NICE_GEN = @echo "  GEN $@"; ./generate-test
++	NICE_GEN = @echo "  GEN $@"; python3 ./generate-test
+ else
+ 	NICE_CC = $(CC)
+ 	NICE_RUN = LD_LIBRARY_PATH=../../libfiu/ \
+ 		   LD_PRELOAD="../../preload/run/fiu_run_preload.so \
+ 		   	../../preload/posix/fiu_posix_preload.so"
+-	NICE_GEN = ./generate-test
++	NICE_GEN = python3 ./generate-test
+ endif
+ 
+ default: tests
+--- libfiu-1.1.orig/utils/Makefile
++++ libfiu-1.1/utils/Makefile
+@@ -9,18 +9,18 @@
+ default:
+ 	
+ install:
+-	$(INSTALL) -d $(PREFIX)/bin
+-	$(INSTALL) -m 0755 fiu-ctrl $(PREFIX)/bin
+-	$(INSTALL) -m 0755 fiu-ls $(PREFIX)/bin
+-	$(INSTALL) -d $(PREFIX)/share/man/man1
+-	$(INSTALL) -m 0644 fiu-ctrl.1 $(PREFIX)/share/man/man1/
+-	$(INSTALL) -m 0644 fiu-ls.1 $(PREFIX)/share/man/man1/
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
++	$(INSTALL) -m 0755 fiu-ctrl $(DESTDIR)$(PREFIX)/bin
++	$(INSTALL) -m 0755 fiu-ls $(DESTDIR)$(PREFIX)/bin
++	$(INSTALL) -d $(DESTDIR)$(PREFIX)/share/man/man1
++	$(INSTALL) -m 0644 fiu-ctrl.1 $(DESTDIR)$(PREFIX)/share/man/man1/
++	$(INSTALL) -m 0644 fiu-ls.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+ 
+ uninstall:
+-	$(RM) $(PREFIX)/bin/fiu-ctrl
+-	$(RM) $(PREFIX)/bin/fiu-ls
+-	$(RM) $(PREFIX)/share/man/man1/fiu-ctrl.1
+-	$(RM) $(PREFIX)/share/man/man1/fiu-ls.1
++	$(RM) $(DESTDIR)$(PREFIX)/bin/fiu-ctrl
++	$(RM) $(DESTDIR)$(PREFIX)/bin/fiu-ls
++	$(RM) $(DESTDIR)$(PREFIX)/share/man/man1/fiu-ctrl.1
++	$(RM) $(DESTDIR)$(PREFIX)/share/man/man1/fiu-ls.1
+ 
+ clean:
+ 
+--- libfiu-1.1.orig/utils/fiu-ctrl
++++ libfiu-1.1/utils/fiu-ctrl
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env bash
++#!/bin/env bash
+ 
+ # This scripts present a friendly interface to the fiu remote control
+ # capabilities. Currently, it supports only the named pipe method (the only
+--- libfiu-1.1.orig/utils/fiu-ls
++++ libfiu-1.1/utils/fiu-ls
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env bash
++#!/bin/env bash
+ # Lists processes that can be controlled with fiu-ctrl.
+ 
+ # default remote control over named pipes prefix; we use the same one as

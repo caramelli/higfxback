@@ -125,6 +125,7 @@ install -m 644 libs/gst/net/gstnetclientclock.h $DESTDIR/dfb/include/gstreamer-1
 install -m 644 libs/gst/net/gstnetcontrolmessagemeta.h $DESTDIR/dfb/include/gstreamer-1.0/gst/net
 install -m 644 libs/gst/net/gstnettimepacket.h $DESTDIR/dfb/include/gstreamer-1.0/gst/net
 install -m 644 libs/gst/net/gstnettimeprovider.h $DESTDIR/dfb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstptpclock.h $DESTDIR/dfb/include/gstreamer-1.0/gst/net
 install -m 644 libs/gst/net/net.h $DESTDIR/dfb/include/gstreamer-1.0/gst/net
 install -d $DESTDIR/dfb/lib
 install libs/gst/base/.libs/libgstbase-1.0.so.0.* $DESTDIR/dfb/lib/libgstbase-1.0.so.0
@@ -260,6 +261,7 @@ devel=\\
 /dfb/include/gstreamer-1.0/gst/net/gstnetcontrolmessagemeta.h \\
 /dfb/include/gstreamer-1.0/gst/net/gstnettimepacket.h \\
 /dfb/include/gstreamer-1.0/gst/net/gstnettimeprovider.h \\
+/dfb/include/gstreamer-1.0/gst/net/gstptpclock.h \\
 /dfb/include/gstreamer-1.0/gst/net/net.h \\
 /dfb/lib/libgstbase-1.0.so \\
 /dfb/lib/libgstcheck-1.0.so \\
@@ -281,6 +283,8 @@ exec=\\
 /dfb/lib/libgstcontroller-1.0.so.0 \\
 /dfb/lib/libgstnet-1.0.so.0 \\
 /dfb/lib/libgstreamer-1.0.so.0 \\
+/dfb/lib/gstreamer-1.0/gst-plugin-scanner \\
+/dfb/lib/gstreamer-1.0/gst-ptp-helper \\
 /dfb/lib/gstreamer-1.0/libgstcoreelements.so
 EOF
 
@@ -301,7 +305,7 @@ exit
  	gettext.h		\
 --- gstreamer-1.6.4.orig/libs/gst/net/net.h
 +++ gstreamer-1.6.4/libs/gst/net/net.h
-@@ -22,11 +22,9 @@
+@@ -22,7 +22,6 @@
  #ifndef __GST_NET__H__
  #define __GST_NET__H__
  
@@ -309,10 +313,6 @@ exit
  #include <gst/net/gstnetaddressmeta.h>
  #include <gst/net/gstnetclientclock.h>
  #include <gst/net/gstnettimepacket.h>
- #include <gst/net/gstnettimeprovider.h>
--#include <gst/net/gstptpclock.h>
- 
- #endif /* __GST_NET__H__ */
 --- gstreamer-1.6.4.orig/pkgconfig/gstreamer.pc.in
 +++ gstreamer-1.6.4/pkgconfig/gstreamer.pc.in
 @@ -17,4 +17,4 @@

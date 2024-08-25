@@ -19,7 +19,7 @@ install arch/`uname -m`/boot/bzImage $DESTDIR/boot
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/linux-build.pc << EOF
 Name: linux
-Version: 5.15.162
+Version: 5.15
 Description: Linux kernel
 Requires: $REQUIRES
 
@@ -28,16 +28,17 @@ exec=\\
 EOF
 
 exit
---- linux-5.15.162.orig/arch/x86/configs/fragment-x86_64.config
-+++ linux-5.15.162/arch/x86/configs/fragment-x86_64.config
-@@ -0,0 +1,4 @@
+--- linux-5.15.orig/arch/x86/configs/fragment-x86_64.config
++++ linux-5.15/arch/x86/configs/fragment-x86_64.config
+@@ -0,0 +1,5 @@
 +CONFIG_SYSFB_SIMPLEFB=y
++CONFIG_INPUT_UINPUT=y
 +CONFIG_DRM_SIMPLEDRM=y
 +CONFIG_FB=y
 +CONFIG_FB_VESA=y
---- linux-5.15.162.orig/drivers/video/fbdev/core/fbcon.c
-+++ linux-5.15.162/drivers/video/fbdev/core/fbcon.c
-@@ -2117,6 +2117,7 @@
+--- linux-5.15.orig/drivers/video/fbdev/core/fbcon.c
++++ linux-5.15/drivers/video/fbdev/core/fbcon.c
+@@ -2079,6 +2079,7 @@
  	 */
  	info->var.activate = var.activate;
  	var.vmode |= info->var.vmode & ~FB_VMODE_MASK;

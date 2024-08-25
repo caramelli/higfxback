@@ -19,6 +19,7 @@ install lib/libGL.so.1.* $DESTDIR/fb/lib/libmesaGL.so.1
 install lib/libGLESv1_CM.so.1.* $DESTDIR/fb/lib/libmesaGLESv1_CM.so.1
 install lib/libGLESv2.so.2.* $DESTDIR/fb/lib/libmesaGLESv2.so.2
 install lib/libglapi.so.0.* $DESTDIR/fb/lib/libglapi.so.0
+ln -sf libglapi.so.0 $DESTDIR/fb/lib/libglapi.so
 install -d $DESTDIR/fb/lib/egl
 install lib/egl/egl_gallium.so $DESTDIR/fb/lib/egl
 install lib/egl/st_GL.so $DESTDIR/fb/lib/egl
@@ -388,14 +389,14 @@ exit
  
 --- Mesa-7.11.2.orig/src/gallium/targets/egl-static/egl.c
 +++ Mesa-7.11.2/src/gallium/targets/egl-static/egl.c
-@@ -32,6 +32,7 @@
+@@ -31,6 +31,7 @@
+ #include "egllog.h"
  
  #ifdef HAVE_LIBUDEV
- #include <stdio.h>
 +#include <sys/stat.h>
+ #include <stdio.h>
  #include <libudev.h>
  #define DRIVER_MAP_GALLIUM_ONLY
- #include "pci_ids/pci_id_driver_map.h"
 --- Mesa-7.11.2.orig/src/mesa/drivers/fbdev/Makefile
 +++ Mesa-7.11.2/src/mesa/drivers/fbdev/Makefile
 @@ -5,6 +5,11 @@
@@ -590,7 +591,7 @@ exit
  glFBDevGetCurrentReadBuffer( void )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -678,7 +701,7 @@
+@@ -678,16 +701,20 @@
  }
  
  
@@ -599,18 +600,25 @@ exit
  glFBDevSwapBuffers( GLFBDevBufferPtr buffer )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -686,8 +709,9 @@
-       buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
-    struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)
-       buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
+-   struct GLFBDevRenderbufferRec *frontrb = (struct GLFBDevRenderbufferRec *)
+-      buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
+-   struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)
+-      buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
++   struct GLFBDevRenderbufferRec *frontrb, *backrb;
 +   int i;
++
++   if (!buffer)
++      return;
++
++   frontrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
++   backrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
  
 -   if (!buffer || !buffer->visual->glvisual.doubleBufferMode)
-+   if (!buffer || !backrb)
++   if (!backrb)
        return;
  
     /* check if swapping currently bound buffer */
-@@ -698,11 +722,14 @@
+@@ -698,11 +725,14 @@
  
     ASSERT(frontrb->Base.Data);
     ASSERT(backrb->Base.Data);
@@ -627,7 +635,7 @@ exit
  glFBDevCreateContext( const GLFBDevVisualPtr visual, GLFBDevContextPtr share )
  {
     GLFBDevContextPtr ctx;
-@@ -756,7 +783,7 @@
+@@ -756,7 +786,7 @@
  }
  
  
@@ -636,7 +644,7 @@ exit
  glFBDevDestroyContext( GLFBDevContextPtr context )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -779,7 +806,7 @@
+@@ -779,7 +809,7 @@
  }
  
  
@@ -645,7 +653,7 @@ exit
  glFBDevGetContextAttrib( const GLFBDevContextPtr context, int attrib)
  {
     (void) context;
-@@ -788,7 +815,7 @@
+@@ -788,7 +818,7 @@
  }
  
  
@@ -654,7 +662,7 @@ exit
  glFBDevGetCurrentContext( void )
  {
     GET_CURRENT_CONTEXT(ctx);
-@@ -796,7 +823,7 @@
+@@ -796,7 +826,7 @@
  }
  
  
@@ -663,7 +671,7 @@ exit
  glFBDevMakeCurrent( GLFBDevContextPtr context,
                      GLFBDevBufferPtr drawBuffer,
                      GLFBDevBufferPtr readBuffer )
-@@ -825,4 +852,24 @@
+@@ -825,4 +855,29 @@
     return 1;
  }
  
@@ -671,11 +679,16 @@ exit
 +void PUBLIC
 +glFBDevSetWindow( GLFBDevBufferPtr buffer, void *window )
 +{
-+   struct GLFBDevRenderbufferRec *frontrb = (struct GLFBDevRenderbufferRec *)buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
-+   struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
-+   struct fb_window *win = (struct fb_window *)window;
++   struct GLFBDevRenderbufferRec *frontrb, *backrb;
++   struct fb_window *win = (struct fb_window *) window;
 +
-+   if (!frontrb)
++   if (!buffer)
++      return;
++
++   frontrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
++   backrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
++
++   if (!win || !backrb)
 +      return;
 +
 +   if (win->width + win->posx <= backrb->winWidth)
