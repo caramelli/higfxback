@@ -21,8 +21,8 @@ install -m 644 libfiu/fiu.h $DESTDIR/include
 install -m 644 libfiu/fiu-control.h $DESTDIR/include
 install -m 644 libfiu/fiu-local.h $DESTDIR/include
 install -d $DESTDIR/lib
-install libfiu/libfiu.so.1.* $DESTDIR/lib/libfiu.so.1
-ln -sf libfiu.so.1 $DESTDIR/lib/libfiu.so
+install libfiu/libfiu.so.1.* $DESTDIR/lib/libfiu.so.0
+ln -sf libfiu.so.0 $DESTDIR/lib/libfiu.so
 install preload/posix/fiu_posix_preload.so $DESTDIR/lib
 install preload/run/fiu_run_preload.so $DESTDIR/lib
 install -d $DESTDIR/lib/pkgconfig
@@ -49,7 +49,7 @@ exec=\\
 /bin/fiu-run \\
 /lib/fiu_posix_preload.so \\
 /lib/fiu_run_preload.so \\
-/lib/libfiu.so.1
+/lib/libfiu.so.0
 EOF
 
 exit
@@ -107,15 +107,6 @@ exit
  # install utility, we assume it's GNU/BSD compatible
  INSTALL=install
  
-@@ -40,7 +37,7 @@
- endif
- 
- LIB_VER=1.1
--LIB_SO_VER=0
-+LIB_SO_VER=1
- 
- 
- # We attempt to detect if we have the extensions we use in backtrace.c by just
 @@ -61,7 +58,7 @@
  libfiu.pc: build-flags libfiu.pc.in
  	@echo "generating libfiu.pc"

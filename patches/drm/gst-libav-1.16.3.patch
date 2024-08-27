@@ -1,0 +1,52 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build ffmpeg-build gst-plugins-base-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+rm -rf gst-libs/ext
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --with-system-libav --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/lib/gstreamer-1.0
+install ext/libav/.libs/libgstlibav.so $DESTDIR/drm/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/gst-libav-build.pc << EOF
+Name: gst-libav
+Version: 1.16.3
+Description: FFmpeg GStreamer plugin
+Requires: $REQUIRES
+
+exec=\\
+/drm/lib/gstreamer-1.0/libgstlibav.so
+EOF
+
+exit
+--- gst-libav-1.16.3.orig/configure.ac
++++ gst-libav-1.16.3/configure.ac
+@@ -472,7 +472,6 @@
+ ext/Makefile
+ ext/libav/Makefile
+ gst-libs/Makefile
+-gst-libs/ext/Makefile
+ docs/Makefile
+ docs/plugins/Makefile
+ docs/version.entities
+@@ -482,6 +481,9 @@
+ pkgconfig/Makefile
+ pkgconfig/gstreamer-plugins-libav-uninstalled.pc
+ )
++if test "$with_system_libav" != "yes"; then
++  AC_CONFIG_FILES(gst-libs/ext/Makefile)
++fi
+ AC_OUTPUT
+ 
+ ORC_OUTPUT

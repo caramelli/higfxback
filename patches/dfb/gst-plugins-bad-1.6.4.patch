@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build curl-build directfb2-build gst-plugins-base-build libxml2-build"
+REQUIRES="autotools-wrappers-lt-build curl-build directfb2-build gst-plugins-base-build libxml2-build openssl-build x265-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -33,9 +33,12 @@ install -d $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/bz2/.libs/libgstbz2.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/curl/.libs/libgstcurl.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/dtls/.libs/libgstdtls.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/directfb/.libs/libgstdfbvideosink.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/hls/.libs/libgstfragmented.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/x265/.libs/libgstx265.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/accurip/.libs/libgstaccurip.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/adpcmenc/.libs/libgstadpcmenc.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -67,6 +70,7 @@ install gst/ivfparse/.libs/libgstivfparse.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/ivtc/.libs/libgstivtc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/jp2kdecimator/.libs/libgstjp2kdecimator.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/jpegformat/.libs/libgstjpegformat.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/liveadder/.libs/libgstliveadder.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/midi/.libs/libgstmidi.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/mpegdemux/.libs/libgstmpegpsdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -78,7 +82,6 @@ install gst/pcapparse/.libs/libgstpcapparse.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/pnm/.libs/libgstpnm.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/rawparse/.libs/libgstrawparse.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/removesilence/.libs/libgstremovesilence.so $DESTDIR/dfb/lib/gstreamer-1.0
-install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/rtp/.libs/libgstrtpbad.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/onvif/.libs/libgstrtponvif.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/sdp/.libs/libgstsdpelem.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -94,6 +97,7 @@ install gst/videosignal/.libs/libgstvideosignal.so $DESTDIR/dfb/lib/gstreamer-1.
 install gst/vmnc/.libs/libgstvmnc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/y4m/.libs/libgsty4mdec.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/yadif/.libs/libgstyadif.so $DESTDIR/dfb/lib/gstreamer-1.0
+install sys/dvb/.libs/libgstdvb.so $DESTDIR/dfb/lib/gstreamer-1.0
 install sys/shm/.libs/libgstshm.so $DESTDIR/dfb/lib/gstreamer-1.0
 install sys/vcd/.libs/libgstvcdsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
 
@@ -132,10 +136,13 @@ exec=\\
 /dfb/lib/gstreamer-1.0/libgstdataurisrc.so \\
 /dfb/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
 /dfb/lib/gstreamer-1.0/libgstdfbvideosink.so \\
+/dfb/lib/gstreamer-1.0/libgstdtls.so \\
+/dfb/lib/gstreamer-1.0/libgstdvb.so \\
 /dfb/lib/gstreamer-1.0/libgstdvbsuboverlay.so \\
 /dfb/lib/gstreamer-1.0/libgstdvdspu.so \\
 /dfb/lib/gstreamer-1.0/libgstfestival.so \\
 /dfb/lib/gstreamer-1.0/libgstfieldanalysis.so \\
+/dfb/lib/gstreamer-1.0/libgstfragmented.so \\
 /dfb/lib/gstreamer-1.0/libgstfreeverb.so \\
 /dfb/lib/gstreamer-1.0/libgstfrei0r.so \\
 /dfb/lib/gstreamer-1.0/libgstgaudieffects.so \\
@@ -177,6 +184,7 @@ exec=\\
 /dfb/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
 /dfb/lib/gstreamer-1.0/libgstvideosignal.so \\
 /dfb/lib/gstreamer-1.0/libgstvmnc.so \\
+/dfb/lib/gstreamer-1.0/libgstx265.so \\
 /dfb/lib/gstreamer-1.0/libgsty4mdec.so \\
 /dfb/lib/gstreamer-1.0/libgstyadif.so
 EOF
@@ -209,6 +217,183 @@ exit
              }
              default:
                GST_DEBUG_OBJECT (dfbvideosink, "key press event %c !",
+--- gst-plugins-bad-1.6.4.orig/ext/dtls/gstdtlsconnection.c
++++ gst-plugins-bad-1.6.4/ext/dtls/gstdtlsconnection.c
+@@ -239,7 +239,7 @@
+       priv->bio = BIO_new (BIO_s_gst_dtls_connection ());
+       g_return_if_fail (priv->bio);
+ 
+-      priv->bio->ptr = self;
++      BIO_set_data (priv->bio, self);
+       SSL_set_bio (priv->ssl, priv->bio, priv->bio);
+ 
+       SSL_set_verify (priv->ssl,
+@@ -573,10 +573,9 @@
+   states |= (! !SSL_want_write (priv->ssl) << 20);
+   states |= (! !SSL_want_read (priv->ssl) << 24);
+ 
+-  GST_LOG_OBJECT (self, "%s: role=%s buf=(%d,%p:%d/%d) %x|%x %s",
++  GST_LOG_OBJECT (self, "%s: role=%s buf=(%p:%d/%d) %x|%x %s",
+       str,
+       priv->is_client ? "client" : "server",
+-      pqueue_size (priv->ssl->d1->sent_messages),
+       priv->bio_buffer,
+       priv->bio_buffer_offset,
+       priv->bio_buffer_len,
+@@ -737,7 +736,7 @@
+   self = SSL_get_ex_data (ssl, connection_ex_index);
+   g_return_val_if_fail (GST_IS_DTLS_CONNECTION (self), FALSE);
+ 
+-  pem = _gst_dtls_x509_to_pem (x509_ctx->cert);
++  pem = _gst_dtls_x509_to_pem (X509_STORE_CTX_get0_cert (x509_ctx));
+ 
+   if (!pem) {
+     GST_WARNING_OBJECT (self,
+@@ -749,7 +748,8 @@
+       gint len;
+ 
+       len =
+-          X509_NAME_print_ex (bio, X509_get_subject_name (x509_ctx->cert), 1,
++          X509_NAME_print_ex (bio,
++          X509_get_subject_name (X509_STORE_CTX_get0_cert (x509_ctx)), 1,
+           XN_FLAG_MULTILINE);
+       BIO_read (bio, buffer, len);
+       buffer[len] = '\0';
+@@ -777,29 +777,32 @@
+     ########  ####  #######
+ */
+ 
+-static BIO_METHOD custom_bio_methods = {
+-  BIO_TYPE_BIO,
+-  "stream",
+-  bio_method_write,
+-  bio_method_read,
+-  NULL,
+-  NULL,
+-  bio_method_ctrl,
+-  bio_method_new,
+-  bio_method_free,
+-  NULL,
+-};
++static BIO_METHOD *custom_bio_methods;
+ 
+ static BIO_METHOD *
+ BIO_s_gst_dtls_connection (void)
+ {
+-  return &custom_bio_methods;
++  if (custom_bio_methods != NULL)
++    return custom_bio_methods;
++
++  custom_bio_methods = BIO_meth_new (BIO_TYPE_BIO, "stream");
++  if (custom_bio_methods == NULL
++      || !BIO_meth_set_write (custom_bio_methods, bio_method_write)
++      || !BIO_meth_set_read (custom_bio_methods, bio_method_read)
++      || !BIO_meth_set_ctrl (custom_bio_methods, bio_method_ctrl)
++      || !BIO_meth_set_create (custom_bio_methods, bio_method_new)
++      || !BIO_meth_set_destroy (custom_bio_methods, bio_method_free)) {
++    BIO_meth_free (custom_bio_methods);
++    return NULL;
++  }
++
++  return custom_bio_methods;
+ }
+ 
+ static int
+ bio_method_write (BIO * bio, const char *data, int size)
+ {
+-  GstDtlsConnection *self = GST_DTLS_CONNECTION (bio->ptr);
++  GstDtlsConnection *self = GST_DTLS_CONNECTION (BIO_get_data (bio));
+ 
+   GST_LOG_OBJECT (self, "BIO: writing %d", size);
+ 
+@@ -824,7 +827,7 @@
+ static int
+ bio_method_read (BIO * bio, char *out_buffer, int size)
+ {
+-  GstDtlsConnection *self = GST_DTLS_CONNECTION (bio->ptr);
++  GstDtlsConnection *self = GST_DTLS_CONNECTION (BIO_get_data (bio));
+   GstDtlsConnectionPrivate *priv = self->priv;
+   guint internal_size;
+   gint copy_size;
+@@ -868,7 +871,7 @@
+ static long
+ bio_method_ctrl (BIO * bio, int cmd, long arg1, void *arg2)
+ {
+-  GstDtlsConnection *self = GST_DTLS_CONNECTION (bio->ptr);
++  GstDtlsConnection *self = GST_DTLS_CONNECTION (BIO_get_data (bio));
+   GstDtlsConnectionPrivate *priv = self->priv;
+ 
+   switch (cmd) {
+@@ -916,8 +919,8 @@
+ {
+   GST_LOG_OBJECT (NULL, "BIO: new");
+ 
+-  bio->shutdown = 0;
+-  bio->init = 1;
++  BIO_set_shutdown (bio, 0);
++  BIO_set_init (bio, 1);
+ 
+   return 1;
+ }
+@@ -930,6 +933,6 @@
+     return 0;
+   }
+ 
+-  GST_LOG_OBJECT (GST_DTLS_CONNECTION (bio->ptr), "BIO free");
++  GST_LOG_OBJECT (GST_DTLS_CONNECTION (BIO_get_data (bio)), "BIO free");
+   return 0;
+ }
+--- gst-plugins-bad-1.6.4.orig/ext/hls/gsthlsdemux.c
++++ gst-plugins-bad-1.6.4/ext/hls/gsthlsdemux.c
+@@ -1113,11 +1113,11 @@
+ gst_hls_demux_decrypt_start (GstHLSDemux * demux, const guint8 * key_data,
+     const guint8 * iv_data)
+ {
+-  EVP_CIPHER_CTX_init (&demux->aes_ctx);
+-  if (!EVP_DecryptInit_ex (&demux->aes_ctx, EVP_aes_128_cbc (), NULL, key_data,
++  demux->aes_ctx = EVP_CIPHER_CTX_new ();
++  if (!EVP_DecryptInit_ex (demux->aes_ctx, EVP_aes_128_cbc (), NULL, key_data,
+           iv_data))
+     return FALSE;
+-  EVP_CIPHER_CTX_set_padding (&demux->aes_ctx, 0);
++  EVP_CIPHER_CTX_set_padding (demux->aes_ctx, 0);
+   return TRUE;
+ }
+ 
+@@ -1131,10 +1131,10 @@
+     return FALSE;
+ 
+   len = (int) length;
+-  if (!EVP_DecryptUpdate (&demux->aes_ctx, decrypted_data, &len, encrypted_data,
++  if (!EVP_DecryptUpdate (demux->aes_ctx, decrypted_data, &len, encrypted_data,
+           len))
+     return FALSE;
+-  EVP_DecryptFinal_ex (&demux->aes_ctx, decrypted_data + len, &flen);
++  EVP_DecryptFinal_ex (demux->aes_ctx, decrypted_data + len, &flen);
+   g_return_val_if_fail (len + flen == length, FALSE);
+   return TRUE;
+ }
+@@ -1142,7 +1142,8 @@
+ static void
+ gst_hls_demux_decrypt_end (GstHLSDemux * demux)
+ {
+-  EVP_CIPHER_CTX_cleanup (&demux->aes_ctx);
++  EVP_CIPHER_CTX_free (demux->aes_ctx);
++  demux->aes_ctx = NULL;
+ }
+ 
+ #elif defined(HAVE_NETTLE)
+--- gst-plugins-bad-1.6.4.orig/ext/hls/gsthlsdemux.h
++++ gst-plugins-bad-1.6.4/ext/hls/gsthlsdemux.h
+@@ -76,7 +76,7 @@
+ 
+   /* decryption tooling */
+ #if defined(HAVE_OPENSSL)
+-  EVP_CIPHER_CTX aes_ctx;
++  EVP_CIPHER_CTX *aes_ctx;
+ #elif defined(HAVE_NETTLE)
+   struct CBC_CTX (struct aes_ctx, AES_BLOCK_SIZE) aes_ctx;
+ #else
 --- gst-plugins-bad-1.6.4.orig/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
 +++ gst-plugins-bad-1.6.4/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
 @@ -26,8 +26,7 @@

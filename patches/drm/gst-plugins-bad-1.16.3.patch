@@ -1,0 +1,282 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libdrm-build libxml2-build openssl-build x265-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists openjpeg2-build; then
+  REQUIRES="$REQUIRES openjpeg2-build"
+else
+  pkg-config --exists --print-errors openjpeg-build || exit 1
+  REQUIRES="$REQUIRES openjpeg-build"
+fi
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-decklink --disable-fbdev --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/lib
+install gst-libs/gst/adaptivedemux/.libs/libgstadaptivedemux-1.0.so.0.* $DESTDIR/drm/lib/libgstadaptivedemux-1.0.so.0
+install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/drm/lib/libgstbasecamerabinsrc-1.0.so.0
+install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/drm/lib/libgstcodecparsers-1.0.so.0
+install gst-libs/gst/interfaces/.libs/libgstphotography-1.0.so.0.* $DESTDIR/drm/lib/libgstphotography-1.0.so.0
+install gst-libs/gst/isoff/.libs/libgstisoff-1.0.so.0.* $DESTDIR/drm/lib/libgstisoff-1.0.so.0
+install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/drm/lib/libgstmpegts-1.0.so.0
+install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/drm/lib/libgsturidownloader-1.0.so.0
+install -d $DESTDIR/drm/lib/gstreamer-1.0
+install ext/bz2/.libs/libgstbz2.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/curl/.libs/libgstcurl.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/dash/.libs/libgstdashdemux.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/dtls/.libs/libgstdtls.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/hls/.libs/libgsthls.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/x265/.libs/libgstx265.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/accurip/.libs/libgstaccurip.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/adpcmenc/.libs/libgstadpcmenc.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/aiff/.libs/libgstaiff.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/asfmux/.libs/libgstasfmux.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/audiobuffersplit/.libs/libgstaudiobuffersplit.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/audiofxbad/.libs/libgstaudiofxbad.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/audiolatency/.libs/libgstaudiolatency.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/audiomixmatrix/.libs/libgstaudiomixmatrix.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/audiovisualizers/.libs/libgstaudiovisualizers.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/autoconvert/.libs/libgstautoconvert.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/bayer/.libs/libgstbayer.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/camerabin2/.libs/libgstcamerabin.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/coloreffects/.libs/libgstcoloreffects.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/debugutils/.libs/libgstdebugutilsbad.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/dvbsuboverlay/.libs/libgstdvbsuboverlay.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/dvdspu/.libs/libgstdvdspu.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/faceoverlay/.libs/libgstfaceoverlay.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/festival/.libs/libgstfestival.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/fieldanalysis/.libs/libgstfieldanalysis.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/freeverb/.libs/libgstfreeverb.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/frei0r/.libs/libgstfrei0r.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/gaudieffects/.libs/libgstgaudieffects.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/gdp/.libs/libgstgdp.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/geometrictransform/.libs/libgstgeometrictransform.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/id3tag/.libs/libgstid3tag.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/inter/.libs/libgstinter.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/interlace/.libs/libgstinterlace.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/ivfparse/.libs/libgstivfparse.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/ivtc/.libs/libgstivtc.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/jp2kdecimator/.libs/libgstjp2kdecimator.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/jpegformat/.libs/libgstjpegformat.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/midi/.libs/libgstmidi.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/mpegdemux/.libs/libgstmpegpsdemux.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/mpegpsmux/.libs/libgstmpegpsmux.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/mpegtsdemux/.libs/libgstmpegtsdemux.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/mpegtsmux/.libs/libgstmpegtsmux.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/mxf/.libs/libgstmxf.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/netsim/.libs/libgstnetsim.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/pcapparse/.libs/libgstpcapparse.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/pnm/.libs/libgstpnm.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/proxy/.libs/libgstproxy.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/rawparse/.libs/libgstlegacyrawparse.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/removesilence/.libs/libgstremovesilence.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/onvif/.libs/libgstrtponvif.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/sdp/.libs/libgstsdpelem.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/segmentclip/.libs/libgstsegmentclip.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/siren/.libs/libgstsiren.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/smooth/.libs/libgstsmooth.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/speed/.libs/libgstspeed.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/subenc/.libs/libgstsubenc.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/timecode/.libs/libgsttimecode.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/videofilters/.libs/libgstvideofiltersbad.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/videoframe_audiolevel/.libs/libgstvideoframe_audiolevel.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/videoparsers/.libs/libgstvideoparsersbad.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/videosignal/.libs/libgstvideosignal.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/vmnc/.libs/libgstvmnc.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/y4m/.libs/libgsty4mdec.so $DESTDIR/drm/lib/gstreamer-1.0
+install gst/yadif/.libs/libgstyadif.so $DESTDIR/drm/lib/gstreamer-1.0
+install sys/ipcpipeline/.libs/libgstipcpipeline.so $DESTDIR/drm/lib/gstreamer-1.0
+install sys/dvb/.libs/libgstdvb.so $DESTDIR/drm/lib/gstreamer-1.0
+install sys/kms/.libs/libgstkms.so $DESTDIR/drm/lib/gstreamer-1.0
+install sys/shm/.libs/libgstshm.so $DESTDIR/drm/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+Name: gst-plugins-bad
+Version: 1.16.3
+Description: Bad GStreamer plugins
+Requires: $REQUIRES
+
+exec=\\
+/drm/lib/libgstadaptivedemux-1.0.so.0 \\
+/drm/lib/libgstbasecamerabinsrc-1.0.so.0 \\
+/drm/lib/libgstcodecparsers-1.0.so.0 \\
+/drm/lib/libgstisoff-1.0.so.0 \\
+/drm/lib/libgstmpegts-1.0.so.0 \\
+/drm/lib/libgstphotography-1.0.so.0 \\
+/drm/lib/gstreamer-1.0/libgstaccurip.so \\
+/drm/lib/gstreamer-1.0/libgstadpcmdec.so \\
+/drm/lib/gstreamer-1.0/libgstadpcmenc.so \\
+/drm/lib/gstreamer-1.0/libgstaiff.so \\
+/drm/lib/gstreamer-1.0/libgstasfmux.so \\
+/drm/lib/gstreamer-1.0/libgstaudiobuffersplit.so \\
+/drm/lib/gstreamer-1.0/libgstaudiofxbad.so \\
+/drm/lib/gstreamer-1.0/libgstaudiolatency.so \\
+/drm/lib/gstreamer-1.0/libgstaudiomixmatrix.so \\
+/drm/lib/gstreamer-1.0/libgstaudiovisualizers.so \\
+/drm/lib/gstreamer-1.0/libgstautoconvert.so \\
+/drm/lib/gstreamer-1.0/libgstbayer.so \\
+/drm/lib/gstreamer-1.0/libgstbz2.so \\
+/drm/lib/gstreamer-1.0/libgstcamerabin.so \\
+/drm/lib/gstreamer-1.0/libgstcoloreffects.so \\
+/drm/lib/gstreamer-1.0/libgstcurl.so \\
+/drm/lib/gstreamer-1.0/libgstdashdemux.so \\
+/drm/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
+/drm/lib/gstreamer-1.0/libgstdtls.so \\
+/drm/lib/gstreamer-1.0/libgstdvb.so \\
+/drm/lib/gstreamer-1.0/libgstdvbsuboverlay.so \\
+/drm/lib/gstreamer-1.0/libgstdvdspu.so \\
+/drm/lib/gstreamer-1.0/libgstfaceoverlay.so \\
+/drm/lib/gstreamer-1.0/libgstfestival.so \\
+/drm/lib/gstreamer-1.0/libgstfieldanalysis.so \\
+/drm/lib/gstreamer-1.0/libgstfreeverb.so \\
+/drm/lib/gstreamer-1.0/libgstfrei0r.so \\
+/drm/lib/gstreamer-1.0/libgstgaudieffects.so \\
+/drm/lib/gstreamer-1.0/libgstgdp.so \\
+/drm/lib/gstreamer-1.0/libgstgeometrictransform.so \\
+/drm/lib/gstreamer-1.0/libgstid3tag.so \\
+/drm/lib/gstreamer-1.0/libgstinter.so \\
+/drm/lib/gstreamer-1.0/libgstinterlace.so \\
+/drm/lib/gstreamer-1.0/libgstipcpipeline.so \\
+/drm/lib/gstreamer-1.0/libgstivfparse.so \\
+/drm/lib/gstreamer-1.0/libgstivtc.so \\
+/drm/lib/gstreamer-1.0/libgstjp2kdecimator.so \\
+/drm/lib/gstreamer-1.0/libgstjpegformat.so \\
+/drm/lib/gstreamer-1.0/libgstkms.so \\
+/drm/lib/gstreamer-1.0/libgstlegacyrawparse.so \\
+/drm/lib/gstreamer-1.0/libgstmidi.so \\
+/drm/lib/gstreamer-1.0/libgstmpegpsdemux.so \\
+/drm/lib/gstreamer-1.0/libgstmpegpsmux.so \\
+/drm/lib/gstreamer-1.0/libgstmpegtsdemux.so \\
+/drm/lib/gstreamer-1.0/libgstmpegtsmux.so \\
+/drm/lib/gstreamer-1.0/libgstmxf.so \\
+/drm/lib/gstreamer-1.0/libgstnetsim.so \\
+/drm/lib/gstreamer-1.0/libgstopenjpeg.so \\
+/drm/lib/gstreamer-1.0/libgstpcapparse.so \\
+/drm/lib/gstreamer-1.0/libgstpnm.so \\
+/drm/lib/gstreamer-1.0/libgstproxy.so \\
+/drm/lib/gstreamer-1.0/libgstremovesilence.so \\
+/drm/lib/gstreamer-1.0/libgstrfbsrc.so \\
+/drm/lib/gstreamer-1.0/libgstrtponvif.so \\
+/drm/lib/gstreamer-1.0/libgstsdpelem.so \\
+/drm/lib/gstreamer-1.0/libgstsegmentclip.so \\
+/drm/lib/gstreamer-1.0/libgstshm.so \\
+/drm/lib/gstreamer-1.0/libgstsiren.so \\
+/drm/lib/gstreamer-1.0/libgstsmooth.so \\
+/drm/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+/drm/lib/gstreamer-1.0/libgstspeed.so \\
+/drm/lib/gstreamer-1.0/libgstsubenc.so \\
+/drm/lib/gstreamer-1.0/libgsttimecode.so \\
+/drm/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
+/drm/lib/gstreamer-1.0/libgstvideoframe_audiolevel.so \\
+/drm/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
+/drm/lib/gstreamer-1.0/libgstvideosignal.so \\
+/drm/lib/gstreamer-1.0/libgstvmnc.so \\
+/drm/lib/gstreamer-1.0/libgstx265.so \\
+/drm/lib/gstreamer-1.0/libgsty4mdec.so \\
+/drm/lib/gstreamer-1.0/libgstyadif.so
+EOF
+
+exit
+--- gst-plugins-bad-1.16.3.orig/configure.ac
++++ gst-plugins-bad-1.16.3/configure.ac
+@@ -1917,8 +1917,13 @@
+ translit(dnm, m, l) AM_CONDITIONAL(USE_OPENJPEG, true)
+ AG_GST_CHECK_FEATURE(OPENJPEG, [openjpeg library], openjpeg, [
+   HAVE_OPENJPEG="no"
+-  AG_GST_PKG_CHECK_MODULES(OPENJPEG, libopenjp2 >= 2.1)
+-  if test x"$HAVE_OPENJPEG" != x"yes"; then
++  AG_GST_PKG_CHECK_MODULES(OPENJPEG, libopenjp2 >= 2.0)
++  if test x"$HAVE_OPENJPEG" = x"yes"; then
++    AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
++    if test x"$HAVE_OPENJPEG_2_1" = x"yes"; then
++      AC_DEFINE([HAVE_OPENJPEG_2_1], 1, [Define if OpenJPEG 2.1 is used])
++    fi
++  else
+     # Fallback to v1.5
+     OPENJPEG_LIBS=""
+     PKG_CHECK_MODULES(OPENJPEG, libopenjpeg1,
+--- gst-plugins-bad-1.16.3.orig/ext/dash/gstdashdemux.c
++++ gst-plugins-bad-1.16.3/ext/dash/gstdashdemux.c
+@@ -285,7 +285,7 @@
+ #include <gio/gio.h>
+ #include <gst/base/gsttypefindhelper.h>
+ #include <gst/tag/tag.h>
+-#include <gst/net/gstnet.h>
++#include <gst/net/net.h>
+ #include "gst/gst-i18n-plugin.h"
+ #include "gstdashdemux.h"
+ #include "gstdash_debug.h"
+--- gst-plugins-bad-1.16.3.orig/ext/openjpeg/gstopenjpegdec.c
++++ gst-plugins-bad-1.16.3/ext/openjpeg/gstopenjpegdec.c
+@@ -1138,7 +1138,11 @@
+   opj_stream_set_write_function (stream, write_fn);
+   opj_stream_set_skip_function (stream, skip_fn);
+   opj_stream_set_seek_function (stream, seek_fn);
++#ifdef HAVE_OPENJPEG_2_1
+   opj_stream_set_user_data (stream, &mstream, NULL);
++#else
++  opj_stream_set_user_data (stream, &mstream);
++#endif
+   opj_stream_set_user_data_length (stream, mstream.size);
+ 
+   image = NULL;
+--- gst-plugins-bad-1.16.3.orig/ext/openjpeg/gstopenjpegenc.c
++++ gst-plugins-bad-1.16.3/ext/openjpeg/gstopenjpegenc.c
+@@ -958,7 +958,11 @@
+   opj_stream_set_write_function (stream, write_fn);
+   opj_stream_set_skip_function (stream, skip_fn);
+   opj_stream_set_seek_function (stream, seek_fn);
++#ifdef HAVE_OPENJPEG_2_1
+   opj_stream_set_user_data (stream, &mstream, NULL);
++#else
++  opj_stream_set_user_data (stream, &mstream);
++#endif
+   opj_stream_set_user_data_length (stream, mstream.size);
+ 
+   if (!opj_start_compress (enc, image, stream))
+--- gst-plugins-bad-1.16.3.orig/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
++++ gst-plugins-bad-1.16.3/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
+@@ -30,8 +30,7 @@
+ #include "config.h"
+ #endif
+ 
+-#include <gst/app/gstappsrc.h>
+-#include <gst/app/gstappsink.h>
++#include <gst/app/app.h>
+ #include <gst/glib-compat-private.h>
+ #include "gstcamerabinpreview.h"
+ #include "gstbasecamerasrc.h"
+--- gst-plugins-bad-1.16.3.orig/sys/kms/gstkmssink.c
++++ gst-plugins-bad-1.16.3/sys/kms/gstkmssink.c
+@@ -177,7 +177,7 @@
+ {
+   static const char *drivers[] = { "i915", "radeon", "nouveau", "vmwgfx",
+     "exynos", "amdgpu", "imx-drm", "rockchip", "atmel-hlcdc", "msm",
+-    "xlnx", "vc4", "meson", "sun4i-drm", "mxsfb-drm",
++    "xlnx", "vc4", "meson", "sun4i-drm", "mxsfb-drm", "simpledrm",
+     "xilinx_drm",               /* DEPRECATED. Replaced by xlnx */
+   };
+   int i, fd = -1;
+@@ -1948,7 +1948,7 @@
+    */
+   g_properties[PROP_FORCE_MODESETTING] =
+       g_param_spec_boolean ("force-modesetting", "Force modesetting",
+-      "When enabled, the sink try to configure the display mode", FALSE,
++      "When enabled, the sink try to configure the display mode", TRUE,
+       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT);
+ 
+   /**
