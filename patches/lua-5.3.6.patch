@@ -1,0 +1,256 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build readline-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --disable-static --prefix
+
+# build
+make linux
+
+# install
+install -d $DESTDIR/bin
+install src/lua $DESTDIR/bin
+install src/luac $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 src/lauxlib.h $DESTDIR/include
+install -m 644 src/lua.h $DESTDIR/include
+install -m 644 src/luaconf.h $DESTDIR/include
+install -m 644 src/lualib.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/liblua.so.5 $DESTDIR/lib
+ln -sf liblua.so.5 $DESTDIR/lib/liblua.so
+install -d $DESTDIR/lib/lua/5.3
+test -L $DESTDIR/lib/lua/5.1 || ln -s 5.3 $DESTDIR/lib/lua/5.1
+test -L $DESTDIR/lib/lua/5.2 || ln -s 5.3 $DESTDIR/lib/lua/5.2
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 lua.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/lua/5.3
+test -L $DESTDIR/share/lua/5.1 || ln -s 5.3 $DESTDIR/share/lua/5.1
+test -L $DESTDIR/share/lua/5.2 || ln -s 5.3 $DESTDIR/share/lua/5.2
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/lua-build.pc << EOF
+Name: lua
+Version: 5.3.6
+Description: Lightweight language for extending applications
+Requires: $REQUIRES
+
+devel=\\
+/include/lauxlib.h \\
+/include/lua.h \\
+/include/luaconf.h \\
+/include/lualib.h \\
+/lib/liblua.so \\
+/lib/pkgconfig/lua.pc
+
+exec=\\
+/bin/lua \\
+/bin/luac \\
+/lib/liblua.so.5
+EOF
+
+exit
+--- lua-5.3.6.orig/Configure
++++ lua-5.3.6/Configure
+@@ -0,0 +1,32 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-static)
++      NOSTATIC=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" lua.pc
++
++sed -i "/^INSTALL_TOP=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^#define LUA_ROOT/s#\".*#\"$PREFIX/\"#" src/luaconf.h
++
++sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makefile
++sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" src/Makefile
+--- lua-5.3.6.orig/Makefile
++++ lua-5.3.6/Makefile
+@@ -3,6 +3,8 @@
+ 
+ # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
+ 
++NOSTATIC ?= 
++
+ # Your platform. See PLATS for possible values.
+ PLAT= none
+ 
+@@ -11,12 +13,12 @@
+ # You may want to make INSTALL_LMOD and INSTALL_CMOD consistent with
+ # LUA_ROOT, LUA_LDIR, and LUA_CDIR in luaconf.h.
+ INSTALL_TOP= /usr/local
+-INSTALL_BIN= $(INSTALL_TOP)/bin
+-INSTALL_INC= $(INSTALL_TOP)/include
+-INSTALL_LIB= $(INSTALL_TOP)/lib
+-INSTALL_MAN= $(INSTALL_TOP)/man/man1
+-INSTALL_LMOD= $(INSTALL_TOP)/share/lua/$V
+-INSTALL_CMOD= $(INSTALL_TOP)/lib/lua/$V
++INSTALL_BIN= $(DESTDIR)$(INSTALL_TOP)/bin
++INSTALL_INC= $(DESTDIR)$(INSTALL_TOP)/include
++INSTALL_LIB= $(DESTDIR)$(INSTALL_TOP)/lib
++INSTALL_MAN= $(DESTDIR)$(INSTALL_TOP)/share/man/man1
++INSTALL_LMOD= $(DESTDIR)$(INSTALL_TOP)/share/lua/$V
++INSTALL_CMOD= $(DESTDIR)$(INSTALL_TOP)/lib/lua/$V
+ 
+ # How to install. If your install program does not support "-p", then
+ # you may have to run ranlib on the installed liblua.a.
+@@ -41,7 +43,11 @@
+ # What to install.
+ TO_BIN= lua luac
+ TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
++ifeq "$(NOSTATIC)" ""
+ TO_LIB= liblua.a
++else
++TO_LIB= liblua.so.5
++endif
+ TO_MAN= lua.1 luac.1
+ 
+ # Lua version and release.
+@@ -61,13 +67,18 @@
+ 	cd src && $(MKDIR) $(INSTALL_BIN) $(INSTALL_INC) $(INSTALL_LIB) $(INSTALL_MAN) $(INSTALL_LMOD) $(INSTALL_CMOD)
+ 	cd src && $(INSTALL_EXEC) $(TO_BIN) $(INSTALL_BIN)
+ 	cd src && $(INSTALL_DATA) $(TO_INC) $(INSTALL_INC)
+-	cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB)
++	if test -z "$(NOSTATIC)"; then \
++		cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB); \
++	else \
++		cd src && $(INSTALL_EXEC) $(TO_LIB) $(INSTALL_LIB); \
++		ln -sf $(TO_LIB) $(INSTALL_LIB)/liblua.so; \
++	fi
+ 	cd doc && $(INSTALL_DATA) $(TO_MAN) $(INSTALL_MAN)
+ 
+ uninstall:
+ 	cd src && cd $(INSTALL_BIN) && $(RM) $(TO_BIN)
+ 	cd src && cd $(INSTALL_INC) && $(RM) $(TO_INC)
+-	cd src && cd $(INSTALL_LIB) && $(RM) $(TO_LIB)
++	cd src && cd $(INSTALL_LIB) && $(RM) liblua.*
+ 	cd doc && cd $(INSTALL_MAN) && $(RM) $(TO_MAN)
+ 
+ local:
+--- lua-5.3.6.orig/lua.pc
++++ lua-5.3.6/lua.pc
+@@ -0,0 +1,10 @@
++prefix=/usr/local
++libdir=${prefix}/lib
++includedir=${prefix}/include
++
++Name: Lua
++Description: An Extensible Extension Language
++Version: 5.3.6
++Libs: -L${libdir} -llua
++Libs.private: -lm -ldl
++Cflags: -I${includedir}
+--- lua-5.3.6.orig/src/Makefile
++++ lua-5.3.6/src/Makefile
+@@ -3,11 +3,17 @@
+ 
+ # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
+ 
++NOSTATIC ?= 
++
+ # Your platform. See PLATS for possible values.
+ PLAT= none
+ 
+ CC= gcc -std=gnu99
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
++CFLAGS += -DLUA_COMPAT_5_1
++ifeq "$(NOSTATIC)" "yes"
++CFLAGS += -fPIC
++endif
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+ 
+@@ -29,6 +35,7 @@
+ PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
+ 
+ LUA_A=	liblua.a
++LUA_SO= liblua.so.5
+ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
+ 	lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o \
+ 	ltm.o lundump.o lvm.o lzio.o
+@@ -43,8 +50,11 @@
+ LUAC_O=	luac.o
+ 
+ ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
++ifeq "$(NOSTATIC)" ""
+ ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
+-ALL_A= $(LUA_A)
++else
++ALL_T= $(LUA_SO) $(LUA_T) $(LUAC_T)
++endif
+ 
+ # Targets start here.
+ default: $(PLAT)
+@@ -53,17 +63,30 @@
+ 
+ o:	$(ALL_O)
+ 
+-a:	$(ALL_A)
++a:	$(LUA_A)
++
++so:	$(LUA_SO)
+ 
+ $(LUA_A): $(BASE_O)
+ 	$(AR) $@ $(BASE_O)
+ 	$(RANLIB) $@
+ 
++$(LUA_SO): $(BASE_O)
++	$(CC) -shared -Wl,-soname,$@ -o $@ $? $(LDFLAGS) -lm -ldl
++
++ifeq "$(NOSTATIC)" ""
+ $(LUA_T): $(LUA_O) $(LUA_A)
+ 	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
+ 
+ $(LUAC_T): $(LUAC_O) $(LUA_A)
+ 	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
++else
++$(LUA_T): $(LUA_O) $(LUA_SO)
++	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_SO) -lreadline
++
++$(LUAC_T): $(LUAC_O) $(LUA_SO)
++	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_SO) -lreadline
++endif
+ 
+ clean:
+ 	$(RM) $(ALL_T) $(ALL_O)
+--- lua-5.3.6.orig/src/luaconf.h
++++ lua-5.3.6/src/luaconf.h
+@@ -275,12 +275,7 @@
+ ** give a warning about it. To avoid these warnings, change to the
+ ** default definition.
+ */
+-#if defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) >= 302) && \
+-    defined(__ELF__)		/* { */
+-#define LUAI_FUNC	__attribute__((visibility("hidden"))) extern
+-#else				/* }{ */
+ #define LUAI_FUNC	extern
+-#endif				/* } */
+ 
+ #define LUAI_DDEC	LUAI_FUNC
+ #define LUAI_DDEF	/* empty */

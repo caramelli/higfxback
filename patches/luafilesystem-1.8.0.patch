@@ -1,0 +1,55 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lua-build make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/lib/lua/5.1
+install src/lfs.so $DESTDIR/lib/lua/5.1
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/luafilesystem-build.pc << EOF
+Name: luafilesystem
+Version: 1.8.0
+Description: File system library for Lua
+Requires: $REQUIRES
+
+exec=\\
+/lib/lua/5.1/lfs.so
+EOF
+
+exit
+--- luafilesystem-1.8.0.orig/Configure
++++ luafilesystem-1.8.0/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX=/s#=.*#=$PREFIX#" config
