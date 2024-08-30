@@ -1,0 +1,84 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="egl-opengl-stubs-build meson-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists xcb-util-keysyms; then
+  XCB=1
+  REQUIRES="$REQUIRES xcb-util-keysyms"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libx11-build; then
+  XLIB=1
+  REQUIRES="$REQUIRES libx11-build"
+fi
+
+test $XLIB || test $XCB || { echo Xlib or XCB packages required; exit 1; }
+
+pkg-config --exists check-build libfiu-build && REQUIRES="$REQUIRES check-build libfiu-build"
+
+# configure
+PKG_CONFIG_PATH=/x11/lib/pkgconfig meson setup -Dfbdev=false --prefix=/x11 build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/x11/include/GL
+install -m 644 glut.h $DESTDIR/x11/include/GL/tinyglut.h
+ln -sf tinyglut.h $DESTDIR/x11/include/GL/glut.h
+install -d $DESTDIR/x11/lib
+install build/libglut.so.3.*[!p] $DESTDIR/x11/lib/libtinyglut.so.3
+ln -sf libtinyglut.so.3 $DESTDIR/x11/lib/libglut.so
+ln -sf libtinyglut.so.3 $DESTDIR/x11/lib/libglut.so.3
+install -d $DESTDIR/x11/lib/glut/backends
+install build/egl_plugin.so $DESTDIR/x11/lib/glut/backends
+test $XLIB && install build/glx_plugin.so $DESTDIR/x11/lib/glut/backends
+install -d $DESTDIR/x11/lib/glut/platforms
+test $XCB && install build/xcb_plugin.so $DESTDIR/x11/lib/glut/platforms
+test $XLIB && install build/x11_plugin.so $DESTDIR/x11/lib/glut/platforms
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 build/meson-private/glut.pc $DESTDIR/x11/lib/pkgconfig/tinyglut.pc
+ln -sf tinyglut.pc $DESTDIR/x11/lib/pkgconfig/glut.pc
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc << EOF
+Name: TinyGLUT
+Version: 0.7
+Description: OpenGL Utility Toolkit
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GL/glut.h \\
+/x11/include/GL/tinyglut.h \\
+/x11/lib/libglut.so \\
+/x11/lib/pkgconfig/glut.pc \\
+/x11/lib/pkgconfig/tinyglut.pc
+
+exec=\\
+/x11/lib/libglut.so.3 \\
+/x11/lib/glut/backends/egl_plugin.so \\
+EOF
+test $XLIB && echo /x11/lib/glut/backends/glx_plugin.so \\ >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc
+test $XCB && echo /x11/lib/glut/platforms/xcb_plugin.so \\ >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc
+test $XLIB && echo /x11/lib/glut/platforms/x11_plugin.so \\ >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc << EOF
+/x11/lib/libtinyglut.so.3
+EOF
+ln -sf tinyglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
+
+exit
+--- TinyGLUT-0.7.orig/x11.c
++++ TinyGLUT-0.7/x11.c
+@@ -63,6 +63,8 @@
+     goto fail;
+   }
+ 
++  XInternAtom(display, "WM_DELETE_WINDOW", True);
++
+   XMapWindow(display, window);
+ 
+   XMoveWindow(display, window, posx, posy);

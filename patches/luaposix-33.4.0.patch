@@ -1,0 +1,40 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build lua-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --prefix=/
+
+# build
+make
+
+# install
+install -d $DESTDIR/lib/lua/5.1
+install ext/posix/.libs/posix.so $DESTDIR/lib/lua/5.1
+install -d $DESTDIR/share/lua/5.1/posix
+install -m 644 lib/posix/_argcheck.lua $DESTDIR/share/lua/5.1/posix
+install -m 644 lib/posix/compat.lua $DESTDIR/share/lua/5.1/posix
+install -m 644 lib/posix/deprecated.lua $DESTDIR/share/lua/5.1/posix
+install -m 644 lib/posix/init.lua $DESTDIR/share/lua/5.1/posix
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/luaposix-build.pc << EOF
+Name: luaposix
+Version: 33.4.0
+Description: POSIX binding for Lua
+Requires: $REQUIRES
+
+exec=\\
+/lib/lua/5.1/posix.so \\
+/share/lua/5.1/posix/_argcheck.lua \\
+/share/lua/5.1/posix/compat.lua \\
+/share/lua/5.1/posix/deprecated.lua \\
+/share/lua/5.1/posix/init.lua
+EOF
+
+exit

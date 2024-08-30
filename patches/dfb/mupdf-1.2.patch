@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -rf thirdparty
-LDFLAGS=-Wl,-rpath,/dfb/lib sh ./Configure --disable-static --disable-x11 --prefix /dfb
+sh ./Configure --disable-static --disable-x11 --prefix /dfb
 
 # build
 make
@@ -48,7 +48,7 @@ EOF
 exit
 --- mupdf-1.2.orig/Configure
 +++ mupdf-1.2/Configure
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,38 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -75,12 +75,6 @@ exit
 +  esac
 +  shift
 +done
-+
-+if test -z $LDFLAGS; then
-+  sed -i "s|LINK_CMD =.*|LINK_CMD = \$(QUIET_LINK) \$(CC) \$(LDFLAGS) -o \$@ $^|" Makefile
-+else
-+  sed -i "s|LINK_CMD =.*|LINK_CMD = \$(QUIET_LINK) \$(CC) \$(LDFLAGS) $LDFLAGS -o \$@ $^|" Makefile
-+fi
 +
 +sed -i "/^prefix ?=/s#=.*#= $PREFIX#" Makefile
 +
@@ -112,7 +106,7 @@ exit
  CXX_CMD = $(QUIET_CXX) $(CXX) $(CFLAGS) -o $@ -c $<
  AR_CMD = $(QUIET_AR) $(AR) cr $@ $^
 -LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
-+LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^
++LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -Wl,-rpath,$(prefix)/lib -o $@ $^
  LINK_V8_CMD = $(QUIET_LINK) $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS_V8)
  MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
  
