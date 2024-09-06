@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DBUILD_SHARED_LIBS=ON -DVVENC_ENABLE_LINK_TIME_OPT=OFF -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install bin/release-shared/vvencapp $DESTDIR/bin
+install -d $DESTDIR/include/vvenc
+install -m 644 include/vvenc/vvenc.h $DESTDIR/include/vvenc
+install -m 644 include/vvenc/vvencCfg.h $DESTDIR/include/vvenc
+install -m 644 include/vvenc/vvencDecl.h $DESTDIR/include/vvenc
+install -d $DESTDIR/lib
+install lib/release-shared/libvvenc.so.1.* $DESTDIR/lib/libvvenc.so.1
+ln -sf libvvenc.so.1 $DESTDIR/lib/libvvenc.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/pkgconfig/libvvenc.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/vvenc-build.pc << EOF
+Name: vvenc
+Version: 1.10.0
+Description: H.266/VVC encoder
+Requires: $REQUIRES
+
+devel=\\
+/include/vvenc/vvenc.h \\
+/include/vvenc/vvencCfg.h \\
+/include/vvenc/vvencDecl.h \\
+/lib/libvvenc.so \\
+/lib/pkgconfig/libvvenc.pc
+
+exec=\\
+/bin/vvencapp \\
+/lib/libvvenc.so.1
+EOF
+
+exit
+--- vvenc-1.10.0.orig/source/Lib/vvenc/CMakeLists.txt
++++ vvenc-1.10.0/source/Lib/vvenc/CMakeLists.txt
+@@ -153,5 +153,5 @@
+ # set the folder where to place the projects
+ set_target_properties( ${LIB_NAME} PROPERTIES
+                                    VERSION ${PROJECT_VERSION}
+-                                   SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
++                                   SOVERSION ${PROJECT_VERSION_MAJOR}
+                                    FOLDER lib )

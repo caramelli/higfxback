@@ -1,0 +1,48 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DBUILD_SHARED_LIBS=ON -DVVDEC_ENABLE_LINK_TIME_OPT=OFF -DVVDEC_INSTALL_VVDECAPP=ON -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install bin/release-shared/vvdecapp $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 include/vvdec/sei.h $DESTDIR/include
+install -m 644 include/vvdec/vvdec.h $DESTDIR/include
+install -m 644 include/vvdec/vvdecDecl.h $DESTDIR/include
+install -d $DESTDIR/lib
+install lib/release-shared/libvvdec.so.2.* $DESTDIR/lib/libvvdec.so.2
+ln -sf libvvdec.so.2 $DESTDIR/lib/libvvdec.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/pkgconfig/libvvdec.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/vvdec-build.pc << EOF
+Name: vvdec
+Version: 2.2.0
+Description: H.266/VVC decoder
+Requires: $REQUIRES
+
+devel=\\
+/include/vvdec/sei.h \\
+/include/vvdec/vvdec.h \\
+/include/vvdec/vvdecDecl.h \\
+/lib/libvvdec.so \\
+/lib/pkgconfig/libvvdec.pc
+
+exec=\\
+/bin/vvdecapp \\
+/lib/libvvdec.so.2
+EOF
+
+exit
