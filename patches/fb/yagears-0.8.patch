@@ -12,7 +12,7 @@ fi
 
 # configure (ac-2.69; am-1.13; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-glesv1-cm --prefix=/fb
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-glesv1_cm --prefix=/fb
 
 # build
 make
@@ -121,17 +121,36 @@ exit
      glutIdleFunc(glutIdle);
 --- yagears-0.8.orig/main.c
 +++ yagears-0.8/main.c
-@@ -39,6 +39,9 @@
+@@ -39,6 +39,10 @@
  #include <directfbgl.h>
  #endif
  #if defined(GL_FBDEV)
++#include <dirent.h>
 +#include <fcntl.h>
-+#include <sys/mman.h>
 +#include <linux/input.h>
++#include <sys/mman.h>
  #include <GL/glfbdev.h>
  #endif
  
-@@ -1002,7 +1005,7 @@
+@@ -49,6 +53,7 @@
+ #include <directfb.h>
+ #endif
+ #if defined(EGL_FBDEV)
++#include <dirent.h>
+ #include <fcntl.h>
+ #include <linux/fb.h>
+ #include <linux/input.h>
+@@ -635,6 +640,9 @@
+   struct fb_var_screeninfo fb_vinfo;
+   struct fb_window *fb_win = NULL;
+   int fb_keyboard = -1;
++  DIR *fb_input_dir = NULL;
++  struct dirent *fb_input_dev = NULL;
++  unsigned char fb_key_bits[(KEY_CNT - 1) / 8 + 1];
+   struct input_event fb_event;
+   #endif
+   #if defined(GL_FBDEV)
+@@ -1002,7 +1010,7 @@
    #if defined(EGL_FBDEV)
    if (!strcmp(backend, "egl-fbdev")) {
      setenv("EGL_PLATFORM", "fbdev", 1);
@@ -140,7 +159,7 @@ exit
    }
    #endif
    #if defined(EGL_WAYLAND)
-@@ -1155,7 +1158,7 @@
+@@ -1155,7 +1163,7 @@
    }
    #endif
    #if defined(GL_FBDEV) || defined(EGL_FBDEV)
@@ -149,6 +168,64 @@ exit
      fb_win = calloc(1, sizeof(struct fb_window));
      if (!fb_win) {
        printf("fb_window calloc failed: %s\n", strerror(errno));
+@@ -1363,17 +1371,39 @@
+   if (!strcmp(backend, "gl-fbdev") || !strcmp(backend, "egl-fbdev")) {
+     if (getenv("KEYBOARD")) {
+       fb_keyboard = open(getenv("KEYBOARD"), O_RDONLY | O_NONBLOCK);
+-      if (fb_keyboard == -1) {
+-        printf("open %s failed: %s\n", getenv("KEYBOARD"), strerror(errno));
+-        goto out;
+-      }
+     }
+     else {
+-      fb_keyboard = open("/dev/input/event0", O_RDONLY | O_NONBLOCK);
+-      if (fb_keyboard == -1) {
+-        printf("open /dev/input/event0 failed: %s\n", strerror(errno));
++      fb_input_dir = opendir("/dev/input");
++      if (!fb_input_dir) {
++        printf("opendir /dev/input failed: %s\n", strerror(errno));
+         goto out;
+       }
++
++      c = alloca(64);
++
++      while ((fb_input_dev = readdir(fb_input_dir))) {
++        if (fb_input_dev->d_type == DT_CHR) {
++          sprintf(c, "/dev/input/%s", fb_input_dev->d_name);
++          fb_keyboard = open(c, O_RDONLY | O_NONBLOCK);
++          if (fb_keyboard == -1)
++            continue;
++
++          err = ioctl(fb_keyboard, EVIOCGBIT(EV_KEY, sizeof(fb_key_bits)), fb_key_bits);
++          if (err == -1)
++            continue;
++
++          if (fb_key_bits[KEY_ENTER / 8] & (1 << (KEY_ENTER % 8)))
++            break;
++
++          close(fb_keyboard);
++          fb_keyboard = -1;
++        }
++      }
++    }
++
++    if (fb_keyboard == -1) {
++      printf("open keyboard event device failed\n");
++      goto out;
+     }
+   }
+   #endif
+@@ -1635,6 +1665,10 @@
+     if (fb_keyboard != -1) {
+       close(fb_keyboard);
+     }
++
++    if (fb_input_dir) {
++      closedir(fb_input_dir);
++    }
+   }
+   #endif
+   #if defined(EGL_WAYLAND)
 --- yagears-0.8.orig/mosaic.c
 +++ yagears-0.8/mosaic.c
 @@ -22,6 +22,14 @@

@@ -6,6 +6,9 @@ REQUIRES="autotools-wrappers-lt-build libxext-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+pkg-config --exists libxcursor-build && REQUIRES="$REQUIRES libxcursor-build"
+pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
+pkg-config --exists libxrandr-build && REQUIRES="$REQUIRES libxrandr-build"
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
@@ -21,7 +24,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 rm -rf src/video/khronos
-LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --disable-video-x11-xdbe --disable-video-x11-xrandr --disable-video-x11-xshape --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --disable-video-x11-xdbe --disable-video-x11-xinput --disable-video-x11-xshape --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
 cd test; SDL_CFLAGS="-I../include -I/x11/include" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/x11/lib" XLIB="-L/x11/lib -lX11" ./configure --with-testdatadir=/x11/share/SDL2/test; cd -
 
 # build
@@ -453,6 +456,19 @@ exit
  
  #include "SDL_vulkan.h"
  
+--- SDL2-2.0.18.orig/src/video/x11/SDL_x11sym.h
++++ SDL2-2.0.18/src/video/x11/SDL_x11sym.h
+@@ -279,8 +279,10 @@
+ SDL_X11_SYM(XIDeviceInfo*,XIQueryDevice,(Display *a,int b,int *c),(a,b,c),return)
+ SDL_X11_SYM(void,XIFreeDeviceInfo,(XIDeviceInfo *a),(a),)
+ SDL_X11_SYM(int,XISelectEvents,(Display *a,Window b,XIEventMask *c,int d),(a,b,c,d),return)
++#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+ SDL_X11_SYM(int,XIGrabTouchBegin,(Display *a,int b,Window c,int d,XIEventMask *e,int f,XIGrabModifiers *g),(a,b,c,d,e,f,g),return)
+ SDL_X11_SYM(int,XIUngrabTouchBegin, (Display *a,int b,Window c, int d,XIGrabModifiers *e),(a, b, c, d, e),return)
++#endif
+ SDL_X11_SYM(Status,XIQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
+ SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c),return)
+ #endif
 --- SDL2-2.0.18.orig/test/Makefile.in
 +++ SDL2-2.0.18/test/Makefile.in
 @@ -4,7 +4,7 @@

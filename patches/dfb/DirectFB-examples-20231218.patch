@@ -7,8 +7,15 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
-  EGL_OPENGL="-Dgl=GLES2/gl2.h -Dgl-ldflags=/dfb/lib/libGLESv2.so"
+  GL_HEADER="-Dgl=GLES2/gl2.h"
+  GL_CFLAGS="-Dgl-cflags=-I/dfb/include"
+  GL_LDFLAGS="-Dgl-ldflags=/dfb/lib/libGLESv2.so"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
+elif PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists directfbgl-portablegl-build; then
+  GL=1
+  GL_HEADER="-Dgl=/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL/idirectfbgl_portablegl.h"
+  GL_CFLAGS="-Dgl-cflags=-I/dfb/include -I/dfb/include/directfb-internal"
+  REQUIRES="$REQUIRES directfbgl-portablegl-build"
 fi
 
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
@@ -17,7 +24,7 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; 
 fi
 
 # configure
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/dfb build
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $GL_HEADER ${GL_CFLAGS:+"$GL_CFLAGS"} $GL_LDFLAGS --prefix=/dfb build
 
 # build
 meson compile -C build
@@ -181,8 +188,8 @@ exit
  if get_option('gl') != ''
    gl_dep = declare_dependency(compile_args: ['-DOPENGL_H="@0@"'.format(get_option('gl')),
 -                                            get_option('gl-cflags').strip().split(' ')],
-+                                            get_option('gl-cflags') != '' ?
-+                                            get_option('gl-cflags').strip().split(' ') : []],
++                                             get_option('gl-cflags') != '' ?
++                                             get_option('gl-cflags').strip().split(' ') : []],
                                link_args: get_option('gl-ldflags') != '' ?
                                           get_option('gl-ldflags').strip().split(' ') : [])
  

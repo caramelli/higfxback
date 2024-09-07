@@ -6,6 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libxext-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+pkg-config --exists libxrandr-build && REQUIRES="$REQUIRES libxrandr-build"
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1
@@ -15,7 +16,7 @@ fi
 # configure (ac-2.61; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
-LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xrandr --disable-video-x11-xv --prefix=/x11
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xv --prefix=/x11
 cd test; SDL_CFLAGS="-I../include -I/x11/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/x11/lib" XPATH=-L/x11/lib ./configure --with-testdatadir=/x11/share/SDL/test; cd -
 
 # build

@@ -1,0 +1,56 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="portablegl-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL
+install -m 644 idirectfbgl_portablegl.h $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfbgl-portablegl-build.pc << EOF
+Name: DirectFBGL-PortableGL
+Version: 20231009
+Description: DirectFBGL implementation for PortableGL
+Requires: $REQUIRES
+
+devel=\\
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL/idirectfbgl_portablegl.h
+EOF
+
+exit
+--- DirectFBGL-PortableGL-20231009.orig/idirectfbgl_portablegl.h
++++ DirectFBGL-PortableGL-20231009/idirectfbgl_portablegl.h
+@@ -198,6 +198,7 @@
+      DFBResult              ret;
+      int                    err;
+      int                    width, height;
++     DFBSurfaceCapabilities caps;
+      DFBSurfacePixelFormat  pixelformat;
+      DFBSurfaceDescription  desc;
+      IDirectFBSurface_data *surface_data;
+@@ -211,9 +212,11 @@
+ 
+      surface->GetSize( surface, &width, &height );
+ 
++     surface->GetCapabilities( surface, &caps );
++
+      surface->GetPixelFormat( surface, &pixelformat );
+ 
+-     if (pixelformat == DSPF_RGB32) {
++     if (caps & DSCAPS_PRIMARY && pixelformat == DSPF_RGB32) {
+          int pitch;
+ 
+          surface->Lock( surface, DSLF_WRITE, (void**) &buf, &pitch );
+@@ -227,7 +230,7 @@
+           return DFB_FAILURE;
+      }
+ 
+-     if (pixelformat != DSPF_RGB32) {
++     if (!(caps & DSCAPS_PRIMARY) || pixelformat != DSPF_RGB32) {
+           desc.flags                 = DSDESC_PIXELFORMAT | DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PREALLOCATED;
+           desc.pixelformat           = DSPF_RGB32;
+           desc.width                 = width;

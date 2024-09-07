@@ -129,6 +129,7 @@ install -m 644 bin/tek/ui/style/editor.css $DESTDIR/dfb/share/lua/5.1/tek/ui/sty
 install -m 644 tek/ui/style/default.css $DESTDIR/dfb/share/lua/5.1/tek/ui/style
 install -m 644 tek/ui/style/desktop.css $DESTDIR/dfb/share/lua/5.1/tek/ui/style
 install -m 644 tek/ui/style/desktop.lua $DESTDIR/dfb/share/lua/5.1/tek/ui/style
+install -m 644 tek/ui/style/industrial.css $DESTDIR/dfb/share/lua/5.1/tek/ui/style
 install -m 644 tek/ui/style/user.css $DESTDIR/dfb/share/lua/5.1/tek/ui/style
 
 # build.pc
@@ -237,6 +238,7 @@ exec=\\
 /dfb/share/lua/5.1/tek/ui/style/desktop.css \\
 /dfb/share/lua/5.1/tek/ui/style/desktop.lua \\
 /dfb/share/lua/5.1/tek/ui/style/editor.css \\
+/dfb/share/lua/5.1/tek/ui/style/industrial.css \\
 /dfb/share/lua/5.1/tek/ui/style/user.css
 EOF
 
@@ -312,6 +314,15 @@ exit
  
  local posix = require "posix"
  local char = string.char
+@@ -104,7 +104,7 @@
+ If you click on the button below, the command will be sent
+ to the application's parent process. 
+ 
+-Clicking the close button will send the command 'quit'.]]
++The 'quit' command will close the application.]]
+ 						},
+ 						ui.Group:new
+ 						{
 --- tekui-1.11-r1.orig/bin/childtask.lua
 +++ tekui-1.11-r1/bin/childtask.lua
 @@ -1,4 +1,4 @@
@@ -554,6 +565,18 @@ exit
  
  local floor = math.floor
  ui = require "tek.ui"
+@@ -144,11 +144,6 @@
+ --	Application:
+ -------------------------------------------------------------------------------
+ 
+-print "This example can additionally visualize sets of 16bit numbers coming"
+-print "in via stdin, by dispatching lines to messages of the type MSG_USER."
+-print "To see the extra curve, run this example as follows:"
+-print "$ bin/gendata.lua | bin/meter.lua"
+-
+ ui.Application:new
+ {
+ 	AuthorStyleSheets = "industrial",
 --- tekui-1.11-r1.orig/bin/plasma.lua
 +++ tekui-1.11-r1/bin/plasma.lua
 @@ -1,4 +1,4 @@
