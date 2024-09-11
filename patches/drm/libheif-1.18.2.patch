@@ -1,0 +1,99 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build gdk-pixbuf-build libaom-build libde265-build vvdec-build vvenc-build x265-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/drm/lib/pkgconfig cmake -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=/drm -DWITH_VVDEC=ON -DWITH_VVENC=ON -DCMAKE_INSTALL_RPATH=/drm/lib -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/drm/bin
+install build/examples/heif-dec $DESTDIR/drm/bin
+install build/examples/heif-enc $DESTDIR/drm/bin
+install build/examples/heif-info $DESTDIR/drm/bin
+install build/examples/heif-thumbnailer $DESTDIR/drm/bin
+install -d $DESTDIR/drm/include/libheif
+install -m 644 build/libheif/heif_version.h $DESTDIR/drm/include/libheif
+install -m 644 libheif/api/libheif/heif.h $DESTDIR/drm/include/libheif
+install -d $DESTDIR/drm/lib
+install build/libheif/libheif.so.1.* $DESTDIR/drm/lib/libheif.so.1
+ln -sf libheif.so.1 $DESTDIR/drm/lib/libheif.so
+install -d $DESTDIR/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install build/gdk-pixbuf/libpixbufloader-heif.so $DESTDIR/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/libheif.pc $DESTDIR/drm/lib/pkgconfig
+LD_LIBRARY_PATH=$DESTDIR/drm/lib $DESTDIR/drm/bin/gdk-pixbuf-query-loaders > $DESTDIR/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/libheif-build.pc << EOF
+Name: libheif
+Version: 1.18.2
+Description: High Efficiency Image Format (HEIF) library
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/libheif/heif.h \\
+/drm/include/libheif/heif_version.h \\
+/drm/lib/libheif.so \\
+/drm/lib/pkgconfig/libheif.pc
+
+exec=\\
+/drm/bin/heif-dec \\
+/drm/bin/heif-enc \\
+/drm/bin/heif-info \\
+/drm/bin/heif-thumbnailer \\
+/drm/lib/libheif.so.1 \\
+/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-heif.so
+EOF
+
+exit
+--- libheif-1.18.2.orig/CMakeLists.txt
++++ libheif-1.18.2/CMakeLists.txt
+@@ -141,24 +141,14 @@
+ 
+ plugin_option(VVDEC "vvdec VVC decoder (experimental)" OFF OFF)
+ if (WITH_VVDEC)
+-    # TODO: how to do configure vvdec cleanly?
+-    find_package(Threads REQUIRED)
+-    find_package(vvdec 2.3.0)
+-    if (vvdec_FOUND)
+-        set(vvdec_LIBRARIES vvdec::vvdec)
+-    endif()
++    pkg_check_modules(vvdec libvvdec)
+ endif ()
+ 
+ # vvenc
+ 
+ plugin_option(VVENC "vvenc VVC encoder (experimental)" OFF OFF)
+ if (WITH_VVENC)
+-    # TODO: how to do configure vvenc cleanly?
+-    find_package(Threads REQUIRED)
+-    find_package(vvenc 1.12.0)
+-    if (vvenc_FOUND)
+-        set(vvenc_LIBRARIES vvenc::vvenc)
+-    endif()
++    pkg_check_modules(vvenc libvvenc)
+ endif ()
+ 
+ # dav1d
+--- libheif-1.18.2.orig/gdk-pixbuf/CMakeLists.txt
++++ libheif-1.18.2/gdk-pixbuf/CMakeLists.txt
+@@ -3,10 +3,7 @@
+   pkg_check_modules(GDKPIXBUF2 gdk-pixbuf-2.0)
+ 
+   if(GDKPIXBUF2_FOUND)
+-    execute_process(
+-      COMMAND ${PKG_CONFIG_EXECUTABLE} gdk-pixbuf-2.0 --variable gdk_pixbuf_moduledir
+-              --define-variable=prefix=${CMAKE_INSTALL_PREFIX} OUTPUT_VARIABLE GDKPIXBUF2_MODULE_DIR
+-      OUTPUT_STRIP_TRAILING_WHITESPACE)
++    pkg_get_variable(GDKPIXBUF2_MODULE_DIR gdk-pixbuf-2.0 gdk_pixbuf_moduledir)
+ 
+     add_library(pixbufloader-heif MODULE pixbufloader-heif.c)
+ 
