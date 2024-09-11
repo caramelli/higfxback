@@ -5,9 +5,9 @@ REQUIRES="autotools-wrappers-lt-build gcc-g++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build; then
-  SDL2=1
-  REQUIRES="$REQUIRES sdl2-build"
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl-build; then
+  SDL=1
+  REQUIRES="$REQUIRES sdl-build"
 fi
 
 # configure (ac-2.71; am-1.16; lt-2.4.6)
@@ -20,7 +20,7 @@ make
 # install
 install -d $DESTDIR/dfb/bin
 install acceleration-speed/.libs/acceleration_speed $DESTDIR/dfb/bin
-test $SDL2 && install dec265/.libs/dec265 $DESTDIR/dfb/bin
+test $SDL && install dec265/.libs/dec265 $DESTDIR/dfb/bin
 install tools/.libs/bjoentegaard $DESTDIR/dfb/bin
 install tools/.libs/block-rate-estim $DESTDIR/dfb/bin
 install tools/.libs/gen-enc-table $DESTDIR/dfb/bin
@@ -39,7 +39,7 @@ install -m 644 libde265.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/libde265-build.pc << EOF
 Name: libde265
-Version: 1.0.14
+Version: 1.0.11
 Description: H.265/HEVC decoder
 Requires: $REQUIRES
 
@@ -54,7 +54,7 @@ exec=\\
 /dfb/bin/bjoentegaard \\
 /dfb/bin/block-rate-estim \\
 EOF
-test $SDL2 && echo /dfb/bin/dec265 \\ >> $DESTDIR/dfb/share/pkgconfig/libde265-build.pc
+test $SDL && echo /dfb/bin/dec265 \\ >> $DESTDIR/dfb/share/pkgconfig/libde265-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/libde265-build.pc << EOF
 /dfb/bin/gen-enc-table \\
 /dfb/bin/rd-curves \\
@@ -63,8 +63,8 @@ cat >> $DESTDIR/dfb/share/pkgconfig/libde265-build.pc << EOF
 EOF
 
 exit
---- libde265-1.0.14.orig/configure.ac
-+++ libde265-1.0.14/configure.ac
+--- libde265-1.0.11.orig/configure.ac
++++ libde265-1.0.11/configure.ac
 @@ -21,8 +21,6 @@
  
  # ---------------------------------------------------------------------------

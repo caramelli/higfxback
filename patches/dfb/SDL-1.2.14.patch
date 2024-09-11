@@ -7,11 +7,16 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
 # configure (ac-2.61; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-assembly --disable-static --disable-video-fbcon --prefix=/dfb
-cd test; SDL_CFLAGS="-I../include -I/dfb/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/dfb/lib" ./configure --with-testdatadir=/dfb/share/SDL/test; cd -
+cd test; SDL_CFLAGS="-I../include -I/dfb/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/dfb/lib" XPATH=-L/dfb/lib ./configure --with-testdatadir=/dfb/share/SDL/test; cd -
 
 # build
 make
@@ -66,6 +71,7 @@ install test/testcdrom $DESTDIR/dfb/share/SDL/test
 install test/testcursor $DESTDIR/dfb/share/SDL/test
 install test/testerror $DESTDIR/dfb/share/SDL/test
 install test/testfile $DESTDIR/dfb/share/SDL/test
+test $GL &&install test/testgl $DESTDIR/dfb/share/SDL/test
 install test/testiconv $DESTDIR/dfb/share/SDL/test
 install test/testjoystick $DESTDIR/dfb/share/SDL/test
 install test/testkeys $DESTDIR/dfb/share/SDL/test
@@ -142,6 +148,9 @@ exec=\\
 /dfb/share/SDL/test/testcursor \\
 /dfb/share/SDL/test/testerror \\
 /dfb/share/SDL/test/testfile \\
+EOF
+test $GL && echo /dfb/share/SDL/test/testgl \\ >> $DESTDIR/dfb/share/pkgconfig/sdl-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/sdl-build.pc << EOF
 /dfb/share/SDL/test/testiconv \\
 /dfb/share/SDL/test/testjoystick \\
 /dfb/share/SDL/test/testkeys \\
@@ -186,9 +195,63 @@ exit
              alsa_lib=[`find_lib "libasound.so.*" "$ALSA_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
  
              AC_DEFINE(SDL_AUDIO_DRIVER_ALSA)
+--- SDL-1.2.14.orig/include/SDL_opengl.h
++++ SDL-1.2.14/include/SDL_opengl.h
+@@ -44,7 +44,6 @@
+ #include <glu.h>	/* Header File For The GLU Library */
+ #else
+ #include <GL/gl.h>	/* Header File For The OpenGL Library */
+-#include <GL/glu.h>	/* Header File For The GLU Library */
+ #endif
+ #ifndef NO_SDL_GLEXT
+ #undef __glext_h_
 --- SDL-1.2.14.orig/src/video/directfb/SDL_DirectFB_video.c
 +++ SDL-1.2.14/src/video/directfb/SDL_DirectFB_video.c
-@@ -386,7 +386,16 @@
+@@ -34,6 +34,9 @@
+ 
+ #include <directfb.h>
+ #include <directfb_version.h>
++#if DIRECTFB_MAJOR_VERSION >= 1
++#include <directfbgl.h>
++#endif
+ 
+ #include "SDL_video.h"
+ #include "SDL_mouse.h"
+@@ -71,6 +74,11 @@
+ static int DirectFB_SetHWAlpha(_THIS, SDL_Surface *surface, Uint8 alpha);
+ static int DirectFB_FlipHWSurface(_THIS, SDL_Surface *surface);
+ static int DirectFB_ShowWMCursor(_THIS, WMcursor *cursor);
++#if DIRECTFB_MAJOR_VERSION >= 1
++static int DirectFB_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
++static int DirectFB_GL_MakeCurrent(_THIS);
++static void DirectFB_GL_SwapBuffers(_THIS);
++#endif
+ 
+ /* Various screen update functions available */
+ static void DirectFB_DirectUpdate(_THIS, int numrects, SDL_Rect *rects);
+@@ -138,6 +146,11 @@
+   device->FlipHWSurface = DirectFB_FlipHWSurface;
+   device->FreeHWSurface = DirectFB_FreeHWSurface;
+   device->ShowWMCursor = DirectFB_ShowWMCursor;
++#if DIRECTFB_MAJOR_VERSION >= 1
++  device->GL_GetAttribute = DirectFB_GL_GetAttribute;
++  device->GL_MakeCurrent = DirectFB_GL_MakeCurrent;
++  device->GL_SwapBuffers = DirectFB_GL_SwapBuffers;
++#endif
+   device->SetCaption = NULL;
+   device->SetIcon = NULL;
+   device->IconifyWindow = NULL;
+@@ -213,6 +226,9 @@
+ struct private_hwdata {
+   IDirectFBSurface *surface;
+   IDirectFBPalette *palette;
++#if DIRECTFB_MAJOR_VERSION >= 1
++  IDirectFBGL      *gl;
++#endif
+ };
+ 
+ void SetDirectFBerror (const char *function, DFBResult code)
+@@ -386,7 +402,16 @@
    HIDDEN->enable_mga_crtc2 = 0;
    HIDDEN->mga_crtc2_stretch_overscan = 1;
  
@@ -206,19 +269,149 @@ exit
    if (ret)
      {
        SetDirectFBerror ("DirectFBInit", ret);
-@@ -594,10 +603,8 @@
+@@ -594,10 +619,23 @@
    DFBSurfacePixelFormat  pixelformat;
    IDirectFBSurface      *surface;
  
--  fprintf (stderr, "SDL DirectFB_SetVideoMode: %dx%d@%d, flags: 0x%08x\n",
--           width, height, bpp, flags);
--
++/*
+   fprintf (stderr, "SDL DirectFB_SetVideoMode: %dx%d@%d, flags: 0x%08x\n",
+            width, height, bpp, flags);
++*/
+ 
 -  flags |= SDL_FULLSCREEN;
 +  if (!SDL_getenv("SDL_DIRECTFB_FORCE_WINDOWED"))
-+    flags |= SDL_FULLSCREEN;
++    {
++      int                      i;
++      struct DirectFBEnumRect *rect;
++ 
++      for (i = 0, rect = enumlist; rect; ++i, rect = rect->next )
++        if (enumlist && enumlist->r.w == width && enumlist->r.h == height)
++          {
++            flags |= SDL_FULLSCREEN;
++            break;
++          }
++    }
  
    /* Release previous primary surface */
    if (current->hwdata && current->hwdata->surface)
+@@ -611,6 +649,14 @@
+           current->hwdata->palette->Release (current->hwdata->palette);
+           current->hwdata->palette = NULL;
+         }
++
++#if DIRECTFB_MAJOR_VERSION >= 1
++      if (current->hwdata->gl)
++        {
++          current->hwdata->gl->Release (current->hwdata->gl);
++          current->hwdata->gl = NULL;
++        }
++#endif
+     }
+   else if (!current->hwdata)
+     {
+@@ -796,6 +842,22 @@
+    }
+   }
+ 
++#if DIRECTFB_MAJOR_VERSION >= 1
++  if (flags & SDL_OPENGL)
++    {
++      DirectFBSetOption("gles", "0");
++
++      ret = surface->GetGL (surface, &current->hwdata->gl);
++      if (ret)
++        {
++          SetDirectFBerror ("surface->GetGL", ret);
++          return NULL;
++        }
++      else
++        current->flags |= SDL_OPENGL;
++    }
++#endif
++
+   return current;
+ }
+ 
+@@ -1091,6 +1153,12 @@
+     {
+       IDirectFBSurface        *surface = this->screen->hwdata->surface;
+       IDirectFBPalette        *palette = this->screen->hwdata->palette;
++#if DIRECTFB_MAJOR_VERSION >= 1
++      IDirectFBGL             *gl      = this->screen->hwdata->gl;
++
++      if (gl)
++        gl->Release (gl);
++#endif
+ 
+       if (palette)
+         palette->Release (palette);
+@@ -1100,6 +1168,9 @@
+ 
+       this->screen->hwdata->surface = NULL;
+       this->screen->hwdata->palette = NULL;
++#if DIRECTFB_MAJOR_VERSION >= 1
++      this->screen->hwdata->gl      = NULL;
++#endif
+     }
+ 
+   if (HIDDEN->c2frame)
+@@ -1166,6 +1237,55 @@
+   return 1;
+ }
+ 
+-void DirectFB_FinalQuit(void) 
++#if DIRECTFB_MAJOR_VERSION >= 1
++static int DirectFB_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value)
++{
++  DFBGLAttributes attributes;
++
++  if (this->screen->hwdata->gl->GetAttributes (this->screen->hwdata->gl, &attributes))
++    return -1;
++
++  switch (attrib)
++    {
++    case SDL_GL_RED_SIZE:
++      *value = attributes.red_size;
++      break;
++    case SDL_GL_GREEN_SIZE:
++      *value = attributes.green_size;
++      break;
++    case SDL_GL_BLUE_SIZE:
++      *value = attributes.blue_size;
++      break;
++    case SDL_GL_ALPHA_SIZE:
++      *value = attributes.alpha_size;
++      break;
++    case SDL_GL_DOUBLEBUFFER:
++      *value = attributes.double_buffer;
++      break;
++    case SDL_GL_BUFFER_SIZE:
++      *value = attributes.buffer_size;
++      break;
++    case SDL_GL_DEPTH_SIZE:
++      *value = attributes.depth_size;
++      break;
++    case SDL_GL_STENCIL_SIZE:
++      *value = attributes.stencil_size;
++      break;
++    default:
++      return -1;
++  }
++
++  return 0;
++}
++
++static int DirectFB_GL_MakeCurrent(_THIS)
++{
++  if (this->screen->hwdata->gl->Lock (this->screen->hwdata->gl))
++    return -1;
++}
++
++static void DirectFB_GL_SwapBuffers(_THIS)
+ {
++  this->screen->hwdata->surface->Flip (this->screen->hwdata->surface, NULL, DSFLIP_WAITFORSYNC);
+ }
++#endif
 --- SDL-1.2.14.orig/test/Makefile.in
 +++ SDL-1.2.14/test/Makefile.in
 @@ -4,7 +4,7 @@
@@ -388,6 +581,15 @@ exit
      printf("%d frames, %.2f fps\n",
 --- SDL-1.2.14.orig/test/testsprite.c
 +++ SDL-1.2.14/test/testsprite.c
+@@ -170,7 +170,7 @@
+ 	videoflags = SDL_SWSURFACE|SDL_ANYFORMAT;
+ 	width = 640;
+ 	height = 480;
+-	video_bpp = 8;
++	video_bpp = 0;
+ 	debug_flip = 0;
+ 	while ( argc > 1 ) {
+ 		--argc;
 @@ -221,7 +221,7 @@
  	}
  

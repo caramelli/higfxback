@@ -41,6 +41,74 @@ exec=\\
 EOF
 
 exit
+--- stb-20200214.orig/stb_image.h
++++ stb-20200214/stb_image.h
+@@ -6777,6 +6777,65 @@
+ {
+    return stbi__gif_info_raw(s,x,y,comp);
+ }
++
++STBIDEF stbi_uc *stbi_xload(char const *filename, int *x, int *y, int *comp, int req_comp, int *frames)
++{
++   stbi_uc *result = 0;
++   stbi__context s;
++   FILE *f = stbi__fopen(filename, "rb");
++   if (!f) return stbi__errpuc("can't fopen", "Unable to open file");
++   stbi__start_file(&s, f);
++
++   if (stbi__gif_test(&s)) {
++      int layers = 0;
++      stbi_uc *u = 0;
++      stbi_uc *out = 0;
++      stbi_uc *pos = 0;
++      stbi_uc *two_back = 0;
++      stbi__gif g = { 0 };
++      int stride;
++
++      do {
++         u = stbi__gif_load_next(&s, &g, comp, req_comp, two_back);
++         if (u == (stbi_uc *)&s) u = 0;  // end of animated gif marker
++
++         if (u) {
++            *x = g.w;
++            *y = g.h;
++            stride = g.w * g.h * 4;
++
++            ++layers;
++
++            out = (stbi_uc*) STBI_REALLOC(out, layers * (stride+2));
++
++            pos = out + ((layers-1) * (stride+2));
++            memcpy( pos, u, stride );
++            pos += stride;
++            *pos++ = g.delay & 0xFF;
++            *pos++ = (g.delay & 0xFF00) >> 8;
++
++            if (layers >= 2) {
++               two_back = pos - 2 * (stride+2);
++            }
++         }
++      } while (u != 0);
++
++      // free temp buffer;
++      STBI_FREE(g.out);
++      STBI_FREE(g.history);
++      STBI_FREE(g.background);
++
++      *frames = layers;
++      result = out;
++   } else {
++      stbi__result_info ri;
++      result = (stbi_uc*)stbi__load_main(&s, x, y, comp, req_comp, &ri, 8);
++      *frames = !!result;
++   }
++
++   fclose(f);
++   return result;
++}
+ #endif
+ 
+ // *************************************************************************************************
 --- stb-20200214.orig/stb_textedit.h
 +++ stb-20200214/stb_textedit.h
 @@ -142,6 +142,8 @@

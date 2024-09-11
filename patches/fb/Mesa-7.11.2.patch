@@ -591,7 +591,7 @@ exit
  glFBDevGetCurrentReadBuffer( void )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -678,16 +701,20 @@
+@@ -678,16 +701,23 @@
  }
  
  
@@ -601,32 +601,41 @@ exit
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
 -   struct GLFBDevRenderbufferRec *frontrb = (struct GLFBDevRenderbufferRec *)
--      buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
--   struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)
--      buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
-+   struct GLFBDevRenderbufferRec *frontrb, *backrb;
-+   int i;
++   struct GLFBDevRenderbufferRec *frb, *brb;
++   GLubyte *frbPtr, *brbPtr;
++   GLuint bpp, i, linesize;
 +
 +   if (!buffer)
 +      return;
 +
-+   frontrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
-+   backrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
++   frb = (struct GLFBDevRenderbufferRec *)
+       buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
+-   struct GLFBDevRenderbufferRec *backrb = (struct GLFBDevRenderbufferRec *)
++   brb = (struct GLFBDevRenderbufferRec *)
+       buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
  
 -   if (!buffer || !buffer->visual->glvisual.doubleBufferMode)
-+   if (!backrb)
++   if (!brb)
        return;
  
     /* check if swapping currently bound buffer */
-@@ -698,11 +725,14 @@
+@@ -696,13 +726,20 @@
+       _mesa_notifySwapBuffers(&fbdevctx->glcontext);
+    }
  
-    ASSERT(frontrb->Base.Data);
-    ASSERT(backrb->Base.Data);
+-   ASSERT(frontrb->Base.Data);
+-   ASSERT(backrb->Base.Data);
 -   memcpy(frontrb->Base.Data, backrb->Base.Data, buffer->size);
-+   for (i = 0; i < frontrb->winHeight; i++)
-+      memcpy(frontrb->Base.Data + (frontrb->winPosy + i) * frontrb->rowStride + frontrb->winPosx * buffer->bytesPerPixel,
-+             backrb->Base.Data + (backrb->winHeight - frontrb->winHeight + i) * backrb->rowStride,
-+             frontrb->winWidth * buffer->bytesPerPixel);
++   bpp = buffer->bytesPerPixel;
++   frbPtr = frb->Base.Data + frb->winPosy * frb->rowStride + frb->winPosx * bpp;
++   brbPtr = brb->Base.Data + (brb->winHeight - frb->winHeight) * brb->rowStride;
++   linesize = frb->winWidth * bpp;
++
++   for (i = 0; i < frb->winHeight; i++) {
++      memcpy(frbPtr, brbPtr, linesize);
++      frbPtr += frb->rowStride;
++      brbPtr += brb->rowStride;
++   }
  }
  
  
@@ -635,7 +644,7 @@ exit
  glFBDevCreateContext( const GLFBDevVisualPtr visual, GLFBDevContextPtr share )
  {
     GLFBDevContextPtr ctx;
-@@ -756,7 +786,7 @@
+@@ -756,7 +793,7 @@
  }
  
  
@@ -644,7 +653,7 @@ exit
  glFBDevDestroyContext( GLFBDevContextPtr context )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -779,7 +809,7 @@
+@@ -779,7 +816,7 @@
  }
  
  
@@ -653,7 +662,7 @@ exit
  glFBDevGetContextAttrib( const GLFBDevContextPtr context, int attrib)
  {
     (void) context;
-@@ -788,7 +818,7 @@
+@@ -788,7 +825,7 @@
  }
  
  
@@ -662,7 +671,7 @@ exit
  glFBDevGetCurrentContext( void )
  {
     GET_CURRENT_CONTEXT(ctx);
-@@ -796,7 +826,7 @@
+@@ -796,7 +833,7 @@
  }
  
  
@@ -671,7 +680,7 @@ exit
  glFBDevMakeCurrent( GLFBDevContextPtr context,
                      GLFBDevBufferPtr drawBuffer,
                      GLFBDevBufferPtr readBuffer )
-@@ -825,4 +855,29 @@
+@@ -825,4 +862,31 @@
     return 1;
  }
  
@@ -679,25 +688,27 @@ exit
 +void PUBLIC
 +glFBDevSetWindow( GLFBDevBufferPtr buffer, void *window )
 +{
-+   struct GLFBDevRenderbufferRec *frontrb, *backrb;
++   struct GLFBDevRenderbufferRec *frb, *brb;
 +   struct fb_window *win = (struct fb_window *) window;
 +
 +   if (!buffer)
 +      return;
 +
-+   frontrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
-+   backrb = (struct GLFBDevRenderbufferRec *) buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
++   frb = (struct GLFBDevRenderbufferRec *)
++      buffer->glframebuffer.Attachment[BUFFER_FRONT_LEFT].Renderbuffer;
++   brb = (struct GLFBDevRenderbufferRec *)
++      buffer->glframebuffer.Attachment[BUFFER_BACK_LEFT].Renderbuffer;
 +
-+   if (!win || !backrb)
++   if (!win || !brb)
 +      return;
 +
-+   if (win->width + win->posx <= backrb->winWidth)
-+      frontrb->winWidth = win->width;
++   if (win->width + win->posx <= brb->winWidth)
++      frb->winWidth = win->width;
 +   else
-+      frontrb->winWidth = backrb->winWidth - win->posx;
-+   frontrb->winHeight = win->height;
-+   frontrb->winPosx = win->posx;
-+   frontrb->winPosy = win->posy;
++      frb->winWidth = brb->winWidth - win->posx;
++   frb->winHeight = win->height;
++   frb->winPosx = win->posx;
++   frb->winPosy = win->posy;
 +}
 +
  #endif /* USE_GLFBDEV_DRIVER */

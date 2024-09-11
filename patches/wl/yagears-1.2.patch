@@ -1,0 +1,104 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-build wayland-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
+  GLFW=1
+  REQUIRES="$REQUIRES glfw-build"
+fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
+  PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+# configure (ac-2.71; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-egl-drm --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1_cm --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install yagears $DESTDIR/wl/bin
+test $GLFW || test $GLUT || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
+test $GLUT && install yagears-mosaic $DESTDIR/wl/bin
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/yagears-build.pc << EOF
+Name: yagears
+Version: 1.2
+Description: Yet Another Gears OpenGL demo
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/yagears \\
+EOF
+test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+test $GLUT && echo /wl/bin/yagears-mosaic \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+
+exit
+--- yagears-1.2.orig/gui.cc
++++ yagears-1.2/gui.cc
+@@ -38,7 +38,11 @@
+ #endif
+ #if defined(GLUT)
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
+ extern "C" {
++void glutInitContextProfile(int);
+ void glutLeaveMainLoop();
+ void glutExit();
+ }
+@@ -1178,6 +1182,7 @@
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
+     glutInitWindowSize(win_width, win_height);
+     glutInitWindowPosition(win_posx, win_posy);
++    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
+     glut_win = glutCreateWindow("yagears");
+     glutDisplayFunc(glutDisplay);
+     glutIdleFunc(glutIdle);
+@@ -1332,7 +1337,7 @@
+         SDL_Idle();
+         #endif
+       SDL_Event event;
+-      while (SDL_PollEvent(&event))
++      if (SDL_PollEvent(&event))
+         #if SDL_VERSION_ATLEAST(2, 0, 0)
+         SDL_KeyDownEvent(sdl_win, &event, &sdl_idle_id);
+         #else
+--- yagears-1.2.orig/mosaic.c
++++ yagears-1.2/mosaic.c
+@@ -24,6 +24,10 @@
+ #include "config.h"
+ 
+ #include <GL/glut.h>
++#ifndef GLUT_ES_PROFILE
++#define GLUT_ES_PROFILE 4
++#endif
++void glutInitContextProfile(int);
+ void glutSetWindowData(void *data);
+ void *glutGetWindowData();
+ void glutLeaveMainLoop();
+@@ -196,6 +200,7 @@
+     for (j = 0; j < COLS; j++) {
+       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
+       glutInitWindowPosition(win_posx, win_posy);
++      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
+       glut_win[i * COLS + j] = glutCreateWindow(NULL);
+       glutSetWindowData((void *)(long)(i * COLS + j));
+       glutDisplayFunc(glutDisplay);

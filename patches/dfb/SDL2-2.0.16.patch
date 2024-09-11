@@ -88,7 +88,7 @@ install -m 644 include/SDL_version.h $DESTDIR/dfb/include/SDL2
 install -m 644 include/SDL_video.h $DESTDIR/dfb/include/SDL2
 test $VK && install -m 644 include/SDL_vulkan.h $DESTDIR/dfb/include/SDL2
 install -d $DESTDIR/dfb/lib
-install ./build/.libs/libSDL2-2.0.so.0.* $DESTDIR/dfb/lib/libSDL2-2.0.so.0
+install build/.libs/libSDL2-2.0.so.0.* $DESTDIR/dfb/lib/libSDL2-2.0.so.0
 ln -sf libSDL2-2.0.so.0 $DESTDIR/dfb/lib/libSDL2.so
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 sdl2.pc $DESTDIR/dfb/lib/pkgconfig
@@ -633,7 +633,26 @@ exit
  	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 --- SDL2-2.0.16.orig/test/configure.ac
 +++ SDL2-2.0.16/test/configure.ac
-@@ -192,6 +192,12 @@
+@@ -184,6 +184,18 @@
+ AC_SUBST(GLES2LIB)
+ AC_SUBST(XLIB)
+ 
++dnl Check for Vulkan
++AC_MSG_CHECKING(for Vulkan support)
++have_vulkan=no
++AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
++  #include <vulkan/vulkan.h>
++]],[])], [have_vulkan=yes],[])
++AC_MSG_RESULT($have_vulkan)
++
++if test x$have_vulkan = xyes; then
++    CFLAGS="$CFLAGS -DHAVE_VULKAN"
++fi
++
+ dnl Check for SDL_ttf
+ AC_CHECK_LIB(SDL2_ttf, TTF_Init, have_SDL_ttf=yes)
+ if test x$have_SDL_ttf = xyes; then
+@@ -192,6 +204,12 @@
  fi
  AC_SUBST(SDL_TTF_LIB)
  
@@ -1133,6 +1152,15 @@ exit
  
 --- SDL2-2.0.16.orig/test/testvulkan.c
 +++ SDL2-2.0.16/test/testvulkan.c
+@@ -16,7 +16,7 @@
+ 
+ #include "SDL_test_common.h"
+ 
+-#if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
++#ifndef HAVE_VULKAN
+ 
+ int main(int argc, char *argv[])
+ {
 @@ -27,12 +27,7 @@
  #else
  

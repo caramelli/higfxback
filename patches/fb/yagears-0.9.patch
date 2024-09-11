@@ -27,7 +27,7 @@ test $GLUT && install yagears-mosaic $DESTDIR/fb/bin
 install -d $DESTDIR/fb/share/pkgconfig
 cat > $DESTDIR/fb/share/pkgconfig/yagears-build.pc << EOF
 Name: yagears
-Version: 0.8
+Version: 0.9
 Description: Yet Another Gears OpenGL demo
 Requires: $REQUIRES
 
@@ -39,10 +39,10 @@ test $GLUT && echo /fb/bin/yagears-mosaic \\ >> $DESTDIR/fb/share/pkgconfig/yage
 sed -i '$ s/ \\//' $DESTDIR/fb/share/pkgconfig/yagears-build.pc
 
 exit
---- yagears-0.8.orig/configure.ac
-+++ yagears-0.8/configure.ac
+--- yagears-0.9.orig/configure.ac
++++ yagears-0.9/configure.ac
 @@ -1,6 +1,7 @@
- AC_INIT(yagears, 0.8)
+ AC_INIT(yagears, 0.9)
  
  AC_CONFIG_HEADERS(config.h)
 +AC_CONFIG_MACRO_DIR([m4])
@@ -52,7 +52,7 @@ exit
 @@ -88,10 +89,13 @@
    if test x$enable_gl_x11 = xyes; then
      save_LIBS=$LIBS
-     LIBS="$LIBS `$PKG_CONFIG --libs-only-L gl 2> /dev/null`"
+     LIBS="$LIBS `$PKG_CONFIG --libs-only-L gl`"
 -    AC_CHECK_LIB(GL, glXCreateContext,
 -                 AC_DEFINE(GL_X11, 1, Support for OpenGL Extension to Xlib) X11_LIBS=-lX11,
 -                 enable_gl_x11=no)
@@ -85,7 +85,7 @@ exit
      fi
      if test x$enable_egl_directfb = xyes; then
        if test x$enable_gl_directfb = xyes; then
-@@ -151,7 +160,7 @@
+@@ -161,7 +170,7 @@
      if test x$enable_egl_drm = xyes; then
        AC_MSG_CHECKING(for DRI driver)
        DRIDRIVERDIR=`$PKG_CONFIG --variable=dridriverdir dri 2> /dev/null`
@@ -94,24 +94,21 @@ exit
          AC_MSG_RESULT(yes)
          PKG_CHECK_MODULES(DRM, libdrm libevdev,
                            AC_DEFINE(EGL_DRM, 1, Support for EGL with DRM platform),
---- yagears-0.8.orig/gui.cc
-+++ yagears-0.8/gui.cc
-@@ -35,6 +35,14 @@
+--- yagears-0.9.orig/gui.cc
++++ yagears-0.9/gui.cc
+@@ -41,7 +41,11 @@
  #endif
  #if defined(GLUT)
  #include <GL/glut.h>
 +#ifndef GLUT_ES_PROFILE
 +#define GLUT_ES_PROFILE 4
 +#endif
-+extern "C" {
+ extern "C" {
 +void glutInitContextProfile(int);
-+void glutLeaveMainLoop();
-+void glutExit();
-+}
- #endif
- #if defined(GTK)
- #include <gtk/gtkgl.h>
-@@ -659,6 +667,7 @@
+ void glutLeaveMainLoop();
+ void glutExit();
+ }
+@@ -1004,6 +1008,7 @@
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
      glutInitWindowSize(win_width, win_height);
      glutInitWindowPosition(win_posx, win_posy);
@@ -119,8 +116,8 @@ exit
      glut_win = glutCreateWindow(NULL);
      glutDisplayFunc(glutDisplay);
      glutIdleFunc(glutIdle);
---- yagears-0.8.orig/main.c
-+++ yagears-0.8/main.c
+--- yagears-0.9.orig/main.c
++++ yagears-0.9/main.c
 @@ -39,6 +39,10 @@
  #include <directfbgl.h>
  #endif
@@ -168,7 +165,7 @@ exit
      fb_win = calloc(1, sizeof(struct fb_window));
      if (!fb_win) {
        printf("fb_window calloc failed: %s\n", strerror(errno));
-@@ -1363,17 +1371,39 @@
+@@ -1365,17 +1373,39 @@
    if (!strcmp(backend, "gl-fbdev") || !strcmp(backend, "egl-fbdev")) {
      if (getenv("KEYBOARD")) {
        fb_keyboard = open(getenv("KEYBOARD"), O_RDONLY | O_NONBLOCK);
@@ -215,7 +212,7 @@ exit
      }
    }
    #endif
-@@ -1635,6 +1665,10 @@
+@@ -1637,6 +1667,10 @@
      if (fb_keyboard != -1) {
        close(fb_keyboard);
      }
@@ -226,8 +223,8 @@ exit
    }
    #endif
    #if defined(EGL_WAYLAND)
---- yagears-0.8.orig/mosaic.c
-+++ yagears-0.8/mosaic.c
+--- yagears-0.9.orig/mosaic.c
++++ yagears-0.9/mosaic.c
 @@ -22,6 +22,14 @@
  */
  
