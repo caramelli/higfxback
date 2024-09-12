@@ -1,0 +1,766 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libxext-build libxft-build luafilesystem-build make-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix /x11
+
+# build
+make all
+
+# install
+install -d $DESTDIR/x11/lib/lua/5.1/tek/lib
+install tek/lib/exec.so $DESTDIR/x11/lib/lua/5.1/tek/lib
+install tek/lib/region.so $DESTDIR/x11/lib/lua/5.1/tek/lib
+install tek/lib/string.so $DESTDIR/x11/lib/lua/5.1/tek/lib
+install tek/lib/support.so $DESTDIR/x11/lib/lua/5.1/tek/lib
+install tek/lib/visual.so $DESTDIR/x11/lib/lua/5.1/tek/lib
+install -d $DESTDIR/x11/lib/lua/5.1/tek/lib/display
+install tek/lib/display/x11.so $DESTDIR/x11/lib/lua/5.1/tek/lib/display
+install -d $DESTDIR/x11/lib/lua/5.1/tek/ui/class
+install tek/ui/class/area.so $DESTDIR/x11/lib/lua/5.1/tek/ui/class
+install tek/ui/class/frame.so $DESTDIR/x11/lib/lua/5.1/tek/ui/class
+install -d $DESTDIR/x11/lib/lua/5.1/tek/ui/layout
+install tek/ui/layout/default.so $DESTDIR/x11/lib/lua/5.1/tek/ui/layout
+install -d $DESTDIR/x11/share/lua/5.1
+install bin/childtask.lua $DESTDIR/x11/share/lua/5.1/tekui_childtask.lua
+install bin/demo.lua $DESTDIR/x11/share/lua/5.1/tekui_demo.lua
+install bin/demo_alignment.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_alignment.lua
+install bin/demo_animations.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_animations.lua
+install bin/demo_borders.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_borders.lua
+install bin/demo_choices.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_choices.lua
+install bin/demo_floattext.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_floattext.lua
+install bin/demo_gradient.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_gradient.lua
+install bin/demo_graphics.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_graphics.lua
+install bin/demo_input.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_input.lua
+install bin/demo_layout.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_layout.lua
+install bin/demo_list.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_list.lua
+install bin/demo_popups.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_popups.lua
+install bin/demo_presentation.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_presentation.lua
+install bin/demo_slider.lua $DESTDIR/x11/share/lua/5.1/tekui_demo_slider.lua
+install bin/editor.lua $DESTDIR/x11/share/lua/5.1/tekui_editor.lua
+install bin/meter.lua $DESTDIR/x11/share/lua/5.1/tekui_meter.lua
+install bin/textlist.lua $DESTDIR/x11/share/lua/5.1/tekui_textlist.lua
+install bin/tsp.lua $DESTDIR/x11/share/lua/5.1/tekui_tsp.lua
+install -d $DESTDIR/x11/share/lua/5.1/graphics
+install -m 644 bin/graphics/locale.ppm $DESTDIR/x11/share/lua/5.1/graphics
+install -m 644 bin/graphics/locale_alpha.png $DESTDIR/x11/share/lua/5.1/graphics
+install -m 644 bin/graphics/world.ppm $DESTDIR/x11/share/lua/5.1/graphics
+install -d $DESTDIR/x11/share/lua/5.1/tek
+install -m 644 tek/class.lua $DESTDIR/x11/share/lua/5.1/tek
+install -m 644 tek/ui.lua $DESTDIR/x11/share/lua/5.1/tek
+install -d $DESTDIR/x11/share/lua/5.1/tek/class
+install -m 644 tek/class/list.lua $DESTDIR/x11/share/lua/5.1/tek/class
+install -m 644 tek/class/object.lua $DESTDIR/x11/share/lua/5.1/tek/class
+install -d $DESTDIR/x11/share/lua/5.1/tek/lib
+install -m 644 tek/lib/args.lua $DESTDIR/x11/share/lua/5.1/tek/lib
+install -m 644 tek/lib/debug.lua $DESTDIR/x11/share/lua/5.1/tek/lib
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/border
+install -m 644 tek/ui/border/default.lua $DESTDIR/x11/share/lua/5.1/tek/ui/border
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 bin/tek/ui/class/boing.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 bin/tek/ui/class/editwindow.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 bin/tek/ui/class/meter.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 bin/tek/ui/class/plasma.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 bin/tek/ui/class/textlist.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 bin/tek/ui/class/tunnel.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/application.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/border.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/button.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/canvas.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/checkmark.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/dirlist.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/display.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/drawhook.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/element.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/family.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/floattext.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/gauge.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/group.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/handle.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/image.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/imagewidget.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/input.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/layout.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/lister.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/listview.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/menuitem.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/numeric.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/pagegroup.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/popitem.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/poplist.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/popupwindow.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/radiobutton.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/scrollbar.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/scrollgroup.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/sizeable.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/slider.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/spacer.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/text.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/textedit.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/widget.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -m 644 tek/ui/class/window.lua $DESTDIR/x11/share/lua/5.1/tek/ui/class
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/cursor
+install -m 644 tek/ui/cursor/cursor-green.png /x11/share/lua/5.1/tek/ui/cursor
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/font
+install -m 644 tek/ui/font/Vera.ttf $DESTDIR/x11/share/lua/5.1/tek/ui/font
+install -m 644 tek/ui/font/VeraMono.ttf $DESTDIR/x11/share/lua/5.1/tek/ui/font
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/hook
+install -m 644 tek/ui/hook/ripple.lua $DESTDIR/x11/share/lua/5.1/tek/ui/hook
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/arrowdown.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/arrowleft.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/arrowright.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/arrowup.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/checkmark.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/file.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -m 644 tek/ui/image/radiobutton.lua $DESTDIR/x11/share/lua/5.1/tek/ui/image
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/dirlist-class
+install -m 644 tek/ui/locale/schulze-mueller.de/dirlist-class/en $DESTDIR/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/dirlist-class
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/editwindow-class
+install -m 644 bin/tek/ui/locale/schulze-mueller.de/editwindow-class/en $DESTDIR/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/editwindow-class
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/tekui-demo
+install -m 644 bin/tek/ui/locale/schulze-mueller.de/tekui-demo/en $DESTDIR/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/tekui-demo
+install -d $DESTDIR/x11/share/lua/5.1/tek/ui/style
+install -m 644 bin/tek/ui/style/editor.css $DESTDIR/x11/share/lua/5.1/tek/ui/style
+install -m 644 tek/ui/style/default.css $DESTDIR/x11/share/lua/5.1/tek/ui/style
+install -m 644 tek/ui/style/desktop.css $DESTDIR/x11/share/lua/5.1/tek/ui/style
+install -m 644 tek/ui/style/desktop.lua $DESTDIR/x11/share/lua/5.1/tek/ui/style
+install -m 644 tek/ui/style/industrial.css $DESTDIR/x11/share/lua/5.1/tek/ui/style
+install -m 644 tek/ui/style/user.css $DESTDIR/x11/share/lua/5.1/tek/ui/style
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/tekui-build.pc << EOF
+Name: tekui
+Version: 1.11-r1
+Description: tekUI Toolkit
+Requires: $REQUIRES
+
+exec=\\
+/x11/lib/lua/5.1/tek/lib/exec.so \\
+/x11/lib/lua/5.1/tek/lib/region.so \\
+/x11/lib/lua/5.1/tek/lib/string.so \\
+/x11/lib/lua/5.1/tek/lib/support.so \\
+/x11/lib/lua/5.1/tek/lib/visual.so \\
+/x11/lib/lua/5.1/tek/lib/display/directfb.so \\
+/x11/lib/lua/5.1/tek/ui/class/area.so \\
+/x11/lib/lua/5.1/tek/ui/class/frame.so \\
+/x11/lib/lua/5.1/tek/ui/layout/default.so \\
+/x11/share/lua/5.1/tekui_childtask.lua \\
+/x11/share/lua/5.1/tekui_demo.lua \\
+/x11/share/lua/5.1/tekui_demo_alignment.lua \\
+/x11/share/lua/5.1/tekui_demo_animations.lua \\
+/x11/share/lua/5.1/tekui_demo_borders.lua \\
+/x11/share/lua/5.1/tekui_demo_choices.lua \\
+/x11/share/lua/5.1/tekui_demo_floattext.lua \\
+/x11/share/lua/5.1/tekui_demo_gradient.lua \\
+/x11/share/lua/5.1/tekui_demo_graphics.lua \\
+/x11/share/lua/5.1/tekui_demo_input.lua \\
+/x11/share/lua/5.1/tekui_demo_layout.lua \\
+/x11/share/lua/5.1/tekui_demo_list.lua \\
+/x11/share/lua/5.1/tekui_demo_popups.lua \\
+/x11/share/lua/5.1/tekui_demo_presentation.lua \\
+/x11/share/lua/5.1/tekui_demo_slider.lua \\
+/x11/share/lua/5.1/tekui_editor.lua \\
+/x11/share/lua/5.1/tekui_meter.lua \\
+/x11/share/lua/5.1/tekui_textlist.lua \\
+/x11/share/lua/5.1/tekui_tsp.lua \\
+/x11/share/lua/5.1/graphics/locale.ppm \\
+/x11/share/lua/5.1/graphics/locale_alpha.png \\
+/x11/share/lua/5.1/graphics/world.ppm \\
+/x11/share/lua/5.1/tek/class.lua \\
+/x11/share/lua/5.1/tek/class/list.lua \\
+/x11/share/lua/5.1/tek/class/object.lua \\
+/x11/share/lua/5.1/tek/lib/args.lua \\
+/x11/share/lua/5.1/tek/lib/debug.lua \\
+/x11/share/lua/5.1/tek/ui.lua \\
+/x11/share/lua/5.1/tek/ui/border/default.lua \\
+/x11/share/lua/5.1/tek/ui/class/application.lua \\
+/x11/share/lua/5.1/tek/ui/class/boing.lua \\
+/x11/share/lua/5.1/tek/ui/class/border.lua \\
+/x11/share/lua/5.1/tek/ui/class/button.lua \\
+/x11/share/lua/5.1/tek/ui/class/canvas.lua \\
+/x11/share/lua/5.1/tek/ui/class/checkmark.lua \\
+/x11/share/lua/5.1/tek/ui/class/dirlist.lua \\
+/x11/share/lua/5.1/tek/ui/class/display.lua \\
+/x11/share/lua/5.1/tek/ui/class/drawhook.lua \\
+/x11/share/lua/5.1/tek/ui/class/editwindow.lua \\
+/x11/share/lua/5.1/tek/ui/class/element.lua \\
+/x11/share/lua/5.1/tek/ui/class/family.lua \\
+/x11/share/lua/5.1/tek/ui/class/floattext.lua \\
+/x11/share/lua/5.1/tek/ui/class/gauge.lua \\
+/x11/share/lua/5.1/tek/ui/class/handle.lua \\
+/x11/share/lua/5.1/tek/ui/class/image.lua \\
+/x11/share/lua/5.1/tek/ui/class/imagewidget.lua \\
+/x11/share/lua/5.1/tek/ui/class/input.lua \\
+/x11/share/lua/5.1/tek/ui/class/layout.lua \\
+/x11/share/lua/5.1/tek/ui/class/lister.lua \\
+/x11/share/lua/5.1/tek/ui/class/listview.lua \\
+/x11/share/lua/5.1/tek/ui/class/menuitem.lua \\
+/x11/share/lua/5.1/tek/ui/class/meter.lua \\
+/x11/share/lua/5.1/tek/ui/class/numeric.lua \\
+/x11/share/lua/5.1/tek/ui/class/pagegroup.lua \\
+/x11/share/lua/5.1/tek/ui/class/plasma.lua \\
+/x11/share/lua/5.1/tek/ui/class/popitem.lua \\
+/x11/share/lua/5.1/tek/ui/class/poplist.lua \\
+/x11/share/lua/5.1/tek/ui/class/popupwindow.lua \\
+/x11/share/lua/5.1/tek/ui/class/radiobutton.lua \\
+/x11/share/lua/5.1/tek/ui/class/scrollbar.lua \\
+/x11/share/lua/5.1/tek/ui/class/scrollgroup.lua \\
+/x11/share/lua/5.1/tek/ui/class/sizeable.lua \\
+/x11/share/lua/5.1/tek/ui/class/slider.lua \\
+/x11/share/lua/5.1/tek/ui/class/spacer.lua \\
+/x11/share/lua/5.1/tek/ui/class/text.lua \\
+/x11/share/lua/5.1/tek/ui/class/textlist.lua \\
+/x11/share/lua/5.1/tek/ui/class/textedit.lua \\
+/x11/share/lua/5.1/tek/ui/class/tunnel.lua \\
+/x11/share/lua/5.1/tek/ui/class/widget.lua \\
+/x11/share/lua/5.1/tek/ui/class/window.lua \\
+/x11/share/lua/5.1/tek/ui/cursor/cursor-green.png \\
+/x11/share/lua/5.1/tek/ui/font/Vera.ttf \\
+/x11/share/lua/5.1/tek/ui/font/VeraMono.ttf \\
+/x11/share/lua/5.1/tek/ui/hook/ripple.lua \\
+/x11/share/lua/5.1/tek/ui/image/arrowdown.lua \\
+/x11/share/lua/5.1/tek/ui/image/arrowleft.lua \\
+/x11/share/lua/5.1/tek/ui/image/arrowright.lua \\
+/x11/share/lua/5.1/tek/ui/image/arrowup.lua \\
+/x11/share/lua/5.1/tek/ui/image/checkmark.lua \\
+/x11/share/lua/5.1/tek/ui/image/file.lua \\
+/x11/share/lua/5.1/tek/ui/image/radiobutton.lua \\
+/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/dirlist-class/en \\
+/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/editwindow-class/en \\
+/x11/share/lua/5.1/tek/ui/locale/schulze-mueller.de/tekui-demo/en \\
+/x11/share/lua/5.1/tek/ui/style/default.css \\
+/x11/share/lua/5.1/tek/ui/style/desktop.css \\
+/x11/share/lua/5.1/tek/ui/style/desktop.lua \\
+/x11/share/lua/5.1/tek/ui/style/editor.css \\
+/x11/share/lua/5.1/tek/ui/style/industrial.css \\
+/x11/share/lua/5.1/tek/ui/style/user.css
+EOF
+
+exit
+--- tekui-1.12-r1.orig/Configure
++++ tekui-1.12-r1/Configure
+@@ -0,0 +1,25 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++X11_DIR=/usr/X11R6
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      X11_DIR=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" config
++sed -i "/^X11_DIR =/s#=.*#= $X11_DIR#" config
+--- tekui-1.12-r1.orig/bin/bashing.lua
++++ tekui-1.12-r1/bin/bashing.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/buttonclass.lua
++++ tekui-1.12-r1/bin/buttonclass.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/canvas.lua
++++ tekui-1.12-r1/bin/canvas.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/childnotify.lua
++++ tekui-1.12-r1/bin/childnotify.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ local exec = require "tek.lib.exec"
+ 
+ local c = exec.run(function()
+--- tekui-1.12-r1.orig/bin/childprocess.lua
++++ tekui-1.12-r1/bin/childprocess.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local posix = require "posix"
+ local char = string.char
+@@ -104,7 +104,7 @@
+ If you click on the button below, the command will be sent
+ to the application's parent process. 
+ 
+-Clicking the close button will send the command 'quit'.]]
++The 'quit' command will close the application.]]
+ 						},
+ 						ui.Group:new
+ 						{
+--- tekui-1.12-r1.orig/bin/childtask.lua
++++ tekui-1.12-r1/bin/childtask.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ local exec = require "tek.lib.exec"
+ local guitask = exec.run(function()
+ 	-- child task:
+@@ -32,7 +32,7 @@
+ If you click on the button below, the command will be sent
+ to the application's parent task. 
+ 
+-Clicking the close button will send the command 'quit'.]]
++The 'quit' command will close the application.]]
+ 							},
+ 							ui.Group:new 
+ 							{
+--- tekui-1.12-r1.orig/bin/compiler.lua
++++ tekui-1.12-r1/bin/compiler.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ --
+ --	compiler.lua - Lua compiler and module linker
+--- tekui-1.12-r1.orig/bin/demo.lua
++++ tekui-1.12-r1/bin/demo.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ --
+ --	bin/demo.lua - tekUI demo
+ --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+@@ -57,7 +57,7 @@
+ 	local demos = { }
+ 
+ 	for fname in lfs.readdir(ui.ProgDir) do
+-		if fname:match("^demo_.*%.lua$") then
++		if fname:match("^demo_.*%.lua$") or fname:match("^tekui_demo_.*%.lua$") then
+ 			fname = ui.ProgDir .. fname
+ 			db.info("Loading demo '%s' ...", fname)
+ 			local success, res = pcall(dofile, fname)
+--- tekui-1.12-r1.orig/bin/demo_alignment.lua
++++ tekui-1.12-r1/bin/demo_alignment.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local List = require "tek.class.list"
+--- tekui-1.12-r1.orig/bin/demo_animations.lua
++++ tekui-1.12-r1/bin/demo_animations.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Group = ui.Group
+--- tekui-1.12-r1.orig/bin/demo_borders.lua
++++ tekui-1.12-r1/bin/demo_borders.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Group = ui.Group
+--- tekui-1.12-r1.orig/bin/demo_buttons.lua
++++ tekui-1.12-r1/bin/demo_buttons.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Button = ui.Button
+--- tekui-1.12-r1.orig/bin/demo_choices.lua
++++ tekui-1.12-r1/bin/demo_choices.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Group = ui.Group
+--- tekui-1.12-r1.orig/bin/demo_floattext.lua
++++ tekui-1.12-r1/bin/demo_floattext.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+--- tekui-1.12-r1.orig/bin/demo_gradient.lua
++++ tekui-1.12-r1/bin/demo_gradient.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Group = ui.Group
+--- tekui-1.12-r1.orig/bin/demo_graphics.lua
++++ tekui-1.12-r1/bin/demo_graphics.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/demo_input.lua
++++ tekui-1.12-r1/bin/demo_input.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Button = ui.Button
+--- tekui-1.12-r1.orig/bin/demo_layout.lua
++++ tekui-1.12-r1/bin/demo_layout.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Button = ui.Button
+--- tekui-1.12-r1.orig/bin/demo_list.lua
++++ tekui-1.12-r1/bin/demo_list.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local List = require "tek.class.list"
+--- tekui-1.12-r1.orig/bin/demo_popups.lua
++++ tekui-1.12-r1/bin/demo_popups.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local List = require "tek.class.list"
+--- tekui-1.12-r1.orig/bin/demo_presentation.lua
++++ tekui-1.12-r1/bin/demo_presentation.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Group = ui.Group
+--- tekui-1.12-r1.orig/bin/demo_slider.lua
++++ tekui-1.12-r1/bin/demo_slider.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Gauge = ui.Gauge
+--- tekui-1.12-r1.orig/bin/dynamic.lua
++++ tekui-1.12-r1/bin/dynamic.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ local ui = require "tek.ui"
+ ui.Application:new
+ {
+--- tekui-1.12-r1.orig/bin/editor.lua
++++ tekui-1.12-r1/bin/editor.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local db = require "tek.lib.debug"
+ local ui = require "tek.ui"
+--- tekui-1.12-r1.orig/bin/filereq.lua
++++ tekui-1.12-r1/bin/filereq.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/fixed.lua
++++ tekui-1.12-r1/bin/fixed.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/gendata.lua
++++ tekui-1.12-r1/bin/gendata.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local exec = require "tek.lib.exec"
+ 
+--- tekui-1.12-r1.orig/bin/gendoc.lua
++++ tekui-1.12-r1/bin/gendoc.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ --
+ --	tek/app/gendoc.lua - Document generator
+--- tekui-1.12-r1.orig/bin/gridalign.lua
++++ tekui-1.12-r1/bin/gridalign.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/helloworld.lua
++++ tekui-1.12-r1/bin/helloworld.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/imagetest.lua
++++ tekui-1.12-r1/bin/imagetest.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/layouthook.lua
++++ tekui-1.12-r1/bin/layouthook.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ local Region = require "tek.lib.region"
+--- tekui-1.12-r1.orig/bin/meter.lua
++++ tekui-1.12-r1/bin/meter.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local floor = math.floor
+ ui = require "tek.ui"
+@@ -144,11 +144,6 @@
+ --	Application:
+ -------------------------------------------------------------------------------
+ 
+-print "This example can additionally visualize sets of 16bit numbers coming"
+-print "in via stdin, by dispatching lines to messages of the type MSG_USER."
+-print "To see the extra curve, run this example as follows:"
+-print "$ bin/gendata.lua | bin/meter.lua"
+-
+ ui.Application:new
+ {
+ 	AuthorStyleSheets = "industrial",
+--- tekui-1.12-r1.orig/bin/plasma.lua
++++ tekui-1.12-r1/bin/plasma.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local visual = require "tek.lib.visual"
+ 
+--- tekui-1.12-r1.orig/bin/runxml.lua
++++ tekui-1.12-r1/bin/runxml.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ --
+ --	runxml.lua - XML to Lua+tekUI converter, runner, and checker
+--- tekui-1.12-r1.orig/bin/shell.lua
++++ tekui-1.12-r1/bin/shell.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local String = require "tek.lib.string"
+ local ui = require "tek.ui"
+--- tekui-1.12-r1.orig/bin/socketmessage.lua
++++ tekui-1.12-r1/bin/socketmessage.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local socket
+ pcall(function() socket = require "socket" end)
+--- tekui-1.12-r1.orig/bin/style.lua
++++ tekui-1.12-r1/bin/style.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua 
++#!/bin/env lua 
+ 
+ local db = require "tek.lib.debug"
+ local ui = require "tek.ui"
+--- tekui-1.12-r1.orig/bin/textlist.lua
++++ tekui-1.12-r1/bin/textlist.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local String = require "tek.lib.string"
+ local ui = require "tek.ui"
+--- tekui-1.12-r1.orig/bin/tsp.lua
++++ tekui-1.12-r1/bin/tsp.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ --
+ --	tsp.lua - Travelling salesman solver
+--- tekui-1.12-r1.orig/bin/tutorial-1.lua
++++ tekui-1.12-r1/bin/tutorial-1.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/tutorial-2.lua
++++ tekui-1.12-r1/bin/tutorial-2.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/tutorial-3.lua
++++ tekui-1.12-r1/bin/tutorial-3.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/tutorial-4.lua
++++ tekui-1.12-r1/bin/tutorial-4.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/tutorial-5.lua
++++ tekui-1.12-r1/bin/tutorial-5.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/bin/updatetest.lua
++++ tekui-1.12-r1/bin/updatetest.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ ui.ThemeName = "dark tutorial"
+--- tekui-1.12-r1.orig/bin/vgroup.lua
++++ tekui-1.12-r1/bin/vgroup.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ local ui = require "tek.ui"
+ 
+--- tekui-1.12-r1.orig/config
++++ tekui-1.12-r1/config
+@@ -150,7 +150,7 @@
+ FREETYPE_INCDIR = $(FREETYPE_DIR)/include
+ FREETYPE_LIBDIR = $(FREETYPE_DIR)/lib
+ FREETYPE_LIBS = -L$(FREETYPE_LIBDIR) -lfreetype # $(CC_LD_RT)$(FREETYPE_LIBDIR)
+-FREETYPE_DEFS = -I$(FREETYPE_INCDIR)/freetype2 `freetype-config --cflags`
++FREETYPE_DEFS = -I$(FREETYPE_INCDIR)/freetype2 `pkg-config --cflags freetype2`
+ 
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ # X11 defines and libraries:
+@@ -159,23 +159,23 @@
+ X11_DIR = /usr/X11R6
+ X11_INCDIR = $(X11_DIR)/include
+ X11_LIBDIR = $(X11_DIR)/lib
+-X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext -lXxf86vm
++X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext # -lXxf86vm
+ X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XSHM # -DENABLE_XVID
+ 
+ # For Xft (antialiased fonts) support:
+-X11_LIBS += $(XFT_LIBS) $(FONTCONFIG_LIBS) $(FREETYPE_LIBS)
++X11_LIBS += $(XFT_LIBS) $(FONTCONFIG_LIBS)
+ X11_DEFS += $(XFT_DEFS) $(FONTCONFIG_DEFS) $(FREETYPE_DEFS) 
+ 
+ XFT_DIR = $(X11_DIR)
+ XFT_INCDIR = $(XFT_DIR)/include
+ XFT_LIBDIR = $(XFT_DIR)/lib
+-XFT_LIBS = -L$(XFT_LIBDIR) -lXft # $(CC_LD_RT)$(XFT_LIBDIR)
++XFT_LIBS = -L$(XFT_LIBDIR) -lXft $(CC_LD_RT)$(XFT_LIBDIR)
+ XFT_DEFS = -I$(XFT_INCDIR) -DENABLE_XFT
+ 
+ FONTCONFIG_DIR = $(PREFIX)
+ FONTCONFIG_INCDIR = $(FONTCONFIG_DIR)/include
+ FONTCONFIG_LIBDIR = $(FONTCONFIG_DIR)/lib
+-FONTCONFIG_LIBS = -L$(FONTCONFIG_LIBDIR) # -lfontconfig $(CC_LD_RT)$(FONTCONFIG_LIBDIR)
++FONTCONFIG_LIBS = -L$(FONTCONFIG_LIBDIR) -lfontconfig # $(CC_LD_RT)$(FONTCONFIG_LIBDIR)
+ FONTCONFIG_DEFS = -I$(FONTCONFIG_INCDIR)
+ 
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+--- tekui-1.12-r1.orig/etc/keymap2c.lua
++++ tekui-1.12-r1/etc/keymap2c.lua
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env lua
++#!/bin/env lua
+ 
+ -- 
+ --	linux keymap converter
+--- tekui-1.12-r1.orig/include/tek/config/posix.h
++++ tekui-1.12-r1/include/tek/config/posix.h
+@@ -64,7 +64,7 @@
+ */
+ 
+ #define TDEBUG_PLATFORM_PUTS(s) do { fputs(s, stderr); fflush(stderr); } while(0)
+-#define TDEBUG_PLATFORM_FATAL() (abort(), 0)
++#define TDEBUG_PLATFORM_FATAL() abort()
+ 
+ /*****************************************************************************/
+ /*
+--- tekui-1.12-r1.orig/src/display_x11/display_x11_api.c
++++ tekui-1.12-r1/src/display_x11/display_x11_api.c
+@@ -6,7 +6,6 @@
+ #include <tek/inline/exec.h>
+ 
+ #if defined(ENABLE_XSHM)
+-#warning using globals (-DENABLE_XSHM)
+ 
+ static TBOOL x11_shm_available = TTRUE;
+ 
+--- tekui-1.12-r1.orig/src/teklib/posix/host.c
++++ tekui-1.12-r1/src/teklib/posix/host.c
+@@ -83,7 +83,6 @@
+ */
+ 
+ #if defined(ENABLE_LAZY_SINGLETON)
+-#warning using globals (-DENABLE_LAZY_SINGLETON)
+ static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
+ static TAPTR g_handle = TNULL;
+ #endif
