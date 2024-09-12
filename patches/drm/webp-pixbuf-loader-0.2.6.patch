@@ -1,0 +1,47 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gdk-pixbuf-build libwebp-build meson-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/drm/lib/pkgconfig meson setup --prefix=/drm build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install build/libpixbufloader-webp.so $DESTDIR/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders
+LD_LIBRARY_PATH=$DESTDIR/drm/lib $DESTDIR/drm/bin/gdk-pixbuf-query-loaders > $DESTDIR/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/webp-pixbuf-loader-build.pc << EOF
+Name: webp-pixbuf-loader
+Version: 0.2.6
+Description: WebP loader for GdkPixbuf
+Requires: $REQUIRES
+
+exec=\\
+/drm/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-webp.so
+EOF
+
+exit
+--- webp-pixbuf-loader-0.2.6.orig/io-webp.c
++++ webp-pixbuf-loader-0.2.6/io-webp.c
+@@ -307,8 +307,13 @@
+         {
+           if (g_strcmp0 (*kiter, "quality") == 0)
+             {
++              #if GLIB_CHECK_VERSION(2,54,0)
+               guint64 quality;
+               if (! g_ascii_string_to_unsigned (*viter, 10, 0, 100, &quality, error))
++              #else
++              float quality = g_ascii_strtod (*viter, NULL);
++              if (quality < 0 || quality > 100)
++              #endif
+                 return FALSE;
+               config.quality = (float) quality;
+             }

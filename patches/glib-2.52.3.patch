@@ -257,6 +257,7 @@ install -m 644 glib/gtypes.h $DESTDIR/include/glib-2.0/glib
 install -m 644 glib/gunicode.h $DESTDIR/include/glib-2.0/glib
 install -m 644 glib/gurifuncs.h $DESTDIR/include/glib-2.0/glib
 install -m 644 glib/gutils.h $DESTDIR/include/glib-2.0/glib
+install -m 644 glib/guuid.h $DESTDIR/include/glib-2.0/glib
 install -m 644 glib/gvariant.h $DESTDIR/include/glib-2.0/glib
 install -m 644 glib/gvarianttype.h $DESTDIR/include/glib-2.0/glib
 install -m 644 glib/gversion.h $DESTDIR/include/glib-2.0/glib
@@ -326,7 +327,7 @@ install -m 644 gio/gdbus-2.0/codegen/utils.py $DESTDIR/share/glib-2.0/codegen
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/glib-build.pc << EOF
 Name: glib
-Version: 2.50.3
+Version: 2.52.3
 Description: GLib library
 Requires: $REQUIRES
 
@@ -564,6 +565,7 @@ devel=\\
 /include/glib-2.0/glib/gunicode.h \\
 /include/glib-2.0/glib/gurifuncs.h \\
 /include/glib-2.0/glib/gutils.h \\
+/include/glib-2.0/glib/guuid.h \\
 /include/glib-2.0/glib/gvariant.h \\
 /include/glib-2.0/glib/gvarianttype.h \\
 /include/glib-2.0/glib/gversion.h \\
@@ -633,9 +635,18 @@ exec=\\
 EOF
 
 exit
---- glib-2.50.3.orig/configure.ac
-+++ glib-2.50.3/configure.ac
-@@ -466,13 +466,6 @@
+--- glib-2.52.3.orig/configure.ac
++++ glib-2.52.3/configure.ac
+@@ -63,7 +63,7 @@
+ # Save this value here, since automake will set cflags later
+ cflags_set=${CFLAGS:+set}
+ 
+-AM_INIT_AUTOMAKE([1.11 -Wno-portability no-define no-dist-gzip dist-xz tar-ustar])
++AM_INIT_AUTOMAKE([1.11 -Wno-portability no-define no-dist-gzip dist-xz tar-ustar subdir-objects])
+ AM_MAINTAINER_MODE([enable])
+ 
+ # Support silent build rules. Disable
+@@ -463,13 +463,6 @@
  AC_SUBST([CONFIG_STATUS_DEPENDENCIES],['$(top_srcdir)/po/LINGUAS'])
  GLIB_GNU_GETTEXT
  
@@ -649,51 +660,38 @@ exit
  LIBS="$INTLLIBS $LIBS"
  
  GETTEXT_PACKAGE=glib20
---- glib-2.50.3.orig/gio/Makefile.am
-+++ glib-2.50.3/gio/Makefile.am
-@@ -1,5 +1,7 @@
- include $(top_srcdir)/glib.mk
- 
-+AUTOMAKE_OPTIONS = subdir-objects
-+
- SUBDIRS = gdbus-2.0/codegen
- 
- if OS_UNIX
---- glib-2.50.3.orig/gio/tests/Makefile.am
-+++ glib-2.50.3/gio/tests/Makefile.am
-@@ -1,5 +1,7 @@
- include $(top_srcdir)/glib-tap.mk
- 
-+AUTOMAKE_OPTIONS = subdir-objects
-+
- dist_uninstalled_test_data =
- test_ltlibraries =
- 
-@@ -233,10 +235,10 @@
+--- glib-2.52.3.orig/gio/tests/Makefile.am
++++ glib-2.52.3/gio/tests/Makefile.am
+@@ -232,10 +232,22 @@
  
  uninstalled_test_extra_programs += gdbus-daemon
  nodist_gdbus_daemon_SOURCES = \
 -	$(top_builddir)/gio/gdbus-daemon-generated.c
-+	../../gio/gdbus-daemon-generated.c
- gdbus_daemon_SOURCES = \
- 	gdbus-daemon.c				\
+-gdbus_daemon_SOURCES = \
+-	gdbus-daemon.c				\
 -	$(top_srcdir)/gio/gdbusdaemon.c
-+	../../gio/gdbusdaemon.c
++	gdbus-daemon-generated.c \
++	gdbus-daemon-impl.c
++gdbus_daemon_SOURCES = gdbus-daemon.c
++
++gdbus-daemon-impl.c: $(top_srcdir)/gio/gdbusdaemon.c
++	$(AM_V_GEN) $(LN_S) $^ $@
++
++gdbus-daemon-generated.h gdbus-daemon-generated.c: $(top_srcdir)/gio/dbus-daemon.xml $(GDBUS_PYTHON_DEPS)
++	$(AM_V_GEN) UNINSTALLED_GLIB_SRCDIR=$(top_srcdir) \
++		UNINSTALLED_GLIB_BUILDDIR=$(top_builddir) \
++		$(PYTHON) $(top_srcdir)/gio/gdbus-2.0/codegen/gdbus-codegen.in \
++		--interface-prefix org. \
++		--generate-c-code gdbus-daemon-generated \
++		--c-namespace _G \
++		$(top_srcdir)/gio/dbus-daemon.xml \
++		$(NULL)
  
  # -----------------------------------------------------------------------------
  #  Test programs buildable on UNIX only
---- glib-2.50.3.orig/glib/Makefile.am
-+++ glib-2.50.3/glib/Makefile.am
-@@ -1,6 +1,8 @@
- ## Process this file with automake to produce Makefile.in
- include $(top_srcdir)/glib.mk
- 
-+AUTOMAKE_OPTIONS = subdir-objects
-+
- #
- # Generate glibconfig.h
- #
-@@ -11,8 +13,7 @@
+--- glib-2.52.3.orig/glib/Makefile.am
++++ glib-2.52.3/glib/Makefile.am
+@@ -11,8 +11,7 @@
  #
  DISTCLEANFILES += glibconfig-stamp glibconfig.h glibconfig.h.win32
  BUILT_SOURCES += glibconfig-stamp
@@ -703,8 +701,8 @@ exit
  glibconfig-stamp: ../config.status
  	$(AM_V_GEN) cd $(top_builddir) && \
  	  $(SHELL) ./config.status glib/glibconfig.h
---- glib-2.50.3.orig/glib/ggettext.c
-+++ glib-2.50.3/glib/ggettext.c
+--- glib-2.52.3.orig/glib/ggettext.c
++++ glib-2.52.3/glib/ggettext.c
 @@ -40,7 +40,6 @@
  
  #include <string.h>
@@ -713,31 +711,30 @@ exit
  
  #ifdef G_OS_WIN32
  
---- glib-2.50.3.orig/glib/glibintl.h
-+++ glib-2.50.3/glib/glibintl.h
-@@ -34,6 +34,7 @@
+--- glib-2.52.3.orig/glib/glibintl.h
++++ glib-2.52.3/glib/glibintl.h
+@@ -33,6 +33,7 @@
+ #define gettext(String) (String)
  #define dgettext(Domain,String) (String)
  #define dcgettext(Domain,String,Type) (String)
- #define dngettext(Domain,String1,String2,N) ((N) == 1 ? (String1) : (String2))
 +#define ngettext(String1,String2,N) dngettext(NULL,String1,String2,N)
+ #define dngettext(Domain,String1,String2,N) ((N) == 1 ? (String1) : (String2))
  #define bindtextdomain(Domain,Directory) (Domain) 
  #define bind_textdomain_codeset(Domain,Codeset)
- #endif
---- glib-2.50.3.orig/glib/tests/Makefile.am
-+++ glib-2.50.3/glib/tests/Makefile.am
-@@ -1,5 +1,7 @@
- include $(top_srcdir)/glib-tap.mk
- 
-+AUTOMAKE_OPTIONS = subdir-objects
-+
- if USE_SYSTEM_PCRE
- pcre_lib = $(PCRE_LIBS)
- pcre_inc = $(PCRE_CFLAGS)
---- glib-2.50.3.orig/glib-2.0.pc.in
-+++ glib-2.50.3/glib-2.0.pc.in
+--- glib-2.52.3.orig/glib-2.0.pc.in
++++ glib-2.52.3/glib-2.0.pc.in
 @@ -13,4 +13,4 @@
  Requires.private: @PCRE_REQUIRES@
  Libs: -L${libdir} -lglib-2.0 @INTLLIBS@
  Libs.private: @G_THREAD_LIBS@ @G_LIBS_EXTRA@ @PCRE_LIBS@ @INTLLIBS@ @ICONV_LIBS@ @CARBON_LIBS@ @COCOA_LIBS@
 -Cflags: -I${includedir}/glib-2.0 -I${libdir}/glib-2.0/include @GLIB_EXTRA_CFLAGS@
 +Cflags: -I${includedir}/glib-2.0 @GLIB_EXTRA_CFLAGS@
+--- glib-2.52.3.orig/win32/vs15/Makefile.am
++++ glib-2.52.3/win32/vs15/Makefile.am
+@@ -44,6 +44,5 @@
+ MSVC_BASE_VER_LONG = 2010
+ MSVC_VER = 15
+ MSVC_VER_LONG = 15
+-MSVC_TOOLSET = 141
+ 
+ include $(top_srcdir)/win32/Makefile-newvs.am

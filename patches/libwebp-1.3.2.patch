@@ -26,16 +26,20 @@ install -m 644 src/webp/encode.h $DESTDIR/include/webp
 install -m 644 src/webp/mux.h $DESTDIR/include/webp
 install -m 644 src/webp/mux_types.h $DESTDIR/include/webp
 install -m 644 src/webp/types.h $DESTDIR/include/webp
+install -d $DESTDIR/include/webp/sharpyuv
+install -m 644 sharpyuv/sharpyuv.h $DESTDIR/include/webp/sharpyuv
+install -m 644 sharpyuv/sharpyuv_csp.h $DESTDIR/include/webp/sharpyuv
 install -d $DESTDIR/lib
+install sharpyuv/.libs/libsharpyuv.so.0.* $DESTDIR/lib/libsharpyuv.so.0
+ln -sf libsharpyuv.so.0 $DESTDIR/lib/libsharpyuv.so
 install src/.libs/libwebp.so.7.* $DESTDIR/lib/libwebp.so.7
 ln -sf libwebp.so.7 $DESTDIR/lib/libwebp.so
-install src/demux/.libs/libwebpdemux.so.2.* $DESTDIR/lib/libwebpdemux.so.2
-ln -sf libwebpdemux.so.2 $DESTDIR/lib/libwebpdemux.so
 install src/demux/.libs/libwebpdemux.so.2.* $DESTDIR/lib/libwebpdemux.so.2
 ln -sf libwebpdemux.so.2 $DESTDIR/lib/libwebpdemux.so
 install src/mux/.libs/libwebpmux.so.3.* $DESTDIR/lib/libwebpmux.so.3
 ln -sf libwebpmux.so.3 $DESTDIR/lib/libwebpmux.so
 install -d $DESTDIR/lib/pkgconfig
+install -m 644 sharpyuv/libsharpyuv.pc $DESTDIR/lib/pkgconfig
 install -m 644 src/libwebp.pc $DESTDIR/lib/pkgconfig
 install -m 644 src/demux/libwebpdemux.pc $DESTDIR/lib/pkgconfig
 install -m 644 src/mux/libwebpmux.pc $DESTDIR/lib/pkgconfig
@@ -44,7 +48,7 @@ install -m 644 src/mux/libwebpmux.pc $DESTDIR/lib/pkgconfig
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/libwebp-build.pc << EOF
 Name: libwebp
-Version: 1.2.4
+Version: 1.3.2
 Description: WebP library
 Requires: $REQUIRES
 
@@ -55,9 +59,13 @@ devel=\\
 /include/webp/mux.h \\
 /include/webp/mux_types.h \\
 /include/webp/types.h \\
+/include/webp/sharpyuv/sharpyuv.h \\
+/include/webp/sharpyuv/sharpyuv_csp.h \\
+/lib/libsharpyuv.so \\
 /lib/libwebp.so \\
 /lib/libwebpdemux.so \\
 /lib/libwebpmux.so \\
+/lib/pkgconfig/libsharpyuv.pc \\
 /lib/pkgconfig/libwebp.pc \\
 /lib/pkgconfig/libwebpdemux.pc \\
 /lib/pkgconfig/libwebpmux.pc
@@ -68,6 +76,7 @@ exec=\\
 /bin/img2webp \\
 /bin/webpinfo \\
 /bin/webpmux \\
+/lib/libsharpyuv.so.0 \\
 /lib/libwebp.so.7 \\
 /lib/libwebpdemux.so.2 \\
 /lib/libwebpmux.so.3
