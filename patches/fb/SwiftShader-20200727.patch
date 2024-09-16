@@ -1,0 +1,642 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="astc-encoder-build cmake3-build gcc-g++-build llvm-build marl-build spirv-tools-build vulkan-headers-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -rf include
+rm -rf third_party/astc-encoder
+rm -rf third_party/llvm-10.0
+rm -rf third_party/marl
+rm -rf third_party/SPIRV-Headers
+rm -rf third_party/SPIRV-Tools
+cmake -DSWIFTSHADER_BUILD_EGL=OFF -DSWIFTSHADER_BUILD_GLES_CM=OFF -DSWIFTSHADER_BUILD_GLESv2=OFF -DSWIFTSHADER_BUILD_PVR=OFF -DSWIFTSHADER_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/fb -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/fb/etc/vulkan/icd.d
+install -m 644 build/Linux/vk_swiftshader_icd.json $DESTDIR/fb/etc/vulkan/icd.d/swiftshader_icd.json
+install -d $DESTDIR/fb/lib
+install build/Linux/libvk_swiftshader.so $DESTDIR/fb/lib
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/swiftshader-build.pc << EOF
+Name: SwiftShader
+Version: 20200727
+Description: CPU-based implementation of Vulkan
+Requires: $REQUIRES
+
+exec=\\
+/fb/etc/vulkan/icd.d/swiftshader_icd.json \\
+/fb/lib/libvk_swiftshader.so
+EOF
+
+exit
+--- SwiftShader-20200727.orig/CMakeLists.txt
++++ SwiftShader-20200727/CMakeLists.txt
+@@ -561,6 +561,10 @@
+ endif()
+ unset(USE_EXCEPTIONS)
+ 
++if(NOT EXISTS ${SWIFTSHADER_DIR}/include)
++    include_directories(${CMAKE_INSTALL_PREFIX}/include)
++endif()
++
+ ###########################################################
+ # libbacktrace and boost
+ ###########################################################
+@@ -572,7 +576,9 @@
+ ###########################################################
+ # LLVM
+ ###########################################################
+-add_subdirectory(${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION} EXCLUDE_FROM_ALL)
++if(EXISTS ${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION})
++    add_subdirectory(${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION} EXCLUDE_FROM_ALL)
++endif()
+ 
+ ###########################################################
+ # Subzero
+@@ -584,8 +590,10 @@
+ # marl
+ ###########################################################
+ if(BUILD_MARL)
+-    set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
+-    add_subdirectory(${THIRD_PARTY_DIR}/marl)
++    if(EXISTS ${THIRD_PARTY_DIR}/marl)
++        set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
++        add_subdirectory(${THIRD_PARTY_DIR}/marl)
++    endif()
+ endif()
+ 
+ if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
+@@ -604,7 +612,9 @@
+ # astc-encoder
+ ###########################################################
+ if(SWIFTSHADER_ENABLE_ASTC)
+-    add_subdirectory(${THIRD_PARTY_DIR}/astc-encoder)
++    if(EXISTS ${THIRD_PARTY_DIR}/astc-encoder)
++        add_subdirectory(${THIRD_PARTY_DIR}/astc-encoder)
++    endif()
+ endif()
+ 
+ ###########################################################
+@@ -689,7 +699,7 @@
+ endif(SWIFTSHADER_BUILD_GLES_CM)
+ 
+ if(SWIFTSHADER_BUILD_VULKAN)
+-    if (NOT TARGET SPIRV-Tools)
++    if(EXISTS ${THIRD_PARTY_DIR}/SPIRV-Headers AND EXISTS ${THIRD_PARTY_DIR}/SPIRV-Tools)
+         # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
+         set(SPIRV-Headers_SOURCE_DIR "${THIRD_PARTY_DIR}/SPIRV-Headers")
+         set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
+@@ -719,6 +729,7 @@
+                 target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WAYLAND_KHR")
+             endif()
+         endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
++        target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_FBDEV_EXT")
+     elseif(APPLE)
+         target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_MACOS_MVK")
+     elseif(FUCHSIA)
+--- SwiftShader-20200727.orig/include/vulkan/vulkan_fbdev.h
++++ SwiftShader-20200727/include/vulkan/vulkan_fbdev.h
+@@ -0,0 +1,54 @@
++#ifndef VULKAN_FBDEV_H_
++#define VULKAN_FBDEV_H_ 1
++
++/*
++** Copyright (c) 2015-2020 The Khronos Group Inc.
++**
++** SPDX-License-Identifier: Apache-2.0
++*/
++
++/*
++** This header is generated from the Khronos Vulkan XML API Registry.
++**
++*/
++
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++
++
++#define VK_EXT_fbdev_surface 1
++#define VK_EXT_FBDEV_SURFACE_SPEC_VERSION 1
++#define VK_EXT_FBDEV_SURFACE_EXTENSION_NAME "VK_EXT_fbdev_surface"
++typedef VkFlags VkFBDevSurfaceCreateFlagsEXT;
++typedef struct VkFBDevSurfaceCreateInfoEXT {
++    VkStructureType                 sType;
++    const void*                     pNext;
++    VkFBDevSurfaceCreateFlagsEXT    flags;
++    int                             fd;
++    void*                           window;
++} VkFBDevSurfaceCreateInfoEXT;
++
++typedef VkResult (VKAPI_PTR *PFN_vkCreateFBDevSurfaceEXT)(VkInstance instance, const VkFBDevSurfaceCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
++typedef VkBool32 (VKAPI_PTR *PFN_vkGetPhysicalDeviceFBDevPresentationSupportEXT)(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, int fd);
++
++#ifndef VK_NO_PROTOTYPES
++VKAPI_ATTR VkResult VKAPI_CALL vkCreateFBDevSurfaceEXT(
++    VkInstance                                  instance,
++    const VkFBDevSurfaceCreateInfoEXT*          pCreateInfo,
++    const VkAllocationCallbacks*                pAllocator,
++    VkSurfaceKHR*                               pSurface);
++
++VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceFBDevPresentationSupportEXT(
++    VkPhysicalDevice                            physicalDevice,
++    uint32_t                                    queueFamilyIndex,
++    int                                         fd);
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+--- SwiftShader-20200727.orig/src/Device/ASTC_Decoder.cpp
++++ SwiftShader-20200727/src/Device/ASTC_Decoder.cpp
+@@ -109,7 +109,11 @@
+ #ifdef SWIFTSHADER_ENABLE_ASTC
+ 	build_quantization_mode_table();
+ 
++#ifdef ASTCENC_INCLUDED
++	astcenc_profile decode_mode = isUnsignedByte ? ASTCENC_PRF_LDR : ASTCENC_PRF_HDR_RGB_LDR_A;
++#else
+ 	astc_decode_mode decode_mode = isUnsignedByte ? DECODE_LDR : DECODE_HDR;
++#endif
+ 
+ 	std::unique_ptr<block_size_descriptor> bsd(new block_size_descriptor);
+ 	init_block_size_descriptor(xBlockSize, yBlockSize, zBlockSize, bsd.get());
+--- SwiftShader-20200727.orig/src/Device/CMakeLists.txt
++++ SwiftShader-20200727/src/Device/CMakeLists.txt
+@@ -77,6 +77,13 @@
+         ${SWIFTSHADER_LINK_FLAGS}
+ )
+ 
++if(NOT TARGET astc-encoder AND SWIFTSHADER_ENABLE_ASTC)
++    target_compile_definitions(vk_device
++        PUBLIC
++            "SWIFTSHADER_ENABLE_ASTC"
++    )
++endif()
++
+ target_link_libraries(vk_device
+     PUBLIC
+         vk_pipeline
+--- SwiftShader-20200727.orig/src/Pipeline/CMakeLists.txt
++++ SwiftShader-20200727/src/Pipeline/CMakeLists.txt
+@@ -57,9 +57,7 @@
+ )
+ 
+ # Add SPIRV-Tools dep
+-if (NOT TARGET SPIRV-Tools)
+-    message(FATAL_ERROR "Missing required target: SPIRV-Tools")
+-endif()
++if (TARGET SPIRV-Tools)
+ 
+ set_target_properties(core_tables PROPERTIES FOLDER "SPIRV-Tools build")
+ set_target_properties(enum_string_mapping PROPERTIES FOLDER "SPIRV-Tools build")
+@@ -67,6 +65,8 @@
+ set_target_properties(spirv-tools-pkg-config PROPERTIES FOLDER "SPIRV-Tools build")
+ set_target_properties(spirv-tools-shared-pkg-config PROPERTIES FOLDER "SPIRV-Tools build")
+ 
++endif()
++
+ set_target_properties(vk_pipeline PROPERTIES
+     POSITION_INDEPENDENT_CODE 1
+     FOLDER "SwiftShader VK"
+--- SwiftShader-20200727.orig/src/Reactor/CMakeLists.txt
++++ SwiftShader-20200727/src/Reactor/CMakeLists.txt
+@@ -124,8 +124,16 @@
+         ${ROOT_PROJECT_COMPILE_OPTIONS}
+ )
+ 
+-target_link_libraries(ReactorLLVM
+-    PRIVATE
+-        llvm
+-        ${REACTOR_PRIVATE_LINK_LIBRARIES}
+-)
++if(TARGET llvm)
++    target_link_libraries(ReactorLLVM
++        PRIVATE
++            llvm
++            ${REACTOR_PRIVATE_LINK_LIBRARIES}
++    )
++else()
++    target_link_libraries(ReactorLLVM
++        PRIVATE
++            LLVM
++            ${REACTOR_PRIVATE_LINK_LIBRARIES}
++    )
++endif()
+--- SwiftShader-20200727.orig/src/Vulkan/CMakeLists.txt
++++ SwiftShader-20200727/src/Vulkan/CMakeLists.txt
+@@ -214,16 +214,8 @@
+     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vk_swiftshader> ${CMAKE_BINARY_DIR}/bin/${VULKAN_API_LIBRARY_NAME}
+ )
+ 
+-# The vk_swiftshader_icd.json manifest file will point to ICD_LIBRARY_PATH.
+-# Set ICD_LIBRARY_PATH to be a relative path similar to "./libvk_swiftshader.so", so both files can be moved.
+-# A relative path is relative to the manifest file.
+-set(ICD_LIBRARY_PATH "${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
+-if(WIN32)
+-    # The path is output to a JSON file, which requires backslashes to be escaped.
+-    set(ICD_LIBRARY_PATH ".\\\\${ICD_LIBRARY_PATH}")
+-else()
+-    set(ICD_LIBRARY_PATH "./${ICD_LIBRARY_PATH}")
+-endif()
++include(GNUInstallDirs)
++set(ICD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
+ configure_file(
+     "vk_swiftshader_icd.json.tmpl"
+     "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json"
+--- SwiftShader-20200727.orig/src/Vulkan/VkGetProcAddress.cpp
++++ SwiftShader-20200727/src/Vulkan/VkGetProcAddress.cpp
+@@ -119,6 +119,11 @@
+ 	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateWaylandSurfaceKHR),
+ 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceWaylandPresentationSupportKHR),
+ #endif
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++	// VK_EXT_fbdev_surface
++	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateFBDevSurfaceEXT),
++	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceFBDevPresentationSupportEXT),
++#endif
+ #ifdef VK_USE_PLATFORM_MACOS_MVK
+ 	// VK_MVK_macos_surface
+ 	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateMacOSSurfaceMVK),
+--- SwiftShader-20200727.orig/src/Vulkan/VkStringify.cpp
++++ SwiftShader-20200727/src/Vulkan/VkStringify.cpp
+@@ -16,8 +16,8 @@
+ 
+ #include "System/Debug.hpp"
+ 
+-#include <vulkan/vk_ext_provoking_vertex.h>
+-#include <vulkan/vk_google_filtering_precision.h>
++#include "vk_ext_provoking_vertex.h"
++#include "vk_google_filtering_precision.h"
+ 
+ #include <iostream>
+ #include <map>
+--- SwiftShader-20200727.orig/src/Vulkan/VulkanPlatform.hpp
++++ SwiftShader-20200727/src/Vulkan/VulkanPlatform.hpp
+@@ -49,9 +49,8 @@
+ 	typedef VkNonDispatchableHandle<object##Ptr> object; \
+ 	template class VkNonDispatchableHandle<object##Ptr>;
+ 
+-#include <vulkan/vk_ext_provoking_vertex.h>
+-#include <vulkan/vk_google_filtering_precision.h>
+-#include <vulkan/vulkan_core.h>
++#include "vk_ext_provoking_vertex.h"
++#include "vk_google_filtering_precision.h"
+ 
+ namespace vk {
+ // Here we define constants that used to be in the Vulkan headers, but are not part of the spec.
+--- SwiftShader-20200727.orig/src/Vulkan/libVulkan.cpp
++++ SwiftShader-20200727/src/Vulkan/libVulkan.cpp
+@@ -61,6 +61,10 @@
+ #	include "WSI/WaylandSurfaceKHR.hpp"
+ #endif
+ 
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++#	include "WSI/FBDevSurfaceEXT.hpp"
++#endif
++
+ #ifdef VK_USE_PLATFORM_WIN32_KHR
+ #	include "WSI/Win32SurfaceKHR.hpp"
+ #endif
+@@ -321,6 +325,9 @@
+ #ifdef VK_USE_PLATFORM_WAYLAND_KHR
+ 	{ VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_SPEC_VERSION },
+ #endif
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++	{ VK_EXT_FBDEV_SURFACE_EXTENSION_NAME, VK_EXT_FBDEV_SURFACE_SPEC_VERSION },
++#endif
+ #ifdef VK_USE_PLATFORM_MACOS_MVK
+ 	{ VK_MVK_MACOS_SURFACE_EXTENSION_NAME, VK_MVK_MACOS_SURFACE_SPEC_VERSION },
+ #endif
+@@ -3511,6 +3518,24 @@
+ 
+ 	return VK_TRUE;
+ }
++#endif
++
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++VKAPI_ATTR VkResult VKAPI_CALL vkCreateFBDevSurfaceEXT(VkInstance instance, const VkFBDevSurfaceCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface)
++{
++	TRACE("(VkInstance instance = %p, VkFBDevSurfaceCreateInfoEXT* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
++	      instance, pCreateInfo, pAllocator, pSurface);
++
++	return vk::FBDevSurfaceEXT::Create(pAllocator, pCreateInfo, pSurface);
++}
++
++VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceFBDevPresentationSupportEXT(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, int fd)
++{
++	TRACE("(VkPhysicalDevice physicalDevice = %p, uint32_t queueFamilyIndex = %d, int fd = %d)",
++	      physicalDevice, int(queueFamilyIndex), fd);
++
++	return VK_TRUE;
++}
+ #endif
+ 
+ #ifdef VK_USE_PLATFORM_MACOS_MVK
+--- SwiftShader-20200727.orig/src/Vulkan/vk_ext_provoking_vertex.h
++++ SwiftShader-20200727/src/Vulkan/vk_ext_provoking_vertex.h
+@@ -0,0 +1,56 @@
++// Copyright 2019 The SwiftShader Authors. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#include <vulkan/vulkan_core.h>
++
++// THIS FILE SHOULD BE DELETED IF VK_EXT_provoking_vertex IS EVER ADDED TO THE VULKAN HEADERS
++#ifdef VK_EXT_provoking_vertex
++#error "VK_EXT_provoking_vertex is already defined in the Vulkan headers, you can delete this file"
++#endif
++
++static constexpr VkStructureType VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT = static_cast<VkStructureType>(1000254000);
++static constexpr VkStructureType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT = static_cast<VkStructureType>(1000254001);
++static constexpr VkStructureType VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT = static_cast<VkStructureType>(1000254002);
++
++#define VK_EXT_provoking_vertex 1
++#define VK_EXT_PROVOKING_VERTEX_SPEC_VERSION 1
++#define VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME "VK_EXT_provoking_vertex"
++
++typedef enum VkProvokingVertexModeEXT {
++    VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT = 0,
++    VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT = 1,
++    VK_PROVOKING_VERTEX_MODE_BEGIN_RANGE_EXT = VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT,
++    VK_PROVOKING_VERTEX_MODE_END_RANGE_EXT = VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT,
++    VK_PROVOKING_VERTEX_MODE_RANGE_SIZE_EXT = (VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT - VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT + 1),
++    VK_PROVOKING_VERTEX_MODE_MAX_ENUM_EXT = 0x7FFFFFFF
++} VkProvokingVertexModeEXT;
++
++typedef struct VkPhysicalDeviceProvokingVertexFeaturesEXT {
++    VkStructureType    sType;
++    void*              pNext;
++    VkBool32           provokingVertexLast;
++} VkPhysicalDeviceProvokingVertexFeaturesEXT;
++
++typedef struct VkPhysicalDeviceProvokingVertexPropertiesEXT {
++    VkStructureType    sType;
++    void*              pNext;
++    VkBool32           provokingVertexModePerPipeline;
++} VkPhysicalDeviceProvokingVertexPropertiesEXT;
++
++typedef struct VkPipelineRasterizationProvokingVertexStateCreateInfoEXT {
++    VkStructureType             sType;
++    const void*                 pNext;
++    VkProvokingVertexModeEXT    provokingVertexMode;
++} VkPipelineRasterizationProvokingVertexStateCreateInfoEXT;
++
+--- SwiftShader-20200727.orig/src/Vulkan/vk_google_filtering_precision.h
++++ SwiftShader-20200727/src/Vulkan/vk_google_filtering_precision.h
+@@ -0,0 +1,41 @@
++// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#include <vulkan/vulkan_core.h>
++
++// THIS FILE SHOULD BE DELETED IF VK_GOOGLE_sampler_filtering_precision IS EVER ADDED TO THE VULKAN HEADERS
++#ifdef VK_GOOGLE_sampler_filtering_precision
++#error "VK_GOOGLE_sampler_filtering_precision is already defined in the Vulkan headers, you can delete this file"
++#endif
++
++static constexpr VkStructureType VK_STRUCTURE_TYPE_SAMPLER_FILTERING_PRECISION_GOOGLE = static_cast<VkStructureType>(1000264000);
++
++#define VK_GOOGLE_sampler_filtering_precisions 1
++#define VK_GOOGLE_SAMPLER_FILTERING_PRECISION_SPEC_VERSION 1
++#define VK_GOOGLE_SAMPLER_FILTERING_PRECISION_EXTENSION_NAME "VK_GOOGLE_sampler_filtering_precision"
++
++typedef enum VkSamplerFilteringPrecisionModeGOOGLE {
++    VK_SAMPLER_FILTERING_PRECISION_MODE_LOW_GOOGLE = 0,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_HIGH_GOOGLE = 1,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_BEGIN_RANGE_GOOGLE = VK_SAMPLER_FILTERING_PRECISION_MODE_LOW_GOOGLE,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_END_RANGE_GOOGLE = VK_SAMPLER_FILTERING_PRECISION_MODE_HIGH_GOOGLE,
++    VK_SAMPLER_FILTERING_PRECISION_MODE_RANGE_SIZE_GOOGLE = (VK_SAMPLER_FILTERING_PRECISION_MODE_HIGH_GOOGLE - VK_SAMPLER_FILTERING_PRECISION_MODE_LOW_GOOGLE + 1),
++    VK_SAMPLER_FILTERING_PRECISION_MODE_MAX_ENUM_GOOGLE = 0x7FFFFFFF
++} VkSamplerFilteringPrecisionModeGOOGLE;
++
++typedef struct VkSamplerFilteringPrecisionGOOGLE {
++    VkStructureType                       sType;
++    const void*                           pNext;
++    VkSamplerFilteringPrecisionModeGOOGLE samplerFilteringPrecisionMode;
++} VkSamplerFilteringPrecisionGOOGLE;
+--- SwiftShader-20200727.orig/src/WSI/CMakeLists.txt
++++ SwiftShader-20200727/src/WSI/CMakeLists.txt
+@@ -52,6 +52,11 @@
+             WaylandSurfaceKHR.hpp
+         )
+     endif()
++
++    list(APPEND WSI_SRC_FILES
++        FBDevSurfaceEXT.cpp
++        FBDevSurfaceEXT.hpp
++    )
+ elseif(APPLE)
+     list(APPEND WSI_SRC_FILES
+         MetalSurface.mm
+--- SwiftShader-20200727.orig/src/WSI/FBDevSurfaceEXT.cpp
++++ SwiftShader-20200727/src/WSI/FBDevSurfaceEXT.cpp
+@@ -0,0 +1,121 @@
++// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#include "FBDevSurfaceEXT.hpp"
++
++#include "Vulkan/VkDeviceMemory.hpp"
++#include "Vulkan/VkImage.hpp"
++
++#include <linux/fb.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/mman.h>
++
++struct fb_window
++{
++	int width;
++	int height;
++	int posx;
++	int posy;
++};
++
++namespace vk {
++
++FBDevSurfaceEXT::FBDevSurfaceEXT(const VkFBDevSurfaceCreateInfoEXT *pCreateInfo, void *mem)
++    : fd(pCreateInfo->fd)
++    , window(pCreateInfo->window)
++{
++	struct fb_var_screeninfo info;
++	ioctl(fd, FBIOGET_VSCREENINFO, &info);
++
++	fbdevWidth = info.xres;
++	fbdevHeight = info.yres;
++	fbdevBytesPerPixel = info.bits_per_pixel / 8;
++	fbdevBuffer = static_cast<uint8_t *>(mmap(NULL, fbdevWidth * fbdevHeight * fbdevBytesPerPixel, PROT_WRITE, MAP_SHARED, fd, 0));
++}
++
++void FBDevSurfaceEXT::destroySurface(const VkAllocationCallbacks *pAllocator)
++{
++	munmap(fbdevBuffer, fbdevWidth * fbdevHeight * fbdevBytesPerPixel);
++}
++
++size_t FBDevSurfaceEXT::ComputeRequiredAllocationSize(const VkFBDevSurfaceCreateInfoEXT *pCreateInfo)
++{
++	return 0;
++}
++
++void FBDevSurfaceEXT::getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const
++{
++	SurfaceKHR::getSurfaceCapabilities(pSurfaceCapabilities);
++
++	if(window)
++	{
++		struct fb_window *fb_window = static_cast<struct fb_window *>(window);
++		VkExtent2D extent = { static_cast<uint32_t>(fb_window->width), static_cast<uint32_t>(fb_window->height) };
++
++	  pSurfaceCapabilities->currentExtent = extent;
++	  pSurfaceCapabilities->minImageExtent = extent;
++	  pSurfaceCapabilities->maxImageExtent = extent;
++	}
++	else
++	{
++		pSurfaceCapabilities->currentExtent = { 0xFFFFFFFF, 0xFFFFFFFF };
++		pSurfaceCapabilities->minImageExtent = { 1, 1 };
++		pSurfaceCapabilities->maxImageExtent = { fbdevWidth, fbdevHeight };
++	}
++}
++
++void FBDevSurfaceEXT::attachImage(PresentImage *image)
++{
++}
++
++void FBDevSurfaceEXT::detachImage(PresentImage *image)
++{
++}
++
++VkResult FBDevSurfaceEXT::present(PresentImage *image)
++{
++	int height, posx, posy;
++
++	if(window)
++	{
++		struct fb_window *fb_window = static_cast<struct fb_window *>(window);
++		height = fb_window->height;
++		posx = fb_window->posx;
++		posy = fb_window->posy;
++	}
++	else
++	{
++		VkExtent3D extent = image->getImage()->getMipLevelExtent(VK_IMAGE_ASPECT_COLOR_BIT, 0);
++		height = extent.height;
++		posx = 0;
++		posy = 0;
++	}
++
++	int fbdevRowPitch = fbdevWidth * fbdevBytesPerPixel;
++	uint8_t *fbdevMemory = fbdevBuffer + posy * fbdevRowPitch + posx * fbdevBytesPerPixel;
++	int imageRowPitch = image->getImage()->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
++	uint8_t *imageMemory = static_cast<uint8_t *>(image->getImageMemory()->getOffsetPointer(0));
++
++	for(int i = 0; i < height; i++)
++	{
++		memcpy(fbdevMemory, imageMemory, fbdevRowPitch);
++		fbdevMemory += fbdevRowPitch;
++		imageMemory += imageRowPitch;
++	}
++
++	return VK_SUCCESS;
++}
++
++}  // namespace vk
+--- SwiftShader-20200727.orig/src/WSI/FBDevSurfaceEXT.hpp
++++ SwiftShader-20200727/src/WSI/FBDevSurfaceEXT.hpp
+@@ -0,0 +1,50 @@
++// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#ifndef SWIFTSHADER_FBDEVSURFACEEXT_HPP
++#define SWIFTSHADER_FBDEVSURFACEEXT_HPP
++
++#include "VkSurfaceKHR.hpp"
++#include "Vulkan/VkObject.hpp"
++
++#include <vulkan/vulkan_fbdev.h>
++
++namespace vk {
++
++class FBDevSurfaceEXT : public SurfaceKHR, public ObjectBase<FBDevSurfaceEXT, VkSurfaceKHR>
++{
++public:
++	FBDevSurfaceEXT(const VkFBDevSurfaceCreateInfoEXT *pCreateInfo, void *mem);
++
++	void destroySurface(const VkAllocationCallbacks *pAllocator) override;
++
++	static size_t ComputeRequiredAllocationSize(const VkFBDevSurfaceCreateInfoEXT *pCreateInfo);
++
++	void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
++
++	virtual void attachImage(PresentImage *image) override;
++	virtual void detachImage(PresentImage *image) override;
++	VkResult present(PresentImage *image) override;
++
++private:
++	int fd;
++	void *window;
++	uint32_t fbdevWidth;
++	uint32_t fbdevHeight;
++	uint32_t fbdevBytesPerPixel;
++	uint8_t *fbdevBuffer;
++};
++
++}  // namespace vk
++#endif  //SWIFTSHADER_FBDEVSURFACEEXT_HPP
