@@ -1,0 +1,556 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build wayland-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+if pkg-config --exists x264-build; then
+  X264=--enable-libx264
+  REQUIRES="$REQUIRES x264-build"
+fi
+
+if pkg-config --exists x265-build; then
+  X265=--enable-libx265
+  REQUIRES="$REQUIRES x265-build"
+fi
+
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
+# configure
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-wayland --enable-gpl --enable-shared $X264 $X265 --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install ffmpeg $DESTDIR/wl/bin
+test $SDL2 && install ffplay $DESTDIR/wl/bin
+install ffprobe $DESTDIR/wl/bin
+install ffserver $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/libavcodec
+install -m 644 libavcodec/avcodec.h $DESTDIR/wl/include/libavcodec
+install -m 644 libavcodec/avfft.h $DESTDIR/wl/include/libavcodec
+install -m 644 libavcodec/version.h $DESTDIR/wl/include/libavcodec
+install -d $DESTDIR/wl/include/libavdevice
+install -m 644 libavdevice/avdevice.h $DESTDIR/wl/include/libavdevice
+install -m 644 libavdevice/version.h $DESTDIR/wl/include/libavdevice
+install -d $DESTDIR/wl/include/libavfilter
+install -m 644 libavfilter/avfilter.h $DESTDIR/wl/include/libavfilter
+install -m 644 libavfilter/avfiltergraph.h $DESTDIR/wl/include/libavfilter
+install -m 644 libavfilter/buffersink.h $DESTDIR/wl/include/libavfilter
+install -m 644 libavfilter/buffersrc.h $DESTDIR/wl/include/libavfilter
+install -m 644 libavfilter/version.h $DESTDIR/wl/include/libavfilter
+install -d $DESTDIR/wl/include/libavformat
+install -m 644 libavformat/avformat.h $DESTDIR/wl/include/libavformat
+install -m 644 libavformat/avio.h $DESTDIR/wl/include/libavformat
+install -m 644 libavformat/version.h $DESTDIR/wl/include/libavformat
+install -d $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/attributes.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/avassert.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/avconfig.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/avstring.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/avutil.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/base64.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/bprint.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/bswap.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/buffer.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/channel_layout.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/common.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/cpu.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/dict.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/display.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/error.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/eval.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/ffversion.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/fifo.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/frame.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/hwcontext.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/imgutils.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/intfloat.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/intreadwrite.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/log.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/lzo.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/macros.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/mathematics.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/md5.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/mem.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/opt.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/parseutils.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/pixdesc.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/pixfmt.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/rational.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/samplefmt.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/sha.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/stereo3d.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/time.h $DESTDIR/wl/include/libavutil
+install -m 644 libavutil/version.h $DESTDIR/wl/include/libavutil
+install -d $DESTDIR/wl/include/libpostproc
+install -m 644 libpostproc/postprocess.h $DESTDIR/wl/include/libpostproc
+install -m 644 libpostproc/version.h $DESTDIR/wl/include/libpostproc
+install -d $DESTDIR/wl/include/libswresample
+install -m 644 libswresample/swresample.h $DESTDIR/wl/include/libswresample
+install -m 644 libswresample/version.h $DESTDIR/wl/include/libswresample
+install -d $DESTDIR/wl/include/libswscale
+install -m 644 libswscale/swscale.h $DESTDIR/wl/include/libswscale
+install -m 644 libswscale/version.h $DESTDIR/wl/include/libswscale
+install -d $DESTDIR/wl/lib
+install libavcodec/libavcodec.so.57 $DESTDIR/wl/lib
+ln -sf libavcodec.so.57 $DESTDIR/wl/lib/libavcodec.so
+install libavdevice/libavdevice.so.57 $DESTDIR/wl/lib
+ln -sf libavdevice.so.57 $DESTDIR/wl/lib/libavdevice.so
+install libavfilter/libavfilter.so.6 $DESTDIR/wl/lib
+ln -sf libavfilter.so.6 $DESTDIR/wl/lib/libavfilter.so
+install libavformat/libavformat.so.57 $DESTDIR/wl/lib
+ln -sf libavformat.so.57 $DESTDIR/wl/lib/libavformat.so
+install libavutil/libavutil.so.55 $DESTDIR/wl/lib
+ln -sf libavutil.so.55 $DESTDIR/wl/lib/libavutil.so
+install libpostproc/libpostproc.so.54 $DESTDIR/wl/lib
+ln -sf libpostproc.so.54 $DESTDIR/wl/lib/libpostproc.so
+install libswresample/libswresample.so.2 $DESTDIR/wl/lib
+ln -sf libswresample.so.2 $DESTDIR/wl/lib/libswresample.so
+install libswscale/libswscale.so.4 $DESTDIR/wl/lib
+ln -sf libswscale.so.4 $DESTDIR/wl/lib/libswscale.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 libavcodec/libavcodec.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libavdevice/libavdevice.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libavfilter/libavfilter.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libavformat/libavformat.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libavutil/libavutil.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libpostproc/libpostproc.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libswresample/libswresample.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 libswscale/libswscale.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
+Name: ffmpeg
+Version: 3.4.13
+Description: A collection of libraries and tools to process multimedia content
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/libavcodec/avcodec.h \\
+/wl/include/libavcodec/avfft.h \\
+/wl/include/libavcodec/version.h \\
+/wl/include/libavdevice/avdevice.h \\
+/wl/include/libavdevice/version.h \\
+/wl/include/libavfilter/avfilter.h \\
+/wl/include/libavfilter/avfiltergraph.h \\
+/wl/include/libavfilter/buffersink.h \\
+/wl/include/libavfilter/buffersrc.h \\
+/wl/include/libavfilter/version.h \\
+/wl/include/libavformat/avformat.h \\
+/wl/include/libavformat/avio.h \\
+/wl/include/libavformat/version.h \\
+/wl/include/libavutil/attributes.h \\
+/wl/include/libavutil/avassert.h \\
+/wl/include/libavutil/avconfig.h \\
+/wl/include/libavutil/avstring.h \\
+/wl/include/libavutil/avutil.h \\
+/wl/include/libavutil/base64.h \\
+/wl/include/libavutil/bprint.h \\
+/wl/include/libavutil/bswap.h \\
+/wl/include/libavutil/buffer.h \\
+/wl/include/libavutil/channel_layout.h \\
+/wl/include/libavutil/common.h \\
+/wl/include/libavutil/cpu.h \\
+/wl/include/libavutil/dict.h \\
+/wl/include/libavutil/display.h \\
+/wl/include/libavutil/error.h \\
+/wl/include/libavutil/eval.h \\
+/wl/include/libavutil/ffversion.h \\
+/wl/include/libavutil/fifo.h \\
+/wl/include/libavutil/frame.h \\
+/wl/include/libavutil/hwcontext.h \\
+/wl/include/libavutil/imgutils.h \\
+/wl/include/libavutil/intfloat.h \\
+/wl/include/libavutil/intreadwrite.h \\
+/wl/include/libavutil/log.h \\
+/wl/include/libavutil/lzo.h \\
+/wl/include/libavutil/macros.h \\
+/wl/include/libavutil/mathematics.h \\
+/wl/include/libavutil/md5.h \\
+/wl/include/libavutil/mem.h \\
+/wl/include/libavutil/opt.h \\
+/wl/include/libavutil/parseutils.h \\
+/wl/include/libavutil/pixdesc.h \\
+/wl/include/libavutil/pixfmt.h \\
+/wl/include/libavutil/rational.h \\
+/wl/include/libavutil/samplefmt.h \\
+/wl/include/libavutil/sha.h \\
+/wl/include/libavutil/stereo3d.h \\
+/wl/include/libavutil/time.h \\
+/wl/include/libavutil/version.h \\
+/wl/include/libpostproc/postprocess.h \\
+/wl/include/libpostproc/version.h \\
+/wl/include/libswresample/swresample.h \\
+/wl/include/libswresample/version.h \\
+/wl/include/libswscale/swscale.h \\
+/wl/include/libswscale/version.h \\
+/wl/lib/libavcodec.so \\
+/wl/lib/libavdevice.so \\
+/wl/lib/libavfilter.so \\
+/wl/lib/libavformat.so \\
+/wl/lib/libavutil.so \\
+/wl/lib/libpostproc.so \\
+/wl/lib/libswresample.so \\
+/wl/lib/libswscale.so \\
+/wl/lib/pkgconfig/libavcodec.pc \\
+/wl/lib/pkgconfig/libavdevice.pc \\
+/wl/lib/pkgconfig/libavfilter.pc \\
+/wl/lib/pkgconfig/libavformat.pc \\
+/wl/lib/pkgconfig/libavutil.pc \\
+/wl/lib/pkgconfig/libpostproc.pc \\
+/wl/lib/pkgconfig/libswresample.pc \\
+/wl/lib/pkgconfig/libswscale.pc
+
+exec=\\
+/wl/bin/ffmpeg \\
+EOF
+test $SDL2 && echo /wl/bin/ffplay \\ >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
+/wl/bin/ffprobe \\
+/wl/bin/ffserver \\
+/wl/lib/libavcodec.so.57 \\
+/wl/lib/libavdevice.so.57 \\
+/wl/lib/libavfilter.so.6 \\
+/wl/lib/libavformat.so.57 \\
+/wl/lib/libavutil.so.55 \\
+/wl/lib/libpostproc.so.54 \\
+/wl/lib/libswresample.so.2 \\
+/wl/lib/libswscale.so.4
+EOF
+
+exit
+--- ffmpeg-3.4.13.orig/configure
++++ ffmpeg-3.4.13/configure
+@@ -299,6 +299,7 @@
+   --disable-sdl2           disable sdl2 [autodetect]
+   --disable-securetransport disable Secure Transport, needed for TLS support
+                            on OSX if openssl and gnutls are not used [autodetect]
++  --disable-wayland        disable wayland [autodetect]
+   --disable-xlib           disable xlib [autodetect]
+   --disable-zlib           disable zlib [autodetect]
+ 
+@@ -1542,6 +1543,7 @@
+     sdl2
+     securetransport
+     sndio
++    wayland
+     xlib
+     zlib
+ "
+@@ -3122,6 +3124,7 @@
+ v4l2_indev_deps_any="linux_videodev2_h sys_videoio_h"
+ v4l2_outdev_deps_any="linux_videodev2_h sys_videoio_h"
+ vfwcap_indev_deps="vfw32 vfwcap_defines"
++wayland_outdev_deps="wayland"
+ xcbgrab_indev_deps="libxcb"
+ xv_outdev_deps="X11_extensions_Xvlib_h XvGetPortAttribute"
+ xv_outdev_extralibs="-lXv -lX11 -lXext"
+@@ -6216,6 +6219,13 @@
+     add_extralibs $xcb_extralibs $xcb_shm_extralibs $xcb_xfixes_extralibs $xcb_shape_extralibs
+ fi
+ 
++check_cmd $pkg_config --exists --print-errors wayland-client || disable wayland
++
++if enabled wayland; then
++    add_cflags $($pkg_config --cflags wayland-client)
++    add_extralibs $($pkg_config --libs wayland-client)
++fi
++
+ check_func_headers "windows.h" CreateDIBSection "$gdigrab_indev_extralibs"
+ 
+ # d3d11va requires linking directly to dxgi and d3d11 if not building for
+--- ffmpeg-3.4.13.orig/libavdevice/Makefile
++++ ffmpeg-3.4.13/libavdevice/Makefile
+@@ -47,6 +47,7 @@
+ OBJS-$(CONFIG_V4L2_INDEV)                += v4l2.o v4l2-common.o timefilter.o
+ OBJS-$(CONFIG_V4L2_OUTDEV)               += v4l2enc.o v4l2-common.o
+ OBJS-$(CONFIG_VFWCAP_INDEV)              += vfwcap.o
++OBJS-$(CONFIG_WAYLAND_OUTDEV)            += wayland.o
+ OBJS-$(CONFIG_XCBGRAB_INDEV)             += xcbgrab.o
+ OBJS-$(CONFIG_XV_OUTDEV)                 += xv.o
+ 
+--- ffmpeg-3.4.13.orig/libavdevice/alldevices.c
++++ ffmpeg-3.4.13/libavdevice/alldevices.c
+@@ -62,6 +62,7 @@
+     REGISTER_INOUTDEV(SNDIO,            sndio);
+     REGISTER_INOUTDEV(V4L2,             v4l2);
+     REGISTER_INDEV   (VFWCAP,           vfwcap);
++    REGISTER_OUTDEV  (WAYLAND,          wayland);
+     REGISTER_INDEV   (XCBGRAB,          xcbgrab);
+     REGISTER_OUTDEV  (XV,               xv);
+ 
+--- ffmpeg-3.4.13.orig/libavdevice/wayland.c
++++ ffmpeg-3.4.13/libavdevice/wayland.c
+@@ -0,0 +1,260 @@
++/*
++ * Wayland ouput device
++ *
++ * This file is part of FFmpeg.
++ *
++ * FFmpeg is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * FFmpeg is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with FFmpeg; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++
++#include <sys/mman.h>
++#include <unistd.h>
++#include <wayland-client.h>
++
++#include "avdevice.h"
++
++typedef struct {
++    AVClass *class;
++    uint32_t format;
++    struct wl_display *display;
++    struct wl_registry *registry;
++    struct wl_compositor *compositor;
++    struct wl_shm *shm;
++    struct wl_shell *shell;
++    struct wl_surface *surface;
++    uint32_t width;
++    uint32_t height;
++    uint32_t size;
++    struct wl_buffer *buffer;
++    uint8_t *data;
++    struct wl_shell_surface *shell_surface;
++} WaylandContext;
++
++static av_cold int wayland_write_trailer(AVFormatContext *s)
++{
++    WaylandContext *wayland = s->priv_data;
++
++    if (wayland->shell_surface) {
++        wl_shell_surface_destroy(wayland->shell_surface);
++        wayland->shell_surface = NULL;
++    }
++
++    if (wayland->data) {
++        munmap(wayland->data, wayland->size);
++        wayland->data = NULL;
++    }
++
++    if (wayland->buffer) {
++        wl_buffer_destroy(wayland->buffer);
++        wayland->buffer = NULL;
++    }
++
++    if (wayland->surface) {
++        wl_surface_destroy(wayland->surface);
++        wayland->surface = NULL;
++    }
++
++    if (wayland->shell) {
++        wl_shell_destroy(wayland->shell);
++        wayland->shell = NULL;
++    }
++
++    if (wayland->shm) {
++        wl_shm_destroy(wayland->shm);
++        wayland->shm = NULL;
++    }
++
++    if (wayland->compositor) {
++        wl_compositor_destroy(wayland->compositor);
++        wayland->compositor = NULL;
++    }
++
++    if (wayland->registry) {
++        wl_registry_destroy(wayland->registry);
++        wayland->registry = NULL;
++    }
++
++    if (wayland->display) {
++        wl_display_disconnect(wayland->display);
++        wayland->display = NULL;
++    }
++
++    return 0;
++}
++
++static void wl_registry_handle_global(void *data, struct wl_registry *registry,
++                                      unsigned int name, const char *interface,
++                                      unsigned int version)
++{
++    WaylandContext *wayland = data;
++
++    if (!strcmp(interface, "wl_compositor")) {
++        wayland->compositor = wl_registry_bind(registry, name,
++                                               &wl_compositor_interface, 1);
++    }
++    else if (!strcmp(interface, "wl_shm")) {
++        wayland->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
++    }
++    else if (!strcmp(interface, "wl_shell")) {
++        wayland->shell = wl_registry_bind(registry, name,
++                                          &wl_shell_interface, 1);
++    }
++}
++
++static void wl_registry_handle_global_remove(void *data,
++                                             struct wl_registry *registry,
++                                             unsigned int name)
++{
++}
++
++static struct wl_registry_listener wl_registry_listener = {
++    wl_registry_handle_global, wl_registry_handle_global_remove
++};
++
++static av_cold int wayland_write_header(AVFormatContext *s)
++{
++    WaylandContext *wayland = s->priv_data;
++    int fd;
++    char template[] = "/tmp/XXXXXX";
++    struct wl_shm_pool *pool;
++    int err;
++
++    if (s->nb_streams > 1 ||
++        s->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO ||
++        s->streams[0]->codecpar->codec_id != AV_CODEC_ID_RAWVIDEO) {
++        av_log(s, AV_LOG_ERROR, "Only supports one rawvideo stream\n");
++        return AVERROR(EINVAL);
++    }
++
++    if (s->streams[0]->codecpar->format == AV_PIX_FMT_BGRA)
++        wayland->format = WL_SHM_FORMAT_ARGB8888;
++    else if (s->streams[0]->codecpar->format == AV_PIX_FMT_BGR0)
++        wayland->format = WL_SHM_FORMAT_XRGB8888;
++    else {
++        av_log(s, AV_LOG_ERROR, "Unsupported pixel format."
++               " Only bgra and bgr0 are currently supported.\n");
++        return AVERROR(EINVAL);
++    }
++
++    wayland->display = wl_display_connect(s->filename[0] ? s->filename : NULL);
++    if (!wayland->display) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Cannot connect display %s: %s\n",
++                s->filename[0] ? s->filename : "wayland-0", av_err2str(err));
++        return err;
++    }
++
++    wayland->registry = wl_display_get_registry(wayland->display);
++
++    wl_registry_add_listener(wayland->registry, &wl_registry_listener, wayland);
++
++    if (wl_display_roundtrip(wayland->display) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to process issued requests: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    wayland->surface = wl_compositor_create_surface(wayland->compositor);
++
++    wayland->width = s->streams[0]->codecpar->width;
++    wayland->height = s->streams[0]->codecpar->height;
++    wayland->size = wayland->width * wayland->height * 4;
++
++    if ((fd = mkstemp(template)) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to create temporary file: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    unlink(template);
++
++    if (ftruncate(fd, wayland->size) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to truncate temporary file to %u: %s\n", wayland->size,
++               av_err2str(err));
++        goto fail;
++    }
++
++    pool = wl_shm_create_pool(wayland->shm, fd, wayland->size);
++    wayland->buffer = wl_shm_pool_create_buffer(pool, 0,
++                                                wayland->width, wayland->height,
++                                                wayland->width * 4,
++                                                wayland->format);
++
++    wayland->data = mmap(NULL, wayland->size, PROT_WRITE, MAP_SHARED, fd, 0);
++    if (wayland->data == MAP_FAILED) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to mmap buffer: %s\n", av_err2str(err));
++        goto fail;
++    }
++
++    wl_shm_pool_destroy(pool);
++
++    close(fd);
++
++    wl_surface_attach(wayland->surface, wayland->buffer, 0, 0);
++
++    wayland->shell_surface = wl_shell_get_shell_surface(wayland->shell,
++                                                        wayland->surface);
++    wl_shell_surface_set_toplevel(wayland->shell_surface);
++
++    return 0;
++  fail:
++    wayland_write_trailer(s);
++    return err;
++}
++
++static int wayland_write_packet(AVFormatContext *s, AVPacket *pkt)
++{
++    WaylandContext *wayland = s->priv_data;
++    int err;
++
++    memcpy(wayland->data, pkt->data, wayland->size);
++
++    wl_surface_damage(wayland->surface, 0, 0, wayland->width, wayland->height);
++    wl_surface_commit(wayland->surface);
++    if (wl_display_roundtrip(wayland->display) == -1) {
++        err = AVERROR(errno);
++        av_log(s, AV_LOG_ERROR,
++               "Failed to process issued requests: %s\n", av_err2str(err));
++        return err;
++    }
++
++    return 0;
++}
++
++static const AVClass wayland_class = {
++    .class_name = "wayland outdev",
++    .item_name  = av_default_item_name,
++    .version    = LIBAVUTIL_VERSION_INT,
++    .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
++};
++
++AVOutputFormat ff_wayland_muxer = {
++    .name           = "wayland",
++    .long_name      = NULL_IF_CONFIG_SMALL("Wayland output device"),
++    .priv_data_size = sizeof(WaylandContext),
++    .audio_codec    = AV_CODEC_ID_NONE,
++    .video_codec    = AV_CODEC_ID_RAWVIDEO,
++    .write_header   = wayland_write_header,
++    .write_packet   = wayland_write_packet,
++    .write_trailer  = wayland_write_trailer,
++    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
++    .priv_class     = &wayland_class,
++};

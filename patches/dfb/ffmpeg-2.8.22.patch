@@ -291,7 +291,7 @@ exit
      REGISTER_INOUTDEV(FBDEV,            fbdev);
 --- ffmpeg-2.8.22.orig/libavdevice/directfb.c
 +++ ffmpeg-2.8.22/libavdevice/directfb.c
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,190 @@
 +/*
 + * DirectFB ouput device
 + *
@@ -338,7 +338,7 @@ exit
 +    { PIX_FMT_RGB555LE, DSPF_RGB555 },
 +};
 +
-+static int directfb_write_header(AVFormatContext *s)
++static av_cold int directfb_write_header(AVFormatContext *s)
 +{
 +    DirectFBContext *directfb = s->priv_data;
 +    DFBSurfaceDescription dsc;
@@ -457,8 +457,8 @@ exit
 +}
 +
 +static const AVOption options[] = {
-+    { "surface_size", "surface size", offsetof(DirectFBContext, surface_size),
-+      FF_OPT_TYPE_STRING, {.str = NULL }, 0, 0, AV_OPT_FLAG_ENCODING_PARAM },
++    { "surface_size", "surface size", OFFSET(DirectFBContext, surface_size),
++      AV_OPT_TYPE_STRING, {.str = NULL }, 0, 0, AV_OPT_FLAG_ENCODING_PARAM },
 +    { NULL },
 +};
 +
@@ -467,6 +467,7 @@ exit
 +    .item_name  = av_default_item_name,
 +    .option     = options,
 +    .version    = LIBAVUTIL_VERSION_INT,
++    .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
 +};
 +
 +AVOutputFormat ff_directfb_muxer = {
@@ -478,7 +479,7 @@ exit
 +    .write_header   = directfb_write_header,
 +    .write_packet   = directfb_write_packet,
 +    .write_trailer  = directfb_write_trailer,
-+    .flags          = AVFMT_NOFILE,
++    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
 +    .priv_class     = &directfb_class,
 +};
 --- ffmpeg-2.8.22.orig/version.sh

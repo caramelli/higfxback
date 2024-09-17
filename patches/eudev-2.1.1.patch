@@ -5,9 +5,16 @@ REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if pkg-config --exists glib-build; then
+  GLIB=1
+  REQUIRES="$REQUIRES glib-build"
+else
+  GUDEV=--disable-gudev
+fi
+
 # configure (ac-2.69; am-1.13; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-./configure --disable-gudev --prefix= --disable-keymap --disable-static --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin
+./configure $GUDEV --disable-keymap --disable-static --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin --prefix=
 
 # build
 make
@@ -26,16 +33,29 @@ SUBSYSTEM=="input", IMPORT{program}="input_id %p"
 EOF
 install -d $DESTDIR/include
 install -m 644 src/libudev/libudev.h $DESTDIR/include
+test $GLIB && install -d $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudev.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudevclient.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudevdevice.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudevenumerator.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudevenums.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudevenumtypes.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 src/gudev/gudevtypes.h $DESTDIR/include/gudev-1.0/gudev
 install -d $DESTDIR/lib
+test $GLIB && install src/gudev/.libs/libgudev-1.0.so.0.* $DESTDIR/lib/libgudev-1.0.so.0
+test $GLIB && ln -sf libgudev-1.0.so.0 $DESTDIR/lib/libgudev-1.0.so
 install src/libudev/.libs/libudev.so.0.* $DESTDIR/lib/libudev.so.0
 ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
 install -d $DESTDIR/lib/udev
 install src/ata_id/ata_id $DESTDIR/lib/udev
 install src/cdrom_id/cdrom_id $DESTDIR/lib/udev
+install src/collect/collect $DESTDIR/lib/udev
 install src/scsi_id/scsi_id $DESTDIR/lib/udev
 install src/v4l_id/v4l_id $DESTDIR/lib/udev
 install -d $DESTDIR/lib/pkgconfig
+test $GLIB && install -m 644 src/gudev/gudev-1.0.pc $DESTDIR/lib/pkgconfig
 install -m 644 src/libudev/libudev.pc $DESTDIR/lib/pkgconfig
+install -m 644 src/udev/udev.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -47,8 +67,22 @@ Requires: $REQUIRES
 
 devel=\\
 /include/libudev.h \\
+EOF
+test $GLIB && echo /include/gudev-1.0/gudev/gudev.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevclient.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevdevice.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenumerator.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenums.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenumtypes.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevtypes.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && echo /lib/libgudev-1.0.so \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
 /lib/libudev.so \\
-/lib/pkgconfig/libudev.pc
+EOF
+test $GLIB && echo /lib/pkgconfig/gudev-1.0.pc \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
+/lib/pkgconfig/libudev.pc \\
+/lib/pkgconfig/udev.pc
 
 exec=\\
 /bin/mdevd \\
@@ -56,17 +90,19 @@ exec=\\
 /bin/udevadm \\
 /etc/udev/udev.conf \\
 /etc/udev/rules.d/udev.rules \\
+EOF
+test $GLIB && echo /lib/libgudev-1.0.so.0 \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
 /lib/libudev.so.0 \\
 /lib/udev/ata_id \\
 /lib/udev/cdrom_id \\
-/lib/udev/firmware \\
-/lib/udev/input_id \\
-/lib/udev/path_id \\
+/lib/udev/collect \\
 /lib/udev/scsi_id \\
-/lib/udev/usb_id \\
 /lib/udev/v4l_id
 EOF
+test $GLIB && ln -sf eudev-build.pc $DESTDIR/share/pkgconfig/gudev-build.pc
 ln -sf eudev-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
+ln -sf eudev-build.pc $DESTDIR/share/pkgconfig/udevd-build.pc
 
 exit
 --- eudev-2.1.1.orig/configure.ac

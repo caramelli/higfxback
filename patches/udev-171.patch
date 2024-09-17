@@ -5,9 +5,16 @@ REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if pkg-config --exists glib-build; then
+  GLIB=1
+  REQUIRES="$REQUIRES glib-build"
+else
+  GUDEV=--disable-gudev
+fi
+
 # configure (ac-2.68; am-1.11; lt-2.4)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
-./configure --disable-gudev --disable-hwdb --disable-introspection --disable-keymap --disable-udev_acl --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin --libexecdir=/lib/udev --prefix=
+./configure $GUDEV --disable-hwdb --disable-introspection --disable-keymap --disable-udev_acl --with-noarch-pkgconfigdir=/lib/pkgconfig --libexecdir=/lib/udev --sbindir=/bin --prefix=
 
 # build
 make
@@ -26,12 +33,23 @@ SUBSYSTEM=="input", IMPORT{program}="input_id %p"
 EOF
 install -d $DESTDIR/include
 install -m 644 libudev/libudev.h $DESTDIR/include
+test $GLIB && install -d $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudev.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevclient.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevdevice.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevenumerator.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevenums.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevenumtypes.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevtypes.h $DESTDIR/include/gudev-1.0/gudev
 install -d $DESTDIR/lib
+test $GLIB && install extras/gudev/.libs/libgudev-1.0.so.0.* $DESTDIR/lib/libgudev-1.0.so.0
+test $GLIB && ln -sf libgudev-1.0.so.0 $DESTDIR/lib/libgudev-1.0.so
 install libudev/.libs/libudev.so.0.* $DESTDIR/lib/libudev.so.0
 ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
 install -d $DESTDIR/lib/udev
 install extras/ata_id/ata_id $DESTDIR/lib/udev
 install extras/cdrom_id/cdrom_id $DESTDIR/lib/udev
+install extras/collect/collect $DESTDIR/lib/udev
 install extras/firmware/firmware $DESTDIR/lib/udev
 install extras/input_id/input_id $DESTDIR/lib/udev
 install extras/path_id/path_id $DESTDIR/lib/udev
@@ -39,7 +57,9 @@ install extras/scsi_id/scsi_id $DESTDIR/lib/udev
 install extras/usb_id/usb_id $DESTDIR/lib/udev
 install extras/v4l_id/v4l_id $DESTDIR/lib/udev
 install -d $DESTDIR/lib/pkgconfig
+test $GLIB && install -m 644 extras/gudev/gudev-1.0.pc $DESTDIR/lib/pkgconfig
 install -m 644 libudev/libudev.pc $DESTDIR/lib/pkgconfig
+install -m 644 udev/udev.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -51,8 +71,22 @@ Requires: $REQUIRES
 
 devel=\\
 /include/libudev.h \\
+EOF
+test $GLIB && echo /include/gudev-1.0/gudev/gudev.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevclient.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevdevice.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenumerator.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenums.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenumtypes.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevtypes.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /lib/libgudev-1.0.so \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
 /lib/libudev.so \\
-/lib/pkgconfig/libudev.pc
+EOF
+test $GLIB && echo /lib/pkgconfig/gudev-1.0.pc \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+/lib/pkgconfig/libudev.pc \\
+/lib/pkgconfig/udev.pc
 
 exec=\\
 /bin/mdevd \\
@@ -60,9 +94,13 @@ exec=\\
 /bin/udevadm \\
 /etc/udev/udev.conf \\
 /etc/udev/rules.d/udev.rules \\
+EOF
+test $GLIB && echo /lib/libgudev-1.0.so.0 \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
 /lib/libudev.so.0 \\
 /lib/udev/ata_id \\
 /lib/udev/cdrom_id \\
+/lib/udev/collect \\
 /lib/udev/firmware \\
 /lib/udev/input_id \\
 /lib/udev/path_id \\
@@ -70,7 +108,9 @@ exec=\\
 /lib/udev/usb_id \\
 /lib/udev/v4l_id
 EOF
+test $GLIB && ln -sf udev-build.pc $DESTDIR/share/pkgconfig/gudev-build.pc
 ln -sf udev-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
+ln -sf udev-build.pc $DESTDIR/share/pkgconfig/udevd-build.pc
 
 exit
 --- udev-171.orig/Makefile.am
