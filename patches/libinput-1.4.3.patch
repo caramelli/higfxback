@@ -13,6 +13,9 @@ libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
 make
 
 # install
+install -d $DESTDIR/bin
+install tools/.libs/libinput-debug-events $DESTDIR/bin
+install tools/.libs/libinput-list-devices $DESTDIR/bin
 install -d $DESTDIR/include
 install -m 644 src/libinput.h $DESTDIR/include
 install -d $DESTDIR/lib
@@ -35,6 +38,8 @@ devel=\\
 /lib/pkgconfig/libinput.pc
 
 exec=\\
+/bin/libinput-debug-events \\
+/bin/libinput-list-devices \\
 /lib/libinput.so.10
 EOF
 

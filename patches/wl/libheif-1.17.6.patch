@@ -1,0 +1,70 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build gdk-pixbuf-build libaom-build libde265-build libwebp-build x265-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=/wl -DCMAKE_INSTALL_RPATH=/wl/lib -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/wl/bin
+install build/examples/heif-convert $DESTDIR/wl/bin
+install build/examples/heif-enc $DESTDIR/wl/bin
+install build/examples/heif-info $DESTDIR/wl/bin
+install build/examples/heif-thumbnailer $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/libheif
+install -m 644 build/libheif/heif_version.h $DESTDIR/wl/include/libheif
+install -m 644 libheif/heif.h $DESTDIR/wl/include/libheif
+install -d $DESTDIR/wl/lib
+install build/libheif/libheif.so.1.* $DESTDIR/wl/lib/libheif.so.1
+ln -sf libheif.so.1 $DESTDIR/wl/lib/libheif.so
+install -d $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install build/gdk-pixbuf/libpixbufloader-heif.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/libheif.pc $DESTDIR/wl/lib/pkgconfig
+LD_LIBRARY_PATH=$DESTDIR/wl/lib $DESTDIR/wl/bin/gdk-pixbuf-query-loaders > $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/libheif-build.pc << EOF
+Name: libheif
+Version: 1.17.6
+Description: High Efficiency Image Format (HEIF) library
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/libheif/heif.h \\
+/wl/include/libheif/heif_version.h \\
+/wl/lib/libheif.so \\
+/wl/lib/pkgconfig/libheif.pc
+
+exec=\\
+/wl/bin/heif-convert \\
+/wl/bin/heif-enc \\
+/wl/bin/heif-info \\
+/wl/bin/heif-thumbnailer \\
+/wl/lib/libheif.so.1 \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-heif.so
+EOF
+
+exit
+--- libheif-1.17.6.orig/gdk-pixbuf/CMakeLists.txt
++++ libheif-1.17.6/gdk-pixbuf/CMakeLists.txt
+@@ -3,10 +3,7 @@
+   pkg_check_modules(GDKPIXBUF2 gdk-pixbuf-2.0)
+ 
+   if(GDKPIXBUF2_FOUND)
+-    execute_process(
+-      COMMAND ${PKG_CONFIG_EXECUTABLE} gdk-pixbuf-2.0 --variable gdk_pixbuf_moduledir
+-              --define-variable=prefix=${CMAKE_INSTALL_PREFIX} OUTPUT_VARIABLE GDKPIXBUF2_MODULE_DIR
+-      OUTPUT_STRIP_TRAILING_WHITESPACE)
++    pkg_get_variable(GDKPIXBUF2_MODULE_DIR gdk-pixbuf-2.0 gdk_pixbuf_moduledir)
+ 
+     add_library(pixbufloader-heif MODULE pixbufloader-heif.c)
+ 

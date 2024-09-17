@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libdrm-build libxml2-build openssl-build x265-build"
+REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libaom-build libde265-build libdrm-build libxml2-build libwebp-build openssl-build x265-build"
 
 PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -29,13 +29,16 @@ install gst-libs/gst/isoff/.libs/libgstisoff-1.0.so.0.* $DESTDIR/drm/lib/libgsti
 install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/drm/lib/libgstmpegts-1.0.so.0
 install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/drm/lib/libgsturidownloader-1.0.so.0
 install -d $DESTDIR/drm/lib/gstreamer-1.0
+install ext/aom/.libs/libgstaom.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/bz2/.libs/libgstbz2.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/curl/.libs/libgstcurl.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dtls/.libs/libgstdtls.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/hls/.libs/libgsthls.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/libde265/.libs/libgstde265.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/webp/.libs/libgstwebp.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/x265/.libs/libgstx265.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/accurip/.libs/libgstaccurip.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -117,10 +120,12 @@ exec=\\
 /drm/lib/libgstisoff-1.0.so.0 \\
 /drm/lib/libgstmpegts-1.0.so.0 \\
 /drm/lib/libgstphotography-1.0.so.0 \\
+/drm/lib/libgsturidownloader-1.0.so.0 \\
 /drm/lib/gstreamer-1.0/libgstaccurip.so \\
 /drm/lib/gstreamer-1.0/libgstadpcmdec.so \\
 /drm/lib/gstreamer-1.0/libgstadpcmenc.so \\
 /drm/lib/gstreamer-1.0/libgstaiff.so \\
+/drm/lib/gstreamer-1.0/libgstaom.so \\
 /drm/lib/gstreamer-1.0/libgstasfmux.so \\
 /drm/lib/gstreamer-1.0/libgstaudiobuffersplit.so \\
 /drm/lib/gstreamer-1.0/libgstaudiofxbad.so \\
@@ -134,6 +139,7 @@ exec=\\
 /drm/lib/gstreamer-1.0/libgstcoloreffects.so \\
 /drm/lib/gstreamer-1.0/libgstcurl.so \\
 /drm/lib/gstreamer-1.0/libgstdashdemux.so \\
+/drm/lib/gstreamer-1.0/libgstde265.so \\
 /drm/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
 /drm/lib/gstreamer-1.0/libgstdtls.so \\
 /drm/lib/gstreamer-1.0/libgstdvb.so \\
@@ -147,6 +153,7 @@ exec=\\
 /drm/lib/gstreamer-1.0/libgstgaudieffects.so \\
 /drm/lib/gstreamer-1.0/libgstgdp.so \\
 /drm/lib/gstreamer-1.0/libgstgeometrictransform.so \\
+/drm/lib/gstreamer-1.0/libgsthls.so \\
 /drm/lib/gstreamer-1.0/libgstid3tag.so \\
 /drm/lib/gstreamer-1.0/libgstinter.so \\
 /drm/lib/gstreamer-1.0/libgstinterlace.so \\
@@ -185,6 +192,7 @@ exec=\\
 /drm/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
 /drm/lib/gstreamer-1.0/libgstvideosignal.so \\
 /drm/lib/gstreamer-1.0/libgstvmnc.so \\
+/drm/lib/gstreamer-1.0/libgstwebp.so \\
 /drm/lib/gstreamer-1.0/libgstx265.so \\
 /drm/lib/gstreamer-1.0/libgsty4mdec.so \\
 /drm/lib/gstreamer-1.0/libgstyadif.so
