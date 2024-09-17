@@ -236,25 +236,16 @@ exit
 +endif()
 --- SwiftShader-20200929.orig/src/Vulkan/CMakeLists.txt
 +++ SwiftShader-20200929/src/Vulkan/CMakeLists.txt
-@@ -216,16 +216,8 @@
-     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vk_swiftshader> ${CMAKE_BINARY_DIR}/bin/${VULKAN_API_LIBRARY_NAME}
- )
- 
--# The vk_swiftshader_icd.json manifest file will point to ICD_LIBRARY_PATH.
--# Set ICD_LIBRARY_PATH to be a relative path similar to "./libvk_swiftshader.so", so both files can be moved.
--# A relative path is relative to the manifest file.
--set(ICD_LIBRARY_PATH "${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
--if(WIN32)
--    # The path is output to a JSON file, which requires backslashes to be escaped.
--    set(ICD_LIBRARY_PATH ".\\\\${ICD_LIBRARY_PATH}")
--else()
+@@ -224,7 +224,8 @@
+     # The path is output to a JSON file, which requires backslashes to be escaped.
+     set(ICD_LIBRARY_PATH ".\\\\${ICD_LIBRARY_PATH}")
+ else()
 -    set(ICD_LIBRARY_PATH "./${ICD_LIBRARY_PATH}")
--endif()
-+include(GNUInstallDirs)
-+set(ICD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
++    include(GNUInstallDirs)
++    set(ICD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${ICD_LIBRARY_PATH}")
+ endif()
  configure_file(
      "vk_swiftshader_icd.json.tmpl"
-     "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json"
 --- SwiftShader-20200929.orig/src/Vulkan/VkStringify.cpp
 +++ SwiftShader-20200929/src/Vulkan/VkStringify.cpp
 @@ -16,8 +16,8 @@

@@ -1,44 +1,54 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build directfb2-build vulkan-headers-build"
+REQUIRES="cmake3-build vulkan-headers-build"
 
-PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig cmake -DBUILD_WSI_DIRECTFB_SUPPORT=ON -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/fb/lib/pkgconfig cmake -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCMAKE_INSTALL_PREFIX=/fb -B build -G "$GENERATOR"
 
 # build
 cmake --build build --target VulkanLoader_generated_source
 cmake --build build
 
 # install
-install -d $DESTDIR/dfb/lib
-install build/loader/libvulkan.so.1.* $DESTDIR/dfb/lib/libvulkan.so.1
-ln -sf libvulkan.so.1 $DESTDIR/dfb/lib/libvulkan.so
-install -d $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/loader/vulkan.pc $DESTDIR/dfb/lib/pkgconfig
+install -d $DESTDIR/fb/lib
+install build/loader/libvulkan.so.1.* $DESTDIR/fb/lib/libvulkan.so.1
+ln -sf libvulkan.so.1 $DESTDIR/fb/lib/libvulkan.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 build/loader/vulkan.pc $DESTDIR/fb/lib/pkgconfig
 
 # build.pc
-install -d $DESTDIR/dfb/share/pkgconfig
-cat > $DESTDIR/dfb/share/pkgconfig/vulkan-loader-build.pc << EOF
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/vulkan-loader-build.pc << EOF
 Name: Vulkan-Loader
-Version: 1.2.151
+Version: 1.2.148
 Description: Vulkan Installable Client Driver (ICD) loader
 Requires: $REQUIRES
 
 devel=\\
-/dfb/lib/libvulkan.so \\
-/dfb/lib/pkgconfig/vulkan.pc
+/fb/lib/libvulkan.so \\
+/fb/lib/pkgconfig/vulkan.pc
 
 exec=\\
-/dfb/lib/libvulkan.so.1
+/fb/lib/libvulkan.so.1
 EOF
 
 exit
---- Vulkan-Loader-1.2.151.orig/CMakeLists.txt
-+++ Vulkan-Loader-1.2.151/CMakeLists.txt
+--- Vulkan-Loader-1.2.148.orig/BUILD.md
++++ Vulkan-Loader-1.2.148/BUILD.md
+@@ -180,6 +180,7 @@
+ | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the loader with the Xlib entry points enabled. Without this, the X11 headers should not be needed, but the extension `VK_KHR_xlib_surface` won't be available. |
+ | BUILD_WSI_WAYLAND_SUPPORT | Linux | `ON` | Build the loader with the Wayland entry points enabled. Without this, the Wayland headers should not be needed, but the extension `VK_KHR_wayland_surface` won't be available. |
+ | BUILD_WSI_DIRECTFB_SUPPORT | Linux | `OFF` | Build the loader with the DirectFB entry points enabled. Without this, the DirectFB headers should not be needed, but the extension `VK_EXT_directfb_surface` won't be available. |
++| BUILD_WSI_FBDEV_SUPPORT | Linux | `ON` | Build the loader with the FBDev entry points enabled. Without this, the extension `VK_EXT_fbdev_surface` won't be available. |
+ | ENABLE_STATIC_LOADER | Windows | `OFF` | By default, the loader is built as a dynamic library. This allows it to be built as a static library, instead. |
+ | ENABLE_WIN10_ONECORE | Windows | `OFF` | Link the loader to the [OneCore](https://msdn.microsoft.com/en-us/library/windows/desktop/mt654039.aspx) umbrella library, instead of the standard Win32 ones. |
+ | USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
+--- Vulkan-Loader-1.2.148.orig/CMakeLists.txt
++++ Vulkan-Loader-1.2.148/CMakeLists.txt
 @@ -30,7 +30,7 @@
  add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
  
@@ -48,7 +58,15 @@ exit
  
  if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
      option(BUILD_TESTS "Build Tests" ON)
-@@ -192,9 +192,9 @@
+@@ -122,6 +122,7 @@
+     option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
+     option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
+     option(BUILD_WSI_DIRECTFB_SUPPORT "Build DirectFB WSI support" OFF)
++    option(BUILD_WSI_FBDEV_SUPPORT "Build FBDev WSI support" ON)
+ 
+     if(BUILD_WSI_XCB_SUPPORT)
+         find_package(XCB REQUIRED)
+@@ -192,9 +193,9 @@
  endif()
  
  # Optional codegen target
@@ -60,24 +78,16 @@ exit
                                ${VulkanRegistry_DIR} --incremental
                        )
  else()
---- Vulkan-Loader-1.2.151.orig/cmake/FindDirectFB.cmake
-+++ Vulkan-Loader-1.2.151/cmake/FindDirectFB.cmake
-@@ -22,7 +22,7 @@
+--- Vulkan-Loader-1.2.148.orig/cmake/FindVulkanHeaders.cmake
++++ Vulkan-Loader-1.2.148/cmake/FindVulkanHeaders.cmake
+@@ -84,12 +84,14 @@
+ set(VulkanRegistry_DIRS ${VulkanRegistry_DIR})
  
-   include(FindPackageHandleStandardArgs)
- 
--  FIND_PACKAGE_HANDLE_STANDARD_ARGS(DIRECTFB DEFAULT_MSG DIRECTFB_LIBRARIES DIRECTFB_INCLUDE_DIR)
-+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(DirectFB DEFAULT_MSG DIRECTFB_LIBRARIES DIRECTFB_INCLUDE_DIR)
- 
-   MARK_AS_ADVANCED(DIRECTFB_INCLUDE_DIR DIRECTFB_LIBRARIES)
- ENDIF ()
---- Vulkan-Loader-1.2.151.orig/cmake/FindVulkanHeaders.cmake
-+++ Vulkan-Loader-1.2.151/cmake/FindVulkanHeaders.cmake
-@@ -87,9 +87,11 @@
+ include(FindPackageHandleStandardArgs)
++set(FPHSA_NAME_MISMATCHED TRUE)
  find_package_handle_standard_args(VulkanHeaders
      DEFAULT_MSG
      VulkanHeaders_INCLUDE_DIR)
-+set(FPHSA_NAME_MISMATCHED TRUE)
  find_package_handle_standard_args(VulkanRegistry
      DEFAULT_MSG
      VulkanRegistry_DIR)
@@ -85,9 +95,20 @@ exit
  
  mark_as_advanced(VulkanHeaders_INCLUDE_DIR VulkanRegistry_DIR)
  
---- Vulkan-Loader-1.2.151.orig/loader/CMakeLists.txt
-+++ Vulkan-Loader-1.2.151/loader/CMakeLists.txt
-@@ -238,7 +238,7 @@
+--- Vulkan-Loader-1.2.148.orig/loader/CMakeLists.txt
++++ Vulkan-Loader-1.2.148/loader/CMakeLists.txt
+@@ -57,6 +57,10 @@
+     if(BUILD_WSI_DIRECTFB_SUPPORT)
+         set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_DIRECTFB_EXT)
+     endif()
++
++    if(BUILD_WSI_FBDEV_SUPPORT)
++        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_FBDEV_EXT)
++    endif()
+ else()
+     message(FATAL_ERROR "Unsupported Platform!")
+ endif()
+@@ -238,7 +242,7 @@
                                       "1"
                                       VERSION
                                       "${VulkanHeaders_VERSION_MAJOR}.${VulkanHeaders_VERSION_MINOR}.${VulkanHeaders_VERSION_PATCH}")
@@ -96,23 +117,221 @@ exit
      target_link_libraries(vulkan Vulkan::Headers)
      if(APPLE)
          find_library(COREFOUNDATION_LIBRARY NAMES CoreFoundation)
---- Vulkan-Loader-1.2.151.orig/loader/loader.c
-+++ Vulkan-Loader-1.2.151/loader/loader.c
-@@ -7061,10 +7061,10 @@
- VkResult ReadSortedPhysicalDevices(struct loader_instance *inst, struct LoaderSortedPhysicalDevice **sorted_devices, uint32_t* sorted_count)
- {
-     VkResult res = VK_SUCCESS;
--    uint32_t sorted_alloc = 0;
--    struct loader_icd_term* icd_term = NULL;
+--- Vulkan-Loader-1.2.148.orig/loader/loader.h
++++ Vulkan-Loader-1.2.148/loader/loader.h
+@@ -329,6 +329,9 @@
+ #ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+     bool wsi_directfb_surface_enabled;
+ #endif
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++    bool wsi_fbdev_surface_enabled;
++#endif
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+     bool wsi_android_surface_enabled;
+ #endif
+--- Vulkan-Loader-1.2.148.orig/loader/wsi.c
++++ Vulkan-Loader-1.2.148/loader/wsi.c
+@@ -55,6 +55,9 @@
+ #ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+     ptr_instance->wsi_directfb_surface_enabled = false;
+ #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++    ptr_instance->wsi_fbdev_surface_enabled = false;
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+     ptr_instance->wsi_android_surface_enabled = false;
+ #endif  // VK_USE_PLATFORM_ANDROID_KHR
+@@ -105,6 +108,12 @@
+             continue;
+         }
+ #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++        if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_FBDEV_SURFACE_EXTENSION_NAME) == 0) {
++            ptr_instance->wsi_fbdev_surface_enabled = true;
++            continue;
++        }
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_ANDROID_SURFACE_EXTENSION_NAME) == 0) {
+             ptr_instance->wsi_android_surface_enabled = true;
+@@ -166,6 +175,9 @@
+ #ifndef VK_USE_PLATFORM_DIRECTFB_EXT
+     if (!strcmp(ext_prop->extensionName, "VK_EXT_directfb_surface")) return true;
+ #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
++#ifndef VK_USE_PLATFORM_FBDEV_EXT
++    if (!strcmp(ext_prop->extensionName, "VK_EXT_fbdev_surface")) return true;
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
  
- #if defined(_WIN32)
-+    uint32_t sorted_alloc = 0;
-+    struct loader_icd_term* icd_term = NULL;
-     IDXGIFactory6* dxgi_factory = NULL;
-     HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, &dxgi_factory);
-     if (hres != S_OK) {
---- Vulkan-Loader-1.2.151.orig/scripts/cgenerator.py
-+++ Vulkan-Loader-1.2.151/scripts/cgenerator.py
+     return false;
+ }
+@@ -1072,6 +1084,120 @@
+ }
+ #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
+ 
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++
++// Functions for the VK_EXT_fbdev_surface extension:
++
++// This is the trampoline entrypoint for CreateFBDevSurfaceEXT
++LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateFBDevSurfaceEXT(VkInstance instance,
++                                                                     const VkFBDevSurfaceCreateInfoEXT *pCreateInfo,
++                                                                     const VkAllocationCallbacks *pAllocator,
++                                                                     VkSurfaceKHR *pSurface) {
++    const VkLayerInstanceDispatchTable *disp;
++    disp = loader_get_instance_layer_dispatch(instance);
++    VkResult res;
++
++    res = disp->CreateFBDevSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
++    return res;
++}
++
++// This is the instance chain terminator function for CreateFBDevSurfaceEXT
++VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateFBDevSurfaceEXT(VkInstance instance, const VkFBDevSurfaceCreateInfoEXT *pCreateInfo,
++                                                                const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface) {
++    VkResult vkRes = VK_SUCCESS;
++    VkIcdSurface *pIcdSurface = NULL;
++    uint32_t i = 0;
++
++    // First, check to ensure the appropriate extension was enabled:
++    struct loader_instance *ptr_instance = loader_get_instance(instance);
++    if (!ptr_instance->wsi_fbdev_surface_enabled) {
++        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
++                   "VK_EXT_fbdev_surface extension not enabled.  vkCreateFBDevSurfaceEXT not executed!\n");
++        vkRes = VK_ERROR_EXTENSION_NOT_PRESENT;
++        goto out;
++    }
++
++    // Next, if so, proceed with the implementation of this function:
++    pIcdSurface = AllocateIcdSurfaceStruct(ptr_instance, sizeof(pIcdSurface->fbdev_surf.base), sizeof(pIcdSurface->fbdev_surf));
++    if (pIcdSurface == NULL) {
++        vkRes = VK_ERROR_OUT_OF_HOST_MEMORY;
++        goto out;
++    }
++
++    pIcdSurface->fbdev_surf.base.platform = VK_ICD_WSI_PLATFORM_FBDEV;
++    pIcdSurface->fbdev_surf.fd = pCreateInfo->fd;
++    pIcdSurface->fbdev_surf.window = pCreateInfo->window;
++
++    // Loop through each ICD and determine if they need to create a surface
++    for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
++        if (icd_term->scanned_icd->interface_version >= ICD_VER_SUPPORTS_ICD_SURFACE_KHR) {
++            if (NULL != icd_term->dispatch.CreateFBDevSurfaceEXT) {
++                vkRes = icd_term->dispatch.CreateFBDevSurfaceEXT(icd_term->instance, pCreateInfo, pAllocator,
++                                                                 &pIcdSurface->real_icd_surfaces[i]);
++                if (VK_SUCCESS != vkRes) {
++                    goto out;
++                }
++            }
++        }
++    }
++
++    *pSurface = (VkSurfaceKHR)pIcdSurface;
++
++out:
++
++    if (VK_SUCCESS != vkRes && NULL != pIcdSurface) {
++        if (NULL != pIcdSurface->real_icd_surfaces) {
++            i = 0;
++            for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
++                if ((VkSurfaceKHR)NULL != pIcdSurface->real_icd_surfaces[i] && NULL != icd_term->dispatch.DestroySurfaceKHR) {
++                    icd_term->dispatch.DestroySurfaceKHR(icd_term->instance, pIcdSurface->real_icd_surfaces[i], pAllocator);
++                }
++            }
++            loader_instance_heap_free(ptr_instance, pIcdSurface->real_icd_surfaces);
++        }
++        loader_instance_heap_free(ptr_instance, pIcdSurface);
++    }
++
++    return vkRes;
++}
++
++// This is the trampoline entrypoint for
++// GetPhysicalDeviceFBDevPresentationSupportEXT
++LOADER_EXPORT VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceFBDevPresentationSupportEXT(VkPhysicalDevice physicalDevice,
++                                                                                            uint32_t queueFamilyIndex,
++                                                                                            int fd) {
++    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(physicalDevice);
++    const VkLayerInstanceDispatchTable *disp;
++    disp = loader_get_instance_layer_dispatch(physicalDevice);
++    VkBool32 res = disp->GetPhysicalDeviceFBDevPresentationSupportEXT(unwrapped_phys_dev, queueFamilyIndex, fd);
++    return res;
++}
++
++// This is the instance chain terminator function for
++// GetPhysicalDeviceFBDevPresentationSupportEXT
++VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceFBDevPresentationSupportEXT(VkPhysicalDevice physicalDevice,
++                                                                                       uint32_t queueFamilyIndex,
++                                                                                       int fd) {
++    // First, check to ensure the appropriate extension was enabled:
++    struct loader_physical_device_term *phys_dev_term = (struct loader_physical_device_term *)physicalDevice;
++    struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
++    struct loader_instance *ptr_instance = (struct loader_instance *)icd_term->this_instance;
++    if (!ptr_instance->wsi_fbdev_surface_enabled) {
++        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
++                   "VK_EXT_fbdev_surface extension not enabled.  vkGetPhysicalDeviceFBDevPresentationSupportEXT not executed!\n");
++        return VK_SUCCESS;
++    }
++
++    if (NULL == icd_term->dispatch.GetPhysicalDeviceFBDevPresentationSupportEXT) {
++        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
++                   "ICD for selected physical device is not exporting vkGetPhysicalDeviceFBDevPresentationSupportEXT!\n");
++        assert(false && "loader: null GetPhysicalDeviceFBDevPresentationSupportEXT ICD pointer");
++    }
++
++    return icd_term->dispatch.GetPhysicalDeviceFBDevPresentationSupportEXT(phys_dev_term->phys_dev, queueFamilyIndex, fd);
++}
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
++
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+ 
+ // Functions for the VK_KHR_android_surface extension:
+@@ -2236,6 +2362,18 @@
+         return true;
+     }
+ #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++
++    // Functions for the VK_EXT_fbdev_surface extension:
++    if (!strcmp("vkCreateFBDevSurfaceEXT", name)) {
++        *addr = ptr_instance->wsi_fbdev_surface_enabled ? (void *)vkCreateFBDevSurfaceEXT : NULL;
++        return true;
++    }
++    if (!strcmp("vkGetPhysicalDeviceFBDevPresentationSupportEXT", name)) {
++        *addr = ptr_instance->wsi_fbdev_surface_enabled ? (void *)vkGetPhysicalDeviceFBDevPresentationSupportEXT : NULL;
++        return true;
++    }
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+ 
+     // Functions for the VK_KHR_android_surface extension:
+--- Vulkan-Loader-1.2.148.orig/loader/wsi.h
++++ Vulkan-Loader-1.2.148/loader/wsi.h
+@@ -42,6 +42,9 @@
+ #ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+         VkIcdSurfaceDirectFB directfb_surf;
+ #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++        VkIcdSurfaceFBDev fbdev_surf;
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
+ #ifdef VK_USE_PLATFORM_MACOS_MVK
+         VkIcdSurfaceMacOS macos_surf;
+ #endif  // VK_USE_PLATFORM_MACOS_MVK
+@@ -132,6 +135,13 @@
+                                                                                           uint32_t queueFamilyIndex,
+                                                                                           IDirectFB *dfb);
+ #endif
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateFBDevSurfaceEXT(VkInstance instance, const VkFBDevSurfaceCreateInfoEXT *pCreateInfo,
++                                                                const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
++VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceFBDevPresentationSupportEXT(VkPhysicalDevice physicalDevice,
++                                                                                       uint32_t queueFamilyIndex,
++                                                                                       int fd);
++#endif
+ #ifdef VK_USE_PLATFORM_MACOS_MVK
+ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateMacOSSurfaceMVK(VkInstance instance, const VkMacOSSurfaceCreateInfoMVK *pCreateInfo,
+                                                                 const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
+--- Vulkan-Loader-1.2.148.orig/scripts/cgenerator.py
++++ Vulkan-Loader-1.2.148/scripts/cgenerator.py
 @@ -0,0 +1,405 @@
 +#!/usr/bin/python3 -i
 +#
@@ -519,8 +738,18 @@ exit
 +        self.appendSection('command', prefix + decls[0] + '\n')
 +        if self.genOpts.genFuncPointers:
 +            self.appendSection('commandPointer', decls[1])
---- Vulkan-Loader-1.2.151.orig/scripts/conventions.py
-+++ Vulkan-Loader-1.2.151/scripts/conventions.py
+--- Vulkan-Loader-1.2.148.orig/scripts/common_codegen.py
++++ Vulkan-Loader-1.2.148/scripts/common_codegen.py
+@@ -57,6 +57,7 @@
+     'xcb' : 'VK_USE_PLATFORM_XCB_KHR',
+     'xlib' : 'VK_USE_PLATFORM_XLIB_KHR',
+     'directfb' : 'VK_USE_PLATFORM_DIRECTFB_EXT',
++    'fbdev' : 'VK_USE_PLATFORM_FBDEV_EXT',
+     'xlib_xrandr' : 'VK_USE_PLATFORM_XLIB_XRANDR_EXT',
+     'provisional' : 'VK_ENABLE_BETA_EXTENSIONS',
+ }
+--- Vulkan-Loader-1.2.148.orig/scripts/conventions.py
++++ Vulkan-Loader-1.2.148/scripts/conventions.py
 @@ -0,0 +1,358 @@
 +#!/usr/bin/python3 -i
 +#
@@ -880,8 +1109,8 @@ exit
 +           or 64 bits), and may depend on assumptions about compiler
 +           handling of sign bits in enumerated types, as well."""
 +        return True
---- Vulkan-Loader-1.2.151.orig/scripts/generator.py
-+++ Vulkan-Loader-1.2.151/scripts/generator.py
+--- Vulkan-Loader-1.2.148.orig/scripts/generator.py
++++ Vulkan-Loader-1.2.148/scripts/generator.py
 @@ -0,0 +1,1020 @@
 +#!/usr/bin/python3 -i
 +#
@@ -1255,7 +1484,7 @@ exit
 +        return [None, None]
 +
 +    def checkDuplicateEnums(self, enums):
-+        """Check enumerated values for duplicates.
++        """Sanity check enumerated values.
 +
 +        -  enums - list of `<enum>` Elements
 +
@@ -1903,8 +2132,18 @@ exit
 +
 +    def setRegistry(self, registry):
 +        self.registry = registry
---- Vulkan-Loader-1.2.151.orig/scripts/reg.py
-+++ Vulkan-Loader-1.2.151/scripts/reg.py
+--- Vulkan-Loader-1.2.148.orig/scripts/loader_extension_generator.py
++++ Vulkan-Loader-1.2.148/scripts/loader_extension_generator.py
+@@ -33,6 +33,7 @@
+                  'VK_KHR_xcb_surface',
+                  'VK_KHR_wayland_surface',
+                  'VK_EXT_directfb_surface',
++                 'VK_EXT_fbdev_surface',
+                  'VK_KHR_win32_surface',
+                  'VK_KHR_android_surface',
+                  'VK_MVK_macos_surface',
+--- Vulkan-Loader-1.2.148.orig/scripts/reg.py
++++ Vulkan-Loader-1.2.148/scripts/reg.py
 @@ -0,0 +1,1324 @@
 +#!/usr/bin/python3 -i
 +#
@@ -3230,8 +3469,8 @@ exit
 +            self.gen.logMsg('diag', 'SUMMARY OF UNRECOGNIZED GROUPS')
 +            for key in sorted(badGroup.keys()):
 +                self.gen.logMsg('diag', '    ', key, ' occurred ', badGroup[key], ' times')
---- Vulkan-Loader-1.2.151.orig/scripts/spec_tools/util.py
-+++ Vulkan-Loader-1.2.151/scripts/spec_tools/util.py
+--- Vulkan-Loader-1.2.148.orig/scripts/spec_tools/util.py
++++ Vulkan-Loader-1.2.148/scripts/spec_tools/util.py
 @@ -0,0 +1,58 @@
 +"""Utility functions not closely tied to other spec_tools types."""
 +# Copyright (c) 2018-2019 Collabora, Ltd.
@@ -3291,8 +3530,8 @@ exit
 +    NOTE: Many places where this is used might be better served by changing to a dictionary.
 +    """
 +    return findFirstWithPredicate(collection, lambda elt: elt.name == name)
---- Vulkan-Loader-1.2.151.orig/scripts/vkconventions.py
-+++ Vulkan-Loader-1.2.151/scripts/vkconventions.py
+--- Vulkan-Loader-1.2.148.orig/scripts/vkconventions.py
++++ Vulkan-Loader-1.2.148/scripts/vkconventions.py
 @@ -0,0 +1,261 @@
 +#!/usr/bin/python3 -i
 +#

@@ -14,6 +14,8 @@ test $DDX && rm -f /x11/etc/X11/xorg.conf
 
 if [ ! -f /x11/etc/X11/xorg.conf ]; then
   DDX=${DDX-fbdev}
+  KEYBOARD=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=120013/{ print handler; exit }' | grep -o event[0-9]*`
+  POINTER=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=(7|17|1f)/{ print handler; exit }' | grep -o event[0-9]*`
   install -d /x11/etc/X11
   cat > /x11/etc/X11/xorg.conf << EOF
 Section "Device"
@@ -25,20 +27,22 @@ EndSection
 Section "InputDevice"
   Identifier "keyboard"
   Driver     "evdev"
-  Option     "Device" "/dev/input/event1"
+  Option     "Device" "$KEYBOARD"
   Option     "XkbLayout" "fr"
 EndSection
 
 Section "InputDevice"
   Identifier "pointer"
   Driver     "evdev"
-  Option     "Device" "/dev/input/event2"
+  Option     "Device" "$POINTER"
 EndSection
 EOF
 fi
 
 export PATH=/bin:/x11/bin
 export DISPLAY=:0
+export LUA_PATH="/share/lua/5.1/?.lua;/x11/share/lua/5.1/?.lua"
+export LUA_CPATH="/lib/lua/5.1/?.so;/x11/lib/lua/5.1/?.so"
 
 Xorg -retro -keyboard keyboard -pointer pointer &
 sleep 1

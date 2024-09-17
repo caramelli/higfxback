@@ -102,7 +102,7 @@ exit
      endif()
 +
 +    if(NOT BUILD_WSI_XCB_SUPPORT AND NOT BUILD_WSI_XLIB_SUPPORT AND NOT BUILD_WSI_WAYLAND_SUPPORT AND NOT BUILD_WSI_DIRECTFB_SUPPORT)
-+        target_link_libraries(vulkaninfo Vulkan::Vulkan)
++        target_link_options(vulkaninfo PRIVATE -Wl,-rpath,${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 +    endif()
  endif()
  
