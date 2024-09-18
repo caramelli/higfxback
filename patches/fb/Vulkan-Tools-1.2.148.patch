@@ -3,39 +3,49 @@
 # requires
 REQUIRES="cmake3-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loader-build"
 
-PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
-PKG_CONFIG_PATH=/drm/lib/pkgconfig cmake -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCUBE_WSI_SELECTION=DISPLAY -DGLSLANG_INSTALL_DIR=`dirname $(dirname $(which glslangValidator))` -DCMAKE_INSTALL_PREFIX=/drm -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/fb/lib/pkgconfig cmake -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCUBE_WSI_SELECTION=FBDEV -DGLSLANG_INSTALL_DIR=`dirname $(dirname $(which glslangValidator))` -DCMAKE_INSTALL_PREFIX=/fb -B build -G "$GENERATOR"
 
 # build
 cmake --build build --target VulkanTools_generated_source
 cmake --build build
 
 # install
-install -d $DESTDIR/drm/bin
-install build/cube/vkcube $DESTDIR/drm/bin/vkcube-display
-install build/cube/vkcubepp $DESTDIR/drm/bin/vkcubepp-display
-install build/vulkaninfo/vulkaninfo $DESTDIR/drm/bin
+install -d $DESTDIR/fb/bin
+install build/cube/vkcube $DESTDIR/fb/bin/vkcube-fbdev
+install build/cube/vkcubepp $DESTDIR/fb/bin/vkcubepp-fbdev
+install build/vulkaninfo/vulkaninfo $DESTDIR/fb/bin
 
 # build.pc
-install -d $DESTDIR/drm/share/pkgconfig
-cat > $DESTDIR/drm/share/pkgconfig/vulkan-tools-build.pc << EOF
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/vulkan-tools-build.pc << EOF
 Name: Vulkan-Tools
-Version: 1.2.169
+Version: 1.2.148
 Description: A collection of Vulkan utilities
 Requires: $REQUIRES
 
 exec=\\
-/drm/bin/vkcube-display \\
-/drm/bin/vkcubepp-display \\
-/drm/bin/vulkaninfo
+/fb/bin/vkcube-fbdev \\
+/fb/bin/vkcubepp-fbdev \\
+/fb/bin/vulkaninfo
 EOF
 
 exit
---- Vulkan-Tools-1.2.169.orig/CMakeLists.txt
-+++ Vulkan-Tools-1.2.169/CMakeLists.txt
+--- Vulkan-Tools-1.2.148.orig/BUILD.md
++++ Vulkan-Tools-1.2.148/BUILD.md
+@@ -205,6 +205,7 @@
+ | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the components with XCB support. |
+ | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the components with Xlib support. |
+ | BUILD_WSI_WAYLAND_SUPPORT | Linux | `ON` | Build the components with Wayland support. |
++| BUILD_WSI_FBDEV_SUPPORT | Linux | `ON` | Build the components with FBDev support. |
+ | USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
+ 
+ The following is a table of all string options currently supported by this repository:
+--- Vulkan-Tools-1.2.148.orig/CMakeLists.txt
++++ Vulkan-Tools-1.2.148/CMakeLists.txt
 @@ -27,7 +27,7 @@
  
  # find_package(), include() and global project settings --------------------------------------------------------------------------
@@ -57,8 +67,21 @@ exit
                                ${VulkanRegistry_DIR} --incremental
                        )
  else()
---- Vulkan-Tools-1.2.169.orig/cube/CMakeLists.txt
-+++ Vulkan-Tools-1.2.169/cube/CMakeLists.txt
+--- Vulkan-Tools-1.2.148.orig/cmake/FindVulkanHeaders.cmake
++++ Vulkan-Tools-1.2.148/cmake/FindVulkanHeaders.cmake
+@@ -62,8 +62,10 @@
+ find_package_handle_standard_args(VulkanHeaders
+     DEFAULT_MSG
+     VulkanHeaders_INCLUDE_DIR)
++set(FPHSA_NAME_MISMATCHED TRUE)
+ find_package_handle_standard_args(VulkanRegistry
+     DEFAULT_MSG
+     VulkanRegistry_DIR)
++unset(FPHSA_NAME_MISMATCHED)
+ 
+ mark_as_advanced(VulkanHeaders_INCLUDE_DIR VulkanRegistry_DIR)
+--- Vulkan-Tools-1.2.148.orig/cube/CMakeLists.txt
++++ Vulkan-Tools-1.2.148/cube/CMakeLists.txt
 @@ -31,12 +31,12 @@
      message(STATUS "Using cmake find_program to look for glslangValidator")
      if(WIN32)
@@ -73,38 +96,591 @@ exit
 -        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
 +        execute_process(COMMAND ${Python3_EXECUTABLE} ${SCRIPTS_DIR}/fetch_glslangvalidator.py glslang-master-linux-Release.zip)
      endif()
-     if (WIN32)
-         set(PLATFORM_DIR "${PROJECT_SOURCE_DIR}/glslang/windows/bin")
---- Vulkan-Tools-1.2.169.orig/cube/cube.c
-+++ Vulkan-Tools-1.2.169/cube/cube.c
-@@ -3927,8 +3927,8 @@
+     find_program(GLSLANG_VALIDATOR NAMES ${GLSLANG_VALIDATOR_NAME} HINTS "${PROJECT_SOURCE_DIR}/glslang/bin")
+ endif()
+@@ -46,7 +46,8 @@
+     option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
+     option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
+     option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
+-    set(CUBE_WSI_SELECTION "XCB" CACHE STRING "Select WSI target for vkcube (XCB, XLIB, WAYLAND, DISPLAY)")
++    option(BUILD_WSI_FBDEV_SUPPORT "Build FBDev WSI support" ON)
++    set(CUBE_WSI_SELECTION "XCB" CACHE STRING "Select WSI target for vkcube (XCB, XLIB, WAYLAND, FBDEV, DISPLAY)")
+ 
+     if(BUILD_WSI_XCB_SUPPORT)
+         find_package(XCB REQUIRED)
+@@ -101,6 +102,11 @@
+         set(CUBE_INCLUDE_DIRS ${WAYLAND_CLIENT_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
+         link_libraries(${WAYLAND_CLIENT_LIBRARIES})
+         add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
++    elseif(CUBE_WSI_SELECTION STREQUAL "FBDEV")
++        if(NOT BUILD_WSI_FBDEV_SUPPORT)
++            message(FATAL_ERROR "Selected FBDEV for vkcube build but not building FBDev support")
++        endif()
++        add_definitions(-DVK_USE_PLATFORM_FBDEV_EXT)
+     elseif(CUBE_WSI_SELECTION STREQUAL "DISPLAY")
+         add_definitions(-DVK_USE_PLATFORM_DISPLAY_KHR)
+     else()
+--- Vulkan-Tools-1.2.148.orig/cube/cube.c
++++ Vulkan-Tools-1.2.148/cube/cube.c
+@@ -37,6 +37,18 @@
+ #include <X11/Xutil.h>
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+ #include <linux/input.h>
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++#include <dirent.h>
++#include <fcntl.h>
++#include <linux/input.h>
++#include <unistd.h>
++
++struct fb_window {
++    int width;
++    int height;
++    int posx;
++    int posy;
++};
+ #endif
+ 
+ #ifdef _WIN32
+@@ -327,6 +339,10 @@
+     struct wl_seat *seat;
+     struct wl_pointer *pointer;
+     struct wl_keyboard *keyboard;
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    int fd;
++    struct fb_window *window;
++    int keyboard;
+ #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+     struct ANativeWindow *window;
+ #elif defined(VK_USE_PLATFORM_METAL_EXT)
+@@ -371,6 +387,7 @@
+     char *enabled_layers[64];
+ 
+     int width, height;
++    int posx, posy;
+     VkFormat format;
+     VkColorSpaceKHR color_space;
+ 
+@@ -2367,6 +2384,10 @@
+     wl_compositor_destroy(demo->compositor);
+     wl_registry_destroy(demo->registry);
+     wl_display_disconnect(demo->display);
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    close(demo->keyboard);
++    free(demo->window);
++    close(demo->fd);
+ #endif
+ 
+     vkDestroyInstance(demo->inst, NULL);
+@@ -2769,6 +2790,94 @@
+     wl_shell_surface_set_toplevel(demo->shell_surface);
+     wl_shell_surface_set_title(demo->shell_surface, APP_SHORT_NAME);
+ }
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++static void demo_create_fbdev_window(struct demo *demo) {
++    demo->fd = open(getenv("FRAMEBUFFER") ? getenv("FRAMEBUFFER") : "/dev/fb0", O_RDWR);
++    if (demo->fd == -1) {
++        printf("Failed to open Linux Framebuffer device!\n");
++        fflush(stdout);
++        exit(1);
++    }
++
++    if (demo->posx >= 0 || demo->posy >= 0) {
++        demo->window = calloc(1, sizeof(struct fb_window));
++        demo->window->width = demo->width;
++        demo->window->height = demo->height;
++        demo->window->posx = demo->posx >= 0 ? demo->posx : 0;
++        demo->window->posy = demo->posy >= 0 ? demo->posy : 0;
++    }
++    else
++        demo->window = NULL;
++
++    DIR *input_dir = opendir("/dev/input");
++    if (!input_dir) {
++        printf("Failed to open /dev/input!\n");
++        fflush(stdout);
++        exit(1);
++    }
++
++    char device_name[64];
++    unsigned char key_bits[(KEY_CNT - 1) / 8 + 1];
++    struct dirent *input_dev;
++
++    while ((input_dev = readdir(input_dir))) {
++        if (input_dev->d_type == DT_CHR) {
++            sprintf(device_name, "/dev/input/%s", input_dev->d_name);
++            demo->keyboard = open(device_name, O_RDONLY | O_NONBLOCK);
++            if (demo->keyboard == -1) {
++                continue;
++            }
++            if (ioctl(demo->keyboard, EVIOCGBIT(EV_KEY, sizeof(key_bits)), key_bits) == -1) {
++                continue;
++            }
++            if (key_bits[KEY_ENTER / 8] & (1 << (KEY_ENTER % 8))) {
++                break;
++            }
++            close(demo->keyboard);
++        }
++    }
++
++    closedir(input_dir);
++}
++
++static int demo_handle_fbdev_event(struct demo *demo, const struct input_event *event) {
++    if (event->type == EV_KEY && event->value) {
++        switch (event->code) {
++            case KEY_ESC:  // Escape
++                demo->quit = true;
++                return event->code;
++            case KEY_LEFT:  // left arrow key
++                demo->spin_angle -= demo->spin_increment;
++                return event->code;
++            case KEY_RIGHT:  // right arrow key
++                demo->spin_angle += demo->spin_increment;
++                return event->code;
++            case KEY_SPACE:  // space bar
++                demo->pause = !demo->pause;
++                return event->code;
++        }
++    }
++
++    return 0;
++}
++
++static void demo_run_fbdev(struct demo *demo) {
++    while (!demo->quit) {
++        int ret = 0;
++        struct input_event event;
++
++        if (read(demo->keyboard, &event, sizeof(struct input_event)) > 0) {
++            ret = demo_handle_fbdev_event(demo, &event);
++        }
++        if (demo->pause && !ret) {
++            continue;
++        }
++
++        demo_draw(demo);
++        demo->curFrame++;
++        if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount) demo->quit = true;
++    }
++}
+ #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+ static void demo_run(struct demo *demo) {
+     if (!demo->prepared) return;
+@@ -3031,6 +3140,11 @@
+                 platformSurfaceExtFound = 1;
+                 demo->extension_names[demo->enabled_extension_count++] = VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+             }
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++            if (!strcmp(VK_EXT_FBDEV_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
++                platformSurfaceExtFound = 1;
++                demo->extension_names[demo->enabled_extension_count++] = VK_EXT_FBDEV_SURFACE_EXTENSION_NAME;
++            }
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+             if (!strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, instance_extensions[i].extensionName)) {
+                 platformSurfaceExtFound = 1;
+@@ -3108,6 +3222,12 @@
+                  "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
+                  "Please look at the Getting Started guide for additional information.\n",
+                  "vkCreateInstance Failure");
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++        ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_EXT_FBDEV_SURFACE_EXTENSION_NAME
++                 " extension.\n\n"
++                 "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
++                 "Please look at the Getting Started guide for additional information.\n",
++                 "vkCreateInstance Failure");
+ #endif
+     }
+     const VkApplicationInfo app = {
+@@ -3405,6 +3525,15 @@
+     createInfo.window = demo->xcb_window;
+ 
+     err = vkCreateXcbSurfaceKHR(demo->inst, &createInfo, NULL, &demo->surface);
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    VkFBDevSurfaceCreateInfoEXT createInfo;
++    createInfo.sType = VK_STRUCTURE_TYPE_FBDEV_SURFACE_CREATE_INFO_EXT;
++    createInfo.pNext = NULL;
++    createInfo.flags = 0;
++    createInfo.fd = demo->fd;
++    createInfo.window = demo->window;
++
++    err = vkCreateFBDevSurfaceEXT(demo->inst, &createInfo, NULL, &demo->surface);
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+     err = demo_create_display_surface(demo);
+ #elif defined(VK_USE_PLATFORM_METAL_EXT)
+@@ -3706,6 +3835,10 @@
+     memset(demo, 0, sizeof(*demo));
+     demo->presentMode = VK_PRESENT_MODE_FIFO_KHR;
+     demo->frameCount = INT32_MAX;
++    demo->width = 500;
++    demo->height = 500;
++    demo->posx = -1;
++    demo->posy = -1;
+     /* For cube demo we just grab the first physical device by default */
+     demo->gpu_number = 0;
+ 
+@@ -3741,6 +3874,26 @@
+             i++;
+             continue;
+         }
++        if (strcmp(argv[i], "--width") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->width) == 1 && demo->width > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--height") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->height) == 1 && demo->height > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--posx") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->posx) == 1 && demo->posx >= 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--posy") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%d", &demo->posy) == 1 && demo->posy >= 0) {
++            i++;
++            continue;
++        }
+         if (strcmp(argv[i], "--suppress_popups") == 0) {
+             demo->suppress_popups = true;
+             continue;
+@@ -3767,6 +3920,8 @@
              "\t[--break] [--c <framecount>] [--suppress_popups]\n"
              "\t[--incremental_present] [--display_timing]\n"
              "\t[--gpu_number <index of physical device>]\n"
--            "\t[--present_mode <present mode enum>]\n"
-             "\t[--width <width>] [--height <height>]\n"
-+            "\t[--present_mode <present mode enum>]\n"
++            "\t[--width <width>] [--height <height>]\n"
++            "\t[--posx <position horizontally>] [--posy <position vertically>]\n"
+             "\t[--present_mode <present mode enum>]\n"
              "\t<present_mode_enum>\n"
              "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = %d\n"
-             "\t\tVK_PRESENT_MODE_MAILBOX_KHR = %d\n"
---- Vulkan-Tools-1.2.169.orig/cube/cube.cpp
-+++ Vulkan-Tools-1.2.169/cube/cube.cpp
-@@ -994,8 +994,8 @@
+@@ -3796,9 +3951,6 @@
+ 
+     demo_init_vk(demo);
+ 
+-    demo->width = 500;
+-    demo->height = 500;
+-
+     demo->spin_angle = 4.0f;
+     demo->spin_increment = 0.2f;
+     demo->pause = false;
+@@ -4014,6 +4166,8 @@
+     demo_create_xlib_window(&demo);
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+     demo_create_window(&demo);
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    demo_create_fbdev_window(&demo);
+ #endif
+ 
+     demo_init_vk_swapchain(&demo);
+@@ -4026,6 +4180,8 @@
+     demo_run_xlib(&demo);
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+     demo_run(&demo);
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    demo_run_fbdev(&demo);
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+     demo_run_display(&demo);
+ #endif
+--- Vulkan-Tools-1.2.148.orig/cube/cube.cpp
++++ Vulkan-Tools-1.2.148/cube/cube.cpp
+@@ -22,6 +22,18 @@
+ #include <X11/Xutil.h>
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+ #include <linux/input.h>
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++#include <dirent.h>
++#include <fcntl.h>
++#include <linux/input.h>
++#include <unistd.h>
++
++struct fb_window {
++    int width;
++    int height;
++    int posx;
++    int posy;
++};
+ #endif
+ 
+ #include <cassert>
+@@ -263,6 +275,10 @@
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+     void run();
+     void create_window();
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    int handle_fbdev_event(const struct input_event *event);
++    void run_fbdev();
++    void create_fbdev_window();
+ #elif defined(VK_USE_PLATFORM_METAL_EXT)
+     void run();
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+@@ -294,6 +310,10 @@
+     wl_seat *seat;
+     wl_pointer *pointer;
+     wl_keyboard *keyboard;
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    int fd;
++    struct fb_window *window;
++    int keyboard;
+ #elif defined(VK_USE_PLATFORM_METAL_EXT)
+     void *caMetalLayer;
+ #endif
+@@ -326,6 +346,8 @@
+ 
+     uint32_t width;
+     uint32_t height;
++    int posx;
++    int posy;
+     vk::Format format;
+     vk::ColorSpaceKHR color_space;
+ 
+@@ -531,6 +553,10 @@
+       seat{nullptr},
+       pointer{nullptr},
+       keyboard{nullptr},
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++      fd{0},
++      window{nullptr},
++      keyboard{0},
+ #endif
+       prepared{false},
+       use_staging_buffer{false},
+@@ -677,6 +703,10 @@
+     wl_compositor_destroy(compositor);
+     wl_registry_destroy(registry);
+     wl_display_disconnect(display);
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    close(keyboard);
++    free(window);
++    close(fd);
+ #endif
+ 
+     inst.destroy(nullptr);
+@@ -923,6 +953,10 @@
+ 
+     presentMode = vk::PresentModeKHR::eFifo;
+     frameCount = UINT32_MAX;
++    width = 500;
++    height = 500;
++    posx = -1;
++    posy = -1;
+     use_xlib = false;
+     /* For cube demo we just grab the first physical device by default */
+     gpu_number = 0;
+@@ -954,6 +988,26 @@
+             i++;
+             continue;
+         }
++        if (strcmp(argv[i], "--width") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &width) == 1 && width > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--height") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &height) == 1 && height > 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--posx") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &posx) == 1 && posx >= 0) {
++            i++;
++            continue;
++        }
++        if (strcmp(argv[i], "--posy") == 0 && i < argc - 1 &&
++            sscanf(argv[i + 1], "%" SCNu32, &posy) == 1 && posy >= 0) {
++            i++;
++            continue;
++        }
+         if (strcmp(argv[i], "--suppress_popups") == 0) {
+             suppress_popups = true;
+             continue;
+@@ -967,12 +1021,14 @@
          usage << "Usage:\n  " << APP_SHORT_NAME << "\t[--use_staging] [--validate]\n"
                << "\t[--break] [--c <framecount>] [--suppress_popups]\n"
                << "\t[--gpu_number <index of physical device>]\n"
--              << "\t[--present_mode <present mode enum>]\n"
-               << "\t[--width <width>] [--height <height>]\n"
-+              << "\t[--present_mode <present mode enum>]\n"
++              << "\t[--width <width>] [--height <height>]\n"
++              << "\t[--posx <position horizontally>] [--posy <position vertically>]\n"
+               << "\t[--present_mode <present mode enum>]\n"
                << "\t<present_mode_enum>\n"
                << "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = " << VK_PRESENT_MODE_IMMEDIATE_KHR << "\n"
                << "\t\tVK_PRESENT_MODE_MAILBOX_KHR = " << VK_PRESENT_MODE_MAILBOX_KHR << "\n"
---- Vulkan-Tools-1.2.169.orig/scripts/cgenerator.py
-+++ Vulkan-Tools-1.2.169/scripts/cgenerator.py
+               << "\t\tVK_PRESENT_MODE_FIFO_KHR = " << VK_PRESENT_MODE_FIFO_KHR << "\n"
+-              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR;
++              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR << "\n";
+ 
+ #if defined(_WIN32)
+         if (!suppress_popups) MessageBox(NULL, usage.str().c_str(), "Usage Error", MB_OK);
+@@ -989,9 +1045,6 @@
+ 
+     init_vk();
+ 
+-    width = 500;
+-    height = 500;
+-
+     spin_angle = 4.0f;
+     spin_increment = 0.2f;
+     pause = false;
+@@ -1118,6 +1171,11 @@
+                 platformSurfaceExtFound = 1;
+                 extension_names[enabled_extension_count++] = VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+             }
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++            if (!strcmp(VK_EXT_FBDEV_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
++                platformSurfaceExtFound = 1;
++                extension_names[enabled_extension_count++] = VK_EXT_FBDEV_SURFACE_EXTENSION_NAME;
++            }
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+             if (!strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, instance_extensions[i].extensionName)) {
+                 platformSurfaceExtFound = 1;
+@@ -1167,6 +1225,12 @@
+                  "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
+                  "Please look at the Getting Started guide for additional information.\n",
+                  "vkCreateInstance Failure");
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++        ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_EXT_FBDEV_SURFACE_EXTENSION_NAME
++                 " extension.\n\n"
++                 "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
++                 "Please look at the Getting Started guide for additional information.\n",
++                 "vkCreateInstance Failure");
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+         ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_DISPLAY_EXTENSION_NAME
+                  " extension.\n\n"
+@@ -1315,6 +1379,13 @@
+         auto result = inst.createXcbSurfaceKHR(&createInfo, nullptr, &surface);
+         VERIFY(result == vk::Result::eSuccess);
+     }
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    {
++        auto const createInfo = vk::FBDevSurfaceCreateInfoEXT().setFd(fd).setWindow(window);
++
++        auto result = inst.createFBDevSurfaceEXT(&createInfo, nullptr, &surface);
++        VERIFY(result == vk::Result::eSuccess);
++    }
+ #elif defined(VK_USE_PLATFORM_METAL_EXT)
+     {
+         auto const createInfo = vk::MetalSurfaceCreateInfoEXT().setPLayer(static_cast<CAMetalLayer *>(caMetalLayer));
+@@ -2711,6 +2782,97 @@
+     wl_shell_surface_set_toplevel(shell_surface);
+     wl_shell_surface_set_title(shell_surface, APP_SHORT_NAME);
+ }
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++
++int Demo::handle_fbdev_event(const struct input_event *event) {
++    if (event->type == EV_KEY && event->value) {
++        switch (event->code) {
++            case KEY_ESC:  // Escape
++                quit = true;
++                return event->code;
++            case KEY_LEFT:  // left arrow key
++                spin_angle -= spin_increment;
++                return event->code;
++            case KEY_RIGHT:  // right arrow key
++                spin_angle += spin_increment;
++                return event->code;
++            case KEY_SPACE:  // space bar
++                pause = !pause;
++                return event->code;
++        }
++    }
++
++    return 0;
++}
++
++void Demo::run_fbdev() {
++    while (!quit) {
++        int ret = 0;
++        struct input_event event;
++
++        if (read(keyboard, &event, sizeof(struct input_event)) > 0) {
++            ret = handle_fbdev_event(&event);
++        }
++        if (pause && !ret) {
++            continue;
++        }
++
++        draw();
++        curFrame++;
++        if (frameCount != UINT32_MAX && curFrame == frameCount) {
++            quit = true;
++        }
++    }
++}
++
++void Demo::create_fbdev_window() {
++    fd = open(getenv("FRAMEBUFFER") ? getenv("FRAMEBUFFER") : "/dev/fb0", O_RDWR);
++    if (fd == -1) {
++        printf("Failed to open Linux Framebuffer device!\n");
++        fflush(stdout);
++        exit(1);
++    }
++
++    if (posx >= 0 || posy >= 0) {
++        window = (struct fb_window *)calloc(1, sizeof(struct fb_window));
++        window->width = width;
++        window->height = height;
++        window->posx = posx >= 0 ? posx : 0;
++        window->posy = posy >= 0 ? posy : 0;
++    }
++    else
++        window = NULL;
++
++    DIR *input_dir = opendir("/dev/input");
++    if (!input_dir) {
++        printf("Failed to open /dev/input!\n");
++        fflush(stdout);
++        exit(1);
++    }
++
++    char device_name[64];
++    unsigned char key_bits[(KEY_CNT - 1) / 8 + 1];
++    struct dirent *input_dev;
++
++    while ((input_dev = readdir(input_dir))) {
++        if (input_dev->d_type == DT_CHR) {
++            sprintf(device_name, "/dev/input/%s", input_dev->d_name);
++            keyboard = open(device_name, O_RDONLY | O_NONBLOCK);
++            if (keyboard == -1) {
++                continue;
++            }
++            if (ioctl(keyboard, EVIOCGBIT(EV_KEY, sizeof(key_bits)), key_bits) == -1) {
++                continue;
++            }
++            if (key_bits[KEY_ENTER / 8] & (1 << (KEY_ENTER % 8))) {
++                break;
++            }
++            close(keyboard);
++        }
++    }
++
++    closedir(input_dir);
++}
+ #elif defined(VK_USE_PLATFORM_METAL_EXT)
+ void Demo::run() {
+     draw();
+@@ -3024,6 +3186,8 @@
+     demo.create_xlib_window();
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+     demo.create_window();
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    demo.create_fbdev_window();
+ #endif
+ 
+     demo.init_vk_swapchain();
+@@ -3036,6 +3200,8 @@
+     demo.run_xlib();
+ #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+     demo.run();
++#elif defined(VK_USE_PLATFORM_FBDEV_EXT)
++    demo.run_fbdev();
+ #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
+     demo.run_display();
+ #endif
+--- Vulkan-Tools-1.2.148.orig/scripts/cgenerator.py
++++ Vulkan-Tools-1.2.148/scripts/cgenerator.py
 @@ -0,0 +1,405 @@
 +#!/usr/bin/python3 -i
 +#
-+# Copyright 2013-2021 The Khronos Group Inc.
++# Copyright (c) 2013-2020 The Khronos Group Inc.
 +#
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -507,12 +1083,22 @@ exit
 +        self.appendSection('command', prefix + decls[0] + '\n')
 +        if self.genOpts.genFuncPointers:
 +            self.appendSection('commandPointer', decls[1])
---- Vulkan-Tools-1.2.169.orig/scripts/conventions.py
-+++ Vulkan-Tools-1.2.169/scripts/conventions.py
+--- Vulkan-Tools-1.2.148.orig/scripts/common_codegen.py
++++ Vulkan-Tools-1.2.148/scripts/common_codegen.py
+@@ -59,6 +59,7 @@
+     'xlib_xrandr' : 'VK_USE_PLATFORM_XLIB_XRANDR_EXT',
+     'provisional' : 'VK_ENABLE_BETA_EXTENSIONS',
+     'directfb' : 'VK_USE_PLATFORM_DIRECTFB_EXT',
++    'fbdev' : 'VK_USE_PLATFORM_FBDEV_EXT',
+ }
+ 
+ #
+--- Vulkan-Tools-1.2.148.orig/scripts/conventions.py
++++ Vulkan-Tools-1.2.148/scripts/conventions.py
 @@ -0,0 +1,358 @@
 +#!/usr/bin/python3 -i
 +#
-+# Copyright 2013-2021 The Khronos Group Inc.
++# Copyright (c) 2013-2020 The Khronos Group Inc.
 +#
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -868,12 +1454,12 @@ exit
 +           or 64 bits), and may depend on assumptions about compiler
 +           handling of sign bits in enumerated types, as well."""
 +        return True
---- Vulkan-Tools-1.2.169.orig/scripts/generator.py
-+++ Vulkan-Tools-1.2.169/scripts/generator.py
-@@ -0,0 +1,1036 @@
+--- Vulkan-Tools-1.2.148.orig/scripts/generator.py
++++ Vulkan-Tools-1.2.148/scripts/generator.py
+@@ -0,0 +1,1020 @@
 +#!/usr/bin/python3 -i
 +#
-+# Copyright 2013-2021 The Khronos Group Inc.
++# Copyright (c) 2013-2020 The Khronos Group Inc.
 +#
 +# SPDX-License-Identifier: Apache-2.0
 +"""Base class for source/header/doc generators, as well as some utility functions."""
@@ -991,7 +1577,6 @@ exit
 +                 addExtensions=None,
 +                 removeExtensions=None,
 +                 emitExtensions=None,
-+                 emitSpirv=None,
 +                 reparentEnums=True,
 +                 sortProcedure=regSortFeatures):
 +        """Constructor.
@@ -1022,9 +1607,6 @@ exit
 +        - emitExtensions - regex matching names of extensions to actually emit
 +        interfaces for (though all requested versions are considered when
 +        deciding which interfaces to generate).
-+        to None.
-+        - emitSpirv - regex matching names of extensions and capabilities
-+        to actually emit interfaces for.
 +        - reparentEnums - move <enum> elements which extend an enumerated
 +        type from <feature> or <extension> elements to the target <enums>
 +        element. This is required for almost all purposes, but the
@@ -1085,10 +1667,6 @@ exit
 +        """regex matching names of extensions to actually emit
 +        interfaces for (though all requested versions are considered when
 +        deciding which interfaces to generate)."""
-+
-+        self.emitSpirv = self.emptyRegex(emitSpirv)
-+        """regex matching names of extensions and capabilities
-+        to actually emit interfaces for."""
 +
 +        self.reparentEnums = reparentEnums
 +        """boolean specifying whether to remove <enum> elements from
@@ -1251,7 +1829,7 @@ exit
 +        return [None, None]
 +
 +    def checkDuplicateEnums(self, enums):
-+        """Check enumerated values for duplicates.
++        """Sanity check enumerated values.
 +
 +        -  enums - list of `<enum>` Elements
 +
@@ -1638,14 +2216,6 @@ exit
 +        Extend to generate as desired in your derived class."""
 +        self.validateFeature('command', cmdinfo)
 +
-+    def genSpirv(self, spirv, spirvinfo, alias):
-+        """Generate interface for a spirv element.
-+
-+        - spirvinfo - SpirvInfo for a command
-+
-+        Extend to generate as desired in your derived class."""
-+        return
-+
 +    def makeProtoName(self, name, tail):
 +        """Turn a `<proto>` `<name>` into C-language prototype
 +        and typedef declarations for that name.
@@ -1907,12 +2477,12 @@ exit
 +
 +    def setRegistry(self, registry):
 +        self.registry = registry
---- Vulkan-Tools-1.2.169.orig/scripts/reg.py
-+++ Vulkan-Tools-1.2.169/scripts/reg.py
-@@ -0,0 +1,1385 @@
+--- Vulkan-Tools-1.2.148.orig/scripts/reg.py
++++ Vulkan-Tools-1.2.148/scripts/reg.py
+@@ -0,0 +1,1324 @@
 +#!/usr/bin/python3 -i
 +#
-+# Copyright 2013-2021 The Khronos Group Inc.
++# Copyright 2013-2020 The Khronos Group Inc.
 +#
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -1924,7 +2494,7 @@ exit
 +import xml.etree.ElementTree as etree
 +from collections import defaultdict, namedtuple
 +from generator import OutputGenerator, GeneratorOptions, write
-+import pdb
++
 +
 +def apiNameMatch(str, supported):
 +    """Return whether a required api name matches a pattern specified for an
@@ -2165,12 +2735,6 @@ exit
 +                self.number = 0
 +            self.supported = elem.get('supported')
 +
-+class SpirvInfo(BaseInfo):
-+    """Registry information about an API <spirvextensions>
-+    or <spirvcapability>."""
-+
-+    def __init__(self, elem):
-+        BaseInfo.__init__(self, elem)
 +
 +class Registry:
 +    """Object representing an API registry, loaded from an XML file."""
@@ -2217,12 +2781,6 @@ exit
 +        self.extdict = {}
 +        "dictionary of FeatureInfo objects for `<extension>` elements keyed by extension name"
 +
-+        self.spirvextdict = {}
-+        "dictionary of FeatureInfo objects for `<spirvextension>` elements keyed by spirv extension name"
-+
-+        self.spirvcapdict = {}
-+        "dictionary of FeatureInfo objects for `<spirvcapability>` elements keyed by spirv capability name"
-+
 +        self.emitFeatures = False
 +        """True to actually emit features for a version / extension,
 +        or False to just treat them as emitted"""
@@ -2268,10 +2826,10 @@ exit
 +
 +        Intended for internal use only.
 +
-+        - elem - `<type>`/`<enums>`/`<enum>`/`<command>`/`<feature>`/`<extension>`/`<spirvextension>`/`<spirvcapability>` Element
-+        - info - corresponding {Type|Group|Enum|Cmd|Feature|Spirv}Info object
-+        - infoName - 'type' / 'group' / 'enum' / 'command' / 'feature' / 'extension' / 'spirvextension' / 'spirvcapability'
-+        - dictionary - self.{type|group|enum|cmd|api|ext|spirvext|spirvcap}dict
++        - elem - `<type>`/`<enums>`/`<enum>`/`<command>`/`<feature>`/`<extension>` Element
++        - info - corresponding {Type|Group|Enum|Cmd|Feature}Info object
++        - infoName - 'type' / 'group' / 'enum' / 'command' / 'feature' / 'extension'
++        - dictionary - self.{type|group|enum|cmd|api|ext}dict
 +
 +        If the Element has an 'api' attribute, the dictionary key is the
 +        tuple (name,api). If not, the key is the name. 'name' is an
@@ -2515,15 +3073,6 @@ exit
 +        for parent in self.validextensionstructs:
 +            self.validextensionstructs[parent].sort()
 +
-+        # Parse out all spirv tags in dictionaries
-+        # Use addElementInfo to catch duplicates
-+        for spirv in self.reg.findall('spirvextensions/spirvextension'):
-+            spirvInfo = SpirvInfo(spirv)
-+            self.addElementInfo(spirv, spirvInfo, 'spirvextension', self.spirvextdict)
-+        for spirv in self.reg.findall('spirvcapabilities/spirvcapability'):
-+            spirvInfo = SpirvInfo(spirv)
-+            self.addElementInfo(spirv, spirvInfo, 'spirvcapability', self.spirvcapdict)
-+
 +    def dumpReg(self, maxlen=120, filehandle=sys.stdout):
 +        """Dump all the dictionaries constructed from the Registry object.
 +
@@ -2556,13 +3105,6 @@ exit
 +        for key in self.extdict:
 +            write('    Extension', key, '->',
 +                  etree.tostring(self.extdict[key].elem)[0:maxlen], file=filehandle)
-+        write('// SPIR-V', file=filehandle)
-+        for key in self.spirvextdict:
-+            write('    SPIR-V Extension', key, '->',
-+                  etree.tostring(self.spirvextdict[key].elem)[0:maxlen], file=filehandle)
-+        for key in self.spirvcapdict:
-+            write('    SPIR-V Capability', key, '->',
-+                  etree.tostring(self.spirvcapdict[key].elem)[0:maxlen], file=filehandle)
 +
 +    def markTypeRequired(self, typename, required):
 +        """Require (along with its dependencies) or remove (but not its dependencies) a type.
@@ -3066,19 +3608,6 @@ exit
 +            for c in features.findall('command'):
 +                self.generateFeature(c.get('name'), 'command', self.cmddict)
 +
-+    def generateSpirv(self, spirv, dictionary):
-+        if spirv is None:
-+            self.gen.logMsg('diag', 'No entry found for element', name,
-+                            'returning!')
-+            return
-+
-+        name = spirv.elem.get('name')
-+        # No known alias for spirv elements
-+        alias = None
-+        if spirv.emit:
-+            genProc = self.gen.genSpirv
-+            genProc(spirv, name, alias)
-+
 +    def apiGen(self):
 +        """Generate interface for specified versions using the current
 +        generator and generator options"""
@@ -3098,7 +3627,6 @@ exit
 +        regAddExtensions = re.compile(self.genOpts.addExtensions)
 +        regRemoveExtensions = re.compile(self.genOpts.removeExtensions)
 +        regEmitExtensions = re.compile(self.genOpts.emitExtensions)
-+        regEmitSpirv = re.compile(self.genOpts.emitSpirv)
 +
 +        # Get all matching API feature names & add to list of FeatureInfo
 +        # Note we used to select on feature version attributes, not names.
@@ -3187,20 +3715,6 @@ exit
 +                self.gen.logMsg('diag', 'NOT including extension',
 +                                extName, '(does not match api attribute or explicitly requested extensions)')
 +
-+        # Add all spirv elements to list
-+        # generators decide to emit them all or not
-+        # Currently no filtering as no client of these elements needs filtering
-+        spirvexts = []
-+        for key in self.spirvextdict:
-+            si = self.spirvextdict[key]
-+            si.emit = (regEmitSpirv.match(key) is not None)
-+            spirvexts.append(si)
-+        spirvcaps = []
-+        for key in self.spirvcapdict:
-+            si = self.spirvcapdict[key]
-+            si.emit = (regEmitSpirv.match(key) is not None)
-+            spirvcaps.append(si)
-+
 +        # Sort the features list, if a sort procedure is defined
 +        if self.genOpts.sortProcedure:
 +            self.genOpts.sortProcedure(features)
@@ -3239,11 +3753,6 @@ exit
 +            self.gen.beginFeature(f.elem, emit)
 +            self.generateRequiredInterface(f.elem)
 +            self.gen.endFeature()
-+        # Generate spirv elements
-+        for s in spirvexts:
-+            self.generateSpirv(s, self.spirvextdict)
-+        for s in spirvcaps:
-+            self.generateSpirv(s, self.spirvcapdict)
 +        self.gen.endFile()
 +
 +    def apiReset(self):
@@ -3295,12 +3804,12 @@ exit
 +            self.gen.logMsg('diag', 'SUMMARY OF UNRECOGNIZED GROUPS')
 +            for key in sorted(badGroup.keys()):
 +                self.gen.logMsg('diag', '    ', key, ' occurred ', badGroup[key], ' times')
---- Vulkan-Tools-1.2.169.orig/scripts/spec_tools/util.py
-+++ Vulkan-Tools-1.2.169/scripts/spec_tools/util.py
+--- Vulkan-Tools-1.2.148.orig/scripts/spec_tools/util.py
++++ Vulkan-Tools-1.2.148/scripts/spec_tools/util.py
 @@ -0,0 +1,58 @@
 +"""Utility functions not closely tied to other spec_tools types."""
-+# Copyright 2018-2019 Collabora, Ltd.
-+# Copyright 2013-2021 The Khronos Group Inc.
++# Copyright (c) 2018-2019 Collabora, Ltd.
++# Copyright (c) 2013-2020 The Khronos Group Inc.
 +#
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -3356,12 +3865,12 @@ exit
 +    NOTE: Many places where this is used might be better served by changing to a dictionary.
 +    """
 +    return findFirstWithPredicate(collection, lambda elt: elt.name == name)
---- Vulkan-Tools-1.2.169.orig/scripts/vkconventions.py
-+++ Vulkan-Tools-1.2.169/scripts/vkconventions.py
+--- Vulkan-Tools-1.2.148.orig/scripts/vkconventions.py
++++ Vulkan-Tools-1.2.148/scripts/vkconventions.py
 @@ -0,0 +1,261 @@
 +#!/usr/bin/python3 -i
 +#
-+# Copyright 2013-2021 The Khronos Group Inc.
++# Copyright (c) 2013-2020 The Khronos Group Inc.
 +#
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -3620,8 +4129,8 @@ exit
 +           cause Vk*FlagBits values with bit 31 set to result in a 64 bit
 +           enumerated type, so disallows such flags."""
 +        return bitpos >= 0 and bitpos < 31
---- Vulkan-Tools-1.2.169.orig/vulkaninfo/CMakeLists.txt
-+++ Vulkan-Tools-1.2.169/vulkaninfo/CMakeLists.txt
+--- Vulkan-Tools-1.2.148.orig/vulkaninfo/CMakeLists.txt
++++ Vulkan-Tools-1.2.148/vulkaninfo/CMakeLists.txt
 @@ -17,6 +17,10 @@
  
  # CMakeLists.txt file for building Vulkaninfo
@@ -3642,14 +4151,176 @@ exit
  endif()
  
  if(UNIX AND NOT APPLE) # i.e. Linux
-@@ -69,6 +73,10 @@
-         target_link_libraries(vulkaninfo ${DIRECTFB_LIBRARIES})
-         target_compile_definitions(vulkaninfo PRIVATE -DVK_USE_PLATFORM_DIRECTFB_EXT -DVK_NO_PROTOTYPES)
+@@ -40,6 +44,7 @@
+     option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
+     option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
+     option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
++    option(BUILD_WSI_FBDEV_SUPPORT "Build FBDev WSI support" ON)
+ 
+     if(BUILD_WSI_XCB_SUPPORT)
+         find_package(XCB REQUIRED)
+@@ -61,6 +66,11 @@
+         target_link_libraries(vulkaninfo ${WAYLAND_CLIENT_LIBRARIES})
+         target_compile_definitions(vulkaninfo PRIVATE -DVK_USE_PLATFORM_WAYLAND_KHR -DVK_NO_PROTOTYPES)
      endif()
 +
-+    if(NOT BUILD_WSI_XCB_SUPPORT AND NOT BUILD_WSI_XLIB_SUPPORT AND NOT BUILD_WSI_WAYLAND_SUPPORT AND NOT BUILD_WSI_DIRECTFB_SUPPORT)
++    if(BUILD_WSI_FBDEV_SUPPORT)
 +        target_link_options(vulkaninfo PRIVATE -Wl,-rpath,${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
++        target_compile_definitions(vulkaninfo PRIVATE -DVK_USE_PLATFORM_FBDEV_EXT -DVK_NO_PROTOTYPES)
 +    endif()
  endif()
  
  if(APPLE)
+--- Vulkan-Tools-1.2.148.orig/vulkaninfo/vulkaninfo.cpp
++++ Vulkan-Tools-1.2.148/vulkaninfo/vulkaninfo.cpp
+@@ -808,8 +808,9 @@
+         auto phys_devices = instance.FindPhysicalDevices();
+ 
+         std::vector<std::unique_ptr<AppSurface>> surfaces;
+-#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) || \
+-    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR)
++#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) ||      \
++    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR) || \
++    defined(VK_USE_PLATFORM_FBDEV_EXT)
+         for (auto &surface_extension : instance.surface_extensions) {
+             surface_extension.create_window(instance);
+             surface_extension.surface = surface_extension.create_surface(instance);
+@@ -865,8 +866,9 @@
+ 
+                 DumpLayers(*p.get(), instance.global_layers, gpus);
+ 
+-#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) || \
+-    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR)
++#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) ||      \
++    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR) || \
++    defined(VK_USE_PLATFORM_FBDEV_EXT)
+                 DumpPresentableSurfaces(*p.get(), instance, gpus, surfaces);
+ #endif
+                 DumpGroups(*p.get(), instance);
+@@ -881,8 +883,9 @@
+             }
+         }
+ 
+-#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) || \
+-    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR)
++#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) ||      \
++    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR) || \
++    defined(VK_USE_PLATFORM_FBDEV_EXT)
+ 
+         for (auto &surface_extension : instance.surface_extensions) {
+             AppDestroySurface(instance, surface_extension.surface);
+--- Vulkan-Tools-1.2.148.orig/vulkaninfo/vulkaninfo.h
++++ Vulkan-Tools-1.2.148/vulkaninfo/vulkaninfo.h
+@@ -68,6 +68,11 @@
+ #include <X11/Xutil.h>
+ #endif
+ 
++#if defined(VK_USE_PLATFORM_FBDEV_EXT)
++#include <fcntl.h>
++#include <unistd.h>
++#endif
++
+ #if defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT)
+ #include "metal_view.h"
+ #endif
+@@ -341,6 +346,13 @@
+     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR fp_vkGetPhysicalDeviceWaylandPresentationSupportKHR =
+         APPLE_FP(vkGetPhysicalDeviceWaylandPresentationSupportKHR);
+ #endif  // VK_USE_PLATFORM_WAYLAND_KHR
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++    PFN_vkCreateFBDevSurfaceEXT fp_vkCreateFBDevSurfaceEXT = APPLE_FP(vkCreateFBDevSurfaceEXT);
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++    PFN_vkGetPhysicalDeviceFBDevPresentationSupportEXT fp_vkGetPhysicalDeviceFBDevPresentationSupportEXT =
++        APPLE_FP(vkGetPhysicalDeviceFBDevPresentationSupportEXT);
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+     PFN_vkCreateAndroidSurfaceKHR fp_vkCreateAndroidSurfaceKHR = APPLE_FP(vkCreateAndroidSurfaceKHR);
+ #endif  // VK_USE_PLATFORM_ANDROID_KHR
+@@ -407,6 +419,12 @@
+ #ifdef VK_USE_PLATFORM_WAYLAND_KHR
+         Load(fp_vkGetPhysicalDeviceWaylandPresentationSupportKHR, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
+ #endif  // VK_USE_PLATFORM_WAYLAND_KHR
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++        Load(fp_vkCreateFBDevSurfaceEXT, "vkCreateFBDevSurfaceEXT");
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++        Load(fp_vkGetPhysicalDeviceFBDevPresentationSupportEXT, "vkGetPhysicalDeviceFBDevPresentationSupportEXT");
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+         Load(fp_vkCreateAndroidSurfaceKHR, "vkCreateAndroidSurfaceKHR");
+ #endif  // VK_USE_PLATFORM_ANDROID_KHR
+@@ -593,6 +611,9 @@
+     wl_display *wayland_display;
+     wl_surface *wayland_surface;
+ #endif
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++    int fd;
++#endif
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR  // TODO
+     ANativeWindow *window;
+ #endif
+@@ -772,7 +793,7 @@
+ 
+ #if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) ||      \
+     defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR) || \
+-    defined(VK_USE_PLATFORM_ANDROID_KHR)
++    defined(VK_USE_PLATFORM_FBDEV_EXT) || defined(VK_USE_PLATFORM_ANDROID_KHR)
+ static void AppDestroySurface(AppInstance &inst, VkSurfaceKHR surface) {  // same for all platforms
+     inst.dll.fp_vkDestroySurfaceKHR(inst.instance, surface, nullptr);
+ }
+@@ -978,6 +999,35 @@
+ #endif  // VK_USE_PLATFORM_WAYLAND_KHR
+ //-----------------------------------------------------------
+ 
++//---------------------------FBDEV---------------------------
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++static void AppCreateFBDevWindow(AppInstance &inst) {
++    inst.fd = open("/dev/fb0", O_RDWR);
++    if (inst.fd == -1) {
++        THROW_ERR("Failed to open /dev/fb0.\nExiting...");
++    }
++}
++
++static VkSurfaceKHR AppCreateFBDevSurface(AppInstance &inst) {
++    VkFBDevSurfaceCreateInfoEXT createInfo;
++    createInfo.sType = VK_STRUCTURE_TYPE_FBDEV_SURFACE_CREATE_INFO_EXT;
++    createInfo.pNext = nullptr;
++    createInfo.flags = 0;
++    createInfo.fd = inst.fd;
++    createInfo.window = nullptr;
++
++    VkSurfaceKHR surface;
++    VkResult err = inst.dll.fp_vkCreateFBDevSurfaceEXT(inst.instance, &createInfo, nullptr, &surface);
++    if (err) THROW_VK_ERR("vkCreateFBDevSurfaceEXT", err);
++    return surface;
++}
++
++static void AppDestroyFBDevWindow(AppInstance &inst) {
++    close(inst.fd);
++}
++#endif  // VK_USE_PLATFORM_FBDEV_EXT
++//-----------------------------------------------------------
++
+ //-------------------------ANDROID---------------------------
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+ static void AppCreateAndroidWindow(AppInstance &inst) {}
+@@ -1091,6 +1141,18 @@
+         }
+     }
+ #endif
++//--FBDEV--
++#ifdef VK_USE_PLATFORM_FBDEV_EXT
++    SurfaceExtension surface_ext_fbdev;
++    if (inst.CheckExtensionEnabled(VK_EXT_FBDEV_SURFACE_EXTENSION_NAME)) {
++        surface_ext_fbdev.name = VK_EXT_FBDEV_SURFACE_EXTENSION_NAME;
++        surface_ext_fbdev.create_window = AppCreateFBDevWindow;
++        surface_ext_fbdev.create_surface = AppCreateFBDevSurface;
++        surface_ext_fbdev.destroy_window = AppDestroyFBDevWindow;
++
++        inst.AddSurfaceExtension(surface_ext_fbdev);
++    }
++#endif
+ //--ANDROID--
+ #ifdef VK_USE_PLATFORM_ANDROID_KHR
+     SurfaceExtension surface_ext_android;

@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 cd common/video/iso-mpeg4; libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c --foreign; cd -
 cd lib/SDLAudio; libtoolize -c -f; aclocal -I .; autoconf; automake -a -c --foreign; cd -
 libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c --foreign; touch bootstrapped
-LD_LIBRARY_PATH=$DESTDIR/x11/lib PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
 
 # build
 make
@@ -2380,7 +2380,33 @@ exit
 -}
 --- mpeg4ip-1.6.1.orig/configure.in
 +++ mpeg4ip-1.6.1/configure.in
-@@ -801,17 +801,9 @@
+@@ -430,24 +430,7 @@
+ 	              [have_mp4live=false],
+ 		        [#include <sys/time.h>
+ #include <sys/types.h>
+-#include <linux/videodev.h>])
+-	if test x$have_mp4live = xfalse; then
+-	    KERNEL_VERSION=`uname -r`
+-	    AC_CHECK_FILE(/lib/modules/$KERNEL_VERSION/build/include/linux/videodev2.h,
+-	                  [AC_MSG_WARN([])
+-			   AC_MSG_WARN([])
+-			  AC_MSG_WARN([We cannot locate videodev2.h in /usr/include/linux])
+-			  AC_MSG_WARN([])
+-			  AC_MSG_WARN([This file is responsible for V4L2 in mp4live])
+-			   AC_MSG_WARN([This file is correct in /lib/modules/$KERNEL_VERSION/build/include])
+-			   AC_MSG_WARN([It is recommended that you copy this file and videodev.h to /usr/include/linux and re-run bootstrap])
+-			   AC_MSG_WARN([You may also have to have to copy compiler.h, as well])
+-			   AC_MSG_WARN([])
+-			   AC_MSG_WARN([This is known to happen on Fedora Core systems])
+-			   AC_MSG_WARN([Mp4live has been disabled])
+-			   AC_MSG_WARN([])
+-			   ])
+-	fi
++#include <linux/videodev2.h>])
+ 	;;
+     *)
+ 	;;
+@@ -801,17 +784,9 @@
      fi
  fi
  
@@ -2399,7 +2425,7 @@ exit
  
  AC_SUBST(SUN_LIBS)
  
-@@ -872,7 +864,7 @@
+@@ -872,7 +847,7 @@
  PLAYER_PLUGIN_DIR=$libdir/mp4player_plugin
  AC_SUBST(PLAYER_PLUGIN_DIR)
  
@@ -3449,3 +3475,14 @@ exit
 +	     uint32_t tyStride, uint32_t tuStride, uint32_t tvStride,
  	     uint32_t w, uint32_t h);
  #endif
+--- mpeg4ip-1.6.1.orig/server/mp4live/video_v4l_source.h
++++ mpeg4ip-1.6.1/server/mp4live/video_v4l_source.h
+@@ -25,7 +25,7 @@
+ 
+ #include <sys/types.h>
+ #include <sys/ioctl.h>
+-#include <linux/videodev.h>
++#include <linux/videodev2.h>
+ 
+ #include "media_source.h"
+ #include "video_encoder.h"

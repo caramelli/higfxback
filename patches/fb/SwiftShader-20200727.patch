@@ -456,7 +456,7 @@ exit
          MetalSurface.mm
 --- SwiftShader-20200727.orig/src/WSI/FBDevSurfaceEXT.cpp
 +++ SwiftShader-20200727/src/WSI/FBDevSurfaceEXT.cpp
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,123 @@
 +// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
 +//
 +// Licensed under the Apache License, Version 2.0 (the "License");
@@ -544,11 +544,12 @@ exit
 +
 +VkResult FBDevSurfaceEXT::present(PresentImage *image)
 +{
-+	int height, posx, posy;
++	int width, height, posx, posy;
 +
 +	if(window)
 +	{
 +		struct fb_window *fb_window = static_cast<struct fb_window *>(window);
++		width = fb_window->width;
 +		height = fb_window->height;
 +		posx = fb_window->posx;
 +		posy = fb_window->posy;
@@ -556,19 +557,21 @@ exit
 +	else
 +	{
 +		VkExtent3D extent = image->getImage()->getMipLevelExtent(VK_IMAGE_ASPECT_COLOR_BIT, 0);
++		width = extent.width;
 +		height = extent.height;
 +		posx = 0;
 +		posy = 0;
 +	}
 +
 +	int fbdevRowPitch = fbdevWidth * fbdevBytesPerPixel;
-+	uint8_t *fbdevMemory = fbdevBuffer + posy * fbdevRowPitch + posx * fbdevBytesPerPixel;
 +	int imageRowPitch = image->getImage()->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
++	uint8_t *fbdevMemory = fbdevBuffer + posy * fbdevRowPitch + posx * fbdevBytesPerPixel;
 +	uint8_t *imageMemory = static_cast<uint8_t *>(image->getImageMemory()->getOffsetPointer(0));
++	size_t lineSize = width * fbdevBytesPerPixel;
 +
 +	for(int i = 0; i < height; i++)
 +	{
-+		memcpy(fbdevMemory, imageMemory, fbdevRowPitch);
++		memcpy(fbdevMemory, imageMemory, lineSize);
 +		fbdevMemory += fbdevRowPitch;
 +		imageMemory += imageRowPitch;
 +	}

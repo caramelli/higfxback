@@ -10,6 +10,7 @@ GENERATOR=${GENERATOR-Unix Makefiles}
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig cmake -DBUILD_WSI_DIRECTFB_SUPPORT=ON -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DCUBE_WSI_SELECTION=DIRECTFB -DGLSLANG_INSTALL_DIR=`dirname $(dirname $(which glslangValidator))` -DCMAKE_INSTALL_PREFIX=/dfb -B build -G "$GENERATOR"
 
 # build
+cmake --build build --target VulkanTools_generated_source
 cmake --build build
 
 # install
@@ -126,14 +127,14 @@ exit
          if (strcmp(argv[i], "--suppress_popups") == 0) {
              demo->suppress_popups = true;
              continue;
-@@ -3870,6 +3882,7 @@
+@@ -3869,6 +3881,7 @@
+             "\t[--break] [--c <framecount>] [--suppress_popups]\n"
              "\t[--incremental_present] [--display_timing]\n"
              "\t[--gpu_number <index of physical device>]\n"
-             "\t[--present_mode <present mode enum>]\n"
 +            "\t[--width <width>] [--height <height>]\n"
+             "\t[--present_mode <present mode enum>]\n"
              "\t<present_mode_enum>\n"
              "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = %d\n"
-             "\t\tVK_PRESENT_MODE_MAILBOX_KHR = %d\n"
 @@ -3898,9 +3911,6 @@
  
      demo_init_vk(demo);
@@ -172,11 +173,12 @@ exit
          if (strcmp(argv[i], "--suppress_popups") == 0) {
              suppress_popups = true;
              continue;
-@@ -984,11 +996,12 @@
+@@ -983,12 +995,13 @@
+         usage << "Usage:\n  " << APP_SHORT_NAME << "\t[--use_staging] [--validate]\n"
                << "\t[--break] [--c <framecount>] [--suppress_popups]\n"
                << "\t[--gpu_number <index of physical device>]\n"
-               << "\t[--present_mode <present mode enum>]\n"
 +              << "\t[--width <width>] [--height <height>]\n"
+               << "\t[--present_mode <present mode enum>]\n"
                << "\t<present_mode_enum>\n"
                << "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = " << VK_PRESENT_MODE_IMMEDIATE_KHR << "\n"
                << "\t\tVK_PRESENT_MODE_MAILBOX_KHR = " << VK_PRESENT_MODE_MAILBOX_KHR << "\n"
@@ -196,3 +198,3447 @@ exit
      spin_angle = 4.0f;
      spin_increment = 0.2f;
      pause = false;
+--- Vulkan-Tools-1.2.151.orig/scripts/cgenerator.py
++++ Vulkan-Tools-1.2.151/scripts/cgenerator.py
+@@ -0,0 +1,405 @@
++#!/usr/bin/python3 -i
++#
++# Copyright (c) 2013-2020 The Khronos Group Inc.
++#
++# SPDX-License-Identifier: Apache-2.0
++
++import os
++import re
++from generator import (GeneratorOptions, OutputGenerator, noneStr,
++                       regSortFeatures, write)
++
++
++class CGeneratorOptions(GeneratorOptions):
++    """CGeneratorOptions - subclass of GeneratorOptions.
++
++    Adds options used by COutputGenerator objects during C language header
++    generation."""
++
++    def __init__(self,
++                 prefixText="",
++                 genFuncPointers=True,
++                 protectFile=True,
++                 protectFeature=True,
++                 protectProto=None,
++                 protectProtoStr=None,
++                 apicall='',
++                 apientry='',
++                 apientryp='',
++                 indentFuncProto=True,
++                 indentFuncPointer=False,
++                 alignFuncParam=0,
++                 genEnumBeginEndRange=False,
++                 genAliasMacro=False,
++                 aliasMacro='',
++                 **kwargs
++                 ):
++        """Constructor.
++        Additional parameters beyond parent class:
++
++        - prefixText - list of strings to prefix generated header with
++        (usually a copyright statement + calling convention macros).
++        - protectFile - True if multiple inclusion protection should be
++        generated (based on the filename) around the entire header.
++        - protectFeature - True if #ifndef..#endif protection should be
++        generated around a feature interface in the header file.
++        - genFuncPointers - True if function pointer typedefs should be
++        generated
++        - protectProto - If conditional protection should be generated
++        around prototype declarations, set to either '#ifdef'
++        to require opt-in (#ifdef protectProtoStr) or '#ifndef'
++        to require opt-out (#ifndef protectProtoStr). Otherwise
++        set to None.
++        - protectProtoStr - #ifdef/#ifndef symbol to use around prototype
++        declarations, if protectProto is set
++        - apicall - string to use for the function declaration prefix,
++        such as APICALL on Windows.
++        - apientry - string to use for the calling convention macro,
++        in typedefs, such as APIENTRY.
++        - apientryp - string to use for the calling convention macro
++        in function pointer typedefs, such as APIENTRYP.
++        - indentFuncProto - True if prototype declarations should put each
++        parameter on a separate line
++        - indentFuncPointer - True if typedefed function pointers should put each
++        parameter on a separate line
++        - alignFuncParam - if nonzero and parameters are being put on a
++        separate line, align parameter names at the specified column
++        - genEnumBeginEndRange - True if BEGIN_RANGE / END_RANGE macros should
++        be generated for enumerated types
++        - genAliasMacro - True if the OpenXR alias macro should be generated
++        for aliased types (unclear what other circumstances this is useful)
++        - aliasMacro - alias macro to inject when genAliasMacro is True"""
++        GeneratorOptions.__init__(self, **kwargs)
++
++        self.prefixText = prefixText
++        """list of strings to prefix generated header with (usually a copyright statement + calling convention macros)."""
++
++        self.genFuncPointers = genFuncPointers
++        """True if function pointer typedefs should be generated"""
++
++        self.protectFile = protectFile
++        """True if multiple inclusion protection should be generated (based on the filename) around the entire header."""
++
++        self.protectFeature = protectFeature
++        """True if #ifndef..#endif protection should be generated around a feature interface in the header file."""
++
++        self.protectProto = protectProto
++        """If conditional protection should be generated around prototype declarations, set to either '#ifdef' to require opt-in (#ifdef protectProtoStr) or '#ifndef' to require opt-out (#ifndef protectProtoStr). Otherwise set to None."""
++
++        self.protectProtoStr = protectProtoStr
++        """#ifdef/#ifndef symbol to use around prototype declarations, if protectProto is set"""
++
++        self.apicall = apicall
++        """string to use for the function declaration prefix, such as APICALL on Windows."""
++
++        self.apientry = apientry
++        """string to use for the calling convention macro, in typedefs, such as APIENTRY."""
++
++        self.apientryp = apientryp
++        """string to use for the calling convention macro in function pointer typedefs, such as APIENTRYP."""
++
++        self.indentFuncProto = indentFuncProto
++        """True if prototype declarations should put each parameter on a separate line"""
++
++        self.indentFuncPointer = indentFuncPointer
++        """True if typedefed function pointers should put each parameter on a separate line"""
++
++        self.alignFuncParam = alignFuncParam
++        """if nonzero and parameters are being put on a separate line, align parameter names at the specified column"""
++
++        self.genEnumBeginEndRange = genEnumBeginEndRange
++        """True if BEGIN_RANGE / END_RANGE macros should be generated for enumerated types"""
++
++        self.genAliasMacro = genAliasMacro
++        """True if the OpenXR alias macro should be generated for aliased types (unclear what other circumstances this is useful)"""
++
++        self.aliasMacro = aliasMacro
++        """alias macro to inject when genAliasMacro is True"""
++
++        self.codeGenerator = True
++        """True if this generator makes compilable code"""
++
++
++class COutputGenerator(OutputGenerator):
++    """Generates C-language API interfaces."""
++
++    # This is an ordered list of sections in the header file.
++    TYPE_SECTIONS = ['include', 'define', 'basetype', 'handle', 'enum',
++                     'group', 'bitmask', 'funcpointer', 'struct']
++    ALL_SECTIONS = TYPE_SECTIONS + ['commandPointer', 'command']
++
++    def __init__(self, *args, **kwargs):
++        super().__init__(*args, **kwargs)
++        # Internal state - accumulators for different inner block text
++        self.sections = {section: [] for section in self.ALL_SECTIONS}
++        self.feature_not_empty = False
++        self.may_alias = None
++
++    def beginFile(self, genOpts):
++        OutputGenerator.beginFile(self, genOpts)
++        # C-specific
++        #
++        # Multiple inclusion protection & C++ wrappers.
++        if genOpts.protectFile and self.genOpts.filename:
++            headerSym = re.sub(r'\.h', '_h_',
++                               os.path.basename(self.genOpts.filename)).upper()
++            write('#ifndef', headerSym, file=self.outFile)
++            write('#define', headerSym, '1', file=self.outFile)
++            self.newline()
++
++        # User-supplied prefix text, if any (list of strings)
++        if genOpts.prefixText:
++            for s in genOpts.prefixText:
++                write(s, file=self.outFile)
++
++        # C++ extern wrapper - after prefix lines so they can add includes.
++        self.newline()
++        write('#ifdef __cplusplus', file=self.outFile)
++        write('extern "C" {', file=self.outFile)
++        write('#endif', file=self.outFile)
++        self.newline()
++
++    def endFile(self):
++        # C-specific
++        # Finish C++ wrapper and multiple inclusion protection
++        self.newline()
++        write('#ifdef __cplusplus', file=self.outFile)
++        write('}', file=self.outFile)
++        write('#endif', file=self.outFile)
++        if self.genOpts.protectFile and self.genOpts.filename:
++            self.newline()
++            write('#endif', file=self.outFile)
++        # Finish processing in superclass
++        OutputGenerator.endFile(self)
++
++    def beginFeature(self, interface, emit):
++        # Start processing in superclass
++        OutputGenerator.beginFeature(self, interface, emit)
++        # C-specific
++        # Accumulate includes, defines, types, enums, function pointer typedefs,
++        # end function prototypes separately for this feature. They're only
++        # printed in endFeature().
++        self.sections = {section: [] for section in self.ALL_SECTIONS}
++        self.feature_not_empty = False
++
++    def endFeature(self):
++        "Actually write the interface to the output file."
++        # C-specific
++        if self.emit:
++            if self.feature_not_empty:
++                if self.genOpts.conventions.writeFeature(self.featureExtraProtect, self.genOpts.filename):
++                    self.newline()
++                    if self.genOpts.protectFeature:
++                        write('#ifndef', self.featureName, file=self.outFile)
++                    # If type declarations are needed by other features based on
++                    # this one, it may be necessary to suppress the ExtraProtect,
++                    # or move it below the 'for section...' loop.
++                    if self.featureExtraProtect is not None:
++                        write('#ifdef', self.featureExtraProtect, file=self.outFile)
++                    self.newline()
++                    write('#define', self.featureName, '1', file=self.outFile)
++                    for section in self.TYPE_SECTIONS:
++                        contents = self.sections[section]
++                        if contents:
++                            write('\n'.join(contents), file=self.outFile)
++                    if self.genOpts.genFuncPointers and self.sections['commandPointer']:
++                        write('\n'.join(self.sections['commandPointer']), file=self.outFile)
++                        self.newline()
++                    if self.sections['command']:
++                        if self.genOpts.protectProto:
++                            write(self.genOpts.protectProto,
++                                  self.genOpts.protectProtoStr, file=self.outFile)
++                        write('\n'.join(self.sections['command']), end='', file=self.outFile)
++                        if self.genOpts.protectProto:
++                            write('#endif', file=self.outFile)
++                        else:
++                            self.newline()
++                    if self.featureExtraProtect is not None:
++                        write('#endif /*', self.featureExtraProtect, '*/', file=self.outFile)
++                    if self.genOpts.protectFeature:
++                        write('#endif /*', self.featureName, '*/', file=self.outFile)
++        # Finish processing in superclass
++        OutputGenerator.endFeature(self)
++
++    def appendSection(self, section, text):
++        "Append a definition to the specified section"
++        # self.sections[section].append('SECTION: ' + section + '\n')
++        self.sections[section].append(text)
++        self.feature_not_empty = True
++
++    def genType(self, typeinfo, name, alias):
++        "Generate type."
++        OutputGenerator.genType(self, typeinfo, name, alias)
++        typeElem = typeinfo.elem
++
++        # Vulkan:
++        # Determine the category of the type, and the type section to add
++        # its definition to.
++        # 'funcpointer' is added to the 'struct' section as a workaround for
++        # internal issue #877, since structures and function pointer types
++        # can have cross-dependencies.
++        category = typeElem.get('category')
++        if category == 'funcpointer':
++            section = 'struct'
++        else:
++            section = category
++
++        if category in ('struct', 'union'):
++            # If the type is a struct type, generate it using the
++            # special-purpose generator.
++            self.genStruct(typeinfo, name, alias)
++        else:
++            # OpenXR: this section was not under 'else:' previously, just fell through
++            if alias:
++                # If the type is an alias, just emit a typedef declaration
++                body = 'typedef ' + alias + ' ' + name + ';\n'
++            else:
++                # Replace <apientry /> tags with an APIENTRY-style string
++                # (from self.genOpts). Copy other text through unchanged.
++                # If the resulting text is an empty string, don't emit it.
++                body = noneStr(typeElem.text)
++                for elem in typeElem:
++                    if elem.tag == 'apientry':
++                        body += self.genOpts.apientry + noneStr(elem.tail)
++                    else:
++                        body += noneStr(elem.text) + noneStr(elem.tail)
++            if body:
++                # Add extra newline after multi-line entries.
++                if '\n' in body[0:-1]:
++                    body += '\n'
++                self.appendSection(section, body)
++
++    def genProtectString(self, protect_str):
++        """Generate protection string.
++
++        Protection strings are the strings defining the OS/Platform/Graphics
++        requirements for a given OpenXR command.  When generating the
++        language header files, we need to make sure the items specific to a
++        graphics API or OS platform are properly wrapped in #ifs."""
++        protect_if_str = ''
++        protect_end_str = ''
++        if not protect_str:
++            return (protect_if_str, protect_end_str)
++
++        if ',' in protect_str:
++            protect_list = protect_str.split(",")
++            protect_defs = ('defined(%s)' % d for d in protect_list)
++            protect_def_str = ' && '.join(protect_defs)
++            protect_if_str = '#if %s\n' % protect_def_str
++            protect_end_str = '#endif // %s\n' % protect_def_str
++        else:
++            protect_if_str = '#ifdef %s\n' % protect_str
++            protect_end_str = '#endif // %s\n' % protect_str
++
++        return (protect_if_str, protect_end_str)
++
++    def typeMayAlias(self, typeName):
++        if not self.may_alias:
++            # First time we've asked if a type may alias.
++            # So, let's populate the set of all names of types that may.
++
++            # Everyone with an explicit mayalias="true"
++            self.may_alias = set(typeName
++                                 for typeName, data in self.registry.typedict.items()
++                                 if data.elem.get('mayalias') == 'true')
++
++            # Every type mentioned in some other type's parentstruct attribute.
++            parent_structs = (otherType.elem.get('parentstruct')
++                              for otherType in self.registry.typedict.values())
++            self.may_alias.update(set(x for x in parent_structs
++                                      if x is not None))
++        return typeName in self.may_alias
++
++    def genStruct(self, typeinfo, typeName, alias):
++        """Generate struct (e.g. C "struct" type).
++
++        This is a special case of the <type> tag where the contents are
++        interpreted as a set of <member> tags instead of freeform C
++        C type declarations. The <member> tags are just like <param>
++        tags - they are a declaration of a struct or union member.
++        Only simple member declarations are supported (no nested
++        structs etc.)
++
++        If alias is not None, then this struct aliases another; just
++        generate a typedef of that alias."""
++        OutputGenerator.genStruct(self, typeinfo, typeName, alias)
++
++        typeElem = typeinfo.elem
++
++        if alias:
++            body = 'typedef ' + alias + ' ' + typeName + ';\n'
++        else:
++            body = ''
++            (protect_begin, protect_end) = self.genProtectString(typeElem.get('protect'))
++            if protect_begin:
++                body += protect_begin
++            body += 'typedef ' + typeElem.get('category')
++
++            # This is an OpenXR-specific alternative where aliasing refers
++            # to an inheritance hierarchy of types rather than C-level type
++            # aliases.
++            if self.genOpts.genAliasMacro and self.typeMayAlias(typeName):
++                body += ' ' + self.genOpts.aliasMacro
++
++            body += ' ' + typeName + ' {\n'
++
++            targetLen = self.getMaxCParamTypeLength(typeinfo)
++            for member in typeElem.findall('.//member'):
++                body += self.makeCParamDecl(member, targetLen + 4)
++                body += ';\n'
++            body += '} ' + typeName + ';\n'
++            if protect_end:
++                body += protect_end
++
++        self.appendSection('struct', body)
++
++    def genGroup(self, groupinfo, groupName, alias=None):
++        """Generate groups (e.g. C "enum" type).
++
++        These are concatenated together with other types.
++
++        If alias is not None, it is the name of another group type
++        which aliases this type; just generate that alias."""
++        OutputGenerator.genGroup(self, groupinfo, groupName, alias)
++        groupElem = groupinfo.elem
++
++        # After either enumerated type or alias paths, add the declaration
++        # to the appropriate section for the group being defined.
++        if groupElem.get('type') == 'bitmask':
++            section = 'bitmask'
++        else:
++            section = 'group'
++
++        if alias:
++            # If the group name is aliased, just emit a typedef declaration
++            # for the alias.
++            body = 'typedef ' + alias + ' ' + groupName + ';\n'
++            self.appendSection(section, body)
++        else:
++            (section, body) = self.buildEnumCDecl(self.genOpts.genEnumBeginEndRange, groupinfo, groupName)
++            self.appendSection(section, "\n" + body)
++
++    def genEnum(self, enuminfo, name, alias):
++        """Generate enumerants.
++
++        <enum> tags may specify their values in several ways, but are usually
++        just integers."""
++        OutputGenerator.genEnum(self, enuminfo, name, alias)
++        (_, strVal) = self.enumToValue(enuminfo.elem, False)
++        body = '#define ' + name.ljust(33) + ' ' + strVal
++        self.appendSection('enum', body)
++
++    def genCmd(self, cmdinfo, name, alias):
++        "Command generation"
++        OutputGenerator.genCmd(self, cmdinfo, name, alias)
++
++        # if alias:
++        #     prefix = '// ' + name + ' is an alias of command ' + alias + '\n'
++        # else:
++        #     prefix = ''
++
++        prefix = ''
++        decls = self.makeCDecls(cmdinfo.elem)
++        self.appendSection('command', prefix + decls[0] + '\n')
++        if self.genOpts.genFuncPointers:
++            self.appendSection('commandPointer', decls[1])
+--- Vulkan-Tools-1.2.151.orig/scripts/conventions.py
++++ Vulkan-Tools-1.2.151/scripts/conventions.py
+@@ -0,0 +1,358 @@
++#!/usr/bin/python3 -i
++#
++# Copyright (c) 2013-2020 The Khronos Group Inc.
++#
++# SPDX-License-Identifier: Apache-2.0
++
++# Base class for working-group-specific style conventions,
++# used in generation.
++
++from enum import Enum
++
++# Type categories that respond "False" to isStructAlwaysValid
++# basetype is home to typedefs like ..Bool32
++CATEGORIES_REQUIRING_VALIDATION = set(('handle',
++                                       'enum',
++                                       'bitmask',
++                                       'basetype',
++                                       None))
++
++# These are basic C types pulled in via openxr_platform_defines.h
++TYPES_KNOWN_ALWAYS_VALID = set(('char',
++                                'float',
++                                'int8_t', 'uint8_t',
++                                'int32_t', 'uint32_t',
++                                'int64_t', 'uint64_t',
++                                'size_t',
++                                'uintptr_t',
++                                'int',
++                                ))
++
++
++class ProseListFormats(Enum):
++    """A connective, possibly with a quantifier."""
++    AND = 0
++    EACH_AND = 1
++    OR = 2
++    ANY_OR = 3
++
++    @classmethod
++    def from_string(cls, s):
++        if s == 'or':
++            return cls.OR
++        if s == 'and':
++            return cls.AND
++        return None
++
++    @property
++    def connective(self):
++        if self in (ProseListFormats.OR, ProseListFormats.ANY_OR):
++            return 'or'
++        return 'and'
++
++    def quantifier(self, n):
++        """Return the desired quantifier for a list of a given length."""
++        if self == ProseListFormats.ANY_OR:
++            if n > 1:
++                return 'any of '
++        elif self == ProseListFormats.EACH_AND:
++            if n > 2:
++                return 'each of '
++            if n == 2:
++                return 'both of '
++        return ''
++
++
++class ConventionsBase:
++    """WG-specific conventions."""
++
++    def __init__(self):
++        self._command_prefix = None
++        self._type_prefix = None
++
++    def formatExtension(self, name):
++        """Mark up an extension name as a link the spec."""
++        return '`apiext:{}`'.format(name)
++
++    @property
++    def null(self):
++        """Preferred spelling of NULL."""
++        raise NotImplementedError
++
++    def makeProseList(self, elements, fmt=ProseListFormats.AND, with_verb=False, *args, **kwargs):
++        """Make a (comma-separated) list for use in prose.
++
++        Adds a connective (by default, 'and')
++        before the last element if there are more than 1.
++
++        Adds the right one of "is" or "are" to the end if with_verb is true.
++
++        Optionally adds a quantifier (like 'any') before a list of 2 or more,
++        if specified by fmt.
++
++        Override with a different method or different call to
++        _implMakeProseList if you want to add a comma for two elements,
++        or not use a serial comma.
++        """
++        return self._implMakeProseList(elements, fmt, with_verb, *args, **kwargs)
++
++    @property
++    def struct_macro(self):
++        """Get the appropriate format macro for a structure.
++
++        May override.
++        """
++        return 'slink:'
++
++    @property
++    def external_macro(self):
++        """Get the appropriate format macro for an external type like uint32_t.
++
++        May override.
++        """
++        return 'code:'
++
++    def makeStructName(self, name):
++        """Prepend the appropriate format macro for a structure to a structure type name.
++
++        Uses struct_macro, so just override that if you want to change behavior.
++        """
++        return self.struct_macro + name
++
++    def makeExternalTypeName(self, name):
++        """Prepend the appropriate format macro for an external type like uint32_t to a type name.
++
++        Uses external_macro, so just override that if you want to change behavior.
++        """
++        return self.external_macro + name
++
++    def _implMakeProseList(self, elements, fmt, with_verb, comma_for_two_elts=False, serial_comma=True):
++        """Internal-use implementation to make a (comma-separated) list for use in prose.
++
++        Adds a connective (by default, 'and')
++        before the last element if there are more than 1,
++        and only includes commas if there are more than 2
++        (if comma_for_two_elts is False).
++
++        Adds the right one of "is" or "are" to the end if with_verb is true.
++
++        Optionally adds a quantifier (like 'any') before a list of 2 or more,
++        if specified by fmt.
++
++        Don't edit these defaults, override self.makeProseList().
++        """
++        assert(serial_comma)  # didn't implement what we didn't need
++        if isinstance(fmt, str):
++            fmt = ProseListFormats.from_string(fmt)
++
++        my_elts = list(elements)
++        if len(my_elts) > 1:
++            my_elts[-1] = '{} {}'.format(fmt.connective, my_elts[-1])
++
++        if not comma_for_two_elts and len(my_elts) <= 2:
++            prose = ' '.join(my_elts)
++        else:
++            prose = ', '.join(my_elts)
++
++        quantifier = fmt.quantifier(len(my_elts))
++
++        parts = [quantifier, prose]
++
++        if with_verb:
++            if len(my_elts) > 1:
++                parts.append(' are')
++            else:
++                parts.append(' is')
++        return ''.join(parts)
++
++    @property
++    def file_suffix(self):
++        """Return suffix of generated Asciidoctor files"""
++        raise NotImplementedError
++
++    def api_name(self, spectype=None):
++        """Return API or specification name for citations in ref pages.
++
++        spectype is the spec this refpage is for.
++        'api' (the default value) is the main API Specification.
++        If an unrecognized spectype is given, returns None.
++
++        Must implement."""
++        raise NotImplementedError
++
++    def should_insert_may_alias_macro(self, genOpts):
++        """Return true if we should insert a "may alias" macro in this file.
++
++        Only used by OpenXR right now."""
++        return False
++
++    @property
++    def command_prefix(self):
++        """Return the expected prefix of commands/functions.
++
++        Implemented in terms of api_prefix."""
++        if not self._command_prefix:
++            self._command_prefix = self.api_prefix[:].replace('_', '').lower()
++        return self._command_prefix
++
++    @property
++    def type_prefix(self):
++        """Return the expected prefix of type names.
++
++        Implemented in terms of command_prefix (and in turn, api_prefix)."""
++        if not self._type_prefix:
++            self._type_prefix = ''.join(
++                (self.command_prefix[0:1].upper(), self.command_prefix[1:]))
++        return self._type_prefix
++
++    @property
++    def api_prefix(self):
++        """Return API token prefix.
++
++        Typically two uppercase letters followed by an underscore.
++
++        Must implement."""
++        raise NotImplementedError
++
++    @property
++    def api_version_prefix(self):
++        """Return API core version token prefix.
++
++        Implemented in terms of api_prefix.
++
++        May override."""
++        return self.api_prefix + 'VERSION_'
++
++    @property
++    def KHR_prefix(self):
++        """Return extension name prefix for KHR extensions.
++
++        Implemented in terms of api_prefix.
++
++        May override."""
++        return self.api_prefix + 'KHR_'
++
++    @property
++    def EXT_prefix(self):
++        """Return extension name prefix for EXT extensions.
++
++        Implemented in terms of api_prefix.
++
++        May override."""
++        return self.api_prefix + 'EXT_'
++
++    def writeFeature(self, featureExtraProtect, filename):
++        """Return True if OutputGenerator.endFeature should write this feature.
++
++        Defaults to always True.
++        Used in COutputGenerator.
++
++        May override."""
++        return True
++
++    def requires_error_validation(self, return_type):
++        """Return True if the return_type element is an API result code
++        requiring error validation.
++
++        Defaults to always False.
++
++        May override."""
++        return False
++
++    @property
++    def required_errors(self):
++        """Return a list of required error codes for validation.
++
++        Defaults to an empty list.
++
++        May override."""
++        return []
++
++    def is_voidpointer_alias(self, tag, text, tail):
++        """Return True if the declaration components (tag,text,tail) of an
++        element represents a void * type.
++
++        Defaults to a reasonable implementation.
++
++        May override."""
++        return tag == 'type' and text == 'void' and tail.startswith('*')
++
++    def make_voidpointer_alias(self, tail):
++        """Reformat a void * declaration to include the API alias macro.
++
++        Defaults to a no-op.
++
++        Must override if you actually want to use this feature in your project."""
++        return tail
++
++    def category_requires_validation(self, category):
++        """Return True if the given type 'category' always requires validation.
++
++        Defaults to a reasonable implementation.
++
++        May override."""
++        return category in CATEGORIES_REQUIRING_VALIDATION
++
++    def type_always_valid(self, typename):
++        """Return True if the given type name is always valid (never requires validation).
++
++        This is for things like integers.
++
++        Defaults to a reasonable implementation.
++
++        May override."""
++        return typename in TYPES_KNOWN_ALWAYS_VALID
++
++    @property
++    def should_skip_checking_codes(self):
++        """Return True if more than the basic validation of return codes should
++        be skipped for a command."""
++
++        return False
++
++    @property
++    def generate_index_terms(self):
++        """Return True if asiidoctor index terms should be generated as part
++           of an API interface from the docgenerator."""
++
++        return False
++
++    @property
++    def generate_enum_table(self):
++        """Return True if asciidoctor tables describing enumerants in a
++           group should be generated as part of group generation."""
++        return False
++
++    @property
++    def generate_max_enum_in_docs(self):
++        """Return True if MAX_ENUM tokens should be generated in
++           documentation includes."""
++        return False
++
++
++    def extension_include_string(self, ext):
++        """Return format string for include:: line for an extension appendix
++           file. ext is an object with the following members:
++            - name - extension string string
++            - vendor - vendor portion of name
++            - barename - remainder of name
++
++        Must implement."""
++        raise NotImplementedError
++
++    @property
++    def refpage_generated_include_path(self):
++        """Return path relative to the generated reference pages, to the
++           generated API include files.
++
++        Must implement."""
++        raise NotImplementedError
++
++    def valid_flag_bit(self, bitpos):
++        """Return True if bitpos is an allowed numeric bit position for
++           an API flag.
++
++           Behavior depends on the data type used for flags (which may be 32
++           or 64 bits), and may depend on assumptions about compiler
++           handling of sign bits in enumerated types, as well."""
++        return True
+--- Vulkan-Tools-1.2.151.orig/scripts/generator.py
++++ Vulkan-Tools-1.2.151/scripts/generator.py
+@@ -0,0 +1,1020 @@
++#!/usr/bin/python3 -i
++#
++# Copyright (c) 2013-2020 The Khronos Group Inc.
++#
++# SPDX-License-Identifier: Apache-2.0
++"""Base class for source/header/doc generators, as well as some utility functions."""
++
++from __future__ import unicode_literals
++
++import io
++import os
++import pdb
++import re
++import shutil
++import sys
++import tempfile
++try:
++    from pathlib import Path
++except ImportError:
++    from pathlib2 import Path
++
++from spec_tools.util import getElemName, getElemType
++
++
++def write(*args, **kwargs):
++    file = kwargs.pop('file', sys.stdout)
++    end = kwargs.pop('end', '\n')
++    file.write(' '.join(str(arg) for arg in args))
++    file.write(end)
++
++
++def noneStr(s):
++    """Return string argument, or "" if argument is None.
++
++    Used in converting etree Elements into text.
++    s - string to convert"""
++    if s:
++        return s
++    return ""
++
++
++def enquote(s):
++    """Return string argument with surrounding quotes,
++      for serialization into Python code."""
++    if s:
++        return "'{}'".format(s)
++    return None
++
++
++def regSortCategoryKey(feature):
++    """Sort key for regSortFeatures.
++    Sorts by category of the feature name string:
++
++    - Core API features (those defined with a `<feature>` tag)
++    - ARB/KHR/OES (Khronos extensions)
++    - other       (EXT/vendor extensions)"""
++
++    if feature.elem.tag == 'feature':
++        return 0
++    if (feature.category == 'ARB'
++        or feature.category == 'KHR'
++            or feature.category == 'OES'):
++        return 1
++
++    return 2
++
++
++def regSortOrderKey(feature):
++    """Sort key for regSortFeatures - key is the sortorder attribute."""
++
++    # print("regSortOrderKey {} -> {}".format(feature.name, feature.sortorder))
++    return feature.sortorder
++
++
++def regSortFeatureVersionKey(feature):
++    """Sort key for regSortFeatures - key is the feature version.
++    `<extension>` elements all have version number 0."""
++
++    return float(feature.versionNumber)
++
++
++def regSortExtensionNumberKey(feature):
++    """Sort key for regSortFeatures - key is the extension number.
++    `<feature>` elements all have extension number 0."""
++
++    return int(feature.number)
++
++
++def regSortFeatures(featureList):
++    """Default sort procedure for features.
++
++    - Sorts by explicit sort order (default 0) relative to other features
++    - then by feature category ('feature' or 'extension'),
++    - then by version number (for features)
++    - then by extension number (for extensions)"""
++    featureList.sort(key=regSortExtensionNumberKey)
++    featureList.sort(key=regSortFeatureVersionKey)
++    featureList.sort(key=regSortCategoryKey)
++    featureList.sort(key=regSortOrderKey)
++
++
++class GeneratorOptions:
++    """Base class for options used during header/documentation production.
++
++    These options are target language independent, and used by
++    Registry.apiGen() and by base OutputGenerator objects."""
++
++    def __init__(self,
++                 conventions=None,
++                 filename=None,
++                 directory='.',
++                 genpath=None,
++                 apiname=None,
++                 profile=None,
++                 versions='.*',
++                 emitversions='.*',
++                 defaultExtensions=None,
++                 addExtensions=None,
++                 removeExtensions=None,
++                 emitExtensions=None,
++                 reparentEnums=True,
++                 sortProcedure=regSortFeatures):
++        """Constructor.
++
++        Arguments:
++
++        - conventions - may be mandatory for some generators:
++        an object that implements ConventionsBase
++        - filename - basename of file to generate, or None to write to stdout.
++        - directory - directory in which to generate files
++        - genpath - path to previously generated files, such as api.py
++        - apiname - string matching `<api>` 'apiname' attribute, e.g. 'gl'.
++        - profile - string specifying API profile , e.g. 'core', or None.
++        - versions - regex matching API versions to process interfaces for.
++        Normally `'.*'` or `'[0-9][.][0-9]'` to match all defined versions.
++        - emitversions - regex matching API versions to actually emit
++        interfaces for (though all requested versions are considered
++        when deciding which interfaces to generate). For GL 4.3 glext.h,
++        this might be `'1[.][2-5]|[2-4][.][0-9]'`.
++        - defaultExtensions - If not None, a string which must in its
++        entirety match the pattern in the "supported" attribute of
++        the `<extension>`. Defaults to None. Usually the same as apiname.
++        - addExtensions - regex matching names of additional extensions
++        to include. Defaults to None.
++        - removeExtensions - regex matching names of extensions to
++        remove (after defaultExtensions and addExtensions). Defaults
++        to None.
++        - emitExtensions - regex matching names of extensions to actually emit
++        interfaces for (though all requested versions are considered when
++        deciding which interfaces to generate).
++        - reparentEnums - move <enum> elements which extend an enumerated
++        type from <feature> or <extension> elements to the target <enums>
++        element. This is required for almost all purposes, but the
++        InterfaceGenerator relies on the list of interfaces in the <feature>
++        or <extension> being complete. Defaults to True.
++        - sortProcedure - takes a list of FeatureInfo objects and sorts
++        them in place to a preferred order in the generated output.
++        Default is core API versions, ARB/KHR/OES extensions, all other
++        extensions, by core API version number or extension number in each
++        group.
++
++        The regex patterns can be None or empty, in which case they match
++        nothing."""
++        self.conventions = conventions
++        """may be mandatory for some generators:
++        an object that implements ConventionsBase"""
++
++        self.filename = filename
++        "basename of file to generate, or None to write to stdout."
++
++        self.genpath = genpath
++        """path to previously generated files, such as api.py"""
++
++        self.directory = directory
++        "directory in which to generate filename"
++
++        self.apiname = apiname
++        "string matching `<api>` 'apiname' attribute, e.g. 'gl'."
++
++        self.profile = profile
++        "string specifying API profile , e.g. 'core', or None."
++
++        self.versions = self.emptyRegex(versions)
++        """regex matching API versions to process interfaces for.
++        Normally `'.*'` or `'[0-9][.][0-9]'` to match all defined versions."""
++
++        self.emitversions = self.emptyRegex(emitversions)
++        """regex matching API versions to actually emit
++        interfaces for (though all requested versions are considered
++        when deciding which interfaces to generate). For GL 4.3 glext.h,
++        this might be `'1[.][2-5]|[2-4][.][0-9]'`."""
++
++        self.defaultExtensions = defaultExtensions
++        """If not None, a string which must in its
++        entirety match the pattern in the "supported" attribute of
++        the `<extension>`. Defaults to None. Usually the same as apiname."""
++
++        self.addExtensions = self.emptyRegex(addExtensions)
++        """regex matching names of additional extensions
++        to include. Defaults to None."""
++
++        self.removeExtensions = self.emptyRegex(removeExtensions)
++        """regex matching names of extensions to
++        remove (after defaultExtensions and addExtensions). Defaults
++        to None."""
++
++        self.emitExtensions = self.emptyRegex(emitExtensions)
++        """regex matching names of extensions to actually emit
++        interfaces for (though all requested versions are considered when
++        deciding which interfaces to generate)."""
++
++        self.reparentEnums = reparentEnums
++        """boolean specifying whether to remove <enum> elements from
++        <feature> or <extension> when extending an <enums> type."""
++
++        self.sortProcedure = sortProcedure
++        """takes a list of FeatureInfo objects and sorts
++        them in place to a preferred order in the generated output.
++        Default is core API versions, ARB/KHR/OES extensions, all
++        other extensions, alphabetically within each group."""
++
++        self.codeGenerator = False
++        """True if this generator makes compilable code"""
++
++    def emptyRegex(self, pat):
++        """Substitute a regular expression which matches no version
++        or extension names for None or the empty string."""
++        if not pat:
++            return '_nomatch_^'
++
++        return pat
++
++
++class OutputGenerator:
++    """Generate specified API interfaces in a specific style, such as a C header.
++
++    Base class for generating API interfaces.
++    Manages basic logic, logging, and output file control.
++    Derived classes actually generate formatted output.
++    """
++
++    # categoryToPath - map XML 'category' to include file directory name
++    categoryToPath = {
++        'bitmask': 'flags',
++        'enum': 'enums',
++        'funcpointer': 'funcpointers',
++        'handle': 'handles',
++        'define': 'defines',
++        'basetype': 'basetypes',
++    }
++
++    def __init__(self, errFile=sys.stderr, warnFile=sys.stderr, diagFile=sys.stdout):
++        """Constructor
++
++        - errFile, warnFile, diagFile - file handles to write errors,
++          warnings, diagnostics to. May be None to not write."""
++        self.outFile = None
++        self.errFile = errFile
++        self.warnFile = warnFile
++        self.diagFile = diagFile
++        # Internal state
++        self.featureName = None
++        self.genOpts = None
++        self.registry = None
++        self.featureDictionary = {}
++        # Used for extension enum value generation
++        self.extBase = 1000000000
++        self.extBlockSize = 1000
++        self.madeDirs = {}
++
++        # API dictionary, which may be loaded by the beginFile method of
++        # derived generators.
++        self.apidict = None
++
++    def logMsg(self, level, *args):
++        """Write a message of different categories to different
++        destinations.
++
++        - `level`
++          - 'diag' (diagnostic, voluminous)
++          - 'warn' (warning)
++          - 'error' (fatal error - raises exception after logging)
++
++        - `*args` - print()-style arguments to direct to corresponding log"""
++        if level == 'error':
++            strfile = io.StringIO()
++            write('ERROR:', *args, file=strfile)
++            if self.errFile is not None:
++                write(strfile.getvalue(), file=self.errFile)
++            raise UserWarning(strfile.getvalue())
++        elif level == 'warn':
++            if self.warnFile is not None:
++                write('WARNING:', *args, file=self.warnFile)
++        elif level == 'diag':
++            if self.diagFile is not None:
++                write('DIAG:', *args, file=self.diagFile)
++        else:
++            raise UserWarning(
++                '*** FATAL ERROR in Generator.logMsg: unknown level:' + level)
++
++    def enumToValue(self, elem, needsNum):
++        """Parse and convert an `<enum>` tag into a value.
++
++        Returns a list:
++
++        - first element - integer representation of the value, or None
++          if needsNum is False. The value must be a legal number
++          if needsNum is True.
++        - second element - string representation of the value
++
++        There are several possible representations of values.
++
++        - A 'value' attribute simply contains the value.
++        - A 'bitpos' attribute defines a value by specifying the bit
++          position which is set in that value.
++        - An 'offset','extbase','extends' triplet specifies a value
++          as an offset to a base value defined by the specified
++          'extbase' extension name, which is then cast to the
++          typename specified by 'extends'. This requires probing
++          the registry database, and imbeds knowledge of the
++          API extension enum scheme in this function.
++        - An 'alias' attribute contains the name of another enum
++          which this is an alias of. The other enum must be
++          declared first when emitting this enum."""
++        name = elem.get('name')
++        numVal = None
++        if 'value' in elem.keys():
++            value = elem.get('value')
++            # print('About to translate value =', value, 'type =', type(value))
++            if needsNum:
++                numVal = int(value, 0)
++            # If there's a non-integer, numeric 'type' attribute (e.g. 'u' or
++            # 'ull'), append it to the string value.
++            # t = enuminfo.elem.get('type')
++            # if t is not None and t != '' and t != 'i' and t != 's':
++            #     value += enuminfo.type
++            self.logMsg('diag', 'Enum', name, '-> value [', numVal, ',', value, ']')
++            return [numVal, value]
++        if 'bitpos' in elem.keys():
++            value = elem.get('bitpos')
++            bitpos = int(value, 0)
++            numVal = 1 << bitpos
++            value = '0x%08x' % numVal
++            if bitpos >= 32:
++                value = value + 'ULL'
++            self.logMsg('diag', 'Enum', name, '-> bitpos [', numVal, ',', value, ']')
++            return [numVal, value]
++        if 'offset' in elem.keys():
++            # Obtain values in the mapping from the attributes
++            enumNegative = False
++            offset = int(elem.get('offset'), 0)
++            extnumber = int(elem.get('extnumber'), 0)
++            extends = elem.get('extends')
++            if 'dir' in elem.keys():
++                enumNegative = True
++            self.logMsg('diag', 'Enum', name, 'offset =', offset,
++                        'extnumber =', extnumber, 'extends =', extends,
++                        'enumNegative =', enumNegative)
++            # Now determine the actual enumerant value, as defined
++            # in the "Layers and Extensions" appendix of the spec.
++            numVal = self.extBase + (extnumber - 1) * self.extBlockSize + offset
++            if enumNegative:
++                numVal *= -1
++            value = '%d' % numVal
++            # More logic needed!
++            self.logMsg('diag', 'Enum', name, '-> offset [', numVal, ',', value, ']')
++            return [numVal, value]
++        if 'alias' in elem.keys():
++            return [None, elem.get('alias')]
++        return [None, None]
++
++    def checkDuplicateEnums(self, enums):
++        """Check enumerated values for duplicates.
++
++        -  enums - list of `<enum>` Elements
++
++        returns the list with duplicates stripped"""
++        # Dictionaries indexed by name and numeric value.
++        # Entries are [ Element, numVal, strVal ] matching name or value
++
++        nameMap = {}
++        valueMap = {}
++
++        stripped = []
++        for elem in enums:
++            name = elem.get('name')
++            (numVal, strVal) = self.enumToValue(elem, True)
++
++            if name in nameMap:
++                # Duplicate name found; check values
++                (name2, numVal2, strVal2) = nameMap[name]
++
++                # Duplicate enum values for the same name are benign. This
++                # happens when defining the same enum conditionally in
++                # several extension blocks.
++                if (strVal2 == strVal or (numVal is not None
++                                          and numVal == numVal2)):
++                    True
++                    # self.logMsg('info', 'checkDuplicateEnums: Duplicate enum (' + name +
++                    #             ') found with the same value:' + strVal)
++                else:
++                    self.logMsg('warn', 'checkDuplicateEnums: Duplicate enum (' + name
++                                + ') found with different values:' + strVal
++                                + ' and ' + strVal2)
++
++                # Don't add the duplicate to the returned list
++                continue
++            elif numVal in valueMap:
++                # Duplicate value found (such as an alias); report it, but
++                # still add this enum to the list.
++                (name2, numVal2, strVal2) = valueMap[numVal]
++
++                msg = 'Two enums found with the same value: {} = {} = {}'.format(
++                    name, name2.get('name'), strVal)
++                self.logMsg('error', msg)
++
++            # Track this enum to detect followon duplicates
++            nameMap[name] = [elem, numVal, strVal]
++            if numVal is not None:
++                valueMap[numVal] = [elem, numVal, strVal]
++
++            # Add this enum to the list
++            stripped.append(elem)
++
++        # Return the list
++        return stripped
++
++    def buildEnumCDecl(self, expand, groupinfo, groupName):
++        """Generate the C declaration for an enum"""
++        groupElem = groupinfo.elem
++
++        # Determine the required bit width for the enum group.
++        # 32 is the default, which generates C enum types for the values.
++        bitwidth = 32
++
++        # If the constFlagBits preference is set, 64 is the default for bitmasks
++        if self.genOpts.conventions.constFlagBits and groupElem.get('type') == 'bitmask':
++            bitwidth = 64
++
++        # Check for an explicitly defined bitwidth, which will override any defaults.
++        if groupElem.get('bitwidth'):
++            try:
++                bitwidth = int(groupElem.get('bitwidth'))
++            except ValueError as ve:
++                self.logMsg('error', 'Invalid value for bitwidth attribute (', groupElem.get('bitwidth'), ') for ', groupName, ' - must be an integer value\n')
++                exit(1)
++
++        # Bitmask types support 64-bit flags, so have different handling
++        if groupElem.get('type') == 'bitmask':
++
++            # Validate the bitwidth and generate values appropriately
++            # Bitmask flags up to 64-bit are generated as static const uint64_t values
++            # Bitmask flags up to 32-bit are generated as C enum values
++            if bitwidth > 64:
++                self.logMsg('error', 'Invalid value for bitwidth attribute (', groupElem.get('bitwidth'), ') for bitmask type ', groupName, ' - must be less than or equal to 64\n')
++                exit(1)
++            elif bitwidth > 32:
++                return self.buildEnumCDecl_Bitmask(groupinfo, groupName)
++            else:
++                return self.buildEnumCDecl_Enum(expand, groupinfo, groupName)
++        else:
++            # Validate the bitwidth and generate values appropriately
++            # Enum group types up to 32-bit are generated as C enum values
++            if bitwidth > 32:
++                self.logMsg('error', 'Invalid value for bitwidth attribute (', groupElem.get('bitwidth'), ') for enum type ', groupName, ' - must be less than or equal to 32\n')
++                exit(1)
++            else:
++                return self.buildEnumCDecl_Enum(expand, groupinfo, groupName)
++
++    def buildEnumCDecl_Bitmask(self, groupinfo, groupName):
++        """Generate the C declaration for an "enum" that is actually a
++        set of flag bits"""
++        groupElem = groupinfo.elem
++        flagTypeName = groupinfo.flagType.elem.get('name')
++
++        # Prefix
++        body = "// Flag bits for " + flagTypeName + "\n"
++
++        # Maximum allowable value for a flag (unsigned 64-bit integer)
++        maxValidValue = 2**(64) - 1
++        minValidValue = 0
++
++        # Loop over the nested 'enum' tags.
++        for elem in groupElem.findall('enum'):
++            # Convert the value to an integer and use that to track min/max.
++            # Values of form -(number) are accepted but nothing more complex.
++            # Should catch exceptions here for more complex constructs. Not yet.
++            (numVal, strVal) = self.enumToValue(elem, True)
++            name = elem.get('name')
++
++            # Range check for the enum value
++            if numVal is not None and (numVal > maxValidValue or numVal < minValidValue):
++                self.logMsg('error', 'Allowable range for flag types in C is [', minValidValue, ',', maxValidValue, '], but', name, 'flag has a value outside of this (', strVal, ')\n')
++                exit(1)
++
++            body += self.genRequirements(name, mustBeFound = False)
++            body += "static const {} {} = {};\n".format(flagTypeName, name, strVal)
++
++        # Postfix
++
++        return ("bitmask", body)
++
++    def buildEnumCDecl_Enum(self, expand, groupinfo, groupName):
++        """Generate the C declaration for an enumerated type"""
++        groupElem = groupinfo.elem
++
++        # Break the group name into prefix and suffix portions for range
++        # enum generation
++        expandName = re.sub(r'([0-9a-z_])([A-Z0-9])', r'\1_\2', groupName).upper()
++        expandPrefix = expandName
++        expandSuffix = ''
++        expandSuffixMatch = re.search(r'[A-Z][A-Z]+$', groupName)
++        if expandSuffixMatch:
++            expandSuffix = '_' + expandSuffixMatch.group()
++            # Strip off the suffix from the prefix
++            expandPrefix = expandName.rsplit(expandSuffix, 1)[0]
++
++        # Prefix
++        body = ["typedef enum %s {" % groupName]
++
++        # @@ Should use the type="bitmask" attribute instead
++        isEnum = ('FLAG_BITS' not in expandPrefix)
++
++        # Allowable range for a C enum - which is that of a signed 32-bit integer
++        maxValidValue = 2**(32 - 1) - 1
++        minValidValue = (maxValidValue * -1) - 1
++
++
++        # Get a list of nested 'enum' tags.
++        enums = groupElem.findall('enum')
++
++        # Check for and report duplicates, and return a list with them
++        # removed.
++        enums = self.checkDuplicateEnums(enums)
++
++        # Loop over the nested 'enum' tags. Keep track of the minimum and
++        # maximum numeric values, if they can be determined; but only for
++        # core API enumerants, not extension enumerants. This is inferred
++        # by looking for 'extends' attributes.
++        minName = None
++
++        # Accumulate non-numeric enumerant values separately and append
++        # them following the numeric values, to allow for aliases.
++        # NOTE: this doesn't do a topological sort yet, so aliases of
++        # aliases can still get in the wrong order.
++        aliasText = []
++
++        for elem in enums:
++            # Convert the value to an integer and use that to track min/max.
++            # Values of form -(number) are accepted but nothing more complex.
++            # Should catch exceptions here for more complex constructs. Not yet.
++            (numVal, strVal) = self.enumToValue(elem, True)
++            name = elem.get('name')
++
++            # Extension enumerants are only included if they are required
++            if self.isEnumRequired(elem):
++                # Indent requirements comment, if there is one
++                decl = self.genRequirements(name, mustBeFound = False)
++                if decl != '':
++                    decl = '  ' + decl
++                decl += "    {} = {},".format(name, strVal)
++                if numVal is not None:
++                    body.append(decl)
++                else:
++                    aliasText.append(decl)
++
++            # Range check for the enum value
++            if numVal is not None and (numVal > maxValidValue or numVal < minValidValue):
++                self.logMsg('error', 'Allowable range for C enum types is [', minValidValue, ',', maxValidValue, '], but', name, 'has a value outside of this (', strVal, ')\n')
++                exit(1)
++
++
++            # Don't track min/max for non-numbers (numVal is None)
++            if isEnum and numVal is not None and elem.get('extends') is None:
++                if minName is None:
++                    minName = maxName = name
++                    minValue = maxValue = numVal
++                elif numVal < minValue:
++                    minName = name
++                    minValue = numVal
++                elif numVal > maxValue:
++                    maxName = name
++                    maxValue = numVal
++
++        # Now append the non-numeric enumerant values
++        body.extend(aliasText)
++
++        # Generate min/max value tokens - legacy use case.
++        if isEnum and expand:
++            body.extend(("    {}_BEGIN_RANGE{} = {},".format(expandPrefix, expandSuffix, minName),
++                         "    {}_END_RANGE{} = {},".format(
++                             expandPrefix, expandSuffix, maxName),
++                         "    {}_RANGE_SIZE{} = ({} - {} + 1),".format(expandPrefix, expandSuffix, maxName, minName)))
++
++        # Generate a range-padding value to ensure the enum is 32 bits, but
++        # only in code generators, so it doesn't appear in documentation
++        if (self.genOpts.codeGenerator or
++            self.conventions.generate_max_enum_in_docs):
++            body.append("    {}_MAX_ENUM{} = 0x7FFFFFFF".format(
++                expandPrefix, expandSuffix))
++
++        # Postfix
++        body.append("} %s;" % groupName)
++
++        # Determine appropriate section for this declaration
++        if groupElem.get('type') == 'bitmask':
++            section = 'bitmask'
++        else:
++            section = 'group'
++
++        return (section, '\n'.join(body))
++
++    def makeDir(self, path):
++        """Create a directory, if not already done.
++
++        Generally called from derived generators creating hierarchies."""
++        self.logMsg('diag', 'OutputGenerator::makeDir(' + path + ')')
++        if path not in self.madeDirs:
++            # This can get race conditions with multiple writers, see
++            # https://stackoverflow.com/questions/273192/
++            if not os.path.exists(path):
++                os.makedirs(path)
++            self.madeDirs[path] = None
++
++    def beginFile(self, genOpts):
++        """Start a new interface file
++
++        - genOpts - GeneratorOptions controlling what's generated and how"""
++        self.genOpts = genOpts
++        self.should_insert_may_alias_macro = \
++            self.genOpts.conventions.should_insert_may_alias_macro(self.genOpts)
++
++        # Try to import the API dictionary, api.py, if it exists. Nothing in
++        # api.py cannot be extracted directly from the XML, and in the
++        # future we should do that.
++        if self.genOpts.genpath is not None:
++            try:
++                sys.path.insert(0, self.genOpts.genpath)
++                import api
++                self.apidict = api
++            except ImportError:
++                self.apidict = None
++
++        self.conventions = genOpts.conventions
++
++        # Open a temporary file for accumulating output.
++        if self.genOpts.filename is not None:
++            self.outFile = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', newline='\n', delete=False)
++        else:
++            self.outFile = sys.stdout
++
++    def endFile(self):
++        if self.errFile:
++            self.errFile.flush()
++        if self.warnFile:
++            self.warnFile.flush()
++        if self.diagFile:
++            self.diagFile.flush()
++        self.outFile.flush()
++        if self.outFile != sys.stdout and self.outFile != sys.stderr:
++            self.outFile.close()
++
++        # On successfully generating output, move the temporary file to the
++        # target file.
++        if self.genOpts.filename is not None:
++            if sys.platform == 'win32':
++                directory = Path(self.genOpts.directory)
++                if not Path.exists(directory):
++                    os.makedirs(directory)
++            shutil.copy(self.outFile.name, self.genOpts.directory + '/' + self.genOpts.filename)
++            os.remove(self.outFile.name)
++        self.genOpts = None
++
++    def beginFeature(self, interface, emit):
++        """Write interface for a feature and tag generated features as having been done.
++
++        - interface - element for the `<version>` / `<extension>` to generate
++        - emit - actually write to the header only when True"""
++        self.emit = emit
++        self.featureName = interface.get('name')
++        # If there's an additional 'protect' attribute in the feature, save it
++        self.featureExtraProtect = interface.get('protect')
++
++    def endFeature(self):
++        """Finish an interface file, closing it when done.
++
++        Derived classes responsible for emitting feature"""
++        self.featureName = None
++        self.featureExtraProtect = None
++
++    def genRequirements(self, name, mustBeFound = True):
++        """Generate text showing what core versions and extensions introduce
++        an API. This exists in the base Generator class because it's used by
++        the shared enumerant-generating interfaces (buildEnumCDecl, etc.).
++        Here it returns an empty string for most generators, but can be
++        overridden by e.g. DocGenerator.
++
++        - name - name of the API
++        - mustBeFound - If True, when requirements for 'name' cannot be
++          determined, a warning comment is generated.
++        """
++
++        return ''
++
++    def validateFeature(self, featureType, featureName):
++        """Validate we're generating something only inside a `<feature>` tag"""
++        if self.featureName is None:
++            raise UserWarning('Attempt to generate', featureType,
++                              featureName, 'when not in feature')
++
++    def genType(self, typeinfo, name, alias):
++        """Generate interface for a type
++
++        - typeinfo - TypeInfo for a type
++
++        Extend to generate as desired in your derived class."""
++        self.validateFeature('type', name)
++
++    def genStruct(self, typeinfo, typeName, alias):
++        """Generate interface for a C "struct" type.
++
++        - typeinfo - TypeInfo for a type interpreted as a struct
++
++        Extend to generate as desired in your derived class."""
++        self.validateFeature('struct', typeName)
++
++        # The mixed-mode <member> tags may contain no-op <comment> tags.
++        # It is convenient to remove them here where all output generators
++        # will benefit.
++        for member in typeinfo.elem.findall('.//member'):
++            for comment in member.findall('comment'):
++                member.remove(comment)
++
++    def genGroup(self, groupinfo, groupName, alias):
++        """Generate interface for a group of enums (C "enum")
++
++        - groupinfo - GroupInfo for a group.
++
++        Extend to generate as desired in your derived class."""
++
++        self.validateFeature('group', groupName)
++
++    def genEnum(self, enuminfo, typeName, alias):
++        """Generate interface for an enum (constant).
++
++        - enuminfo - EnumInfo for an enum
++        - name - enum name
++
++        Extend to generate as desired in your derived class."""
++        self.validateFeature('enum', typeName)
++
++    def genCmd(self, cmd, cmdinfo, alias):
++        """Generate interface for a command.
++
++        - cmdinfo - CmdInfo for a command
++
++        Extend to generate as desired in your derived class."""
++        self.validateFeature('command', cmdinfo)
++
++    def makeProtoName(self, name, tail):
++        """Turn a `<proto>` `<name>` into C-language prototype
++        and typedef declarations for that name.
++
++        - name - contents of `<name>` tag
++        - tail - whatever text follows that tag in the Element"""
++        return self.genOpts.apientry + name + tail
++
++    def makeTypedefName(self, name, tail):
++        """Make the function-pointer typedef name for a command."""
++        return '(' + self.genOpts.apientryp + 'PFN_' + name + tail + ')'
++
++    def makeCParamDecl(self, param, aligncol):
++        """Return a string which is an indented, formatted
++        declaration for a `<param>` or `<member>` block (e.g. function parameter
++        or structure/union member).
++
++        - param - Element (`<param>` or `<member>`) to format
++        - aligncol - if non-zero, attempt to align the nested `<name>` element
++          at this column"""
++        indent = '    '
++        paramdecl = indent + noneStr(param.text)
++        for elem in param:
++            text = noneStr(elem.text)
++            tail = noneStr(elem.tail)
++
++            if self.should_insert_may_alias_macro and self.genOpts.conventions.is_voidpointer_alias(elem.tag, text, tail):
++                # OpenXR-specific macro insertion - but not in apiinc for the spec
++                tail = self.genOpts.conventions.make_voidpointer_alias(tail)
++            if elem.tag == 'name' and aligncol > 0:
++                self.logMsg('diag', 'Aligning parameter', elem.text, 'to column', self.genOpts.alignFuncParam)
++                # Align at specified column, if possible
++                paramdecl = paramdecl.rstrip()
++                oldLen = len(paramdecl)
++                # This works around a problem where very long type names -
++                # longer than the alignment column - would run into the tail
++                # text.
++                paramdecl = paramdecl.ljust(aligncol - 1) + ' '
++                newLen = len(paramdecl)
++                self.logMsg('diag', 'Adjust length of parameter decl from', oldLen, 'to', newLen, ':', paramdecl)
++            paramdecl += text + tail
++        if aligncol == 0:
++            # Squeeze out multiple spaces other than the indentation
++            paramdecl = indent + ' '.join(paramdecl.split())
++        return paramdecl
++
++    def getCParamTypeLength(self, param):
++        """Return the length of the type field is an indented, formatted
++        declaration for a `<param>` or `<member>` block (e.g. function parameter
++        or structure/union member).
++
++        - param - Element (`<param>` or `<member>`) to identify"""
++
++        # Allow for missing <name> tag
++        newLen = 0
++        paramdecl = '    ' + noneStr(param.text)
++        for elem in param:
++            text = noneStr(elem.text)
++            tail = noneStr(elem.tail)
++
++            if self.should_insert_may_alias_macro and self.genOpts.conventions.is_voidpointer_alias(elem.tag, text, tail):
++                # OpenXR-specific macro insertion
++                tail = self.genOpts.conventions.make_voidpointer_alias(tail)
++            if elem.tag == 'name':
++                # Align at specified column, if possible
++                newLen = len(paramdecl.rstrip())
++                self.logMsg('diag', 'Identifying length of', elem.text, 'as', newLen)
++            paramdecl += text + tail
++
++        return newLen
++
++    def getMaxCParamTypeLength(self, info):
++        """Return the length of the longest type field for a member/parameter.
++
++        - info - TypeInfo or CommandInfo.
++        """
++        lengths = (self.getCParamTypeLength(member)
++                   for member in info.getMembers())
++        return max(lengths)
++
++    def getHandleParent(self, typename):
++        """Get the parent of a handle object."""
++        info = self.registry.typedict.get(typename)
++        if info is None:
++            return None
++
++        elem = info.elem
++        if elem is not None:
++            return elem.get('parent')
++
++        return None
++
++    def iterateHandleAncestors(self, typename):
++        """Iterate through the ancestors of a handle type."""
++        current = self.getHandleParent(typename)
++        while current is not None:
++            yield current
++            current = self.getHandleParent(current)
++
++    def getHandleAncestors(self, typename):
++        """Get the ancestors of a handle object."""
++        return list(self.iterateHandleAncestors(typename))
++
++    def getTypeCategory(self, typename):
++        """Get the category of a type."""
++        info = self.registry.typedict.get(typename)
++        if info is None:
++            return None
++
++        elem = info.elem
++        if elem is not None:
++            return elem.get('category')
++        return None
++
++    def isStructAlwaysValid(self, structname):
++        """Try to do check if a structure is always considered valid (i.e. there's no rules to its acceptance)."""
++        # A conventions object is required for this call.
++        if not self.conventions:
++            raise RuntimeError("To use isStructAlwaysValid, be sure your options include a Conventions object.")
++
++        if self.conventions.type_always_valid(structname):
++            return True
++
++        category = self.getTypeCategory(structname)
++        if self.conventions.category_requires_validation(category):
++            return False
++
++        info = self.registry.typedict.get(structname)
++        assert(info is not None)
++
++        members = info.getMembers()
++
++        for member in members:
++            member_name = getElemName(member)
++            if member_name in (self.conventions.structtype_member_name,
++                               self.conventions.nextpointer_member_name):
++                return False
++
++            if member.get('noautovalidity'):
++                return False
++
++            member_type = getElemType(member)
++
++            if member_type in ('void', 'char') or self.paramIsArray(member) or self.paramIsPointer(member):
++                return False
++
++            if self.conventions.type_always_valid(member_type):
++                continue
++
++            member_category = self.getTypeCategory(member_type)
++
++            if self.conventions.category_requires_validation(member_category):
++                return False
++
++            if member_category in ('struct', 'union'):
++                if self.isStructAlwaysValid(member_type) is False:
++                    return False
++
++        return True
++
++    def isEnumRequired(self, elem):
++        """Return True if this `<enum>` element is
++        required, False otherwise
++
++        - elem - `<enum>` element to test"""
++        required = elem.get('required') is not None
++        self.logMsg('diag', 'isEnumRequired:', elem.get('name'),
++                    '->', required)
++        return required
++
++        # @@@ This code is overridden by equivalent code now run in
++        # @@@ Registry.generateFeature
++
++        required = False
++
++        extname = elem.get('extname')
++        if extname is not None:
++            # 'supported' attribute was injected when the <enum> element was
++            # moved into the <enums> group in Registry.parseTree()
++            if self.genOpts.defaultExtensions == elem.get('supported'):
++                required = True
++            elif re.match(self.genOpts.addExtensions, extname) is not None:
++                required = True
++        elif elem.get('version') is not None:
++            required = re.match(self.genOpts.emitversions, elem.get('version')) is not None
++        else:
++            required = True
++
++        return required
++
++    def makeCDecls(self, cmd):
++        """Return C prototype and function pointer typedef for a
++        `<command>` Element, as a two-element list of strings.
++
++        - cmd - Element containing a `<command>` tag"""
++        proto = cmd.find('proto')
++        params = cmd.findall('param')
++        # Begin accumulating prototype and typedef strings
++        pdecl = self.genOpts.apicall
++        tdecl = 'typedef '
++
++        # Insert the function return type/name.
++        # For prototypes, add APIENTRY macro before the name
++        # For typedefs, add (APIENTRY *<name>) around the name and
++        #   use the PFN_cmdnameproc naming convention.
++        # Done by walking the tree for <proto> element by element.
++        # etree has elem.text followed by (elem[i], elem[i].tail)
++        #   for each child element and any following text
++        # Leading text
++        pdecl += noneStr(proto.text)
++        tdecl += noneStr(proto.text)
++        # For each child element, if it's a <name> wrap in appropriate
++        # declaration. Otherwise append its contents and tail contents.
++        for elem in proto:
++            text = noneStr(elem.text)
++            tail = noneStr(elem.tail)
++            if elem.tag == 'name':
++                pdecl += self.makeProtoName(text, tail)
++                tdecl += self.makeTypedefName(text, tail)
++            else:
++                pdecl += text + tail
++                tdecl += text + tail
++
++        if self.genOpts.alignFuncParam == 0:
++            # Squeeze out multiple spaces - there is no indentation
++            pdecl = ' '.join(pdecl.split())
++            tdecl = ' '.join(tdecl.split())
++
++        # Now add the parameter declaration list, which is identical
++        # for prototypes and typedefs. Concatenate all the text from
++        # a <param> node without the tags. No tree walking required
++        # since all tags are ignored.
++        # Uses: self.indentFuncProto
++        # self.indentFuncPointer
++        # self.alignFuncParam
++        n = len(params)
++        # Indented parameters
++        if n > 0:
++            indentdecl = '(\n'
++            indentdecl += ',\n'.join(self.makeCParamDecl(p, self.genOpts.alignFuncParam)
++                                     for p in params)
++            indentdecl += ');'
++        else:
++            indentdecl = '(void);'
++        # Non-indented parameters
++        paramdecl = '('
++        if n > 0:
++            paramnames = (''.join(t for t in p.itertext())
++                          for p in params)
++            paramdecl += ', '.join(paramnames)
++        else:
++            paramdecl += 'void'
++        paramdecl += ");"
++        return [pdecl + indentdecl, tdecl + paramdecl]
++
++    def newline(self):
++        """Print a newline to the output file (utility function)"""
++        write('', file=self.outFile)
++
++    def setRegistry(self, registry):
++        self.registry = registry
+--- Vulkan-Tools-1.2.151.orig/scripts/reg.py
++++ Vulkan-Tools-1.2.151/scripts/reg.py
+@@ -0,0 +1,1324 @@
++#!/usr/bin/python3 -i
++#
++# Copyright 2013-2020 The Khronos Group Inc.
++#
++# SPDX-License-Identifier: Apache-2.0
++
++"""Types and classes for manipulating an API registry."""
++
++import copy
++import re
++import sys
++import xml.etree.ElementTree as etree
++from collections import defaultdict, namedtuple
++from generator import OutputGenerator, GeneratorOptions, write
++
++
++def apiNameMatch(str, supported):
++    """Return whether a required api name matches a pattern specified for an
++    XML <feature> 'api' attribute or <extension> 'supported' attribute.
++
++    - str - api name such as 'vulkan' or 'openxr'
++    - supported - comma-separated list of XML API names"""
++
++    return (str is not None and str in supported.split(','))
++
++
++def matchAPIProfile(api, profile, elem):
++    """Return whether an API and profile
++    being generated matches an element's profile
++
++    - api - string naming the API to match
++    - profile - string naming the profile to match
++    - elem - Element which (may) have 'api' and 'profile'
++      attributes to match to.
++
++    If a tag is not present in the Element, the corresponding API
++      or profile always matches.
++
++    Otherwise, the tag must exactly match the API or profile.
++
++    Thus, if 'profile' = core:
++
++    - `<remove>`  with no attribute will match
++    - `<remove profile="core">` will match
++    - `<remove profile="compatibility">` will not match
++
++    Possible match conditions:
++
++    ```
++      Requested   Element
++      Profile     Profile
++      ---------   --------
++      None        None        Always matches
++      'string'    None        Always matches
++      None        'string'    Does not match. Can't generate multiple APIs
++                              or profiles, so if an API/profile constraint
++                              is present, it must be asked for explicitly.
++      'string'    'string'    Strings must match
++    ```
++
++    ** In the future, we will allow regexes for the attributes,
++    not just strings, so that `api="^(gl|gles2)"` will match. Even
++    this isn't really quite enough, we might prefer something
++    like `"gl(core)|gles1(common-lite)"`."""
++    # Match 'api', if present
++    elem_api = elem.get('api')
++    if elem_api:
++        if api is None:
++            raise UserWarning("No API requested, but 'api' attribute is present with value '"
++                              + elem_api + "'")
++        elif api != elem_api:
++            # Requested API doesn't match attribute
++            return False
++    elem_profile = elem.get('profile')
++    if elem_profile:
++        if profile is None:
++            raise UserWarning("No profile requested, but 'profile' attribute is present with value '"
++                              + elem_profile + "'")
++        elif profile != elem_profile:
++            # Requested profile doesn't match attribute
++            return False
++    return True
++
++
++class BaseInfo:
++    """Base class for information about a registry feature
++    (type/group/enum/command/API/extension).
++
++    Represents the state of a registry feature, used during API generation.
++    """
++
++    def __init__(self, elem):
++        self.required = False
++        """should this feature be defined during header generation
++        (has it been removed by a profile or version)?"""
++
++        self.declared = False
++        "has this feature been defined already?"
++
++        self.elem = elem
++        "etree Element for this feature"
++
++    def resetState(self):
++        """Reset required/declared to initial values. Used
++        prior to generating a new API interface."""
++        self.required = False
++        self.declared = False
++
++    def compareKeys(self, info, key, required = False):
++        """Return True if self.elem and info.elem have the same attribute
++           value for key.
++           If 'required' is not True, also returns True if neither element
++           has an attribute value for key."""
++
++        if required and key not in self.elem.keys():
++            return False
++        return self.elem.get(key) == info.elem.get(key)
++
++    def compareElem(self, info, infoName):
++        """Return True if self.elem and info.elem have the same definition.
++        info - the other object
++        infoName - 'type' / 'group' / 'enum' / 'command' / 'feature' /
++                   'extension'"""
++
++        if infoName == 'enum':
++            if self.compareKeys(info, 'extends'):
++                # Either both extend the same type, or no type
++                if (self.compareKeys(info, 'value', required = True) or
++                    self.compareKeys(info, 'bitpos', required = True)):
++                    # If both specify the same value or bit position,
++                    # they're equal
++                    return True
++                elif (self.compareKeys(info, 'extnumber') and
++                      self.compareKeys(info, 'offset') and
++                      self.compareKeys(info, 'dir')):
++                    # If both specify the same relative offset, they're equal
++                    return True
++                elif (self.compareKeys(info, 'alias')):
++                    # If both are aliases of the same value
++                    return True
++                else:
++                    return False
++            else:
++                # The same enum can't extend two different types
++                return False
++        else:
++            # Non-<enum>s should never be redefined
++            return False
++
++
++class TypeInfo(BaseInfo):
++    """Registry information about a type. No additional state
++      beyond BaseInfo is required."""
++
++    def __init__(self, elem):
++        BaseInfo.__init__(self, elem)
++        self.additionalValidity = []
++        self.removedValidity = []
++
++    def getMembers(self):
++        """Get a collection of all member elements for this type, if any."""
++        return self.elem.findall('member')
++
++    def resetState(self):
++        BaseInfo.resetState(self)
++        self.additionalValidity = []
++        self.removedValidity = []
++
++
++class GroupInfo(BaseInfo):
++    """Registry information about a group of related enums
++    in an <enums> block, generally corresponding to a C "enum" type."""
++
++    def __init__(self, elem):
++        BaseInfo.__init__(self, elem)
++
++
++class EnumInfo(BaseInfo):
++    """Registry information about an enum"""
++
++    def __init__(self, elem):
++        BaseInfo.__init__(self, elem)
++        self.type = elem.get('type')
++        """numeric type of the value of the <enum> tag
++        ( '' for GLint, 'u' for GLuint, 'ull' for GLuint64 )"""
++        if self.type is None:
++            self.type = ''
++
++
++class CmdInfo(BaseInfo):
++    """Registry information about a command"""
++
++    def __init__(self, elem):
++        BaseInfo.__init__(self, elem)
++        self.additionalValidity = []
++        self.removedValidity = []
++
++    def getParams(self):
++        """Get a collection of all param elements for this command, if any."""
++        return self.elem.findall('param')
++
++    def resetState(self):
++        BaseInfo.resetState(self)
++        self.additionalValidity = []
++        self.removedValidity = []
++
++
++class FeatureInfo(BaseInfo):
++    """Registry information about an API <feature>
++    or <extension>."""
++
++    def __init__(self, elem):
++        BaseInfo.__init__(self, elem)
++        self.name = elem.get('name')
++        "feature name string (e.g. 'VK_KHR_surface')"
++
++        self.emit = False
++        "has this feature been defined already?"
++
++        self.sortorder = int(elem.get('sortorder', 0))
++        """explicit numeric sort key within feature and extension groups.
++        Defaults to 0."""
++
++        # Determine element category (vendor). Only works
++        # for <extension> elements.
++        if elem.tag == 'feature':
++            # Element category (vendor) is meaningless for <feature>
++            self.category = 'VERSION'
++            """category, e.g. VERSION or khr/vendor tag"""
++
++            self.version = elem.get('name')
++            """feature name string"""
++
++            self.versionNumber = elem.get('number')
++            """versionNumber - API version number, taken from the 'number'
++               attribute of <feature>. Extensions do not have API version
++               numbers and are assigned number 0."""
++
++            self.number = "0"
++            self.supported = None
++        else:
++            # Extract vendor portion of <APIprefix>_<vendor>_<name>
++            self.category = self.name.split('_', 2)[1]
++            self.version = "0"
++            self.versionNumber = "0"
++            self.number = elem.get('number')
++            """extension number, used for ordering and for assigning
++            enumerant offsets. <feature> features do not have extension
++            numbers and are assigned number 0."""
++
++            # If there's no 'number' attribute, use 0, so sorting works
++            if self.number is None:
++                self.number = 0
++            self.supported = elem.get('supported')
++
++
++class Registry:
++    """Object representing an API registry, loaded from an XML file."""
++
++    def __init__(self, gen=None, genOpts=None):
++        if gen is None:
++            # If not specified, give a default object so messaging will work
++            self.gen = OutputGenerator()
++        else:
++            self.gen = gen
++        "Output generator used to write headers / messages"
++
++        if genOpts is None:
++            self.genOpts = GeneratorOptions()
++        else:
++            self.genOpts = genOpts
++        "Options controlling features to write and how to format them"
++
++        self.gen.registry = self
++        self.gen.genOpts = self.genOpts
++        self.gen.genOpts.registry = self
++
++        self.tree = None
++        "ElementTree containing the root `<registry>`"
++
++        self.typedict = {}
++        "dictionary of TypeInfo objects keyed by type name"
++
++        self.groupdict = {}
++        "dictionary of GroupInfo objects keyed by group name"
++
++        self.enumdict = {}
++        "dictionary of EnumInfo objects keyed by enum name"
++
++        self.cmddict = {}
++        "dictionary of CmdInfo objects keyed by command name"
++
++        self.apidict = {}
++        "dictionary of FeatureInfo objects for `<feature>` elements keyed by API name"
++
++        self.extensions = []
++        "list of `<extension>` Elements"
++
++        self.extdict = {}
++        "dictionary of FeatureInfo objects for `<extension>` elements keyed by extension name"
++
++        self.emitFeatures = False
++        """True to actually emit features for a version / extension,
++        or False to just treat them as emitted"""
++
++        self.breakPat = None
++        "regexp pattern to break on when generating names"
++        # self.breakPat     = re.compile('VkFenceImportFlagBits.*')
++
++        self.requiredextensions = []  # Hack - can remove it after validity generator goes away
++
++        # ** Global types for automatic source generation **
++        # Length Member data
++        self.commandextensiontuple = namedtuple('commandextensiontuple',
++                                                ['command',        # The name of the command being modified
++                                                 'value',          # The value to append to the command
++                                                 'extension'])     # The name of the extension that added it
++        self.validextensionstructs = defaultdict(list)
++        self.commandextensionsuccesses = []
++        self.commandextensionerrors = []
++
++        self.filename     = None
++
++    def loadElementTree(self, tree):
++        """Load ElementTree into a Registry object and parse it."""
++        self.tree = tree
++        self.parseTree()
++
++    def loadFile(self, file):
++        """Load an API registry XML file into a Registry object and parse it"""
++        self.filename = file
++        self.tree = etree.parse(file)
++        self.parseTree()
++
++    def setGenerator(self, gen):
++        """Specify output generator object.
++
++        `None` restores the default generator."""
++        self.gen = gen
++        self.gen.setRegistry(self)
++
++    def addElementInfo(self, elem, info, infoName, dictionary):
++        """Add information about an element to the corresponding dictionary.
++
++        Intended for internal use only.
++
++        - elem - `<type>`/`<enums>`/`<enum>`/`<command>`/`<feature>`/`<extension>` Element
++        - info - corresponding {Type|Group|Enum|Cmd|Feature}Info object
++        - infoName - 'type' / 'group' / 'enum' / 'command' / 'feature' / 'extension'
++        - dictionary - self.{type|group|enum|cmd|api|ext}dict
++
++        If the Element has an 'api' attribute, the dictionary key is the
++        tuple (name,api). If not, the key is the name. 'name' is an
++        attribute of the Element"""
++        # self.gen.logMsg('diag', 'Adding ElementInfo.required =',
++        #     info.required, 'name =', elem.get('name'))
++        api = elem.get('api')
++        if api:
++            key = (elem.get('name'), api)
++        else:
++            key = elem.get('name')
++        if key in dictionary:
++            if not dictionary[key].compareElem(info, infoName):
++                self.gen.logMsg('warn', 'Attempt to redefine', key,
++                                '(this should not happen)')
++            else:
++                True
++        else:
++            dictionary[key] = info
++
++    def lookupElementInfo(self, fname, dictionary):
++        """Find a {Type|Enum|Cmd}Info object by name.
++
++        Intended for internal use only.
++
++        If an object qualified by API name exists, use that.
++
++        - fname - name of type / enum / command
++        - dictionary - self.{type|enum|cmd}dict"""
++        key = (fname, self.genOpts.apiname)
++        if key in dictionary:
++            # self.gen.logMsg('diag', 'Found API-specific element for feature', fname)
++            return dictionary[key]
++        if fname in dictionary:
++            # self.gen.logMsg('diag', 'Found generic element for feature', fname)
++            return dictionary[fname]
++
++        return None
++
++    def breakOnName(self, regexp):
++        """Specify a feature name regexp to break on when generating features."""
++        self.breakPat = re.compile(regexp)
++
++    def parseTree(self):
++        """Parse the registry Element, once created"""
++        # This must be the Element for the root <registry>
++        self.reg = self.tree.getroot()
++
++        # Create dictionary of registry types from toplevel <types> tags
++        # and add 'name' attribute to each <type> tag (where missing)
++        # based on its <name> element.
++        #
++        # There's usually one <types> block; more are OK
++        # Required <type> attributes: 'name' or nested <name> tag contents
++        self.typedict = {}
++        for type_elem in self.reg.findall('types/type'):
++            # If the <type> doesn't already have a 'name' attribute, set
++            # it from contents of its <name> tag.
++            if type_elem.get('name') is None:
++                type_elem.set('name', type_elem.find('name').text)
++            self.addElementInfo(type_elem, TypeInfo(type_elem), 'type', self.typedict)
++
++        # Create dictionary of registry enum groups from <enums> tags.
++        #
++        # Required <enums> attributes: 'name'. If no name is given, one is
++        # generated, but that group can't be identified and turned into an
++        # enum type definition - it's just a container for <enum> tags.
++        self.groupdict = {}
++        for group in self.reg.findall('enums'):
++            self.addElementInfo(group, GroupInfo(group), 'group', self.groupdict)
++
++        # Create dictionary of registry enums from <enum> tags
++        #
++        # <enums> tags usually define different namespaces for the values
++        #   defined in those tags, but the actual names all share the
++        #   same dictionary.
++        # Required <enum> attributes: 'name', 'value'
++        # For containing <enums> which have type="enum" or type="bitmask",
++        # tag all contained <enum>s are required. This is a stopgap until
++        # a better scheme for tagging core and extension enums is created.
++        self.enumdict = {}
++        for enums in self.reg.findall('enums'):
++            required = (enums.get('type') is not None)
++            for enum in enums.findall('enum'):
++                enumInfo = EnumInfo(enum)
++                enumInfo.required = required
++                self.addElementInfo(enum, enumInfo, 'enum', self.enumdict)
++
++        # Create dictionary of registry commands from <command> tags
++        # and add 'name' attribute to each <command> tag (where missing)
++        # based on its <proto><name> element.
++        #
++        # There's usually only one <commands> block; more are OK.
++        # Required <command> attributes: 'name' or <proto><name> tag contents
++        self.cmddict = {}
++        # List of commands which alias others. Contains
++        #   [ aliasName, element ]
++        # for each alias
++        cmdAlias = []
++        for cmd in self.reg.findall('commands/command'):
++            # If the <command> doesn't already have a 'name' attribute, set
++            # it from contents of its <proto><name> tag.
++            name = cmd.get('name')
++            if name is None:
++                name = cmd.set('name', cmd.find('proto/name').text)
++            ci = CmdInfo(cmd)
++            self.addElementInfo(cmd, ci, 'command', self.cmddict)
++            alias = cmd.get('alias')
++            if alias:
++                cmdAlias.append([name, alias, cmd])
++
++        # Now loop over aliases, injecting a copy of the aliased command's
++        # Element with the aliased prototype name replaced with the command
++        # name - if it exists.
++        for (name, alias, cmd) in cmdAlias:
++            if alias in self.cmddict:
++                aliasInfo = self.cmddict[alias]
++                cmdElem = copy.deepcopy(aliasInfo.elem)
++                cmdElem.find('proto/name').text = name
++                cmdElem.set('name', name)
++                cmdElem.set('alias', alias)
++                ci = CmdInfo(cmdElem)
++                # Replace the dictionary entry for the CmdInfo element
++                self.cmddict[name] = ci
++
++                # @  newString = etree.tostring(base, encoding="unicode").replace(aliasValue, aliasName)
++                # @elem.append(etree.fromstring(replacement))
++            else:
++                self.gen.logMsg('warn', 'No matching <command> found for command',
++                                cmd.get('name'), 'alias', alias)
++
++        # Create dictionaries of API and extension interfaces
++        #   from toplevel <api> and <extension> tags.
++        self.apidict = {}
++        for feature in self.reg.findall('feature'):
++            featureInfo = FeatureInfo(feature)
++            self.addElementInfo(feature, featureInfo, 'feature', self.apidict)
++
++            # Add additional enums defined only in <feature> tags
++            # to the corresponding enumerated type.
++            # When seen here, the <enum> element, processed to contain the
++            # numeric enum value, is added to the corresponding <enums>
++            # element, as well as adding to the enum dictionary. It is no
++            # longer removed from the <require> element it is introduced in.
++            # Instead, generateRequiredInterface ignores <enum> elements
++            # that extend enumerated types.
++            #
++            # For <enum> tags which are actually just constants, if there's
++            # no 'extends' tag but there is a 'value' or 'bitpos' tag, just
++            # add an EnumInfo record to the dictionary. That works because
++            # output generation of constants is purely dependency-based, and
++            # doesn't need to iterate through the XML tags.
++            for elem in feature.findall('require'):
++                for enum in elem.findall('enum'):
++                    addEnumInfo = False
++                    groupName = enum.get('extends')
++                    if groupName is not None:
++                        # self.gen.logMsg('diag', 'Found extension enum',
++                        #     enum.get('name'))
++                        # Add version number attribute to the <enum> element
++                        enum.set('version', featureInfo.version)
++                        # Look up the GroupInfo with matching groupName
++                        if groupName in self.groupdict:
++                            # self.gen.logMsg('diag', 'Matching group',
++                            #     groupName, 'found, adding element...')
++                            gi = self.groupdict[groupName]
++                            gi.elem.append(copy.deepcopy(enum))
++                        else:
++                            self.gen.logMsg('warn', 'NO matching group',
++                                            groupName, 'for enum', enum.get('name'), 'found.')
++                        addEnumInfo = True
++                    elif enum.get('value') or enum.get('bitpos') or enum.get('alias'):
++                        # self.gen.logMsg('diag', 'Adding extension constant "enum"',
++                        #     enum.get('name'))
++                        addEnumInfo = True
++                    if addEnumInfo:
++                        enumInfo = EnumInfo(enum)
++                        self.addElementInfo(enum, enumInfo, 'enum', self.enumdict)
++
++        self.extensions = self.reg.findall('extensions/extension')
++        self.extdict = {}
++        for feature in self.extensions:
++            featureInfo = FeatureInfo(feature)
++            self.addElementInfo(feature, featureInfo, 'extension', self.extdict)
++
++            # Add additional enums defined only in <extension> tags
++            # to the corresponding core type.
++            # Algorithm matches that of enums in a "feature" tag as above.
++            #
++            # This code also adds a 'extnumber' attribute containing the
++            # extension number, used for enumerant value calculation.
++            for elem in feature.findall('require'):
++                for enum in elem.findall('enum'):
++                    addEnumInfo = False
++                    groupName = enum.get('extends')
++                    if groupName is not None:
++                        # self.gen.logMsg('diag', 'Found extension enum',
++                        #     enum.get('name'))
++
++                        # Add <extension> block's extension number attribute to
++                        # the <enum> element unless specified explicitly, such
++                        # as when redefining an enum in another extension.
++                        extnumber = enum.get('extnumber')
++                        if not extnumber:
++                            enum.set('extnumber', featureInfo.number)
++
++                        enum.set('extname', featureInfo.name)
++                        enum.set('supported', featureInfo.supported)
++                        # Look up the GroupInfo with matching groupName
++                        if groupName in self.groupdict:
++                            # self.gen.logMsg('diag', 'Matching group',
++                            #     groupName, 'found, adding element...')
++                            gi = self.groupdict[groupName]
++                            gi.elem.append(copy.deepcopy(enum))
++                        else:
++                            self.gen.logMsg('warn', 'NO matching group',
++                                            groupName, 'for enum', enum.get('name'), 'found.')
++                        addEnumInfo = True
++                    elif enum.get('value') or enum.get('bitpos') or enum.get('alias'):
++                        # self.gen.logMsg('diag', 'Adding extension constant "enum"',
++                        #     enum.get('name'))
++                        addEnumInfo = True
++                    if addEnumInfo:
++                        enumInfo = EnumInfo(enum)
++                        self.addElementInfo(enum, enumInfo, 'enum', self.enumdict)
++
++        # Construct a "validextensionstructs" list for parent structures
++        # based on "structextends" tags in child structures
++        disabled_types = []
++        for disabled_ext in self.reg.findall('extensions/extension[@supported="disabled"]'):
++            for type_elem in disabled_ext.findall("*/type"):
++                disabled_types.append(type_elem.get('name'))
++        for type_elem in self.reg.findall('types/type'):
++            if type_elem.get('name') not in disabled_types:
++                parentStructs = type_elem.get('structextends')
++                if parentStructs is not None:
++                    for parent in parentStructs.split(','):
++                        # self.gen.logMsg('diag', type.get('name'), 'extends', parent)
++                        self.validextensionstructs[parent].append(type_elem.get('name'))
++        # Sort the lists so they don't depend on the XML order
++        for parent in self.validextensionstructs:
++            self.validextensionstructs[parent].sort()
++
++    def dumpReg(self, maxlen=120, filehandle=sys.stdout):
++        """Dump all the dictionaries constructed from the Registry object.
++
++        Diagnostic to dump the dictionaries to specified file handle (default stdout).
++        Truncates type / enum / command elements to maxlen characters (default 120)"""
++        write('***************************************', file=filehandle)
++        write('    ** Dumping Registry contents **',     file=filehandle)
++        write('***************************************', file=filehandle)
++        write('// Types', file=filehandle)
++        for name in self.typedict:
++            tobj = self.typedict[name]
++            write('    Type', name, '->', etree.tostring(tobj.elem)[0:maxlen], file=filehandle)
++        write('// Groups', file=filehandle)
++        for name in self.groupdict:
++            gobj = self.groupdict[name]
++            write('    Group', name, '->', etree.tostring(gobj.elem)[0:maxlen], file=filehandle)
++        write('// Enums', file=filehandle)
++        for name in self.enumdict:
++            eobj = self.enumdict[name]
++            write('    Enum', name, '->', etree.tostring(eobj.elem)[0:maxlen], file=filehandle)
++        write('// Commands', file=filehandle)
++        for name in self.cmddict:
++            cobj = self.cmddict[name]
++            write('    Command', name, '->', etree.tostring(cobj.elem)[0:maxlen], file=filehandle)
++        write('// APIs', file=filehandle)
++        for key in self.apidict:
++            write('    API Version ', key, '->',
++                  etree.tostring(self.apidict[key].elem)[0:maxlen], file=filehandle)
++        write('// Extensions', file=filehandle)
++        for key in self.extdict:
++            write('    Extension', key, '->',
++                  etree.tostring(self.extdict[key].elem)[0:maxlen], file=filehandle)
++
++    def markTypeRequired(self, typename, required):
++        """Require (along with its dependencies) or remove (but not its dependencies) a type.
++
++        - typename - name of type
++        - required - boolean (to tag features as required or not)
++        """
++        self.gen.logMsg('diag', 'tagging type:', typename, '-> required =', required)
++        # Get TypeInfo object for <type> tag corresponding to typename
++        typeinfo = self.lookupElementInfo(typename, self.typedict)
++        if typeinfo is not None:
++            if required:
++                # Tag type dependencies in 'alias' and 'required' attributes as
++                # required. This does not un-tag dependencies in a <remove>
++                # tag. See comments in markRequired() below for the reason.
++                for attrib_name in ['requires', 'alias']:
++                    depname = typeinfo.elem.get(attrib_name)
++                    if depname:
++                        self.gen.logMsg('diag', 'Generating dependent type',
++                                        depname, 'for', attrib_name, 'type', typename)
++                        # Don't recurse on self-referential structures.
++                        if typename != depname:
++                            self.markTypeRequired(depname, required)
++                        else:
++                            self.gen.logMsg('diag', 'type', typename, 'is self-referential')
++                # Tag types used in defining this type (e.g. in nested
++                # <type> tags)
++                # Look for <type> in entire <command> tree,
++                # not just immediate children
++                for subtype in typeinfo.elem.findall('.//type'):
++                    self.gen.logMsg('diag', 'markRequired: type requires dependent <type>', subtype.text)
++                    if typename != subtype.text:
++                        self.markTypeRequired(subtype.text, required)
++                    else:
++                        self.gen.logMsg('diag', 'type', typename, 'is self-referential')
++                # Tag enums used in defining this type, for example in
++                #   <member><name>member</name>[<enum>MEMBER_SIZE</enum>]</member>
++                for subenum in typeinfo.elem.findall('.//enum'):
++                    self.gen.logMsg('diag', 'markRequired: type requires dependent <enum>', subenum.text)
++                    self.markEnumRequired(subenum.text, required)
++                # Tag type dependency in 'bitvalues' attributes as
++                # required. This ensures that the bit values for a flag
++                # are emitted
++                depType = typeinfo.elem.get('bitvalues')
++                if depType:
++                    self.gen.logMsg('diag', 'Generating bitflag type',
++                                    depType, 'for type', typename)
++                    self.markTypeRequired(depType, required)
++                    group = self.lookupElementInfo(depType, self.groupdict)
++                    if group is not None:
++                        group.flagType = typeinfo
++
++            typeinfo.required = required
++        elif '.h' not in typename:
++            self.gen.logMsg('warn', 'type:', typename, 'IS NOT DEFINED')
++
++    def markEnumRequired(self, enumname, required):
++        """Mark an enum as required or not.
++
++        - enumname - name of enum
++        - required - boolean (to tag features as required or not)"""
++
++        self.gen.logMsg('diag', 'tagging enum:', enumname, '-> required =', required)
++        enum = self.lookupElementInfo(enumname, self.enumdict)
++        if enum is not None:
++            # If the enum is part of a group, and is being removed, then
++            # look it up in that <group> tag and remove it there, so that it
++            # isn't visible to generators (which traverse the <group> tag
++            # elements themselves).
++            # This isn't the most robust way of doing this, since a removed
++            # enum that's later required again will no longer have a group
++            # element, but it makes the change non-intrusive on generator
++            # code.
++            if required is False:
++                groupName = enum.elem.get('extends')
++                if groupName is not None:
++                    # Look up the Info with matching groupName
++                    if groupName in self.groupdict:
++                        gi = self.groupdict[groupName]
++                        gienum = gi.elem.find("enum[@name='" + enumname + "']")
++                        if gienum is not None:
++                            # Remove copy of this enum from the group
++                            gi.elem.remove(gienum)
++                        else:
++                            self.gen.logMsg('warn', 'Cannot remove enum',
++                                            enumname, 'not found in group',
++                                            groupName)
++                    else:
++                        self.gen.logMsg('warn', 'Cannot remove enum',
++                                        enumname, 'from nonexistent group',
++                                        groupName)
++
++            enum.required = required
++            # Tag enum dependencies in 'alias' attribute as required
++            depname = enum.elem.get('alias')
++            if depname:
++                self.gen.logMsg('diag', 'Generating dependent enum',
++                                depname, 'for alias', enumname, 'required =', enum.required)
++                self.markEnumRequired(depname, required)
++        else:
++            self.gen.logMsg('warn', 'enum:', enumname, 'IS NOT DEFINED')
++
++    def markCmdRequired(self, cmdname, required):
++        """Mark a command as required or not.
++
++        - cmdname - name of command
++        - required - boolean (to tag features as required or not)"""
++        self.gen.logMsg('diag', 'tagging command:', cmdname, '-> required =', required)
++        cmd = self.lookupElementInfo(cmdname, self.cmddict)
++        if cmd is not None:
++            cmd.required = required
++            # Tag command dependencies in 'alias' attribute as required
++            depname = cmd.elem.get('alias')
++            if depname:
++                self.gen.logMsg('diag', 'Generating dependent command',
++                                depname, 'for alias', cmdname)
++                self.markCmdRequired(depname, required)
++            # Tag all parameter types of this command as required.
++            # This DOES NOT remove types of commands in a <remove>
++            # tag, because many other commands may use the same type.
++            # We could be more clever and reference count types,
++            # instead of using a boolean.
++            if required:
++                # Look for <type> in entire <command> tree,
++                # not just immediate children
++                for type_elem in cmd.elem.findall('.//type'):
++                    self.gen.logMsg('diag', 'markRequired: command implicitly requires dependent type', type_elem.text)
++                    self.markTypeRequired(type_elem.text, required)
++        else:
++            self.gen.logMsg('warn', 'command:', cmdname, 'IS NOT DEFINED')
++
++    def markRequired(self, featurename, feature, required):
++        """Require or remove features specified in the Element.
++
++        - featurename - name of the feature
++        - feature - Element for `<require>` or `<remove>` tag
++        - required - boolean (to tag features as required or not)"""
++        self.gen.logMsg('diag', 'markRequired (feature = <too long to print>, required =', required, ')')
++
++        # Loop over types, enums, and commands in the tag
++        # @@ It would be possible to respect 'api' and 'profile' attributes
++        #  in individual features, but that's not done yet.
++        for typeElem in feature.findall('type'):
++            self.markTypeRequired(typeElem.get('name'), required)
++        for enumElem in feature.findall('enum'):
++            self.markEnumRequired(enumElem.get('name'), required)
++        for cmdElem in feature.findall('command'):
++            self.markCmdRequired(cmdElem.get('name'), required)
++
++        # Extensions may need to extend existing commands or other items in the future.
++        # So, look for extend tags.
++        for extendElem in feature.findall('extend'):
++            extendType = extendElem.get('type')
++            if extendType == 'command':
++                commandName = extendElem.get('name')
++                successExtends = extendElem.get('successcodes')
++                if successExtends is not None:
++                    for success in successExtends.split(','):
++                        self.commandextensionsuccesses.append(self.commandextensiontuple(command=commandName,
++                                                                                         value=success,
++                                                                                         extension=featurename))
++                errorExtends = extendElem.get('errorcodes')
++                if errorExtends is not None:
++                    for error in errorExtends.split(','):
++                        self.commandextensionerrors.append(self.commandextensiontuple(command=commandName,
++                                                                                      value=error,
++                                                                                      extension=featurename))
++            else:
++                self.gen.logMsg('warn', 'extend type:', extendType, 'IS NOT SUPPORTED')
++
++    def getAlias(self, elem, dict):
++        """Check for an alias in the same require block.
++
++        - elem - Element to check for an alias"""
++
++        # Try to find an alias
++        alias = elem.get('alias')
++        if alias is None:
++            name = elem.get('name')
++            typeinfo = self.lookupElementInfo(name, dict)
++            alias = typeinfo.elem.get('alias')
++
++        return alias
++
++    def checkForCorrectionAliases(self, alias, require, tag):
++        """Check for an alias in the same require block.
++
++        - alias - String name of the alias
++        - require -  `<require>` block from the registry
++        - tag - tag to look for in the require block"""
++
++        if alias and require.findall(tag + "[@name='" + alias + "']"):
++            return True
++
++        return False
++
++    def fillFeatureDictionary(self, interface, featurename, api, profile):
++        """Capture added interfaces for a `<version>` or `<extension>`.
++
++        - interface - Element for `<version>` or `<extension>`, containing
++          `<require>` and `<remove>` tags
++        - featurename - name of the feature
++        - api - string specifying API name being generated
++        - profile - string specifying API profile being generated"""
++
++        # Explicitly initialize known types - errors for unhandled categories
++        self.gen.featureDictionary[featurename] = {
++            "enumconstant": {},
++            "command": {},
++            "enum": {},
++            "struct": {},
++            "handle": {},
++            "basetype": {},
++            "include": {},
++            "define": {},
++            "bitmask": {},
++            "union": {},
++            "funcpointer": {},
++        }
++
++        # <require> marks things that are required by this version/profile
++        for require in interface.findall('require'):
++            if matchAPIProfile(api, profile, require):
++
++                # Determine the required extension or version needed for a require block
++                # Assumes that only one of these is specified
++                required_key = require.get('feature')
++                if required_key is None:
++                    required_key = require.get('extension')
++
++                # Loop over types, enums, and commands in the tag
++                for typeElem in require.findall('type'):
++                    typename = typeElem.get('name')
++                    typeinfo = self.lookupElementInfo(typename, self.typedict)
++
++                    if typeinfo:
++                        # Remove aliases in the same extension/feature; these are always added as a correction. Don't need the original to be visible.
++                        alias = self.getAlias(typeElem, self.typedict)
++                        if not self.checkForCorrectionAliases(alias, require, 'type'):
++                            # Resolve the type info to the actual type, so we get an accurate read for 'structextends'
++                            while alias:
++                                typeinfo = self.lookupElementInfo(alias, self.typedict)
++                                alias = typeinfo.elem.get('alias')
++
++                            typecat = typeinfo.elem.get('category')
++                            typeextends = typeinfo.elem.get('structextends')
++                            if not required_key in self.gen.featureDictionary[featurename][typecat]:
++                                self.gen.featureDictionary[featurename][typecat][required_key] = {}
++                            if not typeextends in self.gen.featureDictionary[featurename][typecat][required_key]:
++                                self.gen.featureDictionary[featurename][typecat][required_key][typeextends] = []
++                            self.gen.featureDictionary[featurename][typecat][required_key][typeextends].append(typename)
++
++                for enumElem in require.findall('enum'):
++                    enumname = enumElem.get('name')
++                    typeinfo = self.lookupElementInfo(enumname, self.enumdict)
++
++                    # Remove aliases in the same extension/feature; these are always added as a correction. Don't need the original to be visible.
++                    alias = self.getAlias(enumElem, self.enumdict)
++                    if not self.checkForCorrectionAliases(alias, require, 'enum'):
++                        enumextends = enumElem.get('extends')
++                        if not required_key in self.gen.featureDictionary[featurename]['enumconstant']:
++                            self.gen.featureDictionary[featurename]['enumconstant'][required_key] = {}
++                        if not enumextends in self.gen.featureDictionary[featurename]['enumconstant'][required_key]:
++                            self.gen.featureDictionary[featurename]['enumconstant'][required_key][enumextends] = []
++                        self.gen.featureDictionary[featurename]['enumconstant'][required_key][enumextends].append(enumname)
++
++                for cmdElem in require.findall('command'):
++
++                    # Remove aliases in the same extension/feature; these are always added as a correction. Don't need the original to be visible.
++                    alias = self.getAlias(cmdElem, self.cmddict)
++                    if not self.checkForCorrectionAliases(alias, require, 'command'):
++                        if not required_key in self.gen.featureDictionary[featurename]['command']:
++                            self.gen.featureDictionary[featurename]['command'][required_key] = []
++                        self.gen.featureDictionary[featurename]['command'][required_key].append(cmdElem.get('name'))
++
++
++    def requireAndRemoveFeatures(self, interface, featurename, api, profile):
++        """Process `<require>` and `<remove>` tags for a `<version>` or `<extension>`.
++
++        - interface - Element for `<version>` or `<extension>`, containing
++          `<require>` and `<remove>` tags
++        - featurename - name of the feature
++        - api - string specifying API name being generated
++        - profile - string specifying API profile being generated"""
++        # <require> marks things that are required by this version/profile
++        for feature in interface.findall('require'):
++            if matchAPIProfile(api, profile, feature):
++                self.markRequired(featurename, feature, True)
++        # <remove> marks things that are removed by this version/profile
++        for feature in interface.findall('remove'):
++            if matchAPIProfile(api, profile, feature):
++                self.markRequired(featurename, feature, False)
++
++    def assignAdditionalValidity(self, interface, api, profile):
++        # Loop over all usage inside all <require> tags.
++        for feature in interface.findall('require'):
++            if matchAPIProfile(api, profile, feature):
++                for v in feature.findall('usage'):
++                    if v.get('command'):
++                        self.cmddict[v.get('command')].additionalValidity.append(copy.deepcopy(v))
++                    if v.get('struct'):
++                        self.typedict[v.get('struct')].additionalValidity.append(copy.deepcopy(v))
++
++        # Loop over all usage inside all <remove> tags.
++        for feature in interface.findall('remove'):
++            if matchAPIProfile(api, profile, feature):
++                for v in feature.findall('usage'):
++                    if v.get('command'):
++                        self.cmddict[v.get('command')].removedValidity.append(copy.deepcopy(v))
++                    if v.get('struct'):
++                        self.typedict[v.get('struct')].removedValidity.append(copy.deepcopy(v))
++
++    def generateFeature(self, fname, ftype, dictionary):
++        """Generate a single type / enum group / enum / command,
++        and all its dependencies as needed.
++
++        - fname - name of feature (`<type>`/`<enum>`/`<command>`)
++        - ftype - type of feature, 'type' | 'enum' | 'command'
++        - dictionary - of *Info objects - self.{type|enum|cmd}dict"""
++
++        self.gen.logMsg('diag', 'generateFeature: generating', ftype, fname)
++        f = self.lookupElementInfo(fname, dictionary)
++        if f is None:
++            # No such feature. This is an error, but reported earlier
++            self.gen.logMsg('diag', 'No entry found for feature', fname,
++                            'returning!')
++            return
++
++        # If feature isn't required, or has already been declared, return
++        if not f.required:
++            self.gen.logMsg('diag', 'Skipping', ftype, fname, '(not required)')
++            return
++        if f.declared:
++            self.gen.logMsg('diag', 'Skipping', ftype, fname, '(already declared)')
++            return
++        # Always mark feature declared, as though actually emitted
++        f.declared = True
++
++        # Determine if this is an alias, and of what, if so
++        alias = f.elem.get('alias')
++        if alias:
++            self.gen.logMsg('diag', fname, 'is an alias of', alias)
++
++        # Pull in dependent declaration(s) of the feature.
++        # For types, there may be one type in the 'requires' attribute of
++        #   the element, one in the 'alias' attribute, and many in
++        #   embedded <type> and <enum> tags within the element.
++        # For commands, there may be many in <type> tags within the element.
++        # For enums, no dependencies are allowed (though perhaps if you
++        #   have a uint64 enum, it should require that type).
++        genProc = None
++        followupFeature = None
++        if ftype == 'type':
++            genProc = self.gen.genType
++
++            # Generate type dependencies in 'alias' and 'requires' attributes
++            if alias:
++                self.generateFeature(alias, 'type', self.typedict)
++            requires = f.elem.get('requires')
++            if requires:
++                self.gen.logMsg('diag', 'Generating required dependent type',
++                                requires)
++                self.generateFeature(requires, 'type', self.typedict)
++
++            # Generate types used in defining this type (e.g. in nested
++            # <type> tags)
++            # Look for <type> in entire <command> tree,
++            # not just immediate children
++            for subtype in f.elem.findall('.//type'):
++                self.gen.logMsg('diag', 'Generating required dependent <type>',
++                                subtype.text)
++                self.generateFeature(subtype.text, 'type', self.typedict)
++
++            # Generate enums used in defining this type, for example in
++            #   <member><name>member</name>[<enum>MEMBER_SIZE</enum>]</member>
++            for subtype in f.elem.findall('.//enum'):
++                self.gen.logMsg('diag', 'Generating required dependent <enum>',
++                                subtype.text)
++                self.generateFeature(subtype.text, 'enum', self.enumdict)
++
++            # If the type is an enum group, look up the corresponding
++            # group in the group dictionary and generate that instead.
++            if f.elem.get('category') == 'enum':
++                self.gen.logMsg('diag', 'Type', fname, 'is an enum group, so generate that instead')
++                group = self.lookupElementInfo(fname, self.groupdict)
++                if alias is not None:
++                    # An alias of another group name.
++                    # Pass to genGroup with 'alias' parameter = aliased name
++                    self.gen.logMsg('diag', 'Generating alias', fname,
++                                    'for enumerated type', alias)
++                    # Now, pass the *aliased* GroupInfo to the genGroup, but
++                    # with an additional parameter which is the alias name.
++                    genProc = self.gen.genGroup
++                    f = self.lookupElementInfo(alias, self.groupdict)
++                elif group is None:
++                    self.gen.logMsg('warn', 'Skipping enum type', fname,
++                                    ': No matching enumerant group')
++                    return
++                else:
++                    genProc = self.gen.genGroup
++                    f = group
++
++                    # @ The enum group is not ready for generation. At this
++                    # @   point, it contains all <enum> tags injected by
++                    # @   <extension> tags without any verification of whether
++                    # @   they're required or not. It may also contain
++                    # @   duplicates injected by multiple consistent
++                    # @   definitions of an <enum>.
++
++                    # @ Pass over each enum, marking its enumdict[] entry as
++                    # @ required or not. Mark aliases of enums as required,
++                    # @ too.
++
++                    enums = group.elem.findall('enum')
++
++                    self.gen.logMsg('diag', 'generateFeature: checking enums for group', fname)
++
++                    # Check for required enums, including aliases
++                    # LATER - Check for, report, and remove duplicates?
++                    enumAliases = []
++                    for elem in enums:
++                        name = elem.get('name')
++
++                        required = False
++
++                        extname = elem.get('extname')
++                        version = elem.get('version')
++                        if extname is not None:
++                            # 'supported' attribute was injected when the <enum> element was
++                            # moved into the <enums> group in Registry.parseTree()
++                            if self.genOpts.defaultExtensions == elem.get('supported'):
++                                required = True
++                            elif re.match(self.genOpts.addExtensions, extname) is not None:
++                                required = True
++                        elif version is not None:
++                            required = re.match(self.genOpts.emitversions, version) is not None
++                        else:
++                            required = True
++
++                        self.gen.logMsg('diag', '* required =', required, 'for', name)
++                        if required:
++                            # Mark this element as required (in the element, not the EnumInfo)
++                            elem.set('required', 'true')
++                            # If it's an alias, track that for later use
++                            enumAlias = elem.get('alias')
++                            if enumAlias:
++                                enumAliases.append(enumAlias)
++                    for elem in enums:
++                        name = elem.get('name')
++                        if name in enumAliases:
++                            elem.set('required', 'true')
++                            self.gen.logMsg('diag', '* also need to require alias', name)
++            if f.elem.get('category') == 'bitmask':
++                followupFeature = f.elem.get('bitvalues')
++        elif ftype == 'command':
++            # Generate command dependencies in 'alias' attribute
++            if alias:
++                self.generateFeature(alias, 'command', self.cmddict)
++
++            genProc = self.gen.genCmd
++            for type_elem in f.elem.findall('.//type'):
++                depname = type_elem.text
++                self.gen.logMsg('diag', 'Generating required parameter type',
++                                depname)
++                self.generateFeature(depname, 'type', self.typedict)
++        elif ftype == 'enum':
++            # Generate enum dependencies in 'alias' attribute
++            if alias:
++                self.generateFeature(alias, 'enum', self.enumdict)
++            genProc = self.gen.genEnum
++
++        # Actually generate the type only if emitting declarations
++        if self.emitFeatures:
++            self.gen.logMsg('diag', 'Emitting', ftype, 'decl for', fname)
++            genProc(f, fname, alias)
++        else:
++            self.gen.logMsg('diag', 'Skipping', ftype, fname,
++                            '(should not be emitted)')
++
++        if followupFeature:
++            self.gen.logMsg('diag', 'Generating required bitvalues <enum>',
++                            followupFeature)
++            self.generateFeature(followupFeature, "type", self.typedict)
++
++    def generateRequiredInterface(self, interface):
++        """Generate all interfaces required by an API version or extension.
++
++        - interface - Element for `<version>` or `<extension>`"""
++
++        # Loop over all features inside all <require> tags.
++        for features in interface.findall('require'):
++            for t in features.findall('type'):
++                self.generateFeature(t.get('name'), 'type', self.typedict)
++            for e in features.findall('enum'):
++                # If this is an enum extending an enumerated type, don't
++                # generate it - this has already been done in reg.parseTree,
++                # by copying this element into the enumerated type.
++                enumextends = e.get('extends')
++                if not enumextends:
++                    self.generateFeature(e.get('name'), 'enum', self.enumdict)
++            for c in features.findall('command'):
++                self.generateFeature(c.get('name'), 'command', self.cmddict)
++
++    def apiGen(self):
++        """Generate interface for specified versions using the current
++        generator and generator options"""
++
++        self.gen.logMsg('diag', '*******************************************')
++        self.gen.logMsg('diag', '  Registry.apiGen file:', self.genOpts.filename,
++                        'api:', self.genOpts.apiname,
++                        'profile:', self.genOpts.profile)
++        self.gen.logMsg('diag', '*******************************************')
++
++        # Reset required/declared flags for all features
++        self.apiReset()
++
++        # Compile regexps used to select versions & extensions
++        regVersions = re.compile(self.genOpts.versions)
++        regEmitVersions = re.compile(self.genOpts.emitversions)
++        regAddExtensions = re.compile(self.genOpts.addExtensions)
++        regRemoveExtensions = re.compile(self.genOpts.removeExtensions)
++        regEmitExtensions = re.compile(self.genOpts.emitExtensions)
++
++        # Get all matching API feature names & add to list of FeatureInfo
++        # Note we used to select on feature version attributes, not names.
++        features = []
++        apiMatch = False
++        for key in self.apidict:
++            fi = self.apidict[key]
++            api = fi.elem.get('api')
++            if apiNameMatch(self.genOpts.apiname, api):
++                apiMatch = True
++                if regVersions.match(fi.name):
++                    # Matches API & version #s being generated. Mark for
++                    # emission and add to the features[] list .
++                    # @@ Could use 'declared' instead of 'emit'?
++                    fi.emit = (regEmitVersions.match(fi.name) is not None)
++                    features.append(fi)
++                    if not fi.emit:
++                        self.gen.logMsg('diag', 'NOT tagging feature api =', api,
++                                        'name =', fi.name, 'version =', fi.version,
++                                        'for emission (does not match emitversions pattern)')
++                    else:
++                        self.gen.logMsg('diag', 'Including feature api =', api,
++                                        'name =', fi.name, 'version =', fi.version,
++                                        'for emission (matches emitversions pattern)')
++                else:
++                    self.gen.logMsg('diag', 'NOT including feature api =', api,
++                                    'name =', fi.name, 'version =', fi.version,
++                                    '(does not match requested versions)')
++            else:
++                self.gen.logMsg('diag', 'NOT including feature api =', api,
++                                'name =', fi.name,
++                                '(does not match requested API)')
++        if not apiMatch:
++            self.gen.logMsg('warn', 'No matching API versions found!')
++
++        # Get all matching extensions, in order by their extension number,
++        # and add to the list of features.
++        # Start with extensions tagged with 'api' pattern matching the API
++        # being generated. Add extensions matching the pattern specified in
++        # regExtensions, then remove extensions matching the pattern
++        # specified in regRemoveExtensions
++        for (extName, ei) in sorted(self.extdict.items(), key=lambda x: x[1].number if x[1].number is not None else '0'):
++            extName = ei.name
++            include = False
++
++            # Include extension if defaultExtensions is not None and is
++            # exactly matched by the 'supported' attribute.
++            if apiNameMatch(self.genOpts.defaultExtensions,
++                            ei.elem.get('supported')):
++                self.gen.logMsg('diag', 'Including extension',
++                                extName, "(defaultExtensions matches the 'supported' attribute)")
++                include = True
++
++            # Include additional extensions if the extension name matches
++            # the regexp specified in the generator options. This allows
++            # forcing extensions into an interface even if they're not
++            # tagged appropriately in the registry.
++            if regAddExtensions.match(extName) is not None:
++                self.gen.logMsg('diag', 'Including extension',
++                                extName, '(matches explicitly requested extensions to add)')
++                include = True
++            # Remove extensions if the name matches the regexp specified
++            # in generator options. This allows forcing removal of
++            # extensions from an interface even if they're tagged that
++            # way in the registry.
++            if regRemoveExtensions.match(extName) is not None:
++                self.gen.logMsg('diag', 'Removing extension',
++                                extName, '(matches explicitly requested extensions to remove)')
++                include = False
++
++            # If the extension is to be included, add it to the
++            # extension features list.
++            if include:
++                ei.emit = (regEmitExtensions.match(extName) is not None)
++                features.append(ei)
++                if not ei.emit:
++                    self.gen.logMsg('diag', 'NOT tagging extension',
++                                    extName,
++                                    'for emission (does not match emitextensions pattern)')
++
++                # Hack - can be removed when validity generator goes away
++                # (Jon) I'm not sure what this does, or if it should respect
++                # the ei.emit flag above.
++                self.requiredextensions.append(extName)
++            else:
++                self.gen.logMsg('diag', 'NOT including extension',
++                                extName, '(does not match api attribute or explicitly requested extensions)')
++
++        # Sort the features list, if a sort procedure is defined
++        if self.genOpts.sortProcedure:
++            self.genOpts.sortProcedure(features)
++            # print('sortProcedure ->', [f.name for f in features])
++
++        # Pass 1: loop over requested API versions and extensions tagging
++        #   types/commands/features as required (in an <require> block) or no
++        #   longer required (in an <remove> block). It is possible to remove
++        #   a feature in one version and restore it later by requiring it in
++        #   a later version.
++        # If a profile other than 'None' is being generated, it must
++        #   match the profile attribute (if any) of the <require> and
++        #   <remove> tags.
++        self.gen.logMsg('diag', 'PASS 1: TAG FEATURES')
++        for f in features:
++            self.gen.logMsg('diag', 'PASS 1: Tagging required and removed features for',
++                            f.name)
++            self.fillFeatureDictionary(f.elem, f.name, self.genOpts.apiname, self.genOpts.profile)
++            self.requireAndRemoveFeatures(f.elem, f.name, self.genOpts.apiname, self.genOpts.profile)
++            self.assignAdditionalValidity(f.elem, self.genOpts.apiname, self.genOpts.profile)
++
++        # Pass 2: loop over specified API versions and extensions printing
++        #   declarations for required things which haven't already been
++        #   generated.
++        self.gen.logMsg('diag', 'PASS 2: GENERATE INTERFACES FOR FEATURES')
++        self.gen.beginFile(self.genOpts)
++        for f in features:
++            self.gen.logMsg('diag', 'PASS 2: Generating interface for',
++                            f.name)
++            emit = self.emitFeatures = f.emit
++            if not emit:
++                self.gen.logMsg('diag', 'PASS 2: NOT declaring feature',
++                                f.elem.get('name'), 'because it is not tagged for emission')
++            # Generate the interface (or just tag its elements as having been
++            # emitted, if they haven't been).
++            self.gen.beginFeature(f.elem, emit)
++            self.generateRequiredInterface(f.elem)
++            self.gen.endFeature()
++        self.gen.endFile()
++
++    def apiReset(self):
++        """Reset type/enum/command dictionaries before generating another API.
++
++        Use between apiGen() calls to reset internal state."""
++        for datatype in self.typedict:
++            self.typedict[datatype].resetState()
++        for enum in self.enumdict:
++            self.enumdict[enum].resetState()
++        for cmd in self.cmddict:
++            self.cmddict[cmd].resetState()
++        for cmd in self.apidict:
++            self.apidict[cmd].resetState()
++
++    def validateGroups(self):
++        """Validate `group=` attributes on `<param>` and `<proto>` tags.
++
++        Check that `group=` attributes match actual groups"""
++        # Keep track of group names not in <group> tags
++        badGroup = {}
++        self.gen.logMsg('diag', 'VALIDATING GROUP ATTRIBUTES')
++        for cmd in self.reg.findall('commands/command'):
++            proto = cmd.find('proto')
++            # funcname = cmd.find('proto/name').text
++            group = proto.get('group')
++            if group is not None and group not in self.groupdict:
++                # self.gen.logMsg('diag', '*** Command ', funcname, ' has UNKNOWN return group ', group)
++                if group not in badGroup:
++                    badGroup[group] = 1
++                else:
++                    badGroup[group] = badGroup[group] + 1
++
++            for param in cmd.findall('param'):
++                pname = param.find('name')
++                if pname is not None:
++                    pname = pname.text
++                else:
++                    pname = param.get('name')
++                group = param.get('group')
++                if group is not None and group not in self.groupdict:
++                    # self.gen.logMsg('diag', '*** Command ', funcname, ' param ', pname, ' has UNKNOWN group ', group)
++                    if group not in badGroup:
++                        badGroup[group] = 1
++                    else:
++                        badGroup[group] = badGroup[group] + 1
++
++        if badGroup:
++            self.gen.logMsg('diag', 'SUMMARY OF UNRECOGNIZED GROUPS')
++            for key in sorted(badGroup.keys()):
++                self.gen.logMsg('diag', '    ', key, ' occurred ', badGroup[key], ' times')
+--- Vulkan-Tools-1.2.151.orig/scripts/spec_tools/util.py
++++ Vulkan-Tools-1.2.151/scripts/spec_tools/util.py
+@@ -0,0 +1,58 @@
++"""Utility functions not closely tied to other spec_tools types."""
++# Copyright (c) 2018-2019 Collabora, Ltd.
++# Copyright (c) 2013-2020 The Khronos Group Inc.
++#
++# SPDX-License-Identifier: Apache-2.0
++
++
++def getElemName(elem, default=None):
++    """Get the name associated with an element, either a name child or name attribute."""
++    name_elem = elem.find('name')
++    if name_elem is not None:
++        return name_elem.text
++    # Fallback if there is no child.
++    return elem.get('name', default)
++
++
++def getElemType(elem, default=None):
++    """Get the type associated with an element, either a type child or type attribute."""
++    type_elem = elem.find('type')
++    if type_elem is not None:
++        return type_elem.text
++    # Fallback if there is no child.
++    return elem.get('type', default)
++
++
++def findFirstWithPredicate(collection, pred):
++    """Return the first element that satisfies the predicate, or None if none exist.
++
++    NOTE: Some places where this is used might be better served by changing to a dictionary.
++    """
++    for elt in collection:
++        if pred(elt):
++            return elt
++    return None
++
++
++def findNamedElem(elems, name):
++    """Traverse a collection of elements with 'name' nodes or attributes, looking for and returning one with the right name.
++
++    NOTE: Many places where this is used might be better served by changing to a dictionary.
++    """
++    return findFirstWithPredicate(elems, lambda elem: getElemName(elem) == name)
++
++
++def findTypedElem(elems, typename):
++    """Traverse a collection of elements with 'type' nodes or attributes, looking for and returning one with the right typename.
++
++    NOTE: Many places where this is used might be better served by changing to a dictionary.
++    """
++    return findFirstWithPredicate(elems, lambda elem: getElemType(elem) == typename)
++
++
++def findNamedObject(collection, name):
++    """Traverse a collection of elements with 'name' attributes, looking for and returning one with the right name.
++
++    NOTE: Many places where this is used might be better served by changing to a dictionary.
++    """
++    return findFirstWithPredicate(collection, lambda elt: elt.name == name)
+--- Vulkan-Tools-1.2.151.orig/scripts/vkconventions.py
++++ Vulkan-Tools-1.2.151/scripts/vkconventions.py
+@@ -0,0 +1,261 @@
++#!/usr/bin/python3 -i
++#
++# Copyright (c) 2013-2020 The Khronos Group Inc.
++#
++# SPDX-License-Identifier: Apache-2.0
++
++# Working-group-specific style conventions,
++# used in generation.
++
++import re
++import os
++
++from conventions import ConventionsBase
++
++
++# Modified from default implementation - see category_requires_validation() below
++CATEGORIES_REQUIRING_VALIDATION = set(('handle', 'enum', 'bitmask'))
++
++# Tokenize into "words" for structure types, approximately per spec "Implicit Valid Usage" section 2.7.2
++# This first set is for things we recognize explicitly as words,
++# as exceptions to the general regex.
++# Ideally these would be listed in the spec as exceptions, as OpenXR does.
++SPECIAL_WORDS = set((
++    '16Bit',  # VkPhysicalDevice16BitStorageFeatures
++    '8Bit',  # VkPhysicalDevice8BitStorageFeaturesKHR
++    'AABB',  # VkGeometryAABBNV
++    'ASTC',  # VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT
++    'D3D12',  # VkD3D12FenceSubmitInfoKHR
++    'Float16',  # VkPhysicalDeviceShaderFloat16Int8FeaturesKHR
++    'ImagePipe',  # VkImagePipeSurfaceCreateInfoFUCHSIA
++    'Int64',  # VkPhysicalDeviceShaderAtomicInt64FeaturesKHR
++    'Int8',  # VkPhysicalDeviceShaderFloat16Int8FeaturesKHR
++    'MacOS',  # VkMacOSSurfaceCreateInfoMVK
++    'Uint8',  # VkPhysicalDeviceIndexTypeUint8FeaturesEXT
++    'Win32',  # VkWin32SurfaceCreateInfoKHR
++))
++# A regex to match any of the SPECIAL_WORDS
++EXCEPTION_PATTERN = r'(?P<exception>{})'.format(
++    '|'.join('(%s)' % re.escape(w) for w in SPECIAL_WORDS))
++MAIN_RE = re.compile(
++    # the negative lookahead is to prevent the all-caps pattern from being too greedy.
++    r'({}|([0-9]+)|([A-Z][a-z]+)|([A-Z][A-Z]*(?![a-z])))'.format(EXCEPTION_PATTERN))
++
++
++class VulkanConventions(ConventionsBase):
++    @property
++    def null(self):
++        """Preferred spelling of NULL."""
++        return '`NULL`'
++
++    @property
++    def struct_macro(self):
++        """Get the appropriate format macro for a structure.
++
++        Primarily affects generated valid usage statements.
++        """
++
++        return 'slink:'
++
++    @property
++    def constFlagBits(self):
++        """Returns True if static const flag bits should be generated, False if an enumerated type should be generated."""
++        return False
++
++    @property
++    def structtype_member_name(self):
++        """Return name of the structure type member"""
++        return 'sType'
++
++    @property
++    def nextpointer_member_name(self):
++        """Return name of the structure pointer chain member"""
++        return 'pNext'
++
++    @property
++    def valid_pointer_prefix(self):
++        """Return prefix to pointers which must themselves be valid"""
++        return 'valid'
++
++    def is_structure_type_member(self, paramtype, paramname):
++        """Determine if member type and name match the structure type member."""
++        return paramtype == 'VkStructureType' and paramname == self.structtype_member_name
++
++    def is_nextpointer_member(self, paramtype, paramname):
++        """Determine if member type and name match the next pointer chain member."""
++        return paramtype == 'void' and paramname == self.nextpointer_member_name
++
++    def generate_structure_type_from_name(self, structname):
++        """Generate a structure type name, like VK_STRUCTURE_TYPE_CREATE_INSTANCE_INFO"""
++        structure_type_parts = []
++        # Tokenize into "words"
++        for elem in MAIN_RE.findall(structname):
++            word = elem[0]
++            if word == 'Vk':
++                structure_type_parts.append('VK_STRUCTURE_TYPE')
++            else:
++                structure_type_parts.append(word.upper())
++        return '_'.join(structure_type_parts)
++
++    @property
++    def warning_comment(self):
++        """Return warning comment to be placed in header of generated Asciidoctor files"""
++        return '// WARNING: DO NOT MODIFY! This file is automatically generated from the vk.xml registry'
++
++    @property
++    def file_suffix(self):
++        """Return suffix of generated Asciidoctor files"""
++        return '.txt'
++
++    def api_name(self, spectype='api'):
++        """Return API or specification name for citations in ref pages.ref
++           pages should link to for
++
++           spectype is the spec this refpage is for: 'api' is the Vulkan API
++           Specification. Defaults to 'api'. If an unrecognized spectype is
++           given, returns None.
++        """
++        if spectype == 'api' or spectype is None:
++            return 'Vulkan'
++        else:
++            return None
++
++    @property
++    def api_prefix(self):
++        """Return API token prefix"""
++        return 'VK_'
++
++    @property
++    def write_contacts(self):
++        """Return whether contact list should be written to extension appendices"""
++        return True
++
++    @property
++    def write_refpage_include(self):
++        """Return whether refpage include should be written to extension appendices"""
++        return True
++
++    @property
++    def member_used_for_unique_vuid(self):
++        """Return the member name used in the VUID-...-...-unique ID."""
++        return self.structtype_member_name
++
++    def is_externsync_command(self, protoname):
++        """Returns True if the protoname element is an API command requiring
++           external synchronization
++        """
++        return protoname is not None and 'vkCmd' in protoname
++
++    def is_api_name(self, name):
++        """Returns True if name is in the reserved API namespace.
++        For Vulkan, these are names with a case-insensitive 'vk' prefix, or
++        a 'PFN_vk' function pointer type prefix.
++        """
++        return name[0:2].lower() == 'vk' or name[0:6] == 'PFN_vk'
++
++    def specURL(self, spectype='api'):
++        """Return public registry URL which ref pages should link to for the
++           current all-extensions HTML specification, so xrefs in the
++           asciidoc source that aren't to ref pages can link into it
++           instead. N.b. this may need to change on a per-refpage basis if
++           there are multiple documents involved.
++        """
++        return 'https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html'
++
++    @property
++    def xml_api_name(self):
++        """Return the name used in the default API XML registry for the default API"""
++        return 'vulkan'
++
++    @property
++    def registry_path(self):
++        """Return relpath to the default API XML registry in this project."""
++        return 'xml/vk.xml'
++
++    @property
++    def specification_path(self):
++        """Return relpath to the Asciidoctor specification sources in this project."""
++        return '{generated}/meta'
++
++    @property
++    def special_use_section_anchor(self):
++        """Return asciidoctor anchor name in the API Specification of the
++        section describing extension special uses in detail."""
++        return 'extendingvulkan-compatibility-specialuse'
++
++    @property
++    def extra_refpage_headers(self):
++        """Return any extra text to add to refpage headers."""
++        return 'include::{config}/attribs.txt[]'
++
++    @property
++    def extension_index_prefixes(self):
++        """Return a list of extension prefixes used to group extension refpages."""
++        return ['VK_KHR', 'VK_EXT', 'VK']
++
++    @property
++    def unified_flag_refpages(self):
++        """Return True if Flags/FlagBits refpages are unified, False if
++           they're separate.
++        """
++        return False
++
++    @property
++    def spec_reflow_path(self):
++        """Return the path to the spec source folder to reflow"""
++        return os.getcwd()
++
++    @property
++    def spec_no_reflow_dirs(self):
++        """Return a set of directories not to automatically descend into
++           when reflowing spec text
++        """
++        return ('scripts', 'style')
++
++    @property
++    def zero(self):
++        return '`0`'
++
++    def category_requires_validation(self, category):
++        """Return True if the given type 'category' always requires validation.
++
++        Overridden because Vulkan doesn't require "valid" text for basetype in the spec right now."""
++        return category in CATEGORIES_REQUIRING_VALIDATION
++
++    @property
++    def should_skip_checking_codes(self):
++        """Return True if more than the basic validation of return codes should
++        be skipped for a command.
++
++        Vulkan mostly relies on the validation layers rather than API
++        builtin error checking, so these checks are not appropriate.
++
++        For example, passing in a VkFormat parameter will not potentially
++        generate a VK_ERROR_FORMAT_NOT_SUPPORTED code."""
++
++        return True
++
++    def extension_include_string(self, ext):
++        """Return format string for include:: line for an extension appendix
++           file. ext is an object with the following members:
++            - name - extension string string
++            - vendor - vendor portion of name
++            - barename - remainder of name"""
++
++        return 'include::{{appendices}}/{name}{suffix}[]'.format(
++                name=ext.name, suffix=self.file_suffix)
++
++    @property
++    def refpage_generated_include_path(self):
++        """Return path relative to the generated reference pages, to the
++           generated API include files."""
++        return "{generated}"
++
++    def valid_flag_bit(self, bitpos):
++        """Return True if bitpos is an allowed numeric bit position for
++           an API flag bit.
++
++           Vulkan uses 32 bit Vk*Flags types, and assumes C compilers may
++           cause Vk*FlagBits values with bit 31 set to result in a 64 bit
++           enumerated type, so disallows such flags."""
++        return bitpos >= 0 and bitpos < 31

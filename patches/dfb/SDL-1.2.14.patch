@@ -42,6 +42,7 @@ install -m 644 include/SDL_loadso.h $DESTDIR/dfb/include/SDL
 install -m 644 include/SDL_main.h $DESTDIR/dfb/include/SDL
 install -m 644 include/SDL_mouse.h $DESTDIR/dfb/include/SDL
 install -m 644 include/SDL_mutex.h $DESTDIR/dfb/include/SDL
+test $GL && install -m 644 include/SDL_opengl.h $DESTDIR/dfb/include/SDL
 install -m 644 include/SDL_platform.h $DESTDIR/dfb/include/SDL
 install -m 644 include/SDL_quit.h $DESTDIR/dfb/include/SDL
 install -m 644 include/SDL_rwops.h $DESTDIR/dfb/include/SDL
@@ -120,6 +121,9 @@ devel=\\
 /dfb/include/SDL/SDL_main.h \\
 /dfb/include/SDL/SDL_mouse.h \\
 /dfb/include/SDL/SDL_mutex.h \\
+EOF
+test $GL && echo /dfb/include/SDL/SDL_opengl.h \\ >> $DESTDIR/dfb/share/pkgconfig/sdl-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/sdl-build.pc << EOF
 /dfb/include/SDL/SDL_platform.h \\
 /dfb/include/SDL/SDL_quit.h \\
 /dfb/include/SDL/SDL_rwops.h \\
