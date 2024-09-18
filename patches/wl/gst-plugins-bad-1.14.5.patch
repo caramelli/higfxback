@@ -1,0 +1,286 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libaom-build libde265-build libxml2-build libwebp-build openssl-build wayland-build x265-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists openjpeg2-build; then
+  REQUIRES="$REQUIRES openjpeg2-build"
+else
+  pkg-config --exists --print-errors openjpeg-build || exit 1
+  REQUIRES="$REQUIRES openjpeg-build"
+fi
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires gst-plugins-base-build | grep -q egl-opengl-stubs-build && GL=1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-decklink --disable-fbdev --disable-kms --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/lib
+install gst-libs/gst/adaptivedemux/.libs/libgstadaptivedemux-1.0.so.0.* $DESTDIR/wl/lib/libgstadaptivedemux-1.0.so.0
+install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/wl/lib/libgstbasecamerabinsrc-1.0.so.0
+install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/wl/lib/libgstcodecparsers-1.0.so.0
+install gst-libs/gst/interfaces/.libs/libgstphotography-1.0.so.0.* $DESTDIR/wl/lib/libgstphotography-1.0.so.0
+install gst-libs/gst/isoff/.libs/libgstisoff-1.0.so.0.* $DESTDIR/wl/lib/libgstisoff-1.0.so.0
+install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/wl/lib/libgstmpegts-1.0.so.0
+install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/wl/lib/libgsturidownloader-1.0.so.0
+install gst-libs/gst/video/.libs/libgstbadvideo-1.0.so.0.* $DESTDIR/wl/lib/libgstbadvideo-1.0.so.0
+install gst-libs/gst/wayland/.libs/libgstwayland-1.0.so.0.* $DESTDIR/wl/lib/libgstwayland-1.0.so.0
+install -d $DESTDIR/wl/lib/gstreamer-1.0
+install ext/aom/.libs/libgstaom.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/bz2/.libs/libgstbz2.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/curl/.libs/libgstcurl.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/dash/.libs/libgstdashdemux.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/dtls/.libs/libgstdtls.so $DESTDIR/wl/lib/gstreamer-1.0
+test $GL && install ext/gl/.libs/libgstopenglmixers.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/hls/.libs/libgsthls.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/libde265/.libs/libgstde265.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/wayland/.libs/libgstwaylandsink.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/webp/.libs/libgstwebp.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/x265/.libs/libgstx265.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/accurip/.libs/libgstaccurip.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/adpcmenc/.libs/libgstadpcmenc.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/aiff/.libs/libgstaiff.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/asfmux/.libs/libgstasfmux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audiobuffersplit/.libs/libgstaudiobuffersplit.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audiofxbad/.libs/libgstaudiofxbad.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audiolatency/.libs/libgstaudiolatency.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audiomixmatrix/.libs/libgstaudiomixmatrix.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audiovisualizers/.libs/libgstaudiovisualizers.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/autoconvert/.libs/libgstautoconvert.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/bayer/.libs/libgstbayer.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/camerabin2/.libs/libgstcamerabin.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/coloreffects/.libs/libgstcoloreffects.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/compositor/.libs/libgstcompositor.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/debugutils/.libs/libgstdebugutilsbad.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/dvbsuboverlay/.libs/libgstdvbsuboverlay.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/dvdspu/.libs/libgstdvdspu.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/faceoverlay/.libs/libgstfaceoverlay.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/festival/.libs/libgstfestival.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/fieldanalysis/.libs/libgstfieldanalysis.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/freeverb/.libs/libgstfreeverb.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/frei0r/.libs/libgstfrei0r.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/gaudieffects/.libs/libgstgaudieffects.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/gdp/.libs/libgstgdp.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/geometrictransform/.libs/libgstgeometrictransform.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/id3tag/.libs/libgstid3tag.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/inter/.libs/libgstinter.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/interlace/.libs/libgstinterlace.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/ivfparse/.libs/libgstivfparse.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/ivtc/.libs/libgstivtc.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/jp2kdecimator/.libs/libgstjp2kdecimator.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/jpegformat/.libs/libgstjpegformat.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/midi/.libs/libgstmidi.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/mpegdemux/.libs/libgstmpegpsdemux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/mpegpsmux/.libs/libgstmpegpsmux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/mpegtsdemux/.libs/libgstmpegtsdemux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/mpegtsmux/.libs/libgstmpegtsmux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/mxf/.libs/libgstmxf.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/netsim/.libs/libgstnetsim.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/pcapparse/.libs/libgstpcapparse.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/pnm/.libs/libgstpnm.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/proxy/.libs/libgstproxy.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/rawparse/.libs/libgstlegacyrawparse.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/removesilence/.libs/libgstremovesilence.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/onvif/.libs/libgstrtponvif.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/sdp/.libs/libgstsdpelem.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/segmentclip/.libs/libgstsegmentclip.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/siren/.libs/libgstsiren.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/smooth/.libs/libgstsmooth.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/speed/.libs/libgstspeed.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/stereo/.libs/libgststereo.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/subenc/.libs/libgstsubenc.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/timecode/.libs/libgsttimecode.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videofilters/.libs/libgstvideofiltersbad.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videoframe_audiolevel/.libs/libgstvideoframe_audiolevel.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videoparsers/.libs/libgstvideoparsersbad.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videosignal/.libs/libgstvideosignal.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/vmnc/.libs/libgstvmnc.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/y4m/.libs/libgsty4mdec.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/yadif/.libs/libgstyadif.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/ipcpipeline/.libs/libgstipcpipeline.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/dvb/.libs/libgstdvb.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/shm/.libs/libgstshm.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/vcd/.libs/libgstvcdsrc.so $DESTDIR/wl/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+Name: gst-plugins-bad
+Version: 1.14.5
+Description: Bad GStreamer plugins
+Requires: $REQUIRES
+
+exec=\\
+/wl/lib/libgstadaptivedemux-1.0.so.0 \\
+/wl/lib/libgstbadvideo-1.0.so.0 \\
+/wl/lib/libgstbasecamerabinsrc-1.0.so.0 \\
+/wl/lib/libgstcodecparsers-1.0.so.0 \\
+/wl/lib/libgstisoff-1.0.so.0 \\
+/wl/lib/libgstmpegts-1.0.so.0 \\
+/wl/lib/libgstphotography-1.0.so.0 \\
+/wl/lib/libgsturidownloader-1.0.so.0 \\
+/wl/lib/libgstwayland-1.0.so.0 \\
+/wl/lib/gstreamer-1.0/libgstaccurip.so \\
+/wl/lib/gstreamer-1.0/libgstadpcmdec.so \\
+/wl/lib/gstreamer-1.0/libgstadpcmenc.so \\
+/wl/lib/gstreamer-1.0/libgstaiff.so \\
+/wl/lib/gstreamer-1.0/libgstaom.so \\
+/wl/lib/gstreamer-1.0/libgstasfmux.so \\
+/wl/lib/gstreamer-1.0/libgstaudiobuffersplit.so \\
+/wl/lib/gstreamer-1.0/libgstaudiofxbad.so \\
+/wl/lib/gstreamer-1.0/libgstaudiolatency.so \\
+/wl/lib/gstreamer-1.0/libgstaudiomixmatrix.so \\
+/wl/lib/gstreamer-1.0/libgstaudiovisualizers.so \\
+/wl/lib/gstreamer-1.0/libgstautoconvert.so \\
+/wl/lib/gstreamer-1.0/libgstbayer.so \\
+/wl/lib/gstreamer-1.0/libgstbz2.so \\
+/wl/lib/gstreamer-1.0/libgstcamerabin.so \\
+/wl/lib/gstreamer-1.0/libgstcoloreffects.so \\
+/wl/lib/gstreamer-1.0/libgstcompositor.so \\
+/wl/lib/gstreamer-1.0/libgstcurl.so \\
+/wl/lib/gstreamer-1.0/libgstdashdemux.so \\
+/wl/lib/gstreamer-1.0/libgstde265.so \\
+/wl/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
+/wl/lib/gstreamer-1.0/libgstdtls.so \\
+/wl/lib/gstreamer-1.0/libgstdvb.so \\
+/wl/lib/gstreamer-1.0/libgstdvbsuboverlay.so \\
+/wl/lib/gstreamer-1.0/libgstdvdspu.so \\
+/wl/lib/gstreamer-1.0/libgstfaceoverlay.so \\
+/wl/lib/gstreamer-1.0/libgstfestival.so \\
+/wl/lib/gstreamer-1.0/libgstfieldanalysis.so \\
+/wl/lib/gstreamer-1.0/libgstfreeverb.so \\
+/wl/lib/gstreamer-1.0/libgstfrei0r.so \\
+/wl/lib/gstreamer-1.0/libgstgaudieffects.so \\
+/wl/lib/gstreamer-1.0/libgstgdp.so \\
+/wl/lib/gstreamer-1.0/libgstgeometrictransform.so \\
+/wl/lib/gstreamer-1.0/libgsthls.so \\
+/wl/lib/gstreamer-1.0/libgstid3tag.so \\
+/wl/lib/gstreamer-1.0/libgstinter.so \\
+/wl/lib/gstreamer-1.0/libgstinterlace.so \\
+/wl/lib/gstreamer-1.0/libgstipcpipeline.so \\
+/wl/lib/gstreamer-1.0/libgstivfparse.so \\
+/wl/lib/gstreamer-1.0/libgstivtc.so \\
+/wl/lib/gstreamer-1.0/libgstjp2kdecimator.so \\
+/wl/lib/gstreamer-1.0/libgstjpegformat.so \\
+/wl/lib/gstreamer-1.0/libgstlegacyrawparse.so \\
+/wl/lib/gstreamer-1.0/libgstmidi.so \\
+/wl/lib/gstreamer-1.0/libgstmpegpsdemux.so \\
+/wl/lib/gstreamer-1.0/libgstmpegpsmux.so \\
+/wl/lib/gstreamer-1.0/libgstmpegtsdemux.so \\
+/wl/lib/gstreamer-1.0/libgstmpegtsmux.so \\
+/wl/lib/gstreamer-1.0/libgstmxf.so \\
+/wl/lib/gstreamer-1.0/libgstnetsim.so \\
+EOF
+test $GL && echo /wl/lib/gstreamer-1.0/libgstopenglmixers.so \\ >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/wl/lib/gstreamer-1.0/libgstopenjpeg.so \\
+/wl/lib/gstreamer-1.0/libgstpcapparse.so \\
+/wl/lib/gstreamer-1.0/libgstpnm.so \\
+/wl/lib/gstreamer-1.0/libgstproxy.so \\
+/wl/lib/gstreamer-1.0/libgstremovesilence.so \\
+/wl/lib/gstreamer-1.0/libgstrfbsrc.so \\
+/wl/lib/gstreamer-1.0/libgstrtponvif.so \\
+/wl/lib/gstreamer-1.0/libgstsdpelem.so \\
+/wl/lib/gstreamer-1.0/libgstsegmentclip.so \\
+/wl/lib/gstreamer-1.0/libgstshm.so \\
+/wl/lib/gstreamer-1.0/libgstsiren.so \\
+/wl/lib/gstreamer-1.0/libgstsmooth.so \\
+/wl/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+/wl/lib/gstreamer-1.0/libgstspeed.so \\
+/wl/lib/gstreamer-1.0/libgststereo.so \\
+/wl/lib/gstreamer-1.0/libgstsubenc.so \\
+/wl/lib/gstreamer-1.0/libgsttimecode.so \\
+/wl/lib/gstreamer-1.0/libgstvcdsrc.so \\
+/wl/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
+/wl/lib/gstreamer-1.0/libgstvideoframe_audiolevel.so \\
+/wl/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
+/wl/lib/gstreamer-1.0/libgstvideosignal.so \\
+/wl/lib/gstreamer-1.0/libgstvmnc.so \\
+/wl/lib/gstreamer-1.0/libgstwaylandsink.so \\
+/wl/lib/gstreamer-1.0/libgstwebp.so \\
+/wl/lib/gstreamer-1.0/libgstx265.so \\
+/wl/lib/gstreamer-1.0/libgsty4mdec.so \\
+/wl/lib/gstreamer-1.0/libgstyadif.so
+EOF
+
+exit
+--- gst-plugins-bad-1.14.5.orig/configure.ac
++++ gst-plugins-bad-1.14.5/configure.ac
+@@ -1900,8 +1900,13 @@
+ translit(dnm, m, l) AM_CONDITIONAL(USE_OPENJPEG, true)
+ AG_GST_CHECK_FEATURE(OPENJPEG, [openjpeg library], openjpeg, [
+   HAVE_OPENJPEG="no"
+-  AG_GST_PKG_CHECK_MODULES(OPENJPEG, libopenjp2 >= 2.1)
+-  if test x"$HAVE_OPENJPEG" != x"yes"; then
++  AG_GST_PKG_CHECK_MODULES(OPENJPEG, libopenjp2 >= 2.0)
++  if test x"$HAVE_OPENJPEG" = x"yes"; then
++    AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
++    if test x"$HAVE_OPENJPEG_2_1" = x"yes"; then
++      AC_DEFINE([HAVE_OPENJPEG_2_1], 1, [Define if OpenJPEG 2.1 is used])
++    fi
++  else
+     # Fallback to v1.5
+     OPENJPEG_LIBS=""
+     PKG_CHECK_MODULES(OPENJPEG, libopenjpeg1,
+--- gst-plugins-bad-1.14.5.orig/ext/dash/gstdashdemux.c
++++ gst-plugins-bad-1.14.5/ext/dash/gstdashdemux.c
+@@ -285,7 +285,7 @@
+ #include <gio/gio.h>
+ #include <gst/base/gsttypefindhelper.h>
+ #include <gst/tag/tag.h>
+-#include <gst/net/gstnet.h>
++#include <gst/net/net.h>
+ #include "gst/gst-i18n-plugin.h"
+ #include "gstdashdemux.h"
+ #include "gstdash_debug.h"
+--- gst-plugins-bad-1.14.5.orig/ext/openjpeg/gstopenjpegdec.c
++++ gst-plugins-bad-1.14.5/ext/openjpeg/gstopenjpegdec.c
+@@ -1138,7 +1138,11 @@
+   opj_stream_set_write_function (stream, write_fn);
+   opj_stream_set_skip_function (stream, skip_fn);
+   opj_stream_set_seek_function (stream, seek_fn);
++#ifdef HAVE_OPENJPEG_2_1
+   opj_stream_set_user_data (stream, &mstream, NULL);
++#else
++  opj_stream_set_user_data (stream, &mstream);
++#endif
+   opj_stream_set_user_data_length (stream, mstream.size);
+ 
+   image = NULL;
+--- gst-plugins-bad-1.14.5.orig/ext/openjpeg/gstopenjpegenc.c
++++ gst-plugins-bad-1.14.5/ext/openjpeg/gstopenjpegenc.c
+@@ -958,7 +958,11 @@
+   opj_stream_set_write_function (stream, write_fn);
+   opj_stream_set_skip_function (stream, skip_fn);
+   opj_stream_set_seek_function (stream, seek_fn);
++#ifdef HAVE_OPENJPEG_2_1
+   opj_stream_set_user_data (stream, &mstream, NULL);
++#else
++  opj_stream_set_user_data (stream, &mstream);
++#endif
+   opj_stream_set_user_data_length (stream, mstream.size);
+ 
+   if (!opj_start_compress (enc, image, stream))
+--- gst-plugins-bad-1.14.5.orig/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
++++ gst-plugins-bad-1.14.5/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
+@@ -26,8 +26,7 @@
+  * #GstCameraBinVideo.
+  *
+  */
+-#include <gst/app/gstappsrc.h>
+-#include <gst/app/gstappsink.h>
++#include <gst/app/app.h>
+ #include <gst/glib-compat-private.h>
+ #include "gstcamerabinpreview.h"
+ #include "gstbasecamerasrc.h"

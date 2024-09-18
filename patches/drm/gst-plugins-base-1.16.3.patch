@@ -10,6 +10,11 @@ if pkg-config --exists alsa-lib-build; then
   REQUIRES="$REQUIRES alsa-lib-build"
 fi
 
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists egl-opengl-stubs-build gudev-build libdrm-build libgbm-stub-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build gudev-build libdrm-build libgbm-stub-build"
+fi
+
 # configure (ac-2.69; am-1.16; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --prefix=/drm
@@ -68,6 +73,58 @@ install -m 644 gst-libs/gst/fft/gstfftf32.h $DESTDIR/drm/include/gstreamer-1.0/g
 install -m 644 gst-libs/gst/fft/gstfftf64.h $DESTDIR/drm/include/gstreamer-1.0/gst/fft
 install -m 644 gst-libs/gst/fft/gstffts16.h $DESTDIR/drm/include/gstreamer-1.0/gst/fft
 install -m 644 gst-libs/gst/fft/gstffts32.h $DESTDIR/drm/include/gstreamer-1.0/gst/fft
+test $GL && install -d $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gl.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gl-enumtypes.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gl-prelude.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstgl_enums.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstgl_fwd.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglapi.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglbasefilter.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglbasememory.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglbuffer.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglbufferpool.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglcolorconvert.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglconfig.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglcontext.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstgldebug.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstgldisplay.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglfeature.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglfilter.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglformat.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglframebuffer.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglfuncs.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglmemory.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglmemorypbo.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstgloverlaycompositor.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglquery.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglrenderbuffer.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglshader.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglshaderstrings.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglsl.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglslstage.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglsyncmeta.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglupload.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglutils.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglviewconvert.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -m 644 gst-libs/gst/gl/gstglwindow.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl
+test $GL && install -d $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/all_functions.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/base.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/blending.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/buffers.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/debug.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/eglimage.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/fbo.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/fixedfunction.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/gles.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/gstgl_compat.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/gstgl_gles2compat.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/opengl.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/query.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/shaders.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/sync.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
+test $GL && install -m 644 gst-libs/gst/gl/glprototypes/vao.h $DESTDIR/drm/include/gstreamer-1.0/gst/gl/glprototypes
 install -d $DESTDIR/drm/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/codec-utils.h $DESTDIR/drm/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/descriptions.h $DESTDIR/drm/include/gstreamer-1.0/gst/pbutils
@@ -168,6 +225,8 @@ install gst-libs/gst/audio/.libs/libgstaudio-1.0.so.0.* $DESTDIR/drm/lib/libgsta
 ln -sf libgstaudio-1.0.so.0 $DESTDIR/drm/lib/libgstaudio-1.0.so
 install gst-libs/gst/fft/.libs/libgstfft-1.0.so.0.* $DESTDIR/drm/lib/libgstfft-1.0.so.0
 ln -sf libgstfft-1.0.so.0 $DESTDIR/drm/lib/libgstfft-1.0.so
+test $GL && install gst-libs/gst/gl/.libs/libgstgl-1.0.so.0.* $DESTDIR/drm/lib/libgstgl-1.0.so.0
+test $GL && ln -sf libgstgl-1.0.so.0 $DESTDIR/drm/lib/libgstgl-1.0.so
 install gst-libs/gst/pbutils/.libs/libgstpbutils-1.0.so.0.* $DESTDIR/drm/lib/libgstpbutils-1.0.so.0
 ln -sf libgstpbutils-1.0.so.0 $DESTDIR/drm/lib/libgstpbutils-1.0.so
 install gst-libs/gst/riff/.libs/libgstriff-1.0.so.0.* $DESTDIR/drm/lib/libgstriff-1.0.so.0
@@ -184,6 +243,7 @@ install gst-libs/gst/video/.libs/libgstvideo-1.0.so.0.* $DESTDIR/drm/lib/libgstv
 ln -sf libgstvideo-1.0.so.0 $DESTDIR/drm/lib/libgstvideo-1.0.so
 install -d $DESTDIR/drm/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/drm/lib/gstreamer-1.0
+test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/ogg/.libs/libgstogg.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -214,6 +274,7 @@ install -m 644 pkgconfig/gstreamer-allocators-1.0.pc $DESTDIR/drm/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-app-1.0.pc $DESTDIR/drm/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-audio-1.0.pc $DESTDIR/drm/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-fft-1.0.pc $DESTDIR/drm/lib/pkgconfig
+test $GL && install -m 644 pkgconfig/gstreamer-gl-1.0.pc $DESTDIR/drm/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-pbutils-1.0.pc $DESTDIR/drm/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-plugins-base-1.0.pc $DESTDIR/drm/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-riff-1.0.pc $DESTDIR/drm/lib/pkgconfig
@@ -274,6 +335,58 @@ devel=\\
 /drm/include/gstreamer-1.0/gst/fft/gstfftf64.h \\
 /drm/include/gstreamer-1.0/gst/fft/gstffts16.h \\
 /drm/include/gstreamer-1.0/gst/fft/gstffts32.h \\
+EOF
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gl.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gl-enumtypes.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gl-prelude.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstgl_enums.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstgl_fwd.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglapi.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglbasefilter.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglbasememory.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglbuffer.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglbufferpool.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglcolorconvert.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglconfig.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglcontext.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstgldebug.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstgldisplay.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglfeature.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglfilter.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglformat.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglframebuffer.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglfuncs.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglmemory.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglmemorypbo.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstgloverlaycompositor.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglquery.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglrenderbuffer.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglshader.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglshaderstrings.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglsl.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglslstage.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglsyncmeta.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglupload.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglutils.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglviewconvert.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/gstglwindow.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/all_functions.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/base.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/blending.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/buffers.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/debug.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/eglimage.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/fbo.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/fixedfunction.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/gles.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/gstgl_compat.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/gstgl_gles2compat.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/opengl.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/query.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/shaders.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/sync.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+test $GL && echo /drm/include/gstreamer-1.0/gst/gl/glprototypes/vao.h \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/include/gstreamer-1.0/gst/pbutils/codec-utils.h \\
 /drm/include/gstreamer-1.0/gst/pbutils/descriptions.h \\
 /drm/include/gstreamer-1.0/gst/pbutils/encoding-profile.h \\
@@ -362,6 +475,9 @@ devel=\\
 /drm/lib/libgstapp-1.0.so \\
 /drm/lib/libgstaudio-1.0.so \\
 /drm/lib/libgstfft-1.0.so \\
+EOF
+test $GL && echo /drm/lib/libgstgl-1.0.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/libgstpbutils-1.0.so \\
 /drm/lib/libgstriff-1.0.so \\
 /drm/lib/libgstrtp-1.0.so \\
@@ -373,6 +489,9 @@ devel=\\
 /drm/lib/pkgconfig/gstreamer-app-1.0.pc \\
 /drm/lib/pkgconfig/gstreamer-audio-1.0.pc \\
 /drm/lib/pkgconfig/gstreamer-fft-1.0.pc \\
+EOF
+test $GL && echo /drm/lib/pkgconfig/gstreamer-gl-1.0.pc \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/pkgconfig/gstreamer-pbutils-1.0.pc \\
 /drm/lib/pkgconfig/gstreamer-plugins-base-1.0.pc \\
 /drm/lib/pkgconfig/gstreamer-riff-1.0.pc \\
@@ -390,6 +509,9 @@ exec=\\
 /drm/lib/libgstapp-1.0.so.0 \\
 /drm/lib/libgstaudio-1.0.so.0 \\
 /drm/lib/libgstfft-1.0.so.0 \\
+EOF
+test $GL && echo /drm/lib/libgstgl-1.0.so.0 \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/libgstpbutils-1.0.so.0 \\
 /drm/lib/libgstriff-1.0.so.0 \\
 /drm/lib/libgstrtp-1.0.so.0 \\
@@ -412,6 +534,9 @@ cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstgio.so \\
 /drm/lib/gstreamer-1.0/libgstivorbisdec \\
 /drm/lib/gstreamer-1.0/libgstogg.so \\
+EOF
+test $GL && echo /drm/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstpbtypes.so \\
 /drm/lib/gstreamer-1.0/libgstplayback.so \\
 /drm/lib/gstreamer-1.0/libgstoverlaycomposition.so \\
@@ -438,6 +563,37 @@ exit
  #include <gst/fft/gstffts16.h>
  #include <gst/fft/gstffts32.h>
  #include <gst/fft/gstfftf32.h>
+--- gst-plugins-base-1.16.3.orig/gst-libs/gst/gl/Makefile.am
++++ gst-plugins-base-1.16.3/gst-libs/gst/gl/Makefile.am
+@@ -150,9 +150,6 @@
+ gstgl_gir_sources += egl/gstgldisplay_egl.c
+ endif
+ 
+-configexecincludedir = $(libdir)/gstreamer-@GST_API_VERSION@/include/gst/gl
+-nodist_configexecinclude_HEADERS = $(built_sys_header_configure)
+-
+ libgstgl_@GST_API_VERSION@_la_CFLAGS = \
+ 	-DBUILDING_GST_GL \
+ 	$(GST_PLUGINS_BASE_CFLAGS) \
+@@ -181,7 +178,7 @@
+ 
+ CLEANFILES = $(BUILT_SOURCES)
+ 
+-nodist_libgstgl_@GST_API_VERSION@include_HEADERS = $(built_headers)
++nodist_libgstgl_@GST_API_VERSION@include_HEADERS = $(built_headers) $(built_sys_header_configure)
+ nodist_libgstgl_@GST_API_VERSION@_la_SOURCES = $(BUILT_SOURCES)
+ 
+ include $(top_srcdir)/common/gst-glib-gen.mak
+--- gst-plugins-base-1.16.3.orig/gst-libs/gst/gl/egl/Makefile.am
++++ gst-plugins-base-1.16.3/gst-libs/gst/gl/egl/Makefile.am
+@@ -24,6 +24,7 @@
+ 	-I$(top_srcdir)/gst-libs \
+ 	-I$(top_builddir)/gst-libs \
+ 	-DBUILDING_GST_GL \
++	-DEGL_NO_PLATFORM_SPECIFIC_TYPES \
+ 	$(GL_CFLAGS) \
+ 	$(GST_PLUGINS_BASE_CFLAGS) \
+ 	$(GST_BASE_CFLAGS) \
 --- gst-plugins-base-1.16.3.orig/gst-libs/gst/riff/riff.h
 +++ gst-plugins-base-1.16.3/gst-libs/gst/riff/riff.h
 @@ -23,7 +23,6 @@
@@ -479,6 +635,14 @@ exit
  #include <gst/sdp/gstsdpmessage.h>
  #include <gst/sdp/gstmikey.h>
  
+--- gst-plugins-base-1.16.3.orig/pkgconfig/gstreamer-gl.pc.in
++++ gst-plugins-base-1.16.3/pkgconfig/gstreamer-gl.pc.in
+@@ -13,4 +13,4 @@
+ Requires: gstreamer-video-@GST_API_VERSION@ gstreamer-base-@GST_API_VERSION@ gstreamer-@GST_API_VERSION@
+ 
+ Libs: -L${libdir} -lgstgl-@GST_API_VERSION@
+-Cflags: -I${includedir} -I${libdir}/gstreamer-@GST_API_VERSION@/include @GL_CFLAGS@
++Cflags: -I${includedir} @GL_CFLAGS@
 --- gst-plugins-base-1.16.3.orig/tests/examples/fft/fftrange.c
 +++ gst-plugins-base-1.16.3/tests/examples/fft/fftrange.c
 @@ -18,10 +18,7 @@

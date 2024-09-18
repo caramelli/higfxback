@@ -1,0 +1,162 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build cairo-build gdk-pixbuf-build gst-plugins-base-build speex-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/lib/gstreamer-1.0
+install ext/cairo/.libs/libgstcairo.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/gdk_pixbuf/.libs/libgstgdkpixbuf.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/jpeg/.libs/libgstjpeg.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/libpng/.libs/libgstpng.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/speex/.libs/libgstspeex.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/law/.libs/libgstalaw.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/alpha/.libs/libgstalpha.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/alpha/.libs/libgstalphacolor.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/apetag/.libs/libgstapetag.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audiofx/.libs/libgstaudiofx.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/audioparsers/.libs/libgstaudioparsers.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/auparse/.libs/libgstauparse.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/autodetect/.libs/libgstautodetect.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/avi/.libs/libgstavi.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/cutter/.libs/libgstcutter.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/debugutils/.libs/libgstdebug.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/deinterlace/.libs/libgstdeinterlace.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/dtmf/.libs/libgstdtmf.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/effectv/.libs/libgsteffectv.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/equalizer/.libs/libgstequalizer.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/flv/.libs/libgstflv.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/flx/.libs/libgstflxdec.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/goom/.libs/libgstgoom.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/goom2k1/.libs/libgstgoom2k1.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/icydemux/.libs/libgsticydemux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/id3demux/.libs/libgstid3demux.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/imagefreeze/.libs/libgstimagefreeze.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/interleave/.libs/libgstinterleave.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/isomp4/.libs/libgstisomp4.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/level/.libs/libgstlevel.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/matroska/.libs/libgstmatroska.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/law/.libs/libgstmulaw.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/multifile/.libs/libgstmultifile.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/multipart/.libs/libgstmultipart.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/debugutils/.libs/libgstnavigationtest.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/replaygain/.libs/libgstreplaygain.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/rtp/.libs/libgstrtp.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/rtpmanager/.libs/libgstrtpmanager.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/rtsp/.libs/libgstrtsp.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/shapewipe/.libs/libgstshapewipe.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/smpte/.libs/libgstsmpte.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/spectrum/.libs/libgstspectrum.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/udp/.libs/libgstudp.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videobox/.libs/libgstvideobox.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videocrop/.libs/libgstvideocrop.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videofilter/.libs/libgstvideofilter.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/videomixer/.libs/libgstvideomixer.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/wavenc/.libs/libgstwavenc.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/wavparse/.libs/libgstwavparse.so $DESTDIR/wl/lib/gstreamer-1.0
+install gst/y4m/.libs/libgsty4menc.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/oss/.libs/libgstossaudio.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/oss4/.libs/libgstoss4.so $DESTDIR/wl/lib/gstreamer-1.0
+install sys/v4l2/.libs/libgstvideo4linux2.so $DESTDIR/wl/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/gst-plugins-good-build.pc << EOF
+Name: gst-plugins-good
+Version: 1.14.5
+Description: Good GStreamer plugins
+Requires: $REQUIRES
+
+exec=\\
+/wl/lib/gstreamer-1.0/libgstalaw.so \\
+/wl/lib/gstreamer-1.0/libgstalpha.so \\
+/wl/lib/gstreamer-1.0/libgstalphacolor.so \\
+/wl/lib/gstreamer-1.0/libgstapetag.so \\
+/wl/lib/gstreamer-1.0/libgstaudiofx.so \\
+/wl/lib/gstreamer-1.0/libgstaudioparsers.so \\
+/wl/lib/gstreamer-1.0/libgstauparse.so \\
+/wl/lib/gstreamer-1.0/libgstautodetect.so \\
+/wl/lib/gstreamer-1.0/libgstavi.so \\
+/wl/lib/gstreamer-1.0/libgstcairo.so \\
+/wl/lib/gstreamer-1.0/libgstcutter.so \\
+/wl/lib/gstreamer-1.0/libgstdebug.so \\
+/wl/lib/gstreamer-1.0/libgstdeinterlace.so \\
+/wl/lib/gstreamer-1.0/libgstdtmf.so \\
+/wl/lib/gstreamer-1.0/libgsteffectv.so \\
+/wl/lib/gstreamer-1.0/libgstequalizer.so \\
+/wl/lib/gstreamer-1.0/libgstflv.so \\
+/wl/lib/gstreamer-1.0/libgstflxdec.so \\
+/wl/lib/gstreamer-1.0/libgstgdkpixbuf.so \\
+/wl/lib/gstreamer-1.0/libgstgoom.so \\
+/wl/lib/gstreamer-1.0/libgstgoom2k1.so \\
+/wl/lib/gstreamer-1.0/libgsticydemux.so \\
+/wl/lib/gstreamer-1.0/libgstid3demux.so \\
+/wl/lib/gstreamer-1.0/libgstimagefreeze.so \\
+/wl/lib/gstreamer-1.0/libgstinterleave.so \\
+/wl/lib/gstreamer-1.0/libgstisomp4.so \\
+/wl/lib/gstreamer-1.0/libgstjpeg.so \\
+/wl/lib/gstreamer-1.0/libgstlevel.so \\
+/wl/lib/gstreamer-1.0/libgstmatroska.so \\
+/wl/lib/gstreamer-1.0/libgstmulaw.so \\
+/wl/lib/gstreamer-1.0/libgstmultifile.so \\
+/wl/lib/gstreamer-1.0/libgstmultipart.so \\
+/wl/lib/gstreamer-1.0/libgstnavigationtest.so \\
+/wl/lib/gstreamer-1.0/libgstossaudio.so \\
+/wl/lib/gstreamer-1.0/libgstoss4.so \\
+/wl/lib/gstreamer-1.0/libgstpng.so \\
+/wl/lib/gstreamer-1.0/libgstreplaygain.so \\
+/wl/lib/gstreamer-1.0/libgstrtp.so \\
+/wl/lib/gstreamer-1.0/libgstrtpmanager.so \\
+/wl/lib/gstreamer-1.0/libgstrtsp.so \\
+/wl/lib/gstreamer-1.0/libgstshapewipe.so \\
+/wl/lib/gstreamer-1.0/libgstsmpte.so \\
+/wl/lib/gstreamer-1.0/libgstspectrum.so \\
+/wl/lib/gstreamer-1.0/libgstspeex.so \\
+/wl/lib/gstreamer-1.0/libgstudp.so \\
+/wl/lib/gstreamer-1.0/libgstvideo4linux2.so \\
+/wl/lib/gstreamer-1.0/libgstvideobox.so \\
+/wl/lib/gstreamer-1.0/libgstvideocrop.so \\
+/wl/lib/gstreamer-1.0/libgstvideofilter.so \\
+/wl/lib/gstreamer-1.0/libgstvideomixer.so \\
+/wl/lib/gstreamer-1.0/libgstwavenc.so \\
+/wl/lib/gstreamer-1.0/libgstwavparse.so \\
+/wl/lib/gstreamer-1.0/libgsty4menc.so
+EOF
+
+exit
+--- gst-plugins-good-1.14.5.orig/gst/matroska/matroska-demux.c
++++ gst-plugins-good-1.14.5/gst/matroska/matroska-demux.c
+@@ -55,9 +55,7 @@
+ 
+ /* For AVI compatibility mode
+    and for fourcc stuff */
+-#include <gst/riff/riff-read.h>
+-#include <gst/riff/riff-ids.h>
+-#include <gst/riff/riff-media.h>
++#include <gst/riff/riff.h>
+ 
+ #include <gst/audio/audio.h>
+ #include <gst/tag/tag.h>
+--- gst-plugins-good-1.14.5.orig/gst/rtsp/gstrtspsrc.c
++++ gst-plugins-good-1.14.5/gst/rtsp/gstrtspsrc.c
+@@ -87,9 +87,8 @@
+ #include <stdio.h>
+ #include <stdarg.h>
+ 
+-#include <gst/net/gstnet.h>
+-#include <gst/sdp/gstsdpmessage.h>
+-#include <gst/sdp/gstmikey.h>
++#include <gst/net/net.h>
++#include <gst/sdp/sdp.h>
+ #include <gst/rtp/rtp.h>
+ 
+ #include "gst/gst-i18n-plugin.h"
