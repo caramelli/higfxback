@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libaom-build libde265-build libdrm-build libxml2-build libwebp-build openssl-build x265-build"
+REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libdrm-build libxml2-build libwebp-build openssl-build"
 
 PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -10,6 +10,21 @@ if pkg-config --exists openjpeg2-build; then
 else
   pkg-config --exists --print-errors openjpeg-build || exit 1
   REQUIRES="$REQUIRES openjpeg-build"
+fi
+
+if pkg-config --exists libaom-build; then
+  AOM=1
+  REQUIRES="$REQUIRES libaom-build"
+fi
+
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists libde265-build; then
+  DE265=1
+  REQUIRES="$REQUIRES libde265-build"
+fi
+
+if pkg-config --exists x265-build; then
+  X265=1
+  REQUIRES="$REQUIRES x265-build"
 fi
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
@@ -29,17 +44,17 @@ install gst-libs/gst/isoff/.libs/libgstisoff-1.0.so.0.* $DESTDIR/drm/lib/libgsti
 install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/drm/lib/libgstmpegts-1.0.so.0
 install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/drm/lib/libgsturidownloader-1.0.so.0
 install -d $DESTDIR/drm/lib/gstreamer-1.0
-install ext/aom/.libs/libgstaom.so $DESTDIR/drm/lib/gstreamer-1.0
+test $AOM && install ext/aom/.libs/libgstaom.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/bz2/.libs/libgstbz2.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/curl/.libs/libgstcurl.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dtls/.libs/libgstdtls.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/hls/.libs/libgsthls.so $DESTDIR/drm/lib/gstreamer-1.0
-install ext/libde265/.libs/libgstde265.so $DESTDIR/drm/lib/gstreamer-1.0
+test $DE265 && install ext/libde265/.libs/libgstde265.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/webp/.libs/libgstwebp.so $DESTDIR/drm/lib/gstreamer-1.0
-install ext/x265/.libs/libgstx265.so $DESTDIR/drm/lib/gstreamer-1.0
+test $X265 && install ext/x265/.libs/libgstx265.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/accurip/.libs/libgstaccurip.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/adpcmenc/.libs/libgstadpcmenc.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -125,7 +140,9 @@ exec=\\
 /drm/lib/gstreamer-1.0/libgstadpcmdec.so \\
 /drm/lib/gstreamer-1.0/libgstadpcmenc.so \\
 /drm/lib/gstreamer-1.0/libgstaiff.so \\
-/drm/lib/gstreamer-1.0/libgstaom.so \\
+EOF
+test $AOM && echo /drm/lib/gstreamer-1.0/libgstaom.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstasfmux.so \\
 /drm/lib/gstreamer-1.0/libgstaudiobuffersplit.so \\
 /drm/lib/gstreamer-1.0/libgstaudiofxbad.so \\
@@ -139,7 +156,9 @@ exec=\\
 /drm/lib/gstreamer-1.0/libgstcoloreffects.so \\
 /drm/lib/gstreamer-1.0/libgstcurl.so \\
 /drm/lib/gstreamer-1.0/libgstdashdemux.so \\
-/drm/lib/gstreamer-1.0/libgstde265.so \\
+EOF
+test $DE265 && echo /drm/lib/gstreamer-1.0/libgstde265.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
 /drm/lib/gstreamer-1.0/libgstdtls.so \\
 /drm/lib/gstreamer-1.0/libgstdvb.so \\
@@ -193,7 +212,9 @@ exec=\\
 /drm/lib/gstreamer-1.0/libgstvideosignal.so \\
 /drm/lib/gstreamer-1.0/libgstvmnc.so \\
 /drm/lib/gstreamer-1.0/libgstwebp.so \\
-/drm/lib/gstreamer-1.0/libgstx265.so \\
+EOF
+test $X265 && echo /drm/lib/gstreamer-1.0/libgstx265.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgsty4mdec.so \\
 /drm/lib/gstreamer-1.0/libgstyadif.so
 EOF

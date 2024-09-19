@@ -217,8 +217,8 @@ test $FUSIONSOUND && test $MAD && install -m 644 build/meson-private/fusionsound
 test $FUSIONSOUND && install -m 644 build/meson-private/fusionsound-interface-musicprovider_playlist.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && test $TREMOR && install -m 644 build/meson-private/fusionsound-interface-musicprovider_tremor.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && test $VORBIS && install -m 644 build/meson-private/fusionsound-interface-musicprovider_vorbis.pc $DESTDIR/dfb/lib/pkgconfig
-PATH=/bin:/dfb/bin dfb-update-pkgconfig
-test $FUSIONSOUND && PATH=/bin:/dfb/bin fs-update-pkgconfig
+test $DESTDIR || /dfb/bin/dfb-update-pkgconfig
+test $FUSIONSOUND && { test $DESTDIR || /dfb/bin/fs-update-pkgconfig; }
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig

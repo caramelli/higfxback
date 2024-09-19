@@ -603,7 +603,7 @@ exit
 -   struct GLFBDevRenderbufferRec *frontrb = (struct GLFBDevRenderbufferRec *)
 +   struct GLFBDevRenderbufferRec *frb, *brb;
 +   GLubyte *frbPtr, *brbPtr;
-+   GLuint bpp, i, linesize;
++   GLuint bpp, i;
 +
 +   if (!buffer)
 +      return;
@@ -619,7 +619,7 @@ exit
        return;
  
     /* check if swapping currently bound buffer */
-@@ -696,13 +726,20 @@
+@@ -696,13 +726,19 @@
        _mesa_notifySwapBuffers(&fbdevctx->glcontext);
     }
  
@@ -629,10 +629,9 @@ exit
 +   bpp = buffer->bytesPerPixel;
 +   frbPtr = frb->Base.Data + frb->winPosy * frb->rowStride + frb->winPosx * bpp;
 +   brbPtr = brb->Base.Data + (brb->winHeight - frb->winHeight) * brb->rowStride;
-+   linesize = frb->winWidth * bpp;
 +
 +   for (i = 0; i < frb->winHeight; i++) {
-+      memcpy(frbPtr, brbPtr, linesize);
++      memcpy(frbPtr, brbPtr, frb->winWidth * bpp);
 +      frbPtr += frb->rowStride;
 +      brbPtr += brb->rowStride;
 +   }
@@ -644,7 +643,7 @@ exit
  glFBDevCreateContext( const GLFBDevVisualPtr visual, GLFBDevContextPtr share )
  {
     GLFBDevContextPtr ctx;
-@@ -756,7 +793,7 @@
+@@ -756,7 +792,7 @@
  }
  
  
@@ -653,7 +652,7 @@ exit
  glFBDevDestroyContext( GLFBDevContextPtr context )
  {
     GLFBDevContextPtr fbdevctx = glFBDevGetCurrentContext();
-@@ -779,7 +816,7 @@
+@@ -779,7 +815,7 @@
  }
  
  
@@ -662,7 +661,7 @@ exit
  glFBDevGetContextAttrib( const GLFBDevContextPtr context, int attrib)
  {
     (void) context;
-@@ -788,7 +825,7 @@
+@@ -788,7 +824,7 @@
  }
  
  
@@ -671,7 +670,7 @@ exit
  glFBDevGetCurrentContext( void )
  {
     GET_CURRENT_CONTEXT(ctx);
-@@ -796,7 +833,7 @@
+@@ -796,7 +832,7 @@
  }
  
  
@@ -680,7 +679,7 @@ exit
  glFBDevMakeCurrent( GLFBDevContextPtr context,
                      GLFBDevBufferPtr drawBuffer,
                      GLFBDevBufferPtr readBuffer )
-@@ -825,4 +862,31 @@
+@@ -825,4 +861,31 @@
     return 1;
  }
  

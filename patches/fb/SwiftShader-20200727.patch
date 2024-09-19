@@ -456,7 +456,7 @@ exit
          MetalSurface.mm
 --- SwiftShader-20200727.orig/src/WSI/FBDevSurfaceEXT.cpp
 +++ SwiftShader-20200727/src/WSI/FBDevSurfaceEXT.cpp
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,122 @@
 +// Copyright 2020 The SwiftShader Authors. All Rights Reserved.
 +//
 +// Licensed under the Apache License, Version 2.0 (the "License");
@@ -567,11 +567,10 @@ exit
 +	int imageRowPitch = image->getImage()->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 +	uint8_t *fbdevMemory = fbdevBuffer + posy * fbdevRowPitch + posx * fbdevBytesPerPixel;
 +	uint8_t *imageMemory = static_cast<uint8_t *>(image->getImageMemory()->getOffsetPointer(0));
-+	size_t lineSize = width * fbdevBytesPerPixel;
 +
 +	for(int i = 0; i < height; i++)
 +	{
-+		memcpy(fbdevMemory, imageMemory, lineSize);
++		memcpy(fbdevMemory, imageMemory, width * fbdevBytesPerPixel);
 +		fbdevMemory += fbdevRowPitch;
 +		imageMemory += imageRowPitch;
 +	}
