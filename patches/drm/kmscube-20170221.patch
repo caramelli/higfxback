@@ -1,0 +1,82 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build egl-opengl-stubs-build libdrm-build libgbm-stub-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14)
+aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install kmscube $DESTDIR/drm/bin
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/kmscube-build.pc << EOF
+Name: kmscube
+Version: 20170221
+Description: Spinning OpenGL cube using KMS/DRM/GBM/EGL Native Platform Graphics Interface
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/kmscube
+EOF
+
+exit
+--- kmscube-20170221.orig/Makefile.am
++++ kmscube-20170221/Makefile.am
+@@ -23,9 +23,6 @@
+ 
+ bin_PROGRAMS = kmscube
+ 
+-kmscube_LDFLAGS = \
+-	-no-undefined
+-
+ kmscube_LDADD = \
+ 	$(DRM_LIBS) \
+ 	$(GBM_LIBS) \
+@@ -34,6 +31,7 @@
+ 
+ kmscube_CFLAGS = \
+ 	-O0 -g -lm \
++	-DEGL_NO_X11 \
+ 	$(DRM_CFLAGS) \
+ 	$(GBM_CFLAGS) \
+ 	$(EGL_CFLAGS) \
+--- kmscube-20170221.orig/common.h
++++ kmscube-20170221/common.h
+@@ -31,7 +31,7 @@
+ #include <EGL/eglext.h>
+ 
+ #include <gbm.h>
+-#include <drm/drm_fourcc.h>
++#include <drm_fourcc.h>
+ 
+ #define GL_GLEXT_PROTOTYPES 1
+ #include <GLES2/gl2.h>
+--- kmscube-20170221.orig/configure.ac
++++ kmscube-20170221/configure.ac
+@@ -25,7 +25,6 @@
+ AC_PREREQ([2.60])
+ AC_INIT([kmscube], [0.0.1], [https://github.com/robclark/kmscube/], [kmscube])
+ AC_CONFIG_SRCDIR([Makefile.am])
+-AC_CONFIG_HEADERS([config.h])
+ AC_CONFIG_AUX_DIR([build-aux])
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+@@ -36,9 +35,6 @@
+ # Enable quiet compiles on automake 1.11.
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+-# Initialize libtool
+-AC_PROG_LIBTOOL
+-
+ # Obtain compiler/linker options for depedencies
+ PKG_CHECK_MODULES(DRM, libdrm)
+ PKG_CHECK_MODULES(GBM, gbm)

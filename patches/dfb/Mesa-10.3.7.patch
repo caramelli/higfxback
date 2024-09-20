@@ -1,14 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build bison-build directfb2-build gcc-g++-build libxml2-build opengl-registry-build"
+REQUIRES="autotools-wrappers-lt-build bison-build directfb2-build gcc-g++-build opengl-registry-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if pkg-config --exists libdrm-build; then
   DRM=1
   DRI="--disable-glx --disable-nls --with-egl-platforms=directfb,drm --without-dri-drivers"
-  REQUIRES="$REQUIRES libdrm-build"
+  REQUIRES="$REQUIRES expat-build libdrm-build"
   pkg-config --exists libudev-build && REQUIRES="$REQUIRES libudev-build" || SYSFS=--enable-sysfs
 else
   DRI="--disable-dri --with-egl-platforms=directfb"

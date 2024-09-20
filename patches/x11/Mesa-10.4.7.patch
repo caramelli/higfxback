@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libxext-build libxml2-build opengl-registry-build"
+REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build libxext-build opengl-registry-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -9,7 +9,7 @@ if pkg-config --exists libdrm-build; then
   PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires libx11-build | grep -q libxcb-build || { echo libX11 with XCB support required; exit 1; }
   DRM=1
   DRI="--disable-nls --with-egl-platforms=x11,drm --without-dri-drivers"
-  REQUIRES="$REQUIRES libdrm-build"
+  REQUIRES="$REQUIRES expat-build libdrm-build"
   pkg-config --exists libudev-build && REQUIRES="$REQUIRES libudev-build" || SYSFS=--enable-sysfs
 else
   DRI="--disable-dri"
