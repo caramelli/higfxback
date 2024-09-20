@@ -5,9 +5,19 @@ REQUIRES="directfb2-build freetype-build libpng-build meson-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=1
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists ffmpeg-build; then
   FFMPEG=1
   REQUIRES="$REQUIRES ffmpeg-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists divine2-build; then
+  DIVINE=1
+  REQUIRES="$REQUIRES divine2-build"
 fi
 
 # configure
@@ -24,9 +34,11 @@ install build/src/dfiffinfo $DESTDIR/dfb/bin
 install build/src/dfiffcolorkeying $DESTDIR/dfb/bin
 install build/src/dflayerlevel $DESTDIR/dfb/bin
 install build/src/dfvffinfo $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fsvolume $DESTDIR/dfb/bin
 install build/src/mkdfiff $DESTDIR/dfb/bin
 test $FFMPEG && install build/src/mkdfvff $DESTDIR/dfb/bin
 install build/src/mkdgiff $DESTDIR/dfb/bin
+test $DIVINE && install build/src/spooky $DESTDIR/dfb/bin
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -43,11 +55,16 @@ exec=\\
 /dfb/bin/dfiffcolorkeying \\
 /dfb/bin/dflayerlevel \\
 /dfb/bin/dfvffinfo \\
+EOF
+test $FUSIONSOUND && echo /dfb/bin/fsvolume \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc << EOF
 /dfb/bin/mkdfiff \\
 EOF
 test $FFMPEG && echo /dfb/bin/mkdfvff \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc << EOF
-/dfb/bin/mkdgiff
+/dfb/bin/mkdgiff \\
 EOF
+test $DIVINE && echo /dfb/bin/spooky \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-tools-build.pc
 
 exit

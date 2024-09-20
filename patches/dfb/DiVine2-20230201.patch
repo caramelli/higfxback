@@ -1,0 +1,43 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/include/divine
+install -m 644 include/divine.h $DESTDIR/dfb/include/divine
+install -d $DESTDIR/dfb/lib
+install build/src/libdivine-2.0.so.0.*[!p] $DESTDIR/dfb/lib/libdivine-2.0.so.0
+ln -sf libdivine-2.0.so.0 $DESTDIR/dfb/lib/libdivine.so
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/inputdrivers
+install build/inputdrivers/divine/libdirectfb_divine.so $DESTDIR/dfb/lib/directfb-2.0-0/inputdrivers
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/divine.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/divine2-build.pc << EOF
+Name: DiVine2
+Version: 20230201
+Description: DirectFB Virtual input extension
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/divine/divine.h \\
+/dfb/lib/libdivine.so \\
+/dfb/lib/pkgconfig/divine.pc
+
+exec=\\
+/dfb/lib/libdivine-2.0.so.0 \\
+/dfb/lib/directfb-2.0-0/inputdrivers/libdirectfb_divine.so
+EOF
+
+exit
