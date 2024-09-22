@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-lt-build glib-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 ./configure --libexecdir=/dfb/lib --prefix=/dfb
 
@@ -17,6 +17,7 @@ install -d $DESTDIR/dfb/bin
 install tools/.libs/gst-inspect-1.0 $DESTDIR/dfb/bin
 install tools/.libs/gst-launch-1.0 $DESTDIR/dfb/bin
 install tools/.libs/gst-typefind-1.0 $DESTDIR/dfb/bin
+install tools/.libs/gst-stats-1.0 $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/glib-compat.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gst.h $DESTDIR/dfb/include/gstreamer-1.0/gst
@@ -80,6 +81,9 @@ install -m 644 gst/gsttask.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gsttaskpool.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gsttoc.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gsttocsetter.h $DESTDIR/dfb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttracer.h $DESTDIR/dfb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttracerfactory.h $DESTDIR/dfb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttracerrecord.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gsttypefind.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gsttypefindfactory.h $DESTDIR/dfb/include/gstreamer-1.0/gst
 install -m 644 gst/gsturi.h $DESTDIR/dfb/include/gstreamer-1.0/gst
@@ -142,6 +146,7 @@ install -d $DESTDIR/dfb/lib/gstreamer-1.0
 install libs/gst/helpers/.libs/gst-plugin-scanner $DESTDIR/dfb/lib/gstreamer-1.0
 install libs/gst/helpers/.libs/gst-ptp-helper $DESTDIR/dfb/lib/gstreamer-1.0
 install plugins/elements/.libs/libgstcoreelements.so $DESTDIR/dfb/lib/gstreamer-1.0
+install plugins/tracers/.libs/libgstcoretracers.so $DESTDIR/dfb/lib/gstreamer-1.0
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-1.0.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-base-1.0.pc $DESTDIR/dfb/lib/pkgconfig
@@ -153,7 +158,7 @@ install -m 644 pkgconfig/gstreamer-net-1.0.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gstreamer-build.pc << EOF
 Name: gstreamer
-Version: 1.6.4
+Version: 1.8.3
 Description: Core GStreamer libraries and utilities
 Requires: $REQUIRES
 
@@ -220,6 +225,9 @@ devel=\\
 /dfb/include/gstreamer-1.0/gst/gsttaskpool.h \\
 /dfb/include/gstreamer-1.0/gst/gsttoc.h \\
 /dfb/include/gstreamer-1.0/gst/gsttocsetter.h \\
+/dfb/include/gstreamer-1.0/gst/gsttracer.h \\
+/dfb/include/gstreamer-1.0/gst/gsttracerfactory.h \\
+/dfb/include/gstreamer-1.0/gst/gsttracerrecord.h \\
 /dfb/include/gstreamer-1.0/gst/gsttypefind.h \\
 /dfb/include/gstreamer-1.0/gst/gsttypefindfactory.h \\
 /dfb/include/gstreamer-1.0/gst/gsturi.h \\
@@ -278,6 +286,7 @@ exec=\\
 /dfb/bin/gst-inspect-1.0 \\
 /dfb/bin/gst-launch-1.0 \\
 /dfb/bin/gst-typefind-1.0 \\
+/dfb/bin/gst-stats-1.0 \\
 /dfb/lib/libgstbase-1.0.so.0 \\
 /dfb/lib/libgstcheck-1.0.so.0 \\
 /dfb/lib/libgstcontroller-1.0.so.0 \\
@@ -285,13 +294,14 @@ exec=\\
 /dfb/lib/libgstreamer-1.0.so.0 \\
 /dfb/lib/gstreamer-1.0/gst-plugin-scanner \\
 /dfb/lib/gstreamer-1.0/gst-ptp-helper \\
-/dfb/lib/gstreamer-1.0/libgstcoreelements.so
+/dfb/lib/gstreamer-1.0/libgstcoreelements.so \\
+/dfb/lib/gstreamer-1.0/libgstcoretracers.so
 EOF
 
 exit
---- gstreamer-1.6.4.orig/gst/Makefile.am
-+++ gstreamer-1.6.4/gst/Makefile.am
-@@ -229,10 +229,7 @@
+--- gstreamer-1.8.3.orig/gst/Makefile.am
++++ gstreamer-1.8.3/gst/Makefile.am
+@@ -236,10 +236,7 @@
  libgstreamer_@GST_API_VERSION@include_HEADERS = $(gst_headers) math-compat.h
  
  nodist_libgstreamer_@GST_API_VERSION@include_HEADERS = \
@@ -303,8 +313,8 @@ exit
  
  noinst_HEADERS = 		\
  	gettext.h		\
---- gstreamer-1.6.4.orig/libs/gst/net/net.h
-+++ gstreamer-1.6.4/libs/gst/net/net.h
+--- gstreamer-1.8.3.orig/libs/gst/net/net.h
++++ gstreamer-1.8.3/libs/gst/net/net.h
 @@ -22,7 +22,6 @@
  #ifndef __GST_NET__H__
  #define __GST_NET__H__
@@ -313,8 +323,8 @@ exit
  #include <gst/net/gstnetaddressmeta.h>
  #include <gst/net/gstnetclientclock.h>
  #include <gst/net/gstnettimepacket.h>
---- gstreamer-1.6.4.orig/pkgconfig/gstreamer.pc.in
-+++ gstreamer-1.6.4/pkgconfig/gstreamer.pc.in
+--- gstreamer-1.8.3.orig/pkgconfig/gstreamer.pc.in
++++ gstreamer-1.8.3/pkgconfig/gstreamer.pc.in
 @@ -17,4 +17,4 @@
  Requires: glib-2.0, gobject-2.0
  Requires.private: gmodule-no-export-2.0

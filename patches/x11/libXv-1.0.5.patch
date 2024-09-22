@@ -1,0 +1,52 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libxext-build videoproto-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/extensions
+install -m 644 include/X11/extensions/Xvlib.h $DESTDIR/x11/include/X11/extensions
+install -d $DESTDIR/x11/lib
+install src/.libs/libXv.so.1.* $DESTDIR/x11/lib/libXv.so.1
+ln -sf libXv.so.1 $DESTDIR/x11/lib/libXv.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xv.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxv-build.pc << EOF
+Name: libXv
+Version: 1.0.5
+Description: X video library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/extensions/Xvlib.h \\
+/x11/lib/libXv.so \\
+/x11/lib/pkgconfig/xv.pc
+
+exec=\\
+/x11/lib/libXv.so.1
+EOF
+
+exit
+--- libXv-1.0.5.orig/include/X11/extensions/Xvlib.h
++++ libXv-1.0.5/include/X11/extensions/Xvlib.h
+@@ -53,7 +53,7 @@
+ **
+ */
+ 
+-#include <X11/Xfuncproto.h>
++#include <X11/Xlib.h>
+ #include <X11/extensions/Xv.h>
+ #include <X11/extensions/XShm.h>
+ 

@@ -22,7 +22,7 @@ if pkg-config --exists x265-build; then
   REQUIRES="$REQUIRES x265-build"
 fi
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-decklink --disable-fbdev --prefix=/dfb
 
@@ -32,6 +32,7 @@ make
 # install
 install -d $DESTDIR/dfb/lib
 install gst-libs/gst/adaptivedemux/.libs/libgstadaptivedemux-1.0.so.0.* $DESTDIR/dfb/lib/libgstadaptivedemux-1.0.so.0
+install gst-libs/gst/audio/.libs/libgstbadaudio-1.0.so.0.* $DESTDIR/dfb/lib/libgstbadaudio-1.0.so.0
 install gst-libs/gst/base/.libs/libgstbadbase-1.0.so.0.* $DESTDIR/dfb/lib/libgstbadbase-1.0.so.0
 install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/dfb/lib/libgstbasecamerabinsrc-1.0.so.0
 install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/dfb/lib/libgstcodecparsers-1.0.so.0
@@ -43,9 +44,9 @@ install -d $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/bz2/.libs/libgstbz2.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/curl/.libs/libgstcurl.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
-install ext/dtls/.libs/libgstdtls.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/directfb/.libs/libgstdfbvideosink.so $DESTDIR/dfb/lib/gstreamer-1.0
-install ext/hls/.libs/libgstfragmented.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/dtls/.libs/libgstdtls.so $DESTDIR/dfb/lib/gstreamer-1.0
+install ext/hls/.libs/libgsthls.so $DESTDIR/dfb/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstlibde265.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -83,18 +84,17 @@ install gst/ivtc/.libs/libgstivtc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/jp2kdecimator/.libs/libgstjp2kdecimator.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/jpegformat/.libs/libgstjpegformat.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
-install gst/liveadder/.libs/libgstliveadder.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/midi/.libs/libgstmidi.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/mpegdemux/.libs/libgstmpegpsdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/mpegpsmux/.libs/libgstmpegpsmux.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/mpegtsdemux/.libs/libgstmpegtsdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/mpegtsmux/.libs/libgstmpegtsmux.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/mxf/.libs/libgstmxf.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/netsim/.libs/libgstnetsim.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/pcapparse/.libs/libgstpcapparse.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/pnm/.libs/libgstpnm.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/rawparse/.libs/libgstrawparse.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/removesilence/.libs/libgstremovesilence.so $DESTDIR/dfb/lib/gstreamer-1.0
-install gst/rtp/.libs/libgstrtpbad.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/onvif/.libs/libgstrtponvif.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/sdp/.libs/libgstsdpelem.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/segmentclip/.libs/libgstsegmentclip.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -104,6 +104,7 @@ install gst/speed/.libs/libgstspeed.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/stereo/.libs/libgststereo.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/subenc/.libs/libgstsubenc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/videofilters/.libs/libgstvideofiltersbad.so $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/videoframe_audiolevel/.libs/libgstvideoframe_audiolevel.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/videoparsers/.libs/libgstvideoparsersbad.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/videosignal/.libs/libgstvideosignal.so $DESTDIR/dfb/lib/gstreamer-1.0
 install gst/vmnc/.libs/libgstvmnc.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -117,12 +118,13 @@ install sys/vcd/.libs/libgstvcdsrc.so $DESTDIR/dfb/lib/gstreamer-1.0
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 Name: gst-plugins-bad
-Version: 1.6.4
+Version: 1.8.3
 Description: Bad GStreamer plugins
 Requires: $REQUIRES
 
 exec=\\
 /dfb/lib/libgstadaptivedemux-1.0.so.0 \\
+/dfb/lib/libgstbadaudio-1.0.so.0 \\
 /dfb/lib/libgstbadbase-1.0.so.0 \\
 /dfb/lib/libgstbadvideo-1.0.so.0 \\
 /dfb/lib/libgstbasecamerabinsrc-1.0.so.0 \\
@@ -155,12 +157,12 @@ exec=\\
 /dfb/lib/gstreamer-1.0/libgstdvdspu.so \\
 /dfb/lib/gstreamer-1.0/libgstfestival.so \\
 /dfb/lib/gstreamer-1.0/libgstfieldanalysis.so \\
-/dfb/lib/gstreamer-1.0/libgstfragmented.so \\
 /dfb/lib/gstreamer-1.0/libgstfreeverb.so \\
 /dfb/lib/gstreamer-1.0/libgstfrei0r.so \\
 /dfb/lib/gstreamer-1.0/libgstgaudieffects.so \\
 /dfb/lib/gstreamer-1.0/libgstgdp.so \\
 /dfb/lib/gstreamer-1.0/libgstgeometrictransform.so \\
+/dfb/lib/gstreamer-1.0/libgsthls.so \\
 /dfb/lib/gstreamer-1.0/libgstid3tag.so \\
 /dfb/lib/gstreamer-1.0/libgstinter.so \\
 /dfb/lib/gstreamer-1.0/libgstinterlace.so \\
@@ -171,20 +173,19 @@ exec=\\
 EOF
 test $DE265 && echo /dfb/lib/gstreamer-1.0/libgstlibde265.so \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
-/dfb/lib/gstreamer-1.0/libgstliveadder.so \\
 /dfb/lib/gstreamer-1.0/libgstmidi.so \\
 /dfb/lib/gstreamer-1.0/libgstmpegpsdemux.so \\
 /dfb/lib/gstreamer-1.0/libgstmpegpsmux.so \\
 /dfb/lib/gstreamer-1.0/libgstmpegtsdemux.so \\
 /dfb/lib/gstreamer-1.0/libgstmpegtsmux.so \\
 /dfb/lib/gstreamer-1.0/libgstmxf.so \\
+/dfb/lib/gstreamer-1.0/libgstnetsim.so \\
 /dfb/lib/gstreamer-1.0/libgstopenjpeg.so \\
 /dfb/lib/gstreamer-1.0/libgstpcapparse.so \\
 /dfb/lib/gstreamer-1.0/libgstpnm.so \\
 /dfb/lib/gstreamer-1.0/libgstrawparse.so \\
 /dfb/lib/gstreamer-1.0/libgstremovesilence.so \\
 /dfb/lib/gstreamer-1.0/libgstrfbsrc.so \\
-/dfb/lib/gstreamer-1.0/libgstrtpbad.so \\
 /dfb/lib/gstreamer-1.0/libgstrtponvif.so \\
 /dfb/lib/gstreamer-1.0/libgstsdpelem.so \\
 /dfb/lib/gstreamer-1.0/libgstsegmentclip.so \\
@@ -197,10 +198,11 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstsubenc.so \\
 /dfb/lib/gstreamer-1.0/libgstvcdsrc.so \\
 /dfb/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
+/dfb/lib/gstreamer-1.0/libgstvideoframe_audiolevel.so \\
 /dfb/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
 /dfb/lib/gstreamer-1.0/libgstvideosignal.so \\
 /dfb/lib/gstreamer-1.0/libgstvmnc.so \\
-/dfb/lib/gstreamer-1.0/libgstwebp..so \\
+/dfb/lib/gstreamer-1.0/libgstwebp.so \\
 EOF
 test $X265 && echo /dfb/lib/gstreamer-1.0/libgstx265.so \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
@@ -209,9 +211,20 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 EOF
 
 exit
---- gst-plugins-bad-1.6.4.orig/ext/dash/gstdashdemux.c
-+++ gst-plugins-bad-1.6.4/ext/dash/gstdashdemux.c
-@@ -150,7 +150,7 @@
+--- gst-plugins-bad-1.8.3.orig/configure.ac
++++ gst-plugins-bad-1.8.3/configure.ac
+@@ -2722,7 +2722,7 @@
+   if test x"$HAVE_OPENJPEG" = x"yes"; then
+     dnl minor API changes in v2.1
+     AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
+-    if test x"$HAVE_OPENJPEG" = x"yes"; then
++    if test x"$HAVE_OPENJPEG_2_1" = x"yes"; then
+       AC_DEFINE([HAVE_OPENJPEG_2_1], 1, [Define if OpenJPEG 2.1 is used])
+     fi
+   else
+--- gst-plugins-bad-1.8.3.orig/ext/dash/gstdashdemux.c
++++ gst-plugins-bad-1.8.3/ext/dash/gstdashdemux.c
+@@ -151,7 +151,7 @@
  #include <gio/gio.h>
  #include <gst/base/gsttypefindhelper.h>
  #include <gst/tag/tag.h>
@@ -220,8 +233,8 @@ exit
  #include "gst/gst-i18n-plugin.h"
  #include "gstdashdemux.h"
  #include "gstdash_debug.h"
---- gst-plugins-bad-1.6.4.orig/ext/directfb/dfbvideosink.c
-+++ gst-plugins-bad-1.6.4/ext/directfb/dfbvideosink.c
+--- gst-plugins-bad-1.8.3.orig/ext/directfb/dfbvideosink.c
++++ gst-plugins-bad-1.8.3/ext/directfb/dfbvideosink.c
 @@ -589,10 +589,9 @@
            switch (event.input.key_symbol) {
              case DIKS_ESCAPE:
@@ -236,8 +249,88 @@ exit
              }
              default:
                GST_DEBUG_OBJECT (dfbvideosink, "key press event %c !",
---- gst-plugins-bad-1.6.4.orig/ext/dtls/gstdtlsconnection.c
-+++ gst-plugins-bad-1.6.4/ext/dtls/gstdtlsconnection.c
+@@ -1117,12 +1116,15 @@
+       pixel_format = DSPF_RGB16;
+       break;
+     case GST_VIDEO_FORMAT_RGB:
++    case GST_VIDEO_FORMAT_BGR:
+       pixel_format = DSPF_RGB24;
+       break;
+     case GST_VIDEO_FORMAT_xRGB:
++    case GST_VIDEO_FORMAT_BGRx:
+       pixel_format = DSPF_RGB32;
+       break;
+     case GST_VIDEO_FORMAT_ARGB:
++    case GST_VIDEO_FORMAT_BGRA:
+       pixel_format = DSPF_ARGB;
+       break;
+     case GST_VIDEO_FORMAT_I420:
+@@ -1160,13 +1162,25 @@
+       fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_RGB16);
+       break;
+     case DSPF_RGB24:
++#if G_BYTE_ORDER == G_BIG_ENDIAN
+       fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_RGB);
++#else
++      fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_BGR);
++#endif
+       break;
+     case DSPF_RGB32:
++#if G_BYTE_ORDER == G_BIG_ENDIAN
+       fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_xRGB);
++#else
++      fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_BGRx);
++#endif
+       break;
+     case DSPF_ARGB:
++#if G_BYTE_ORDER == G_BIG_ENDIAN
+       fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_ARGB);
++#else
++      fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_BGRA);
++#endif
+       break;
+     case DSPF_YUY2:
+       fourcc = gst_video_format_to_string (GST_VIDEO_FORMAT_YUY2);
+@@ -1594,11 +1608,9 @@
+     lc.flags = DLCONF_PIXELFORMAT;
+     lc.pixelformat = pixel_format;
+ 
+-    ret = dfbvideosink->layer->SetConfiguration (dfbvideosink->layer, &lc);
+-    if (ret != DFB_OK) {
+-      GST_WARNING_OBJECT (dfbvideosink, "failed setting layer pixelformat "
+-          "to %s", gst_dfbvideosink_get_format_name (pixel_format));
+-    } else {
++    if (DFB_BYTES_PER_PIXEL(pixel_format) ==
++        DFB_BYTES_PER_PIXEL(dfbvideosink->pixel_format)) {
++      dfbvideosink->layer->SetConfiguration (dfbvideosink->layer, &lc);
+       dfbvideosink->layer->GetConfiguration (dfbvideosink->layer, &lc);
+       dfbvideosink->out_width = lc.width;
+       dfbvideosink->out_height = lc.height;
+@@ -1609,12 +1621,6 @@
+     }
+   }
+ 
+-  if (pixel_format != dfbvideosink->pixel_format) {
+-    GST_WARNING_OBJECT (dfbvideosink, "setcaps sent us a different pixel "
+-        "format %s", gst_dfbvideosink_get_format_name (pixel_format));
+-    goto beach;
+-  }
+-
+   dfbvideosink->video_width = video_width;
+   dfbvideosink->video_height = video_height;
+ 
+@@ -1634,7 +1640,8 @@
+         "failed to set buffer pool configuration");
+     goto beach;
+   }
+-  if (!gst_buffer_pool_set_active (dfbvideosink->pool, TRUE)) {
++  if (pixel_format == dfbvideosink->pixel_format &&
++      !gst_buffer_pool_set_active (dfbvideosink->pool, TRUE)) {
+     GST_WARNING_OBJECT (dfbvideosink, "failed to activate buffer pool");
+     goto beach;
+   }
+--- gst-plugins-bad-1.8.3.orig/ext/dtls/gstdtlsconnection.c
++++ gst-plugins-bad-1.8.3/ext/dtls/gstdtlsconnection.c
 @@ -239,7 +239,7 @@
        priv->bio = BIO_new (BIO_s_gst_dtls_connection ());
        g_return_if_fail (priv->bio);
@@ -362,9 +455,9 @@ exit
 +  GST_LOG_OBJECT (GST_DTLS_CONNECTION (BIO_get_data (bio)), "BIO free");
    return 0;
  }
---- gst-plugins-bad-1.6.4.orig/ext/hls/gsthlsdemux.c
-+++ gst-plugins-bad-1.6.4/ext/hls/gsthlsdemux.c
-@@ -1113,11 +1113,11 @@
+--- gst-plugins-bad-1.8.3.orig/ext/hls/gsthlsdemux.c
++++ gst-plugins-bad-1.8.3/ext/hls/gsthlsdemux.c
+@@ -1100,11 +1100,11 @@
  gst_hls_demux_decrypt_start (GstHLSDemux * demux, const guint8 * key_data,
      const guint8 * iv_data)
  {
@@ -379,7 +472,7 @@ exit
    return TRUE;
  }
  
-@@ -1131,10 +1131,10 @@
+@@ -1118,10 +1118,10 @@
      return FALSE;
  
    len = (int) length;
@@ -392,7 +485,7 @@ exit
    g_return_val_if_fail (len + flen == length, FALSE);
    return TRUE;
  }
-@@ -1142,7 +1142,8 @@
+@@ -1129,7 +1129,8 @@
  static void
  gst_hls_demux_decrypt_end (GstHLSDemux * demux)
  {
@@ -402,8 +495,8 @@ exit
  }
  
  #elif defined(HAVE_NETTLE)
---- gst-plugins-bad-1.6.4.orig/ext/hls/gsthlsdemux.h
-+++ gst-plugins-bad-1.6.4/ext/hls/gsthlsdemux.h
+--- gst-plugins-bad-1.8.3.orig/ext/hls/gsthlsdemux.h
++++ gst-plugins-bad-1.8.3/ext/hls/gsthlsdemux.h
 @@ -76,7 +76,7 @@
  
    /* decryption tooling */
@@ -413,15 +506,3 @@ exit
  #elif defined(HAVE_NETTLE)
    struct CBC_CTX (struct aes_ctx, AES_BLOCK_SIZE) aes_ctx;
  #else
---- gst-plugins-bad-1.6.4.orig/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
-+++ gst-plugins-bad-1.6.4/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
-@@ -26,8 +26,7 @@
-  * #GstCameraBinVideo.
-  *
-  */
--#include <gst/app/gstappsrc.h>
--#include <gst/app/gstappsink.h>
-+#include <gst/app/app.h>
- #include <gst/glib-compat-private.h>
- #include "gstcamerabinpreview.h"
- #include "gstbasecamerasrc.h"

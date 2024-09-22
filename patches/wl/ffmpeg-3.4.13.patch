@@ -271,6 +271,17 @@ exit
  check_func_headers "windows.h" CreateDIBSection "$gdigrab_indev_extralibs"
  
  # d3d11va requires linking directly to dxgi and d3d11 if not building for
+--- ffmpeg-3.4.13.orig/ffbuild/version.sh
++++ ffmpeg-3.4.13/ffbuild/version.sh
+@@ -46,7 +46,7 @@
+ fi
+ 
+ NEW_REVISION="#define FFMPEG_VERSION \"$version\""
+-OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -1)
++OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -n -1)
+ 
+ # String used for preprocessor guard
+ GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
 --- ffmpeg-3.4.13.orig/libavdevice/Makefile
 +++ ffmpeg-3.4.13/libavdevice/Makefile
 @@ -47,6 +47,7 @@

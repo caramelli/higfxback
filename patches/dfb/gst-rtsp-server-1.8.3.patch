@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-lt-build gst-plugins-bad-build gst-plugins-good-bui
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
@@ -36,6 +36,8 @@ install -m 644 gst/rtsp-server/rtsp-token.h $DESTDIR/dfb/include/gstreamer-1.0/g
 install -d $DESTDIR/dfb/lib
 install gst/rtsp-server/.libs/libgstrtspserver-1.0.so.0.* $DESTDIR/dfb/lib/libgstrtspserver-1.0.so.0
 ln -sf libgstrtspserver-1.0.so.0 $DESTDIR/dfb/lib/libgstrtspserver-1.0.so
+install -d $DESTDIR/dfb/lib/gstreamer-1.0
+install gst/rtsp-sink/.libs/libgstrtspclientsink.so $DESTDIR/dfb/lib/gstreamer-1.0
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 pkgconfig/gstreamer-rtsp-server-1.0.pc $DESTDIR/dfb/lib/pkgconfig
 
@@ -43,7 +45,7 @@ install -m 644 pkgconfig/gstreamer-rtsp-server-1.0.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gst-rtsp-server-build.pc << EOF
 Name: gst-rtsp-server
-Version: 1.6.4
+Version: 1.8.3
 Description: GStreamer RTSP server library
 Requires: $REQUIRES
 
@@ -71,12 +73,13 @@ devel=\\
 /dfb/lib/pkgconfig/gstreamer-rtsp-server-1.0.pc
 
 exec=\\
-/dfb/lib/libgstrtspserver-1.0.so.0
+/dfb/lib/libgstrtspserver-1.0.so.0 \\
+/dfb/lib/gstreamer-1.0/libgstrtspclientsink.so
 EOF
 
 exit
---- gst-rtsp-server-1.6.4.orig/examples/test-netclock-client.c
-+++ gst-rtsp-server-1.6.4/examples/test-netclock-client.c
+--- gst-rtsp-server-1.8.3.orig/examples/test-netclock-client.c
++++ gst-rtsp-server-1.8.3/examples/test-netclock-client.c
 @@ -21,7 +21,7 @@
  #include <stdlib.h>
  
@@ -86,8 +89,8 @@ exit
  
  #define PLAYBACK_DELAY_MS 40
  
---- gst-rtsp-server-1.6.4.orig/gst/rtsp-server/rtsp-media.h
-+++ gst-rtsp-server-1.6.4/gst/rtsp-server/rtsp-media.h
+--- gst-rtsp-server-1.8.3.orig/gst/rtsp-server/rtsp-media.h
++++ gst-rtsp-server-1.8.3/gst/rtsp-server/rtsp-media.h
 @@ -19,7 +19,7 @@
  
  #include <gst/gst.h>
@@ -97,3 +100,13 @@ exit
  
  #ifndef __GST_RTSP_MEDIA_H__
  #define __GST_RTSP_MEDIA_H__
+--- gst-rtsp-server-1.8.3.orig/gst/rtsp-sink/gstrtspclientsink.c
++++ gst-rtsp-server-1.8.3/gst/rtsp-sink/gstrtspclientsink.c
+@@ -95,7 +95,6 @@
+ #include <stdio.h>
+ #include <stdarg.h>
+ 
+-#include <gst/net/gstnet.h>
+ #include <gst/sdp/gstsdpmessage.h>
+ #include <gst/sdp/gstmikey.h>
+ #include <gst/rtp/rtp.h>

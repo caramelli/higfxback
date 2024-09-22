@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-lt-build ffmpeg-build gst-plugins-base-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 rm -rf gst-libs/ext
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --with-system-libav --prefix=/dfb
@@ -21,7 +21,7 @@ install ext/libav/.libs/libgstlibav.so $DESTDIR/dfb/lib/gstreamer-1.0
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gst-libav-build.pc << EOF
 Name: gst-libav
-Version: 1.6.4
+Version: 1.8.3
 Description: FFmpeg GStreamer plugin
 Requires: $REQUIRES
 
@@ -30,9 +30,9 @@ exec=\\
 EOF
 
 exit
---- gst-libav-1.6.4.orig/configure.ac
-+++ gst-libav-1.6.4/configure.ac
-@@ -444,7 +444,6 @@
+--- gst-libav-1.8.3.orig/configure.ac
++++ gst-libav-1.8.3/configure.ac
+@@ -485,7 +485,6 @@
  ext/libav/Makefile
  ext/libswscale/Makefile
  gst-libs/Makefile
@@ -40,7 +40,7 @@ exit
  docs/Makefile
  docs/plugins/Makefile
  docs/version.entities
-@@ -454,6 +453,9 @@
+@@ -495,6 +494,9 @@
  pkgconfig/Makefile
  pkgconfig/gstreamer-plugins-libav-uninstalled.pc
  )

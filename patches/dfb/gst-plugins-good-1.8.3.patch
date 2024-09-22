@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-lt-build gdk-pixbuf-build gst-plugins-base-build sp
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
@@ -72,7 +72,7 @@ install sys/v4l2/.libs/libgstvideo4linux2.so $DESTDIR/dfb/lib/gstreamer-1.0
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gst-plugins-good-build.pc << EOF
 Name: gst-plugins-good
-Version: 1.6.4
+Version: 1.8.3
 Description: Good GStreamer plugins
 Requires: $REQUIRES
 
@@ -133,8 +133,8 @@ exec=\\
 EOF
 
 exit
---- gst-plugins-good-1.6.4.orig/gst/matroska/matroska-demux.c
-+++ gst-plugins-good-1.6.4/gst/matroska/matroska-demux.c
+--- gst-plugins-good-1.8.3.orig/gst/matroska/matroska-demux.c
++++ gst-plugins-good-1.8.3/gst/matroska/matroska-demux.c
 @@ -55,9 +55,7 @@
  
  /* For AVI compatibility mode
@@ -146,8 +146,8 @@ exit
  
  #include <gst/audio/audio.h>
  #include <gst/tag/tag.h>
---- gst-plugins-good-1.6.4.orig/gst/rtsp/gstrtspsrc.c
-+++ gst-plugins-good-1.6.4/gst/rtsp/gstrtspsrc.c
+--- gst-plugins-good-1.8.3.orig/gst/rtsp/gstrtspsrc.c
++++ gst-plugins-good-1.8.3/gst/rtsp/gstrtspsrc.c
 @@ -87,9 +87,8 @@
  #include <stdio.h>
  #include <stdarg.h>

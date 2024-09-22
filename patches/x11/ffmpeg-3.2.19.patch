@@ -1,0 +1,318 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libx11-build make-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl2-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+if pkg-config --exists x264-build; then
+  X264=--enable-libx264
+  REQUIRES="$REQUIRES x264-build"
+fi
+
+if pkg-config --exists x265-build; then
+  X265=--enable-libx265
+  REQUIRES="$REQUIRES x265-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcb-build; then
+  REQUIRES="$REQUIRES libxcb-build"
+else
+  X11GRAB=--enable-x11grab
+  REQUIRES="$REQUIRES libxext-build libxfixes-build"
+fi
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxv-build && REQUIRES="$REQUIRES libxv-build"
+
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
+# configure
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-indev=fbdev --disable-outdev=fbdev --disable-static --disable-yasm --enable-gpl --enable-shared $X264 $X265 $X11GRAB --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install ffmpeg $DESTDIR/x11/bin
+test $SDL2 && install ffplay $DESTDIR/x11/bin
+install ffprobe $DESTDIR/x11/bin
+install ffserver $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/libavcodec
+install -m 644 libavcodec/avcodec.h $DESTDIR/x11/include/libavcodec
+install -m 644 libavcodec/avfft.h $DESTDIR/x11/include/libavcodec
+install -m 644 libavcodec/version.h $DESTDIR/x11/include/libavcodec
+install -d $DESTDIR/x11/include/libavdevice
+install -m 644 libavdevice/avdevice.h $DESTDIR/x11/include/libavdevice
+install -m 644 libavdevice/version.h $DESTDIR/x11/include/libavdevice
+install -d $DESTDIR/x11/include/libavfilter
+install -m 644 libavfilter/avfilter.h $DESTDIR/x11/include/libavfilter
+install -m 644 libavfilter/avfiltergraph.h $DESTDIR/x11/include/libavfilter
+install -m 644 libavfilter/buffersink.h $DESTDIR/x11/include/libavfilter
+install -m 644 libavfilter/buffersrc.h $DESTDIR/x11/include/libavfilter
+install -m 644 libavfilter/version.h $DESTDIR/x11/include/libavfilter
+install -d $DESTDIR/x11/include/libavformat
+install -m 644 libavformat/avformat.h $DESTDIR/x11/include/libavformat
+install -m 644 libavformat/avio.h $DESTDIR/x11/include/libavformat
+install -m 644 libavformat/version.h $DESTDIR/x11/include/libavformat
+install -d $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/attributes.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/avassert.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/avconfig.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/avstring.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/avutil.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/base64.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/bprint.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/bswap.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/buffer.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/channel_layout.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/common.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/cpu.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/dict.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/display.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/error.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/eval.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/ffversion.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/fifo.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/frame.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/hwcontext.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/imgutils.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/intfloat.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/intreadwrite.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/log.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/lzo.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/macros.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/mathematics.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/md5.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/mem.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/opt.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/parseutils.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/pixdesc.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/pixfmt.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/rational.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/samplefmt.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/sha.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/time.h $DESTDIR/x11/include/libavutil
+install -m 644 libavutil/version.h $DESTDIR/x11/include/libavutil
+install -d $DESTDIR/x11/include/libpostproc
+install -m 644 libpostproc/postprocess.h $DESTDIR/x11/include/libpostproc
+install -m 644 libpostproc/version.h $DESTDIR/x11/include/libpostproc
+install -d $DESTDIR/x11/include/libswresample
+install -m 644 libswresample/swresample.h $DESTDIR/x11/include/libswresample
+install -m 644 libswresample/version.h $DESTDIR/x11/include/libswresample
+install -d $DESTDIR/x11/include/libswscale
+install -m 644 libswscale/swscale.h $DESTDIR/x11/include/libswscale
+install -m 644 libswscale/version.h $DESTDIR/x11/include/libswscale
+install -d $DESTDIR/x11/lib
+install libavcodec/libavcodec.so.57 $DESTDIR/x11/lib
+ln -sf libavcodec.so.57 $DESTDIR/x11/lib/libavcodec.so
+install libavdevice/libavdevice.so.57 $DESTDIR/x11/lib
+ln -sf libavdevice.so.57 $DESTDIR/x11/lib/libavdevice.so
+install libavfilter/libavfilter.so.6 $DESTDIR/x11/lib
+ln -sf libavfilter.so.6 $DESTDIR/x11/lib/libavfilter.so
+install libavformat/libavformat.so.57 $DESTDIR/x11/lib
+ln -sf libavformat.so.57 $DESTDIR/x11/lib/libavformat.so
+install libavutil/libavutil.so.55 $DESTDIR/x11/lib
+ln -sf libavutil.so.55 $DESTDIR/x11/lib/libavutil.so
+install libpostproc/libpostproc.so.54 $DESTDIR/x11/lib
+ln -sf libpostproc.so.54 $DESTDIR/x11/lib/libpostproc.so
+install libswresample/libswresample.so.2 $DESTDIR/x11/lib
+ln -sf libswresample.so.2 $DESTDIR/x11/lib/libswresample.so
+install libswscale/libswscale.so.4 $DESTDIR/x11/lib
+ln -sf libswscale.so.4 $DESTDIR/x11/lib/libswscale.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 libavcodec/libavcodec.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libavdevice/libavdevice.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libavfilter/libavfilter.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libavformat/libavformat.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libavutil/libavutil.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libpostproc/libpostproc.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libswresample/libswresample.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 libswscale/libswscale.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/ffmpeg-build.pc << EOF
+Name: ffmpeg
+Version: 3.2.19
+Description: A collection of libraries and tools to process multimedia content
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/libavcodec/avcodec.h \\
+/x11/include/libavcodec/avfft.h \\
+/x11/include/libavcodec/version.h \\
+/x11/include/libavdevice/avdevice.h \\
+/x11/include/libavdevice/version.h \\
+/x11/include/libavfilter/avfilter.h \\
+/x11/include/libavfilter/avfiltergraph.h \\
+/x11/include/libavfilter/buffersink.h \\
+/x11/include/libavfilter/buffersrc.h \\
+/x11/include/libavfilter/version.h \\
+/x11/include/libavformat/avformat.h \\
+/x11/include/libavformat/avio.h \\
+/x11/include/libavformat/version.h \\
+/x11/include/libavutil/attributes.h \\
+/x11/include/libavutil/avassert.h \\
+/x11/include/libavutil/avconfig.h \\
+/x11/include/libavutil/avstring.h \\
+/x11/include/libavutil/avutil.h \\
+/x11/include/libavutil/base64.h \\
+/x11/include/libavutil/bprint.h \\
+/x11/include/libavutil/bswap.h \\
+/x11/include/libavutil/buffer.h \\
+/x11/include/libavutil/channel_layout.h \\
+/x11/include/libavutil/common.h \\
+/x11/include/libavutil/cpu.h \\
+/x11/include/libavutil/dict.h \\
+/x11/include/libavutil/display.h \\
+/x11/include/libavutil/error.h \\
+/x11/include/libavutil/eval.h \\
+/x11/include/libavutil/ffversion.h \\
+/x11/include/libavutil/fifo.h \\
+/x11/include/libavutil/frame.h \\
+/x11/include/libavutil/hwcontext.h \\
+/x11/include/libavutil/imgutils.h \\
+/x11/include/libavutil/intfloat.h \\
+/x11/include/libavutil/intreadwrite.h \\
+/x11/include/libavutil/log.h \\
+/x11/include/libavutil/lzo.h \\
+/x11/include/libavutil/macros.h \\
+/x11/include/libavutil/mathematics.h \\
+/x11/include/libavutil/md5.h \\
+/x11/include/libavutil/mem.h \\
+/x11/include/libavutil/opt.h \\
+/x11/include/libavutil/parseutils.h \\
+/x11/include/libavutil/pixdesc.h \\
+/x11/include/libavutil/pixfmt.h \\
+/x11/include/libavutil/rational.h \\
+/x11/include/libavutil/samplefmt.h \\
+/x11/include/libavutil/sha.h \\
+/x11/include/libavutil/time.h \\
+/x11/include/libavutil/version.h \\
+/x11/include/libpostproc/postprocess.h \\
+/x11/include/libpostproc/version.h \\
+/x11/include/libswresample/swresample.h \\
+/x11/include/libswresample/version.h \\
+/x11/include/libswscale/swscale.h \\
+/x11/include/libswscale/version.h \\
+/x11/lib/libavcodec.so \\
+/x11/lib/libavdevice.so \\
+/x11/lib/libavfilter.so \\
+/x11/lib/libavformat.so \\
+/x11/lib/libavutil.so \\
+/x11/lib/libpostproc.so \\
+/x11/lib/libswresample.so \\
+/x11/lib/libswscale.so \\
+/x11/lib/pkgconfig/libavcodec.pc \\
+/x11/lib/pkgconfig/libavdevice.pc \\
+/x11/lib/pkgconfig/libavfilter.pc \\
+/x11/lib/pkgconfig/libavformat.pc \\
+/x11/lib/pkgconfig/libavutil.pc \\
+/x11/lib/pkgconfig/libpostproc.pc \\
+/x11/lib/pkgconfig/libswresample.pc \\
+/x11/lib/pkgconfig/libswscale.pc
+
+exec=\\
+/x11/bin/ffmpeg \\
+EOF
+test $SDL2 && echo /x11/bin/ffplay \\ >> $DESTDIR/x11/share/pkgconfig/ffmpeg-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/ffmpeg-build.pc << EOF
+/x11/bin/ffprobe \\
+/x11/bin/ffserver \\
+/x11/lib/libavcodec.so.57 \\
+/x11/lib/libavdevice.so.57 \\
+/x11/lib/libavfilter.so.6 \\
+/x11/lib/libavformat.so.57 \\
+/x11/lib/libavutil.so.55 \\
+/x11/lib/libpostproc.so.54 \\
+/x11/lib/libswresample.so.2 \\
+/x11/lib/libswscale.so.4
+EOF
+
+exit
+--- ffmpeg-3.2.19.orig/configure
++++ ffmpeg-3.2.19/configure
+@@ -273,6 +273,7 @@
+   --enable-libxcb-shm      enable X11 grabbing shm communication [autodetect]
+   --enable-libxcb-xfixes   enable X11 grabbing mouse rendering [autodetect]
+   --enable-libxcb-shape    enable X11 grabbing shape rendering [autodetect]
++  --enable-libxv           enable X11 XVideo display [autodetect]
+   --enable-libxvid         enable Xvid encoding via xvidcore,
+                            native MPEG-4/Xvid encoder exists [no]
+   --enable-libzimg         enable z.lib, needed for zscale filter [no]
+@@ -293,7 +294,7 @@
+   --disable-securetransport disable Secure Transport, needed for TLS support
+                            on OSX if openssl and gnutls are not used [autodetect]
+   --enable-x11grab         enable X11 grabbing (legacy) [no]
+-  --disable-xlib           disable xlib [autodetect]
++  --disable-xlib           disable xlib [no]
+   --disable-zlib           disable zlib [autodetect]
+ 
+   The following libraries provide various hardware acceleration features:
+@@ -1539,6 +1540,7 @@
+     libxcb_shm
+     libxcb_shape
+     libxcb_xfixes
++    libxv
+     libxvid
+     libzimg
+     libzmq
+@@ -2964,7 +2966,7 @@
+ vfwcap_indev_extralibs="-lavicap32"
+ x11grab_indev_deps="x11grab"
+ x11grab_xcb_indev_deps="libxcb"
+-xv_outdev_deps="X11_extensions_Xvlib_h XvGetPortAttribute"
++xv_outdev_deps="libxv"
+ xv_outdev_extralibs="-lXv -lX11 -lXext"
+ 
+ # protocols
+@@ -5535,8 +5537,6 @@
+ check_func_headers windows.h VirtualAlloc
+ check_struct windows.h "CONDITION_VARIABLE" Ptr
+ check_func_headers glob.h glob
+-enabled xlib &&
+-    check_func_headers "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute -lXv -lX11 -lXext
+ 
+ check_header AudioToolbox/AudioToolbox.h
+ check_header direct.h
+@@ -5949,7 +5949,7 @@
+ fi
+ 
+ enabled xlib &&
+-    check_lib X11/Xlib.h XOpenDisplay -lX11 || disable xlib
++    require_pkg_config x11 X11/Xlib.h XOpenDisplay
+ 
+ if ! disabled libxcb; then
+     check_pkg_config "xcb >= 1.4" xcb/xcb.h xcb_connect || {
+@@ -5977,6 +5977,12 @@
+ fi
+ fi
+ 
++if ! disabled libxv; then
++    check_pkg_config xv X11/extensions/Xvlib.h XvGetPortAttribute || {
++        enabled libxv && die "ERROR: libXv not found";
++    } && enable libxv
++fi
++
+ if enabled x11grab; then
+     enabled xlib || die "ERROR: Xlib not found"
+     require Xext X11/extensions/XShm.h XShmCreateImage -lXext
+--- ffmpeg-3.2.19.orig/version.sh
++++ ffmpeg-3.2.19/version.sh
+@@ -46,7 +46,7 @@
+ fi
+ 
+ NEW_REVISION="#define FFMPEG_VERSION \"$version\""
+-OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -1)
++OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -n -1)
+ 
+ # String used for preprocessor guard
+ GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')

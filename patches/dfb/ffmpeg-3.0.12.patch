@@ -39,13 +39,11 @@ install ffserver $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include/libavcodec
 install -m 644 libavcodec/avcodec.h $DESTDIR/dfb/include/libavcodec
 install -m 644 libavcodec/avfft.h $DESTDIR/dfb/include/libavcodec
-install -m 644 libavcodec/old_codec_ids.h $DESTDIR/dfb/include/libavcodec
 install -m 644 libavcodec/version.h $DESTDIR/dfb/include/libavcodec
 install -d $DESTDIR/dfb/include/libavdevice
 install -m 644 libavdevice/avdevice.h $DESTDIR/dfb/include/libavdevice
 install -m 644 libavdevice/version.h $DESTDIR/dfb/include/libavdevice
 install -d $DESTDIR/dfb/include/libavfilter
-install -m 644 libavfilter/avcodec.h $DESTDIR/dfb/include/libavfilter
 install -m 644 libavfilter/avfilter.h $DESTDIR/dfb/include/libavfilter
 install -m 644 libavfilter/avfiltergraph.h $DESTDIR/dfb/include/libavfilter
 install -m 644 libavfilter/buffersink.h $DESTDIR/dfb/include/libavfilter
@@ -57,7 +55,6 @@ install -m 644 libavformat/avio.h $DESTDIR/dfb/include/libavformat
 install -m 644 libavformat/version.h $DESTDIR/dfb/include/libavformat
 install -d $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/attributes.h $DESTDIR/dfb/include/libavutil
-install -m 644 libavutil/audioconvert.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/avassert.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/avconfig.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/avstring.h $DESTDIR/dfb/include/libavutil
@@ -85,7 +82,6 @@ install -m 644 libavutil/macros.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/mathematics.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/md5.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/mem.h $DESTDIR/dfb/include/libavutil
-install -m 644 libavutil/old_pix_fmts.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/opt.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/parseutils.h $DESTDIR/dfb/include/libavutil
 install -m 644 libavutil/pixdesc.h $DESTDIR/dfb/include/libavutil
@@ -105,22 +101,22 @@ install -d $DESTDIR/dfb/include/libswscale
 install -m 644 libswscale/swscale.h $DESTDIR/dfb/include/libswscale
 install -m 644 libswscale/version.h $DESTDIR/dfb/include/libswscale
 install -d $DESTDIR/dfb/lib
-install libavcodec/libavcodec.so.56 $DESTDIR/dfb/lib
-ln -sf libavcodec.so.56 $DESTDIR/dfb/lib/libavcodec.so
-install libavdevice/libavdevice.so.56 $DESTDIR/dfb/lib
-ln -sf libavdevice.so.56 $DESTDIR/dfb/lib/libavdevice.so
-install libavfilter/libavfilter.so.5 $DESTDIR/dfb/lib
-ln -sf libavfilter.so.5 $DESTDIR/dfb/lib/libavfilter.so
-install libavformat/libavformat.so.56 $DESTDIR/dfb/lib
-ln -sf libavformat.so.56 $DESTDIR/dfb/lib/libavformat.so
-install libavutil/libavutil.so.54 $DESTDIR/dfb/lib
-ln -sf libavutil.so.54 $DESTDIR/dfb/lib/libavutil.so
-install libpostproc/libpostproc.so.53 $DESTDIR/dfb/lib
-ln -sf libpostproc.so.53 $DESTDIR/dfb/lib/libpostproc.so
-install libswresample/libswresample.so.1 $DESTDIR/dfb/lib
-ln -sf libswresample.so.1 $DESTDIR/dfb/lib/libswresample.so
-install libswscale/libswscale.so.3 $DESTDIR/dfb/lib
-ln -sf libswscale.so.3 $DESTDIR/dfb/lib/libswscale.so
+install libavcodec/libavcodec.so.57 $DESTDIR/dfb/lib
+ln -sf libavcodec.so.57 $DESTDIR/dfb/lib/libavcodec.so
+install libavdevice/libavdevice.so.57 $DESTDIR/dfb/lib
+ln -sf libavdevice.so.57 $DESTDIR/dfb/lib/libavdevice.so
+install libavfilter/libavfilter.so.6 $DESTDIR/dfb/lib
+ln -sf libavfilter.so.6 $DESTDIR/dfb/lib/libavfilter.so
+install libavformat/libavformat.so.57 $DESTDIR/dfb/lib
+ln -sf libavformat.so.57 $DESTDIR/dfb/lib/libavformat.so
+install libavutil/libavutil.so.55 $DESTDIR/dfb/lib
+ln -sf libavutil.so.55 $DESTDIR/dfb/lib/libavutil.so
+install libpostproc/libpostproc.so.54 $DESTDIR/dfb/lib
+ln -sf libpostproc.so.54 $DESTDIR/dfb/lib/libpostproc.so
+install libswresample/libswresample.so.2 $DESTDIR/dfb/lib
+ln -sf libswresample.so.2 $DESTDIR/dfb/lib/libswresample.so
+install libswscale/libswscale.so.4 $DESTDIR/dfb/lib
+ln -sf libswscale.so.4 $DESTDIR/dfb/lib/libswscale.so
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 libavcodec/libavcodec.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 libavdevice/libavdevice.pc $DESTDIR/dfb/lib/pkgconfig
@@ -135,18 +131,16 @@ install -m 644 libswscale/libswscale.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/ffmpeg-build.pc << EOF
 Name: ffmpeg
-Version: 2.8.22
+Version: 3.0.12
 Description: A collection of libraries and tools to process multimedia content
 Requires: $REQUIRES
 
 devel=\\
 /dfb/include/libavcodec/avcodec.h \\
 /dfb/include/libavcodec/avfft.h \\
-/dfb/include/libavcodec/old_codec_ids.h \\
 /dfb/include/libavcodec/version.h \\
 /dfb/include/libavdevice/avdevice.h \\
 /dfb/include/libavdevice/version.h \\
-/dfb/include/libavfilter/avcodec.h \\
 /dfb/include/libavfilter/avfilter.h \\
 /dfb/include/libavfilter/avfiltergraph.h \\
 /dfb/include/libavfilter/buffersink.h \\
@@ -156,7 +150,6 @@ devel=\\
 /dfb/include/libavformat/avio.h \\
 /dfb/include/libavformat/version.h \\
 /dfb/include/libavutil/attributes.h \\
-/dfb/include/libavutil/audioconvert.h \\
 /dfb/include/libavutil/avassert.h \\
 /dfb/include/libavutil/avconfig.h \\
 /dfb/include/libavutil/avstring.h \\
@@ -184,7 +177,6 @@ devel=\\
 /dfb/include/libavutil/mathematics.h \\
 /dfb/include/libavutil/md5.h \\
 /dfb/include/libavutil/mem.h \\
-/dfb/include/libavutil/old_pix_fmts.h \\
 /dfb/include/libavutil/opt.h \\
 /dfb/include/libavutil/parseutils.h \\
 /dfb/include/libavutil/pixdesc.h \\
@@ -224,53 +216,53 @@ test $SDL && echo /dfb/bin/ffplay \\ >> $DESTDIR/dfb/share/pkgconfig/ffmpeg-buil
 cat >> $DESTDIR/dfb/share/pkgconfig/ffmpeg-build.pc << EOF
 /dfb/bin/ffprobe \\
 /dfb/bin/ffserver \\
-/dfb/lib/libavcodec.so.56 \\
-/dfb/lib/libavdevice.so.56 \\
-/dfb/lib/libavfilter.so.5 \\
-/dfb/lib/libavformat.so.56 \\
-/dfb/lib/libavutil.so.54 \\
-/dfb/lib/libpostproc.so.53 \\
-/dfb/lib/libswresample.so.1 \\
-/dfb/lib/libswscale.so.3
+/dfb/lib/libavcodec.so.57 \\
+/dfb/lib/libavdevice.so.57 \\
+/dfb/lib/libavfilter.so.6 \\
+/dfb/lib/libavformat.so.57 \\
+/dfb/lib/libavutil.so.55 \\
+/dfb/lib/libpostproc.so.54 \\
+/dfb/lib/libswresample.so.2 \\
+/dfb/lib/libswscale.so.4
 EOF
 
 exit
---- ffmpeg-2.8.22.orig/configure
-+++ ffmpeg-2.8.22/configure
-@@ -197,6 +197,7 @@
+--- ffmpeg-3.0.12.orig/configure
++++ ffmpeg-3.0.12/configure
+@@ -196,6 +196,7 @@
  External library support:
    --enable-avisynth        enable reading of AviSynth script files [no]
    --disable-bzlib          disable bzlib [autodetect]
 +  --enable-directfb        enable DirectFB [no]
+   --enable-chromaprint     enable audio fingerprinting with chromaprint [no]
    --enable-fontconfig      enable fontconfig, useful for drawtext filter [no]
    --enable-frei0r          enable frei0r video filtering [no]
-   --enable-gnutls          enable gnutls, needed for https support
-@@ -1359,6 +1360,7 @@
-     bzlib
+@@ -1446,6 +1447,7 @@
+     chromaprint
      crystalhd
      decklink
 +    directfb
      frei0r
-     gnutls
-     iconv
-@@ -2643,6 +2645,7 @@
- decklink_outdev_extralibs="-lstdc++"
- decklink_indev_deps="decklink pthreads"
+     gcrypt
+     gmp
+@@ -2769,6 +2771,7 @@
  decklink_indev_extralibs="-lstdc++"
+ decklink_outdev_deps="decklink pthreads"
+ decklink_outdev_extralibs="-lstdc++"
 +directfb_outdev_deps="directfb"
  dshow_indev_deps="IBaseFilter"
  dshow_indev_extralibs="-lpsapi -lole32 -lstrmiids -luuid -loleaut32 -lshlwapi"
  dv1394_indev_deps="dv1394"
-@@ -5213,6 +5216,7 @@
-                                { check_lib2 "dlfcn.h" dlopen -ldl; } ||
+@@ -5446,6 +5449,7 @@
                                 die "ERROR: LoadLibrary/dlopen not found for avisynth"; }
+ enabled chromaprint       && require chromaprint chromaprint.h chromaprint_get_version -lchromaprint
  enabled decklink          && { check_header DeckLinkAPI.h || die "ERROR: DeckLinkAPI.h header not found"; }
 +enabled directfb          && require_pkg_config directfb directfb.h DirectFBInit
  enabled frei0r            && { check_header frei0r.h || die "ERROR: frei0r.h header not found"; }
+ enabled gmp               && require2 gmp gmp.h mpz_export -lgmp
  enabled gnutls            && require_pkg_config gnutls gnutls/gnutls.h gnutls_global_init
- enabled ladspa            && { check_header ladspa.h || die "ERROR: ladspa.h header not found"; }
---- ffmpeg-2.8.22.orig/libavdevice/Makefile
-+++ ffmpeg-2.8.22/libavdevice/Makefile
+--- ffmpeg-3.0.12.orig/libavdevice/Makefile
++++ ffmpeg-3.0.12/libavdevice/Makefile
 @@ -17,6 +17,7 @@
  OBJS-$(CONFIG_CACA_OUTDEV)               += caca.o
  OBJS-$(CONFIG_DECKLINK_OUTDEV)           += decklink_enc.o decklink_enc_c.o decklink_common.o
@@ -279,8 +271,8 @@ exit
  OBJS-$(CONFIG_DSHOW_INDEV)               += dshow_crossbar.o dshow.o dshow_enummediatypes.o \
                                              dshow_enumpins.o dshow_filter.o \
                                              dshow_pin.o dshow_common.o
---- ffmpeg-2.8.22.orig/libavdevice/alldevices.c
-+++ ffmpeg-2.8.22/libavdevice/alldevices.c
+--- ffmpeg-3.0.12.orig/libavdevice/alldevices.c
++++ ffmpeg-3.0.12/libavdevice/alldevices.c
 @@ -51,6 +51,7 @@
      REGISTER_INDEV   (BKTR,             bktr);
      REGISTER_OUTDEV  (CACA,             caca);
@@ -289,8 +281,8 @@ exit
      REGISTER_INDEV   (DSHOW,            dshow);
      REGISTER_INDEV   (DV1394,           dv1394);
      REGISTER_INOUTDEV(FBDEV,            fbdev);
---- ffmpeg-2.8.22.orig/libavdevice/directfb.c
-+++ ffmpeg-2.8.22/libavdevice/directfb.c
+--- ffmpeg-3.0.12.orig/libavdevice/directfb.c
++++ ffmpeg-3.0.12/libavdevice/directfb.c
 @@ -0,0 +1,190 @@
 +/*
 + * DirectFB ouput device
@@ -327,15 +319,15 @@ exit
 +} DirectFBContext;
 +
 +static const struct {
-+    enum PixelFormat av_pix_fmt;
++    enum AVPixelFormat av_pix_fmt;
 +    DFBSurfacePixelFormat dfb_pix_fmt;
 +} directfb_pix_fmts[] = {
-+    { PIX_FMT_BGR24, DSPF_RGB24 },
-+    { PIX_FMT_BGRA, DSPF_ARGB /* DSPF_RGB32 */ },
-+    { PIX_FMT_RGBA, DSPF_ABGR },
-+    { PIX_FMT_RGB565LE, DSPF_RGB16 },
-+    { PIX_FMT_BGR555LE, DSPF_BGR555 },
-+    { PIX_FMT_RGB555LE, DSPF_RGB555 },
++    { AV_PIX_FMT_BGR24, DSPF_RGB24 },
++    { AV_PIX_FMT_BGRA, DSPF_ARGB /* DSPF_RGB32 */ },
++    { AV_PIX_FMT_RGBA, DSPF_ABGR },
++    { AV_PIX_FMT_RGB565LE, DSPF_RGB16 },
++    { AV_PIX_FMT_BGR555LE, DSPF_BGR555 },
++    { AV_PIX_FMT_RGB555LE, DSPF_RGB555 },
 +};
 +
 +static av_cold int directfb_write_header(AVFormatContext *s)
@@ -346,7 +338,7 @@ exit
 +
 +    if (s->nb_streams > 1 ||
 +        s->streams[0]->codec->codec_type != AVMEDIA_TYPE_VIDEO ||
-+        s->streams[0]->codec->codec_id != CODEC_ID_RAWVIDEO) {
++        s->streams[0]->codec->codec_id != AV_CODEC_ID_RAWVIDEO) {
 +        av_log(s, AV_LOG_ERROR, "Only supports one rawvideo stream\n");
 +        return AVERROR(EINVAL);
 +    }
@@ -457,7 +449,7 @@ exit
 +}
 +
 +static const AVOption options[] = {
-+    { "surface_size", "surface size", OFFSET(DirectFBContext, surface_size),
++    { "surface_size", "surface size", offsetof(DirectFBContext, surface_size),
 +      AV_OPT_TYPE_STRING, {.str = NULL }, 0, 0, AV_OPT_FLAG_ENCODING_PARAM },
 +    { NULL },
 +};
@@ -474,16 +466,16 @@ exit
 +    .name           = "directfb",
 +    .long_name      = NULL_IF_CONFIG_SMALL("DirectFB output device"),
 +    .priv_data_size = sizeof(DirectFBContext),
-+    .audio_codec    = CODEC_ID_NONE,
-+    .video_codec    = CODEC_ID_RAWVIDEO,
++    .audio_codec    = AV_CODEC_ID_NONE,
++    .video_codec    = AV_CODEC_ID_RAWVIDEO,
 +    .write_header   = directfb_write_header,
 +    .write_packet   = directfb_write_packet,
 +    .write_trailer  = directfb_write_trailer,
 +    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
 +    .priv_class     = &directfb_class,
 +};
---- ffmpeg-2.8.22.orig/version.sh
-+++ ffmpeg-2.8.22/version.sh
+--- ffmpeg-3.0.12.orig/version.sh
++++ ffmpeg-3.0.12/version.sh
 @@ -46,7 +46,7 @@
  fi
  

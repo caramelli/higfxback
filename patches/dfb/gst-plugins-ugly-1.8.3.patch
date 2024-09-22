@@ -5,7 +5,7 @@ REQUIRES="a52dec-build autotools-wrappers-lt-build gst-plugins-base-build libmad
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
@@ -27,7 +27,7 @@ install gst/xingmux/.libs/libgstxingmux.so $DESTDIR/dfb/lib/gstreamer-1.0
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
 Name: gst-plugins-ugly
-Version: 1.6.4
+Version: 1.8.3
 Description: Ugly GStreamer plugins
 Requires: $REQUIRES
 

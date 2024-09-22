@@ -10,7 +10,7 @@ if pkg-config --exists alsa-lib-build; then
   REQUIRES="$REQUIRES alsa-lib-build"
 fi
 
-# configure (ac-2.69; am-1.15; lt-2.4.2)
+# configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
@@ -32,10 +32,13 @@ install -m 644 gst-libs/gst/app/gstappsink.h $DESTDIR/dfb/include/gstreamer-1.0/
 install -m 644 gst-libs/gst/app/gstappsrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/app
 install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/audio.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-channel-mixer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/audio-channels.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-converter.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/audio-enumtypes.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/audio-format.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/audio-info.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
+install -m 644 gst-libs/gst/audio/audio-quantize.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/gstaudiobasesink.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/gstaudiobasesrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
 install -m 644 gst-libs/gst/audio/gstaudiocdsrc.h $DESTDIR/dfb/include/gstreamer-1.0/gst/audio
@@ -61,6 +64,7 @@ install -m 644 gst-libs/gst/pbutils/codec-utils.h $DESTDIR/dfb/include/gstreamer
 install -m 644 gst-libs/gst/pbutils/descriptions.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/encoding-profile.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/encoding-target.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
+install -m 644 gst-libs/gst/pbutils/gstaudiovisualizer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/gstdiscoverer.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/gstpluginsbaseversion.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
 install -m 644 gst-libs/gst/pbutils/install-plugins.h $DESTDIR/dfb/include/gstreamer-1.0/gst/pbutils
@@ -106,6 +110,7 @@ install -m 644 gst-libs/gst/tag/xmpwriter.h $DESTDIR/dfb/include/gstreamer-1.0/g
 install -d $DESTDIR/dfb/include/gstreamer-1.0/gst/video
 install -m 644 gst-libs/gst/video/colorbalance.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
 install -m 644 gst-libs/gst/video/colorbalancechannel.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
+install -m 644 gst-libs/gst/video/gstvideoaffinetransformationmeta.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
 install -m 644 gst-libs/gst/video/gstvideodecoder.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
 install -m 644 gst-libs/gst/video/gstvideoencoder.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
 install -m 644 gst-libs/gst/video/gstvideofilter.h $DESTDIR/dfb/include/gstreamer-1.0/gst/video
@@ -196,7 +201,7 @@ install -m 644 pkgconfig/gstreamer-video-1.0.pc $DESTDIR/dfb/lib/pkgconfig
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
 Name: gst-plugins-base
-Version: 1.6.4
+Version: 1.8.3
 Description: Base GStreamer plugins and libraries
 Requires: $REQUIRES
 
@@ -208,10 +213,13 @@ devel=\\
 /dfb/include/gstreamer-1.0/gst/app/gstappsink.h \\
 /dfb/include/gstreamer-1.0/gst/app/gstappsrc.h \\
 /dfb/include/gstreamer-1.0/gst/audio/audio.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-channel-mixer.h \\
 /dfb/include/gstreamer-1.0/gst/audio/audio-channels.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-converter.h \\
 /dfb/include/gstreamer-1.0/gst/audio/audio-enumtypes.h \\
 /dfb/include/gstreamer-1.0/gst/audio/audio-format.h \\
 /dfb/include/gstreamer-1.0/gst/audio/audio-info.h \\
+/dfb/include/gstreamer-1.0/gst/audio/audio-quantize.h \\
 /dfb/include/gstreamer-1.0/gst/audio/gstaudiobasesink.h \\
 /dfb/include/gstreamer-1.0/gst/audio/gstaudiobasesrc.h \\
 /dfb/include/gstreamer-1.0/gst/audio/gstaudiocdsrc.h \\
@@ -235,6 +243,7 @@ devel=\\
 /dfb/include/gstreamer-1.0/gst/pbutils/descriptions.h \\
 /dfb/include/gstreamer-1.0/gst/pbutils/encoding-profile.h \\
 /dfb/include/gstreamer-1.0/gst/pbutils/encoding-target.h \\
+/dfb/include/gstreamer-1.0/gst/pbutils/gstaudiovisualizer.h \\
 /dfb/include/gstreamer-1.0/gst/pbutils/gstdiscoverer.h \\
 /dfb/include/gstreamer-1.0/gst/pbutils/gstpluginsbaseversion.h \\
 /dfb/include/gstreamer-1.0/gst/pbutils/install-plugins.h \\
@@ -274,6 +283,7 @@ devel=\\
 /dfb/include/gstreamer-1.0/gst/tag/xmpwriter.h \\
 /dfb/include/gstreamer-1.0/gst/video/colorbalance.h \\
 /dfb/include/gstreamer-1.0/gst/video/colorbalancechannel.h \\
+/dfb/include/gstreamer-1.0/gst/video/gstvideoaffinetransformationmeta.h \\
 /dfb/include/gstreamer-1.0/gst/video/gstvideodecoder.h \\
 /dfb/include/gstreamer-1.0/gst/video/gstvideoencoder.h \\
 /dfb/include/gstreamer-1.0/gst/video/gstvideofilter.h \\
@@ -366,8 +376,8 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
 EOF
 
 exit
---- gst-plugins-base-1.6.4.orig/gst-libs/gst/fft/fft.h
-+++ gst-plugins-base-1.6.4/gst-libs/gst/fft/fft.h
+--- gst-plugins-base-1.8.3.orig/gst-libs/gst/fft/fft.h
++++ gst-plugins-base-1.8.3/gst-libs/gst/fft/fft.h
 @@ -22,7 +22,6 @@
  #ifndef __GST_FFT__H__
  #define __GST_FFT__H__
@@ -376,8 +386,8 @@ exit
  #include <gst/fft/gstffts16.h>
  #include <gst/fft/gstffts32.h>
  #include <gst/fft/gstfftf32.h>
---- gst-plugins-base-1.6.4.orig/gst-libs/gst/riff/riff.h
-+++ gst-plugins-base-1.6.4/gst-libs/gst/riff/riff.h
+--- gst-plugins-base-1.8.3.orig/gst-libs/gst/riff/riff.h
++++ gst-plugins-base-1.8.3/gst-libs/gst/riff/riff.h
 @@ -22,7 +22,6 @@
  #ifndef __GST_RIFF_H__
  #define __GST_RIFF_H__
@@ -386,8 +396,8 @@ exit
  #include <gst/riff/riff-media.h>
  #include <gst/riff/riff-read.h>
  
---- gst-plugins-base-1.6.4.orig/gst-libs/gst/rtsp/rtsp.h
-+++ gst-plugins-base-1.6.4/gst-libs/gst/rtsp/rtsp.h
+--- gst-plugins-base-1.8.3.orig/gst-libs/gst/rtsp/rtsp.h
++++ gst-plugins-base-1.8.3/gst-libs/gst/rtsp/rtsp.h
 @@ -22,7 +22,6 @@
  #ifndef __GST_RTSP__H__
  #define __GST_RTSP__H__
@@ -396,8 +406,8 @@ exit
  #include <gst/rtsp/gstrtspconnection.h>
  #include <gst/rtsp/gstrtspdefs.h>
  #include <gst/rtsp/gstrtsp-enumtypes.h>
---- gst-plugins-base-1.6.4.orig/gst-libs/gst/sdp/sdp.h
-+++ gst-plugins-base-1.6.4/gst-libs/gst/sdp/sdp.h
+--- gst-plugins-base-1.8.3.orig/gst-libs/gst/sdp/sdp.h
++++ gst-plugins-base-1.8.3/gst-libs/gst/sdp/sdp.h
 @@ -22,7 +22,6 @@
  #ifndef __GST_SDP__H__
  #define __GST_SDP__H__
@@ -406,8 +416,8 @@ exit
  #include <gst/sdp/gstsdpmessage.h>
  #include <gst/sdp/gstmikey.h>
  
---- gst-plugins-base-1.6.4.orig/tests/examples/fft/fftrange.c
-+++ gst-plugins-base-1.6.4/tests/examples/fft/fftrange.c
+--- gst-plugins-base-1.8.3.orig/tests/examples/fft/fftrange.c
++++ gst-plugins-base-1.8.3/tests/examples/fft/fftrange.c
 @@ -18,10 +18,7 @@
   */
  
