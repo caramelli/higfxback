@@ -1,0 +1,389 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libxml2-build libwebp-build openssl-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists openjpeg2-build; then
+  REQUIRES="$REQUIRES openjpeg2-build"
+else
+  pkg-config --exists --print-errors openjpeg-build || exit 1
+  REQUIRES="$REQUIRES openjpeg-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libde265-build; then
+  DE265=1
+  REQUIRES="$REQUIRES libde265-build"
+fi
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+if pkg-config --exists x265-build; then
+  X265=1
+  REQUIRES="$REQUIRES x265-build"
+fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-decklink --disable-fbdev --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/lib
+install gst-libs/gst/adaptivedemux/.libs/libgstadaptivedemux-1.0.so.0.* $DESTDIR/x11/lib/libgstadaptivedemux-1.0.so.0
+install gst-libs/gst/audio/.libs/libgstbadaudio-1.0.so.0.* $DESTDIR/x11/lib/libgstbadaudio-1.0.so.0
+install gst-libs/gst/base/.libs/libgstbadbase-1.0.so.0.* $DESTDIR/x11/lib/libgstbadbase-1.0.so.0
+install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/x11/lib/libgstbasecamerabinsrc-1.0.so.0
+install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/x11/lib/libgstcodecparsers-1.0.so.0
+test $GL && install gst-libs/gst/gl/.libs/libgstgl-1.0.so.0.* $DESTDIR/x11/lib/libgstgl-1.0.so.0
+install gst-libs/gst/interfaces/.libs/libgstphotography-1.0.so.0.* $DESTDIR/x11/lib/libgstphotography-1.0.so.0
+install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/x11/lib/libgstmpegts-1.0.so.0
+install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/x11/lib/libgsturidownloader-1.0.so.0
+install gst-libs/gst/video/.libs/libgstbadvideo-1.0.so.0.* $DESTDIR/x11/lib/libgstbadvideo-1.0.so.0
+install -d $DESTDIR/x11/lib/gstreamer-1.0
+install ext/bz2/.libs/libgstbz2.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/curl/.libs/libgstcurl.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/dash/.libs/libgstdashdemux.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/dtls/.libs/libgstdtls.so $DESTDIR/x11/lib/gstreamer-1.0
+test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/hls/.libs/libgsthls.so $DESTDIR/x11/lib/gstreamer-1.0
+test $DE265 && install ext/libde265/.libs/libgstlibde265.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/webp/.libs/libgstwebp.so $DESTDIR/x11/lib/gstreamer-1.0
+test $X265 && install ext/x265/.libs/libgstx265.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/accurip/.libs/libgstaccurip.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/adpcmdec/.libs/libgstadpcmdec.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/adpcmenc/.libs/libgstadpcmenc.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/aiff/.libs/libgstaiff.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/asfmux/.libs/libgstasfmux.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/audiofxbad/.libs/libgstaudiofxbad.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/audiomixer/.libs/libgstaudiomixer.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/audiovisualizers/.libs/libgstaudiovisualizers.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/autoconvert/.libs/libgstautoconvert.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/bayer/.libs/libgstbayer.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/camerabin2/.libs/libgstcamerabin2.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/coloreffects/.libs/libgstcoloreffects.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/compositor/.libs/libgstcompositor.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/dataurisrc/.libs/libgstdataurisrc.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/debugutils/.libs/libgstdebugutilsbad.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/dvbsuboverlay/.libs/libgstdvbsuboverlay.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/dvdspu/.libs/libgstdvdspu.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/festival/.libs/libgstfestival.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/fieldanalysis/.libs/libgstfieldanalysis.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/freeverb/.libs/libgstfreeverb.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/frei0r/.libs/libgstfrei0r.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/gaudieffects/.libs/libgstgaudieffects.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/gdp/.libs/libgstgdp.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/geometrictransform/.libs/libgstgeometrictransform.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/id3tag/.libs/libgstid3tag.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/inter/.libs/libgstinter.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/interlace/.libs/libgstinterlace.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/ivfparse/.libs/libgstivfparse.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/ivtc/.libs/libgstivtc.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/jp2kdecimator/.libs/libgstjp2kdecimator.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/jpegformat/.libs/libgstjpegformat.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/librfb/.libs/libgstrfbsrc.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/midi/.libs/libgstmidi.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/mpegdemux/.libs/libgstmpegpsdemux.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/mpegpsmux/.libs/libgstmpegpsmux.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/mpegtsdemux/.libs/libgstmpegtsdemux.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/mpegtsmux/.libs/libgstmpegtsmux.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/mxf/.libs/libgstmxf.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/netsim/.libs/libgstnetsim.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/pcapparse/.libs/libgstpcapparse.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/pnm/.libs/libgstpnm.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/rawparse/.libs/libgstrawparse.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/removesilence/.libs/libgstremovesilence.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/onvif/.libs/libgstrtponvif.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/sdp/.libs/libgstsdpelem.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/segmentclip/.libs/libgstsegmentclip.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/siren/.libs/libgstsiren.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/smooth/.libs/libgstsmooth.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/speed/.libs/libgstspeed.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/stereo/.libs/libgststereo.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/subenc/.libs/libgstsubenc.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/timecode/.libs/libgsttimecode.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/videofilters/.libs/libgstvideofiltersbad.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/videoframe_audiolevel/.libs/libgstvideoframe_audiolevel.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/videoparsers/.libs/libgstvideoparsersbad.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/videosignal/.libs/libgstvideosignal.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/vmnc/.libs/libgstvmnc.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/y4m/.libs/libgsty4mdec.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/yadif/.libs/libgstyadif.so $DESTDIR/x11/lib/gstreamer-1.0
+install sys/dvb/.libs/libgstdvb.so $DESTDIR/x11/lib/gstreamer-1.0
+install sys/shm/.libs/libgstshm.so $DESTDIR/x11/lib/gstreamer-1.0
+install sys/vcd/.libs/libgstvcdsrc.so $DESTDIR/x11/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+Name: gst-plugins-bad
+Version: 1.10.5
+Description: Bad GStreamer plugins
+Requires: $REQUIRES
+
+exec=\\
+/x11/lib/libgstadaptivedemux-1.0.so.0 \\
+/x11/lib/libgstbadaudio-1.0.so.0 \\
+/x11/lib/libgstbadbase-1.0.so.0 \\
+/x11/lib/libgstbadvideo-1.0.so.0 \\
+/x11/lib/libgstbasecamerabinsrc-1.0.so.0 \\
+/x11/lib/libgstcodecparsers-1.0.so.0 \\
+EOF
+test $GL && echo /x11/lib/libgstgl-1.0.so.0 \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/x11/lib/libgstmpegts-1.0.so.0 \\
+/x11/lib/libgstphotography-1.0.so.0 \\
+/x11/lib/libgsturidownloader-1.0.so.0 \\
+/x11/lib/gstreamer-1.0/libgstaccurip.so \\
+/x11/lib/gstreamer-1.0/libgstadpcmdec.so \\
+/x11/lib/gstreamer-1.0/libgstadpcmenc.so \\
+/x11/lib/gstreamer-1.0/libgstaiff.so \\
+/x11/lib/gstreamer-1.0/libgstasfmux.so \\
+/x11/lib/gstreamer-1.0/libgstaudiofxbad.so \\
+/x11/lib/gstreamer-1.0/libgstaudiomixer.so \\
+/x11/lib/gstreamer-1.0/libgstaudiovisualizers.so \\
+/x11/lib/gstreamer-1.0/libgstautoconvert.so \\
+/x11/lib/gstreamer-1.0/libgstbayer.so \\
+/x11/lib/gstreamer-1.0/libgstbz2.so \\
+/x11/lib/gstreamer-1.0/libgstcamerabin2.so \\
+/x11/lib/gstreamer-1.0/libgstcoloreffects.so \\
+/x11/lib/gstreamer-1.0/libgstcompositor.so \\
+/x11/lib/gstreamer-1.0/libgstcurl.so \\
+/x11/lib/gstreamer-1.0/libgstdashdemux.so \\
+/x11/lib/gstreamer-1.0/libgstdataurisrc.so \\
+/x11/lib/gstreamer-1.0/libgstdebugutilsbad.so \\
+/x11/lib/gstreamer-1.0/libgstdtls.so \\
+/x11/lib/gstreamer-1.0/libgstdvb.so \\
+/x11/lib/gstreamer-1.0/libgstdvbsuboverlay.so \\
+/x11/lib/gstreamer-1.0/libgstdvdspu.so \\
+/x11/lib/gstreamer-1.0/libgstfestival.so \\
+/x11/lib/gstreamer-1.0/libgstfieldanalysis.so \\
+/x11/lib/gstreamer-1.0/libgstfreeverb.so \\
+/x11/lib/gstreamer-1.0/libgstfrei0r.so \\
+/x11/lib/gstreamer-1.0/libgstgaudieffects.so \\
+/x11/lib/gstreamer-1.0/libgstgdp.so \\
+/x11/lib/gstreamer-1.0/libgstgeometrictransform.so \\
+/x11/lib/gstreamer-1.0/libgsthls.so \\
+/x11/lib/gstreamer-1.0/libgstid3tag.so \\
+/x11/lib/gstreamer-1.0/libgstinter.so \\
+/x11/lib/gstreamer-1.0/libgstinterlace.so \\
+/x11/lib/gstreamer-1.0/libgstivfparse.so \\
+/x11/lib/gstreamer-1.0/libgstivtc.so \\
+/x11/lib/gstreamer-1.0/libgstjp2kdecimator.so \\
+/x11/lib/gstreamer-1.0/libgstjpegformat.so \\
+EOF
+test $DE265 && echo /x11/lib/gstreamer-1.0/libgstlibde265.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstmidi.so \\
+/x11/lib/gstreamer-1.0/libgstmpegpsdemux.so \\
+/x11/lib/gstreamer-1.0/libgstmpegpsmux.so \\
+/x11/lib/gstreamer-1.0/libgstmpegtsdemux.so \\
+/x11/lib/gstreamer-1.0/libgstmpegtsmux.so \\
+/x11/lib/gstreamer-1.0/libgstmxf.so \\
+/x11/lib/gstreamer-1.0/libgstnetsim.so \\
+EOF
+test $GL && echo /x11/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstopenjpeg.so \\
+/x11/lib/gstreamer-1.0/libgstpcapparse.so \\
+/x11/lib/gstreamer-1.0/libgstpnm.so \\
+/x11/lib/gstreamer-1.0/libgstrawparse.so \\
+/x11/lib/gstreamer-1.0/libgstremovesilence.so \\
+/x11/lib/gstreamer-1.0/libgstrfbsrc.so \\
+/x11/lib/gstreamer-1.0/libgstrtponvif.so \\
+/x11/lib/gstreamer-1.0/libgstsdpelem.so \\
+/x11/lib/gstreamer-1.0/libgstsegmentclip.so \\
+/x11/lib/gstreamer-1.0/libgstshm.so \\
+/x11/lib/gstreamer-1.0/libgstsiren.so \\
+/x11/lib/gstreamer-1.0/libgstsmooth.so \\
+/x11/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+/x11/lib/gstreamer-1.0/libgstspeed.so \\
+/x11/lib/gstreamer-1.0/libgststereo.so \\
+/x11/lib/gstreamer-1.0/libgstsubenc.so \\
+/x11/lib/gstreamer-1.0/libgsttimecode.so \\
+/x11/lib/gstreamer-1.0/libgstvcdsrc.so \\
+/x11/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
+/x11/lib/gstreamer-1.0/libgstvideoframe_audiolevel.so \\
+/x11/lib/gstreamer-1.0/libgstvideoparsersbad.so \\
+/x11/lib/gstreamer-1.0/libgstvideosignal.so \\
+/x11/lib/gstreamer-1.0/libgstvmnc.so \\
+/x11/lib/gstreamer-1.0/libgstwebp.so \\
+EOF
+test $X265 && echo /x11/lib/gstreamer-1.0/libgstx265.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgsty4mdec.so \\
+/x11/lib/gstreamer-1.0/libgstyadif.so
+EOF
+
+exit
+--- gst-plugins-bad-1.10.5.orig/configure.ac
++++ gst-plugins-bad-1.10.5/configure.ac
+@@ -2801,7 +2801,7 @@
+   if test x"$HAVE_OPENJPEG" = x"yes"; then
+     dnl minor API changes in v2.1
+     AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
+-    if test x"$HAVE_OPENJPEG" = x"yes"; then
++    if test x"$HAVE_OPENJPEG_2_1" = x"yes"; then
+       AC_DEFINE([HAVE_OPENJPEG_2_1], 1, [Define if OpenJPEG 2.1 is used])
+     fi
+   else
+--- gst-plugins-bad-1.10.5.orig/ext/dash/gstdashdemux.c
++++ gst-plugins-bad-1.10.5/ext/dash/gstdashdemux.c
+@@ -151,7 +151,7 @@
+ #include <gio/gio.h>
+ #include <gst/base/gsttypefindhelper.h>
+ #include <gst/tag/tag.h>
+-#include <gst/net/gstnet.h>
++#include <gst/net/net.h>
+ #include "gst/gst-i18n-plugin.h"
+ #include "gstdashdemux.h"
+ #include "gstdash_debug.h"
+--- gst-plugins-bad-1.10.5.orig/ext/hls/gsthlsdemux.c
++++ gst-plugins-bad-1.10.5/ext/hls/gsthlsdemux.c
+@@ -1611,11 +1611,11 @@
+ gst_hls_demux_stream_decrypt_start (GstHLSDemuxStream * stream,
+     const guint8 * key_data, const guint8 * iv_data)
+ {
+-  EVP_CIPHER_CTX_init (&stream->aes_ctx);
+-  if (!EVP_DecryptInit_ex (&stream->aes_ctx, EVP_aes_128_cbc (), NULL, key_data,
++  stream->aes_ctx = EVP_CIPHER_CTX_new ();
++  if (!EVP_DecryptInit_ex (stream->aes_ctx, EVP_aes_128_cbc (), NULL, key_data,
+           iv_data))
+     return FALSE;
+-  EVP_CIPHER_CTX_set_padding (&stream->aes_ctx, 0);
++  EVP_CIPHER_CTX_set_padding (stream->aes_ctx, 0);
+   return TRUE;
+ }
+ 
+@@ -1629,10 +1629,10 @@
+     return FALSE;
+ 
+   len = (int) length;
+-  if (!EVP_DecryptUpdate (&stream->aes_ctx, decrypted_data, &len,
++  if (!EVP_DecryptUpdate (stream->aes_ctx, decrypted_data, &len,
+           encrypted_data, len))
+     return FALSE;
+-  EVP_DecryptFinal_ex (&stream->aes_ctx, decrypted_data + len, &flen);
++  EVP_DecryptFinal_ex (stream->aes_ctx, decrypted_data + len, &flen);
+   g_return_val_if_fail (len + flen == length, FALSE);
+   return TRUE;
+ }
+@@ -1640,7 +1640,8 @@
+ static void
+ gst_hls_demux_stream_decrypt_end (GstHLSDemuxStream * stream)
+ {
+-  EVP_CIPHER_CTX_cleanup (&stream->aes_ctx);
++  EVP_CIPHER_CTX_free (stream->aes_ctx);
++  stream->aes_ctx = NULL;
+ }
+ 
+ #elif defined(HAVE_NETTLE)
+--- gst-plugins-bad-1.10.5.orig/ext/hls/gsthlsdemux.h
++++ gst-plugins-bad-1.10.5/ext/hls/gsthlsdemux.h
+@@ -101,7 +101,7 @@
+ 
+   /* decryption tooling */
+ #if defined(HAVE_OPENSSL)
+-  EVP_CIPHER_CTX aes_ctx;
++  EVP_CIPHER_CTX *aes_ctx;
+ #elif defined(HAVE_NETTLE)
+   struct CBC_CTX (struct aes_ctx, AES_BLOCK_SIZE) aes_ctx;
+ #else
+--- gst-plugins-bad-1.10.5.orig/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
++++ gst-plugins-bad-1.10.5/gst-libs/gst/basecamerabinsrc/gstcamerabinpreview.c
+@@ -26,8 +26,7 @@
+  * #GstCameraBinVideo.
+  *
+  */
+-#include <gst/app/gstappsrc.h>
+-#include <gst/app/gstappsink.h>
++#include <gst/app/app.h>
+ #include <gst/glib-compat-private.h>
+ #include "gstcamerabinpreview.h"
+ #include "gstbasecamerasrc.h"
+--- gst-plugins-bad-1.10.5.orig/gst-libs/gst/gl/Makefile.am
++++ gst-plugins-bad-1.10.5/gst-libs/gst/gl/Makefile.am
+@@ -125,9 +125,6 @@
+ libgstgl_@GST_API_VERSION@_la_LIBADD += -lgstallocators-$(GST_API_VERSION)
+ endif
+ 
+-configexecincludedir = $(libdir)/gstreamer-@GST_API_VERSION@/include/gst/gl
+-nodist_configexecinclude_HEADERS = $(built_sys_header_configure)
+-
+ libgstgl_@GST_API_VERSION@_la_CFLAGS = \
+ 	-DGST_EXPORTS \
+ 	-I$(top_srcdir)/gst-libs \
+@@ -145,6 +142,8 @@
+ # DISTCLEANFILES is for files generated by configure
+ DISTCLEANFILES = $(built_sys_header_configure)
+ 
++nodist_libgstgl_@GST_API_VERSION@include_HEADERS = $(built_sys_header_configure)
++
+ if HAVE_INTROSPECTION
+ BUILT_GIRSOURCES = GstGL-@GST_API_VERSION@.gir
+ 
+--- gst-plugins-bad-1.10.5.orig/gst-libs/gst/gl/x11/gstglcontext_glx.c
++++ gst-plugins-bad-1.10.5/gst-libs/gst/gl/x11/gstglcontext_glx.c
+@@ -138,6 +138,7 @@
+   GST_DEBUG ("stencil: %d", val);
+ }
+ 
++#ifdef GLX_ARB_create_context
+ static GLXContext
+ _create_context_with_flags (GstGLContextGLX * context_glx, Display * dpy,
+     GLXFBConfig fbconfig, GLXContext share_context, gint major, gint minor,
+@@ -182,6 +183,7 @@
+ 
+   return ret;
+ }
++#endif
+ 
+ static gboolean
+ gst_gl_context_glx_create_context (GstGLContext * context,
+@@ -191,8 +193,10 @@
+   GstGLWindow *window;
+   GstGLWindowX11 *window_x11;
+   GstGLDisplay *display = NULL;
++#ifdef GLX_ARB_create_context
+   gboolean create_context;
+   const char *glx_exts;
++#endif
+   Display *device;
+   guintptr external_gl_context = 0;
+ 
+@@ -227,6 +231,7 @@
+     goto failure;
+   }
+ 
++#ifdef GLX_ARB_create_context
+   glx_exts = glXQueryExtensionsString (device, DefaultScreen (device));
+ 
+   create_context = gst_gl_check_extension ("GLX_ARB_create_context", glx_exts);
+@@ -265,6 +270,7 @@
+       }
+     }
+   }
++#endif
+   if (!context_glx->glx_context && gl_api & GST_GL_API_OPENGL) {
+     context_glx->glx_context =
+         glXCreateContext (device, window_x11->visual_info,
+@@ -489,7 +495,11 @@
+   gpointer result;
+ 
+   if (!(result = gst_gl_context_default_get_proc_address (gl_api, name))) {
++#ifdef GLX_ARB_get_proc_address
+     result = glXGetProcAddressARB ((const GLubyte *) name);
++#else
++    result = glXGetProcAddress ((const GLubyte *) name);
++#endif
+   }
+ 
+   return result;

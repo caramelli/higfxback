@@ -1,0 +1,45 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="a52dec-build autotools-wrappers-lt-build gst-plugins-base-build libmad-build x264-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/lib/gstreamer-1.0
+install ext/a52dec/.libs/libgsta52dec.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/mad/.libs/libgstmad.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/x264/.libs/libgstx264.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/asfdemux/.libs/libgstasf.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/dvdlpcmdec/.libs/libgstdvdlpcmdec.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/dvdsub/.libs/libgstdvdsub.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/realmedia/.libs/libgstrmdemux.so $DESTDIR/x11/lib/gstreamer-1.0
+install gst/xingmux/.libs/libgstxingmux.so $DESTDIR/x11/lib/gstreamer-1.0
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
+Name: gst-plugins-ugly
+Version: 1.10.5
+Description: Ugly GStreamer plugins
+Requires: $REQUIRES
+
+exec=\\
+/x11/lib/gstreamer-1.0/libgsta52dec.so \\
+/x11/lib/gstreamer-1.0/libgstasf.so \\
+/x11/lib/gstreamer-1.0/libgstdvdlpcmdec.so \\
+/x11/lib/gstreamer-1.0/libgstdvdsub.so \\
+/x11/lib/gstreamer-1.0/libgstmad.so \\
+/x11/lib/gstreamer-1.0/libgstrmdemux.so \\
+/x11/lib/gstreamer-1.0/libgstx264.so \\
+/x11/lib/gstreamer-1.0/libgstxingmux.so
+EOF
+
+exit
