@@ -17,6 +17,11 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libde265-build; then
   REQUIRES="$REQUIRES libde265-build"
 fi
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
 if pkg-config --exists x265-build; then
   X265=1
   REQUIRES="$REQUIRES x265-build"
@@ -36,6 +41,7 @@ install gst-libs/gst/audio/.libs/libgstbadaudio-1.0.so.0.* $DESTDIR/dfb/lib/libg
 install gst-libs/gst/base/.libs/libgstbadbase-1.0.so.0.* $DESTDIR/dfb/lib/libgstbadbase-1.0.so.0
 install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/dfb/lib/libgstbasecamerabinsrc-1.0.so.0
 install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/dfb/lib/libgstcodecparsers-1.0.so.0
+test $GL && install gst-libs/gst/gl/.libs/libgstgl-1.0.so.0.* $DESTDIR/dfb/lib/libgstgl-1.0.so.0
 install gst-libs/gst/interfaces/.libs/libgstphotography-1.0.so.0.* $DESTDIR/dfb/lib/libgstphotography-1.0.so.0
 install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/dfb/lib/libgstmpegts-1.0.so.0
 install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/dfb/lib/libgsturidownloader-1.0.so.0
@@ -46,6 +52,7 @@ install ext/curl/.libs/libgstcurl.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/directfb/.libs/libgstdfbvideosink.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/dtls/.libs/libgstdtls.so $DESTDIR/dfb/lib/gstreamer-1.0
+test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/hls/.libs/libgsthls.so $DESTDIR/dfb/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstlibde265.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -129,6 +136,9 @@ exec=\\
 /dfb/lib/libgstbadvideo-1.0.so.0 \\
 /dfb/lib/libgstbasecamerabinsrc-1.0.so.0 \\
 /dfb/lib/libgstcodecparsers-1.0.so.0 \\
+EOF
+test $GL && echo /dfb/lib/libgstgl-1.0.so.0 \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /dfb/lib/libgstmpegts-1.0.so.0 \\
 /dfb/lib/libgstphotography-1.0.so.0 \\
 /dfb/lib/libgsturidownloader-1.0.so.0 \\
@@ -180,6 +190,9 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstmpegtsmux.so \\
 /dfb/lib/gstreamer-1.0/libgstmxf.so \\
 /dfb/lib/gstreamer-1.0/libgstnetsim.so \\
+EOF
+test $GL && echo /dfb/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstopenjpeg.so \\
 /dfb/lib/gstreamer-1.0/libgstpcapparse.so \\
 /dfb/lib/gstreamer-1.0/libgstpnm.so \\
@@ -213,7 +226,133 @@ EOF
 exit
 --- gst-plugins-bad-1.8.3.orig/configure.ac
 +++ gst-plugins-bad-1.8.3/configure.ac
-@@ -2722,7 +2722,7 @@
+@@ -666,6 +666,15 @@
+        *) AC_MSG_ERROR([bad value ${enableval} for --enable-wayland]) ;;
+      esac],[NEED_WAYLAND_EGL=auto])
+ 
++AC_ARG_ENABLE([directfb],
++     [  --enable-directfb       Enable DirectFB support @<:@default=auto@:>@],
++     [case "${enableval}" in
++       yes)  NEED_DIRECTFB=yes ;;
++       no)   NEED_DIRECTFB=no ;;
++       auto) NEED_DIRECTFB=auto ;;
++       *) AC_MSG_ERROR([bad value ${enableval} for --enable-directfb]) ;;
++     esac],[NEED_DIRECTFB=auto])
++
+ AC_ARG_ENABLE([dispmanx],
+      [  --enable-dispmanx        Enable Dispmanx support (requires EGL) @<:@default=auto@:>@],
+      [case "${enableval}" in
+@@ -780,6 +789,10 @@
+     CFLAGS=$old_CFLAGS
+ 
+     PKG_CHECK_MODULES(WAYLAND_EGL, wayland-client >= 1.0 wayland-cursor >= 1.0 wayland-egl >= 9.0, HAVE_WAYLAND_EGL=yes, HAVE_WAYLAND_EGL=no)
++
++    if test "x$NEED_DIRECTFB" != "xno"; then
++      PKG_CHECK_MODULES(DIRECTFB, directfb, HAVE_DIRECTFB=yes, HAVE_DIRECTFB=no)
++    fi
+   ;;
+ esac
+ 
+@@ -964,7 +977,9 @@
+ 
+     if test "x$HAVE_X" = "xno"; then
+       if test "x$HAVE_WAYLAND_EGL" = "xno"; then
+-        AC_MSG_WARN([X or Wayland is required for OpenGL support])
++        if test "x$HAVE_DIRECTFB" = "xno"; then
++          AC_MSG_WARN([X, Wayland or DirectFB is required for OpenGL support])
++        fi
+       fi
+     fi
+ 
+@@ -1003,6 +1018,14 @@
+       fi
+     fi
+ 
++    if test "x$HAVE_DIRECTFB" = "xyes"; then
++      if test "x$NEED_DIRECTFB" != "xno"; then
++        GL_LIBS="$GL_LIBS $DIRECTFB_LIBS"
++        GL_CFLAGS="$GL_CFLAGS $DIRECTFB_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
++        HAVE_WINDOW_DIRECTFB=yes
++      fi
++    fi
++
+     if test "x$HAVE_EGL_RPI" = "xyes"; then
+       if test "x$NEED_DISPMANX" != "xno"; then
+         HAVE_WINDOW_DISPMANX=yes
+@@ -1017,7 +1040,7 @@
+       fi
+     else
+       if test "x$NEED_EGL" != "xno"; then
+-        if test "x$HAVE_WINDOW_WAYLAND" = "xyes" -o "x$HAVE_WINDOW_X11" = "xyes" -o "x$HAVE_WINDOW_DISPMANX" = "xyes"; then
++        if test "x$HAVE_WINDOW_WAYLAND" = "xyes" -o "x$HAVE_WINDOW_X11" = "xyes" -o "x$HAVE_WINDOW_DIRECTFB" = "xyes" -o "x$HAVE_WINDOW_DISPMANX" = "xyes"; then
+           GL_LIBS="$GL_LIBS -lEGL $EGL_LIBS"
+           GL_CFLAGS="$GL_CFLAGS $EGL_CFLAGS"
+           USE_EGL=yes
+@@ -1164,6 +1187,7 @@
+ GST_GL_HAVE_WINDOW_WIN32=0
+ GST_GL_HAVE_WINDOW_WAYLAND=0
+ GST_GL_HAVE_WINDOW_ANDROID=0
++GST_GL_HAVE_WINDOW_DIRECTFB=0
+ GST_GL_HAVE_WINDOW_DISPMANX=0
+ GST_GL_HAVE_WINDOW_EAGL=0
+ 
+@@ -1187,6 +1211,10 @@
+   GL_WINDOWS="android $GL_WINDOWS"
+   GST_GL_HAVE_WINDOW_ANDROID=1
+ fi
++if test "x$HAVE_WINDOW_DIRECTFB" = "xyes"; then
++  GL_WINDOWS="directfb $GL_WINDOWS"
++  GST_GL_HAVE_WINDOW_DIRECTFB=1
++fi
+ if test "x$HAVE_WINDOW_DISPMANX" = "xyes"; then
+   GL_WINDOWS="dispmanx $GL_WINDOWS"
+   GST_GL_HAVE_WINDOW_DISPMANX=1
+@@ -1202,6 +1230,7 @@
+ #define GST_GL_HAVE_WINDOW_WIN32 $GST_GL_HAVE_WINDOW_WIN32
+ #define GST_GL_HAVE_WINDOW_WAYLAND $GST_GL_HAVE_WINDOW_WAYLAND
+ #define GST_GL_HAVE_WINDOW_ANDROID $GST_GL_HAVE_WINDOW_ANDROID
++#define GST_GL_HAVE_WINDOW_DIRECTFB $GST_GL_HAVE_WINDOW_DIRECTFB
+ #define GST_GL_HAVE_WINDOW_DISPMANX $GST_GL_HAVE_WINDOW_DISPMANX
+ #define GST_GL_HAVE_WINDOW_EAGL $GST_GL_HAVE_WINDOW_EAGL
+ "
+@@ -1274,6 +1303,7 @@
+ 
+   HAVE_WINDOW_X11=no
+   HAVE_WINDOW_WIN32=no
++  HAVE_WINDOW_DIRECTFB=no
+   HAVE_WINDOW_DISPMANX=no
+   HAVE_WINDOW_WAYLAND=no
+   HAVE_WINDOW_ANDROID=no
+@@ -1290,6 +1320,7 @@
+ AM_CONDITIONAL(HAVE_WINDOW_X11, test "x$HAVE_WINDOW_X11" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_COCOA, test "x$HAVE_WINDOW_COCOA" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_WIN32, test "x$HAVE_WINDOW_WIN32" = "xyes")
++AM_CONDITIONAL(HAVE_WINDOW_DIRECTFB, test "x$HAVE_WINDOW_DIRECTFB" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_DISPMANX, test "x$HAVE_WINDOW_DISPMANX" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_WAYLAND, test "x$HAVE_WINDOW_WAYLAND" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_ANDROID, test "x$HAVE_WINDOW_ANDROID" = "xyes")
+@@ -2150,14 +2181,15 @@
+ 
+ dnl **** DirectFB ****
+ translit(dnm, m, l) AM_CONDITIONAL(USE_DIRECTFB, true)
+-AG_GST_CHECK_FEATURE(DIRECTFB, [directfb], dfbvideosink , [
+-  PKG_CHECK_MODULES(DIRECTFB, directfb >= 0.9.24, HAVE_DIRECTFB="yes", [
+-    HAVE_DIRECTFB="no"
+-  ])
+-])
++if test "x$HAVE_DIRECTFB" = "xyes"; then
++AG_GST_CHECK_FEATURE(DIRECTFB, [directfb sink], dfbvideosink, HAVE_DIRECTFB=yes)
++else
++AG_GST_CHECK_FEATURE(DIRECTFB, [directfb sink], dfbvideosink, HAVE_DIRECTFB=no)
++fi
+ 
+ dnl **** Wayland ****
+ translit(dnm, m, l) AM_CONDITIONAL(USE_WAYLAND, true)
++echo
+ AC_PATH_PROG([wayland_scanner], [wayland-scanner])
+ AG_GST_CHECK_FEATURE(WAYLAND, [wayland sink], wayland , [
+   PKG_CHECK_MODULES(WAYLAND, wayland-client >= 1.4.0, [
+@@ -2722,7 +2754,7 @@
    if test x"$HAVE_OPENJPEG" = x"yes"; then
      dnl minor API changes in v2.1
      AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
@@ -222,6 +361,14 @@ exit
        AC_DEFINE([HAVE_OPENJPEG_2_1], 1, [Define if OpenJPEG 2.1 is used])
      fi
    else
+@@ -3582,6 +3614,7 @@
+ gst-libs/gst/gl/Makefile
+ gst-libs/gst/gl/android/Makefile
+ gst-libs/gst/gl/cocoa/Makefile
++gst-libs/gst/gl/directfb/Makefile
+ gst-libs/gst/gl/dispmanx/Makefile
+ gst-libs/gst/gl/glprototypes/Makefile
+ gst-libs/gst/gl/eagl/Makefile
 --- gst-plugins-bad-1.8.3.orig/ext/dash/gstdashdemux.c
 +++ gst-plugins-bad-1.8.3/ext/dash/gstdashdemux.c
 @@ -151,7 +151,7 @@
@@ -506,3 +653,549 @@ exit
  #elif defined(HAVE_NETTLE)
    struct CBC_CTX (struct aes_ctx, AES_BLOCK_SIZE) aes_ctx;
  #else
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/Makefile.am
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/Makefile.am
+@@ -2,7 +2,7 @@
+ lib_LTLIBRARIES = libgstgl-@GST_API_VERSION@.la
+ 
+ SUBDIRS = glprototypes
+-DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland dispmanx egl eagl
++DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland directfb dispmanx egl eagl
+ 
+ built_sys_header_configure = gstglconfig.h
+ 
+@@ -102,6 +102,11 @@
+ libgstgl_@GST_API_VERSION@_la_LIBADD += wayland/libgstgl-wayland.la
+ endif
+ 
++if HAVE_WINDOW_DIRECTFB
++SUBDIRS += directfb
++libgstgl_@GST_API_VERSION@_la_LIBADD += directfb/libgstgl-directfb.la
++endif
++
+ if HAVE_WINDOW_DISPMANX
+ SUBDIRS += dispmanx
+ libgstgl_@GST_API_VERSION@_la_LIBADD += dispmanx/libgstgl-dispmanx.la
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/directfb/Makefile.am
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/directfb/Makefile.am
+@@ -0,0 +1,23 @@
++## Process this file with automake to produce Makefile.in
++
++noinst_LTLIBRARIES = libgstgl-directfb.la
++
++libgstgl_directfb_la_SOURCES = \
++	gstgldisplay_directfb.c \
++	gstglwindow_directfb.c
++
++noinst_HEADERS = \
++	gstgldisplay_directfb.h \
++	gstglwindow_directfb.h
++
++libgstgl_directfb_la_CFLAGS = \
++	-I$(top_srcdir)/gst-libs \
++	-I$(top_builddir)/gst-libs \
++	$(GL_CFLAGS) \
++	$(GST_PLUGINS_BASE_CFLAGS) \
++	$(GST_BASE_CFLAGS) \
++	$(GST_CFLAGS)
++
++libgstgl_directfb_la_LDFLAGS = \
++	$(GST_LIB_LDFLAGS) \
++	$(GST_ALL_LDFLAGS)
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/directfb/gstgldisplay_directfb.c
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/directfb/gstgldisplay_directfb.c
+@@ -0,0 +1,107 @@
++/*
++ * GStreamer
++ * Copyright (C) 2015 The DirectFB Open Source Project
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "gstgldisplay_directfb.h"
++
++G_DEFINE_TYPE (GstGLDisplayDirectFB, gst_gl_display_directfb,
++    GST_TYPE_GL_DISPLAY);
++
++static void gst_gl_display_directfb_finalize (GObject * object);
++static guintptr gst_gl_display_directfb_get_handle (GstGLDisplay * display);
++
++static void
++gst_gl_display_directfb_class_init (GstGLDisplayDirectFBClass * klass)
++{
++  G_OBJECT_CLASS (klass)->finalize = gst_gl_display_directfb_finalize;
++
++  GST_GL_DISPLAY_CLASS (klass)->get_handle =
++      GST_DEBUG_FUNCPTR (gst_gl_display_directfb_get_handle);
++}
++
++static void
++gst_gl_display_directfb_init (GstGLDisplayDirectFB * display_directfb)
++{
++  GstGLDisplay *display = (GstGLDisplay *) display_directfb;
++
++  display->type = GST_GL_DISPLAY_TYPE_DIRECTFB;
++}
++
++static void
++gst_gl_display_directfb_finalize (GObject * object)
++{
++  GstGLDisplayDirectFB *display_directfb = GST_GL_DISPLAY_DIRECTFB (object);
++
++  if (display_directfb->layer) {
++    display_directfb->layer->Release (display_directfb->layer);
++    display_directfb->layer = NULL;
++  }
++
++  if (display_directfb->dfb) {
++    display_directfb->dfb->Release (display_directfb->dfb);
++    display_directfb->dfb = NULL;
++  }
++
++  G_OBJECT_CLASS (gst_gl_display_directfb_parent_class)->finalize (object);
++}
++
++static guintptr
++gst_gl_display_directfb_get_handle (GstGLDisplay * display)
++{
++  return (guintptr) GST_GL_DISPLAY_DIRECTFB (display)->dfb;
++}
++
++GstGLDisplayDirectFB *
++gst_gl_display_directfb_new (void)
++{
++  DFBResult ret;
++  GstGLDisplayDirectFB *display_directfb;
++
++  display_directfb = g_object_new (GST_TYPE_GL_DISPLAY_DIRECTFB, NULL);
++
++  ret = DirectFBInit (NULL, NULL);
++
++  if (ret) {
++    GST_ERROR ("Failed to initialize DirectFB");
++    return NULL;
++  }
++
++  ret = DirectFBCreate (&display_directfb->dfb);
++
++  if (ret) {
++    GST_ERROR ("Failed to create DirectFB main interface");
++    return NULL;
++  }
++
++  display_directfb->dfb->GetDisplayLayer (display_directfb->dfb, DLID_PRIMARY,
++                                          &display_directfb->layer);
++
++  if (ret) {
++    GST_ERROR ("Failed to get DirectFB display layer");
++    display_directfb->dfb->Release (display_directfb->dfb);
++    display_directfb->dfb = NULL;
++    return NULL;
++  }
++
++  return display_directfb;
++}
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/directfb/gstgldisplay_directfb.h
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/directfb/gstgldisplay_directfb.h
+@@ -0,0 +1,56 @@
++/*
++ * GStreamer
++ * Copyright (C) 2015 The DirectFB Open Source Project
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __GST_GL_DISPLAY_DIRECTFB_H__
++#define __GST_GL_DISPLAY_DIRECTFB_H__
++
++#include <directfb.h>
++
++#include <gst/gl/gstgldisplay.h>
++
++G_BEGIN_DECLS
++
++GType gst_gl_display_directfb_get_type (void);
++
++#define GST_TYPE_GL_DISPLAY_DIRECTFB  (gst_gl_display_directfb_get_type())
++#define GST_GL_DISPLAY_DIRECTFB(obj)  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_GL_DISPLAY_DIRECTFB,GstGLDisplayDirectFB))
++
++typedef struct _GstGLDisplayDirectFB GstGLDisplayDirectFB;
++typedef struct _GstGLDisplayDirectFBClass GstGLDisplayDirectFBClass;
++
++struct _GstGLDisplayDirectFB
++{
++  GstGLDisplay parent;
++
++  IDirectFB *dfb;
++
++  IDirectFBDisplayLayer *layer;
++};
++
++struct _GstGLDisplayDirectFBClass
++{
++  GstGLDisplayClass object_class;
++};
++
++GstGLDisplayDirectFB * gst_gl_display_directfb_new (void);
++
++G_END_DECLS
++
++#endif /* __GST_GL_DISPLAY_DIRECTFB_H__ */
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/directfb/gstglwindow_directfb.c
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/directfb/gstglwindow_directfb.c
+@@ -0,0 +1,171 @@
++/*
++ * GStreamer
++ * Copyright (C) 2015 The DirectFB Open Source Project
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "gstgldisplay_directfb.h"
++#include "gstglwindow_directfb.h"
++
++G_DEFINE_TYPE (GstGLWindowDirectFB, gst_gl_window_directfb,
++    GST_GL_TYPE_WINDOW);
++
++static guintptr gst_gl_window_directfb_get_window_handle (GstGLWindow * window);
++static void gst_gl_window_directfb_close (GstGLWindow * window);
++static void gst_gl_window_directfb_set_preferred_size (GstGLWindow * window,
++    gint width, gint height);
++static void gst_gl_window_directfb_draw (GstGLWindow * window);
++static void gst_gl_window_directfb_show (GstGLWindow * window);
++
++static void
++gst_gl_window_directfb_class_init (GstGLWindowDirectFBClass * klass)
++{
++  GstGLWindowClass *window_class = (GstGLWindowClass *) klass;
++
++  window_class->get_window_handle =
++      GST_DEBUG_FUNCPTR (gst_gl_window_directfb_get_window_handle);
++  window_class->draw = GST_DEBUG_FUNCPTR (gst_gl_window_directfb_draw);
++  window_class->close = GST_DEBUG_FUNCPTR (gst_gl_window_directfb_close);
++  window_class->set_preferred_size =
++      GST_DEBUG_FUNCPTR (gst_gl_window_directfb_set_preferred_size);
++  window_class->show = GST_DEBUG_FUNCPTR (gst_gl_window_directfb_show);
++}
++
++static void
++gst_gl_window_directfb_init (GstGLWindowDirectFB * window)
++{
++}
++
++guintptr
++gst_gl_window_directfb_get_window_handle (GstGLWindow * window)
++{
++  return (guintptr) GST_GL_WINDOW_DIRECTFB (window)->surface;
++}
++
++void
++gst_gl_window_directfb_close (GstGLWindow * window)
++{
++  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
++
++  if (window_directfb->surface) {
++    window_directfb->surface->Release (window_directfb->surface);
++    window_directfb->surface = NULL;
++  }
++
++  if (window_directfb->window) {
++    window_directfb->window->Release (window_directfb->window);
++    window_directfb->window = NULL;
++  }
++
++  GST_GL_WINDOW_CLASS (gst_gl_window_directfb_parent_class)->close (window);
++}
++
++static void
++gst_gl_window_directfb_set_preferred_size (GstGLWindow * window,
++    gint width, gint height)
++{
++  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
++
++  gst_gl_window_resize (window, width, height);
++
++  window_directfb->window->Resize (window_directfb->window, width, height);
++}
++
++static void
++draw_cb (gpointer data)
++{
++  GstGLWindowDirectFB *window_directfb = data;
++  GstGLWindow *window = GST_GL_WINDOW (window_directfb);
++  GstGLContext *context = gst_gl_window_get_context (window);
++  GstGLContextClass *context_class = GST_GL_CONTEXT_GET_CLASS (context);
++
++  if (window->draw)
++    window->draw (window->draw_data);
++
++  context_class->swap_buffers (context);
++
++  if (g_getenv ("DSCAPS_GL"))
++    window_directfb->surface->Flip (window_directfb->surface, NULL,
++                                    DSFLIP_WAITFORSYNC);
++
++  gst_object_unref (context);
++}
++
++static void
++gst_gl_window_directfb_draw (GstGLWindow * window)
++{
++  gst_gl_window_send_message (window, (GstGLWindowCB) draw_cb, window);
++}
++
++static void
++gst_gl_window_directfb_show (GstGLWindow * window)
++{
++  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
++
++  window_directfb->window->SetOpacity (window_directfb->window, 0xff);
++}
++
++GstGLWindowDirectFB *
++gst_gl_window_directfb_new (GstGLDisplay * display)
++{
++  if ((gst_gl_display_get_handle_type (display) & GST_GL_DISPLAY_TYPE_DIRECTFB)
++      == GST_GL_DISPLAY_TYPE_NONE) {
++    GST_INFO ("Wrong display type %u for this window type %u", display->type,
++        GST_GL_DISPLAY_TYPE_DIRECTFB);
++    return NULL;
++  }
++
++  return g_object_new (GST_GL_TYPE_WINDOW_DIRECTFB, NULL);
++}
++
++void
++gst_gl_window_directfb_create_window (GstGLWindowDirectFB * window_directfb)
++{
++  DFBResult ret;
++  DFBWindowDescription desc;
++  GstGLDisplayDirectFB *display_directfb =
++      GST_GL_DISPLAY_DIRECTFB (GST_GL_WINDOW (window_directfb)->display);
++
++  desc.flags = DWDESC_WIDTH | DWDESC_HEIGHT;
++  desc.width = 1;
++  desc.height = 1;
++
++  if (g_getenv ("DSCAPS_GL")) {
++    desc.flags |= DWDESC_SURFACE_CAPS;
++    desc.surface_caps |= DSCAPS_GL;
++  }
++
++  ret = display_directfb->layer->CreateWindow (display_directfb->layer, &desc,
++                                               &window_directfb->window);
++
++  if (ret) {
++    GST_ERROR ("Failed to create DirectFB window");
++  }
++
++  ret = window_directfb->window->GetSurface (window_directfb->window,
++                                             &window_directfb->surface);
++
++  if (ret) {
++    GST_ERROR ("Failed to get DirectFB surface");
++    window_directfb->window->Release (window_directfb->window);
++    window_directfb->window = NULL;
++  }
++}
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/directfb/gstglwindow_directfb.h
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/directfb/gstglwindow_directfb.h
+@@ -0,0 +1,62 @@
++/*
++ * GStreamer
++ * Copyright (C) 2015 The DirectFB Open Source Project
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __GST_GL_WINDOW_DIRECTFB_H__
++#define __GST_GL_WINDOW_DIRECTFB_H__
++
++#include <directfb.h>
++
++#include <gst/gl/gstglwindow.h>
++
++G_BEGIN_DECLS
++
++GType gst_gl_window_directfb_get_type (void);
++
++#define GST_GL_TYPE_WINDOW_DIRECTFB   (gst_gl_window_directfb_get_type())
++#define GST_GL_WINDOW_DIRECTFB(o)     (G_TYPE_CHECK_INSTANCE_CAST((o), GST_GL_TYPE_WINDOW_DIRECTFB, GstGLWindowDirectFB))
++#define GST_IS_GL_WINDOW_DIRECTFB(o)  (G_TYPE_CHECK_INSTANCE_TYPE((o), GST_GL_TYPE_WINDOW_DIRECTFB))
++
++typedef struct _GstGLWindowDirectFB GstGLWindowDirectFB;
++typedef struct _GstGLWindowDirectFBClass GstGLWindowDirectFBClass;
++
++struct _GstGLWindowDirectFB
++{
++  GstGLWindow parent;
++
++  IDirectFBWindow *window;
++
++  IDirectFBSurface *surface;
++
++  gpointer _reserved[GST_PADDING];
++};
++
++struct _GstGLWindowDirectFBClass {
++  GstGLWindowClass parent_class;
++
++  gpointer _reserved[GST_PADDING_LARGE];
++};
++
++GstGLWindowDirectFB * gst_gl_window_directfb_new (GstGLDisplay * display);
++
++void gst_gl_window_directfb_create_window (GstGLWindowDirectFB * window_directfb);
++
++G_END_DECLS
++
++#endif /* __GST_GL_WINDOW_DIRECTFB_H__ */
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/egl/gstglcontext_egl.c
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/egl/gstglcontext_egl.c
+@@ -43,6 +43,9 @@
+ #if GST_GL_HAVE_WINDOW_WIN32
+ #include "../win32/gstglwindow_win32.h"
+ #endif
++#if GST_GL_HAVE_WINDOW_DIRECTFB
++#include "../directfb/gstglwindow_directfb.h"
++#endif
+ #if GST_GL_HAVE_WINDOW_DISPMANX
+ #include "../dispmanx/gstglwindow_dispmanx_egl.h"
+ #endif
+@@ -542,6 +545,12 @@
+       gst_gl_window_win32_create_window ((GstGLWindowWin32 *) context->window);
+     }
+ #endif
++#if GST_GL_HAVE_WINDOW_DIRECTFB
++    if (GST_IS_GL_WINDOW_DIRECTFB (context->window)) {
++      gst_gl_window_directfb_create_window ((GstGLWindowDirectFB *)
++          context->window);
++    }
++#endif
+ #if GST_GL_HAVE_WINDOW_DISPMANX
+     if (GST_IS_GL_WINDOW_DISPMANX_EGL (context->window)) {
+       gst_gl_window_dispmanx_egl_create_window ((GstGLWindowDispmanxEGL *)
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/gstgldisplay.c
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/gstgldisplay.c
+@@ -65,6 +65,9 @@
+ #if GST_GL_HAVE_WINDOW_WAYLAND
+ #include <gst/gl/wayland/gstgldisplay_wayland.h>
+ #endif
++#if GST_GL_HAVE_WINDOW_DIRECTFB
++#include <gst/gl/directfb/gstgldisplay_directfb.h>
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+ #include <gst/gl/egl/gstgldisplay_egl.h>
+ #include <gst/gl/egl/gsteglimagememory.h>
+@@ -205,6 +208,10 @@
+   if (!display && (!user_choice || g_strstr_len (user_choice, 7, "wayland")))
+     display = GST_GL_DISPLAY (gst_gl_display_wayland_new (NULL));
+ #endif
++#if GST_GL_HAVE_WINDOW_DIRECTFB
++  if (!display && (!user_choice || g_strstr_len (user_choice, 8, "directfb")))
++    display = GST_GL_DISPLAY (gst_gl_display_directfb_new ());
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+   if (!display && (!platform_choice
+           || g_strstr_len (platform_choice, 3, "egl")))
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/gstgldisplay.h
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/gstgldisplay.h
+@@ -49,6 +49,7 @@
+  * @GST_GL_DISPLAY_TYPE_WIN32: Win32 display
+  * @GST_GL_DISPLAY_TYPE_DISPMANX: Dispmanx display
+  * @GST_GL_DISPLAY_TYPE_EGL: EGL display
++ * @GST_GL_DISPLAY_TYPE_DIRECTFB: DirectFB display
+  * @GST_GL_DISPLAY_TYPE_ANY: any display type
+  */
+ typedef enum
+@@ -60,6 +61,7 @@
+   GST_GL_DISPLAY_TYPE_WIN32 = (1 << 3),
+   GST_GL_DISPLAY_TYPE_DISPMANX = (1 << 4),
+   GST_GL_DISPLAY_TYPE_EGL = (1 << 5),
++  GST_GL_DISPLAY_TYPE_DIRECTFB = (1 << 6),
+ 
+   GST_GL_DISPLAY_TYPE_ANY = G_MAXUINT32
+ } GstGLDisplayType;
+--- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/gstglwindow.c
++++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/gstglwindow.c
+@@ -58,6 +58,9 @@
+ #if GST_GL_HAVE_WINDOW_EAGL
+ #include "eagl/gstglwindow_eagl.h"
+ #endif
++#if GST_GL_HAVE_WINDOW_DIRECTFB
++#include "directfb/gstglwindow_directfb.h"
++#endif
+ #if GST_GL_HAVE_WINDOW_DISPMANX
+ #include "dispmanx/gstglwindow_dispmanx_egl.h"
+ #endif
+@@ -290,6 +293,10 @@
+   if (!window && (!user_choice || g_strstr_len (user_choice, 7, "wayland")))
+     window = GST_GL_WINDOW (gst_gl_window_wayland_egl_new (display));
+ #endif
++#if GST_GL_HAVE_WINDOW_DIRECTFB
++  if (!window && (!user_choice || g_strstr_len (user_choice, 8, "directfb")))
++    window = GST_GL_WINDOW (gst_gl_window_directfb_new (display));
++#endif
+ #if GST_GL_HAVE_WINDOW_DISPMANX
+   if (!window && (!user_choice || g_strstr_len (user_choice, 8, "dispmanx")))
+     window = GST_GL_WINDOW (gst_gl_window_dispmanx_egl_new (display));
