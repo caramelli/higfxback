@@ -1,0 +1,2072 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="jpeg-build libpng-build make-build perl-build tiff-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+yes "" | ./configure
+sed -e "s/@VERSION@/$(grep NETPBM_MAJOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ').$(grep NETPBM_MINOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ')/" -e "s/@LIBDIR@/\/lib/" -e "s/@INCLUDEDIR@/\/include/" buildtools/pkgconfig_template > netpbm.pc
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install analyzer/pamfile $DESTDIR/bin
+ln -sf pamfile $DESTDIR/bin/pnmfile
+install analyzer/pamsharpmap $DESTDIR/bin
+install analyzer/pamsharpness $DESTDIR/bin
+install analyzer/pamslice $DESTDIR/bin
+ln -sf pamslice $DESTDIR/bin/pgmslice
+install analyzer/pamsumm $DESTDIR/bin
+install analyzer/pgmhist $DESTDIR/bin
+install analyzer/pgmminkowski $DESTDIR/bin
+install analyzer/pgmtexture $DESTDIR/bin
+install analyzer/pnmhistmap $DESTDIR/bin
+install analyzer/pnmpsnr $DESTDIR/bin
+install analyzer/ppmhist $DESTDIR/bin
+install converter/pbm/atktopbm $DESTDIR/bin
+install converter/pbm/brushtopbm $DESTDIR/bin
+install converter/pbm/cmuwmtopbm $DESTDIR/bin
+install converter/pbm/ddbugtopbm $DESTDIR/bin
+install converter/pbm/escp2topbm $DESTDIR/bin
+install converter/pbm/g3topbm $DESTDIR/bin
+install converter/pbm/icontopbm $DESTDIR/bin
+install converter/pbm/macptopbm $DESTDIR/bin
+install converter/pbm/mdatopbm $DESTDIR/bin
+install converter/pbm/mgrtopbm $DESTDIR/bin
+install converter/pbm/mrftopbm $DESTDIR/bin
+install converter/pbm/pbmto10x $DESTDIR/bin
+install converter/pbm/pbmto4425 $DESTDIR/bin
+install converter/pbm/pbmtoascii $DESTDIR/bin
+install converter/pbm/pbmtoatk $DESTDIR/bin
+install converter/pbm/pbmtobbnbg $DESTDIR/bin
+install converter/pbm/pbmtocmuwm $DESTDIR/bin
+install converter/pbm/pbmtodjvurle $DESTDIR/bin
+install converter/pbm/pbmtoepsi $DESTDIR/bin
+install converter/pbm/pbmtoepson $DESTDIR/bin
+install converter/pbm/pbmtoescp2 $DESTDIR/bin
+install converter/pbm/pbmtog3 $DESTDIR/bin
+install converter/pbm/pbmtogem $DESTDIR/bin
+install converter/pbm/pbmtogo $DESTDIR/bin
+install converter/pbm/pbmtoibm23xx $DESTDIR/bin
+install converter/pbm/pbmtoicon $DESTDIR/bin
+install converter/pbm/pbmtolj $DESTDIR/bin
+install converter/pbm/pbmtoln03 $DESTDIR/bin
+install converter/pbm/pbmtolps $DESTDIR/bin
+install converter/pbm/pbmtomacp $DESTDIR/bin
+install converter/pbm/pbmtomatrixorbital $DESTDIR/bin
+install converter/pbm/pbmtomda $DESTDIR/bin
+install converter/pbm/pbmtomgr $DESTDIR/bin
+install converter/pbm/pbmtomrf $DESTDIR/bin
+install converter/pbm/pbmtonokia $DESTDIR/bin
+install converter/pbm/pbmtopi3 $DESTDIR/bin
+install converter/pbm/pbmtopk $DESTDIR/bin
+install converter/pbm/pbmtoplot $DESTDIR/bin
+install converter/pbm/pbmtopsg3 $DESTDIR/bin
+install converter/pbm/pbmtoptx $DESTDIR/bin
+install converter/pbm/pbmtowbmp $DESTDIR/bin
+install converter/pbm/pbmtox10bm $DESTDIR/bin
+install converter/pbm/pbmtoxbm $DESTDIR/bin
+install converter/pbm/pbmtoybm $DESTDIR/bin
+install converter/pbm/pbmtozinc $DESTDIR/bin
+install converter/pbm/pi3topbm $DESTDIR/bin
+install converter/pbm/pktopbm $DESTDIR/bin
+install converter/pbm/thinkjettopbm $DESTDIR/bin
+install converter/pbm/wbmptopbm $DESTDIR/bin
+install converter/pbm/xbmtopbm $DESTDIR/bin
+install converter/pbm/ybmtopbm $DESTDIR/bin
+install converter/pbm/pbmtoppa/pbmtoppa $DESTDIR/bin
+install converter/pgm/asciitopgm $DESTDIR/bin
+install converter/pgm/bioradtopgm $DESTDIR/bin
+install converter/pgm/fstopgm $DESTDIR/bin
+install converter/pgm/hipstopgm $DESTDIR/bin
+install converter/pgm/lispmtopgm $DESTDIR/bin
+install converter/pgm/pgmtofs $DESTDIR/bin
+install converter/pgm/pgmtolispm $DESTDIR/bin
+install converter/pgm/pgmtopgm $DESTDIR/bin
+install converter/pgm/psidtopgm $DESTDIR/bin
+install converter/pgm/rawtopgm $DESTDIR/bin
+install converter/pgm/sbigtopgm $DESTDIR/bin
+install converter/pgm/spottopgm $DESTDIR/bin
+install converter/ppm/411toppm $DESTDIR/bin
+install converter/ppm/eyuvtoppm $DESTDIR/bin
+install converter/ppm/gouldtoppm $DESTDIR/bin
+install converter/ppm/ilbmtoppm $DESTDIR/bin
+install converter/ppm/leaftoppm $DESTDIR/bin
+install converter/ppm/mtvtoppm $DESTDIR/bin
+install converter/ppm/neotoppm $DESTDIR/bin
+install converter/ppm/imgtoppm $DESTDIR/bin
+install converter/ppm/pc1toppm $DESTDIR/bin
+install converter/ppm/pcxtoppm $DESTDIR/bin
+install converter/ppm/pi1toppm $DESTDIR/bin
+install converter/ppm/picttoppm $DESTDIR/bin
+install converter/ppm/pjtoppm $DESTDIR/bin
+install converter/ppm/ppmtoacad $DESTDIR/bin
+install converter/ppm/ppmtoarbtxt $DESTDIR/bin
+install converter/ppm/ppmtobmp $DESTDIR/bin
+install converter/ppm/ppmtoeyuv $DESTDIR/bin
+install converter/ppm/ppmtogif $DESTDIR/bin
+install converter/ppm/ppmtoicr $DESTDIR/bin
+install converter/ppm/ppmtoilbm $DESTDIR/bin
+install converter/ppm/ppmtoleaf $DESTDIR/bin
+install converter/ppm/ppmtolj $DESTDIR/bin
+install converter/ppm/ppmtomitsu $DESTDIR/bin
+install converter/ppm/ppmtoneo $DESTDIR/bin
+install converter/ppm/ppmtopcx $DESTDIR/bin
+install converter/ppm/ppmtopi1 $DESTDIR/bin
+install converter/ppm/ppmtopict $DESTDIR/bin
+install converter/ppm/ppmtopj $DESTDIR/bin
+install converter/ppm/ppmtopjxl $DESTDIR/bin
+install converter/ppm/ppmtoppm $DESTDIR/bin
+install converter/ppm/ppmtopuzz $DESTDIR/bin
+install converter/ppm/ppmtorgb3 $DESTDIR/bin
+install converter/ppm/ppmtosixel $DESTDIR/bin
+install converter/ppm/ppmtoterm $DESTDIR/bin
+install converter/ppm/ppmtowinicon $DESTDIR/bin
+install converter/ppm/ppmtoxpm $DESTDIR/bin
+install converter/ppm/ppmtoyuv $DESTDIR/bin
+install converter/ppm/ppmtoyuvsplit $DESTDIR/bin
+install converter/ppm/qrttoppm $DESTDIR/bin
+install converter/ppm/rawtoppm $DESTDIR/bin
+install converter/ppm/rgb3toppm $DESTDIR/bin
+install converter/ppm/sldtoppm $DESTDIR/bin
+install converter/ppm/spctoppm $DESTDIR/bin
+install converter/ppm/sputoppm $DESTDIR/bin
+install converter/ppm/tgatoppm $DESTDIR/bin
+install converter/ppm/winicontoppm $DESTDIR/bin
+install converter/ppm/ximtoppm $DESTDIR/bin
+install converter/ppm/xpmtoppm $DESTDIR/bin
+install converter/ppm/xvminitoppm $DESTDIR/bin
+install converter/ppm/yuvsplittoppm $DESTDIR/bin
+install converter/ppm/yuvtoppm $DESTDIR/bin
+install converter/ppm/hpcdtoppm/hpcdtoppm $DESTDIR/bin
+install converter/ppm/hpcdtoppm/pcdovtoppm $DESTDIR/bin
+install converter/ppm/ppmtompeg/ppmtompeg $DESTDIR/bin
+install converter/other/anytopnm $DESTDIR/bin
+install converter/other/bmptopnm $DESTDIR/bin
+ln -sf bmptopnm $DESTDIR/bin/bmptoppm
+install converter/other/fitstopnm $DESTDIR/bin
+install converter/other/gemtopnm $DESTDIR/bin
+ln -sf gemtopnm $DESTDIR/bin/gemtopbm
+install converter/other/giftopnm $DESTDIR/bin
+install converter/other/hdifftopam $DESTDIR/bin
+install converter/other/infotopam $DESTDIR/bin
+install converter/other/jpegtopnm $DESTDIR/bin
+install converter/other/pamtodjvurle $DESTDIR/bin
+install converter/other/pamtohdiff $DESTDIR/bin
+install converter/other/pamtohtmltbl $DESTDIR/bin
+install converter/other/pamtopfm $DESTDIR/bin
+install converter/other/pamtopnm $DESTDIR/bin
+install converter/other/pamtotga $DESTDIR/bin
+install converter/other/pamtouil $DESTDIR/bin
+ln -sf pamtouil $DESTDIR/bin/ppmtouil
+install converter/other/pbmtopgm $DESTDIR/bin
+install converter/other/pfmtopam $DESTDIR/bin
+install converter/other/pgmtopbm $DESTDIR/bin
+install converter/other/pgmtoppm $DESTDIR/bin
+install converter/other/pngtopnm $DESTDIR/bin
+install converter/other/pnmtoddif $DESTDIR/bin
+install converter/other/pnmtofits $DESTDIR/bin
+install converter/other/pnmtojpeg $DESTDIR/bin
+ln -sf pnmtojpeg $DESTDIR/bin/ppmtojpeg
+install converter/other/pnmtopclxl $DESTDIR/bin
+install converter/other/pnmtoplainpnm $DESTDIR/bin
+ln -sf pnmtoplainpnm $DESTDIR/bin/pnmnoraw
+install converter/other/pnmtopng $DESTDIR/bin
+install converter/other/pnmtopnm $DESTDIR/bin
+install converter/other/pnmtops $DESTDIR/bin
+install converter/other/pnmtorast $DESTDIR/bin
+install converter/other/pnmtorle $DESTDIR/bin
+install converter/other/pnmtosgi $DESTDIR/bin
+install converter/other/pnmtosir $DESTDIR/bin
+install converter/other/pnmtotiff $DESTDIR/bin
+install converter/other/pnmtotiffcmyk $DESTDIR/bin
+install converter/other/pnmtoxwd $DESTDIR/bin
+install converter/other/ppmtopgm $DESTDIR/bin
+install converter/other/pstopnm $DESTDIR/bin
+install converter/other/rasttopnm $DESTDIR/bin
+install converter/other/rletopnm $DESTDIR/bin
+install converter/other/sgitopnm $DESTDIR/bin
+install converter/other/sirtopnm $DESTDIR/bin
+install converter/other/tifftopnm $DESTDIR/bin
+install converter/other/xwdtopnm $DESTDIR/bin
+install converter/other/zeisstopnm $DESTDIR/bin
+install converter/other/fiasco/fiascotopnm $DESTDIR/bin
+install converter/other/fiasco/pnmtofiasco $DESTDIR/bin
+install converter/other/jbig/jbigtopnm $DESTDIR/bin
+install converter/other/jbig/pnmtojbig $DESTDIR/bin
+install converter/other/jpeg2000/jpeg2ktopam $DESTDIR/bin
+install converter/other/jpeg2000/pamtojpeg2k $DESTDIR/bin
+install converter/other/pnmtopalm/palmtopnm $DESTDIR/bin
+install converter/other/pnmtopalm/pnmtopalm $DESTDIR/bin
+install editor/pamcomp $DESTDIR/bin
+install editor/pamcut $DESTDIR/bin
+install editor/pamdeinterlace $DESTDIR/bin
+install editor/pamdice $DESTDIR/bin
+install editor/pamditherbw $DESTDIR/bin
+install editor/pamedge $DESTDIR/bin
+ln -sf pamedge $DESTDIR/bin/pgmedge
+install editor/pamenlarge $DESTDIR/bin
+ln -sf pamenlarge $DESTDIR/bin/pnmenlarge
+install editor/pamflip $DESTDIR/bin
+install editor/pamfunc $DESTDIR/bin
+install editor/pammasksharpen $DESTDIR/bin
+install editor/pamoil $DESTDIR/bin
+ln -sf pamoil $DESTDIR/bin/pgmoil
+install editor/pamperspective $DESTDIR/bin
+install editor/pampop9 $DESTDIR/bin
+install editor/pamscale $DESTDIR/bin
+install editor/pamstretch $DESTDIR/bin
+ln -sf pamstretch $DESTDIR/bin/pnminterp
+install editor/pamstretch-gen $DESTDIR/bin
+install editor/pbmclean $DESTDIR/bin
+install editor/pbmlife $DESTDIR/bin
+install editor/pbmmask $DESTDIR/bin
+install editor/pbmpscale $DESTDIR/bin
+install editor/pbmreduce $DESTDIR/bin
+install editor/pgmabel $DESTDIR/bin
+install editor/pgmbentley $DESTDIR/bin
+install editor/pgmenhance $DESTDIR/bin
+install editor/pgmmorphconv $DESTDIR/bin
+install editor/pnmalias $DESTDIR/bin
+install editor/pnmcat $DESTDIR/bin
+install editor/pnmcomp $DESTDIR/bin
+install editor/pnmconvol $DESTDIR/bin
+install editor/pnmcrop $DESTDIR/bin
+install editor/pnmcut $DESTDIR/bin
+install editor/pnmflip $DESTDIR/bin
+install editor/pnmgamma $DESTDIR/bin
+install editor/pnmhisteq $DESTDIR/bin
+install editor/pnmindex $DESTDIR/bin
+install editor/pnminvert $DESTDIR/bin
+install editor/pnmmargin $DESTDIR/bin
+install editor/pnmmontage $DESTDIR/bin
+install editor/pnmnlfilt $DESTDIR/bin
+install editor/pnmnorm $DESTDIR/bin
+ln -sf pnmnorm $DESTDIR/bin/pgmnorm
+ln -sf pnmnorm $DESTDIR/bin/ppmnorm
+install editor/pnmpad $DESTDIR/bin
+install editor/pnmpaste $DESTDIR/bin
+install editor/pnmquant $DESTDIR/bin
+install editor/pnmremap $DESTDIR/bin
+install editor/pnmrotate $DESTDIR/bin
+install editor/pnmscale $DESTDIR/bin
+install editor/pnmscalefixed $DESTDIR/bin
+install editor/pnmshear $DESTDIR/bin
+install editor/pnmsmooth $DESTDIR/bin
+install editor/pnmstitch $DESTDIR/bin
+install editor/pnmtile $DESTDIR/bin
+install editor/ppm3d $DESTDIR/bin
+install editor/ppmbrighten $DESTDIR/bin
+install editor/ppmchange $DESTDIR/bin
+install editor/ppmcolormask $DESTDIR/bin
+install editor/ppmdim $DESTDIR/bin
+install editor/ppmdist $DESTDIR/bin
+install editor/ppmdither $DESTDIR/bin
+install editor/ppmfade $DESTDIR/bin
+install editor/ppmflash $DESTDIR/bin
+install editor/ppmglobe $DESTDIR/bin
+install editor/ppmlabel $DESTDIR/bin
+install editor/ppmmix $DESTDIR/bin
+install editor/ppmntsc $DESTDIR/bin
+install editor/ppmquant $DESTDIR/bin
+install editor/ppmquantall $DESTDIR/bin
+install editor/ppmrelief $DESTDIR/bin
+install editor/ppmshadow $DESTDIR/bin
+install editor/ppmshift $DESTDIR/bin
+install editor/ppmspread $DESTDIR/bin
+install editor/ppmtv $DESTDIR/bin
+install generator/pamgauss $DESTDIR/bin
+install generator/pamseq $DESTDIR/bin
+install generator/pamstereogram $DESTDIR/bin
+install generator/pbmmake $DESTDIR/bin
+install generator/pbmpage $DESTDIR/bin
+install generator/pbmtext $DESTDIR/bin
+install generator/pbmtextps $DESTDIR/bin
+install generator/pbmupc $DESTDIR/bin
+install generator/pgmcrater $DESTDIR/bin
+install generator/pgmkernel $DESTDIR/bin
+install generator/pgmnoise $DESTDIR/bin
+install generator/pgmramp $DESTDIR/bin
+install generator/ppmcie $DESTDIR/bin
+install generator/ppmcolors $DESTDIR/bin
+install generator/ppmforge $DESTDIR/bin
+install generator/ppmmake $DESTDIR/bin
+install generator/ppmpat $DESTDIR/bin
+install generator/ppmrainbow $DESTDIR/bin
+install generator/ppmrough $DESTDIR/bin
+install generator/ppmwheel $DESTDIR/bin
+install other/pamarith $DESTDIR/bin
+ln -sf pamarith $DESTDIR/bin/pnmarith
+install other/pamchannel $DESTDIR/bin
+install other/pamendian $DESTDIR/bin
+install other/pamlookup $DESTDIR/bin
+install other/pamstack $DESTDIR/bin
+install other/pamsummcol $DESTDIR/bin
+install other/pnmcolormap $DESTDIR/bin
+install other/pnmdepth $DESTDIR/bin
+install other/pnmsplit $DESTDIR/bin
+install other/ppmtomap $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 lib/pbm.h $DESTDIR/include
+install -m 644 lib/pgm.h $DESTDIR/include
+install -m 644 lib/pm.h $DESTDIR/include
+install -m 644 lib/pm_config.h $DESTDIR/include
+install -m 644 lib/pnm.h $DESTDIR/include
+install -m 644 lib/ppm.h $DESTDIR/include
+install -m 644 lib/ppmcmap.h $DESTDIR/include
+install -d $DESTDIR/lib
+install lib/libnetpbm.so.10.* $DESTDIR/lib/libnetpbm.so.10
+ln -sf libnetpbm.so.10 $DESTDIR/lib/libnetpbm.so
+install -m 644 netpbm.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/netpbm-build.pc << EOF
+Name: netpbm
+Version: 10.26.64
+Description: Graphics conversion tools between image formats
+Requires: $REQUIRES
+
+devel=\\
+/include/pbm.h \\
+/include/pgm.h \\
+/include/pm.h \\
+/include/pm_config.h \\
+/include/pnm.h \\
+/include/ppm.h \\
+/include/ppmcmap.h \\
+/lib/libnetpbm.so \\
+/lib/pkgconfig/netpbm.pc
+
+exec=\\
+/bin/411toppm \\
+/bin/anytopnm \\
+/bin/asciitopgm \\
+/bin/atktopbm \\
+/bin/bioradtopgm \\
+/bin/bmptopnm \\
+/bin/bmptoppm \\
+/bin/brushtopbm \\
+/bin/cmuwmtopbm \\
+/bin/ddbugtopbm \\
+/bin/escp2topbm \\
+/bin/eyuvtoppm \\
+/bin/fiascotopnm \\
+/bin/fitstopnm \\
+/bin/fstopgm \\
+/bin/g3topbm \\
+/bin/gemtopbm \\
+/bin/gemtopnm \\
+/bin/giftopnm \\
+/bin/gouldtoppm \\
+/bin/hdifftopam \\
+/bin/hipstopgm \\
+/bin/hpcdtoppm \\
+/bin/icontopbm \\
+/bin/ilbmtoppm \\
+/bin/imgtoppm \\
+/bin/infotopam \\
+/bin/jbigtopnm \\
+/bin/jpeg2ktopam \\
+/bin/jpegtopnm \\
+/bin/leaftoppm \\
+/bin/lispmtopgm \\
+/bin/macptopbm \\
+/bin/mdatopbm \\
+/bin/mgrtopbm \\
+/bin/mrftopbm \\
+/bin/mtvtoppm \\
+/bin/neotoppm \\
+/bin/palmtopnm \\
+/bin/pamarith \\
+/bin/pamchannel \\
+/bin/pamcomp \\
+/bin/pamcut \\
+/bin/pamdeinterlace \\
+/bin/pamdice \\
+/bin/pamditherbw \\
+/bin/pamedge \\
+/bin/pamendian \\
+/bin/pamenlarge \\
+/bin/pamfile \\
+/bin/pamflip \\
+/bin/pamfunc \\
+/bin/pamgauss \\
+/bin/pamlookup \\
+/bin/pammasksharpen \\
+/bin/pamoil \\
+/bin/pamperspective \\
+/bin/pampop9 \\
+/bin/pamscale \\
+/bin/pamseq \\
+/bin/pamsharpmap \\
+/bin/pamsharpness \\
+/bin/pamslice \\
+/bin/pamstack \\
+/bin/pamstereogram \\
+/bin/pamstretch \\
+/bin/pamstretch-gen \\
+/bin/pamsumm \\
+/bin/pamsummcol \\
+/bin/pamtodjvurle \\
+/bin/pamtohdiff \\
+/bin/pamtohtmltbl \\
+/bin/pamtojpeg2k \\
+/bin/pamtopfm \\
+/bin/pamtopnm \\
+/bin/pamtotga \\
+/bin/pamtouil \\
+/bin/pbmclean \\
+/bin/pbmlife \\
+/bin/pbmmake \\
+/bin/pbmmask \\
+/bin/pbmpage \\
+/bin/pbmpscale \\
+/bin/pbmreduce \\
+/bin/pbmtext \\
+/bin/pbmtextps \\
+/bin/pbmto10x \\
+/bin/pbmto4425 \\
+/bin/pbmtoascii \\
+/bin/pbmtoatk \\
+/bin/pbmtobbnbg \\
+/bin/pbmtocmuwm \\
+/bin/pbmtodjvurle \\
+/bin/pbmtoepsi \\
+/bin/pbmtoepson \\
+/bin/pbmtoescp2 \\
+/bin/pbmtog3 \\
+/bin/pbmtogem \\
+/bin/pbmtogo \\
+/bin/pbmtoibm23xx \\
+/bin/pbmtoicon \\
+/bin/pbmtolj \\
+/bin/pbmtoln03 \\
+/bin/pbmtolps \\
+/bin/pbmtomacp \\
+/bin/pbmtomatrixorbital \\
+/bin/pbmtomda \\
+/bin/pbmtomgr \\
+/bin/pbmtomrf \\
+/bin/pbmtonokia \\
+/bin/pbmtopgm \\
+/bin/pbmtopi3 \\
+/bin/pbmtopk \\
+/bin/pbmtoplot \\
+/bin/pbmtoppa \\
+/bin/pbmtopsg3 \\
+/bin/pbmtoptx \\
+/bin/pbmtowbmp \\
+/bin/pbmtox10bm \\
+/bin/pbmtoxbm \\
+/bin/pbmtoybm \\
+/bin/pbmtozinc \\
+/bin/pbmupc \\
+/bin/pc1toppm \\
+/bin/pcdovtoppm \\
+/bin/pcxtoppm \\
+/bin/pfmtopam \\
+/bin/pgmabel \\
+/bin/pgmbentley \\
+/bin/pgmcrater \\
+/bin/pgmedge \\
+/bin/pgmenhance \\
+/bin/pgmhist \\
+/bin/pgmkernel \\
+/bin/pgmminkowski \\
+/bin/pgmmorphconv \\
+/bin/pgmnoise \\
+/bin/pgmnorm \\
+/bin/pgmoil \\
+/bin/pgmramp \\
+/bin/pgmslice \\
+/bin/pgmtexture \\
+/bin/pgmtofs \\
+/bin/pgmtolispm \\
+/bin/pgmtopbm \\
+/bin/pgmtopgm \\
+/bin/pgmtoppm \\
+/bin/pi1toppm \\
+/bin/pi3topbm \\
+/bin/picttoppm \\
+/bin/pjtoppm \\
+/bin/pktopbm \\
+/bin/pngtopnm \\
+/bin/pnmalias \\
+/bin/pnmarith \\
+/bin/pnmcat \\
+/bin/pnmcolormap \\
+/bin/pnmcomp \\
+/bin/pnmconvol \\
+/bin/pnmcrop \\
+/bin/pnmcut \\
+/bin/pnmdepth \\
+/bin/pnmenlarge \\
+/bin/pnmfile \\
+/bin/pnmflip \\
+/bin/pnmgamma \\
+/bin/pnmhisteq \\
+/bin/pnmhistmap \\
+/bin/pnmindex \\
+/bin/pnminterp \\
+/bin/pnminvert \\
+/bin/pnmmargin \\
+/bin/pnmmontage \\
+/bin/pnmnlfilt \\
+/bin/pnmnoraw \\
+/bin/pnmnorm \\
+/bin/pnmpad \\
+/bin/pnmpaste \\
+/bin/pnmpsnr \\
+/bin/pnmquant \\
+/bin/pnmremap \\
+/bin/pnmrotate \\
+/bin/pnmscale \\
+/bin/pnmscalefixed \\
+/bin/pnmshear \\
+/bin/pnmsmooth \\
+/bin/pnmsplit \\
+/bin/pnmstitch \\
+/bin/pnmtile \\
+/bin/pnmtoddif \\
+/bin/pnmtofiasco \\
+/bin/pnmtofits \\
+/bin/pnmtojbig \\
+/bin/pnmtojpeg \\
+/bin/pnmtopalm \\
+/bin/pnmtopclxl \\
+/bin/pnmtoplainpnm \\
+/bin/pnmtopng \\
+/bin/pnmtopnm \\
+/bin/pnmtops \\
+/bin/pnmtorast \\
+/bin/pnmtorle \\
+/bin/pnmtosgi \\
+/bin/pnmtosir \\
+/bin/pnmtotiff \\
+/bin/pnmtotiffcmyk \\
+/bin/pnmtoxwd \\
+/bin/ppm3d \\
+/bin/ppmbrighten \\
+/bin/ppmchange \\
+/bin/ppmcie \\
+/bin/ppmcolormask \\
+/bin/ppmcolors \\
+/bin/ppmdim \\
+/bin/ppmdist \\
+/bin/ppmdither \\
+/bin/ppmfade \\
+/bin/ppmflash \\
+/bin/ppmforge \\
+/bin/ppmglobe \\
+/bin/ppmhist \\
+/bin/ppmlabel \\
+/bin/ppmmake \\
+/bin/ppmmix \\
+/bin/ppmnorm \\
+/bin/ppmntsc \\
+/bin/ppmpat \\
+/bin/ppmquant \\
+/bin/ppmquantall \\
+/bin/ppmrainbow \\
+/bin/ppmrelief \\
+/bin/ppmrough \\
+/bin/ppmshadow \\
+/bin/ppmshift \\
+/bin/ppmspread \\
+/bin/ppmtoacad \\
+/bin/ppmtoarbtxt \\
+/bin/ppmtobmp \\
+/bin/ppmtoeyuv \\
+/bin/ppmtogif \\
+/bin/ppmtoicr \\
+/bin/ppmtoilbm \\
+/bin/ppmtojpeg \\
+/bin/ppmtoleaf \\
+/bin/ppmtolj \\
+/bin/ppmtomap \\
+/bin/ppmtomitsu \\
+/bin/ppmtompeg \\
+/bin/ppmtoneo \\
+/bin/ppmtopcx \\
+/bin/ppmtopgm \\
+/bin/ppmtopi1 \\
+/bin/ppmtopict \\
+/bin/ppmtopj \\
+/bin/ppmtopjxl \\
+/bin/ppmtoppm \\
+/bin/ppmtopuzz \\
+/bin/ppmtorgb3 \\
+/bin/ppmtosixel \\
+/bin/ppmtoterm \\
+/bin/ppmtouil \\
+/bin/ppmtowinicon \\
+/bin/ppmtoxpm \\
+/bin/ppmtoyuv \\
+/bin/ppmtoyuvsplit \\
+/bin/ppmtv \\
+/bin/ppmwheel \\
+/bin/psidtopgm \\
+/bin/pstopnm \\
+/bin/qrttoppm \\
+/bin/rasttopnm \\
+/bin/rawtopgm \\
+/bin/rawtoppm \\
+/bin/rgb3toppm \\
+/bin/rletopnm \\
+/bin/sbigtopgm \\
+/bin/sgitopnm \\
+/bin/sirtopnm \\
+/bin/sldtoppm \\
+/bin/spctoppm \\
+/bin/spottopgm \\
+/bin/sputoppm \\
+/bin/tgatoppm \\
+/bin/thinkjettopbm \\
+/bin/tifftopnm \\
+/bin/wbmptopbm \\
+/bin/winicontoppm \\
+/bin/xbmtopbm \\
+/bin/ximtoppm \\
+/bin/xpmtoppm \\
+/bin/xvminitoppm \\
+/bin/xwdtopnm \\
+/bin/ybmtopbm \\
+/bin/yuvsplittoppm \\
+/bin/yuvtoppm \\
+/bin/zeisstopnm \\
+/lib/libnetpbm.so.10
+EOF
+
+exit
+--- netpbm-10.26.64.orig/Makefile.common
++++ netpbm-10.26.64/Makefile.common
+@@ -377,21 +377,21 @@
+ 
+ MANUALS1 = $(BINARIES) $(SCRIPTS)
+ 
+-install.man1: $(PKGDIR)/man/man1 $(MANUALS1:%=%_installman1)
++install.man1: $(PKGDIR)/share/man/man1 $(MANUALS1:%=%_installman1)
+ 
+-install.man3: $(PKGDIR)/man/man3 $(MANUALS3:%=%_installman3)
++install.man3: $(PKGDIR)/share/man/man3 $(MANUALS3:%=%_installman3)
+ 
+-install.man5: $(PKGDIR)/man/man5 $(MANUALS5:%=%_installman5)
++install.man5: $(PKGDIR)/share/man/man5 $(MANUALS5:%=%_installman5)
+ 
+-%_installman1: $(PKGDIR)/man/man1
++%_installman1: $(PKGDIR)/share/man/man1
+ 	perl -w $(SRCDIR)/buildtools/makepointerman $(@:%_installman1=%) \
+           $(NETPBM_DOCURL) $< 1 $(MANPAGE_FORMAT) $(INSTALL_PERM_MAN)
+ 
+-%_installman3: $(PKGDIR)/man/man3
++%_installman3: $(PKGDIR)/share/man/man3
+ 	perl -w $(SRCDIR)/buildtools/makepointerman $(@:%_installman3=%) \
+           $(NETPBM_DOCURL) $< 3 $(MANPAGE_FORMAT) $(INSTALL_PERM_MAN)
+ 
+-%_installman5: $(PKGDIR)/man/man5
++%_installman5: $(PKGDIR)/share/man/man5
+ 	perl -w $(SRCDIR)/buildtools/makepointerman $(@:%_installman5=%) \
+           $(NETPBM_DOCURL) $< 5 $(MANPAGE_FORMAT) $(INSTALL_PERM_MAN)
+ 
+--- netpbm-10.26.64.orig/buildtools/configure.pl
++++ netpbm-10.26.64/buildtools/configure.pl
+@@ -653,7 +653,7 @@
+         print("programs not in the Netpbm package?\n");
+         print("\n");
+         
+-        my $default = "y";
++        my $default = "n";
+         
+         my $response = prompt("(y)es or (n)o", $default);
+         
+@@ -1862,6 +1862,10 @@
+ #    my $key = <STDIN>;
+ }
+ 
++if ($OSNAME eq "linux") {
++    push(@Makefile_config, "CFLAGS_SHLIB += -fPIC\n");
++}
++
+ if (defined($tiffhdr_dir)) {
+     push(@Makefile_config, "TIFFHDR_DIR = $tiffhdr_dir\n");
+ }
+--- netpbm-10.26.64.orig/buildtools/installnetpbm.pl
++++ netpbm-10.26.64/buildtools/installnetpbm.pl
+@@ -728,10 +728,12 @@
+                     my $old = "$netpbmWebdir/netpbm.url";
+                     my $new = "$webdir/netpbm.url";
+                     mkdir($webdir, 0777);
+-                    my $success = symlink($old, $new);
+-                    if (!$success) {
+-                        print("Failed to create symbolic link from $new to " .
+-                              "$old.  Error is $ERRNO\n");
++                    if (!-e($new)) {
++                        my $success = symlink($old, $new);
++                        if (!$success) {
++                            print("Failed to create symbolic link from $new to " .
++                                  "$old.  Error is $ERRNO\n");
++                        }
+                     }
+                 }
+             }
+@@ -870,6 +872,86 @@
+ 
+ 
+ 
++sub installPkgConfig($$$) {
++    my ($pkgdir, $libdir, $includedir) = @_;
++
++    my $error;
++
++    my $pcTemplateFilename = dirname($0) . "/pkgconfig_template";
++
++    my $templateOpened = open(TEMPLATE, "<$pcTemplateFilename");
++    if (!$templateOpened) {
++        $error = "Can't open template file '$pcTemplateFilename'.\n";
++    } else {
++        my @template = <TEMPLATE>;
++
++        close(TEMPLATE);
++
++        my $versionOpened = open(VERSION, "<$pkgdir/VERSION");
++
++        my $version;
++        if (!$versionOpened) {
++            $error = "Unable to open $pkgdir/VERSION for reading.  " .
++                "Errno=$ERRNO\n";
++        } else {
++            $version = <VERSION>;
++            chomp($version);
++            $version =~ s/^Netpbm //;
++            close(VERSION);
++
++            my @output;
++
++            foreach (@template) {
++                if (m{^@}) {
++                    # Comment -- ignore it.
++                } else {
++                    if (defined($version)) {
++                        s/\@VERSION\@/$version/;
++                    }
++                    if (defined($libdir)) {
++                        s/\@LIBDIR@/$libdir/;
++                    }
++                    if (defined($includedir)) {
++                        s/\@INCLUDEDIR@/$includedir/;
++                    }
++                    push(@output, $_);
++                }
++            }
++
++            my $pkgconfigDir = "$libdir/pkgconfig";
++
++            my $success = $TRUE;
++
++            if (!-d($pkgconfigDir)) {
++                $success = mkdir($pkgconfigDir, 0777);
++            }
++
++            if ($success) {
++                my $filename = "$pkgconfigDir/netpbm.pc";
++        
++                $success = open(NETPBM_PC, ">$filename");
++                if ($success) {
++                    chmod(0644, $filename);
++                    foreach (@output) { print NETPBM_PC; }
++                    close(NETPBM_PC);
++                } else {
++                    $error = "Unable to open the file " .
++                        "'$filename' for writing.  Errno=$ERRNO\n";
++                }
++            } else {
++                $error = "Unable to create directory '$pkgconfigDir'.  " .
++                    "Errno=$ERRNO\n";
++            }
++        }
++    }
++    if ($error) {
++        print(STDERR "Failed to create the Netpbm Pkg-config file.  " .
++              "$error\n");
++    }
++}
++
++
++
+ #******************************************************************************
+ #
+ #  MAINLINE
+@@ -912,6 +994,8 @@
+ installConfig($pkgdir, 
+               $bindir, $libdir, $linkdir, $datadir, $includedir, $mandir);
+ 
++installPkgConfig($pkgdir, $libdir, $includedir);
++
+ print("Installation is complete (except where previous error messages have\n");
+ print("indicated otherwise).\n");
+ 
+--- netpbm-10.26.64.orig/buildtools/pkgconfig_template
++++ netpbm-10.26.64/buildtools/pkgconfig_template
+@@ -0,0 +1,7 @@
++Name: Netpbm
++Description: Graphics utilities
++Version: @VERSION@
++Requires: 
++Libs: -L@LIBDIR@ -lnetpbm
++Libs.private: 
++Cflags: -I@INCLUDEDIR@
+--- netpbm-10.26.64.orig/converter/other/pngtopnm.c
++++ netpbm-10.26.64/converter/other/pngtopnm.c
+@@ -43,12 +43,6 @@
+ #include "nstring.h"
+ #include "shhopt.h"
+ 
+-#if PNG_LIBPNG_VER >= 10400
+-#error Your PNG library (<png.h>) is incompatible with this Netpbm source code.
+-#error You need either an older PNG library (older than 1.4)
+-#error newer Netpbm source code (at least 10.48)
+-#endif
+-
+ typedef struct _jmpbuf_wrapper {
+   jmp_buf jmpbuf;
+ } jmpbuf_wrapper;
+@@ -91,8 +85,8 @@
+ #ifdef __STDC__
+ static png_uint_16 _get_png_val (png_byte **pp, int bit_depth);
+ static int iscolor (png_color c);
+-static void save_text (png_info *info_ptr, FILE *tfp);
+-static void show_time (png_info *info_ptr);
++static void save_text (png_textp text, int num_text, FILE *tfp);
++static void show_time (png_timep mod_time);
+ static void pngtopnm_error_handler (png_structp png_ptr, png_const_charp msg);
+ int main (int argc, char *argv[]);
+ #endif
+@@ -185,7 +179,7 @@
+ 
+ 
+ 
+-#define get_png_val(p) _get_png_val (&(p), info_ptr->bit_depth)
++#define get_png_val(p) _get_png_val (&(p), bit_depth)
+ 
+ #ifdef __STDC__
+ static png_uint_16 _get_png_val (png_byte **pp, int bit_depth)
+@@ -259,33 +253,34 @@
+ }
+ 
+ #ifdef __STDC__
+-static void save_text (png_info *info_ptr, FILE *tfp)
++static void save_text (png_textp text, int num_text, FILE *tfp)
+ #else
+-static void save_text (info_ptr, tfp)
+-png_info *info_ptr;
++static void save_text (text, num_text, tfp)
++png_textp text;
++int num_text;
+ FILE *tfp;
+ #endif
+ {
+   int i, j, k;
+ 
+-  for (i = 0 ; i < info_ptr->num_text ; i++) {
++  for (i = 0 ; i < num_text ; i++) {
+     j = 0;
+-    while (info_ptr->text[i].key[j] != '\0' && info_ptr->text[i].key[j] != ' ')
++    while (text[i].key[j] != '\0' && text[i].key[j] != ' ')
+       j++;    
+-    if (info_ptr->text[i].key[j] != ' ') {
+-      fprintf (tfp, "%s", info_ptr->text[i].key);
+-      for (j = strlen (info_ptr->text[i].key) ; j < 15 ; j++)
++    if (text[i].key[j] != ' ') {
++      fprintf (tfp, "%s", text[i].key);
++      for (j = strlen (text[i].key) ; j < 15 ; j++)
+         putc (' ', tfp);
+     } else {
+-      fprintf (tfp, "\"%s\"", info_ptr->text[i].key);
+-      for (j = strlen (info_ptr->text[i].key) ; j < 13 ; j++)
++      fprintf (tfp, "\"%s\"", text[i].key);
++      for (j = strlen (text[i].key) ; j < 13 ; j++)
+         putc (' ', tfp);
+     }
+     putc (' ', tfp); /* at least one space between key and text */
+     
+-    for (j = 0 ; j < info_ptr->text[i].text_length ; j++) {
+-      putc (info_ptr->text[i].text[j], tfp);
+-      if (info_ptr->text[i].text[j] == '\n')
++    for (j = 0 ; j < text[i].text_length ; j++) {
++      putc (text[i].text[j], tfp);
++      if (text[i].text[j] == '\n')
+         for (k = 0 ; k < 16 ; k++)
+           putc ((int)' ', tfp);
+     }
+@@ -294,10 +289,10 @@
+ }
+ 
+ #ifdef __STDC__
+-static void show_time (png_info *info_ptr)
++static void show_time (png_timep mod_time)
+ #else
+ static void show_time (info_ptr)
+-png_info *info_ptr;
++png_timep mod_time;
+ #endif
+ {
+     static const char * const month[] = {
+@@ -305,12 +300,10 @@
+         "July", "August", "September", "October", "November", "December"
+     };
+ 
+-  if (info_ptr->valid & PNG_INFO_tIME) {
+     pm_message ("modification time: %02d %s %d %02d:%02d:%02d",
+-                info_ptr->mod_time.day, month[info_ptr->mod_time.month],
+-                info_ptr->mod_time.year, info_ptr->mod_time.hour,
+-                info_ptr->mod_time.minute, info_ptr->mod_time.second);
+-  }
++                mod_time->day, month[mod_time->month],
++                mod_time->year, mod_time->hour,
++                mod_time->minute, mod_time->second);
+ }
+ 
+ #ifdef __STDC__
+@@ -349,12 +342,43 @@
+ 
+ 
+ static void
+-dump_png_info(png_info *info_ptr) {
++dump_png_info(png_struct *png_ptr, png_info *info_ptr) {
+ 
+     const char *type_string;
+     const char *filter_string;
++    png_uint_32 width, height;
++    png_byte bit_depth;
++    png_byte color_type;
++    png_byte interlace_type;
++    png_byte filter_type;
++    png_color_16p png_background;
++    int num_trans;
++    double gamma;
++    png_color_8p sig_bit;
++    png_colorp palette;
++    int num_palette;
++    png_uint_16p hist;
++    int unit_type;
++    png_uint_32 res_x, res_y;
++    png_int_32 offset_x, offset_y;
++    png_timep mod_time;
++    png_charp purpose;
++    png_int_32 X0, X1;
++    int type;
++    int nparams;
++    png_charp units;
++    png_charpp params;
++    int file_srgb_intent;
++
++    width = png_get_image_width (png_ptr, info_ptr);
++    height = png_get_image_height (png_ptr, info_ptr);
++    bit_depth = png_get_bit_depth (png_ptr, info_ptr);
++    color_type = png_get_color_type (png_ptr, info_ptr);
++    interlace_type = png_get_interlace_type (png_ptr, info_ptr);
++    filter_type = png_get_filter_type (png_ptr, info_ptr);
++    png_get_bKGD (png_ptr, info_ptr, &png_background);
+ 
+-    switch (info_ptr->color_type) {
++    switch (color_type) {
+       case PNG_COLOR_TYPE_GRAY:
+         type_string = "gray";
+         break;
+@@ -376,89 +400,90 @@
+         break;
+     }
+ 
+-    switch (info_ptr->filter_type) {
++    switch (filter_type) {
+     case PNG_FILTER_TYPE_BASE:
+         asprintfN(&filter_string, "base filter");
+         break;
+     default:
+         asprintfN(&filter_string, "unknown filter type %d", 
+-                  info_ptr->filter_type);
++                  filter_type);
+     }
+ 
+-    pm_message("reading a %ldw x %ldh image, %d bit%s",
+-               info_ptr->width, info_ptr->height,
+-               info_ptr->bit_depth, info_ptr->bit_depth > 1 ? "s" : "");
++    pm_message("reading a %uw x %uh image, %d bit%s",
++               width, height,
++               bit_depth, bit_depth > 1 ? "s" : "");
+     pm_message("%s, %s, %s",
+                type_string,
+-               info_ptr->interlace_type ? 
++               interlace_type ? 
+                "Adam7 interlaced" : "not interlaced",
+                filter_string);
+     pm_message("background {index, gray, red, green, blue} = "
+                "{%d, %d, %d, %d, %d}",
+-               info_ptr->background.index,
+-               info_ptr->background.gray,
+-               info_ptr->background.red,
+-               info_ptr->background.green,
+-               info_ptr->background.blue);
++               png_background->index,
++               png_background->gray,
++               png_background->red,
++               png_background->green,
++               png_background->blue);
+ 
+     strfree(filter_string);
+ 
+-    if (info_ptr->valid & PNG_INFO_tRNS)
++    if (png_get_tRNS (png_ptr, info_ptr, NULL, &num_trans, NULL))
+         pm_message("tRNS chunk (transparency): present");
+     else
+         pm_message("tRNS chunk (transparency): not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_gAMA)
+-        pm_message("gAMA chunk (image gamma): gamma = %4.2f", info_ptr->gamma);
++    if (png_get_gAMA (png_ptr, info_ptr, &gamma))
++        pm_message("gAMA chunk (image gamma): gamma = %4.2f", gamma);
+     else
+         pm_message("gAMA chunk (image gamma): not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_sBIT)
++    if (png_get_sBIT (png_ptr, info_ptr, &sig_bit))
+         pm_message("sBIT chunk: present");
+     else
+         pm_message("sBIT chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_cHRM)
++    if (png_get_cHRM (png_ptr, info_ptr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL))
+         pm_message("cHRM chunk: present");
+     else
+         pm_message("cHRM chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_PLTE)
++    if (png_get_PLTE (png_ptr, info_ptr, &palette, &num_palette))
+         pm_message("PLTE chunk: present");
+     else
+         pm_message("PLTE chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_bKGD)
++    if (png_get_bKGD (png_ptr, info_ptr, &png_background))
+         pm_message("bKGD chunk: present");
+     else
+         pm_message("bKGD chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_PLTE)
++    if (png_get_hIST (png_ptr, info_ptr, &hist))
+         pm_message("hIST chunk: present");
+     else
+         pm_message("hIST chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_pHYs)
++    if (png_get_pHYs (png_ptr, info_ptr, &res_x, &res_y, &unit_type))
+         pm_message("pHYs chunk: present");
+     else
+         pm_message("pHYs chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_oFFs)
++    if (png_get_oFFs (png_ptr, info_ptr, &offset_x, &offset_y, &unit_type))
+         pm_message("oFFs chunk: present");
+     else
+         pm_message("oFFs chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_tIME)
++    if (png_get_tIME (png_ptr, info_ptr, &mod_time))
+         pm_message("tIME chunk: present");
+     else
+         pm_message("tIME chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_pCAL)
++    if (png_get_pCAL (png_ptr, info_ptr,
++                      &purpose, &X0, &X1, &type, &nparams, &units, &params))
+         pm_message("pCAL chunk: present");
+     else
+         pm_message("pCAL chunk: not present");
+ 
+-    if (info_ptr->valid & PNG_INFO_sRGB)
++    if (png_get_sRGB (png_ptr, info_ptr, &file_srgb_intent))
+         pm_message("sRGB chunk: present");
+     else
+         pm_message("sRGB chunk: not present");
+@@ -470,9 +495,18 @@
+ writePnm(FILE *      const ofP,
+          xelval      const maxval,
+          int         const pnm_type,
++         png_struct* const png_ptr,
+          png_info *  const info_ptr,
+          png_byte ** const png_image) {
+ 
++    png_uint_32 width, height;
++    png_byte bit_depth;
++    png_byte color_type;
++    png_bytep trans;
++    int num_trans;
++    png_color_16p trans_values;
++    png_colorp palette;
++    int num_palette;
+     xel *xelrow;
+     int row;
+ 
+@@ -483,24 +517,31 @@
+                     pnm_type == PPM_TYPE ? "PPM" :
+                     "UNKNOWN!", 
+                     maxval);
++
++    width = png_get_image_width (png_ptr, info_ptr);
++    height = png_get_image_height (png_ptr, info_ptr);
++    bit_depth = png_get_bit_depth (png_ptr, info_ptr);
++    color_type = png_get_color_type (png_ptr, info_ptr);
++    png_get_PLTE (png_ptr, info_ptr, &palette, &num_palette);
+     
+-    xelrow = pnm_allocrow(info_ptr->width);
++    xelrow = pnm_allocrow(width);
+ 
+-    pnm_writepnminit(stdout, info_ptr->width, info_ptr->height, maxval,
++    pnm_writepnminit(stdout, width, height, maxval,
+                      pnm_type, FALSE);
+ 
+-    for (row = 0; row < info_ptr->height; ++row) {
++    for (row = 0; row < height; ++row) {
+         png_byte * png_pixelP;
+         int col;
+ 
+         png_pixelP = &png_image[row][0];  /* initial value */
+-        for (col = 0; col < info_ptr->width; ++col) {
++        for (col = 0; col < width; ++col) {
+             png_uint_16 const c = get_png_val(png_pixelP);
+-            switch (info_ptr->color_type) {
++            switch (color_type) {
+             case PNG_COLOR_TYPE_GRAY:
+                 setXel(&xelrow[col], c, c, c,
+-                       ((info_ptr->valid & PNG_INFO_tRNS) &&
+-                        (c == gamma_correct(info_ptr->trans_values.gray,
++                       (png_get_tRNS (png_ptr, info_ptr,
++                                      NULL, &num_trans, &trans_values) &&
++                        (c == gamma_correct(trans_values->gray,
+                                             totalgamma))) ?
+                        0 : maxval);
+                 break;
+@@ -512,24 +553,26 @@
+             break;
+ 
+             case PNG_COLOR_TYPE_PALETTE:
+-                setXel(&xelrow[col], info_ptr->palette[c].red,
+-                       info_ptr->palette[c].green, 
+-                       info_ptr->palette[c].blue,
+-                       (info_ptr->valid & PNG_INFO_tRNS) &&
+-                       c < info_ptr->num_trans ?
+-                       info_ptr->trans[c] : maxval);
++                setXel(&xelrow[col], palette[c].red,
++                       palette[c].green, 
++                       palette[c].blue,
++                       png_get_tRNS (png_ptr, info_ptr,
++                                     &trans, &num_trans, NULL) &&
++                       c < num_trans ?
++                       trans[c] : maxval);
+                 break;
+ 
+             case PNG_COLOR_TYPE_RGB: {
+                 png_uint_16 const c2 = get_png_val(png_pixelP);
+                 png_uint_16 const c3 = get_png_val(png_pixelP);
+                 setXel(&xelrow[col], c, c2, c3,
+-                       ((info_ptr->valid & PNG_INFO_tRNS) &&
+-                        (c == gamma_correct(info_ptr->trans_values.red,
++                       (png_get_tRNS (png_ptr, info_ptr,
++                                      NULL, &num_trans, &trans_values) &&
++                        (c == gamma_correct(trans_values->red,
+                                             totalgamma)) &&
+-                        (c2 == gamma_correct(info_ptr->trans_values.green,
++                        (c2 == gamma_correct(trans_values->green,
+                                              totalgamma)) &&
+-                        (c3 == gamma_correct(info_ptr->trans_values.blue,
++                        (c3 == gamma_correct(trans_values->blue,
+                                              totalgamma))) ?
+                        0 : maxval);
+             }
+@@ -544,10 +587,10 @@
+             break;
+ 
+             default:
+-                pm_error ("unknown PNG color type: %d", info_ptr->color_type);
++                pm_error ("unknown PNG color type: %d", color_type);
+             }
+         }
+-        pnm_writepnmrow(ofP, xelrow, info_ptr->width, maxval, pnm_type, FALSE);
++        pnm_writepnmrow(ofP, xelrow, width, maxval, pnm_type, FALSE);
+     }
+     pnm_freerow (xelrow);
+ }
+@@ -563,6 +606,20 @@
+   png_struct *png_ptr;
+   png_info *info_ptr;
+   png_byte **png_image;
++  png_uint_32 width, height;
++  png_byte bit_depth;
++  png_byte color_type;
++  double gamma;
++  png_color_8p sig_bit;
++  png_bytep trans;
++  int num_trans;
++  png_colorp palette;
++  int num_palette;
++  png_color_16p png_background;
++  png_timep mod_time;
++  png_textp text;
++  int num_text;
++  png_uint_32 res_x, res_y;
+   int x, y;
+   int linesize;
+   int pnm_type;
+@@ -610,28 +667,35 @@
+   png_set_sig_bytes (png_ptr, SIG_CHECK_SIZE);
+   png_read_info (png_ptr, info_ptr);
+ 
+-  MALLOCARRAY(png_image, info_ptr->height);
++  width = png_get_image_width (png_ptr, info_ptr);
++  height = png_get_image_height (png_ptr, info_ptr);
++
++  MALLOCARRAY(png_image, height);
+   if (png_image == NULL) {
+     png_destroy_read_struct (&png_ptr, &info_ptr, (png_infopp)NULL);
+     pm_closer (ifp);
+     pm_error ("couldn't allocate space for image");
+   }
+ 
+-  if (info_ptr->bit_depth == 16)
+-    linesize = 2 * info_ptr->width;
++  bit_depth = png_get_bit_depth (png_ptr, info_ptr);
++
++  if (bit_depth == 16)
++    linesize = 2 * width;
+   else
+-    linesize = info_ptr->width;
++    linesize = width;
++
++  color_type = png_get_color_type (png_ptr, info_ptr);
+ 
+-  if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
++  if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+     linesize *= 2;
+   else
+-  if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
++  if (color_type == PNG_COLOR_TYPE_RGB)
+     linesize *= 3;
+   else
+-  if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA)
++  if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+     linesize *= 4;
+ 
+-  for (y = 0 ; y < info_ptr->height ; y++) {
++  for (y = 0 ; y < height ; y++) {
+     png_image[y] = malloc (linesize);
+     if (png_image[y] == NULL) {
+       for (x = 0 ; x < y ; x++)
+@@ -643,35 +707,37 @@
+     }
+   }
+ 
+-  if (info_ptr->bit_depth < 8)
++  if (bit_depth < 8)
+     png_set_packing (png_ptr);
+ 
+-  if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
++  if (color_type == PNG_COLOR_TYPE_PALETTE) {
+     maxval = 255;
++    png_get_tRNS (png_ptr, info_ptr, &trans, &num_trans, NULL);
++    png_get_PLTE (png_ptr, info_ptr, &palette, &num_palette);
+   } else {
+-    maxval = (1l << info_ptr->bit_depth) - 1;
++    maxval = (1l << bit_depth) - 1;
+   }
+ 
+   /* gamma-correction */
+   if (displaygamma != -1.0) {
+-    if (info_ptr->valid & PNG_INFO_gAMA) {
+-      if (displaygamma != info_ptr->gamma) {
+-        png_set_gamma (png_ptr, displaygamma, info_ptr->gamma);
+-	totalgamma = (double) info_ptr->gamma * (double) displaygamma;
+-	/* in case of gamma-corrections, sBIT's as in the PNG-file are not valid anymore */
+-	info_ptr->valid &= ~PNG_INFO_sBIT;
++    if (png_get_gAMA (png_ptr, info_ptr, &gamma)) {
++      if (displaygamma != gamma) {
++        png_set_gamma (png_ptr, displaygamma, gamma);
++        totalgamma = (double) gamma * (double) displaygamma;
++        /* in case of gamma-corrections, sBIT's as in the PNG-file are not valid anymore */
++        png_set_invalid (png_ptr, info_ptr, PNG_INFO_sBIT);
+         if (verbose)
+           pm_message ("image gamma is %4.2f, converted for display gamma of %4.2f",
+-                    info_ptr->gamma, displaygamma);
++                      gamma, displaygamma);
+       }
+     } else {
+-      if (displaygamma != info_ptr->gamma) {
+-	png_set_gamma (png_ptr, displaygamma, 1.0);
+-	totalgamma = (double) displaygamma;
+-	info_ptr->valid &= ~PNG_INFO_sBIT;
+-	if (verbose)
+-	  pm_message ("image gamma assumed 1.0, converted for display gamma of %4.2f",
+-		      displaygamma);
++      if (displaygamma != gamma) {
++        png_set_gamma (png_ptr, displaygamma, 1.0);
++        totalgamma = (double) displaygamma;
++        png_set_invalid (png_ptr, info_ptr, PNG_INFO_sBIT);
++        if (verbose)
++          pm_message ("image gamma assumed 1.0, converted for display gamma of %4.2f",
++                      displaygamma);
+       }
+     }
+   }
+@@ -684,17 +750,16 @@
+      so we will use the sBIT info only for transparency, if we know that only
+      solid and fully transparent is used */
+ 
+-  if (info_ptr->valid & PNG_INFO_sBIT) {
++  if (png_get_sBIT (png_ptr, info_ptr, &sig_bit)) {
+     switch (alpha) {
+       case mix:
+-        if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA ||
+-            info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
++        if (color_type == PNG_COLOR_TYPE_RGB_ALPHA ||
++            color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+           break;
+-        if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
+-            (info_ptr->valid & PNG_INFO_tRNS)) {
++        if (color_type == PNG_COLOR_TYPE_PALETTE && num_trans > 0) {
+           trans_mix = TRUE;
+-          for (i = 0 ; i < info_ptr->num_trans ; i++)
+-            if (info_ptr->trans[i] != 0 && info_ptr->trans[i] != 255) {
++          for (i = 0 ; i < num_trans ; i++)
++            if (trans[i] != 0 && trans[i] != 255) {
+               trans_mix = FALSE;
+               break;
+             }
+@@ -705,62 +770,58 @@
+         /* else fall though to normal case */
+ 
+       case none:
+-        if ((info_ptr->color_type == PNG_COLOR_TYPE_PALETTE ||
+-             info_ptr->color_type == PNG_COLOR_TYPE_RGB ||
+-             info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) &&
+-            (info_ptr->sig_bit.red != info_ptr->sig_bit.green ||
+-             info_ptr->sig_bit.red != info_ptr->sig_bit.blue) &&
++        if ((color_type == PNG_COLOR_TYPE_PALETTE ||
++             color_type == PNG_COLOR_TYPE_RGB ||
++             color_type == PNG_COLOR_TYPE_RGB_ALPHA) &&
++            (sig_bit->red != sig_bit->green ||
++             sig_bit->red != sig_bit->blue) &&
+             alpha == none) {
+ 	  pm_message ("different bit depths for color channels not supported");
+-	  pm_message ("writing file with %d bit resolution", info_ptr->bit_depth);
++	  pm_message ("writing file with %d bit resolution", bit_depth);
+ 	  *errorlevelP = PNMTOPNG_WARNING_LEVEL;
+         } else {
+-          if ((info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) &&
+-	      (info_ptr->sig_bit.red < 255)) {
+-	    for (i = 0 ; i < info_ptr->num_palette ; i++) {
+-	      info_ptr->palette[i].red   >>= (8 - info_ptr->sig_bit.red);
+-	      info_ptr->palette[i].green >>= (8 - info_ptr->sig_bit.green);
+-	      info_ptr->palette[i].blue  >>= (8 - info_ptr->sig_bit.blue);
++          if ((color_type == PNG_COLOR_TYPE_PALETTE) &&
++	      (sig_bit->red < 255)) {
++	    for (i = 0 ; i < num_palette ; i++) {
++	      palette[i].red   >>= (8 - sig_bit->red);
++	      palette[i].green >>= (8 - sig_bit->green);
++	      palette[i].blue  >>= (8 - sig_bit->blue);
+ 	    }
+-	    maxval = (1l << info_ptr->sig_bit.red) - 1;
++	    maxval = (1l << sig_bit->red) - 1;
+ 	    if (verbose)
+ 	      pm_message ("image has fewer significant bits, "
+-                      "writing file with %d bits per channel", 
+-		info_ptr->sig_bit.red);
++                      "writing file with %d bits per channel", sig_bit->red);
+           } else
+-          if ((info_ptr->color_type == PNG_COLOR_TYPE_RGB ||
+-               info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) &&
+-	      (info_ptr->sig_bit.red < info_ptr->bit_depth)) {
+-	    png_set_shift (png_ptr, &(info_ptr->sig_bit));
+-	    maxval = (1l << info_ptr->sig_bit.red) - 1;
++          if ((color_type == PNG_COLOR_TYPE_RGB ||
++               color_type == PNG_COLOR_TYPE_RGB_ALPHA) &&
++	      (sig_bit->red < bit_depth)) {
++	    png_set_shift (png_ptr, sig_bit);
++	    maxval = (1l << sig_bit->red) - 1;
+ 	    if (verbose)
+ 	      pm_message ("image has fewer significant bits, "
+-                      "writing file with %d bits per channel", 
+-		info_ptr->sig_bit.red);
++                      "writing file with %d bits per channel", sig_bit->red);
+           } else 
+-          if ((info_ptr->color_type == PNG_COLOR_TYPE_GRAY ||
+-               info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) &&
+-	      (info_ptr->sig_bit.gray < info_ptr->bit_depth)) {
+-	    png_set_shift (png_ptr, &(info_ptr->sig_bit));
+-	    maxval = (1l << info_ptr->sig_bit.gray) - 1;
++          if ((color_type == PNG_COLOR_TYPE_GRAY ||
++               color_type == PNG_COLOR_TYPE_GRAY_ALPHA) &&
++	      (sig_bit->gray < bit_depth)) {
++	    png_set_shift (png_ptr, sig_bit);
++	    maxval = (1l << sig_bit->gray) - 1;
+ 	    if (verbose)
+ 	      pm_message ("image has fewer significant bits, "
+-                      "writing file with %d bits",
+-		info_ptr->sig_bit.gray);
++                      "writing file with %d bits", sig_bit->gray);
+           }
+         }
+         break;
+ 
+       case alpha_only:
+-        if ((info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA ||
+-             info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) && 
+-	    (info_ptr->sig_bit.gray < info_ptr->bit_depth)) {
+-	  png_set_shift (png_ptr, &(info_ptr->sig_bit));
++        if ((color_type == PNG_COLOR_TYPE_RGB_ALPHA ||
++             color_type == PNG_COLOR_TYPE_GRAY_ALPHA) && 
++	    (sig_bit->gray < bit_depth)) {
++	  png_set_shift (png_ptr, sig_bit);
++	  maxval = (1l << sig_bit->alpha) - 1;
+ 	  if (verbose)
+ 	    pm_message ("image has fewer significant bits, "
+-                    "writing file with %d bits", 
+-		info_ptr->sig_bit.alpha);
+-	  maxval = (1l << info_ptr->sig_bit.alpha) - 1;
++                    "writing file with %d bits", sig_bit->alpha);
+         }
+         break;
+ 
+@@ -769,22 +830,22 @@
+ 
+   /* didn't manage to get libpng to work (bugs?) concerning background */
+   /* processing, therefore we do our own using bgr, bgg and bgb        */
+-  if (info_ptr->valid & PNG_INFO_bKGD)
+-    switch (info_ptr->color_type) {
++  if (png_get_bKGD (png_ptr, info_ptr, &png_background))
++    switch (color_type) {
+       case PNG_COLOR_TYPE_GRAY:
+       case PNG_COLOR_TYPE_GRAY_ALPHA:
+-        bgr = bgg = bgb = gamma_correct (info_ptr->background.gray, totalgamma);
++        bgr = bgg = bgb = gamma_correct (png_background->gray, totalgamma);
+         break;
+       case PNG_COLOR_TYPE_PALETTE:
+-        bgr = gamma_correct (info_ptr->palette[info_ptr->background.index].red, totalgamma);
+-        bgg = gamma_correct (info_ptr->palette[info_ptr->background.index].green, totalgamma);
+-        bgb = gamma_correct (info_ptr->palette[info_ptr->background.index].blue, totalgamma);
++        bgr = gamma_correct (palette[png_background->index].red, totalgamma);
++        bgg = gamma_correct (palette[png_background->index].green, totalgamma);
++        bgb = gamma_correct (palette[png_background->index].blue, totalgamma);
+         break;
+       case PNG_COLOR_TYPE_RGB:
+       case PNG_COLOR_TYPE_RGB_ALPHA:
+-        bgr = gamma_correct (info_ptr->background.red, totalgamma);
+-        bgg = gamma_correct (info_ptr->background.green, totalgamma);
+-        bgb = gamma_correct (info_ptr->background.blue, totalgamma);
++        bgr = gamma_correct (png_background->red, totalgamma);
++        bgg = gamma_correct (png_background->green, totalgamma);
++        bgb = gamma_correct (png_background->blue, totalgamma);
+         break;
+     }
+   else
+@@ -796,7 +857,7 @@
+   if (background)
+   {
+     backcolor = ppm_parsecolor (background, maxval);
+-    switch (info_ptr->color_type) {
++    switch (color_type) {
+       case PNG_COLOR_TYPE_GRAY:
+       case PNG_COLOR_TYPE_GRAY_ALPHA:
+         bgr = bgg = bgb = PNM_GET1 (backcolor);
+@@ -819,16 +880,20 @@
+        completes.  That's because it comes from chunks that are at the
+        end of the stream.
+     */
+-    dump_png_info(info_ptr);
++    dump_png_info(png_ptr, info_ptr);
+ 
+-  if (mtime)
+-    show_time (info_ptr);
+-  if (tfp)
+-    save_text (info_ptr, tfp);
++  if (mtime) {
++    if (png_get_tIME (png_ptr, info_ptr, &mod_time))
++      show_time (mod_time);
++  }
++  if (tfp) {
++    if (png_get_text (png_ptr, info_ptr, &text, &num_text))
++      save_text (text, num_text, tfp);
++  }
+ 
+-  if (info_ptr->valid & PNG_INFO_pHYs) {
++  if (png_get_pHYs (png_ptr, info_ptr, &res_x, &res_y, NULL)) {
+     float r;
+-    r = (float)info_ptr->x_pixels_per_unit / info_ptr->y_pixels_per_unit;
++    r = (float)res_x / res_y;
+     if (r != 1.0) {
+       pm_message ("warning - non-square pixels; "
+                   "to fix do a 'pamscale -%cscale %g'",
+@@ -839,15 +904,15 @@
+   }
+ 
+   if (alpha == alpha_only) {
+-    if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY ||
+-        info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
++    if (color_type == PNG_COLOR_TYPE_GRAY ||
++        color_type == PNG_COLOR_TYPE_RGB) {
+       pnm_type = PBM_TYPE;
+     } else
+-      if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
++      if (color_type == PNG_COLOR_TYPE_PALETTE) {
+         pnm_type = PBM_TYPE;
+-        if (info_ptr->valid & PNG_INFO_tRNS) {
+-          for (i = 0 ; i < info_ptr->num_trans ; i++) {
+-            if (info_ptr->trans[i] != 0 && info_ptr->trans[i] != maxval) {
++        if (num_trans > 0) {
++          for (i = 0 ; i < num_trans ; i++) {
++            if (trans[i] != 0 && trans[i] != maxval) {
+               pnm_type = PGM_TYPE;
+               break;
+             }
+@@ -860,18 +925,18 @@
+           pnm_type = PGM_TYPE;
+       }
+   } else {
+-    if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY ||
+-        info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+-      if (info_ptr->bit_depth == 1) {
++    if (color_type == PNG_COLOR_TYPE_GRAY ||
++        color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
++      if (bit_depth == 1) {
+         pnm_type = PBM_TYPE;
+       } else {
+         pnm_type = PGM_TYPE;
+       }
+     } else
+-    if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
++    if (color_type == PNG_COLOR_TYPE_PALETTE) {
+       pnm_type = PGM_TYPE;
+-      for (i = 0 ; i < info_ptr->num_palette ; i++) {
+-        if (iscolor (info_ptr->palette[i])) {
++      for (i = 0 ; i < num_palette ; i++) {
++        if (iscolor (palette[i])) {
+           pnm_type = PPM_TYPE;
+           break;
+         }
+@@ -887,10 +952,10 @@
+     maxmaxval = PPM_OVERALLMAXVAL;
+   else maxmaxval = maxval;
+ 
+-  writePnm(stdout, maxval, pnm_type, info_ptr, png_image);
++  writePnm(stdout, maxval, pnm_type, png_ptr, info_ptr, png_image);
+ 
+   fflush(stdout);
+-  for (y = 0 ; y < info_ptr->height ; y++)
++  for (y = 0 ; y < height ; y++)
+     free (png_image[y]);
+   free (png_image);
+   png_destroy_read_struct (&png_ptr, &info_ptr, (png_infopp)NULL);
+--- netpbm-10.26.64.orig/converter/other/pngtxt.c
++++ netpbm-10.26.64/converter/other/pngtxt.c
+@@ -128,7 +128,7 @@
+         realloc(commentP->text, commentP->text_length + lineLength + 1 + 1);
+ 
+     if (commentP->text == NULL)
+-        pm_error("Unable to allocate %u bytes of memory for comment chunk",
++        pm_error("Unable to allocate %zu bytes of memory for comment chunk",
+                  commentP->text_length + lineLength + 1 +1);
+ 
+     commentP->text[commentP->text_length++] = '\n';
+@@ -238,11 +238,14 @@
+ 
+ 
+ void 
+-pnmpng_read_text (png_info * const info_ptr, 
++pnmpng_read_text (png_struct * const png_ptr,
++                  png_info * const info_ptr, 
+                   FILE *     const tfp, 
+                   bool const ztxt,
+                   bool const verbose) {
+ 
++    png_textp text;
++    int num_text;
+     const char * textline;
+     unsigned int lineLength;
+     unsigned int commentIdx;
+@@ -255,8 +258,8 @@
+ 
+     allocatedComments = 256;  /* initial value */
+ 
+-    MALLOCARRAY(info_ptr->text, allocatedComments);
+-    if (info_ptr->text == NULL) 
++    MALLOCARRAY(text, allocatedComments);
++    if (text == NULL) 
+         pm_error("unable to allocate memory for comment array");
+ 
+     commentIdx = 0;
+@@ -271,7 +274,7 @@
+             if (lineLength == 0) {
+                 /* skip this empty line */
+             } else {
+-                handleArrayAllocation(&info_ptr->text, &allocatedComments,
++                handleArrayAllocation(&text, &allocatedComments,
+                                       commentIdx);
+                 if ((textline[0] != ' ') && (textline[0] != '\t')) {
+                     /* Line doesn't start with white space, which
+@@ -283,7 +286,7 @@
+                         ++commentIdx;
+                     noCommentsYet = FALSE;
+ 
+-                    startComment(&info_ptr->text[commentIdx], 
++                    startComment(&text[commentIdx], 
+                                  textline, lineLength, ztxt);
+                 } else {
+                     /* Line starts with whitespace, which means it is
+@@ -293,7 +296,7 @@
+                         pm_error("Invalid comment file format: "
+                                  "first line is a continuation line! "
+                                  "(It starts with whitespace)");
+-                    continueComment(&info_ptr->text[commentIdx], 
++                    continueComment(&text[commentIdx], 
+                                     textline, lineLength);
+                 }
+             }
+@@ -301,12 +304,17 @@
+         }
+     } 
+     if (noCommentsYet)
+-        info_ptr->num_text = 0;
++        num_text = 0;
+     else
+-        info_ptr->num_text = commentIdx + 1;
++        num_text = commentIdx + 1;
+ 
+     if (verbose)
+-        pm_message("%d comments placed in text chunk", info_ptr->num_text);
++        pm_message("%d comments placed in text chunk", num_text);
++
++    if (num_text > 0)
++        png_set_text(png_ptr, info_ptr, text, num_text);
++
++    free(text);
+ }
+ 
+ 
+--- netpbm-10.26.64.orig/converter/other/pngtxt.h
++++ netpbm-10.26.64/converter/other/pngtxt.h
+@@ -1,7 +1,8 @@
+ #include "pm.h"
+ 
+ void 
+-pnmpng_read_text (png_info * const info_ptr, 
++pnmpng_read_text (png_struct * const png_ptr,
++                  png_info * const info_ptr, 
+                   FILE *     const tfp, 
+                   bool const ztxt,
+                   bool const verbose);
+--- netpbm-10.26.64.orig/converter/other/pnmtopng.c
++++ netpbm-10.26.64/converter/other/pnmtopng.c
+@@ -56,19 +56,14 @@
+ 
+ #include <string.h>	/* strcat() */
+ #include <limits.h>
+-#include <png.h>	/* includes zlib.h and setjmp.h */
++#include <png.h>
++#include <zlib.h>
+ #define VERSION "2.37.6 (21 July 2001) +netpbm"
+ #include "pnm.h"
+ #include "pngtxt.h"
+ #include "mallocvar.h"
+ #include "nstring.h"
+ 
+-#if PNG_LIBPNG_VER >= 10400
+-#error Your PNG library (<png.h>) is incompatible with this Netpbm source code.
+-#error You need either an older PNG library (older than 1.4)
+-#error newer Netpbm source code (at least 10.48)
+-#endif
+-
+ struct zlib_compression {
+     /* These are parameters that describe a form of zlib compression. 
+        In each of them, -1 means "don't care," and a nonnegative value is
+@@ -1151,13 +1146,12 @@
+         gray paletteTrans;
+ 
+         if (paletteIndex < transSize)
+-            paletteTrans = alphaMaxval;
+-        else
+             paletteTrans = trans_pnm[paletteIndex];
+-
++        else
++            paletteTrans = alphaMaxval;
+ 
+         addtocoloralphahash(caht, &palette_pnm[paletteIndex],
+-                            &trans_pnm[paletteIndex], paletteIndex);
++                            &paletteTrans, paletteIndex);
+     }
+     *cahtP = caht;
+ }
+@@ -1552,6 +1546,11 @@
+ 
+   xel p;
+   int rows, cols, format;
++  int color_type;
++  png_color_16 trans_values;
++  png_color_16 png_background;
++  png_color_8 sig_bit;
++  png_time mod_time;
+   xelval maxval;
+       /* The maxval of the input image */
+   xelval png_maxval;
+@@ -1814,63 +1813,49 @@
+   }
+ 
+   png_init_io (png_ptr, stdout);
+-  info_ptr->width = cols;
+-  info_ptr->height = rows;
+-  info_ptr->bit_depth = depth;
+ 
+   if (colorMapped)
+-    info_ptr->color_type = PNG_COLOR_TYPE_PALETTE;
++    color_type = PNG_COLOR_TYPE_PALETTE;
+   else if (pnm_type == PPM_TYPE)
+-    info_ptr->color_type = PNG_COLOR_TYPE_RGB;
++    color_type = PNG_COLOR_TYPE_RGB;
+   else
+-    info_ptr->color_type = PNG_COLOR_TYPE_GRAY;
++    color_type = PNG_COLOR_TYPE_GRAY;
+ 
+-  if (alpha && info_ptr->color_type != PNG_COLOR_TYPE_PALETTE)
+-    info_ptr->color_type |= PNG_COLOR_MASK_ALPHA;
++  if (alpha && color_type != PNG_COLOR_TYPE_PALETTE)
++    color_type |= PNG_COLOR_MASK_ALPHA;
+ 
+-  info_ptr->interlace_type = interlace;
++  png_set_IHDR(png_ptr, info_ptr, cols, rows, depth,
++               color_type, interlace, 0, 0);
+ 
+   /* gAMA chunk */
+   if (gamma != -1.0) {
+-    info_ptr->valid |= PNG_INFO_gAMA;
+-    info_ptr->gamma = gamma;
++    png_set_gAMA(png_ptr, info_ptr, gamma);
+   }
+ 
+   /* cHRM chunk */
+   if (chroma.wx != -1.0) {
+-    info_ptr->valid |= PNG_INFO_cHRM;
+-    info_ptr->x_white = chroma.wx;
+-    info_ptr->y_white = chroma.wy;
+-    info_ptr->x_red = chroma.rx;
+-    info_ptr->y_red = chroma.ry;
+-    info_ptr->x_green = chroma.gx;
+-    info_ptr->y_green = chroma.gy;
+-    info_ptr->x_blue = chroma.bx;
+-    info_ptr->y_blue = chroma.by;
++    png_set_cHRM(png_ptr, info_ptr,
++                 chroma.wx, chroma.wy,
++                 chroma.rx, chroma.ry,
++                 chroma.gx, chroma.gy,
++                 chroma.bx, chroma.by);
+   }
+ 
+   /* pHYS chunk */
+   if (phys_unit != -1.0) {
+-    info_ptr->valid |= PNG_INFO_pHYs;
+-    info_ptr->x_pixels_per_unit = phys_x;
+-    info_ptr->y_pixels_per_unit = phys_y;
+-    info_ptr->phys_unit_type = phys_unit;
++    png_set_pHYs(png_ptr, info_ptr, phys_x, phys_y, phys_unit);
+   }
+ 
+-  if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
++  if (color_type == PNG_COLOR_TYPE_PALETTE) {
+ 
+     /* creating PNG palette  (PLTE and tRNS chunks) */
+ 
+     createPngPalette(palette_pnm, palette_size, maxval,
+                      trans_pnm, trans_size, alpha_maxval, 
+                      palette, trans);
+-    info_ptr->valid |= PNG_INFO_PLTE;
+-    info_ptr->palette = palette;
+-    info_ptr->num_palette = palette_size;
++    png_set_PLTE(png_ptr, info_ptr, palette, palette_size);
+     if (trans_size > 0) {
+-        info_ptr->valid |= PNG_INFO_tRNS;
+-        info_ptr->trans = trans;
+-        info_ptr->num_trans = trans_size;   /* omit opaque values */
++        png_set_tRNS(png_ptr, info_ptr, trans, trans_size, NULL);
+     }
+     /* creating hIST chunk */
+     if (hist) {
+@@ -1896,18 +1881,16 @@
+ 
+         ppm_freecolorhash(cht);
+ 
+-        info_ptr->valid |= PNG_INFO_hIST;
+-        info_ptr->hist = histogram;
++        png_set_hIST(png_ptr, info_ptr, histogram);
+         if (verbose)
+             pm_message ("histogram created");
+     }
+   } else { /* color_type != PNG_COLOR_TYPE_PALETTE */
+-    if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY ||
+-        info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
++    if (color_type == PNG_COLOR_TYPE_GRAY ||
++        color_type == PNG_COLOR_TYPE_RGB) {
+         if (transparent > 0) {
+-            info_ptr->valid |= PNG_INFO_tRNS;
+-            info_ptr->trans_values = 
+-                xelToPngColor_16(transcolor, maxval, png_maxval);
++            trans_values = xelToPngColor_16(transcolor, maxval, png_maxval);
++            png_set_tRNS(png_ptr, info_ptr, NULL, 0, &trans_values);
+         }
+     } else {
+         /* This is PNG_COLOR_MASK_ALPHA.  Transparency will be handled
+@@ -1915,13 +1898,13 @@
+         */
+     }
+     if (verbose) {
+-        if (info_ptr->valid && PNG_INFO_tRNS) 
++        if (transparent > 0) 
+             pm_message("Transparent color {gray, red, green, blue} = "
+                        "{%d, %d, %d, %d}",
+-                       info_ptr->trans_values.gray,
+-                       info_ptr->trans_values.red,
+-                       info_ptr->trans_values.green,
+-                       info_ptr->trans_values.blue);
++                       trans_values.gray,
++                       trans_values.red,
++                       trans_values.green,
++                       trans_values.blue);
+         else
+             pm_message("No transparent color");
+     }
+@@ -1929,19 +1912,20 @@
+ 
+   /* bKGD chunk */
+   if (background > -1) {
+-      info_ptr->valid |= PNG_INFO_bKGD;
+-      if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+-          info_ptr->background.index = background_index;
++      if (color_type == PNG_COLOR_TYPE_PALETTE) {
++          png_background.index = background_index;
++          png_set_bKGD(png_ptr, info_ptr, &png_background);
+       } else {
+-          info_ptr->background = 
++          png_background = 
+               xelToPngColor_16(backcolor, maxval, png_maxval);
++          png_set_bKGD(png_ptr, info_ptr, &png_background);
+           if (verbose)
+               pm_message("Writing bKGD chunk with background color "
+                          " {gray, red, green, blue} = {%d, %d, %d, %d}",
+-                         info_ptr->background.gray, 
+-                         info_ptr->background.red, 
+-                         info_ptr->background.green, 
+-                         info_ptr->background.blue ); 
++                         png_background.gray, 
++                         png_background.red, 
++                         png_background.green, 
++                         png_background.blue ); 
+       }
+   }
+ 
+@@ -1957,34 +1941,34 @@
+     /* sBIT chunk */
+     int sbitval;
+ 
+-    info_ptr->valid |= PNG_INFO_sBIT;
+-
+     sbitval = pm_maxvaltobits(maxval);
+ 
+-    if (info_ptr->color_type & PNG_COLOR_MASK_COLOR) {
+-      info_ptr->sig_bit.red   = sbitval;
+-      info_ptr->sig_bit.green = sbitval;
+-      info_ptr->sig_bit.blue  = sbitval;
++    if (color_type & PNG_COLOR_MASK_COLOR) {
++      sig_bit.red   = sbitval;
++      sig_bit.green = sbitval;
++      sig_bit.blue  = sbitval;
++      png_set_sBIT(png_ptr, info_ptr, &sig_bit);
+     } else {
+-      info_ptr->sig_bit.gray = sbitval;
++      sig_bit.gray = sbitval;
++      png_set_sBIT(png_ptr, info_ptr, &sig_bit);
+     }
+     if (verbose)
+         pm_message("Writing sBIT chunk with sbitval = %d", sbitval);
+ 
+-    if (info_ptr->color_type & PNG_COLOR_MASK_ALPHA) {
+-      info_ptr->sig_bit.alpha = pm_maxvaltobits(alpha_maxval);
++    if (color_type & PNG_COLOR_MASK_ALPHA) {
++      sig_bit.alpha = pm_maxvaltobits(alpha_maxval);
++      png_set_sBIT(png_ptr, info_ptr, &sig_bit);
+     }
+   }
+ 
+   /* tEXT and zTXT chunks */
+   if ((text) || (ztxt)) {
+-    pnmpng_read_text (info_ptr, tfp, ztxt, verbose);
++    pnmpng_read_text (png_ptr, info_ptr, tfp, ztxt, verbose);
+   }
+ 
+   /* tIME chunk */
+   if (mtime) {
+     struct tm time_struct;
+-    info_ptr->valid |= PNG_INFO_tIME;
+     sscanf (date_string, "%d-%d-%d", &time_struct.tm_year,
+                                      &time_struct.tm_mon,
+                                      &time_struct.tm_mday);
+@@ -1994,7 +1978,8 @@
+     sscanf (time_string, "%d:%d:%d", &time_struct.tm_hour,
+                                      &time_struct.tm_min,
+                                      &time_struct.tm_sec);
+-    png_convert_from_struct_tm (&info_ptr->mod_time, &time_struct);
++    png_convert_from_struct_tm (&mod_time, &time_struct);
++    png_set_tIME(png_ptr, info_ptr, &mod_time);
+   }
+ 
+   /* explicit filter-type (or none) required */
+@@ -2014,11 +1999,11 @@
+ 
+   if ((text) || (ztxt))
+     /* prevent from being written twice with png_write_end */
+-    info_ptr->num_text = 0;
++    png_set_text(png_ptr, info_ptr, NULL, 0);
+ 
+   if (mtime)
+     /* prevent from being written twice with png_write_end */
+-    info_ptr->valid &= ~PNG_INFO_tIME;
++    png_set_tIME(png_ptr, info_ptr, NULL);
+ 
+   /* let libpng take care of, e.g., bit-depth conversions */
+   png_set_packing (png_ptr);
+@@ -2046,12 +2031,12 @@
+               xel p_png;
+               xel const p = xelrow[col];
+               PPM_DEPTH(p_png, p, maxval, png_maxval);
+-              if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY ||
+-                  info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
++              if (color_type == PNG_COLOR_TYPE_GRAY ||
++                  color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+                   if (depth == 16)
+                       *pp++ = PNM_GET1 (p_png) >> 8;
+                   *pp++ = PNM_GET1 (p_png)&0xff;
+-              } else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
++              } else if (color_type == PNG_COLOR_TYPE_PALETTE) {
+                   unsigned int paletteIndex;
+                   if (alpha)
+                       paletteIndex = lookupColorAlpha(caht, &p, 
+@@ -2059,8 +2044,8 @@
+                   else
+                       paletteIndex = ppm_lookupcolor(cht, &p);
+                   *pp++ = paletteIndex;
+-              } else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB ||
+-                         info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
++              } else if (color_type == PNG_COLOR_TYPE_RGB ||
++                         color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
+                   if (depth == 16)
+                       *pp++ = PPM_GETR (p_png) >> 8;
+                   *pp++ = PPM_GETR (p_png)&0xff;
+@@ -2075,7 +2060,7 @@
+                   pm_closer (ifp);
+                   pm_error (" (can't happen) undefined color_type");
+               }
+-              if (info_ptr->color_type & PNG_COLOR_MASK_ALPHA) {
++              if (color_type & PNG_COLOR_MASK_ALPHA) {
+                   int const png_alphaval = (int)
+                       alpha_mask[row][col] * (float) png_maxval / maxval +0.5;
+                   if (depth == 16)
+@@ -2141,8 +2126,8 @@
+     */
+     fprintf(stderr, "   Compiled with libpng %s.\n",
+             PNG_LIBPNG_VER_STRING);
+-    fprintf(stderr, "   Compiled with zlib %s; using zlib %s.\n",
+-            ZLIB_VERSION, zlib_version);
++    fprintf(stderr, "   Compiled with zlib %s.\n",
++            ZLIB_VERSION);
+     fprintf(stderr,    
+             "   Compiled with %d-bit netpbm support "
+             "(PPM_OVERALLMAXVAL = %d).\n",
+--- netpbm-10.26.64.orig/converter/ppm/ppmtompeg/jpeg.c
++++ netpbm-10.26.64/converter/ppm/ppmtompeg/jpeg.c
+@@ -481,7 +481,7 @@
+ #ifdef JPEG4
+   buffer_height = 8;  /* could be 2, 4,8 rows high */
+ #else
+-  buffer_height = cinfo.max_v_samp_factor * cinfo.min_DCT_scaled_size;
++  buffer_height = cinfo.max_v_samp_factor * cinfo.min_DCT_v_scaled_size;
+ #endif
+   
+   for(cp=0,compptr = cinfo.comp_info;cp<cinfo.num_components;
+--- netpbm-10.26.64.orig/editor/pnmflip
++++ netpbm-10.26.64/editor/pnmflip
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -w
++#!/bin/perl -w
+ 
+ #============================================================================
+ #  This is a compatibility interface to Pamflip.
+--- netpbm-10.26.64.orig/editor/pnmquant
++++ netpbm-10.26.64/editor/pnmquant
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -w
++#!/bin/perl -w
+ 
+ ##############################################################################
+ #                         pnmquant 
+--- netpbm-10.26.64.orig/editor/ppmfade
++++ netpbm-10.26.64/editor/ppmfade
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -w
++#!/bin/perl -w
+ #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ #
+ #  This program creates a fade (a sequence of frames) between two images.
+--- netpbm-10.26.64.orig/editor/ppmquant
++++ netpbm-10.26.64/editor/ppmquant
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -w
++#!/bin/perl -w
+ ##############################################################################
+ #  This is nothing but a compatibility interface for Pnmquant.
+ #  An old program coded to call Ppmquant will continue working because
+--- netpbm-10.26.64.orig/editor/ppmshadow
++++ netpbm-10.26.64/editor/ppmshadow
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -w
++#!/bin/perl -w
+ 
+ #                         P P M S H A D O W
+ 
+--- netpbm-10.26.64.orig/generator/ppmrainbow
++++ netpbm-10.26.64/generator/ppmrainbow
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -wl
++#!/bin/perl -wl
+ use strict;
+ use Getopt::Long;
+ 
+--- netpbm-10.26.64.orig/lib/Makefile
++++ netpbm-10.26.64/lib/Makefile
+@@ -196,6 +196,10 @@
+ 	cd $(PKGDIR)/lib/ ; \
+           rm -f libnetpbm.$(NETPBMLIBSUFFIX).$(MAJ); \
+           $(SYMLINK) libnetpbm.$(NETPBMLIBSUFFIX).$(MAJ).$(MIN) $(SONAME)
++	cd $(PKGDIR)/lib/ ; \
++          rm -f libnetpbm.$(NETPBMLIBSUFFIX); \
++          $(SYMLINK) libnetpbm.$(NETPBMLIBSUFFIX).$(MAJ) \
++            libnetpbm.$(NETPBMLIBSUFFIX)
+ endif
+ ifeq ($(NETPBMLIBTYPE),dll)
+ #install a Windows DLL shared library
+--- netpbm-10.26.64.orig/manweb
++++ netpbm-10.26.64/manweb
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -w
++#!/bin/perl -w
+ 
+ use strict;
+ use English;

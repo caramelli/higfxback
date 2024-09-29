@@ -1,0 +1,29 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build netpbm-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install fbtest $DESTDIR/fb/bin
+install pnmtohex/pnmtohex $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbtest-build.pc << EOF
+Name: fbtest
+Version: 20200420
+Description: Linux Framebuffer test suite
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/fbtest \\
+/fb/bin/pnmtohex
+EOF
+
+exit

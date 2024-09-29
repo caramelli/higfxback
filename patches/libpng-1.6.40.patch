@@ -53,3 +53,15 @@ exec=\\
 EOF
 
 exit
+--- libpng-1.6.40.orig/pngget.c
++++ libpng-1.6.40/pngget.c
+@@ -1026,7 +1026,8 @@
+    png_debug1(1, "in %s retrieval function", "PLTE");
+ 
+    if (png_ptr != NULL && info_ptr != NULL &&
+-       (info_ptr->valid & PNG_INFO_PLTE) != 0 && palette != NULL)
++       (info_ptr->valid & PNG_INFO_PLTE) != 0 &&
++       palette != NULL && num_palette != NULL)
+    {
+       *palette = info_ptr->palette;
+       *num_palette = info_ptr->num_palette;
