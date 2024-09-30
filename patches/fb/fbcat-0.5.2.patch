@@ -1,0 +1,55 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install fbcat $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbcat-build.pc << EOF
+Name: fbcat
+Version: 0.5.2
+Description: Linux Framebuffer screenshot grabber
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/fbcat
+EOF
+
+exit
+--- fbcat-0.5.2.orig/Configure
++++ fbcat-0.5.2/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
