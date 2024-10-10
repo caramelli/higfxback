@@ -5,14 +5,14 @@ REQUIRES="gcc-g++-build gyp-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists opengl-registry-build; then
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=-Dktx_opengl=1
-  REQUIRES="$REQUIRES opengl-registry-build"
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists vulkan-headers-build; then
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists vulkan-loader-build; then
   VK=-Dktx_vulkan=1
-  REQUIRES="$REQUIRES vulkan-headers-build"
+  REQUIRES="$REQUIRES vulkan-loader-build"
 fi
 
 # configure

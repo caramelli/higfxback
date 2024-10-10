@@ -1,0 +1,26 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="zipp-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/lib/python3/importlib_metadata
+install -m 644 importlib_metadata/__init__.py $DESTDIR/lib/python3/importlib_metadata
+install -m 644 importlib_metadata/_compat.py $DESTDIR/lib/python3/importlib_metadata
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/importlib_metadata-build.pc << EOF
+Name: importlib_metadata
+Version: 2.1.1
+Description: Read metadata from Python packages
+Requires: $REQUIRES
+
+exec=\\
+/lib/python3/importlib_metadata/__init__.py \\
+/lib/python3/importlib_metadata/_compat.py
+EOF
+
+exit

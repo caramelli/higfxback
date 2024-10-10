@@ -5,6 +5,9 @@ REQUIRES="egl-registry-build make-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+sh ./Configure --prefix /x11
+
 # build
 make -C xml
 
@@ -25,8 +28,11 @@ install -m 644 api/GLES2/gl2platform.h $DESTDIR/x11/include/GLES2
 install -d $DESTDIR/x11/include/GLES3
 install -m 644 api/GLES3/gl3.h $DESTDIR/x11/include/GLES3
 install -m 644 api/GLES3/gl3platform.h $DESTDIR/x11/include/GLES3
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 opengl-registry.pc $DESTDIR/x11/lib/pkgconfig
 install -d $DESTDIR/x11/share/opengl/registry
 install -m 644 xml/gl.xml $DESTDIR/x11/share/opengl/registry
+install -m 644 xml/glx.xml $DESTDIR/x11/share/opengl/registry
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -49,10 +55,37 @@ devel=\\
 /x11/include/GLES2/gl2platform.h \\
 /x11/include/GLES3/gl3.h \\
 /x11/include/GLES3/gl3platform.h \\
-/x11/share/opengl/registry/gl.xml
+/x11/lib/pkgconfig/opengl-registry.pc \\
+/x11/share/opengl/registry/gl.xml \\
+/x11/share/opengl/registry/glx.xml
 EOF
 
 exit
+--- OpenGL-Registry-20191206.orig/Configure
++++ OpenGL-Registry-20191206/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed "/^prefix=/s#=.*#=$PREFIX#" xml/opengl-registry.pc.in > opengl-registry.pc
 --- OpenGL-Registry-20191206.orig/xml/Makefile
 +++ OpenGL-Registry-20191206/xml/Makefile
 @@ -17,7 +17,7 @@
@@ -156,3 +189,14 @@ exit
          protectProtoStr   = 'GLX_GLXEXT_PROTOTYPES',
          apicall           = '',
          apientry          = '',
+--- OpenGL-Registry-20191206.orig/xml/opengl-registry.pc.in
++++ OpenGL-Registry-20191206/xml/opengl-registry.pc.in
+@@ -0,0 +1,8 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++datarootdir=${prefix}/share
++headersdir=${pc_sysrootdir}${prefix}/include
++pkgdatadir=${pc_sysrootdir}${datarootdir}/opengl/registry
++
++Name: OpenGL Registry
++Description: OpenGL API registry file
++Version: 20191206

@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build egl-opengl-stubs-build libxcursor-build libxi-build libxinerama-build libxrandr-build stb-build"
+REQUIRES="cmake3-build egl-opengl-stubs-build glad-build libxcursor-build libxi-build libxinerama-build libxrandr-build linmath-build stb-build tinycthread-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -12,8 +12,7 @@ fi
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
-rm -f deps/nuklear.h
-rm -f deps/stb_image_write.h
+rm -rf deps
 PKG_CONFIG_PATH=/x11/lib/pkgconfig cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
 
 # build
@@ -148,18 +147,85 @@ exit
      endif()
 --- glfw-3.3.8.orig/examples/CMakeLists.txt
 +++ glfw-3.3.8/examples/CMakeLists.txt
-@@ -46,6 +46,11 @@
+@@ -1,8 +1,6 @@
+ 
+ link_libraries(glfw)
+ 
+-include_directories("${GLFW_SOURCE_DIR}/deps")
+-
+ if (MATH_LIBRARY)
+     link_libraries("${MATH_LIBRARY}")
+ endif()
+@@ -29,27 +27,68 @@
+ 
+ endif()
+ 
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/gl.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/glad_gl.c")
+ set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h"
+             "${GLFW_SOURCE_DIR}/deps/glad_gl.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.c")
+ set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
+            "${GLFW_SOURCE_DIR}/deps/getopt.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/stb_image_write.h")
++set(STB_IMAGE_WRITE "${GLFW_SOURCE_DIR}/deps/stb_image_write.h")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
+ set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
+                 "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
++endif()
+ 
+ add_executable(boing WIN32 MACOSX_BUNDLE boing.c ${ICON} ${GLAD_GL})
+ add_executable(gears WIN32 MACOSX_BUNDLE gears.c ${ICON} ${GLAD_GL})
+ add_executable(heightmap WIN32 MACOSX_BUNDLE heightmap.c ${ICON} ${GLAD_GL})
+-add_executable(offscreen offscreen.c ${ICON} ${GLAD_GL})
++add_executable(offscreen offscreen.c ${ICON} ${GLAD_GL} ${STB_IMAGE_WRITE})
+ add_executable(particles WIN32 MACOSX_BUNDLE particles.c ${ICON} ${TINYCTHREAD} ${GETOPT} ${GLAD_GL})
+ add_executable(sharing WIN32 MACOSX_BUNDLE sharing.c ${ICON} ${GLAD_GL})
+ add_executable(simple WIN32 MACOSX_BUNDLE simple.c ${ICON} ${GLAD_GL})
  add_executable(splitview WIN32 MACOSX_BUNDLE splitview.c ${ICON} ${GLAD_GL})
  add_executable(wave WIN32 MACOSX_BUNDLE wave.c ${ICON} ${GLAD_GL})
  
-+find_path(STB_INCLUDE_PATH stb/stb_image_write.h)
-+if (STB_INCLUDE_PATH)
-+    target_include_directories(offscreen PRIVATE ${STB_INCLUDE_PATH}/stb)
++if (NOT GLAD_GL)
++find_path(GLAD_GL_INCLUDE_PATH glad/gl.h)
++if (NOT GLAD_GL_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/gl.h not found")
++endif()
++include_directories(${GLAD_GL_INCLUDE_PATH})
++add_definitions(-DGLAD_GL_IMPLEMENTATION)
 +endif()
 +
++if (NOT STB_IMAGE_WRITE)
++find_path(STB_INCLUDE_PATH stb_image_write.h PATH_SUFFIXES stb)
++if (NOT STB_INCLUDE_PATH)
++    message(FATAL_ERROR "stb/stb_image_write.h not found")
++endif()
++include_directories(${STB_INCLUDE_PATH})
++endif()
++
++if (GLAD_GL OR STB_IMAGE_WRITE OR TINYCTHREAD)
++include_directories("${GLFW_SOURCE_DIR}/deps")
++endif()
++
++if (TINYCTHREAD)
  target_link_libraries(particles "${CMAKE_THREAD_LIBS_INIT}")
  if (RT_LIBRARY)
      target_link_libraries(particles "${RT_LIBRARY}")
+ endif()
++else()
++find_library(TINYCTHREAD_LIBRARY tinycthread)
++if (NOT TINYCTHREAD_LIBRARY)
++    message(FATAL_ERROR "tinycthread not found")
++endif()
++target_link_libraries(particles ${TINYCTHREAD_LIBRARY})
++endif()
+ 
+ set(GUI_ONLY_BINARIES boing gears heightmap particles sharing simple splitview
+     wave)
 --- glfw-3.3.8.orig/src/glfw3.pc.in
 +++ glfw-3.3.8/src/glfw3.pc.in
 @@ -8,6 +8,6 @@
@@ -172,13 +238,48 @@ exit
  Cflags: -I${includedir}
 --- glfw-3.3.8.orig/tests/CMakeLists.txt
 +++ glfw-3.3.8/tests/CMakeLists.txt
-@@ -42,11 +42,13 @@
+@@ -1,8 +1,6 @@
+ 
+ link_libraries(glfw)
+ 
+-include_directories("${GLFW_SOURCE_DIR}/deps")
+-
+ if (MATH_LIBRARY)
+     link_libraries("${MATH_LIBRARY}")
+ endif()
+@@ -12,14 +10,25 @@
+     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+ endif()
+ 
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/gl.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/glad_gl.c")
+ set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h"
+             "${GLFW_SOURCE_DIR}/deps/glad_gl.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/vulkan.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/glad_vulkan.c")
+ set(GLAD_VULKAN "${GLFW_SOURCE_DIR}/deps/glad/vulkan.h"
+                 "${GLFW_SOURCE_DIR}/deps/glad_vulkan.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.c")
+ set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
+            "${GLFW_SOURCE_DIR}/deps/getopt.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
+ set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
+                 "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
++endif()
+ 
+ if (${CMAKE_VERSION} VERSION_EQUAL "3.1.0" OR
+     ${CMAKE_VERSION} VERSION_GREATER "3.1.0")
+@@ -42,11 +51,13 @@
  add_executable(cursor cursor.c ${GLAD_GL})
  
  add_executable(empty WIN32 MACOSX_BUNDLE empty.c ${TINYCTHREAD} ${GLAD_GL})
 -add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
  add_executable(icon WIN32 MACOSX_BUNDLE icon.c ${GLAD_GL})
-+if(EXISTS deps/nuklear.h)
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/nuklear.h")
 +add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
  add_executable(inputlag WIN32 MACOSX_BUNDLE inputlag.c ${GETOPT} ${GLAD_GL})
  add_executable(joysticks WIN32 MACOSX_BUNDLE joysticks.c ${GLAD_GL})
@@ -187,16 +288,199 @@ exit
  add_executable(tearing WIN32 MACOSX_BUNDLE tearing.c ${GLAD_GL})
  add_executable(threads WIN32 MACOSX_BUNDLE threads.c ${TINYCTHREAD} ${GLAD_GL})
  add_executable(timeout WIN32 MACOSX_BUNDLE timeout.c ${GLAD_GL})
-@@ -61,8 +63,12 @@
+@@ -54,15 +65,48 @@
+ add_executable(triangle-vulkan WIN32 triangle-vulkan.c ${GLAD_VULKAN})
+ add_executable(windows WIN32 MACOSX_BUNDLE windows.c ${GETOPT} ${GLAD_GL})
+ 
++if (NOT GLAD_GL)
++find_path(GLAD_GL_INCLUDE_PATH glad/gl.h)
++if (NOT GLAD_GL_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/gl.h not found")
++endif()
++include_directories("${GLAD_GL_INCLUDE_PATH}")
++add_definitions(-DGLAD_GL_IMPLEMENTATION)
++endif()
++
++if (NOT GLAD_VULKAN)
++find_path(GLAD_VULKAN_INCLUDE_PATH glad/vulkan.h)
++if (NOT GLAD_VULKAN_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/vulkan.h not found")
++endif()
++include_directories("${GLAD_VULKAN_INCLUDE_PATH}")
++add_definitions(-DGLAD_VULKAN_IMPLEMENTATION)
++endif()
++
++if (GLAD_GL OR GLAD_VULKAN OR TINYCTHREAD)
++include_directories(${GLFW_SOURCE_DIR}/deps)
++endif()
++
++if (TINYCTHREAD)
+ target_link_libraries(empty "${CMAKE_THREAD_LIBS_INIT}")
+ target_link_libraries(threads "${CMAKE_THREAD_LIBS_INIT}")
+ if (RT_LIBRARY)
+     target_link_libraries(empty "${RT_LIBRARY}")
      target_link_libraries(threads "${RT_LIBRARY}")
  endif()
- 
-+if(EXISTS deps/nuklear.h)
- set(GUI_ONLY_BINARIES empty gamma icon inputlag joysticks opacity tearing
-     threads timeout title triangle-vulkan windows)
 +else()
++find_library(TINYCTHREAD_LIBRARY tinycthread)
++if (NOT TINYCTHREAD_LIBRARY)
++    message(FATAL_ERROR "tinycthread not found")
++endif()
++target_link_libraries(empty "${TINYCTHREAD_LIBRARY}")
++target_link_libraries(threads "${TINYCTHREAD_LIBRARY}")
++endif()
+ 
+-set(GUI_ONLY_BINARIES empty gamma icon inputlag joysticks opacity tearing
+-    threads timeout title triangle-vulkan windows)
 +set(GUI_ONLY_BINARIES empty icon tearing threads timeout title triangle-vulkan windows)
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/nuklear.h")
++    list(APPEND GUI_ONLY_BINARIES gamma inputlag joysticks opacity)
 +endif()
  set(CONSOLE_BINARIES clipboard events msaa glfwinfo iconify monitors reopen
                       cursor)
  
+--- glfw-3.3.8.orig/tests/glfwinfo.c
++++ glfw-3.3.8/tests/glfwinfo.c
+@@ -759,9 +759,7 @@
+     if (glfwVulkanSupported())
+     {
+         uint32_t loader_version = VK_API_VERSION_1_0;
+-        int portability_enumeration = GLFW_FALSE;
+-        uint32_t i, j, glfw_re_count, re_count, pd_count, ep_count;
+-        const char** glfw_re;
++        uint32_t i, j, re_count, pd_count, ep_count;
+         const char** re;
+         VkApplicationInfo ai = {0};
+         VkInstanceCreateInfo ici = {0};
+@@ -781,19 +779,13 @@
+                VK_VERSION_MAJOR(loader_version),
+                VK_VERSION_MINOR(loader_version));
+ 
+-        glfw_re = glfwGetRequiredInstanceExtensions(&glfw_re_count);
+-
+-        re_count = glfw_re_count;
+-        re = calloc(glfw_re_count, sizeof(char*));
++        re = glfwGetRequiredInstanceExtensions(&re_count);
+ 
+         printf("Vulkan window surface required instance extensions:\n");
+-        if (glfw_re)
++        if (re)
+         {
+-            for (i = 0;  i < glfw_re_count;  i++)
+-            {
+-                printf(" %s\n", glfw_re[i]);
+-                re[i] = glfw_re[i];
+-            }
++            for (i = 0;  i < re_count;  i++)
++                printf(" %s\n", re[i]);
+         }
+         else
+             printf(" missing\n");
+@@ -810,17 +802,6 @@
+                 printf(" %s (spec version %u)\n", ep[i].extensionName, ep[i].specVersion);
+         }
+ 
+-        for (i = 0;  i < ep_count;  i++)
+-        {
+-            if (strcmp(ep[i].extensionName, "VK_KHR_portability_enumeration") != 0)
+-                continue;
+-
+-            re_count++;
+-            re = realloc((void*) re, sizeof(char*) * re_count);
+-            re[re_count - 1] = "VK_KHR_portability_enumeration";
+-            portability_enumeration = GLFW_TRUE;
+-        }
+-
+         free(ep);
+ 
+         if (list_layers)
+@@ -842,17 +823,12 @@
+         ici.enabledExtensionCount = re_count;
+         ici.ppEnabledExtensionNames = re;
+ 
+-        if (portability_enumeration)
+-            ici.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+-
+         if (vkCreateInstance(&ici, NULL, &instance) != VK_SUCCESS)
+         {
+             glfwTerminate();
+             exit(EXIT_FAILURE);
+         }
+ 
+-        free((void*) re);
+-
+         gladLoadVulkanUserPtr(NULL, (GLADuserptrloadfunc) glfwGetInstanceProcAddress, instance);
+ 
+         vkEnumeratePhysicalDevices(instance, &pd_count, NULL);
+@@ -878,36 +854,7 @@
+             VkExtensionProperties* ep = calloc(ep_count, sizeof(VkExtensionProperties));
+             vkEnumerateDeviceExtensionProperties(pd[i], NULL, &ep_count, ep);
+ 
+-            if (portability_enumeration)
+-            {
+-                int conformant = GLFW_TRUE;
+-
+-                for (j = 0; j < ep_count; j++)
+-                {
+-                    if (strcmp(ep[j].extensionName, "VK_KHR_portability_subset") == 0)
+-                    {
+-                        conformant = GLFW_FALSE;
+-                        break;
+-                    }
+-                }
+-
+-                printf("Vulkan %s %s device: \"%s\" (API version %i.%i)\n",
+-                       conformant ? "conformant" : "non-conformant",
+-                       get_device_type_name(pdp.deviceType),
+-                       pdp.deviceName,
+-                       VK_VERSION_MAJOR(pdp.apiVersion),
+-                       VK_VERSION_MINOR(pdp.apiVersion));
+-            }
+-            else
+-            {
+-                printf("Vulkan %s device: \"%s\" (API version %i.%i)\n",
+-                       get_device_type_name(pdp.deviceType),
+-                       pdp.deviceName,
+-                       VK_VERSION_MAJOR(pdp.apiVersion),
+-                       VK_VERSION_MINOR(pdp.apiVersion));
+-            }
+-
+-            if (glfw_re_count)
++            if (re_count)
+             {
+                 printf("Vulkan device queue family presentation support:\n");
+                 for (j = 0;  j < qfp_count;  j++)
+--- glfw-3.3.8.orig/tests/triangle-vulkan.c
++++ glfw-3.3.8/tests/triangle-vulkan.c
+@@ -1560,7 +1560,6 @@
+ 
+ static void demo_init_vk(struct demo *demo) {
+     VkResult err;
+-    VkBool32 portability_enumeration = VK_FALSE;
+     uint32_t i = 0;
+     uint32_t required_extension_count = 0;
+     uint32_t instance_extension_count = 0;
+@@ -1668,13 +1667,6 @@
+                 }
+             }
+             assert(demo->enabled_extension_count < 64);
+-            if (!strcmp(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+-                        instance_extensions[i].extensionName)) {
+-                demo->extension_names[demo->enabled_extension_count++] =
+-                    VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+-                portability_enumeration = VK_TRUE;
+-            }
+-            assert(demo->enabled_extension_count < 64);
+         }
+ 
+         free(instance_extensions);
+@@ -1699,9 +1691,6 @@
+         .ppEnabledExtensionNames = (const char *const *)demo->extension_names,
+     };
+ 
+-    if (portability_enumeration)
+-        inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+-
+     uint32_t gpu_count;
+ 
+     err = vkCreateInstance(&inst_info, NULL, &demo->inst);

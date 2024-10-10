@@ -1,13 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build"
+REQUIRES="python3-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-GENERATOR=${GENERATOR-Unix Makefiles}
-cmake -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
+sh ./Configure --prefix /x11
 
 # build
 python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_beta.h
@@ -29,7 +28,7 @@ install -m 644 include/vulkan/vulkan_xcb.h $DESTDIR/x11/include/vulkan
 install -m 644 include/vulkan/vulkan_xlib.h $DESTDIR/x11/include/vulkan
 install -m 644 include/vulkan/vulkan_xlib_xrandr.h $DESTDIR/x11/include/vulkan
 install -d $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/vulkan-registry.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 vulkan-registry.pc $DESTDIR/x11/lib/pkgconfig
 install -d $DESTDIR/x11/share/vulkan/registry
 install -m 644 registry/vk.xml $DESTDIR/x11/share/vulkan/registry
 
@@ -81,6 +80,31 @@ exit
  # uninstall target
  if(NOT TARGET uninstall)
      configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+--- Vulkan-Headers-1.2.156.orig/Configure
++++ Vulkan-Headers-1.2.156/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed "/^prefix=/s#=.*#=$PREFIX#" registry/vulkan-registry.pc.in > vulkan-registry.pc
 --- Vulkan-Headers-1.2.156.orig/registry/docgenerator.py
 +++ Vulkan-Headers-1.2.156/registry/docgenerator.py
 @@ -0,0 +1,450 @@
@@ -4310,9 +4334,10 @@ exit
 +            self.genStruct(typeinfo, name, alias)
 --- Vulkan-Headers-1.2.156.orig/registry/vulkan-registry.pc.in
 +++ Vulkan-Headers-1.2.156/registry/vulkan-registry.pc.in
-@@ -0,0 +1,7 @@
+@@ -0,0 +1,8 @@
 +prefix=@CMAKE_INSTALL_PREFIX@
 +datarootdir=${prefix}/share
++headersdir=${pc_sysrootdir}${prefix}/include
 +pkgdatadir=${pc_sysrootdir}${datarootdir}/vulkan/registry
 +
 +Name: Vulkan Registry

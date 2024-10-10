@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build gdk-pixbuf-build gst-plugins-base-build speex-build"
+REQUIRES="autotools-wrappers-lt-build flac-build gdk-pixbuf-build gst-plugins-base-build speex-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -15,6 +15,7 @@ make
 # install
 install -d $DESTDIR/x11/lib/gstreamer-1.0
 install ext/cairo/.libs/libgstcairo.so $DESTDIR/x11/lib/gstreamer-1.0
+install ext/flac/.libs/libgstflac.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/gdk_pixbuf/.libs/libgstgdkpixbuf.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/jpeg/.libs/libgstjpeg.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/libpng/.libs/libgstpng.so $DESTDIR/x11/lib/gstreamer-1.0
@@ -94,6 +95,7 @@ exec=\\
 /x11/lib/gstreamer-1.0/libgstdtmf.so \\
 /x11/lib/gstreamer-1.0/libgsteffectv.so \\
 /x11/lib/gstreamer-1.0/libgstequalizer.so \\
+/x11/lib/gstreamer-1.0/libgstflac.so \\
 /x11/lib/gstreamer-1.0/libgstflv.so \\
 /x11/lib/gstreamer-1.0/libgstflxdec.so \\
 /x11/lib/gstreamer-1.0/libgstgdkpixbuf.so \\

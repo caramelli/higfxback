@@ -1,0 +1,104 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+make -C test
+
+# install
+install -d $DESTDIR/include
+install -m 644 source/tinycthread.h $DESTDIR/include
+install -d $DESTDIR/lib
+install libtinycthread.so.1 $DESTDIR/lib
+ln -sf libtinycthread.so.1 $DESTDIR/lib/libtinycthread.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 tinycthread.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/tinycthread-build.pc << EOF
+Name: tinycthread
+Version: 20160930
+Description: Tiny C11 Thread library
+Requires: $REQUIRES
+
+devel=\\
+/include/tinycthread.h \\
+/lib/libtinycthread.so \\
+/lib/pkgconfig/tinycthread.pc
+
+exec=\\
+/lib/libtinycthread.so.1
+EOF
+
+exit
+--- tinycthread-20160930.orig/Configure
++++ tinycthread-20160930/Configure
+@@ -0,0 +1,24 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^prefix=/s#=.*#=$PREFIX#" tinycthread.pc
+--- tinycthread-20160930.orig/Makefile
++++ tinycthread-20160930/Makefile
+@@ -0,0 +1,21 @@
++PREFIX ?= /usr/local
++
++CFLAGS += -g -O2 -fPIC
++LDFLAGS += -lpthread
++
++all: libtinycthread.so.1
++
++libtinycthread.so.1: source/tinycthread.c
++	$(CC) -Wall -shared -Wl,-soname,$@ $^ -o $@ $(CFLAGS) $(LDFLAGS)
++
++clean:
++	$(RM) libtinycthread.so.1
++
++install: all
++	install -d $(DESTDIR)$(PREFIX)/include
++	install -m 644 source/tinycthread.h $(DESTDIR)$(PREFIX)/include
++	install -d $(DESTDIR)$(PREFIX)/lib
++	install libtinycthread.so.1 $(DESTDIR)$(PREFIX)/lib
++	ln -sf libtinycthread.so.1 $(DESTDIR)$(PREFIX)/lib/libtinycthread.so
++	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
++	sed "/^prefix=/s|=.*|=$(PREFIX)|" tinycthread.pc > $(DESTDIR)$(PREFIX)/lib/pkgconfig/tinycthread.pc
+--- tinycthread-20160930.orig/tinycthread.pc
++++ tinycthread-20160930/tinycthread.pc
+@@ -0,0 +1,9 @@
++prefix=/usr/local
++libdir=${prefix}/lib
++includedir=${prefix}/include
++
++Name: tinycthread
++Description: Tiny C11 Thread library
++Version: 1.2
++Libs: -L${libdir} -ltinycthread
++Cflags: -I${includedir}

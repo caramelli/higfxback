@@ -1,0 +1,66 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/makehrtf $DESTDIR/bin
+install build/openal-info $DESTDIR/bin
+install -d $DESTDIR/include/AL
+install -m 644 include/AL/al.h $DESTDIR/include/AL
+install -m 644 include/AL/alc.h $DESTDIR/include/AL
+install -m 644 include/AL/alext.h $DESTDIR/include/AL
+install -m 644 include/AL/efx.h $DESTDIR/include/AL
+install -d $DESTDIR/lib
+install build/libopenal.so.1.* $DESTDIR/lib/libopenal.so.1
+ln -sf libopenal.so.1 $DESTDIR/lib/libopenal.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/openal.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/openal-soft-build.pc << EOF
+Name: openal-soft
+Version: 1.15.1
+Description: CPU-based implementation of OpenAL
+Requires: $REQUIRES
+
+devel=\\
+/include/al.h \\
+/include/alc.h \\
+/include/alext.h \\
+/include/efx.h \\
+/lib/libopenal.so \\
+/lib/pkgconfig/openal.pc
+
+exec=\\
+/bin/makehrtf \\
+/bin/openal-info \\
+/lib/libopenal.so.1
+EOF
+
+exit
+--- openal-soft-1.15.1.orig/Alc/backends/alsa.c
++++ openal-soft-1.15.1/Alc/backends/alsa.c
+@@ -445,6 +445,9 @@
+             break;
+         case SND_PCM_STATE_DISCONNECTED:
+             return -ENODEV;
++
++        case 1024 /*SND_PCM_STATE_PRIVATE1*/:
++            assert(state != 1024);
+     }
+ 
+     return state;

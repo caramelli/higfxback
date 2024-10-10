@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build egl-opengl-stubs-build libxkbcommon-build stb-build wayland-build"
+REQUIRES="cmake3-build egl-opengl-stubs-build glad-build linmath-build libxkbcommon-build stb-build tinycthread-build wayland-protocols-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -12,8 +12,7 @@ fi
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
-rm -f deps/nuklear.h
-rm -f deps/stb_image_write.h
+rm -rf deps
 PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DGLFW_BUILD_X11=OFF -DCMAKE_INSTALL_PREFIX=/wl -DCMAKE_INSTALL_RPATH=/wl/lib -DUSE_XCOMPOSE=OFF -B build -G "$GENERATOR"
 
 # build
@@ -122,18 +121,96 @@ exit
      "Library type override for GLFW (SHARED, STATIC, OBJECT, or empty to follow BUILD_SHARED_LIBS)")
 --- glfw-3.4.orig/examples/CMakeLists.txt
 +++ glfw-3.4/examples/CMakeLists.txt
-@@ -37,6 +37,11 @@
+@@ -1,8 +1,6 @@
+ 
+ link_libraries(glfw)
+ 
+-include_directories("${GLFW_SOURCE_DIR}/deps")
+-
+ if (MATH_LIBRARY)
+     link_libraries("${MATH_LIBRARY}")
+ endif()
+@@ -18,17 +16,32 @@
+     set(ICON glfw.icns)
+ endif()
+ 
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/gl.h")
+ set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/gles2.h")
+ set(GLAD_GLES2 "${GLFW_SOURCE_DIR}/deps/glad/gles2.h")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.c")
+ set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
+            "${GLFW_SOURCE_DIR}/deps/getopt.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/stb_image_write.h")
++set(STB_IMAGE_WRITE "${GLFW_SOURCE_DIR}/deps/stb_image_write.h")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
+ set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
+                 "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
++endif()
+ 
+ add_executable(boing WIN32 MACOSX_BUNDLE boing.c ${ICON} ${GLAD_GL})
+ add_executable(gears WIN32 MACOSX_BUNDLE gears.c ${ICON} ${GLAD_GL})
+ add_executable(heightmap WIN32 MACOSX_BUNDLE heightmap.c ${ICON} ${GLAD_GL})
+-add_executable(offscreen offscreen.c ${ICON} ${GLAD_GL})
++add_executable(offscreen offscreen.c ${ICON} ${GLAD_GL} ${STB_IMAGE_WRITE})
+ add_executable(particles WIN32 MACOSX_BUNDLE particles.c ${ICON} ${TINYCTHREAD} ${GETOPT} ${GLAD_GL})
+ add_executable(sharing WIN32 MACOSX_BUNDLE sharing.c ${ICON} ${GLAD_GL})
+ add_executable(splitview WIN32 MACOSX_BUNDLE splitview.c ${ICON} ${GLAD_GL})
+@@ -37,10 +50,46 @@
  add_executable(wave WIN32 MACOSX_BUNDLE wave.c ${ICON} ${GLAD_GL})
  add_executable(windows WIN32 MACOSX_BUNDLE windows.c ${ICON} ${GLAD_GL})
  
-+find_path(STB_INCLUDE_PATH stb/stb_image_write.h)
-+if (STB_INCLUDE_PATH)
-+    target_include_directories(offscreen PRIVATE ${STB_INCLUDE_PATH}/stb)
++if (NOT GLAD_GL)
++find_path(GLAD_GL_INCLUDE_PATH glad/gl.h)
++if (NOT GLAD_GL_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/gl.h not found")
++endif()
++include_directories(${GLAD_GL_INCLUDE_PATH})
 +endif()
 +
++if (NOT GLAD_GLES2)
++find_path(GLAD_GLES2_INCLUDE_PATH glad/gles2.h)
++if (NOT GLAD_GLES2_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/gles2.h not found")
++endif()
++include_directories(${GLAD_GLES2_INCLUDE_PATH})
++endif()
++
++if (NOT STB_IMAGE_WRITE)
++find_path(STB_INCLUDE_PATH stb_image_write.h PATH_SUFFIXES stb)
++if (NOT STB_INCLUDE_PATH)
++    message(FATAL_ERROR "stb/stb_image_write.h not found")
++endif()
++include_directories(${STB_INCLUDE_PATH})
++endif()
++
++if (GLAD_GL OR GLAD_GLES2 OR STB_IMAGE_WRITE OR TINYCTHREAD)
++include_directories("${GLFW_SOURCE_DIR}/deps")
++endif()
++
++if (TINYCTHREAD)
  target_link_libraries(particles Threads::Threads)
  if (RT_LIBRARY)
      target_link_libraries(particles "${RT_LIBRARY}")
+ endif()
++else()
++find_library(TINYCTHREAD_LIBRARY tinycthread)
++if (NOT TINYCTHREAD_LIBRARY)
++    message(FATAL_ERROR "tinycthread not found")
++endif()
++target_link_libraries(particles ${TINYCTHREAD_LIBRARY})
++endif()
+ 
+ set(GUI_ONLY_BINARIES boing gears heightmap particles sharing splitview
+     triangle-opengl triangle-opengles wave windows)
 --- glfw-3.4.orig/examples/triangle-opengl.c
 +++ glfw-3.4/examples/triangle-opengl.c
 @@ -49,11 +49,10 @@
@@ -190,6 +267,82 @@ exit
      target_sources(glfw PRIVATE wl_platform.h xkb_unicode.h wl_init.c
                                  wl_monitor.c wl_window.c xkb_unicode.c)
  endif()
+@@ -76,8 +79,10 @@
+         message(FATAL_ERROR "Failed to find wayland-scanner")
+     endif()
+ 
+-    macro(generate_wayland_protocol protocol_file)
+-        set(protocol_path "${GLFW_SOURCE_DIR}/deps/wayland/${protocol_file}")
++    include(FindPkgConfig)
++
++    macro(generate_wayland_protocol protocol_path)
++        get_filename_component(protocol_file ${protocol_path} NAME)
+ 
+         string(REGEX REPLACE "\\.xml$" "-client-protocol.h" header_file ${protocol_file})
+         string(REGEX REPLACE "\\.xml$" "-client-protocol-code.h" code_file ${protocol_file})
+@@ -95,15 +100,37 @@
+         target_sources(glfw PRIVATE ${header_file} ${code_file})
+     endmacro()
+ 
+-    generate_wayland_protocol("wayland.xml")
+-    generate_wayland_protocol("viewporter.xml")
+-    generate_wayland_protocol("xdg-shell.xml")
+-    generate_wayland_protocol("idle-inhibit-unstable-v1.xml")
+-    generate_wayland_protocol("pointer-constraints-unstable-v1.xml")
+-    generate_wayland_protocol("relative-pointer-unstable-v1.xml")
+-    generate_wayland_protocol("fractional-scale-v1.xml")
+-    generate_wayland_protocol("xdg-activation-v1.xml")
+-    generate_wayland_protocol("xdg-decoration-unstable-v1.xml")
++    if (IS_DIRECTORY "${GLFW_SOURCE_DIR}/deps/wayland")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/wayland.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/viewporter.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/xdg-shell.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/idle-inhibit-unstable-v1.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/pointer-constraints-unstable-v1.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/relative-pointer-unstable-v1.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/xdg-decoration-unstable-v1.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/xdg-activation-v1.xml")
++        generate_wayland_protocol("${GLFW_SOURCE_DIR}/deps/wayland/fractional-scale-v1.xml")
++    else()
++        pkg_check_modules(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
++        pkg_get_variable(WAYLAND_CLIENT_PKGDATADIR wayland-client pkgdatadir)
++        pkg_get_variable(WAYLAND_PROTOCOLS_BASE wayland-protocols pkgdatadir)
++
++        generate_wayland_protocol("${WAYLAND_CLIENT_PKGDATADIR}/wayland.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/stable/viewporter/viewporter.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/stable/xdg-shell/xdg-shell.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/unstable/relative-pointer/relative-pointer-unstable-v1.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml")
++        if (EXISTS "${WAYLAND_PROTOCOLS_BASE}/staging/xdg-activation/xdg-activation-v1.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/staging/xdg-activation/xdg-activation-v1.xml")
++        target_compile_definitions(glfw PRIVATE XDG_ACTIVATION)
++        endif()
++        if (EXISTS "${WAYLAND_PROTOCOLS_BASE}/staging/fractional-scale/fractional-scale-v1.xml")
++        generate_wayland_protocol("${WAYLAND_PROTOCOLS_BASE}/staging/fractional-scale/fractional-scale-v1.xml")
++        target_compile_definitions(glfw PRIVATE FRACTIONAL_SCALE)
++        endif()
++    endif()
+ endif()
+ 
+ if (WIN32 AND GLFW_BUILD_SHARED_LIBRARY)
+@@ -158,12 +185,10 @@
+ endif()
+ 
+ if (GLFW_BUILD_WAYLAND)
+-    include(FindPkgConfig)
+-
+     pkg_check_modules(Wayland REQUIRED
+-        wayland-client>=0.2.7
+-        wayland-cursor>=0.2.7
+-        wayland-egl>=0.2.7
++        wayland-client
++        wayland-cursor
++        wayland-egl
+         xkbcommon>=0.5.0)
+ 
+     target_include_directories(glfw PRIVATE ${Wayland_INCLUDE_DIRS})
 --- glfw-3.4.orig/src/linux_joystick.c
 +++ glfw-3.4/src/linux_joystick.c
 @@ -25,6 +25,8 @@
@@ -223,7 +376,61 @@ exit
  #include "internal.h"
  
  #if defined(_GLFW_WAYLAND)
-@@ -690,6 +692,7 @@
+@@ -46,8 +48,12 @@
+ #include "viewporter-client-protocol.h"
+ #include "relative-pointer-unstable-v1-client-protocol.h"
+ #include "pointer-constraints-unstable-v1-client-protocol.h"
++#ifdef FRACTIONAL_SCALE
+ #include "fractional-scale-v1-client-protocol.h"
++#endif
++#ifdef XDG_ACTIVATION
+ #include "xdg-activation-v1-client-protocol.h"
++#endif
+ #include "idle-inhibit-unstable-v1-client-protocol.h"
+ 
+ // NOTE: Versions of wayland-scanner prior to 1.17.91 named every global array of
+@@ -79,6 +85,7 @@
+ #include "pointer-constraints-unstable-v1-client-protocol-code.h"
+ #undef types
+ 
++#ifdef FRACTIONAL_SCALE
+ #define types _glfw_fractional_scale_types
+ #include "fractional-scale-v1-client-protocol-code.h"
+ #undef types
+@@ -86,6 +93,7 @@
+ #define types _glfw_xdg_activation_types
+ #include "xdg-activation-v1-client-protocol-code.h"
+ #undef types
++#endif
+ 
+ #define types _glfw_idle_inhibit_types
+ #include "idle-inhibit-unstable-v1-client-protocol-code.h"
+@@ -187,6 +195,7 @@
+                              &zwp_idle_inhibit_manager_v1_interface,
+                              1);
+     }
++#ifdef XDG_ACTIVATION
+     else if (strcmp(interface, "xdg_activation_v1") == 0)
+     {
+         _glfw.wl.activationManager =
+@@ -194,6 +203,8 @@
+                              &xdg_activation_v1_interface,
+                              1);
+     }
++#endif
++#ifdef FRACTIONAL_SCALE
+     else if (strcmp(interface, "wp_fractional_scale_manager_v1") == 0)
+     {
+         _glfw.wl.fractionalScaleManager =
+@@ -201,6 +212,7 @@
+                              &wp_fractional_scale_manager_v1_interface,
+                              1);
+     }
++#endif
+ }
+ 
+ static void registryHandleGlobalRemove(void* userData,
+@@ -690,6 +702,7 @@
          _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_state_key_get_layout");
      _glfw.wl.xkb.state_mod_index_is_active = (PFN_xkb_state_mod_index_is_active)
          _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_state_mod_index_is_active");
@@ -231,7 +438,7 @@ exit
      _glfw.wl.xkb.compose_table_new_from_locale = (PFN_xkb_compose_table_new_from_locale)
          _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_compose_table_new_from_locale");
      _glfw.wl.xkb.compose_table_unref = (PFN_xkb_compose_table_unref)
-@@ -704,6 +707,7 @@
+@@ -704,6 +717,7 @@
          _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_compose_state_get_status");
      _glfw.wl.xkb.compose_state_get_one_sym = (PFN_xkb_compose_state_get_one_sym)
          _glfwPlatformGetModuleSymbol(_glfw.wl.xkb.handle, "xkb_compose_state_get_one_sym");
@@ -239,7 +446,7 @@ exit
  
      if (!_glfw.wl.xkb.context_new ||
          !_glfw.wl.xkb.context_unref ||
-@@ -717,8 +721,15 @@
+@@ -717,8 +731,15 @@
          !_glfw.wl.xkb.state_key_get_syms ||
          !_glfw.wl.xkb.state_update_mask ||
          !_glfw.wl.xkb.state_key_get_layout ||
@@ -257,7 +464,7 @@ exit
          !_glfw.wl.xkb.compose_table_unref ||
          !_glfw.wl.xkb.compose_state_new ||
          !_glfw.wl.xkb.compose_state_unref ||
-@@ -730,6 +741,7 @@
+@@ -730,6 +751,7 @@
                          "Wayland: Failed to load all entry points from libxkbcommon");
          return GLFW_FALSE;
      }
@@ -265,7 +472,7 @@ exit
  
      if (_glfw.hints.init.wl.libdecorMode == GLFW_WAYLAND_PREFER_LIBDECOR)
          _glfw.wl.libdecor.handle = _glfwPlatformLoadModule("libdecor-0.so.0");
-@@ -914,8 +926,10 @@
+@@ -914,8 +936,10 @@
          _glfw.wl.egl.handle = NULL;
      }
  
@@ -276,6 +483,46 @@ exit
      if (_glfw.wl.xkb.keymap)
          xkb_keymap_unref(_glfw.wl.xkb.keymap);
      if (_glfw.wl.xkb.state)
+@@ -979,10 +1003,14 @@
+         zwp_pointer_constraints_v1_destroy(_glfw.wl.pointerConstraints);
+     if (_glfw.wl.idleInhibitManager)
+         zwp_idle_inhibit_manager_v1_destroy(_glfw.wl.idleInhibitManager);
++#ifdef XDG_ACTIVATION
+     if (_glfw.wl.activationManager)
+         xdg_activation_v1_destroy(_glfw.wl.activationManager);
++#endif
++#ifdef FRACTIONAL_SCALE
+     if (_glfw.wl.fractionalScaleManager)
+         wp_fractional_scale_manager_v1_destroy(_glfw.wl.fractionalScaleManager);
++#endif
+     if (_glfw.wl.registry)
+         wl_registry_destroy(_glfw.wl.registry);
+     if (_glfw.wl.display)
+--- glfw-3.4.orig/src/wl_monitor.c
++++ glfw-3.4/src/wl_monitor.c
+@@ -147,8 +147,10 @@
+     outputHandleMode,
+     outputHandleDone,
+     outputHandleScale,
++#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+     outputHandleName,
+     outputHandleDescription,
++#endif
+ };
+ 
+ 
+@@ -165,7 +167,11 @@
+         return;
+     }
+ 
++#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+     version = _glfw_min(version, WL_OUTPUT_NAME_SINCE_VERSION);
++#else
++    version = 2;
++#endif
+ 
+     struct wl_output* output = wl_registry_bind(_glfw.wl.registry,
+                                                 name,
 --- glfw-3.4.orig/src/wl_platform.h
 +++ glfw-3.4/src/wl_platform.h
 @@ -26,7 +26,9 @@
@@ -288,7 +535,22 @@ exit
  
  #include <stdbool.h>
  
-@@ -194,6 +196,7 @@
+@@ -129,10 +131,14 @@
+ #define xdg_surface_interface _glfw_xdg_surface_interface
+ #define xdg_toplevel_interface _glfw_xdg_toplevel_interface
+ #define xdg_wm_base_interface _glfw_xdg_wm_base_interface
++#ifdef XDG_ACTIVATION
+ #define xdg_activation_v1_interface _glfw_xdg_activation_v1_interface
+ #define xdg_activation_token_v1_interface _glfw_xdg_activation_token_v1_interface
++#endif
+ #define wl_surface_interface _glfw_wl_surface_interface
++#ifdef FRACTIONAL_SCALE
+ #define wp_fractional_scale_v1_interface _glfw_wp_fractional_scale_v1_interface
++#endif
+ 
+ #define GLFW_WAYLAND_WINDOW_STATE         _GLFWwindowWayland  wl;
+ #define GLFW_WAYLAND_LIBRARY_WINDOW_STATE _GLFWlibraryWayland wl;
+@@ -194,6 +200,7 @@
  #define xkb_state_key_get_layout _glfw.wl.xkb.state_key_get_layout
  #define xkb_state_mod_index_is_active _glfw.wl.xkb.state_mod_index_is_active
  
@@ -296,7 +558,7 @@ exit
  typedef struct xkb_compose_table* (* PFN_xkb_compose_table_new_from_locale)(struct xkb_context*, const char*, enum xkb_compose_compile_flags);
  typedef void (* PFN_xkb_compose_table_unref)(struct xkb_compose_table*);
  typedef struct xkb_compose_state* (* PFN_xkb_compose_state_new)(struct xkb_compose_table*, enum xkb_compose_state_flags);
-@@ -208,6 +211,7 @@
+@@ -208,6 +215,7 @@
  #define xkb_compose_state_feed _glfw.wl.xkb.compose_state_feed
  #define xkb_compose_state_get_status _glfw.wl.xkb.compose_state_get_status
  #define xkb_compose_state_get_one_sym _glfw.wl.xkb.compose_state_get_one_sym
@@ -304,7 +566,41 @@ exit
  
  struct libdecor;
  struct libdecor_frame;
-@@ -474,7 +478,9 @@
+@@ -396,16 +404,20 @@
+     size_t                      outputScaleCount;
+     size_t                      outputScaleSize;
+ 
++#ifdef FRACTIONAL_SCALE
+     struct wp_viewport*             scalingViewport;
+     uint32_t                        scalingNumerator;
+     struct wp_fractional_scale_v1*  fractionalScale;
++#endif
+ 
+     struct zwp_relative_pointer_v1* relativePointer;
+     struct zwp_locked_pointer_v1*   lockedPointer;
+     struct zwp_confined_pointer_v1* confinedPointer;
+ 
+     struct zwp_idle_inhibitor_v1*   idleInhibitor;
++#ifdef XDG_ACTIVATION
+     struct xdg_activation_token_v1* activationToken;
++#endif
+ 
+     struct {
+         GLFWbool                    decorations;
+@@ -435,8 +447,12 @@
+     struct zwp_relative_pointer_manager_v1* relativePointerManager;
+     struct zwp_pointer_constraints_v1*      pointerConstraints;
+     struct zwp_idle_inhibit_manager_v1*     idleInhibitManager;
++#ifdef XDG_ACTIVATION
+     struct xdg_activation_v1*               activationManager;
++#endif
++#ifdef FRACTIONAL_SCALE
+     struct wp_fractional_scale_manager_v1*  fractionalScaleManager;
++#endif
+ 
+     _GLFWofferWayland*          offers;
+     unsigned int                offerCount;
+@@ -474,7 +490,9 @@
          struct xkb_keymap*      keymap;
          struct xkb_state*       state;
  
@@ -314,7 +610,7 @@ exit
  
          xkb_mod_index_t         controlIndex;
          xkb_mod_index_t         altIndex;
-@@ -498,6 +504,7 @@
+@@ -498,6 +516,7 @@
          PFN_xkb_state_key_get_layout state_key_get_layout;
          PFN_xkb_state_mod_index_is_active state_mod_index_is_active;
  
@@ -322,7 +618,7 @@ exit
          PFN_xkb_compose_table_new_from_locale compose_table_new_from_locale;
          PFN_xkb_compose_table_unref compose_table_unref;
          PFN_xkb_compose_state_new compose_state_new;
-@@ -505,6 +512,7 @@
+@@ -505,6 +524,7 @@
          PFN_xkb_compose_state_feed compose_state_feed;
          PFN_xkb_compose_state_get_status compose_state_get_status;
          PFN_xkb_compose_state_get_one_sym compose_state_get_one_sym;
@@ -332,7 +628,105 @@ exit
      _GLFWwindow*                pointerFocus;
 --- glfw-3.4.orig/src/wl_window.c
 +++ glfw-3.4/src/wl_window.c
-@@ -1164,6 +1164,7 @@
+@@ -48,9 +48,13 @@
+ #include "viewporter-client-protocol.h"
+ #include "relative-pointer-unstable-v1-client-protocol.h"
+ #include "pointer-constraints-unstable-v1-client-protocol.h"
++#ifdef XDG_ACTIVATION
+ #include "xdg-activation-v1-client-protocol.h"
++#endif
+ #include "idle-inhibit-unstable-v1-client-protocol.h"
++#ifdef FRACTIONAL_SCALE
+ #include "fractional-scale-v1-client-protocol.h"
++#endif
+ 
+ #define GLFW_BORDER_SIZE    4
+ #define GLFW_CAPTION_HEIGHT 24
+@@ -313,12 +317,14 @@
+ 
+ static void resizeFramebuffer(_GLFWwindow* window)
+ {
++#ifdef FRACTIONAL_SCALE
+     if (window->wl.fractionalScale)
+     {
+         window->wl.fbWidth = (window->wl.width * window->wl.scalingNumerator) / 120;
+         window->wl.fbHeight = (window->wl.height * window->wl.scalingNumerator) / 120;
+     }
+     else
++#endif
+     {
+         window->wl.fbWidth = window->wl.width * window->wl.bufferScale;
+         window->wl.fbHeight = window->wl.height * window->wl.bufferScale;
+@@ -351,12 +357,14 @@
+ 
+     resizeFramebuffer(window);
+ 
++#ifdef FRACTIONAL_SCALE
+     if (window->wl.scalingViewport)
+     {
+         wp_viewport_set_destination(window->wl.scalingViewport,
+                                     window->wl.width,
+                                     window->wl.height);
+     }
++#endif
+ 
+     if (window->wl.fallback.decorations)
+     {
+@@ -399,9 +407,11 @@
+     if (!window->wl.scaleFramebuffer)
+         return;
+ 
++#ifdef FRACTIONAL_SCALE
+     // When using fractional scaling, the buffer scale should remain at 1
+     if (window->wl.fractionalScale)
+         return;
++#endif
+ 
+     // Get the scale factor from the highest scale monitor.
+     int32_t maxScale = 1;
+@@ -536,6 +546,7 @@
+     }
+ }
+ 
++#ifdef FRACTIONAL_SCALE
+ void fractionalScaleHandlePreferredScale(void* userData,
+                                          struct wp_fractional_scale_v1* fractionalScale,
+                                          uint32_t numerator)
+@@ -554,6 +565,7 @@
+ {
+     fractionalScaleHandlePreferredScale,
+ };
++#endif
+ 
+ static void xdgToplevelHandleConfigure(void* userData,
+                                        struct xdg_toplevel* toplevel,
+@@ -1041,7 +1053,9 @@
+     window->wl.appId = _glfw_strdup(wndconfig->wl.appId);
+ 
+     window->wl.bufferScale = 1;
++#ifdef FRACTIONAL_SCALE
+     window->wl.scalingNumerator = 120;
++#endif
+     window->wl.scaleFramebuffer = wndconfig->scaleFramebuffer;
+ 
+     window->wl.maximized = wndconfig->maximized;
+@@ -1050,6 +1064,7 @@
+     if (!window->wl.transparent)
+         setContentAreaOpaque(window);
+ 
++#ifdef FRACTIONAL_SCALE
+     if (_glfw.wl.fractionalScaleManager)
+     {
+         if (window->wl.scaleFramebuffer)
+@@ -1071,6 +1086,7 @@
+                                                 window);
+         }
+     }
++#endif
+ 
+     return GLFW_TRUE;
+ }
+@@ -1164,6 +1180,7 @@
      return GLFW_KEY_UNKNOWN;
  }
  
@@ -340,7 +734,7 @@ exit
  static xkb_keysym_t composeSymbol(xkb_keysym_t sym)
  {
      if (sym == XKB_KEY_NoSymbol || !_glfw.wl.xkb.composeState)
-@@ -1183,6 +1184,7 @@
+@@ -1183,6 +1200,7 @@
              return sym;
      }
  }
@@ -348,7 +742,7 @@ exit
  
  static void inputText(_GLFWwindow* window, uint32_t scancode)
  {
-@@ -1191,7 +1193,11 @@
+@@ -1191,7 +1209,11 @@
  
      if (xkb_state_key_get_syms(_glfw.wl.xkb.state, keycode, &keysyms) == 1)
      {
@@ -360,7 +754,7 @@ exit
          const uint32_t codepoint = _glfwKeySym2Unicode(keysym);
          if (codepoint != GLFW_INVALID_CODEPOINT)
          {
-@@ -1639,8 +1645,10 @@
+@@ -1639,8 +1661,10 @@
  {
      struct xkb_keymap* keymap;
      struct xkb_state* state;
@@ -371,7 +765,7 @@ exit
  
      char* mapStr;
      const char* locale;
-@@ -1689,6 +1697,7 @@
+@@ -1689,6 +1713,7 @@
      if (!locale)
          locale = "C";
  
@@ -379,7 +773,7 @@ exit
      composeTable =
          xkb_compose_table_new_from_locale(_glfw.wl.xkb.context, locale,
                                            XKB_COMPOSE_COMPILE_NO_FLAGS);
-@@ -1708,6 +1717,7 @@
+@@ -1708,6 +1733,7 @@
          _glfwInputError(GLFW_PLATFORM_ERROR,
                          "Wayland: Failed to create XKB compose table");
      }
@@ -387,15 +781,120 @@ exit
  
      xkb_keymap_unref(_glfw.wl.xkb.keymap);
      xkb_state_unref(_glfw.wl.xkb.state);
+@@ -2089,6 +2115,7 @@
+     dataDeviceHandleSelection,
+ };
+ 
++#ifdef XDG_ACTIVATION
+ static void xdgActivationHandleDone(void* userData,
+                                     struct xdg_activation_token_v1* activationToken,
+                                     const char* token)
+@@ -2107,6 +2134,7 @@
+ {
+     xdgActivationHandleDone
+ };
++#endif
+ 
+ void _glfwAddSeatListenerWayland(struct wl_seat* seat)
+ {
+@@ -2183,8 +2211,10 @@
+     if (window == _glfw.wl.keyboardFocus)
+         _glfw.wl.keyboardFocus = NULL;
+ 
++#ifdef XDG_ACTIVATION
+     if (window->wl.activationToken)
+         xdg_activation_token_v1_destroy(window->wl.activationToken);
++#endif
+ 
+     if (window->wl.idleInhibitor)
+         zwp_idle_inhibitor_v1_destroy(window->wl.idleInhibitor);
+@@ -2363,6 +2393,7 @@
+ void _glfwGetWindowContentScaleWayland(_GLFWwindow* window,
+                                        float* xscale, float* yscale)
+ {
++#ifdef FRACTIONAL_SCALE
+     if (window->wl.fractionalScale)
+     {
+         if (xscale)
+@@ -2371,6 +2402,7 @@
+             *yscale = (float) window->wl.scalingNumerator / 120.f;
+     }
+     else
++#endif
+     {
+         if (xscale)
+             *xscale = (float) window->wl.bufferScale;
+@@ -2444,6 +2476,7 @@
+ 
+ void _glfwRequestWindowAttentionWayland(_GLFWwindow* window)
+ {
++#ifdef XDG_ACTIVATION
+     if (!_glfw.wl.activationManager)
+         return;
+ 
+@@ -2458,10 +2491,12 @@
+                                          window);
+ 
+     xdg_activation_token_v1_commit(window->wl.activationToken);
++#endif
+ }
+ 
+ void _glfwFocusWindowWayland(_GLFWwindow* window)
+ {
++#ifdef XDG_ACTIVATION
+     if (!_glfw.wl.activationManager)
+         return;
+ 
+@@ -2492,6 +2527,7 @@
+     }
+ 
+     xdg_activation_token_v1_commit(window->wl.activationToken);
++#endif
+ }
+ 
+ void _glfwSetWindowMonitorWayland(_GLFWwindow* window,
 --- glfw-3.4.orig/tests/CMakeLists.txt
 +++ glfw-3.4/tests/CMakeLists.txt
-@@ -30,16 +30,18 @@
+@@ -1,8 +1,6 @@
+ 
+ link_libraries(glfw)
+ 
+-include_directories("${GLFW_SOURCE_DIR}/deps")
+-
+ if (MATH_LIBRARY)
+     link_libraries("${MATH_LIBRARY}")
+ endif()
+@@ -12,12 +10,23 @@
+     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+ endif()
+ 
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/gl.h")
+ set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/glad/vulkan.h")
+ set(GLAD_VULKAN "${GLFW_SOURCE_DIR}/deps/glad/vulkan.h")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/getopt.c")
+ set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
+            "${GLFW_SOURCE_DIR}/deps/getopt.c")
++endif()
++
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.h" AND EXISTS "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
+ set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
+                 "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
++endif()
+ 
+ add_executable(allocator allocator.c ${GLAD_GL})
+ add_executable(clipboard clipboard.c ${GETOPT} ${GLAD_GL})
+@@ -30,26 +39,59 @@
  add_executable(cursor cursor.c ${GLAD_GL})
  
  add_executable(empty WIN32 MACOSX_BUNDLE empty.c ${TINYCTHREAD} ${GLAD_GL})
 -add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
  add_executable(icon WIN32 MACOSX_BUNDLE icon.c ${GLAD_GL})
-+if(EXISTS deps/nuklear.h)
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/nuklear.h")
 +add_executable(gamma WIN32 MACOSX_BUNDLE gamma.c ${GLAD_GL})
  add_executable(inputlag WIN32 MACOSX_BUNDLE inputlag.c ${GETOPT} ${GLAD_GL})
  add_executable(joysticks WIN32 MACOSX_BUNDLE joysticks.c ${GLAD_GL})
@@ -408,18 +907,196 @@ exit
  add_executable(triangle-vulkan WIN32 triangle-vulkan.c ${GLAD_VULKAN})
 -add_executable(window WIN32 MACOSX_BUNDLE window.c ${GLAD_GL})
  
++if (NOT GLAD_GL)
++find_path(GLAD_GL_INCLUDE_PATH glad/gl.h)
++if (NOT GLAD_GL_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/gl.h not found")
++endif()
++include_directories(${GLAD_GL_INCLUDE_PATH})
++endif()
++
++if (NOT GLAD_VULKAN)
++find_path(GLAD_VULKAN_INCLUDE_PATH glad/vulkan.h)
++if (NOT GLAD_VULKAN_INCLUDE_PATH)
++    message(FATAL_ERROR "glad/vulkan.h not found")
++endif()
++include_directories(${GLAD_VULKAN_INCLUDE_PATH})
++endif()
++
++if (GLAD_GL OR GLAD_VULKAN OR TINYCTHREAD)
++include_directories(${GLFW_SOURCE_DIR}/deps)
++endif()
++
++if (TINYCTHREAD)
  target_link_libraries(empty Threads::Threads)
  target_link_libraries(threads Threads::Threads)
-@@ -48,8 +50,12 @@
+ if (RT_LIBRARY)
+     target_link_libraries(empty "${RT_LIBRARY}")
      target_link_libraries(threads "${RT_LIBRARY}")
  endif()
- 
-+if(EXISTS deps/nuklear.h)
- set(GUI_ONLY_BINARIES empty gamma icon inputlag joysticks tearing threads
-     timeout title triangle-vulkan window)
 +else()
++find_library(TINYCTHREAD_LIBRARY tinycthread)
++if (NOT TINYCTHREAD_LIBRARY)
++    message(FATAL_ERROR "tinycthread not found")
++endif()
++target_link_libraries(empty "${TINYCTHREAD_LIBRARY}")
++target_link_libraries(threads "${TINYCTHREAD_LIBRARY}")
++endif()
+ 
+-set(GUI_ONLY_BINARIES empty gamma icon inputlag joysticks tearing threads
+-    timeout title triangle-vulkan window)
 +set(GUI_ONLY_BINARIES empty icon tearing threads timeout title triangle-vulkan)
++if (EXISTS "${GLFW_SOURCE_DIR}/deps/nuklear.h")
++    list(APPEND GUI_ONLY_BINARIES gamma inputlag joysticks)
 +endif()
  set(CONSOLE_BINARIES allocator clipboard events msaa glfwinfo iconify monitors
      reopen cursor)
  
+--- glfw-3.4.orig/tests/glfwinfo.c
++++ glfw-3.4/tests/glfwinfo.c
+@@ -922,20 +922,14 @@
+                VK_VERSION_MAJOR(loader_version),
+                VK_VERSION_MINOR(loader_version));
+ 
+-        uint32_t glfw_re_count;
+-        const char** glfw_re = glfwGetRequiredInstanceExtensions(&glfw_re_count);
++        uint32_t re_count;
++        const char** re = glfwGetRequiredInstanceExtensions(&re_count);
+ 
+-        uint32_t re_count = glfw_re_count;
+-        const char** re = calloc(glfw_re_count, sizeof(char*));
+-
+-        if (glfw_re)
++        if (re)
+         {
+             printf("Vulkan window surface required instance extensions:\n");
+-            for (uint32_t i = 0;  i < glfw_re_count;  i++)
+-            {
+-                printf(" %s\n", glfw_re[i]);
+-                re[i] = glfw_re[i];
+-            }
++            for (uint32_t i = 0;  i < re_count;  i++)
++                printf(" %s\n", re[i]);
+         }
+         else
+             printf("Vulkan window surface extensions missing\n");
+@@ -953,19 +947,6 @@
+                 printf(" %s (spec version %u)\n", ep[i].extensionName, ep[i].specVersion);
+         }
+ 
+-        bool portability_enumeration = false;
+-
+-        for (uint32_t i = 0;  i < ep_count;  i++)
+-        {
+-            if (strcmp(ep[i].extensionName, "VK_KHR_portability_enumeration") != 0)
+-                continue;
+-
+-            re_count++;
+-            re = realloc((void*) re, sizeof(char*) * re_count);
+-            re[re_count - 1] = "VK_KHR_portability_enumeration";
+-            portability_enumeration = true;
+-        }
+-
+         free(ep);
+ 
+         if (list_layers)
+@@ -987,9 +968,6 @@
+         ici.enabledExtensionCount = re_count;
+         ici.ppEnabledExtensionNames = re;
+ 
+-        if (portability_enumeration)
+-            ici.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+-
+         VkInstance instance = VK_NULL_HANDLE;
+ 
+         if (vkCreateInstance(&ici, NULL, &instance) != VK_SUCCESS)
+@@ -998,11 +976,9 @@
+             exit(EXIT_FAILURE);
+         }
+ 
+-        free((void*) re);
+-
+         gladLoadVulkanUserPtr(NULL, (GLADuserptrloadfunc) glfwGetInstanceProcAddress, instance);
+ 
+-        if (glfw_re_count)
++        if (re_count)
+         {
+             VkSurfaceKHR surface = VK_NULL_HANDLE;
+ 
+@@ -1033,36 +1009,13 @@
+             VkExtensionProperties* ep = calloc(ep_count, sizeof(VkExtensionProperties));
+             vkEnumerateDeviceExtensionProperties(pd[i], NULL, &ep_count, ep);
+ 
+-            if (portability_enumeration)
+-            {
+-                bool conformant = true;
+-
+-                for (uint32_t j = 0; j < ep_count; j++)
+-                {
+-                    if (strcmp(ep[j].extensionName, "VK_KHR_portability_subset") == 0)
+-                    {
+-                        conformant = false;
+-                        break;
+-                    }
+-                }
+-
+-                printf("Vulkan %s %s device: \"%s\" (API version %i.%i)\n",
+-                       conformant ? "conformant" : "non-conformant",
+-                       get_device_type_name(pdp.deviceType),
+-                       pdp.deviceName,
+-                       VK_VERSION_MAJOR(pdp.apiVersion),
+-                       VK_VERSION_MINOR(pdp.apiVersion));
+-            }
+-            else
+-            {
+-                printf("Vulkan %s device: \"%s\" (API version %i.%i)\n",
+-                       get_device_type_name(pdp.deviceType),
+-                       pdp.deviceName,
+-                       VK_VERSION_MAJOR(pdp.apiVersion),
+-                       VK_VERSION_MINOR(pdp.apiVersion));
+-            }
++            printf("Vulkan %s device: \"%s\" (API version %i.%i)\n",
++                   get_device_type_name(pdp.deviceType),
++                   pdp.deviceName,
++                   VK_VERSION_MAJOR(pdp.apiVersion),
++                   VK_VERSION_MINOR(pdp.apiVersion));
+ 
+-            if (glfw_re_count)
++            if (re_count)
+             {
+                 printf("Vulkan device queue family presentation support:\n");
+                 for (uint32_t j = 0;  j < qfp_count;  j++)
+--- glfw-3.4.orig/tests/triangle-vulkan.c
++++ glfw-3.4/tests/triangle-vulkan.c
+@@ -1561,7 +1561,6 @@
+ 
+ static void demo_init_vk(struct demo *demo) {
+     VkResult err;
+-    VkBool32 portability_enumeration = VK_FALSE;
+     uint32_t i = 0;
+     uint32_t required_extension_count = 0;
+     uint32_t instance_extension_count = 0;
+@@ -1669,13 +1668,6 @@
+                 }
+             }
+             assert(demo->enabled_extension_count < 64);
+-            if (!strcmp(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+-                        instance_extensions[i].extensionName)) {
+-                demo->extension_names[demo->enabled_extension_count++] =
+-                    VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+-                portability_enumeration = VK_TRUE;
+-            }
+-            assert(demo->enabled_extension_count < 64);
+         }
+ 
+         free(instance_extensions);
+@@ -1700,9 +1692,6 @@
+         .ppEnabledExtensionNames = (const char *const *)demo->extension_names,
+     };
+ 
+-    if (portability_enumeration)
+-        inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+-
+     uint32_t gpu_count;
+ 
+     err = vkCreateInstance(&inst_info, NULL, &demo->inst);

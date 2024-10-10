@@ -1,0 +1,24 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="python3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/lib/python3
+install -m 644 zipp.py $DESTDIR/lib/python3
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/zipp-build.pc << EOF
+Name: zipp
+Version: 2.1.1
+Description: pathlib-compatible object wrapper for ZIP files
+Requires: $REQUIRES
+
+exec=\\
+/lib/python3/zipp.py
+EOF
+
+exit

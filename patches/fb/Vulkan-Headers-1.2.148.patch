@@ -1,13 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build"
+REQUIRES="python3-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-GENERATOR=${GENERATOR-Unix Makefiles}
-cmake -DCMAKE_INSTALL_PREFIX=/fb -B build -G "$GENERATOR"
+sh ./Configure --prefix /fb
 
 # build
 python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_beta.h
@@ -25,7 +24,7 @@ install -m 644 include/vulkan/vulkan_beta.h $DESTDIR/fb/include/vulkan
 install -m 644 include/vulkan/vulkan_core.h $DESTDIR/fb/include/vulkan
 install -m 644 include/vulkan/vulkan_fbdev.h $DESTDIR/fb/include/vulkan
 install -d $DESTDIR/fb/lib/pkgconfig
-install -m 644 build/vulkan-registry.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 vulkan-registry.pc $DESTDIR/fb/lib/pkgconfig
 install -d $DESTDIR/fb/share/vulkan/registry
 install -m 644 registry/vk.xml $DESTDIR/fb/share/vulkan/registry
 
@@ -75,6 +74,31 @@ exit
  # uninstall target
  if(NOT TARGET uninstall)
      configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+--- Vulkan-Headers-1.2.148.orig/Configure
++++ Vulkan-Headers-1.2.148/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed "/^prefix=/s#=.*#=$PREFIX#" registry/vulkan-registry.pc.in > vulkan-registry.pc
 --- Vulkan-Headers-1.2.148.orig/include/vulkan/vk_icd.h
 +++ Vulkan-Headers-1.2.148/include/vulkan/vk_icd.h
 @@ -80,7 +80,7 @@
@@ -4429,9 +4453,10 @@ exit
          <extension name="VK_KHR_android_surface" number="9" type="instance" requires="VK_KHR_surface" platform="android" author="KHR" contact="Jesse Hall @critsec" supported="vulkan">
 --- Vulkan-Headers-1.2.148.orig/registry/vulkan-registry.pc.in
 +++ Vulkan-Headers-1.2.148/registry/vulkan-registry.pc.in
-@@ -0,0 +1,7 @@
+@@ -0,0 +1,8 @@
 +prefix=@CMAKE_INSTALL_PREFIX@
 +datarootdir=${prefix}/share
++headersdir=${pc_sysrootdir}${prefix}/include
 +pkgdatadir=${pc_sysrootdir}${datarootdir}/vulkan/registry
 +
 +Name: Vulkan Registry

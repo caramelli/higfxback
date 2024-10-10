@@ -24,6 +24,11 @@ fi
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires gst-plugins-base-build | grep -q egl-opengl-stubs-build && GL=1
 
+if pkg-config --exists openal-soft-build; then
+  OPENAL=1
+  REQUIRES="$REQUIRES openal-soft-build"
+fi
+
 if pkg-config --exists x265-build; then
   X265=1
   REQUIRES="$REQUIRES x265-build"
@@ -56,6 +61,7 @@ install ext/dtls/.libs/libgstdtls.so $DESTDIR/wl/lib/gstreamer-1.0
 test $GL && install ext/gl/.libs/libgstopenglmixers.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/hls/.libs/libgsthls.so $DESTDIR/wl/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstde265.so $DESTDIR/wl/lib/gstreamer-1.0
+test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/wayland/.libs/libgstwaylandsink.so $DESTDIR/wl/lib/gstreamer-1.0
@@ -201,6 +207,7 @@ cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstmxf.so \\
 /wl/lib/gstreamer-1.0/libgstnetsim.so \\
 EOF
+test $GL && echo /wl/lib/gstreamer-1.0/libgstopenal.so \\ >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc
 test $GL && echo /wl/lib/gstreamer-1.0/libgstopenglmixers.so \\ >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc
 cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstopenjpeg.so \\

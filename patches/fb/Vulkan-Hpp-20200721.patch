@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf tinyxml2
 rm -rf Vulkan-Headers
-cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DVulkanRegistry_DIR=`PKG_CONFIG_PATH=/fb/lib/pkgconfig pkg-config --variable=pkgdatadir vulkan-registry` -DCMAKE_INSTALL_INCLUDEDIR=/fb/include -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/fb/lib/pkgconfig cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DCMAKE_INSTALL_INCLUDEDIR=/fb/include -B build -G "$GENERATOR"
 
 # build
 cmake --build build
@@ -33,25 +33,31 @@ EOF
 exit
 --- Vulkan-Hpp-20200721.orig/CMakeLists.txt
 +++ Vulkan-Hpp-20200721/CMakeLists.txt
-@@ -55,10 +55,14 @@
+@@ -55,10 +55,20 @@
  
  set(CMAKE_CXX_STANDARD 11)
  
 -if (NOT DEFINED VULKAN_HPP_VULKAN_HEADERS_SRC_DIR)
 -  set(VULKAN_HPP_VULKAN_HEADERS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers")
++find_package(PkgConfig QUIET)
++pkg_check_modules(VulkanRegistry QUIET vulkan-registry)
++if (VulkanRegistry_FOUND)
++  pkg_get_variable(VulkanRegistry_DIR vulkan-registry pkgdatadir)
+ endif()
+-file(TO_NATIVE_PATH ${VULKAN_HPP_VULKAN_HEADERS_SRC_DIR}/registry/vk.xml vk_spec)
++
 +if (NOT DEFINED VulkanRegistry_DIR)
 +  if (DEFINED VULKAN_HPP_VULKAN_HEADERS_SRC_DIR)
 +    set(VulkanRegistry_DIR "${VULKAN_HPP_VULKAN_HEADERS_SRC_DIR}/registry")
 +  else()
 +    set(VulkanRegistry_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/registry")
 +  endif()
- endif()
--file(TO_NATIVE_PATH ${VULKAN_HPP_VULKAN_HEADERS_SRC_DIR}/registry/vk.xml vk_spec)
++endif()
 +file(TO_NATIVE_PATH ${VulkanRegistry_DIR}/vk.xml vk_spec)
  string(REPLACE "\\" "\\\\" vk_spec ${vk_spec})
  add_definitions(-DVK_SPEC="${vk_spec}")
  
-@@ -79,18 +83,20 @@
+@@ -79,18 +89,20 @@
    VulkanHppGenerator.cpp
  )
  
@@ -82,7 +88,7 @@ exit
  source_group(headers FILES ${HEADERS})
  source_group(sources FILES ${SOURCES})
  
-@@ -106,7 +112,11 @@
+@@ -106,7 +118,11 @@
  
  set_property(TARGET VulkanHppGenerator PROPERTY CXX_STANDARD 14)
  

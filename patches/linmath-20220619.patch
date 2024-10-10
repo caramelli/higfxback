@@ -1,0 +1,73 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 linmath.h $DESTDIR/include
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/linmath-build.pc << EOF
+Name: linmath
+Version: 20220619
+Description: single-file linear math library
+
+devel=\\
+/include/linmath.h
+EOF
+
+exit
+--- linmath-20220619.orig/Configure
++++ linmath-20220619/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
+--- linmath-20220619.orig/Makefile
++++ linmath-20220619/Makefile
+@@ -0,0 +1,16 @@
++PREFIX ?= /usr/local
++
++CFLAGS += -g -O2
++LDFLAGS += -lm
++
++all: linmath_test
++
++linmath_test: linmath_test.c
++	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
++
++clean:
++	$(RM) linmath_test
++
++install: all
++	install -d $(DESTDIR)$(PREFIX)/include
++	install -m 644 linmath.h $(DESTDIR)$(PREFIX)/include

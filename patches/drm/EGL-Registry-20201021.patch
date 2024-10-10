@@ -5,6 +5,9 @@ REQUIRES="lxml-build make-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+sh ./Configure --prefix /drm
+
 # build
 make -C api
 
@@ -15,6 +18,8 @@ install -m 644 api/EGL/eglext.h $DESTDIR/drm/include/EGL
 install -m 644 api/EGL/eglplatform.h $DESTDIR/drm/include/EGL
 install -d $DESTDIR/drm/include/KHR
 install -m 644 api/KHR/khrplatform.h $DESTDIR/drm/include/KHR
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 egl-registry.pc $DESTDIR/drm/lib/pkgconfig
 install -d $DESTDIR/drm/share/egl/registry
 install -m 644 api/egl.xml $DESTDIR/drm/share/egl/registry
 
@@ -31,10 +36,47 @@ devel=\\
 /drm/include/EGL/eglext.h \\
 /drm/include/EGL/eglplatform.h \\
 /drm/include/KHR/khrplatform.h \\
+/drm/lib/pkgconfig/egl-registry.pc \\
 /drm/share/egl/registry/egl.xml
 EOF
 
 exit
+--- EGL-Registry-20201021.orig/Configure
++++ EGL-Registry-20201021/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed "/^prefix=/s#=.*#=$PREFIX#" api/egl-registry.pc.in > egl-registry.pc
+--- EGL-Registry-20201021.orig/api/egl-registry.pc.in
++++ EGL-Registry-20201021/api/egl-registry.pc.in
+@@ -0,0 +1,8 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++datarootdir=${prefix}/share
++headersdir=${pc_sysrootdir}${prefix}/include
++pkgdatadir=${pc_sysrootdir}${datarootdir}/egl/registry
++
++Name: EGL Registry
++Description: EGL API registry file
++Version: 20201021
 --- EGL-Registry-20201021.orig/api/genheaders.py
 +++ EGL-Registry-20201021/api/genheaders.py
 @@ -1,4 +1,4 @@

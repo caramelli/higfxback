@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf tinyxml2
 rm -rf Vulkan-Headers
-cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DVulkanRegistry_DIR=`PKG_CONFIG_PATH=/drm/lib/pkgconfig pkg-config --variable=pkgdatadir vulkan-registry` -DCMAKE_INSTALL_INCLUDEDIR=/drm/include -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/drm/lib/pkgconfig cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DCMAKE_INSTALL_INCLUDEDIR=/drm/include -B build -G "$GENERATOR"
 
 # build
 cmake --build build
@@ -33,7 +33,20 @@ EOF
 exit
 --- Vulkan-Hpp-20210201.orig/CMakeLists.txt
 +++ Vulkan-Hpp-20210201/CMakeLists.txt
-@@ -85,17 +85,19 @@
+@@ -54,6 +54,12 @@
+ 
+ message("CMAKE_CXX_STANDARD = <${CMAKE_CXX_STANDARD}>")
+ 
++find_package(PkgConfig QUIET)
++pkg_check_modules(VulkanRegistry QUIET vulkan-registry)
++if (VulkanRegistry_FOUND)
++  pkg_get_variable(VulkanRegistry_DIR vulkan-registry pkgdatadir)
++endif()
++
+ if (NOT DEFINED VulkanRegistry_DIR)
+   if (DEFINED VULKAN_HPP_VULKAN_HEADERS_SRC_DIR)
+     set(VulkanRegistry_DIR "${VULKAN_HPP_VULKAN_HEADERS_SRC_DIR}/registry")
+@@ -85,17 +91,19 @@
    VulkanHppGenerator.cpp
  )
  
@@ -63,7 +76,7 @@ exit
  
  source_group(headers FILES ${HEADERS})
  source_group(sources FILES ${SOURCES})
-@@ -121,7 +123,11 @@
+@@ -121,7 +129,11 @@
    target_compile_options(VulkanHppGenerator PRIVATE -Wall -Wextra -pedantic -Werror)
  endif(MSVC)
  

@@ -1,0 +1,76 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/minimp3
+install -m 644 minimp3.h $DESTDIR/include/minimp3
+install -m 644 minimp3_ex.h $DESTDIR/include/minimp3
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/minimp3-build.pc << EOF
+Name: minimp3
+Version: 20211130
+Description: single-file library to decode MP3
+
+devel=\\
+/include/minimp3/minimp3.h \\
+/include/minimp3/minimp3_ex.h
+EOF
+
+exit
+--- minimp3-20211130.orig/Configure
++++ minimp3-20211130/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
+--- minimp3-20211130.orig/Makefile
++++ minimp3-20211130/Makefile
+@@ -0,0 +1,17 @@
++PREFIX ?= /usr/local
++
++CFLAGS += -g -O2
++LDFLAGS += -lm
++
++all: minimp3_test
++
++minimp3_test: minimp3_test.c
++	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
++
++clean:
++	$(RM) minimp3_test
++
++install: all
++	install -d $(DESTDIR)$(PREFIX)/include/minimp3
++	install -m 644 minimp3.h $(DESTDIR)$(PREFIX)/include/minimp3
++	install -m 644 minimp3_ex.h $(DESTDIR)$(PREFIX)/include/minimp3

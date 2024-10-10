@@ -5,6 +5,9 @@ REQUIRES="egl-registry-build make-build"
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+sh ./Configure --prefix /fb
+
 # build
 make -C xml
 
@@ -24,6 +27,8 @@ install -m 644 api/GLES2/gl2platform.h $DESTDIR/fb/include/GLES2
 install -d $DESTDIR/fb/include/GLES3
 install -m 644 api/GLES3/gl3.h $DESTDIR/fb/include/GLES3
 install -m 644 api/GLES3/gl3platform.h $DESTDIR/fb/include/GLES3
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 opengl-registry.pc $DESTDIR/fb/lib/pkgconfig
 install -d $DESTDIR/fb/share/opengl/registry
 install -m 644 xml/gl.xml $DESTDIR/fb/share/opengl/registry
 
@@ -47,10 +52,36 @@ devel=\\
 /fb/include/GLES2/gl2platform.h \\
 /fb/include/GLES3/gl3.h \\
 /fb/include/GLES3/gl3platform.h \\
+/fb/lib/pkgconfig/opengl-registry.pc \\
 /fb/share/opengl/registry/gl.xml
 EOF
 
 exit
+--- OpenGL-Registry-20170130.orig/Configure
++++ OpenGL-Registry-20170130/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed "/^prefix=/s#=.*#=$PREFIX#" xml/opengl-registry.pc.in > opengl-registry.pc
 --- OpenGL-Registry-20170130.orig/api/GL/glfbdev.h
 +++ OpenGL-Registry-20170130/api/GL/glfbdev.h
 @@ -0,0 +1,78 @@
@@ -201,3 +232,14 @@ exit
      # GL API 1.2+ + extensions - GL/glext.h
      CGeneratorOptions(
          filename          = '../api/GL/glext.h',
+--- OpenGL-Registry-20170130.orig/xml/opengl-registry.pc.in
++++ OpenGL-Registry-20170130/xml/opengl-registry.pc.in
+@@ -0,0 +1,8 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++datarootdir=${prefix}/share
++headersdir=${pc_sysrootdir}${prefix}/include
++pkgdatadir=${pc_sysrootdir}${datarootdir}/opengl/registry
++
++Name: OpenGL Registry
++Description: OpenGL API registry file
++Version: 20170130

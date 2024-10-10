@@ -22,6 +22,11 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-bui
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 fi
 
+if pkg-config --exists openal-soft-build; then
+  OPENAL=1
+  REQUIRES="$REQUIRES openal-soft-build"
+fi
+
 if pkg-config --exists x265-build; then
   X265=1
   REQUIRES="$REQUIRES x265-build"
@@ -55,6 +60,7 @@ install ext/dtls/.libs/libgstdtls.so $DESTDIR/dfb/lib/gstreamer-1.0
 test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/hls/.libs/libgsthls.so $DESTDIR/dfb/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstlibde265.so $DESTDIR/dfb/lib/gstreamer-1.0
+test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/webp/.libs/libgstwebp.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -191,6 +197,7 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstmxf.so \\
 /dfb/lib/gstreamer-1.0/libgstnetsim.so \\
 EOF
+test $OPENAL && echo /dfb/lib/gstreamer-1.0/libgstopenal.so \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc
 test $GL && echo /dfb/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstopenjpeg.so \\

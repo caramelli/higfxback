@@ -1,0 +1,62 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="markupsafe-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/__init__.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/_identifier.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/async_utils.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/bccache.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/compiler.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/defaults.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/environment.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/exceptions.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/ext.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/filters.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/idtracking.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/lexer.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/loaders.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/nodes.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/optimizer.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/parser.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/runtime.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/tests.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/utils.py $DESTDIR/lib/python3/jinja2
+install -m 644 src/jinja2/visitor.py $DESTDIR/lib/python3/jinja2
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/jinja-build.pc << EOF
+Name: jinja
+Version: 3.0.3
+Description: Pythonic template engine
+Requires: $REQUIRES
+
+exec=\\
+/lib/python3/jinja2/__init__.py \\
+/lib/python3/jinja2/_identifier.py \\
+/lib/python3/jinja2/async_utils.py \\
+/lib/python3/jinja2/bccache.py \\
+/lib/python3/jinja2/compiler.py \\
+/lib/python3/jinja2/defaults.py \\
+/lib/python3/jinja2/environment.py \\
+/lib/python3/jinja2/exceptions.py \\
+/lib/python3/jinja2/ext.py \\
+/lib/python3/jinja2/filters.py \\
+/lib/python3/jinja2/idtracking.py \\
+/lib/python3/jinja2/lexer.py \\
+/lib/python3/jinja2/loaders.py \\
+/lib/python3/jinja2/nodes.py \\
+/lib/python3/jinja2/optimizer.py \\
+/lib/python3/jinja2/parser.py \\
+/lib/python3/jinja2/runtime.py \\
+/lib/python3/jinja2/tests.py \\
+/lib/python3/jinja2/utils.py \\
+/lib/python3/jinja2/visitor.py
+EOF
+
+exit

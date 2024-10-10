@@ -1,0 +1,65 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="importlib_metadata-build jinja-build opengl-registry-build vulkan-headers-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -f glad/files/*.h
+rm -f glad/files/*.xml
+ln -sf `PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=pkgdatadir egl-registry`/egl.xml glad/files/egl.xml
+ln -sf `PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=headersdir egl-registry`/EGL/eglplatform.h glad/files/eglplatform.h
+ln -sf `PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=headersdir egl-registry`/KHR/khrplatform.h glad/files/khrplatform.h
+ln -sf `PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=pkgdatadir opengl-registry`/gl.xml glad/files/gl.xml
+ln -sf `PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=headersdir vulkan-registry`/vulkan/vk_platform.h glad/files/vk_platform.h
+ln -sf `PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=pkgdatadir vulkan-registry`/vk.xml glad/files/vk.xml
+
+# build
+python3 -m glad --api=egl --out-path=build --reproducible c --header-only --loader
+python3 -m glad --api=gl:compatibility --out-path=build --reproducible c --header-only
+python3 -m glad --api=gles2 --out-path=build --reproducible c --header-only
+python3 -m glad --api=vulkan --out-path=build --reproducible c --header-only
+
+# install
+install -d $DESTDIR/wl/include/glad
+install -m 644 build/include/glad/egl.h $DESTDIR/wl/include/glad
+install -m 644 build/include/glad/gl.h $DESTDIR/wl/include/glad
+install -m 644 build/include/glad/gles2.h $DESTDIR/wl/include/glad
+install -m 644 build/include/glad/vulkan.h $DESTDIR/wl/include/glad
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/glad-build.pc << EOF
+Name: glad
+Version: 2.0.6
+Description: single-file EGL/OpenGL/Vulkan loader
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/glad/egl.h \\
+/wl/include/glad/gl.h \\
+/wl/include/glad/gles2.h \\
+/wl/include/glad/vulkan.h
+EOF
+
+exit
+--- glad-2.0.6.orig/glad/plugin.py
++++ glad-2.0.6/glad/plugin.py
+@@ -3,14 +3,14 @@
+ import inspect
+ try:
+     from importlib.metadata import entry_points
++except ImportError:
++    from importlib_metadata import entry_points
+ 
+     if sys.version_info < (3, 10):
+         _entry_points = entry_points
+ 
+         def entry_points(group=None):
+             return _entry_points().get(group, [])
+-except ImportError:
+-    from pkg_resources import iter_entry_points as entry_points
+ 
+ import glad.specification
+ from glad.generator.c import CGenerator

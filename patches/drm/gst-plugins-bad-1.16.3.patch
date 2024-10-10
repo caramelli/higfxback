@@ -22,6 +22,11 @@ if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists libde265-build; then
   REQUIRES="$REQUIRES libde265-build"
 fi
 
+if pkg-config --exists openal-soft-build; then
+  OPENAL=1
+  REQUIRES="$REQUIRES openal-soft-build"
+fi
+
 if pkg-config --exists x265-build; then
   X265=1
   REQUIRES="$REQUIRES x265-build"
@@ -51,6 +56,7 @@ install ext/dash/.libs/libgstdashdemux.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dtls/.libs/libgstdtls.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/hls/.libs/libgsthls.so $DESTDIR/drm/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstde265.so $DESTDIR/drm/lib/gstreamer-1.0
+test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/webp/.libs/libgstwebp.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -190,6 +196,9 @@ cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstmpegtsmux.so \\
 /drm/lib/gstreamer-1.0/libgstmxf.so \\
 /drm/lib/gstreamer-1.0/libgstnetsim.so \\
+EOF
+test $OPENAL && echo /drm/lib/gstreamer-1.0/libgstopenal.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstopenjpeg.so \\
 /drm/lib/gstreamer-1.0/libgstpcapparse.so \\
 /drm/lib/gstreamer-1.0/libgstpnm.so \\

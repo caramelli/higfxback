@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf tinyxml2
 rm -rf Vulkan-Headers
-cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DVulkanRegistry_DIR=`PKG_CONFIG_PATH=/wl/lib/pkgconfig pkg-config --variable=pkgdatadir vulkan-registry` -DCMAKE_INSTALL_INCLUDEDIR=/wl/include -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DVULKAN_HPP_INSTALL=ON -DVULKAN_HPP_RUN_GENERATOR=ON -DCMAKE_INSTALL_INCLUDEDIR=/wl/include -B build -G "$GENERATOR"
 
 # build
 cmake --build build
@@ -33,17 +33,38 @@ EOF
 exit
 --- Vulkan-Hpp-20201104.orig/CMakeLists.txt
 +++ Vulkan-Hpp-20201104/CMakeLists.txt
-@@ -85,18 +85,20 @@
+@@ -54,6 +54,12 @@
+ 
+ message("CMAKE_CXX_STANDARD = <${CMAKE_CXX_STANDARD}>")
+ 
++find_package(PkgConfig QUIET)
++pkg_check_modules(VulkanRegistry QUIET vulkan-registry)
++if (VulkanRegistry_FOUND)
++  pkg_get_variable(VulkanRegistry_DIR vulkan-registry pkgdatadir)
++endif()
++
+ if (NOT DEFINED VulkanRegistry_DIR)
+   if (DEFINED VULKAN_HPP_VULKAN_HEADERS_SRC_DIR)
+     set(VulkanRegistry_DIR "${VULKAN_HPP_VULKAN_HEADERS_SRC_DIR}/registry")
+@@ -85,17 +91,19 @@
    VulkanHppGenerator.cpp
  )
  
 -if (NOT DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
 -  set(VULKAN_HPP_TINYXML2_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2")
+-endif()
+-
+-set(TINYXML2_SOURCES
+-  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
+-)
 +if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2)
 +  if (NOT DEFINED VULKAN_HPP_TINYXML2_SRC_DIR)
 +    set(VULKAN_HPP_TINYXML2_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tinyxml2")
 +  endif()
-+
+ 
+-set(TINYXML2_HEADERS
+-  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
+-)
 +  set(TINYXML2_SOURCES
 +    ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
 +  )
@@ -51,20 +72,11 @@ exit
 +  set(TINYXML2_HEADERS
 +    ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
 +  )
- endif()
++endif()
  
--set(TINYXML2_SOURCES
--  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.cpp
--)
--
--set(TINYXML2_HEADERS
--  ${VULKAN_HPP_TINYXML2_SRC_DIR}/tinyxml2.h
--)
--
  source_group(headers FILES ${HEADERS})
  source_group(sources FILES ${SOURCES})
- 
-@@ -118,7 +120,11 @@
+@@ -118,7 +126,11 @@
    target_compile_options(VulkanHppGenerator PRIVATE -Wall -Wextra -pedantic -Werror)
  endif(MSVC)
  

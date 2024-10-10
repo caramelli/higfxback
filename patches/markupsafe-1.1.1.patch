@@ -1,0 +1,28 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="python3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/lib/python3/markupsafe
+install -m 644 src/markupsafe/__init__.py $DESTDIR/lib/python3/markupsafe
+install -m 644 src/markupsafe/_compat.py $DESTDIR/lib/python3/markupsafe
+install -m 644 src/markupsafe/_native.py $DESTDIR/lib/python3/markupsafe
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/markupsafe-build.pc << EOF
+Name: markupsafe
+Version: 1.1.1
+Description: library to escape HTML/XML markup characters
+Requires: $REQUIRES
+
+exec=\\
+/lib/python3/markupsafe/__init__.py \\
+/lib/python3/markupsafe/_compat.py \\
+/lib/python3/markupsafe/_native.py
+EOF
+
+exit
