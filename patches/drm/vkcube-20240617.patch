@@ -1,0 +1,189 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="glslang-build libpng-build meson-build vulkan-loader-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -f vkcube.frag.spv.h.in vkcube.vert.spv.h.in
+PKG_CONFIG_PATH=/drm/lib/pkgconfig meson setup --prefix=/drm build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/drm/bin
+install build/vkcube $DESTDIR/drm/bin
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/vkcube-build.pc << EOF
+Name: vkcube
+Version: 20240617
+Description: Spinning Vulkan cube using Window System Integration
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/vkcube
+EOF
+
+exit
+--- vkcube-20240617.orig/common.h
++++ vkcube-20240617/common.h
+@@ -3,11 +3,14 @@
+ #include <sys/time.h>
+ #include <stdbool.h>
+ #include <string.h>
+-#include <strings.h>
+ 
++#if defined(HAVE_VULKAN_INTEL_H)
+ #include <xf86drm.h>
+ #include <xf86drmMode.h>
+ #include <drm_fourcc.h>
++#include <gbm.h>
++#endif
++
+ #include <png.h>
+ 
+ #if defined(ENABLE_XCB)
+@@ -24,8 +27,6 @@
+ #define VK_PROTOTYPES
+ #include <vulkan/vulkan.h>
+ 
+-#include <gbm.h>
+-
+ #include "esUtil.h"
+ 
+ #define printflike(a, b) __attribute__((format(printf, (a), (b))))
+@@ -33,7 +34,10 @@
+ #define MAX_NUM_IMAGES 5
+ 
+ struct vkcube_buffer {
++#if defined(HAVE_VULKAN_INTEL_H)
+    struct gbm_bo *gbm_bo;
++   uint32_t fb;
++#endif
+    VkDeviceMemory mem;
+    VkImage image;
+    VkImageView view;
+@@ -41,7 +45,6 @@
+    VkFence fence;
+    VkCommandBuffer cmd_buffer;
+ 
+-   uint32_t fb;
+    uint32_t stride;
+ };
+ 
+@@ -57,8 +60,12 @@
+ 
+    bool protected;
+ 
++#if defined(HAVE_VULKAN_INTEL_H)
+    int fd;
++   drmModeCrtc *crtc;
++   drmModeConnector *connector;
+    struct gbm_device *gbm_device;
++#endif
+ 
+ #if defined(ENABLE_XCB)
+    struct {
+@@ -89,8 +96,6 @@
+ 
+    VkSwapchainKHR swap_chain;
+ 
+-   drmModeCrtc *crtc;
+-   drmModeConnector *connector;
+    uint32_t width, height;
+ 
+    VkInstance instance;
+--- vkcube-20240617.orig/main.c
++++ vkcube-20240617/main.c
+@@ -37,25 +37,28 @@
+ 
+ #define _DEFAULT_SOURCE /* for major() */
+ 
++#include <assert.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+-#include <fcntl.h>
+ #include <unistd.h>
++#if defined(ENABLE_WAYLAND)
++#include <linux/input.h>
++#endif
++#if defined(ENABLE_WAYLAND) || defined(HAVE_VULKAN_INTEL_H)
+ #include <errno.h>
+-#include <sys/ioctl.h>
+-#include <sys/types.h>
+-#include <sys/sysmacros.h>
+-#include <sys/stat.h>
+-#include <signal.h>
++#include <poll.h>
++#endif
++#if defined(HAVE_VULKAN_INTEL_H)
++#include <fcntl.h>
+ #include <linux/kd.h>
+-#include <linux/vt.h>
+ #include <linux/major.h>
++#include <linux/vt.h>
++#include <signal.h>
++#include <sys/ioctl.h>
++#include <sys/stat.h>
+ #include <termios.h>
+-#include <poll.h>
+-#include <math.h>
+-#include <assert.h>
+-#include <sys/mman.h>
+-#include <linux/input.h>
++#include <vulkan/vulkan_intel.h>
++#endif
+ 
+ #include "common.h"
+ 
+@@ -451,12 +454,10 @@
+    return 0;
+ }
+ 
+-#ifdef HAVE_VULKAN_INTEL_H
++#if defined(HAVE_VULKAN_INTEL_H)
+ 
+ /* KMS display code - render to kernel modesetting fb */
+ 
+-#include <vulkan/vulkan_intel.h>
+-
+ static struct termios save_tio;
+ 
+ static void
+@@ -1804,7 +1805,9 @@
+    parse_args(argc, argv);
+ 
+    vc.model = cube_model;
++#if defined(HAVE_VULKAN_INTEL_H)
+    vc.gbm_device = NULL;
++#endif
+ #if defined(ENABLE_XCB)
+    vc.xcb.window = XCB_NONE;
+ #endif
+--- vkcube-20240617.orig/meson.build
++++ vkcube-20240617/meson.build
+@@ -7,8 +7,8 @@
+ 
+ dep_vulkan = dependency('vulkan')
+ dep_libpng = dependency('libpng')
+-dep_libdrm = dependency('libdrm')
+-dep_gbm = dependency('gbm')
++dep_libdrm = []
++dep_gbm = []
+ dep_wayland_client = dependency('wayland-client', required : get_option('wayland') == 'true')
+ dep_wayland_protocols = dependency('wayland-protocols', version : '>= 1.12', required : get_option('wayland') == 'true')
+ dep_xcb = dependency('xcb', required : get_option('xcb') == 'true')
+@@ -16,6 +16,9 @@
+ defs = []
+ if cc.has_header('vulkan/vulkan_intel.h', dependencies: dep_vulkan)
+   defs += '-DHAVE_VULKAN_INTEL_H'
++
++  dep_libdrm = dependency('libdrm')
++  dep_gbm = dependency('gbm')
+ endif
+ 
+ if dep_wayland_client.found() and get_option('wayland') != 'false'

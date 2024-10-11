@@ -7,13 +7,16 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires vulkan-loader-build | grep -q libxcb-build; then
   XCB=1
+  REQUIRES="$REQUIRES libxcb-build"
   if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires vulkan-loader-build | grep -q libx11-build; then
     XLIB=1
+    REQUIRES="$REQUIRES libx11-build"
   else
     BUILD_WSI=-DBUILD_WSI_XLIB_SUPPORT=OFF
   fi
 else
   XLIB=1
+  REQUIRES="$REQUIRES libx11-build"
   BUILD_WSI="-DBUILD_WSI_XCB_SUPPORT=OFF -DCUBE_WSI_SELECTION=XLIB"
 fi
 

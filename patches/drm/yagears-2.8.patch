@@ -1,14 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="libpng-build meson-build tiff-build libdrm-build"
+REQUIRES="libevdev-build libpng-build meson-build tiff-build"
 
 PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists egl-opengl-stubs-build libgbm-stub-build; then
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists egl-opengl-stubs-build libdrm-build libgbm-stub-build; then
   GL=1
   EGL_OPENGL="-Degl-fbdev=false -Dgl=false -Dglesv1_cm=false"
-  REQUIRES="$REQUIRES egl-opengl-stubs-build libgbm-stub-build"
+  REQUIRES="$REQUIRES egl-opengl-stubs-build libdrm-build libgbm-stub-build"
 fi
 
 if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
