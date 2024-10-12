@@ -185,7 +185,7 @@ cat >> $DESTDIR/x11/share/pkgconfig/sdl-build.pc << EOF
 /x11/share/SDL/test/testwm \\
 /x11/share/SDL/test/threadwin \\
 /x11/share/SDL/test/torturethread \\
-/x11/share/SDL/test/utf8.txt \\
+/x11/share/SDL/test/utf8.txt
 EOF
 
 exit
@@ -483,6 +483,17 @@ exit
  	}
  fprintf(stderr, "Loading picture: %s\n", bmpfile);
  	picture = SDL_LoadBMP(bmpfile);
+--- SDL-1.2.15.orig/test/testwm.c
++++ SDL-1.2.15/test/testwm.c
+@@ -387,7 +387,7 @@
+ 	}
+ 
+ 	/* Set the icon -- this must be done before the first mode set */
+-	icon = LoadIconSurface("icon.bmp", &icon_mask);
++	icon = LoadIconSurface(TESTDATADIR"/icon.bmp", &icon_mask);
+ 	if ( icon != NULL ) {
+ 		SDL_WM_SetIcon(icon, icon_mask);
+ 	}
 --- SDL-1.2.15.orig/test/threadwin.c
 +++ SDL-1.2.15/test/threadwin.c
 @@ -272,7 +272,7 @@
