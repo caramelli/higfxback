@@ -1,0 +1,255 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists sdl-build; then
+  SDL=1
+  REQUIRES="$REQUIRES sdl-build"
+fi
+
+if pkg-config --exists x264-build; then
+  X264=--enable-libx264
+  REQUIRES="$REQUIRES x264-build"
+fi
+
+if pkg-config --exists x265-build; then
+  X265=--enable-libx265
+  REQUIRES="$REQUIRES x265-build"
+fi
+
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
+# configure
+PKG_CONFIG_PATH=/fb/lib/pkgconfig ./configure --disable-static --disable-yasm --enable-gpl --enable-shared $X264 $X265 --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install ffmpeg $DESTDIR/fb/bin
+test $SDL && install ffplay $DESTDIR/fb/bin
+install ffprobe $DESTDIR/fb/bin
+install ffserver $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/libavcodec
+install -m 644 libavcodec/avcodec.h $DESTDIR/fb/include/libavcodec
+install -m 644 libavcodec/avfft.h $DESTDIR/fb/include/libavcodec
+install -m 644 libavcodec/old_codec_ids.h $DESTDIR/fb/include/libavcodec
+install -m 644 libavcodec/version.h $DESTDIR/fb/include/libavcodec
+install -d $DESTDIR/fb/include/libavdevice
+install -m 644 libavdevice/avdevice.h $DESTDIR/fb/include/libavdevice
+install -m 644 libavdevice/version.h $DESTDIR/fb/include/libavdevice
+install -d $DESTDIR/fb/include/libavfilter
+install -m 644 libavfilter/avfilter.h $DESTDIR/fb/include/libavfilter
+install -m 644 libavfilter/avfiltergraph.h $DESTDIR/fb/include/libavfilter
+install -m 644 libavfilter/buffersink.h $DESTDIR/fb/include/libavfilter
+install -m 644 libavfilter/buffersrc.h $DESTDIR/fb/include/libavfilter
+install -m 644 libavfilter/version.h $DESTDIR/fb/include/libavfilter
+install -d $DESTDIR/fb/include/libavformat
+install -m 644 libavformat/avformat.h $DESTDIR/fb/include/libavformat
+install -m 644 libavformat/avio.h $DESTDIR/fb/include/libavformat
+install -m 644 libavformat/version.h $DESTDIR/fb/include/libavformat
+install -d $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/attributes.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/avassert.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/avconfig.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/avstring.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/avutil.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/base64.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/bprint.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/bswap.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/buffer.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/channel_layout.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/common.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/cpu.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/dict.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/display.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/error.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/eval.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/ffversion.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/fifo.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/frame.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/imgutils.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/intfloat.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/intreadwrite.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/log.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/lzo.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/macros.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/mathematics.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/md5.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/mem.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/old_pix_fmts.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/opt.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/parseutils.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/pixdesc.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/pixfmt.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/rational.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/samplefmt.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/sha.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/time.h $DESTDIR/fb/include/libavutil
+install -m 644 libavutil/version.h $DESTDIR/fb/include/libavutil
+install -d $DESTDIR/fb/include/libpostproc
+install -m 644 libpostproc/postprocess.h $DESTDIR/fb/include/libpostproc
+install -m 644 libpostproc/version.h $DESTDIR/fb/include/libpostproc
+install -d $DESTDIR/fb/include/libswresample
+install -m 644 libswresample/swresample.h $DESTDIR/fb/include/libswresample
+install -m 644 libswresample/version.h $DESTDIR/fb/include/libswresample
+install -d $DESTDIR/fb/include/libswscale
+install -m 644 libswscale/swscale.h $DESTDIR/fb/include/libswscale
+install -m 644 libswscale/version.h $DESTDIR/fb/include/libswscale
+install -d $DESTDIR/fb/lib
+install libavcodec/libavcodec.so.56 $DESTDIR/fb/lib
+ln -sf libavcodec.so.56 $DESTDIR/fb/lib/libavcodec.so
+install libavdevice/libavdevice.so.56 $DESTDIR/fb/lib
+ln -sf libavdevice.so.56 $DESTDIR/fb/lib/libavdevice.so
+install libavfilter/libavfilter.so.5 $DESTDIR/fb/lib
+ln -sf libavfilter.so.5 $DESTDIR/fb/lib/libavfilter.so
+install libavformat/libavformat.so.56 $DESTDIR/fb/lib
+ln -sf libavformat.so.56 $DESTDIR/fb/lib/libavformat.so
+install libavutil/libavutil.so.54 $DESTDIR/fb/lib
+ln -sf libavutil.so.54 $DESTDIR/fb/lib/libavutil.so
+install libpostproc/libpostproc.so.53 $DESTDIR/fb/lib
+ln -sf libpostproc.so.53 $DESTDIR/fb/lib/libpostproc.so
+install libswresample/libswresample.so.1 $DESTDIR/fb/lib
+ln -sf libswresample.so.1 $DESTDIR/fb/lib/libswresample.so
+install libswscale/libswscale.so.3 $DESTDIR/fb/lib
+ln -sf libswscale.so.3 $DESTDIR/fb/lib/libswscale.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 libavcodec/libavcodec.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libavdevice/libavdevice.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libavfilter/libavfilter.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libavformat/libavformat.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libavutil/libavutil.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libpostproc/libpostproc.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libswresample/libswresample.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 libswscale/libswscale.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/ffmpeg-build.pc << EOF
+Name: ffmpeg
+Version: 2.8.22
+Description: A collection of libraries and tools to process multimedia content
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/libavcodec/avcodec.h \\
+/fb/include/libavcodec/avfft.h \\
+/fb/include/libavcodec/old_codec_ids.h \\
+/fb/include/libavcodec/version.h \\
+/fb/include/libavdevice/avdevice.h \\
+/fb/include/libavdevice/version.h \\
+/fb/include/libavfilter/avfilter.h \\
+/fb/include/libavfilter/avfiltergraph.h \\
+/fb/include/libavfilter/buffersink.h \\
+/fb/include/libavfilter/buffersrc.h \\
+/fb/include/libavfilter/version.h \\
+/fb/include/libavformat/avformat.h \\
+/fb/include/libavformat/avio.h \\
+/fb/include/libavformat/version.h \\
+/fb/include/libavutil/attributes.h \\
+/fb/include/libavutil/avassert.h \\
+/fb/include/libavutil/avconfig.h \\
+/fb/include/libavutil/avstring.h \\
+/fb/include/libavutil/avutil.h \\
+/fb/include/libavutil/base64.h \\
+/fb/include/libavutil/bprint.h \\
+/fb/include/libavutil/bswap.h \\
+/fb/include/libavutil/buffer.h \\
+/fb/include/libavutil/channel_layout.h \\
+/fb/include/libavutil/common.h \\
+/fb/include/libavutil/cpu.h \\
+/fb/include/libavutil/dict.h \\
+/fb/include/libavutil/display.h \\
+/fb/include/libavutil/error.h \\
+/fb/include/libavutil/eval.h \\
+/fb/include/libavutil/ffversion.h \\
+/fb/include/libavutil/fifo.h \\
+/fb/include/libavutil/frame.h \\
+/fb/include/libavutil/imgutils.h \\
+/fb/include/libavutil/intfloat.h \\
+/fb/include/libavutil/intreadwrite.h \\
+/fb/include/libavutil/log.h \\
+/fb/include/libavutil/lzo.h \\
+/fb/include/libavutil/macros.h \\
+/fb/include/libavutil/mathematics.h \\
+/fb/include/libavutil/md5.h \\
+/fb/include/libavutil/mem.h \\
+/fb/include/libavutil/old_pix_fmts.h \\
+/fb/include/libavutil/opt.h \\
+/fb/include/libavutil/parseutils.h \\
+/fb/include/libavutil/pixdesc.h \\
+/fb/include/libavutil/pixfmt.h \\
+/fb/include/libavutil/rational.h \\
+/fb/include/libavutil/samplefmt.h \\
+/fb/include/libavutil/sha.h \\
+/fb/include/libavutil/time.h \\
+/fb/include/libavutil/version.h \\
+/fb/include/libpostproc/postprocess.h \\
+/fb/include/libpostproc/version.h \\
+/fb/include/libswresample/swresample.h \\
+/fb/include/libswresample/version.h \\
+/fb/include/libswscale/swscale.h \\
+/fb/include/libswscale/version.h \\
+/fb/lib/libavcodec.so \\
+/fb/lib/libavdevice.so \\
+/fb/lib/libavfilter.so \\
+/fb/lib/libavformat.so \\
+/fb/lib/libavutil.so \\
+/fb/lib/libpostproc.so \\
+/fb/lib/libswresample.so \\
+/fb/lib/libswscale.so \\
+/fb/lib/pkgconfig/libavcodec.pc \\
+/fb/lib/pkgconfig/libavdevice.pc \\
+/fb/lib/pkgconfig/libavfilter.pc \\
+/fb/lib/pkgconfig/libavformat.pc \\
+/fb/lib/pkgconfig/libavutil.pc \\
+/fb/lib/pkgconfig/libpostproc.pc \\
+/fb/lib/pkgconfig/libswresample.pc \\
+/fb/lib/pkgconfig/libswscale.pc
+
+exec=\\
+/fb/bin/ffmpeg \\
+EOF
+test $SDL && echo /fb/bin/ffplay \\ >> $DESTDIR/fb/share/pkgconfig/ffmpeg-build.pc
+cat >> $DESTDIR/fb/share/pkgconfig/ffmpeg-build.pc << EOF
+/fb/bin/ffprobe \\
+/fb/bin/ffserver \\
+/fb/lib/libavcodec.so.56 \\
+/fb/lib/libavdevice.so.56 \\
+/fb/lib/libavfilter.so.5 \\
+/fb/lib/libavformat.so.56 \\
+/fb/lib/libavutil.so.54 \\
+/fb/lib/libpostproc.so.53 \\
+/fb/lib/libswresample.so.1 \\
+/fb/lib/libswscale.so.3
+EOF
+
+exit
+--- ffmpeg-2.8.22.orig/ffplay.c
++++ ffmpeg-2.8.22/ffplay.c
+@@ -3214,7 +3214,7 @@
+ 
+ static void toggle_full_screen(VideoState *is)
+ {
+-#if defined(__APPLE__) && SDL_VERSION_ATLEAST(1, 2, 14)
++#if defined(__APPLE__)
+     /* OS X needs to reallocate the SDL overlays */
+     int i;
+     for (i = 0; i < VIDEO_PICTURE_QUEUE_SIZE; i++)
+--- ffmpeg-2.8.22.orig/version.sh
++++ ffmpeg-2.8.22/version.sh
+@@ -46,7 +46,7 @@
+ fi
+ 
+ NEW_REVISION="#define FFMPEG_VERSION \"$version\""
+-OLD_REVISION=$(cat "$2" 2> /dev/null | head -3 | tail -1)
++OLD_REVISION=$(cat "$2" 2> /dev/null | head -3 | tail -n -1)
+ 
+ # String used for preprocessor guard
+ GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
