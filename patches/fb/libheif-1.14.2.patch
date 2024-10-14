@@ -1,0 +1,130 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build gcc-g++-build gdk-pixbuf-build libaom-build libde265-build x265-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig ./configure --disable-static --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install examples/.libs/heif-convert $DESTDIR/fb/bin
+install examples/.libs/heif-enc $DESTDIR/fb/bin
+install examples/.libs/heif-info $DESTDIR/fb/bin
+install examples/.libs/heif-thumbnailer $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/libheif
+install -m 644 libheif/heif.h $DESTDIR/fb/include/libheif
+install -m 644 libheif/heif_version.h $DESTDIR/fb/include/libheif
+install -d $DESTDIR/fb/lib
+install libheif/.libs/libheif.so.1.* $DESTDIR/fb/lib/libheif.so.1
+ln -sf libheif.so.1 $DESTDIR/fb/lib/libheif.so
+install -d $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install gdk-pixbuf/.libs/libpixbufloader-heif.so $DESTDIR/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 libheif.pc $DESTDIR/fb/lib/pkgconfig
+test $DESTDIR || /fb/bin/gdk-pixbuf-query-loaders > /fb/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/libheif-build.pc << EOF
+Name: libheif
+Version: 1.14.2
+Description: High Efficiency Image Format (HEIF) library
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/libheif/heif.h \\
+/fb/include/libheif/heif_version.h \\
+/fb/lib/libheif.so \\
+/fb/lib/pkgconfig/libheif.pc
+
+exec=\\
+/fb/bin/heif-convert \\
+/fb/bin/heif-enc \\
+/fb/bin/heif-info \\
+/fb/bin/heif-thumbnailer \\
+/fb/lib/libheif.so.1 \\
+/fb/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-heif.so
+EOF
+
+exit
+--- libheif-1.14.2.orig/configure.ac
++++ libheif-1.14.2/configure.ac
+@@ -26,7 +26,6 @@
+ AC_SUBST(LIBHEIF_REVISION)
+ AC_SUBST(LIBHEIF_AGE)
+ 
+-AC_CANONICAL_SYSTEM
+ LT_INIT
+ AC_CONFIG_MACRO_DIR([m4])
+ AC_CONFIG_AUX_DIR([.])
+@@ -192,13 +191,13 @@
+ if eval "test x$have_libjpeg = xyes"; then
+ AC_MSG_CHECKING([for jpeg_write_icc_profile])
+ AC_LANG_PUSH(C++)
+-AC_TRY_COMPILE([
++AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+     #include <stddef.h>
+     #include <stdio.h>
+     #include <jpeglib.h>
+ ], [
+     jpeg_write_icc_profile(NULL, NULL, 0);
+-],[has_jpeg_write_icc_profile=yes],[has_jpeg_write_icc_profile=no]);
++])],[has_jpeg_write_icc_profile=yes],[has_jpeg_write_icc_profile=no]);
+ AC_LANG_POP(C++)
+ AC_MSG_RESULT([$has_jpeg_write_icc_profile])
+ if eval "test x$has_jpeg_write_icc_profile = xyes"; then
+--- libheif-1.14.2.orig/examples/heif_enc.cc
++++ libheif-1.14.2/examples/heif_enc.cc
+@@ -394,12 +394,12 @@
+   jpeg_read_header(&cinfo, TRUE);
+ 
+   boolean embeddedIccFlag = ReadICCProfileFromJPEG(&cinfo, &iccBuffer, &iccLen);
+-  boolean embeddedXMPFlag = ReadXMPFromJPEG(&cinfo, xmpData);
++  bool embeddedXMPFlag = ReadXMPFromJPEG(&cinfo, xmpData);
+   if (embeddedXMPFlag) {
+     img.xmp = xmpData;
+   }
+ 
+-  boolean embeddedEXIFFlag = ReadEXIFFromJPEG(&cinfo, exifData);
++  bool embeddedEXIFFlag = ReadEXIFFromJPEG(&cinfo, exifData);
+   if (embeddedEXIFFlag) {
+     img.exif = exifData;
+     img.orientation = (heif_orientation)read_exif_orientation_tag(exifData.data(), (int)exifData.size());
+--- libheif-1.14.2.orig/m4/ac_c_cxx_compile_flags.m4
++++ libheif-1.14.2/m4/ac_c_cxx_compile_flags.m4
+@@ -6,9 +6,9 @@
+  AC_MSG_CHECKING(whether compiler supports $ac_flag)
+  CXXFLAGS="$NEW_CXXFLAGS $ac_flag"
+  AC_LANG(C++)
+- AC_TRY_COMPILE(,[
++ AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+   ;
+- ],[
++ ])],[
+ 
+   NEW_CFLAGS="$NEW_CFLAGS $ac_flag"
+   NEW_CXXFLAGS="$NEW_CXXFLAGS $ac_flag"
+--- libheif-1.14.2.orig/m4/visibility.m4
++++ libheif-1.14.2/m4/visibility.m4
+@@ -30,12 +30,12 @@
+     AC_CACHE_VAL(gl_cv_cc_visibility, [
+       gl_save_CFLAGS="$CFLAGS"
+       CFLAGS="$CFLAGS -fvisibility=hidden"
+-      AC_TRY_COMPILE(
++      AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+         [extern __attribute__((__visibility__("hidden"))) int hiddenvar;
+          extern __attribute__((__visibility__("default"))) int exportedvar;
+          extern __attribute__((__visibility__("hidden"))) int hiddenfunc (void);
+          extern __attribute__((__visibility__("default"))) int exportedfunc (void);],
+-        [],
++        [])],
+         gl_cv_cc_visibility=yes,
+         gl_cv_cc_visibility=no)
+       CFLAGS="$gl_save_CFLAGS"])

@@ -820,26 +820,20 @@ exit
          // Look for a GPU that supports swapchains
          for (std::size_t i = 0; i < devices.size(); i++)
          {
-@@ -599,11 +601,18 @@
-             if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-             {
-                 gpu = devices[i];
-+                deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-                 break;
-             }
+@@ -604,6 +606,12 @@
              else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
              {
                  gpu = devices[i];
 +                deviceType = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
 +            }
-+            else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU && deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
++            else if ((deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) && (deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU))
 +            {
 +                gpu = devices[i];
 +                deviceType = VK_PHYSICAL_DEVICE_TYPE_CPU;
              }
          }
  
-@@ -804,12 +813,18 @@
+@@ -804,12 +812,18 @@
          swapchainExtent.width  = clamp<uint32_t>(window.getSize().x, surfaceCapabilities.minImageExtent.width,  surfaceCapabilities.maxImageExtent.width);
          swapchainExtent.height = clamp<uint32_t>(window.getSize().y, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
  
@@ -860,7 +854,7 @@ exit
          swapchainCreateInfo.imageFormat = swapchainFormat.format;
          swapchainCreateInfo.imageColorSpace = swapchainFormat.colorSpace;
          swapchainCreateInfo.imageExtent = swapchainExtent;
-@@ -888,7 +903,7 @@
+@@ -888,7 +902,7 @@
          {
              sf::FileInputStream file;
  
@@ -869,7 +863,7 @@ exit
              {
                  vulkanAvailable = false;
                  return;
-@@ -916,7 +931,7 @@
+@@ -916,7 +930,7 @@
          {
              sf::FileInputStream file;
  
@@ -878,7 +872,7 @@ exit
              {
                  vulkanAvailable = false;
                  return;
-@@ -1751,7 +1766,7 @@
+@@ -1751,7 +1765,7 @@
          // Load the image data
          sf::Image imageData;
  
@@ -887,7 +881,7 @@ exit
          {
              vulkanAvailable = false;
              return;
-@@ -2495,7 +2510,7 @@
+@@ -2495,7 +2509,7 @@
  
      bool vulkanAvailable;
  
