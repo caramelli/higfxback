@@ -1,0 +1,75 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libdrm-build make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install drm-framebuffer $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/drm-framebuffer-build.pc << EOF
+Name: drm-framebuffer
+Version: 20231108
+Description: A utility to pipe data to a DRM dumb framebuffer
+Requires: $REQUIRES
+
+devel=\\
+/bin/drm-framebuffer
+EOF
+
+exit
+--- drm-framebuffer-20231108.orig/Configure
++++ drm-framebuffer-20231108/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^prefix ?=/s#=.*#= $PREFIX#" Makefile
+--- drm-framebuffer-20231108.orig/Makefile
++++ drm-framebuffer-20231108/Makefile
+@@ -1,13 +1,13 @@
++prefix ?= /usr/local
++bindir ?= $(prefix)/bin
++
+ CC      ?= gcc
+-CFLAGS  ?= -O0 -ggdb -pedantic -Wall -I /usr/include/libdrm
++CFLAGS  ?= -O0 -ggdb -pedantic -Wall -I$(prefix)/include/libdrm
+ LDFLAGS ?= -ldrm
+ 
+ OBJ = main.o framebuffer.o
+ PROGNAME = drm-framebuffer
+ 
+-exec_prefix ?= /usr
+-bindir ?= $(exec_prefix)/bin
+-
+ all: $(OBJ)
+ 	$(CC) $(CFLAGS) -o $(PROGNAME) $(OBJ) $(LDFLAGS)
+ 

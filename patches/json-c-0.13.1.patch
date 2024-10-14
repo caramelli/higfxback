@@ -1,0 +1,76 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/json-c
+install -m 644 arraylist.h $DESTDIR/include/json-c
+install -m 644 debug.h $DESTDIR/include/json-c
+install -m 644 json.h $DESTDIR/include/json-c
+install -m 644 json_c_version.h $DESTDIR/include/json-c
+install -m 644 json_config.h $DESTDIR/include/json-c
+install -m 644 json_inttypes.h $DESTDIR/include/json-c
+install -m 644 json_object.h $DESTDIR/include/json-c
+install -m 644 json_object_iterator.h $DESTDIR/include/json-c
+install -m 644 json_pointer.h $DESTDIR/include/json-c
+install -m 644 json_tokener.h $DESTDIR/include/json-c
+install -m 644 json_util.h $DESTDIR/include/json-c
+install -m 644 linkhash.h $DESTDIR/include/json-c
+install -m 644 printbuf.h $DESTDIR/include/json-c
+install -d $DESTDIR/lib
+install .libs/libjson-c.so.4.* $DESTDIR/lib/libjson-c.so.4
+ln -sf libjson-c.so.4 $DESTDIR/lib/libjson-c.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 json-c.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/json-c-build.pc << EOF
+Name: json-c
+Version: 0.13.1
+Description: C library for interacting with JSON
+Requires: $REQUIRES
+
+devel=\\
+/include/json-c/arraylist.h \\
+/include/json-c/debug.h \\
+/include/json-c/json.h \\
+/include/json-c/json_c_version.h \\
+/include/json-c/json_config.h \\
+/include/json-c/json_inttypes.h \\
+/include/json-c/json_object.h \\
+/include/json-c/json_object_iterator.h \\
+/include/json-c/json_pointer.h \\
+/include/json-c/json_tokener.h \\
+/include/json-c/json_util.h \\
+/include/json-c/linkhash.h \\
+/include/json-c/printbuf.h \\
+/lib/libjson-c.so \\
+/lib/pkgconfig/json-c.pc
+
+exec=\\
+/lib/libjson-c.so.4
+EOF
+
+exit
+--- json-c-0.13.1.orig/configure.ac
++++ json-c-0.13.1/configure.ac
+@@ -5,7 +5,7 @@
+ 
+ AM_INIT_AUTOMAKE
+ 
+-AC_CONFIG_MACRO_DIRS([autoconf-archive/m4])
++AC_CONFIG_MACRO_DIR([autoconf-archive/m4])
+ 
+ AC_PROG_MAKE_SET
+ 

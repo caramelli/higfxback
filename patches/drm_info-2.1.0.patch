@@ -1,0 +1,30 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="json-c-build libdrm-build meson-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+meson setup --prefix=/ build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/bin
+install build/drm_info $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/drm_info-build.pc << EOF
+Name: drm_info
+Version: 2.1.0
+Description: A utility to dump info about DRM devices
+Requires: $REQUIRES
+
+exec=\\
+/bin/drm_info
+EOF
+
+exit

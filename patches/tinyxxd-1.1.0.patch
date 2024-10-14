@@ -33,7 +33,7 @@ exit
 @@ -0,0 +1,22 @@
 +#!/bin/sh
 +
-+PREFIX=/usr
++PREFIX=/usr/local
 +
 +while : ; do
 +  case "$1" in
@@ -53,3 +53,14 @@ exit
 +done
 +
 +sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
+--- tinyxxd-1.1.0.orig/Makefile
++++ tinyxxd-1.1.0/Makefile
+@@ -1,7 +1,7 @@
+ .PHONY: clean install uninstall
+ 
+ CFLAGS ?= -std=c11 -O2 -pipe -fPIC -fno-plt -fstack-protector-strong -D_GNU_SOURCE -s -z norelro -Wall -Wextra -Wpedantic -Wfatal-errors
+-PREFIX ?= /usr
++PREFIX ?= /usr/local
+ BINDIR ?= $(PREFIX)/bin
+ DESTDIR ?=
+ 
