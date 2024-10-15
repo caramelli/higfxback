@@ -1,0 +1,99 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build gst-plugins-bad-build gst-plugins-good-build gst-plugins-ugly-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.2)
+libtoolize -c -f; aclocal -I common/m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-address-pool.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-auth.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-client.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-context.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-media.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-media-factory.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-media-factory-uri.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-mount-points.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-params.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-permissions.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-sdp.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-server.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-session.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-session-media.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-session-pool.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-stream.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-stream-transport.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-thread-pool.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -m 644 gst/rtsp-server/rtsp-token.h $DESTDIR/fb/include/gstreamer-1.0/gst/rtsp-server
+install -d $DESTDIR/fb/lib
+install gst/rtsp-server/.libs/libgstrtspserver-1.0.so.0.* $DESTDIR/fb/lib/libgstrtspserver-1.0.so.0
+ln -sf libgstrtspserver-1.0.so.0 $DESTDIR/fb/lib/libgstrtspserver-1.0.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-rtsp-server-1.0.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/gst-rtsp-server-build.pc << EOF
+Name: gst-rtsp-server
+Version: 1.6.4
+Description: GStreamer RTSP server library
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-address-pool.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-auth.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-client.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-context.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-media.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-media-factory.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-media-factory-uri.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-mount-points.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-params.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-permissions.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-sdp.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-server.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-session.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-session-media.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-session-pool.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-stream.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-stream-transport.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-thread-pool.h \\
+/fb/include/gstreamer-1.0/gst/rtsp-server/rtsp-token.h \\
+/fb/lib/libgstrtspserver-1.0.so \\
+/fb/lib/pkgconfig/gstreamer-rtsp-server-1.0.pc
+
+exec=\\
+/fb/lib/libgstrtspserver-1.0.so.0
+EOF
+
+exit
+--- gst-rtsp-server-1.6.4.orig/examples/test-netclock-client.c
++++ gst-rtsp-server-1.6.4/examples/test-netclock-client.c
+@@ -21,7 +21,7 @@
+ #include <stdlib.h>
+ 
+ #include <gst/gst.h>
+-#include <gst/net/gstnet.h>
++#include <gst/net/net.h>
+ 
+ #define PLAYBACK_DELAY_MS 40
+ 
+--- gst-rtsp-server-1.6.4.orig/gst/rtsp-server/rtsp-media.h
++++ gst-rtsp-server-1.6.4/gst/rtsp-server/rtsp-media.h
+@@ -19,7 +19,7 @@
+ 
+ #include <gst/gst.h>
+ #include <gst/rtsp/rtsp.h>
+-#include <gst/net/gstnet.h>
++#include <gst/net/net.h>
+ 
+ #ifndef __GST_RTSP_MEDIA_H__
+ #define __GST_RTSP_MEDIA_H__

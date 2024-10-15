@@ -1,0 +1,323 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build glib-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+./configure --libexecdir=/fb/lib --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install tools/.libs/gst-inspect-1.0 $DESTDIR/fb/bin
+install tools/.libs/gst-launch-1.0 $DESTDIR/fb/bin
+install tools/.libs/gst-typefind-1.0 $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/glib-compat.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gst.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstallocator.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstatomicqueue.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstbin.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstbuffer.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstbufferlist.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstbufferpool.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstbus.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstcaps.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstcapsfeatures.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstchildproxy.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstclock.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstcompat.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstconfig.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstcontext.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstcontrolbinding.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstcontrolsource.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstdatetime.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstdebugutils.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstdevice.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstdevicemonitor.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstdeviceprovider.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstdeviceproviderfactory.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstelement.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstelementfactory.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstelementmetadata.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstenumtypes.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsterror.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstevent.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstformat.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstghostpad.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstinfo.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstiterator.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstmacros.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstmemory.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstmessage.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstmeta.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstminiobject.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstobject.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstpad.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstpadtemplate.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstparamspecs.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstparse.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstpipeline.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstplugin.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstpluginfeature.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstpoll.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstpreset.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstprotection.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstquery.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstregistry.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstsample.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstsegment.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gststructure.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstsystemclock.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttaglist.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttagsetter.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttask.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttaskpool.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttoc.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttocsetter.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttypefind.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsttypefindfactory.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gsturi.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstutils.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstvalue.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/gstversion.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -m 644 gst/math-compat.h $DESTDIR/fb/include/gstreamer-1.0/gst
+install -d $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/base.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstadapter.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbaseparse.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbasesink.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbasesrc.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbasetransform.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbitreader.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbytereader.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstbytewriter.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstcollectpads.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstdataqueue.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstflowcombiner.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstpushsrc.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gstqueuearray.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -m 644 libs/gst/base/gsttypefindhelper.h $DESTDIR/fb/include/gstreamer-1.0/gst/base
+install -d $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/check.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/gstbufferstraw.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/gstcheck.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/gstconsistencychecker.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/gstharness.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/gsttestclock.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -m 644 libs/gst/check/internal-check.h $DESTDIR/fb/include/gstreamer-1.0/gst/check
+install -d $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/controller.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/gstargbcontrolbinding.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/gstdirectcontrolbinding.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/gstinterpolationcontrolsource.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/gstlfocontrolsource.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/gsttimedvaluecontrolsource.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -m 644 libs/gst/controller/gsttriggercontrolsource.h $DESTDIR/fb/include/gstreamer-1.0/gst/controller
+install -d $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstnetaddressmeta.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstnetclientclock.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstnetcontrolmessagemeta.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstnettimepacket.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstnettimeprovider.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/gstptpclock.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -m 644 libs/gst/net/net.h $DESTDIR/fb/include/gstreamer-1.0/gst/net
+install -d $DESTDIR/fb/lib
+install libs/gst/base/.libs/libgstbase-1.0.so.0.* $DESTDIR/fb/lib/libgstbase-1.0.so.0
+ln -sf libgstbase-1.0.so.0 $DESTDIR/fb/lib/libgstbase-1.0.so
+install libs/gst/check/.libs/libgstcheck-1.0.so.0.* $DESTDIR/fb/lib/libgstcheck-1.0.so.0
+ln -sf libgstcheck-1.0.so.0 $DESTDIR/fb/lib/libgstcheck-1.0.so
+install libs/gst/controller/.libs/libgstcontroller-1.0.so.0.* $DESTDIR/fb/lib/libgstcontroller-1.0.so.0
+ln -sf libgstcontroller-1.0.so.0 $DESTDIR/fb/lib/libgstcontroller-1.0.so
+install libs/gst/net/.libs/libgstnet-1.0.so.0.* $DESTDIR/fb/lib/libgstnet-1.0.so.0
+ln -sf libgstnet-1.0.so.0 $DESTDIR/fb/lib/libgstnet-1.0.so
+install gst/.libs/libgstreamer-1.0.so.0.* $DESTDIR/fb/lib/libgstreamer-1.0.so.0
+ln -sf libgstreamer-1.0.so.0 $DESTDIR/fb/lib/libgstreamer-1.0.so
+install -d $DESTDIR/fb/lib/gstreamer-1.0
+install libs/gst/helpers/.libs/gst-plugin-scanner $DESTDIR/fb/lib/gstreamer-1.0
+install libs/gst/helpers/.libs/gst-ptp-helper $DESTDIR/fb/lib/gstreamer-1.0
+install plugins/elements/.libs/libgstcoreelements.so $DESTDIR/fb/lib/gstreamer-1.0
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-1.0.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-base-1.0.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-check-1.0.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-controller-1.0.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 pkgconfig/gstreamer-net-1.0.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/gstreamer-build.pc << EOF
+Name: gstreamer
+Version: 1.6.4
+Description: Core GStreamer libraries and utilities
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/gstreamer-1.0/gst/glib-compat.h \\
+/fb/include/gstreamer-1.0/gst/gst.h \\
+/fb/include/gstreamer-1.0/gst/gstallocator.h \\
+/fb/include/gstreamer-1.0/gst/gstatomicqueue.h \\
+/fb/include/gstreamer-1.0/gst/gstbin.h \\
+/fb/include/gstreamer-1.0/gst/gstbuffer.h \\
+/fb/include/gstreamer-1.0/gst/gstbufferlist.h \\
+/fb/include/gstreamer-1.0/gst/gstbufferpool.h \\
+/fb/include/gstreamer-1.0/gst/gstbus.h \\
+/fb/include/gstreamer-1.0/gst/gstcaps.h \\
+/fb/include/gstreamer-1.0/gst/gstcapsfeatures.h \\
+/fb/include/gstreamer-1.0/gst/gstchildproxy.h \\
+/fb/include/gstreamer-1.0/gst/gstclock.h \\
+/fb/include/gstreamer-1.0/gst/gstcompat.h \\
+/fb/include/gstreamer-1.0/gst/gstconfig.h \\
+/fb/include/gstreamer-1.0/gst/gstcontext.h \\
+/fb/include/gstreamer-1.0/gst/gstcontrolbinding.h \\
+/fb/include/gstreamer-1.0/gst/gstcontrolsource.h \\
+/fb/include/gstreamer-1.0/gst/gstdatetime.h \\
+/fb/include/gstreamer-1.0/gst/gstdebugutils.h \\
+/fb/include/gstreamer-1.0/gst/gstdevice.h \\
+/fb/include/gstreamer-1.0/gst/gstdevicemonitor.h \\
+/fb/include/gstreamer-1.0/gst/gstdeviceprovider.h \\
+/fb/include/gstreamer-1.0/gst/gstdeviceproviderfactory.h \\
+/fb/include/gstreamer-1.0/gst/gstelement.h \\
+/fb/include/gstreamer-1.0/gst/gstelementfactory.h \\
+/fb/include/gstreamer-1.0/gst/gstelementmetadata.h \\
+/fb/include/gstreamer-1.0/gst/gstenumtypes.h \\
+/fb/include/gstreamer-1.0/gst/gsterror.h \\
+/fb/include/gstreamer-1.0/gst/gstevent.h \\
+/fb/include/gstreamer-1.0/gst/gstformat.h \\
+/fb/include/gstreamer-1.0/gst/gstghostpad.h \\
+/fb/include/gstreamer-1.0/gst/gstinfo.h \\
+/fb/include/gstreamer-1.0/gst/gstiterator.h \\
+/fb/include/gstreamer-1.0/gst/gstmacros.h \\
+/fb/include/gstreamer-1.0/gst/gstmemory.h \\
+/fb/include/gstreamer-1.0/gst/gstmessage.h \\
+/fb/include/gstreamer-1.0/gst/gstmeta.h \\
+/fb/include/gstreamer-1.0/gst/gstminiobject.h \\
+/fb/include/gstreamer-1.0/gst/gstobject.h \\
+/fb/include/gstreamer-1.0/gst/gstpad.h \\
+/fb/include/gstreamer-1.0/gst/gstpadtemplate.h \\
+/fb/include/gstreamer-1.0/gst/gstparamspecs.h \\
+/fb/include/gstreamer-1.0/gst/gstparse.h \\
+/fb/include/gstreamer-1.0/gst/gstpipeline.h \\
+/fb/include/gstreamer-1.0/gst/gstplugin.h \\
+/fb/include/gstreamer-1.0/gst/gstpluginfeature.h \\
+/fb/include/gstreamer-1.0/gst/gstpoll.h \\
+/fb/include/gstreamer-1.0/gst/gstpreset.h \\
+/fb/include/gstreamer-1.0/gst/gstprotection.h \\
+/fb/include/gstreamer-1.0/gst/gstquery.h \\
+/fb/include/gstreamer-1.0/gst/gstregistry.h \\
+/fb/include/gstreamer-1.0/gst/gstsample.h \\
+/fb/include/gstreamer-1.0/gst/gstsegment.h \\
+/fb/include/gstreamer-1.0/gst/gststructure.h \\
+/fb/include/gstreamer-1.0/gst/gstsystemclock.h \\
+/fb/include/gstreamer-1.0/gst/gsttaglist.h \\
+/fb/include/gstreamer-1.0/gst/gsttagsetter.h \\
+/fb/include/gstreamer-1.0/gst/gsttask.h \\
+/fb/include/gstreamer-1.0/gst/gsttaskpool.h \\
+/fb/include/gstreamer-1.0/gst/gsttoc.h \\
+/fb/include/gstreamer-1.0/gst/gsttocsetter.h \\
+/fb/include/gstreamer-1.0/gst/gsttypefind.h \\
+/fb/include/gstreamer-1.0/gst/gsttypefindfactory.h \\
+/fb/include/gstreamer-1.0/gst/gsturi.h \\
+/fb/include/gstreamer-1.0/gst/gstutils.h \\
+/fb/include/gstreamer-1.0/gst/gstvalue.h \\
+/fb/include/gstreamer-1.0/gst/gstversion.h \\
+/fb/include/gstreamer-1.0/gst/math-compat.h \\
+/fb/include/gstreamer-1.0/gst/base/base.h \\
+/fb/include/gstreamer-1.0/gst/base/gstadapter.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbaseparse.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbasesink.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbasesrc.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbasetransform.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbitreader.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbytereader.h \\
+/fb/include/gstreamer-1.0/gst/base/gstbytewriter.h \\
+/fb/include/gstreamer-1.0/gst/base/gstcollectpads.h \\
+/fb/include/gstreamer-1.0/gst/base/gstdataqueue.h \\
+/fb/include/gstreamer-1.0/gst/base/gstflowcombiner.h \\
+/fb/include/gstreamer-1.0/gst/base/gstpushsrc.h \\
+/fb/include/gstreamer-1.0/gst/base/gstqueuearray.h \\
+/fb/include/gstreamer-1.0/gst/base/gsttypefindhelper.h \\
+/fb/include/gstreamer-1.0/gst/check/check.h \\
+/fb/include/gstreamer-1.0/gst/check/gstbufferstraw.h \\
+/fb/include/gstreamer-1.0/gst/check/gstcheck.h \\
+/fb/include/gstreamer-1.0/gst/check/gstconsistencychecker.h \\
+/fb/include/gstreamer-1.0/gst/check/gstharness.h \\
+/fb/include/gstreamer-1.0/gst/check/gsttestclock.h \\
+/fb/include/gstreamer-1.0/gst/check/internal-check.h \\
+/fb/include/gstreamer-1.0/gst/controller/controller.h \\
+/fb/include/gstreamer-1.0/gst/controller/gstargbcontrolbinding.h \\
+/fb/include/gstreamer-1.0/gst/controller/gstdirectcontrolbinding.h \\
+/fb/include/gstreamer-1.0/gst/controller/gstinterpolationcontrolsource.h \\
+/fb/include/gstreamer-1.0/gst/controller/gstlfocontrolsource.h \\
+/fb/include/gstreamer-1.0/gst/controller/gsttimedvaluecontrolsource.h \\
+/fb/include/gstreamer-1.0/gst/controller/gsttriggercontrolsource.h \\
+/fb/include/gstreamer-1.0/gst/net/gstnetaddressmeta.h \\
+/fb/include/gstreamer-1.0/gst/net/gstnetclientclock.h \\
+/fb/include/gstreamer-1.0/gst/net/gstnetcontrolmessagemeta.h \\
+/fb/include/gstreamer-1.0/gst/net/gstnettimepacket.h \\
+/fb/include/gstreamer-1.0/gst/net/gstnettimeprovider.h \\
+/fb/include/gstreamer-1.0/gst/net/gstptpclock.h \\
+/fb/include/gstreamer-1.0/gst/net/net.h \\
+/fb/lib/libgstbase-1.0.so \\
+/fb/lib/libgstcheck-1.0.so \\
+/fb/lib/libgstcontroller-1.0.so \\
+/fb/lib/libgstnet-1.0.so \\
+/fb/lib/libgstreamer-1.0.so \\
+/fb/lib/pkgconfig/gstreamer-1.0.pc \\
+/fb/lib/pkgconfig/gstreamer-base-1.0.pc \\
+/fb/lib/pkgconfig/gstreamer-check-1.0.pc \\
+/fb/lib/pkgconfig/gstreamer-controller-1.0.pc \\
+/fb/lib/pkgconfig/gstreamer-net-1.0.pc
+
+exec=\\
+/fb/bin/gst-inspect-1.0 \\
+/fb/bin/gst-launch-1.0 \\
+/fb/bin/gst-typefind-1.0 \\
+/fb/lib/libgstbase-1.0.so.0 \\
+/fb/lib/libgstcheck-1.0.so.0 \\
+/fb/lib/libgstcontroller-1.0.so.0 \\
+/fb/lib/libgstnet-1.0.so.0 \\
+/fb/lib/libgstreamer-1.0.so.0 \\
+/fb/lib/gstreamer-1.0/gst-plugin-scanner \\
+/fb/lib/gstreamer-1.0/gst-ptp-helper \\
+/fb/lib/gstreamer-1.0/libgstcoreelements.so
+EOF
+
+exit
+--- gstreamer-1.6.4.orig/gst/Makefile.am
++++ gstreamer-1.6.4/gst/Makefile.am
+@@ -229,10 +229,7 @@
+ libgstreamer_@GST_API_VERSION@include_HEADERS = $(gst_headers) math-compat.h
+ 
+ nodist_libgstreamer_@GST_API_VERSION@include_HEADERS = \
+-	$(built_header_configure) $(built_header_make)
+-
+-configexecincludedir = $(libdir)/gstreamer-@GST_API_VERSION@/include/gst
+-nodist_configexecinclude_HEADERS = $(built_sys_header_configure)
++	$(built_header_configure) $(built_header_make) $(built_sys_header_configure)
+ 
+ noinst_HEADERS = 		\
+ 	gettext.h		\
+--- gstreamer-1.6.4.orig/libs/gst/net/net.h
++++ gstreamer-1.6.4/libs/gst/net/net.h
+@@ -22,7 +22,6 @@
+ #ifndef __GST_NET__H__
+ #define __GST_NET__H__
+ 
+-#include <gst/net/gstnet.h>
+ #include <gst/net/gstnetaddressmeta.h>
+ #include <gst/net/gstnetclientclock.h>
+ #include <gst/net/gstnettimepacket.h>
+--- gstreamer-1.6.4.orig/pkgconfig/gstreamer.pc.in
++++ gstreamer-1.6.4/pkgconfig/gstreamer.pc.in
+@@ -17,4 +17,4 @@
+ Requires: glib-2.0, gobject-2.0
+ Requires.private: gmodule-no-export-2.0
+ Libs: -L${libdir} -lgstreamer-@GST_API_VERSION@
+-Cflags: -I${includedir} -I${libdir}/gstreamer-@GST_API_VERSION@/include
++Cflags: -I${includedir}
