@@ -233,50 +233,34 @@ EOF
 exit
 --- gst-plugins-bad-1.8.3.orig/configure.ac
 +++ gst-plugins-bad-1.8.3/configure.ac
-@@ -666,6 +666,15 @@
-        *) AC_MSG_ERROR([bad value ${enableval} for --enable-wayland]) ;;
-      esac],[NEED_WAYLAND_EGL=auto])
- 
-+AC_ARG_ENABLE([directfb],
-+     [  --enable-directfb       Enable DirectFB support @<:@default=auto@:>@],
-+     [case "${enableval}" in
-+       yes)  NEED_DIRECTFB=yes ;;
-+       no)   NEED_DIRECTFB=no ;;
-+       auto) NEED_DIRECTFB=auto ;;
-+       *) AC_MSG_ERROR([bad value ${enableval} for --enable-directfb]) ;;
-+     esac],[NEED_DIRECTFB=auto])
-+
- AC_ARG_ENABLE([dispmanx],
-      [  --enable-dispmanx        Enable Dispmanx support (requires EGL) @<:@default=auto@:>@],
-      [case "${enableval}" in
-@@ -780,6 +789,10 @@
+@@ -780,6 +780,8 @@
      CFLAGS=$old_CFLAGS
  
      PKG_CHECK_MODULES(WAYLAND_EGL, wayland-client >= 1.0 wayland-cursor >= 1.0 wayland-egl >= 9.0, HAVE_WAYLAND_EGL=yes, HAVE_WAYLAND_EGL=no)
 +
-+    if test "x$NEED_DIRECTFB" != "xno"; then
-+      PKG_CHECK_MODULES(DIRECTFB, directfb, HAVE_DIRECTFB=yes, HAVE_DIRECTFB=no)
-+    fi
++    PKG_CHECK_MODULES(DIRECTFB, directfb, HAVE_DFB=yes, HAVE_DFB=no)
    ;;
  esac
  
-@@ -964,7 +977,9 @@
+@@ -964,7 +966,9 @@
  
      if test "x$HAVE_X" = "xno"; then
        if test "x$HAVE_WAYLAND_EGL" = "xno"; then
 -        AC_MSG_WARN([X or Wayland is required for OpenGL support])
-+        if test "x$HAVE_DIRECTFB" = "xno"; then
++        if test "x$HAVE_DFB" = "xno"; then
 +          AC_MSG_WARN([X, Wayland or DirectFB is required for OpenGL support])
 +        fi
        fi
      fi
  
-@@ -1003,6 +1018,14 @@
+@@ -1003,6 +1007,16 @@
        fi
      fi
  
-+    if test "x$HAVE_DIRECTFB" = "xyes"; then
-+      if test "x$NEED_DIRECTFB" != "xno"; then
++    if test "x$HAVE_DFB" = "xyes"; then
++      if test "x$NEED_EGL" = "xno" -o "x$HAVE_EGL" = "xno"; then
++        AC_MSG_WARN([EGL is required by the DirectFB backend for OpenGL support])
++      else
 +        GL_LIBS="$GL_LIBS $DIRECTFB_LIBS"
 +        GL_CFLAGS="$GL_CFLAGS $DIRECTFB_CFLAGS -DEGL_NO_PLATFORM_SPECIFIC_TYPES"
 +        HAVE_WINDOW_DIRECTFB=yes
@@ -286,7 +270,7 @@ exit
      if test "x$HAVE_EGL_RPI" = "xyes"; then
        if test "x$NEED_DISPMANX" != "xno"; then
          HAVE_WINDOW_DISPMANX=yes
-@@ -1017,7 +1040,7 @@
+@@ -1017,7 +1031,7 @@
        fi
      else
        if test "x$NEED_EGL" != "xno"; then
@@ -295,7 +279,7 @@ exit
            GL_LIBS="$GL_LIBS -lEGL $EGL_LIBS"
            GL_CFLAGS="$GL_CFLAGS $EGL_CFLAGS"
            USE_EGL=yes
-@@ -1164,6 +1187,7 @@
+@@ -1164,6 +1178,7 @@
  GST_GL_HAVE_WINDOW_WIN32=0
  GST_GL_HAVE_WINDOW_WAYLAND=0
  GST_GL_HAVE_WINDOW_ANDROID=0
@@ -303,7 +287,7 @@ exit
  GST_GL_HAVE_WINDOW_DISPMANX=0
  GST_GL_HAVE_WINDOW_EAGL=0
  
-@@ -1187,6 +1211,10 @@
+@@ -1187,6 +1202,10 @@
    GL_WINDOWS="android $GL_WINDOWS"
    GST_GL_HAVE_WINDOW_ANDROID=1
  fi
@@ -314,7 +298,7 @@ exit
  if test "x$HAVE_WINDOW_DISPMANX" = "xyes"; then
    GL_WINDOWS="dispmanx $GL_WINDOWS"
    GST_GL_HAVE_WINDOW_DISPMANX=1
-@@ -1202,6 +1230,7 @@
+@@ -1202,6 +1221,7 @@
  #define GST_GL_HAVE_WINDOW_WIN32 $GST_GL_HAVE_WINDOW_WIN32
  #define GST_GL_HAVE_WINDOW_WAYLAND $GST_GL_HAVE_WINDOW_WAYLAND
  #define GST_GL_HAVE_WINDOW_ANDROID $GST_GL_HAVE_WINDOW_ANDROID
@@ -322,7 +306,7 @@ exit
  #define GST_GL_HAVE_WINDOW_DISPMANX $GST_GL_HAVE_WINDOW_DISPMANX
  #define GST_GL_HAVE_WINDOW_EAGL $GST_GL_HAVE_WINDOW_EAGL
  "
-@@ -1274,6 +1303,7 @@
+@@ -1274,6 +1294,7 @@
  
    HAVE_WINDOW_X11=no
    HAVE_WINDOW_WIN32=no
@@ -330,7 +314,7 @@ exit
    HAVE_WINDOW_DISPMANX=no
    HAVE_WINDOW_WAYLAND=no
    HAVE_WINDOW_ANDROID=no
-@@ -1290,6 +1320,7 @@
+@@ -1290,6 +1311,7 @@
  AM_CONDITIONAL(HAVE_WINDOW_X11, test "x$HAVE_WINDOW_X11" = "xyes")
  AM_CONDITIONAL(HAVE_WINDOW_COCOA, test "x$HAVE_WINDOW_COCOA" = "xyes")
  AM_CONDITIONAL(HAVE_WINDOW_WIN32, test "x$HAVE_WINDOW_WIN32" = "xyes")
@@ -338,7 +322,7 @@ exit
  AM_CONDITIONAL(HAVE_WINDOW_DISPMANX, test "x$HAVE_WINDOW_DISPMANX" = "xyes")
  AM_CONDITIONAL(HAVE_WINDOW_WAYLAND, test "x$HAVE_WINDOW_WAYLAND" = "xyes")
  AM_CONDITIONAL(HAVE_WINDOW_ANDROID, test "x$HAVE_WINDOW_ANDROID" = "xyes")
-@@ -2150,14 +2181,15 @@
+@@ -2150,14 +2172,11 @@
  
  dnl **** DirectFB ****
  translit(dnm, m, l) AM_CONDITIONAL(USE_DIRECTFB, true)
@@ -347,11 +331,7 @@ exit
 -    HAVE_DIRECTFB="no"
 -  ])
 -])
-+if test "x$HAVE_DIRECTFB" = "xyes"; then
-+AG_GST_CHECK_FEATURE(DIRECTFB, [directfb sink], dfbvideosink, HAVE_DIRECTFB=yes)
-+else
-+AG_GST_CHECK_FEATURE(DIRECTFB, [directfb sink], dfbvideosink, HAVE_DIRECTFB=no)
-+fi
++AG_GST_CHECK_FEATURE(DIRECTFB, [directfb sink], dfbvideosink, HAVE_DIRECTFB=$HAVE_DFB)
  
  dnl **** Wayland ****
  translit(dnm, m, l) AM_CONDITIONAL(USE_WAYLAND, true)
@@ -359,7 +339,7 @@ exit
  AC_PATH_PROG([wayland_scanner], [wayland-scanner])
  AG_GST_CHECK_FEATURE(WAYLAND, [wayland sink], wayland , [
    PKG_CHECK_MODULES(WAYLAND, wayland-client >= 1.4.0, [
-@@ -2722,7 +2754,7 @@
+@@ -2722,7 +2741,7 @@
    if test x"$HAVE_OPENJPEG" = x"yes"; then
      dnl minor API changes in v2.1
      AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
@@ -368,7 +348,7 @@ exit
        AC_DEFINE([HAVE_OPENJPEG_2_1], 1, [Define if OpenJPEG 2.1 is used])
      fi
    else
-@@ -3582,6 +3614,7 @@
+@@ -3582,6 +3601,7 @@
  gst-libs/gst/gl/Makefile
  gst-libs/gst/gl/android/Makefile
  gst-libs/gst/gl/cocoa/Makefile
@@ -679,7 +659,7 @@ exit
  
  SUBDIRS = glprototypes
 -DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland dispmanx egl eagl
-+DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland directfb dispmanx egl eagl
++DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland dispmanx egl eagl directfb
  
  built_sys_header_configure = gstglconfig.h
  
@@ -911,7 +891,7 @@ exit
 +#endif /* __GST_GL_DISPLAY_DIRECTFB_H__ */
 --- gst-plugins-bad-1.8.3.orig/gst-libs/gst/gl/directfb/gstglwindow_directfb.c
 +++ gst-plugins-bad-1.8.3/gst-libs/gst/gl/directfb/gstglwindow_directfb.c
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,168 @@
 +/*
 + * GStreamer
 + * Copyright (C) 2015 The DirectFB Open Source Project
@@ -943,10 +923,10 @@ exit
 +    GST_GL_TYPE_WINDOW);
 +
 +static guintptr gst_gl_window_directfb_get_window_handle (GstGLWindow * window);
++static void gst_gl_window_directfb_draw (GstGLWindow * window);
 +static void gst_gl_window_directfb_close (GstGLWindow * window);
 +static void gst_gl_window_directfb_set_preferred_size (GstGLWindow * window,
 +    gint width, gint height);
-+static void gst_gl_window_directfb_draw (GstGLWindow * window);
 +static void gst_gl_window_directfb_show (GstGLWindow * window);
 +
 +static void
@@ -972,35 +952,6 @@ exit
 +gst_gl_window_directfb_get_window_handle (GstGLWindow * window)
 +{
 +  return (guintptr) GST_GL_WINDOW_DIRECTFB (window)->surface;
-+}
-+
-+void
-+gst_gl_window_directfb_close (GstGLWindow * window)
-+{
-+  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
-+
-+  if (window_directfb->surface) {
-+    window_directfb->surface->Release (window_directfb->surface);
-+    window_directfb->surface = NULL;
-+  }
-+
-+  if (window_directfb->window) {
-+    window_directfb->window->Release (window_directfb->window);
-+    window_directfb->window = NULL;
-+  }
-+
-+  GST_GL_WINDOW_CLASS (gst_gl_window_directfb_parent_class)->close (window);
-+}
-+
-+static void
-+gst_gl_window_directfb_set_preferred_size (GstGLWindow * window,
-+    gint width, gint height)
-+{
-+  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
-+
-+  gst_gl_window_resize (window, width, height);
-+
-+  window_directfb->window->Resize (window_directfb->window, width, height);
 +}
 +
 +static void
@@ -1030,6 +981,35 @@ exit
 +}
 +
 +static void
++gst_gl_window_directfb_close (GstGLWindow * window)
++{
++  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
++
++  if (window_directfb->surface) {
++    window_directfb->surface->Release (window_directfb->surface);
++    window_directfb->surface = NULL;
++  }
++
++  if (window_directfb->window) {
++    window_directfb->window->Release (window_directfb->window);
++    window_directfb->window = NULL;
++  }
++
++  GST_GL_WINDOW_CLASS (gst_gl_window_directfb_parent_class)->close (window);
++}
++
++static void
++gst_gl_window_directfb_set_preferred_size (GstGLWindow * window,
++    gint width, gint height)
++{
++  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
++
++  gst_gl_window_resize (window, width, height);
++
++  window_directfb->window->Resize (window_directfb->window, width, height);
++}
++
++static void
 +gst_gl_window_directfb_show (GstGLWindow * window)
 +{
 +  GstGLWindowDirectFB *window_directfb = GST_GL_WINDOW_DIRECTFB (window);
@@ -1041,11 +1021,8 @@ exit
 +gst_gl_window_directfb_new (GstGLDisplay * display)
 +{
 +  if ((gst_gl_display_get_handle_type (display) & GST_GL_DISPLAY_TYPE_DIRECTFB)
-+      == GST_GL_DISPLAY_TYPE_NONE) {
-+    GST_INFO ("Wrong display type %u for this window type %u", display->type,
-+        GST_GL_DISPLAY_TYPE_DIRECTFB);
++      == GST_GL_DISPLAY_TYPE_NONE)
 +    return NULL;
-+  }
 +
 +  return g_object_new (GST_GL_TYPE_WINDOW_DIRECTFB, NULL);
 +}
@@ -1126,24 +1103,24 @@ exit
 +
 +struct _GstGLWindowDirectFB
 +{
++  /*< private >*/
 +  GstGLWindow parent;
 +
 +  IDirectFBWindow *window;
 +
 +  IDirectFBSurface *surface;
-+
-+  gpointer _reserved[GST_PADDING];
 +};
 +
 +struct _GstGLWindowDirectFBClass {
++  /*< private >*/
 +  GstGLWindowClass parent_class;
 +
-+  gpointer _reserved[GST_PADDING_LARGE];
++  /*< private >*/
++  gpointer _reserved[GST_PADDING];
 +};
 +
-+GstGLWindowDirectFB * gst_gl_window_directfb_new (GstGLDisplay * display);
-+
-+void gst_gl_window_directfb_create_window (GstGLWindowDirectFB * window_directfb);
++GstGLWindowDirectFB * gst_gl_window_directfb_new           (GstGLDisplay * display);
++void                  gst_gl_window_directfb_create_window (GstGLWindowDirectFB * window_directfb);
 +
 +G_END_DECLS
 +

@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 # configure (ac-2.68)
 cat m4/* acinclude.m4 > aclocal.m4; autoconf
-./configure --disable-gallium-llvm --disable-glu --disable-glw --enable-gallium-egl --enable-gles1 --enable-gles2 --with-driver=fbdev --with-egl-platforms=fbdev --with-gallium-drivers=swrast --prefix=/fb
+./configure --disable-gallium-llvm --disable-glu --disable-glw --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-shared-glapi --with-driver=fbdev --with-egl-platforms=fbdev --with-gallium-drivers=swrast --prefix=/fb
 
 # build
 make
@@ -22,7 +22,6 @@ install lib/libglapi.so.0.* $DESTDIR/fb/lib/libglapi.so.0
 ln -sf libglapi.so.0 $DESTDIR/fb/lib/libglapi.so
 install -d $DESTDIR/fb/lib/egl
 install lib/egl/egl_gallium.so $DESTDIR/fb/lib/egl
-install lib/egl/st_GL.so $DESTDIR/fb/lib/egl
 
 # build.pc
 install -d $DESTDIR/fb/share/pkgconfig
@@ -38,8 +37,7 @@ exec=\\
 /fb/lib/libmesaGLESv1_CM.so.1 \\
 /fb/lib/libmesaGLESv2.so.2 \\
 /fb/lib/libglapi.so.0 \\
-/fb/lib/egl/egl_gallium.so \\
-/fb/lib/egl/st_GL.so
+/fb/lib/egl/egl_gallium.so
 EOF
 
 exit
@@ -100,17 +98,20 @@ exit
  xlib)
      DRIVER_DIRS="x11"
      GALLIUM_WINSYS_DIRS="$GALLIUM_WINSYS_DIRS sw/xlib"
-@@ -820,6 +822,9 @@
+@@ -820,6 +822,12 @@
  dnl libGL configuration per driver
  dnl
  case "$mesa_driver" in
 +fbdev)
 +    GL_LIB_DEPS="-lpthread $DLOPEN_LIBS"
++    if test "$SHARED_GLAPI" -eq 1; then
++        GL_LIB_DEPS="$GL_LIB_DEPS -Wl,--whole-archive \$(TOP)/src/mapi/glapi/libglapi.a -Wl,--no-whole-archive"
++    fi
 +    ;;
  xlib)
      if test "$x11_pkgconfig" = yes; then
          PKG_CHECK_MODULES([XLIBGL], [x11 xext])
-@@ -959,6 +964,10 @@
+@@ -959,6 +967,10 @@
  
  AC_SUBST([HAVE_XF86VIDMODE])
  
@@ -121,7 +122,7 @@ exit
  dnl
  dnl More X11 setup
  dnl
-@@ -1635,7 +1644,7 @@
+@@ -1635,7 +1647,7 @@
  AC_ARG_WITH([egl-platforms],
      [AS_HELP_STRING([--with-egl-platforms@<:@=DIRS...@:>@],
          [comma delimited native platforms libEGL supports, e.g.
@@ -411,7 +412,18 @@ exit
  SOURCES = glfbdev.c
  
  OBJECTS = $(SOURCES:.c=.o)
-@@ -26,10 +31,10 @@
+@@ -17,6 +22,10 @@
+ 
+ CORE_MESA = $(TOP)/src/mesa/libmesa.a $(TOP)/src/mapi/glapi/libglapi.a
+ 
++ifeq ($(SHARED_GLAPI),1)
++GL_LIB_DEPS := -L$(TOP)/$(LIB_DIR) -l$(GLAPI_LIB) $(GL_LIB_DEPS)
++endif
++
+ 
+ .c.o:
+ 	$(CC) -c $(INCLUDE_DIRS) $(CFLAGS) $< -o $@
+@@ -26,10 +35,10 @@
  
  
  $(TOP)/$(LIB_DIR)/$(GL_LIB_NAME): $(CORE_MESA) $(OBJECTS)

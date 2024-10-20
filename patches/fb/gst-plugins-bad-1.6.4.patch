@@ -17,6 +17,11 @@ if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists libde265-build; then
   REQUIRES="$REQUIRES libde265-build"
 fi
 
+if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
 if pkg-config --exists openal-soft-build; then
   OPENAL=1
   REQUIRES="$REQUIRES openal-soft-build"
@@ -40,6 +45,7 @@ install gst-libs/gst/adaptivedemux/.libs/libgstadaptivedemux-1.0.so.0.* $DESTDIR
 install gst-libs/gst/base/.libs/libgstbadbase-1.0.so.0.* $DESTDIR/fb/lib/libgstbadbase-1.0.so.0
 install gst-libs/gst/basecamerabinsrc/.libs/libgstbasecamerabinsrc-1.0.so.0.* $DESTDIR/fb/lib/libgstbasecamerabinsrc-1.0.so.0
 install gst-libs/gst/codecparsers/.libs/libgstcodecparsers-1.0.so.0.* $DESTDIR/fb/lib/libgstcodecparsers-1.0.so.0
+test $GL && install gst-libs/gst/gl/.libs/libgstgl-1.0.so.0.* $DESTDIR/fb/lib/libgstgl-1.0.so.0
 install gst-libs/gst/interfaces/.libs/libgstphotography-1.0.so.0.* $DESTDIR/fb/lib/libgstphotography-1.0.so.0
 install gst-libs/gst/mpegts/.libs/libgstmpegts-1.0.so.0.* $DESTDIR/fb/lib/libgstmpegts-1.0.so.0
 install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0.* $DESTDIR/fb/lib/libgsturidownloader-1.0.so.0
@@ -49,6 +55,7 @@ install ext/bz2/.libs/libgstbz2.so $DESTDIR/fb/lib/gstreamer-1.0
 install ext/curl/.libs/libgstcurl.so $DESTDIR/fb/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/fb/lib/gstreamer-1.0
 install ext/dtls/.libs/libgstdtls.so $DESTDIR/fb/lib/gstreamer-1.0
+test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/fb/lib/gstreamer-1.0
 install ext/hls/.libs/libgstfragmented.so $DESTDIR/fb/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstlibde265.so $DESTDIR/fb/lib/gstreamer-1.0
 test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/fb/lib/gstreamer-1.0
@@ -133,6 +140,9 @@ exec=\\
 /fb/lib/libgstbadvideo-1.0.so.0 \\
 /fb/lib/libgstbasecamerabinsrc-1.0.so.0 \\
 /fb/lib/libgstcodecparsers-1.0.so.0 \\
+EOF
+test $GL && echo /fb/lib/libgstgl-1.0.so.0 \\ >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc
+cat >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /fb/lib/libgstmpegts-1.0.so.0 \\
 /fb/lib/libgstphotography-1.0.so.0 \\
 /fb/lib/libgsturidownloader-1.0.so.0 \\
@@ -186,6 +196,7 @@ cat >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /fb/lib/gstreamer-1.0/libgstmxf.so \\
 EOF
 test $OPENAL && echo /fb/lib/gstreamer-1.0/libgstopenal.so \\ >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc
+test $GL && echo /fb/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc
 cat >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /fb/lib/gstreamer-1.0/libgstopenjpeg.so \\
 /fb/lib/gstreamer-1.0/libgstpcapparse.so \\
@@ -218,6 +229,240 @@ cat >> $DESTDIR/fb/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 EOF
 
 exit
+--- gst-plugins-bad-1.6.4.orig/configure.ac
++++ gst-plugins-bad-1.6.4/configure.ac
+@@ -612,6 +612,15 @@
+        *) AC_MSG_ERROR([bad value ${enableval} for --enable-glx]) ;;
+      esac],[NEED_GLX=auto])
+ 
++AC_ARG_ENABLE([glfbdev],
++     [  --enable-glfbdev        Enable GLFBDev support @<:@default=auto@:>@],
++     [case "${enableval}" in
++       yes)  NEED_GLFBDEV=yes ;;
++       no)   NEED_GLFBDEV=no ;;
++       auto) NEED_GLFBDEV=auto ;;
++       *) AC_MSG_ERROR([bad value ${enableval} for --enable-glfbdev]) ;;
++     esac],[NEED_GLFBDEV=auto])
++
+ AC_ARG_ENABLE([cocoa],
+      [  --enable-cocoa          Enable Cocoa support @<:@default=auto@:>@],
+      [case "${enableval}" in
+@@ -670,13 +679,13 @@
+   ;;
+   *)
+     if test "x$NEED_GL" != "xno"; then
+-      AG_GST_CHECK_LIBHEADER(GL, GL, glTexImage2D,, GL/gl.h)
++      AG_GST_PKG_CHECK_MODULES(GL, gl)
+     fi
+     if test "x$NEED_GLES2" != "xno"; then
+-      AG_GST_CHECK_LIBHEADER(GLES2, GLESv2, glTexImage2D,, GLES2/gl2.h)
++      AG_GST_PKG_CHECK_MODULES(GLES2, glesv2)
+     fi
+     if test "x$NEED_EGL" != "xno"; then
+-      AG_GST_CHECK_LIBHEADER(EGL, EGL, eglGetError,, EGL/egl.h)
++      AG_GST_PKG_CHECK_MODULES(EGL, egl)
+     fi
+ 
+     old_LIBS=$LIBS
+@@ -744,6 +753,11 @@
+     CFLAGS=$old_CFLAGS
+ 
+     PKG_CHECK_MODULES(WAYLAND_EGL, wayland-client >= 1.0 wayland-cursor >= 1.0 wayland-egl >= 9.0, HAVE_WAYLAND_EGL=yes, HAVE_WAYLAND_EGL=no)
++
++    AC_CHECK_HEADER([linux/fb.h], HAVE_LINUXFB=yes, HAVE_LINUXFB=no)
++    if test "x$HAVE_LINUXFB" = "xyes" -a "x$NEED_GLFBDEV" != "xno"; then
++      GLFBDEV_CFLAGS="$GL_CFLAGS"
++    fi
+   ;;
+ esac
+ 
+@@ -753,6 +767,7 @@
+ USE_OPENGL=no
+ USE_GLES2=no
+ USE_GLX=no
++USE_GLFBDEV=no
+ USE_COCOA=no
+ USE_WGL=no
+ USE_X11=no
+@@ -803,6 +818,26 @@
+   fi
+ fi
+ 
++dnl Linux Framebuffer, GLFBDev and OpenGL
++if test "x$HAVE_LINUXFB" = "xno"; then
++  if test "x$NEED_GLFBDEV" = "xyes"; then
++    AC_MSG_ERROR([Building the GLFBDev backend without Linux Framebuffer is unsupported])
++  fi
++else
++  if test "x$NEED_GL" != "xno"; then
++    if test "x$HAVE_GL" = "xno"; then
++      if test "x$NEED_GLFBDEV" = "xyes"; then
++        AC_MSG_ERROR([Building the GLFBDev backend without the OpenGL backend is unsupported])
++      fi
++    else dnl HAVE_GL=yes
++      USE_OPENGL=yes
++      if test "x$NEED_GLFBDEV" != "xno"; then
++        USE_GLFBDEV=yes
++      fi
++    fi
++  fi
++fi
++
+ dnl check if we can include both GL and GLES2 at the same time
+ if test "x$HAVE_GL" = "xyes" -a "x$HAVE_GLES2" = "xyes"; then
+   GL_INCLUDES="
+@@ -832,7 +867,7 @@
+ "
+   AC_MSG_CHECKING([whether it is possible to include both GL and GLES2 headers])
+   save_CPPFLAGS="$CPPFLAGS"
+-  CPPFLAGS="$CPPFLAGS $ERROR_CFLAGS"
++  CPPFLAGS="$CPPFLAGS $GLES2_CFLAGS $ERROR_CFLAGS"
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[$GL_INCLUDES]], [[
+     #if !defined(GL_FALSE)
+     #error Failed to include GL headers
+@@ -906,8 +941,10 @@
+     fi
+ 
+     if test "x$HAVE_X" = "xno"; then
+-      if test "x$HAVE_WAYLAND_EGL" = "xno"; then
+-        AC_MSG_WARN([X or Wayland is required for OpenGL support])
++      if test "x$HAVE_LINUXFB" = "xno"; then
++        if test "x$HAVE_WAYLAND_EGL" = "xno"; then
++          AC_MSG_WARN([X, Linux Framebuffer or Wayland is required for OpenGL support])
++        fi
+       fi
+     fi
+ 
+@@ -934,6 +971,13 @@
+       fi
+     fi
+ 
++    if test "x$HAVE_LINUXFB" = "xyes"; then
++      if test "x$NEED_GLFBDEV" != "xno"; then
++        GL_CFLAGS="$GL_CFLAGS $GLFBDEV_CFLAGS"
++        HAVE_WINDOW_FBDEV=yes
++      fi
++    fi
++
+     if test "x$HAVE_WAYLAND_EGL" = "xyes"; then
+       if test "x$NEED_EGL" = "xno" -o "x$HAVE_EGL" = "xno"; then
+         AC_MSG_WARN([EGL is required by the Wayland backend for OpenGL support])
+@@ -956,7 +1000,7 @@
+     dnl EGL
+     if test "x$HAVE_EGL" = "xno"; then
+       if test "x$HAVE_GL" = "xno"; then
+-        AC_MSG_WARN([Building requires either EGL or GLX for OpenGL support])
++        AC_MSG_WARN([Building requires either EGL, GLX or GLFBDev for OpenGL support])
+       fi
+     else
+       if test "x$NEED_EGL" != "xno"; then
+@@ -1103,6 +1147,7 @@
+ dnl WINDOW's
+ 
+ GST_GL_HAVE_WINDOW_X11=0
++GST_GL_HAVE_WINDOW_FBDEV=0
+ GST_GL_HAVE_WINDOW_COCOA=0
+ GST_GL_HAVE_WINDOW_WIN32=0
+ GST_GL_HAVE_WINDOW_WAYLAND=0
+@@ -1114,6 +1159,10 @@
+   GL_WINDOWS="x11 $GL_WINDOWS"
+   GST_GL_HAVE_WINDOW_X11=1
+ fi
++if test "x$HAVE_WINDOW_FBDEV" = "xyes"; then
++  GL_WINDOWS="fbdev $GL_WINDOWS"
++  GST_GL_HAVE_WINDOW_FBDEV=1
++fi
+ if test "x$HAVE_WINDOW_COCOA" = "xyes"; then
+   GL_WINDOWS="cocoa $GL_WINDOWS"
+   GST_GL_HAVE_WINDOW_COCOA=1
+@@ -1141,6 +1190,7 @@
+ 
+ GL_CONFIG_DEFINES="$GL_CONFIG_DEFINES
+ #define GST_GL_HAVE_WINDOW_X11 $GST_GL_HAVE_WINDOW_X11
++#define GST_GL_HAVE_WINDOW_FBDEV $GST_GL_HAVE_WINDOW_FBDEV
+ #define GST_GL_HAVE_WINDOW_COCOA $GST_GL_HAVE_WINDOW_COCOA
+ #define GST_GL_HAVE_WINDOW_WIN32 $GST_GL_HAVE_WINDOW_WIN32
+ #define GST_GL_HAVE_WINDOW_WAYLAND $GST_GL_HAVE_WINDOW_WAYLAND
+@@ -1153,6 +1203,7 @@
+ 
+ GST_GL_HAVE_PLATFORM_EGL=0
+ GST_GL_HAVE_PLATFORM_GLX=0
++GST_GL_HAVE_PLATFORM_GLFBDEV=0
+ GST_GL_HAVE_PLATFORM_WGL=0
+ GST_GL_HAVE_PLATFORM_CGL=0
+ GST_GL_HAVE_PLATFORM_EAGL=0
+@@ -1165,6 +1216,10 @@
+   GL_PLATFORMS="glx $GL_PLATFORMS"
+   GST_GL_HAVE_PLATFORM_GLX=1
+ fi
++if test "x$USE_GLFBDEV" = "xyes"; then
++  GL_PLATFORMS="glfbdev $GL_PLATFORMS"
++  GST_GL_HAVE_PLATFORM_GLFBDEV=1
++fi
+ if test "x$USE_WGL" = "xyes"; then
+   GL_PLATFORMS="wgl $GL_PLATFORMS"
+   GST_GL_HAVE_PLATFORM_WGL=1
+@@ -1181,6 +1236,7 @@
+ GL_CONFIG_DEFINES="$GL_CONFIG_DEFINES
+ #define GST_GL_HAVE_PLATFORM_EGL $GST_GL_HAVE_PLATFORM_EGL
+ #define GST_GL_HAVE_PLATFORM_GLX $GST_GL_HAVE_PLATFORM_GLX
++#define GST_GL_HAVE_PLATFORM_GLFBDEV $GST_GL_HAVE_PLATFORM_GLFBDEV
+ #define GST_GL_HAVE_PLATFORM_WGL $GST_GL_HAVE_PLATFORM_WGL
+ #define GST_GL_HAVE_PLATFORM_CGL $GST_GL_HAVE_PLATFORM_CGL
+ #define GST_GL_HAVE_PLATFORM_EAGL $GST_GL_HAVE_PLATFORM_EAGL
+@@ -1204,6 +1260,7 @@
+   USE_OPENGL=no
+   USE_GLES2=no
+   USE_GLX=no
++  USE_GLFBDEV=no
+   USE_EGL=no
+   USE_WGL=no
+   USE_COCOA=no
+@@ -1212,6 +1269,7 @@
+   USE_EAGL=no
+ 
+   HAVE_WINDOW_X11=no
++  HAVE_WINDOW_FBDEV=no
+   HAVE_WINDOW_WIN32=no
+   HAVE_WINDOW_DISPMANX=no
+   HAVE_WINDOW_WAYLAND=no
+@@ -1227,6 +1285,7 @@
+ AC_SUBST(USE_GLES2)
+ 
+ AM_CONDITIONAL(HAVE_WINDOW_X11, test "x$HAVE_WINDOW_X11" = "xyes")
++AM_CONDITIONAL(HAVE_WINDOW_FBDEV, test "x$HAVE_WINDOW_FBDEV" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_COCOA, test "x$HAVE_WINDOW_COCOA" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_WIN32, test "x$HAVE_WINDOW_WIN32" = "xyes")
+ AM_CONDITIONAL(HAVE_WINDOW_DISPMANX, test "x$HAVE_WINDOW_DISPMANX" = "xyes")
+@@ -1237,6 +1296,7 @@
+ AM_CONDITIONAL(USE_OPENGL, test "x$USE_OPENGL" = "xyes")
+ AM_CONDITIONAL(USE_GLES2, test "x$USE_GLES2" = "xyes")
+ AM_CONDITIONAL(USE_GLX, test "x$USE_GLX" = "xyes")
++AM_CONDITIONAL(USE_GLFBDEV, test "x$USE_GLFBDEV" = "xyes")
+ AM_CONDITIONAL(USE_EGL, test "x$USE_EGL" = "xyes")
+ AM_CONDITIONAL(USE_WGL, test "x$USE_WGL" = "xyes")
+ AM_CONDITIONAL(USE_COCOA, test "x$USE_COCOA" = "xyes")
+@@ -2051,11 +2111,7 @@
+ 
+ dnl *** fbdev ***
+ translit(dnm, m, l) AM_CONDITIONAL(USE_FBDEV, true)
+-AG_GST_CHECK_FEATURE(FBDEV, [linux framebuffer], fbdevsink, [
+-  if test "x$HAVE_FBDEV" != "xyes"; then
+-    AC_CHECK_HEADER([linux/fb.h], HAVE_FBDEV=yes, HAVE_FBDEV=no)
+-  fi
+-])
++AG_GST_CHECK_FEATURE(FBDEV, [linux framebuffer], fbdevsink, HAVE_FBDEV=$HAVE_LINUXFB)
+ 
+ dnl *** flite ***
+ translit(dnm, m, l) AM_CONDITIONAL(USE_FLITE, true)
+@@ -3317,6 +3373,7 @@
+ gst-libs/gst/gl/glprototypes/Makefile
+ gst-libs/gst/gl/eagl/Makefile
+ gst-libs/gst/gl/egl/Makefile
++gst-libs/gst/gl/fbdev/Makefile
+ gst-libs/gst/gl/wayland/Makefile
+ gst-libs/gst/gl/win32/Makefile
+ gst-libs/gst/gl/x11/Makefile
 --- gst-plugins-bad-1.6.4.orig/ext/dash/gstdashdemux.c
 +++ gst-plugins-bad-1.6.4/ext/dash/gstdashdemux.c
 @@ -150,7 +150,7 @@
@@ -418,3 +663,927 @@ exit
  #include <gst/glib-compat-private.h>
  #include "gstcamerabinpreview.h"
  #include "gstbasecamerasrc.h"
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/Makefile.am
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/Makefile.am
+@@ -2,7 +2,7 @@
+ lib_LTLIBRARIES = libgstgl-@GST_API_VERSION@.la
+ 
+ SUBDIRS = glprototypes
+-DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland dispmanx egl eagl
++DIST_SUBDIRS = glprototypes android x11 win32 cocoa wayland dispmanx egl eagl fbdev
+ 
+ noinst_HEADERS =
+ 
+@@ -81,6 +81,11 @@
+ libgstgl_@GST_API_VERSION@_la_LIBADD += x11/libgstgl-x11.la
+ endif
+ 
++if HAVE_WINDOW_FBDEV
++SUBDIRS += fbdev
++libgstgl_@GST_API_VERSION@_la_LIBADD += fbdev/libgstgl-fbdev.la
++endif
++
+ if HAVE_WINDOW_WAYLAND
+ SUBDIRS += wayland
+ libgstgl_@GST_API_VERSION@_la_LIBADD += wayland/libgstgl-wayland.la
+@@ -106,9 +111,6 @@
+ libgstgl_@GST_API_VERSION@_la_LIBADD += egl/libgstgl-egl.la
+ endif
+ 
+-configexecincludedir = $(libdir)/gstreamer-@GST_API_VERSION@/include/gst/gl
+-nodist_configexecinclude_HEADERS = $(built_sys_header_configure)
+-
+ libgstgl_@GST_API_VERSION@_la_CFLAGS = \
+ 	-I$(top_srcdir)/gst-libs \
+ 	-I$(top_builddir)/gst-libs \
+@@ -126,6 +128,8 @@
+ # DISTCLEANFILES is for files generated by configure
+ DISTCLEANFILES = $(built_sys_header_configure)
+ 
++nodist_libgstgl_@GST_API_VERSION@include_HEADERS = $(built_sys_header_configure)
++
+ if HAVE_INTROSPECTION
+ BUILT_GIRSOURCES = GstGL-@GST_API_VERSION@.gir
+ 
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/Makefile.am
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/Makefile.am
+@@ -0,0 +1,25 @@
++## Process this file with automake to produce Makefile.in
++
++noinst_LTLIBRARIES = libgstgl-fbdev.la
++
++libgstgl_fbdev_la_SOURCES = \
++	gstglcontext_glfbdev.c \
++	gstgldisplay_fbdev.c \
++	gstglwindow_fbdev.c
++
++noinst_HEADERS = \
++	gstglcontext_glfbdev.h \
++	gstgldisplay_fbdev.h \
++	gstglwindow_fbdev.h
++
++libgstgl_fbdev_la_CFLAGS = \
++	-I$(top_srcdir)/gst-libs \
++	-I$(top_builddir)/gst-libs \
++	$(GL_CFLAGS) \
++	$(GST_PLUGINS_BASE_CFLAGS) \
++	$(GST_BASE_CFLAGS) \
++	$(GST_CFLAGS)
++
++libgstgl_fbdev_la_LDFLAGS = \
++	$(GST_LIB_LDFLAGS) \
++	$(GST_ALL_LDFLAGS)
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/gstglcontext_glfbdev.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/gstglcontext_glfbdev.c
+@@ -0,0 +1,240 @@
++/*
++ * GStreamer
++ * Copyright (C) 2014 GStreamer developers
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "gstglcontext_glfbdev.h"
++#include "gstgldisplay_fbdev.h"
++#include "gstglwindow_fbdev.h"
++
++G_DEFINE_TYPE (GstGLContextGLFBDev, gst_gl_context_glfbdev,
++    GST_GL_TYPE_CONTEXT);
++
++static guintptr gst_gl_context_glfbdev_get_gl_context (GstGLContext * context);
++static GstGLAPI gst_gl_context_glfbdev_get_gl_api (GstGLContext * context);
++static GstGLPlatform gst_gl_context_glfbdev_get_gl_platform (GstGLContext *
++    context);
++static gboolean gst_gl_context_glfbdev_activate (GstGLContext * context,
++    gboolean activate);
++static gboolean gst_gl_context_glfbdev_create_context (GstGLContext * context,
++    GstGLAPI gl_api, GstGLContext * other_context, GError ** error);
++static void gst_gl_context_glfbdev_destroy_context (GstGLContext * context);
++static void gst_gl_context_glfbdev_swap_buffers (GstGLContext * context);
++static void gst_gl_context_glfbdev_set_window_private (GstGLContext * context,
++    void * priv);
++
++static void
++gst_gl_context_glfbdev_class_init (GstGLContextGLFBDevClass * klass)
++{
++  GstGLContextClass *context_class = (GstGLContextClass *) klass;
++
++  context_class->get_current_context =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_get_current_context);
++  context_class->get_gl_context =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_get_gl_context);
++  context_class->get_gl_api =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_get_gl_api);
++  context_class->get_gl_platform =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_get_gl_platform);
++  context_class->get_proc_address =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_get_proc_address);
++  context_class->activate =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_activate);
++  context_class->create_context =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_create_context);
++  context_class->destroy_context =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_destroy_context);
++  context_class->swap_buffers =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_swap_buffers);
++  context_class->set_window_private =
++      GST_DEBUG_FUNCPTR (gst_gl_context_glfbdev_set_window_private);
++}
++
++static void
++gst_gl_context_glfbdev_init (GstGLContextGLFBDev * context)
++{
++}
++
++static guintptr
++gst_gl_context_glfbdev_get_gl_context (GstGLContext * context)
++{
++  return (guintptr) GST_GL_CONTEXT_GLFBDEV (context)->context;
++}
++
++GstGLAPI
++gst_gl_context_glfbdev_get_gl_api (GstGLContext * context)
++{
++  return GST_GL_API_OPENGL;
++}
++
++static GstGLPlatform
++gst_gl_context_glfbdev_get_gl_platform (GstGLContext * context)
++{
++  return GST_GL_PLATFORM_GLFBDEV;
++}
++
++static gboolean
++gst_gl_context_glfbdev_activate (GstGLContext * context, gboolean activate)
++{
++  GstGLContextGLFBDev *context_glfbdev = GST_GL_CONTEXT_GLFBDEV (context);
++  gboolean result;
++
++  if (activate) {
++    result = glFBDevMakeCurrent (context_glfbdev->context,
++        context_glfbdev->buffer, context_glfbdev->buffer);
++  } else {
++    result = glFBDevMakeCurrent (NULL, NULL, NULL);
++  }
++
++  return result;
++}
++
++static gboolean
++gst_gl_context_glfbdev_create_context (GstGLContext * context,
++    GstGLAPI gl_api, GstGLContext * other_context, GError ** error)
++{
++  GstGLContextGLFBDev *context_glfbdev = GST_GL_CONTEXT_GLFBDEV (context);
++  GstGLDisplay *display = gst_gl_context_get_display (context);
++  GstGLDisplayFBDev *display_fbdev = GST_GL_DISPLAY_FBDEV (display);
++  GstGLWindow *window = gst_gl_context_get_window (context);
++
++  gint attribs[] = {
++    GLFBDEV_DEPTH_SIZE, 1,
++    GLFBDEV_DOUBLE_BUFFER,
++    GLFBDEV_NONE
++  };
++
++  GST_INFO ("GLFBDev Version: %s", glFBDevGetString (GLFBDEV_VERSION));
++
++  context_glfbdev->visual = glFBDevCreateVisual (
++      &display_fbdev->fixinfo, &display_fbdev->varinfo, attribs);
++
++  if (!context_glfbdev->visual) {
++    g_set_error (error, GST_GL_CONTEXT_ERROR,
++        GST_GL_CONTEXT_ERROR_WRONG_CONFIG,
++        "Failed to create GLFBDev visual");
++    goto failure;
++  }
++
++  context_glfbdev->buffer = glFBDevCreateBuffer (
++      &display_fbdev->fixinfo, &display_fbdev->varinfo, context_glfbdev->visual,
++      display_fbdev->framebuffer, NULL, display_fbdev->fixinfo.smem_len);
++
++  if (!context_glfbdev->buffer) {
++    g_set_error (error, GST_GL_CONTEXT_ERROR,
++        GST_GL_CONTEXT_ERROR_WRONG_CONFIG,
++        "Failed to create GLFBDev buffer");
++    goto failure;
++  }
++
++  context_glfbdev->context = glFBDevCreateContext (context_glfbdev->visual,
++      NULL);
++
++  if (!context_glfbdev->context) {
++    g_set_error (error, GST_GL_CONTEXT_ERROR,
++        GST_GL_CONTEXT_ERROR_CREATE_CONTEXT,
++        "Failed to create OpenGL context");
++    goto failure;
++  }
++
++  gst_gl_window_fbdev_create_window ((GstGLWindowFBDev *) window);
++
++  gst_object_unref (window);
++  gst_object_unref (display);
++
++  return TRUE;
++
++failure:
++  if (context_glfbdev->buffer)
++    glFBDevDestroyBuffer (context_glfbdev->buffer);
++  if (context_glfbdev->visual)
++    glFBDevDestroyVisual (context_glfbdev->visual);
++  gst_object_unref (window);
++  gst_object_unref (display);
++
++  return FALSE;
++}
++
++static void
++gst_gl_context_glfbdev_destroy_context (GstGLContext * context)
++{
++  GstGLContextGLFBDev *context_glfbdev = GST_GL_CONTEXT_GLFBDEV (context);
++
++  if (context_glfbdev->context) {
++    glFBDevDestroyContext (context_glfbdev->context);
++    context_glfbdev->context = NULL;
++  }
++
++  if (context_glfbdev->buffer) {
++    glFBDevDestroyBuffer (context_glfbdev->buffer);
++    context_glfbdev->buffer = NULL;
++  }
++
++  if (context_glfbdev->visual) {
++    glFBDevDestroyVisual (context_glfbdev->visual);
++    context_glfbdev->visual = NULL;
++  }
++}
++
++static void
++gst_gl_context_glfbdev_swap_buffers (GstGLContext * context)
++{
++  GstGLContextGLFBDev *context_glfbdev = GST_GL_CONTEXT_GLFBDEV (context);
++
++  glFBDevSwapBuffers (context_glfbdev->buffer);
++}
++
++static void
++gst_gl_context_glfbdev_set_window_private (GstGLContext * context,
++    gpointer priv)
++{
++  GstGLContextGLFBDev *context_glfbdev = GST_GL_CONTEXT_GLFBDEV (context);
++
++  glFBDevSetWindow (context_glfbdev->buffer, priv);
++}
++
++GstGLContextGLFBDev *
++gst_gl_context_glfbdev_new (GstGLDisplay * display)
++{
++  if ((gst_gl_display_get_handle_type (display) & GST_GL_DISPLAY_TYPE_FBDEV)
++      == GST_GL_DISPLAY_TYPE_NONE)
++    return NULL;
++
++  return g_object_new (GST_GL_TYPE_CONTEXT_GLFBDEV, NULL);
++}
++
++gpointer
++gst_gl_context_glfbdev_get_proc_address (GstGLAPI gl_api, const gchar * name)
++{
++  gpointer result;
++
++  if (!(result = gst_gl_context_default_get_proc_address (gl_api, name)))
++    result = glFBDevGetProcAddress (name);
++
++  return result;
++}
++
++guintptr
++gst_gl_context_glfbdev_get_current_context (void)
++{
++  return (guintptr) glFBDevGetCurrentContext ();
++}
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/gstglcontext_glfbdev.h
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/gstglcontext_glfbdev.h
+@@ -0,0 +1,60 @@
++/*
++ * GStreamer
++ * Copyright (C) 2014 GStreamer developers
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __GST_GL_CONTEXT_GLFBDEV_H__
++#define __GST_GL_CONTEXT_GLFBDEV_H__
++
++#include <GL/glfbdev.h>
++
++#include <gst/gl/gstglcontext.h>
++
++G_BEGIN_DECLS
++
++GType gst_gl_context_glfbdev_get_type       (void);
++
++#define GST_GL_TYPE_CONTEXT_GLFBDEV         (gst_gl_context_glfbdev_get_type())
++#define GST_GL_CONTEXT_GLFBDEV(o)           (G_TYPE_CHECK_INSTANCE_CAST((o), GST_GL_TYPE_CONTEXT_GLFBDEV, GstGLContextGLFBDev))
++#define GST_GL_CONTEXT_GLFBDEV_CLASS(k)     (G_TYPE_CHECK_CLASS((k), GST_GL_TYPE_CONTEXT_GLFBDEV, GstGLContextGLFBDevClass))
++#define GST_GL_IS_CONTEXT_GLFBDEV(o)        (G_TYPE_CHECK_INSTANCE_TYPE((o), GST_GL_TYPE_CONTEXT_GLFBDEV))
++#define GST_GL_IS_CONTEXT_GLFBDEV_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE((k), GST_GL_TYPE_CONTEXT_GLFBDEV))
++#define GST_GL_CONTEXT_GLFBDEV_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), GST_GL_TYPE_CONTEXT_GLFBDEV, GstGLContextGLFBDev_Class))
++
++typedef struct _GstGLContextGLFBDev GstGLContextGLFBDev;
++typedef struct _GstGLContextGLFBDevClass GstGLContextGLFBDevClass;
++
++struct _GstGLContextGLFBDev {
++  GstGLContext parent;
++
++  GLFBDevVisualPtr  visual;
++  GLFBDevContextPtr context;
++  GLFBDevBufferPtr  buffer;
++};
++
++struct _GstGLContextGLFBDevClass {
++  GstGLContextClass parent_class;
++};
++
++GstGLContextGLFBDev * gst_gl_context_glfbdev_new                 (GstGLDisplay * display);
++gpointer              gst_gl_context_glfbdev_get_proc_address    (GstGLAPI gl_api, const gchar * name);
++guintptr              gst_gl_context_glfbdev_get_current_context (void);
++
++G_END_DECLS
++
++#endif /* __GST_GL_CONTEXT_GLFBDEV_H__ */
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/gstgldisplay_fbdev.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/gstgldisplay_fbdev.c
+@@ -0,0 +1,108 @@
++/*
++ * GStreamer
++ * Copyright (C) 2014 GStreamer developers
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "gstgldisplay_fbdev.h"
++
++#include <fcntl.h>
++#include <sys/ioctl.h>
++#include <sys/mman.h>
++#include <unistd.h>
++
++G_DEFINE_TYPE (GstGLDisplayFBDev, gst_gl_display_fbdev,
++    GST_TYPE_GL_DISPLAY);
++
++static void gst_gl_display_fbdev_finalize (GObject * object);
++static guintptr gst_gl_display_fbdev_get_handle (GstGLDisplay * display);
++
++static void
++gst_gl_display_fbdev_class_init (GstGLDisplayFBDevClass * klass)
++{
++  G_OBJECT_CLASS (klass)->finalize = gst_gl_display_fbdev_finalize;
++
++  GST_GL_DISPLAY_CLASS (klass)->get_handle =
++      GST_DEBUG_FUNCPTR (gst_gl_display_fbdev_get_handle);
++}
++
++static void
++gst_gl_display_fbdev_init (GstGLDisplayFBDev * display_fbdev)
++{
++  GstGLDisplay *display = (GstGLDisplay *) display_fbdev;
++
++  display->type = GST_GL_DISPLAY_TYPE_FBDEV;
++}
++
++static void
++gst_gl_display_fbdev_finalize (GObject * object)
++{
++  GstGLDisplayFBDev *display_fbdev = GST_GL_DISPLAY_FBDEV (object);
++
++  if (display_fbdev->framebuffer) {
++    munmap (display_fbdev->framebuffer, display_fbdev->fixinfo.smem_len);
++    display_fbdev->framebuffer = NULL;
++  }
++
++  if (display_fbdev->fd) {
++    close (display_fbdev->fd);
++    display_fbdev->fd = -1;
++  }
++
++  G_OBJECT_CLASS (gst_gl_display_fbdev_parent_class)->finalize (object);
++}
++
++static guintptr
++gst_gl_display_fbdev_get_handle (GstGLDisplay * display)
++{
++  return (guintptr) GST_GL_DISPLAY_FBDEV (display)->fd;
++}
++
++GstGLDisplayFBDev *
++gst_gl_display_fbdev_new (void)
++{
++  GstGLDisplayFBDev *display_fbdev;
++  const char *device = g_getenv ("FRAMEBUFFER");
++
++  display_fbdev = g_object_new (GST_TYPE_GL_DISPLAY_FBDEV, NULL);
++
++  display_fbdev->fd = open (device ?: "/dev/fb0", O_RDWR);
++
++  if (display_fbdev->fd == -1)
++    return NULL;
++
++  /* get the fixed screen info */
++  if (ioctl (display_fbdev->fd, FBIOGET_FSCREENINFO, &display_fbdev->fixinfo))
++    return NULL;
++
++  /* get the variable screen info */
++  if (ioctl (display_fbdev->fd, FBIOGET_VSCREENINFO, &display_fbdev->varinfo))
++    return NULL;
++
++  /* map the framebuffer */
++  display_fbdev->framebuffer = mmap (NULL, display_fbdev->fixinfo.smem_len,
++      PROT_WRITE, MAP_SHARED, display_fbdev->fd, 0);
++
++  if (display_fbdev->framebuffer == MAP_FAILED)
++    return NULL;
++
++  return display_fbdev;
++}
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/gstgldisplay_fbdev.h
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/gstgldisplay_fbdev.h
+@@ -0,0 +1,58 @@
++/*
++ * GStreamer
++ * Copyright (C) 2014 GStreamer developers
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __GST_GL_DISPLAY_FBDEV_H__
++#define __GST_GL_DISPLAY_FBDEV_H__
++
++#include <linux/fb.h>
++
++#include <gst/gl/gstgldisplay.h>
++
++G_BEGIN_DECLS
++
++GType gst_gl_display_fbdev_get_type (void);
++
++#define GST_TYPE_GL_DISPLAY_FBDEV  (gst_gl_display_fbdev_get_type())
++#define GST_GL_DISPLAY_FBDEV(obj)  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_GL_DISPLAY_FBDEV,GstGLDisplayFBDev))
++
++typedef struct _GstGLDisplayFBDev GstGLDisplayFBDev;
++typedef struct _GstGLDisplayFBDevClass GstGLDisplayFBDevClass;
++
++struct _GstGLDisplayFBDev
++{
++  GstGLDisplay parent;
++
++  struct fb_fix_screeninfo fixinfo;
++  struct fb_var_screeninfo varinfo;
++
++  int fd;
++  unsigned char *framebuffer;
++};
++
++struct _GstGLDisplayFBDevClass
++{
++  GstGLDisplayClass object_class;
++};
++
++GstGLDisplayFBDev * gst_gl_display_fbdev_new (void);
++
++G_END_DECLS
++
++#endif /* __GST_GL_DISPLAY_FBDEV_H__ */
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/gstglwindow_fbdev.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/gstglwindow_fbdev.c
+@@ -0,0 +1,101 @@
++/*
++ * GStreamer
++ * Copyright (C) 2014 GStreamer developers
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "gstglwindow_fbdev.h"
++
++G_DEFINE_TYPE (GstGLWindowFBDev, gst_gl_window_fbdev,
++    GST_GL_TYPE_WINDOW);
++
++static guintptr gst_gl_window_fbdev_get_window_handle (GstGLWindow * window);
++static void gst_gl_window_fbdev_close (GstGLWindow * window);
++static void gst_gl_window_fbdev_set_preferred_size (GstGLWindow * window,
++    gint width, gint height);
++
++static void
++gst_gl_window_fbdev_class_init (GstGLWindowFBDevClass * klass)
++{
++  GstGLWindowClass *window_class = (GstGLWindowClass *) klass;
++
++  window_class->get_window_handle =
++      GST_DEBUG_FUNCPTR (gst_gl_window_fbdev_get_window_handle);
++  window_class->close = GST_DEBUG_FUNCPTR (gst_gl_window_fbdev_close);
++  window_class->set_preferred_size =
++      GST_DEBUG_FUNCPTR (gst_gl_window_fbdev_set_preferred_size);
++}
++
++static void
++gst_gl_window_fbdev_init (GstGLWindowFBDev * window)
++{
++}
++
++guintptr
++gst_gl_window_fbdev_get_window_handle (GstGLWindow * window)
++{
++  return (guintptr) GST_GL_WINDOW_FBDEV (window)->window;
++}
++
++static void
++gst_gl_window_fbdev_close (GstGLWindow * window)
++{
++  GstGLWindowFBDev *window_fbdev = GST_GL_WINDOW_FBDEV (window);
++
++  if (window_fbdev->window) {
++    g_free (window_fbdev->window);
++    window_fbdev->window = NULL;
++  }
++
++  GST_GL_WINDOW_CLASS (gst_gl_window_fbdev_parent_class)->close (window);
++}
++
++static void
++gst_gl_window_fbdev_set_preferred_size (GstGLWindow * window,
++    gint width, gint height)
++{
++  GstGLContext *context = gst_gl_window_get_context (window);
++  GstGLContextClass *context_class = GST_GL_CONTEXT_GET_CLASS (context);
++  GstGLWindowFBDev *window_fbdev = GST_GL_WINDOW_FBDEV (window);
++
++  gst_gl_window_resize (window, width, height);
++
++  window_fbdev->window->width = width;
++  window_fbdev->window->height = height;
++
++  context_class->set_window_private (context, window_fbdev->window);
++}
++
++GstGLWindowFBDev *
++gst_gl_window_fbdev_new (GstGLDisplay * display)
++{
++  if ((gst_gl_display_get_handle_type (display) & GST_GL_DISPLAY_TYPE_FBDEV)
++      == GST_GL_DISPLAY_TYPE_NONE)
++    return NULL;
++
++  return g_object_new (GST_GL_TYPE_WINDOW_FBDEV, NULL);
++}
++
++void
++gst_gl_window_fbdev_create_window (GstGLWindowFBDev * window_fbdev)
++{
++  window_fbdev->window = g_new0 (struct fb_window, 1);
++}
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/fbdev/gstglwindow_fbdev.h
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/fbdev/gstglwindow_fbdev.h
+@@ -0,0 +1,64 @@
++/*
++ * GStreamer
++ * Copyright (C) 2014 GStreamer developers
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __GST_GL_WINDOW_FBDEV_H__
++#define __GST_GL_WINDOW_FBDEV_H__
++
++struct fb_window {
++  int width;
++  int height;
++  int posx;
++  int posy;
++};
++
++#include <gst/gl/gstglwindow.h>
++
++G_BEGIN_DECLS
++
++GType gst_gl_window_fbdev_get_type (void);
++
++#define GST_GL_TYPE_WINDOW_FBDEV  (gst_gl_window_fbdev_get_type())
++#define GST_GL_WINDOW_FBDEV(o)    (G_TYPE_CHECK_INSTANCE_CAST((o), GST_GL_TYPE_WINDOW_FBDEV, GstGLWindowFBDev))
++
++typedef struct _GstGLWindowFBDev GstGLWindowFBDev;
++typedef struct _GstGLWindowFBDevClass GstGLWindowFBDevClass;
++
++struct _GstGLWindowFBDev
++{
++  /*< private >*/
++  GstGLWindow parent;
++
++  struct fb_window *window;
++};
++
++struct _GstGLWindowFBDevClass {
++  /*< private >*/
++  GstGLWindowClass parent_class;
++
++  /*< private >*/
++  gpointer _reserved[GST_PADDING];
++};
++
++GstGLWindowFBDev * gst_gl_window_fbdev_new           (GstGLDisplay * display);
++void               gst_gl_window_fbdev_create_window (GstGLWindowFBDev * window_fbdev);
++
++G_END_DECLS
++
++#endif /* __GST_GL_WINDOW_FBDEV_H__ */
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstglapi.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstglapi.c
+@@ -143,6 +143,9 @@
+   if (platform & GST_GL_PLATFORM_GLX) {
+     str = g_string_append (str, "glx ");
+   }
++  if (platform & GST_GL_PLATFORM_GLFBDEV) {
++    str = g_string_append (str, "glfbdev ");
++  }
+   if (platform & GST_GL_PLATFORM_EGL) {
+     str = g_string_append (str, "egl ");
+   }
+@@ -184,6 +187,9 @@
+       } else if (g_strstr_len (platform, 3, "glx")) {
+         ret |= GST_GL_PLATFORM_GLX;
+         platform = &platform[3];
++      } else if (g_strstr_len (platform, 7, "glfbdev")) {
++        ret |= GST_GL_PLATFORM_GLFBDEV;
++        platform = &platform[7];
+       } else if (g_strstr_len (platform, 3, "egl")) {
+         ret |= GST_GL_PLATFORM_EGL;
+         platform = &platform[3];
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstglapi.h
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstglapi.h
+@@ -23,6 +23,11 @@
+ 
+ #include <gst/gl/gstglconfig.h>
+ 
++#ifdef __GNUC__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wredundant-decls"
++#endif
++
+ /* OpenGL 2.0 for Embedded Systems */
+ #if GST_GL_HAVE_GLES2
+ #ifndef GL_GLEXT_PROTOTYPES
+@@ -51,12 +56,14 @@
+ #  endif
+ # else
+ #  include <GL/gl.h>
+-#  if defined(__WIN32__) || defined(_WIN32)
+-#   include <GL/glext.h>
+-#  endif
++#  include <GL/glext.h>
+ # endif
+ #endif
+ 
++#ifdef __GNUC__
++#pragma GCC diagnostic pop
++#endif
++
+ #ifdef WINAPI
+ #define GSTGLAPI WINAPI
+ #else
+@@ -91,6 +98,7 @@
+   GST_GL_PLATFORM_WGL = (1 << 2),
+   GST_GL_PLATFORM_CGL = (1 << 3),
+   GST_GL_PLATFORM_EAGL = (1 << 4),
++  GST_GL_PLATFORM_GLFBDEV = (1 << 5),
+ 
+   GST_GL_PLATFORM_ANY = G_MAXUINT32
+ } GstGLPlatform;
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstglcontext.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstglcontext.c
+@@ -52,6 +52,9 @@
+ #if GST_GL_HAVE_PLATFORM_GLX
+ #include "x11/gstglcontext_glx.h"
+ #endif
++#if GST_GL_HAVE_PLATFORM_GLFBDEV
++#include "fbdev/gstglcontext_glfbdev.h"
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+ #include "egl/gstglcontext_egl.h"
+ #endif
+@@ -317,6 +320,10 @@
+   if (!context && (!user_choice || g_strstr_len (user_choice, 3, "glx")))
+     context = GST_GL_CONTEXT (gst_gl_context_glx_new (display));
+ #endif
++#if GST_GL_HAVE_PLATFORM_GLFBDEV
++  if (!context && (!user_choice || g_strstr_len (user_choice, 7, "glfbdev")))
++    context = GST_GL_CONTEXT (gst_gl_context_glfbdev_new (display));
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+   if (!context && (!user_choice || g_strstr_len (user_choice, 7, "egl")))
+     context = GST_GL_CONTEXT (gst_gl_context_egl_new (display));
+@@ -401,6 +408,12 @@
+     context_class->get_proc_address = gst_gl_context_glx_get_proc_address;
+   }
+ #endif
++#if GST_GL_HAVE_PLATFORM_GLFBDEV
++  if (context_type == GST_GL_PLATFORM_GLFBDEV) {
++    context_class->get_current_context = gst_gl_context_glfbdev_get_current_context;
++    context_class->get_proc_address = gst_gl_context_glfbdev_get_proc_address;
++  }
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+   if (context_type == GST_GL_PLATFORM_EGL) {
+     context_class->get_current_context = gst_gl_context_egl_get_current_context;
+@@ -456,6 +469,10 @@
+   if (!handle && (context_type & GST_GL_PLATFORM_GLX) != 0)
+     handle = gst_gl_context_glx_get_current_context ();
+ #endif
++#if GST_GL_HAVE_PLATFORM_GLFBDEV
++  if (!handle && (context_type & GST_GL_PLATFORM_GLFBDEV) != 0)
++    handle = gst_gl_context_glfbdev_get_current_context ();
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+   if (!handle && (context_type & GST_GL_PLATFORM_EGL) != 0)
+     handle = gst_gl_context_egl_get_current_context ();
+@@ -489,6 +506,10 @@
+   if (!ret && (context_type & GST_GL_PLATFORM_GLX) != 0)
+     ret = gst_gl_context_glx_get_proc_address (gl_api, name);
+ #endif
++#if GST_GL_HAVE_PLATFORM_GLFBDEV
++  if (!ret && (context_type & GST_GL_PLATFORM_GLFBDEV) != 0)
++    ret = gst_gl_context_glfbdev_get_proc_address (gl_api, name);
++#endif
+ #if GST_GL_HAVE_PLATFORM_EGL
+   if (!ret && (context_type & GST_GL_PLATFORM_EGL) != 0)
+     ret = gst_gl_context_egl_get_proc_address (gl_api, name);
+@@ -1506,10 +1527,12 @@
+ 
+   /* Does not implement OES_vertex_array_object properly, see
+    * https://bugzilla.gnome.org/show_bug.cgi?id=750185 */
+-  if (g_strcmp0 ((const gchar *) gl->GetString (GL_VENDOR),
++  if ((g_strcmp0 ((const gchar *) gl->GetString (GL_VENDOR),
+           "Imagination Technologies") == 0
+       && g_strcmp0 ((const gchar *) gl->GetString (GL_RENDERER),
+-          "PowerVR SGX 544MP") == 0) {
++          "PowerVR SGX 544MP") == 0)
++      || g_strcmp0 ((const gchar *) gl->GetString (GL_RENDERER),
++          "Mesa glfbdev") == 0) {
+     gl->GenVertexArrays = NULL;
+     gl->DeleteVertexArrays = NULL;
+     gl->BindVertexArray = NULL;
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstglcontext.h
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstglcontext.h
+@@ -108,9 +108,10 @@
+   void          (*destroy_context)    (GstGLContext *context);
+   void          (*swap_buffers)       (GstGLContext *context);
+   gboolean      (*check_feature)      (GstGLContext *context, const gchar *feature);
++  void          (*set_window_private) (GstGLContext *context, gpointer priv);
+ 
+   /*< private >*/
+-  gpointer _reserved[GST_PADDING];
++  gpointer _reserved[GST_PADDING-1];
+ };
+ 
+ /* methods */
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstgldisplay.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstgldisplay.c
+@@ -62,6 +62,9 @@
+ #if GST_GL_HAVE_WINDOW_X11
+ #include <gst/gl/x11/gstgldisplay_x11.h>
+ #endif
++#if GST_GL_HAVE_WINDOW_FBDEV
++#include <gst/gl/fbdev/gstgldisplay_fbdev.h>
++#endif
+ #if GST_GL_HAVE_WINDOW_WAYLAND
+ #include <gst/gl/wayland/gstgldisplay_wayland.h>
+ #endif
+@@ -201,6 +204,10 @@
+   if (!display && (!user_choice || g_strstr_len (user_choice, 3, "x11")))
+     display = GST_GL_DISPLAY (gst_gl_display_x11_new (NULL));
+ #endif
++#if GST_GL_HAVE_WINDOW_FBDEV
++  if (!display && (!user_choice || g_strstr_len (user_choice, 5, "fbdev")))
++    display = GST_GL_DISPLAY (gst_gl_display_fbdev_new ());
++#endif
+ #if GST_GL_HAVE_WINDOW_WAYLAND
+   if (!display && (!user_choice || g_strstr_len (user_choice, 7, "wayland")))
+     display = GST_GL_DISPLAY (gst_gl_display_wayland_new (NULL));
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstgldisplay.h
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstgldisplay.h
+@@ -49,6 +49,7 @@
+   GST_GL_DISPLAY_TYPE_WIN32 = (1 << 3),
+   GST_GL_DISPLAY_TYPE_DISPMANX = (1 << 4),
+   GST_GL_DISPLAY_TYPE_EGL = (1 << 5),
++  GST_GL_DISPLAY_TYPE_FBDEV = (1 << 6),
+ 
+   GST_GL_DISPLAY_TYPE_ANY = G_MAXUINT32
+ } GstGLDisplayType;
+--- gst-plugins-bad-1.6.4.orig/gst-libs/gst/gl/gstglwindow.c
++++ gst-plugins-bad-1.6.4/gst-libs/gst/gl/gstglwindow.c
+@@ -43,6 +43,9 @@
+ #if GST_GL_HAVE_WINDOW_X11
+ #include "x11/gstglwindow_x11.h"
+ #endif
++#if GST_GL_HAVE_WINDOW_FBDEV
++#include "fbdev/gstglwindow_fbdev.h"
++#endif
+ #if GST_GL_HAVE_WINDOW_WIN32
+ #include "win32/gstglwindow_win32.h"
+ #endif
+@@ -281,6 +284,10 @@
+   if (!window && (!user_choice || g_strstr_len (user_choice, 3, "x11")))
+     window = GST_GL_WINDOW (gst_gl_window_x11_new (display));
+ #endif
++#if GST_GL_HAVE_WINDOW_FBDEV
++  if (!window && (!user_choice || g_strstr_len (user_choice, 5, "fbdev")))
++    window = GST_GL_WINDOW (gst_gl_window_fbdev_new (display));
++#endif
+ #if GST_GL_HAVE_WINDOW_WIN32
+   if (!window && (!user_choice || g_strstr_len (user_choice, 5, "win32")))
+     window = GST_GL_WINDOW (gst_gl_window_win32_new (display));
