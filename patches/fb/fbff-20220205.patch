@@ -1,0 +1,94 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="ffmpeg-build make-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+sh ./Configure --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install fbff $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbff-build.pc << EOF
+Name: fbff
+Version: 20220205
+Description: FFmpeg-based media player for Linux Framebuffer
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/fbff
+EOF
+
+exit
+--- fbff-20220205.orig/Configure
++++ fbff-20220205/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
+--- fbff-20220205.orig/Makefile
++++ fbff-20220205/Makefile
+@@ -1,8 +1,8 @@
+-FF_PATH = /opt
++PREFIX = /usr/local
+ CC = cc
+-CFLAGS = -I$(FF_PATH)/include -Wall -O2
+-LDFLAGS = -L$(FF_PATH)/lib -lavutil -lavformat -lavcodec -lavutil \
+-		-lswscale -lswresample -lz -lm -lpthread
++CFLAGS = -I$(PREFIX)/include -Wall -O2
++LDFLAGS = -L$(PREFIX)/lib -lavutil -lavformat -lavcodec -lavutil \
++		-lswscale -lswresample -lz -lm -lpthread -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: fbff
+ .c.o:
+--- fbff-20220205.orig/ffs.c
++++ fbff-20220205/ffs.c
+@@ -212,7 +212,7 @@
+ 	return 0;
+ }
+ 
+-static int ffs_bytespersample(ffs)
++static int ffs_bytespersample(void)
+ {
+ 	return av_get_bytes_per_sample(FFS_SAMPLEFMT) *
+ 		av_get_channel_layout_nb_channels(FFS_CHLAYOUT);
+@@ -239,10 +239,10 @@
+ 			continue;
+ 		out[0] = buf + rdec;
+ 		len = swr_convert(ffs->swrc,
+-			out, (blen - rdec) / ffs_bytespersample(ffs),
++			out, (blen - rdec) / ffs_bytespersample(),
+ 			(void *) ffs->tmp->extended_data, ffs->tmp->nb_samples);
+ 		if (len > 0)
+-			rdec += len * ffs_bytespersample(ffs);
++			rdec += len * ffs_bytespersample();
+ 	}
+ 	av_free_packet(pkt);
+ 	return rdec;

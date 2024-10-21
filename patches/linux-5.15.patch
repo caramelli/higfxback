@@ -30,13 +30,17 @@ EOF
 exit
 --- linux-5.15.orig/arch/x86/configs/fragment-x86_64.config
 +++ linux-5.15/arch/x86/configs/fragment-x86_64.config
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,10 @@
 +CONFIG_SYSFB_SIMPLEFB=y
 +CONFIG_INPUT_MOUSEDEV=y
 +CONFIG_INPUT_UINPUT=y
 +CONFIG_DRM_SIMPLEDRM=y
 +CONFIG_FB=y
 +CONFIG_FB_VESA=y
++CONFIG_SND_OSSEMUL=y
++CONFIG_SND_MIXER_OSS=y
++CONFIG_SND_PCM_OSS=y
++CONFIG_SND_HDA_CODEC_REALTEK=y
 --- linux-5.15.orig/drivers/video/fbdev/core/fbcon.c
 +++ linux-5.15/drivers/video/fbdev/core/fbcon.c
 @@ -2079,6 +2079,7 @@

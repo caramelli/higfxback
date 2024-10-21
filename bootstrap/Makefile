@@ -60,7 +60,7 @@ toolchain: glibc
 
 linux:
 	@echo Build $@
-	@test -d $(LINUX) || wget -qO- https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz | tar -xJ
+	@test -d $(LINUX) || ( wget -qO- https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz | tar -xJ && patch -d $(LINUX) -p1 < $(LINUX).patch )
 	test -f $(LINUX)/.config || ( cp $(LINUX)-fragment-x86_64.config $(LINUX)/arch/x86/configs/fragment-x86_64.config && $(MAKE) -C $(LINUX) x86_64_defconfig fragment-x86_64.config )
 	$(MAKE) CROSS_COMPILE=$(HOST)- -C $(LINUX)
 

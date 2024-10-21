@@ -231,7 +231,23 @@ EOF
 exit
 --- gst-plugins-bad-1.6.4.orig/configure.ac
 +++ gst-plugins-bad-1.6.4/configure.ac
-@@ -612,6 +612,15 @@
+@@ -309,9 +309,14 @@
+   PKG_CHECK_MODULES(SDL, sdl >= 1.2.0, HAVE_SDL=yes, HAVE_SDL=no)
+   AC_SUBST(SDL_LIBS)
+   AC_SUBST(SDL_CFLAGS)
+-  AC_SUBST(SDL_CLUTTER)
++  if test "x$HAVE_SDL" = "xyes"; then
++    if test "x$GST_GL_HAVE_PLATFORM_WGL" = "x1" -o "x$GST_GL_HAVE_PLATFORM_GLX" = "x1"; then
++      HAVE_SDL_GL=yes
++    fi
++  fi
+ fi
+ AM_CONDITIONAL(HAVE_SDL, test "x$HAVE_SDL" = "xyes")
++AM_CONDITIONAL(HAVE_SDL_GL, test "x$HAVE_SDL_GL" = "xyes")
+ 
+ 
+ dnl Needed for GtkBuilder to autoconnect signals
+@@ -612,6 +617,15 @@
         *) AC_MSG_ERROR([bad value ${enableval} for --enable-glx]) ;;
       esac],[NEED_GLX=auto])
  
@@ -247,7 +263,7 @@ exit
  AC_ARG_ENABLE([cocoa],
       [  --enable-cocoa          Enable Cocoa support @<:@default=auto@:>@],
       [case "${enableval}" in
-@@ -670,13 +679,13 @@
+@@ -670,13 +684,13 @@
    ;;
    *)
      if test "x$NEED_GL" != "xno"; then
@@ -264,7 +280,7 @@ exit
      fi
  
      old_LIBS=$LIBS
-@@ -744,6 +753,11 @@
+@@ -744,6 +758,11 @@
      CFLAGS=$old_CFLAGS
  
      PKG_CHECK_MODULES(WAYLAND_EGL, wayland-client >= 1.0 wayland-cursor >= 1.0 wayland-egl >= 9.0, HAVE_WAYLAND_EGL=yes, HAVE_WAYLAND_EGL=no)
@@ -276,7 +292,7 @@ exit
    ;;
  esac
  
-@@ -753,6 +767,7 @@
+@@ -753,6 +772,7 @@
  USE_OPENGL=no
  USE_GLES2=no
  USE_GLX=no
@@ -284,7 +300,7 @@ exit
  USE_COCOA=no
  USE_WGL=no
  USE_X11=no
-@@ -803,6 +818,26 @@
+@@ -803,6 +823,26 @@
    fi
  fi
  
@@ -311,7 +327,7 @@ exit
  dnl check if we can include both GL and GLES2 at the same time
  if test "x$HAVE_GL" = "xyes" -a "x$HAVE_GLES2" = "xyes"; then
    GL_INCLUDES="
-@@ -832,7 +867,7 @@
+@@ -832,7 +872,7 @@
  "
    AC_MSG_CHECKING([whether it is possible to include both GL and GLES2 headers])
    save_CPPFLAGS="$CPPFLAGS"
@@ -320,7 +336,7 @@ exit
    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[$GL_INCLUDES]], [[
      #if !defined(GL_FALSE)
      #error Failed to include GL headers
-@@ -906,8 +941,10 @@
+@@ -906,8 +946,10 @@
      fi
  
      if test "x$HAVE_X" = "xno"; then
@@ -333,7 +349,7 @@ exit
        fi
      fi
  
-@@ -934,6 +971,13 @@
+@@ -934,6 +976,13 @@
        fi
      fi
  
@@ -347,7 +363,7 @@ exit
      if test "x$HAVE_WAYLAND_EGL" = "xyes"; then
        if test "x$NEED_EGL" = "xno" -o "x$HAVE_EGL" = "xno"; then
          AC_MSG_WARN([EGL is required by the Wayland backend for OpenGL support])
-@@ -956,7 +1000,7 @@
+@@ -956,7 +1005,7 @@
      dnl EGL
      if test "x$HAVE_EGL" = "xno"; then
        if test "x$HAVE_GL" = "xno"; then
@@ -356,7 +372,7 @@ exit
        fi
      else
        if test "x$NEED_EGL" != "xno"; then
-@@ -1103,6 +1147,7 @@
+@@ -1103,6 +1152,7 @@
  dnl WINDOW's
  
  GST_GL_HAVE_WINDOW_X11=0
@@ -364,7 +380,7 @@ exit
  GST_GL_HAVE_WINDOW_COCOA=0
  GST_GL_HAVE_WINDOW_WIN32=0
  GST_GL_HAVE_WINDOW_WAYLAND=0
-@@ -1114,6 +1159,10 @@
+@@ -1114,6 +1164,10 @@
    GL_WINDOWS="x11 $GL_WINDOWS"
    GST_GL_HAVE_WINDOW_X11=1
  fi
@@ -375,7 +391,7 @@ exit
  if test "x$HAVE_WINDOW_COCOA" = "xyes"; then
    GL_WINDOWS="cocoa $GL_WINDOWS"
    GST_GL_HAVE_WINDOW_COCOA=1
-@@ -1141,6 +1190,7 @@
+@@ -1141,6 +1195,7 @@
  
  GL_CONFIG_DEFINES="$GL_CONFIG_DEFINES
  #define GST_GL_HAVE_WINDOW_X11 $GST_GL_HAVE_WINDOW_X11
@@ -383,7 +399,7 @@ exit
  #define GST_GL_HAVE_WINDOW_COCOA $GST_GL_HAVE_WINDOW_COCOA
  #define GST_GL_HAVE_WINDOW_WIN32 $GST_GL_HAVE_WINDOW_WIN32
  #define GST_GL_HAVE_WINDOW_WAYLAND $GST_GL_HAVE_WINDOW_WAYLAND
-@@ -1153,6 +1203,7 @@
+@@ -1153,6 +1208,7 @@
  
  GST_GL_HAVE_PLATFORM_EGL=0
  GST_GL_HAVE_PLATFORM_GLX=0
@@ -391,7 +407,7 @@ exit
  GST_GL_HAVE_PLATFORM_WGL=0
  GST_GL_HAVE_PLATFORM_CGL=0
  GST_GL_HAVE_PLATFORM_EAGL=0
-@@ -1165,6 +1216,10 @@
+@@ -1165,6 +1221,10 @@
    GL_PLATFORMS="glx $GL_PLATFORMS"
    GST_GL_HAVE_PLATFORM_GLX=1
  fi
@@ -402,7 +418,7 @@ exit
  if test "x$USE_WGL" = "xyes"; then
    GL_PLATFORMS="wgl $GL_PLATFORMS"
    GST_GL_HAVE_PLATFORM_WGL=1
-@@ -1181,6 +1236,7 @@
+@@ -1181,6 +1241,7 @@
  GL_CONFIG_DEFINES="$GL_CONFIG_DEFINES
  #define GST_GL_HAVE_PLATFORM_EGL $GST_GL_HAVE_PLATFORM_EGL
  #define GST_GL_HAVE_PLATFORM_GLX $GST_GL_HAVE_PLATFORM_GLX
@@ -410,7 +426,7 @@ exit
  #define GST_GL_HAVE_PLATFORM_WGL $GST_GL_HAVE_PLATFORM_WGL
  #define GST_GL_HAVE_PLATFORM_CGL $GST_GL_HAVE_PLATFORM_CGL
  #define GST_GL_HAVE_PLATFORM_EAGL $GST_GL_HAVE_PLATFORM_EAGL
-@@ -1204,6 +1260,7 @@
+@@ -1204,6 +1265,7 @@
    USE_OPENGL=no
    USE_GLES2=no
    USE_GLX=no
@@ -418,7 +434,7 @@ exit
    USE_EGL=no
    USE_WGL=no
    USE_COCOA=no
-@@ -1212,6 +1269,7 @@
+@@ -1212,6 +1274,7 @@
    USE_EAGL=no
  
    HAVE_WINDOW_X11=no
@@ -426,7 +442,7 @@ exit
    HAVE_WINDOW_WIN32=no
    HAVE_WINDOW_DISPMANX=no
    HAVE_WINDOW_WAYLAND=no
-@@ -1227,6 +1285,7 @@
+@@ -1227,6 +1290,7 @@
  AC_SUBST(USE_GLES2)
  
  AM_CONDITIONAL(HAVE_WINDOW_X11, test "x$HAVE_WINDOW_X11" = "xyes")
@@ -434,7 +450,7 @@ exit
  AM_CONDITIONAL(HAVE_WINDOW_COCOA, test "x$HAVE_WINDOW_COCOA" = "xyes")
  AM_CONDITIONAL(HAVE_WINDOW_WIN32, test "x$HAVE_WINDOW_WIN32" = "xyes")
  AM_CONDITIONAL(HAVE_WINDOW_DISPMANX, test "x$HAVE_WINDOW_DISPMANX" = "xyes")
-@@ -1237,6 +1296,7 @@
+@@ -1237,6 +1301,7 @@
  AM_CONDITIONAL(USE_OPENGL, test "x$USE_OPENGL" = "xyes")
  AM_CONDITIONAL(USE_GLES2, test "x$USE_GLES2" = "xyes")
  AM_CONDITIONAL(USE_GLX, test "x$USE_GLX" = "xyes")
@@ -442,7 +458,7 @@ exit
  AM_CONDITIONAL(USE_EGL, test "x$USE_EGL" = "xyes")
  AM_CONDITIONAL(USE_WGL, test "x$USE_WGL" = "xyes")
  AM_CONDITIONAL(USE_COCOA, test "x$USE_COCOA" = "xyes")
-@@ -2051,11 +2111,7 @@
+@@ -2051,11 +2116,7 @@
  
  dnl *** fbdev ***
  translit(dnm, m, l) AM_CONDITIONAL(USE_FBDEV, true)
@@ -455,7 +471,7 @@ exit
  
  dnl *** flite ***
  translit(dnm, m, l) AM_CONDITIONAL(USE_FLITE, true)
-@@ -3317,6 +3373,7 @@
+@@ -3317,6 +3378,7 @@
  gst-libs/gst/gl/glprototypes/Makefile
  gst-libs/gst/gl/eagl/Makefile
  gst-libs/gst/gl/egl/Makefile
@@ -1587,3 +1603,14 @@ exit
  #if GST_GL_HAVE_WINDOW_WIN32
    if (!window && (!user_choice || g_strstr_len (user_choice, 5, "win32")))
      window = GST_GL_WINDOW (gst_gl_window_win32_new (display));
+--- gst-plugins-bad-1.6.4.orig/tests/examples/gl/sdl/Makefile.am
++++ gst-plugins-bad-1.6.4/tests/examples/gl/sdl/Makefile.am
+@@ -1,7 +1,7 @@
+ noinst_PROGRAMS = ##
+ 
+ #works on win32 and X
+-if HAVE_SDL
++if HAVE_SDL_GL
+ 
+ noinst_PROGRAMS += sdlshare sdlshare2
+ 

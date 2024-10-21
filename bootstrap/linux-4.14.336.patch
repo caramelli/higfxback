@@ -1,0 +1,10 @@
+--- linux-4.14.336.orig/drivers/video/fbdev/core/fbmem.c
++++ linux-4.14.336/drivers/video/fbdev/core/fbmem.c
+@@ -1135,6 +1135,7 @@
+ 			return -ENODEV;
+ 		}
+ 		info->flags |= FBINFO_MISC_USEREVENT;
++		memcpy(info->var.reserved, var.reserved, sizeof(var.reserved));
+ 		ret = fb_set_var(info, &var);
+ 		info->flags &= ~FBINFO_MISC_USEREVENT;
+ 		unlock_fb_info(info);
