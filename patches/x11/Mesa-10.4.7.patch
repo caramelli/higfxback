@@ -40,7 +40,7 @@ test $DRM && install -m 644 src/mesa/drivers/dri/dri.pc $DESTDIR/x11/lib/pkgconf
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
-cat > $DESTDIR/x11/share/pkgconfig/mesa-build.pc << EOF
+cat > $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
 Name: Mesa
 Version: 10.4.7
 Description: Implementation of Khronos specifications
@@ -50,17 +50,17 @@ exec=\\
 /x11/lib/libglapi.so.0 \\
 /x11/lib/libmesaEGL.so.1 \\
 EOF
-test $DRM && echo /x11/lib/libmesagbm.so.1 \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
-cat >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc << EOF
+test $DRM && echo /x11/lib/libmesagbm.so.1 \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
 /x11/lib/libmesaGL.so.1 \\
 /x11/lib/libmesaGLESv1_CM.so.1 \\
 /x11/lib/libmesaGLESv2.so.2 \\
 EOF
-test $DRM && echo /x11/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
-test $DRM && echo /x11/lib/dri/swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
-echo /x11/lib/egl/egl_gallium.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
-test $DRM && echo /x11/lib/pkgconfig/dri.pc \\ >> $DESTDIR/x11/share/pkgconfig/mesa-build.pc
-sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/mesa-build.pc
+test $DRM && echo /x11/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+test $DRM && echo /x11/lib/dri/swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+echo /x11/lib/egl/egl_gallium.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+test $DRM && echo /x11/lib/pkgconfig/dri.pc \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
 
 exit
 --- Mesa-10.4.7.orig/bin/config.rpath

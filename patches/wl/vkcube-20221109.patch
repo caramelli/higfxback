@@ -99,7 +99,7 @@ exit
     VkInstance instance;
 --- vkcube-20221109.orig/main.c
 +++ vkcube-20221109/main.c
-@@ -37,25 +37,28 @@
+@@ -37,32 +37,37 @@
  
  #define _DEFAULT_SOURCE /* for major() */
  
@@ -140,21 +140,137 @@ exit
  
  #include "common.h"
  
-@@ -451,12 +454,10 @@
+ enum display_mode {
+    DISPLAY_MODE_AUTO = 0,
+    DISPLAY_MODE_HEADLESS,
++#if defined(HAVE_VULKAN_INTEL_H)
+    DISPLAY_MODE_KMS,
++#endif
+ #if defined(ENABLE_WAYLAND)
+    DISPLAY_MODE_WAYLAND,
+ #endif
+@@ -451,11 +456,9 @@
     return 0;
  }
  
 -#ifdef HAVE_VULKAN_INTEL_H
-+#if defined(HAVE_VULKAN_INTEL_H)
- 
+-
  /* KMS display code - render to kernel modesetting fb */
  
 -#include <vulkan/vulkan_intel.h>
--
++#if defined(HAVE_VULKAN_INTEL_H)
+ 
  static struct termios save_tio;
  
- static void
-@@ -1800,7 +1801,9 @@
+@@ -669,19 +672,6 @@
+    }
+ }
+ 
+-#else
+-
+-static int
+-init_kms(struct vkcube *vc)
+-{
+-   return -1;
+-}
+-
+-static void
+-mainloop_vt(struct vkcube *vc)
+-{
+-}
+-
+ #endif
+ 
+ /* Swapchain-based code - shared between XCB and Wayland */
+@@ -805,6 +795,7 @@
+ }
+ 
+ /* XCB display code - render to X window */
++
+ #if defined(ENABLE_XCB)
+ 
+ static xcb_atom_t
+@@ -1025,6 +1016,7 @@
+    }
+ }
+ #endif
++
+ /* Wayland display code - render to Wayland window */
+ 
+ #if defined(ENABLE_WAYLAND)
+@@ -1564,9 +1556,11 @@
+    } else if (streq(s, "headless")) {
+       *mode = DISPLAY_MODE_HEADLESS;
+       return true;
++#if defined(HAVE_VULKAN_INTEL_H)
+    } else if (streq(s, "kms")) {
+       *mode = DISPLAY_MODE_KMS;
+       return true;
++#endif
+ #if defined(ENABLE_WAYLAND)
+    } else if (streq(s, "wayland")) {
+       *mode = DISPLAY_MODE_WAYLAND;
+@@ -1711,23 +1705,31 @@
+       display_mode = DISPLAY_MODE_WAYLAND;
+       if (init_wayland(vc) == -1) {
+          fprintf(stderr, "failed to initialize wayland, falling back "
++#if defined(ENABLE_XCB)
+                          "to xcb\n");
++#elif defined(HAVE_VULKAN_INTEL_H)
++                         "to kms\n");
++#endif
+ #endif
+ #if defined(ENABLE_XCB)
+          display_mode = DISPLAY_MODE_XCB;
+          if (init_xcb(vc) == -1) {
+             fprintf(stderr, "failed to initialize xcb, falling back "
+-                            "to kms\n");
+ #endif
++#if defined(HAVE_VULKAN_INTEL_H)
++                            "to kms\n");
+             display_mode = DISPLAY_MODE_KMS;
+             if (init_kms(vc) == -1) {
+-               fprintf(stderr, "failed to initialize kms, falling "
+-                               "back to headless\n");
++               fprintf(stderr, "failed to initialize kms, falling back "
++#endif
++                               "to headless\n");
+                display_mode = DISPLAY_MODE_HEADLESS;
+                if (init_headless(vc) == -1) {
+                   fail("failed to initialize headless mode");
+                }
++#if defined(HAVE_VULKAN_INTEL_H)
+             }
++#endif
+ #if defined(ENABLE_XCB)
+          }
+ #endif
+@@ -1743,10 +1745,12 @@
+       if (init_khr(vc) == -1)
+          fail("fail to initialize khr");
+       break;
++#if defined(HAVE_VULKAN_INTEL_H)
+    case DISPLAY_MODE_KMS:
+       if (init_kms(vc) == -1)
+          fail("failed to initialize kms");
+       break;
++#endif
+ #if defined(ENABLE_WAYLAND)
+    case DISPLAY_MODE_WAYLAND:
+       if (init_wayland(vc) == -1)
+@@ -1779,9 +1783,11 @@
+       mainloop_xcb(vc);
+       break;
+ #endif
++#if defined(HAVE_VULKAN_INTEL_H)
+    case DISPLAY_MODE_KMS:
+       mainloop_vt(vc);
+       break;
++#endif
+    case DISPLAY_MODE_KHR:
+       mainloop_khr(vc);
+       break;
+@@ -1800,7 +1806,9 @@
     parse_args(argc, argv);
  
     vc.model = cube_model;
@@ -166,24 +282,27 @@ exit
  #endif
 --- vkcube-20221109.orig/meson.build
 +++ vkcube-20221109/meson.build
-@@ -7,8 +7,8 @@
+@@ -7,14 +7,15 @@
  
  dep_vulkan = dependency('vulkan')
  dep_libpng = dependency('libpng')
 -dep_libdrm = dependency('libdrm')
 -dep_gbm = dependency('gbm')
-+dep_libdrm = []
-+dep_gbm = []
++dep_libdrm = dependency('libdrm', required : get_option('kms') == 'true')
++dep_gbm = dependency('gbm', required : get_option('kms') == 'true')
  dep_wayland_client = dependency('wayland-client', required : get_option('wayland') == 'true')
  dep_wayland_protocols = dependency('wayland-protocols', version : '>= 1.12', required : get_option('wayland') == 'true')
  dep_xcb = dependency('xcb', required : get_option('xcb') == 'true')
-@@ -16,6 +16,9 @@
+ 
  defs = []
  if cc.has_header('vulkan/vulkan_intel.h', dependencies: dep_vulkan)
++  message('kms enabled')
    defs += '-DHAVE_VULKAN_INTEL_H'
-+
-+  dep_libdrm = dependency('libdrm')
-+  dep_gbm = dependency('gbm')
  endif
  
- if dep_wayland_client.found() and get_option('wayland') != 'false'
+--- vkcube-20221109.orig/meson_options.txt
++++ vkcube-20221109/meson_options.txt
+@@ -1,2 +1,3 @@
++option('kms', type : 'combo', choices : ['auto', 'true', 'false'], value : 'auto')
+ option('xcb', type : 'combo', choices : ['auto', 'true', 'false'], value : 'auto')
+ option('wayland', type : 'combo', choices : ['auto', 'true', 'false'], value : 'auto')

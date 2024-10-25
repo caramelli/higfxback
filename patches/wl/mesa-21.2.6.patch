@@ -1,0 +1,1202 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build llvm-build mako-build meson-build vulkan-headers-build wayland-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists zstd-build && REQUIRES="$REQUIRES zstd-build"
+
+# configure
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup -Ddri-drivers= -Degl=disabled -Dgallium-drivers=swrast -Dglx=disabled -Dkmsdrm=disabled -Dopengl=false -Dplatforms=wayland -Dvulkan-drivers=swrast -Dvulkan-icd-dir=/wl/etc/vulkan/icd.d --prefix=/wl build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/wl/etc/vulkan/icd.d
+install -m 644 build/src/gallium/targets/lavapipe/lvp_icd*.json $DESTDIR/wl/etc/vulkan/icd.d/lvp_icd.json
+install -d $DESTDIR/wl/lib
+install build/src/gallium/targets/lavapipe/libvulkan_lvp.so $DESTDIR/wl/lib
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/mesa-vk-build.pc << EOF
+Name: mesa
+Version: 21.2.6
+Description: Implementation of Khronos specifications
+Requires: $REQUIRES
+
+exec=\\
+/wl/etc/vulkan/icd.d/lvp_icd.json \\
+/wl/lib/libvulkan_lvp.so
+EOF
+
+exit
+--- mesa-21.2.6.orig/include/drm-uapi/nouveau_drm.h
++++ mesa-21.2.6/include/drm-uapi/nouveau_drm.h
+@@ -0,0 +1,246 @@
++/*
++ * Copyright 2005 Stephane Marchesin.
++ * All Rights Reserved.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the next
++ * paragraph) shall be included in all copies or substantial portions of the
++ * Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++ * VA LINUX SYSTEMS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++ * OTHER DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef __NOUVEAU_DRM_H__
++#define __NOUVEAU_DRM_H__
++
++#define DRM_NOUVEAU_EVENT_NVIF                                       0x80000000
++
++#include "drm.h"
++
++#if defined(__cplusplus)
++extern "C" {
++#endif
++
++#define NOUVEAU_GETPARAM_PCI_VENDOR      3
++#define NOUVEAU_GETPARAM_PCI_DEVICE      4
++#define NOUVEAU_GETPARAM_BUS_TYPE        5
++#define NOUVEAU_GETPARAM_FB_SIZE         8
++#define NOUVEAU_GETPARAM_AGP_SIZE        9
++#define NOUVEAU_GETPARAM_CHIPSET_ID      11
++#define NOUVEAU_GETPARAM_VM_VRAM_BASE    12
++#define NOUVEAU_GETPARAM_GRAPH_UNITS     13
++#define NOUVEAU_GETPARAM_PTIMER_TIME     14
++#define NOUVEAU_GETPARAM_HAS_BO_USAGE    15
++#define NOUVEAU_GETPARAM_HAS_PAGEFLIP    16
++struct drm_nouveau_getparam {
++	__u64 param;
++	__u64 value;
++};
++
++struct drm_nouveau_channel_alloc {
++	__u32     fb_ctxdma_handle;
++	__u32     tt_ctxdma_handle;
++
++	__s32     channel;
++	__u32     pushbuf_domains;
++
++	/* Notifier memory */
++	__u32     notifier_handle;
++
++	/* DRM-enforced subchannel assignments */
++	struct {
++		__u32 handle;
++		__u32 grclass;
++	} subchan[8];
++	__u32 nr_subchan;
++};
++
++struct drm_nouveau_channel_free {
++	__s32 channel;
++};
++
++#define NOUVEAU_GEM_DOMAIN_CPU       (1 << 0)
++#define NOUVEAU_GEM_DOMAIN_VRAM      (1 << 1)
++#define NOUVEAU_GEM_DOMAIN_GART      (1 << 2)
++#define NOUVEAU_GEM_DOMAIN_MAPPABLE  (1 << 3)
++#define NOUVEAU_GEM_DOMAIN_COHERENT  (1 << 4)
++
++#define NOUVEAU_GEM_TILE_COMP        0x00030000 /* nv50-only */
++#define NOUVEAU_GEM_TILE_LAYOUT_MASK 0x0000ff00
++#define NOUVEAU_GEM_TILE_16BPP       0x00000001
++#define NOUVEAU_GEM_TILE_32BPP       0x00000002
++#define NOUVEAU_GEM_TILE_ZETA        0x00000004
++#define NOUVEAU_GEM_TILE_NONCONTIG   0x00000008
++
++struct drm_nouveau_gem_info {
++	__u32 handle;
++	__u32 domain;
++	__u64 size;
++	__u64 offset;
++	__u64 map_handle;
++	__u32 tile_mode;
++	__u32 tile_flags;
++};
++
++struct drm_nouveau_gem_new {
++	struct drm_nouveau_gem_info info;
++	__u32 channel_hint;
++	__u32 align;
++};
++
++#define NOUVEAU_GEM_MAX_BUFFERS 1024
++struct drm_nouveau_gem_pushbuf_bo_presumed {
++	__u32 valid;
++	__u32 domain;
++	__u64 offset;
++};
++
++struct drm_nouveau_gem_pushbuf_bo {
++	__u64 user_priv;
++	__u32 handle;
++	__u32 read_domains;
++	__u32 write_domains;
++	__u32 valid_domains;
++	struct drm_nouveau_gem_pushbuf_bo_presumed presumed;
++};
++
++#define NOUVEAU_GEM_RELOC_LOW  (1 << 0)
++#define NOUVEAU_GEM_RELOC_HIGH (1 << 1)
++#define NOUVEAU_GEM_RELOC_OR   (1 << 2)
++#define NOUVEAU_GEM_MAX_RELOCS 1024
++struct drm_nouveau_gem_pushbuf_reloc {
++	__u32 reloc_bo_index;
++	__u32 reloc_bo_offset;
++	__u32 bo_index;
++	__u32 flags;
++	__u32 data;
++	__u32 vor;
++	__u32 tor;
++};
++
++#define NOUVEAU_GEM_MAX_PUSH 512
++struct drm_nouveau_gem_pushbuf_push {
++	__u32 bo_index;
++	__u32 pad;
++	__u64 offset;
++	__u64 length;
++};
++
++struct drm_nouveau_gem_pushbuf {
++	__u32 channel;
++	__u32 nr_buffers;
++	__u64 buffers;
++	__u32 nr_relocs;
++	__u32 nr_push;
++	__u64 relocs;
++	__u64 push;
++	__u32 suffix0;
++	__u32 suffix1;
++#define NOUVEAU_GEM_PUSHBUF_SYNC                                    (1ULL << 0)
++	__u64 vram_available;
++	__u64 gart_available;
++};
++
++#define NOUVEAU_GEM_CPU_PREP_NOWAIT                                  0x00000001
++#define NOUVEAU_GEM_CPU_PREP_WRITE                                   0x00000004
++struct drm_nouveau_gem_cpu_prep {
++	__u32 handle;
++	__u32 flags;
++};
++
++struct drm_nouveau_gem_cpu_fini {
++	__u32 handle;
++};
++
++#define DRM_NOUVEAU_GETPARAM           0x00
++#define DRM_NOUVEAU_SETPARAM           0x01 /* deprecated */
++#define DRM_NOUVEAU_CHANNEL_ALLOC      0x02
++#define DRM_NOUVEAU_CHANNEL_FREE       0x03
++#define DRM_NOUVEAU_GROBJ_ALLOC        0x04 /* deprecated */
++#define DRM_NOUVEAU_NOTIFIEROBJ_ALLOC  0x05 /* deprecated */
++#define DRM_NOUVEAU_GPUOBJ_FREE        0x06 /* deprecated */
++#define DRM_NOUVEAU_NVIF               0x07
++#define DRM_NOUVEAU_SVM_INIT           0x08
++#define DRM_NOUVEAU_SVM_BIND           0x09
++#define DRM_NOUVEAU_GEM_NEW            0x40
++#define DRM_NOUVEAU_GEM_PUSHBUF        0x41
++#define DRM_NOUVEAU_GEM_CPU_PREP       0x42
++#define DRM_NOUVEAU_GEM_CPU_FINI       0x43
++#define DRM_NOUVEAU_GEM_INFO           0x44
++
++struct drm_nouveau_svm_init {
++	__u64 unmanaged_addr;
++	__u64 unmanaged_size;
++};
++
++struct drm_nouveau_svm_bind {
++	__u64 header;
++	__u64 va_start;
++	__u64 va_end;
++	__u64 npages;
++	__u64 stride;
++	__u64 result;
++	__u64 reserved0;
++	__u64 reserved1;
++};
++
++#define NOUVEAU_SVM_BIND_COMMAND_SHIFT          0
++#define NOUVEAU_SVM_BIND_COMMAND_BITS           8
++#define NOUVEAU_SVM_BIND_COMMAND_MASK           ((1 << 8) - 1)
++#define NOUVEAU_SVM_BIND_PRIORITY_SHIFT         8
++#define NOUVEAU_SVM_BIND_PRIORITY_BITS          8
++#define NOUVEAU_SVM_BIND_PRIORITY_MASK          ((1 << 8) - 1)
++#define NOUVEAU_SVM_BIND_TARGET_SHIFT           16
++#define NOUVEAU_SVM_BIND_TARGET_BITS            32
++#define NOUVEAU_SVM_BIND_TARGET_MASK            0xffffffff
++
++/*
++ * Below is use to validate ioctl argument, userspace can also use it to make
++ * sure that no bit are set beyond known fields for a given kernel version.
++ */
++#define NOUVEAU_SVM_BIND_VALID_BITS     48
++#define NOUVEAU_SVM_BIND_VALID_MASK     ((1ULL << NOUVEAU_SVM_BIND_VALID_BITS) - 1)
++
++
++/*
++ * NOUVEAU_BIND_COMMAND__MIGRATE: synchronous migrate to target memory.
++ * result: number of page successfuly migrate to the target memory.
++ */
++#define NOUVEAU_SVM_BIND_COMMAND__MIGRATE               0
++
++/*
++ * NOUVEAU_SVM_BIND_HEADER_TARGET__GPU_VRAM: target the GPU VRAM memory.
++ */
++#define NOUVEAU_SVM_BIND_TARGET__GPU_VRAM               (1UL << 31)
++
++
++#define DRM_IOCTL_NOUVEAU_GETPARAM           DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_GETPARAM, struct drm_nouveau_getparam)
++#define DRM_IOCTL_NOUVEAU_CHANNEL_ALLOC      DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_CHANNEL_ALLOC, struct drm_nouveau_channel_alloc)
++#define DRM_IOCTL_NOUVEAU_CHANNEL_FREE       DRM_IOW (DRM_COMMAND_BASE + DRM_NOUVEAU_CHANNEL_FREE, struct drm_nouveau_channel_free)
++
++#define DRM_IOCTL_NOUVEAU_SVM_INIT           DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_SVM_INIT, struct drm_nouveau_svm_init)
++#define DRM_IOCTL_NOUVEAU_SVM_BIND           DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_SVM_BIND, struct drm_nouveau_svm_bind)
++
++#define DRM_IOCTL_NOUVEAU_GEM_NEW            DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_GEM_NEW, struct drm_nouveau_gem_new)
++#define DRM_IOCTL_NOUVEAU_GEM_PUSHBUF        DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_GEM_PUSHBUF, struct drm_nouveau_gem_pushbuf)
++#define DRM_IOCTL_NOUVEAU_GEM_CPU_PREP       DRM_IOW (DRM_COMMAND_BASE + DRM_NOUVEAU_GEM_CPU_PREP, struct drm_nouveau_gem_cpu_prep)
++#define DRM_IOCTL_NOUVEAU_GEM_CPU_FINI       DRM_IOW (DRM_COMMAND_BASE + DRM_NOUVEAU_GEM_CPU_FINI, struct drm_nouveau_gem_cpu_fini)
++#define DRM_IOCTL_NOUVEAU_GEM_INFO           DRM_IOWR(DRM_COMMAND_BASE + DRM_NOUVEAU_GEM_INFO, struct drm_nouveau_gem_info)
++
++#if defined(__cplusplus)
++}
++#endif
++
++#endif /* __NOUVEAU_DRM_H__ */
+--- mesa-21.2.6.orig/meson.build
++++ mesa-21.2.6/meson.build
+@@ -164,7 +164,19 @@
+ # Only build shared_glapi if at least one OpenGL API is enabled
+ with_shared_glapi = with_shared_glapi and with_any_opengl
+ 
+-system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos'].contains(host_machine.system())
++_kmsdrm = get_option('kmsdrm')
++if _kmsdrm == 'true'
++  _kmsdrm = 'enabled'
++  warning('kmsdrm option "true" deprecated, please use "enabled" instead.')
++elif _kmsdrm == 'false'
++  _kmsdrm = 'disabled'
++  warning('kmsdrm option "false" deprecated, please use "disabled" instead.')
++endif
++if _kmsdrm == 'auto'
++  system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos'].contains(host_machine.system())
++else
++  system_has_kms_drm = _kmsdrm == 'enabled'
++endif
+ 
+ dri_drivers = get_option('dri-drivers')
+ if dri_drivers.contains('auto')
+@@ -1565,11 +1577,16 @@
+ endforeach
+ 
+ with_gallium_drisw_kms = false
+-dep_libdrm = dependency(
+-  'libdrm', version : '>=' + _drm_ver,
+-  # GNU/Hurd includes egl_dri2, without drm.
+-  required : (with_dri2 and host_machine.system() != 'gnu') or with_dri3
+-)
++
++dep_libdrm = dependency('', required: false)
++if system_has_kms_drm
++  dep_libdrm = dependency(
++    'libdrm', version : '>=' + _drm_ver,
++    # GNU/Hurd includes egl_dri2, without drm.
++    required : (with_dri2 and host_machine.system() != 'gnu') or with_dri3
++  )
++endif
++
+ if dep_libdrm.found()
+   pre_args += '-DHAVE_LIBDRM'
+   if with_dri_platform == 'drm' and with_dri
+@@ -1908,8 +1925,8 @@
+     wl_scanner_arg = 'code'
+   endif
+   dep_wl_protocols = dependency('wayland-protocols', version : '>= 1.8')
+-  dep_wayland_client = dependency('wayland-client', version : '>=1.18')
+-  dep_wayland_server = dependency('wayland-server', version : '>=1.18')
++  dep_wayland_client = dependency('wayland-client', version : '>=1.17')
++  dep_wayland_server = dependency('wayland-server', version : '>=1.17')
+   if with_egl
+     dep_wayland_egl = dependency('wayland-egl-backend', version : '>= 3')
+     dep_wayland_egl_headers = dep_wayland_egl.partial_dependency(compile_args : true)
+--- mesa-21.2.6.orig/meson_options.txt
++++ mesa-21.2.6/meson_options.txt
+@@ -28,6 +28,13 @@
+   description : 'window systems to support. If this is set to `auto`, all platforms applicable will be enabled.'
+ )
+ option(
++  'kmsdrm',
++  type : 'combo',
++  value : 'auto',
++  choices : ['auto', 'true', 'false', 'enabled', 'disabled'],
++  description : 'Enable KMS/DRM support.'
++)
++option(
+   'egl-native-platform',
+   type : 'combo',
+   value : 'auto',
+--- mesa-21.2.6.orig/src/gallium/frontends/lavapipe/lvp_device.c
++++ mesa-21.2.6/src/gallium/frontends/lavapipe/lvp_device.c
+@@ -1196,8 +1196,6 @@
+    const VkAllocationCallbacks*                pAllocator,
+    VkDevice*                                   pDevice)
+ {
+-   fprintf(stderr, "WARNING: lavapipe is not a conformant vulkan implementation, testing use only.\n");
+-
+    LVP_FROM_HANDLE(lvp_physical_device, physical_device, physicalDevice);
+    struct lvp_device *device;
+    struct lvp_instance *instance = (struct lvp_instance *)physical_device->vk.instance;
+--- mesa-21.2.6.orig/src/loader/pci_id_driver_map.c
++++ mesa-21.2.6/src/loader/pci_id_driver_map.c
+@@ -29,7 +29,7 @@
+ 
+ #include <stdlib.h>
+ #include <xf86drm.h>
+-#include <nouveau_drm.h>
++#include "drm-uapi/nouveau_drm.h"
+ 
+ static int
+ nouveau_chipset(int fd)
+--- mesa-21.2.6.orig/src/vulkan/wsi/wsi_common.c
++++ mesa-21.2.6/src/vulkan/wsi/wsi_common.c
+@@ -687,3 +687,348 @@
+ {
+    return os_time_get_nano();
+ }
++
++uint32_t
++select_memory_type(const struct wsi_device *wsi,
++                   bool want_device_local,
++                   uint32_t type_bits)
++{
++   assert(type_bits);
++
++   bool all_local = true;
++   for (uint32_t i = 0; i < wsi->memory_props.memoryTypeCount; i++) {
++       const VkMemoryType type = wsi->memory_props.memoryTypes[i];
++       bool local = type.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
++
++       if ((type_bits & (1 << i)) && local == want_device_local)
++         return i;
++       all_local &= local;
++   }
++
++   /* ignore want_device_local when all memory types are device-local */
++   if (all_local) {
++      assert(!want_device_local);
++      return ffs(type_bits) - 1;
++   }
++
++   unreachable("No memory type found");
++}
++
++VkResult
++wsi_create_native_image(const struct wsi_swapchain *chain,
++                        const VkSwapchainCreateInfoKHR *pCreateInfo,
++                        uint32_t num_modifier_lists,
++                        const uint32_t *num_modifiers,
++                        const uint64_t *const *modifiers,
++                        struct wsi_image *image)
++{
++   const struct wsi_device *wsi = chain->wsi;
++   VkResult result;
++
++   memset(image, 0, sizeof(*image));
++   for (int i = 0; i < ARRAY_SIZE(image->fds); i++)
++      image->fds[i] = -1;
++
++   struct wsi_image_create_info image_wsi_info = {
++      .sType = VK_STRUCTURE_TYPE_WSI_IMAGE_CREATE_INFO_MESA,
++   };
++   VkImageCreateInfo image_info = {
++      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
++      .pNext = &image_wsi_info,
++      .flags = 0,
++      .imageType = VK_IMAGE_TYPE_2D,
++      .format = pCreateInfo->imageFormat,
++      .extent = {
++         .width = pCreateInfo->imageExtent.width,
++         .height = pCreateInfo->imageExtent.height,
++         .depth = 1,
++      },
++      .mipLevels = 1,
++      .arrayLayers = 1,
++      .samples = VK_SAMPLE_COUNT_1_BIT,
++      .tiling = VK_IMAGE_TILING_OPTIMAL,
++      .usage = pCreateInfo->imageUsage,
++      .sharingMode = pCreateInfo->imageSharingMode,
++      .queueFamilyIndexCount = pCreateInfo->queueFamilyIndexCount,
++      .pQueueFamilyIndices = pCreateInfo->pQueueFamilyIndices,
++      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
++   };
++
++   VkImageFormatListCreateInfoKHR image_format_list;
++   if (pCreateInfo->flags & VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR) {
++      image_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT |
++                          VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR;
++
++      const VkImageFormatListCreateInfoKHR *format_list =
++         vk_find_struct_const(pCreateInfo->pNext,
++                              IMAGE_FORMAT_LIST_CREATE_INFO_KHR);
++
++#ifndef NDEBUG
++      assume(format_list && format_list->viewFormatCount > 0);
++      bool format_found = false;
++      for (int i = 0; i < format_list->viewFormatCount; i++)
++         if (pCreateInfo->imageFormat == format_list->pViewFormats[i])
++            format_found = true;
++      assert(format_found);
++#endif
++
++      image_format_list = *format_list;
++      image_format_list.pNext = NULL;
++      __vk_append_struct(&image_info, &image_format_list);
++   }
++
++   VkImageDrmFormatModifierListCreateInfoEXT image_modifier_list;
++
++   uint32_t image_modifier_count = 0, modifier_prop_count = 0;
++   struct VkDrmFormatModifierPropertiesEXT *modifier_props = NULL;
++   uint64_t *image_modifiers = NULL;
++   if (num_modifier_lists == 0) {
++      /* If we don't have modifiers, fall back to the legacy "scanout" flag */
++      image_wsi_info.scanout = true;
++   } else {
++      /* The winsys can't request modifiers if we don't support them. */
++      assert(wsi->supports_modifiers);
++      struct VkDrmFormatModifierPropertiesListEXT modifier_props_list = {
++         .sType = VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
++      };
++      VkFormatProperties2 format_props = {
++         .sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2,
++         .pNext = &modifier_props_list,
++      };
++      wsi->GetPhysicalDeviceFormatProperties2KHR(wsi->pdevice,
++                                                 pCreateInfo->imageFormat,
++                                                 &format_props);
++      assert(modifier_props_list.drmFormatModifierCount > 0);
++      modifier_props = vk_alloc(&chain->alloc,
++                                sizeof(*modifier_props) *
++                                modifier_props_list.drmFormatModifierCount,
++                                8,
++                                VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
++      if (!modifier_props) {
++         result = VK_ERROR_OUT_OF_HOST_MEMORY;
++         goto fail;
++      }
++
++      modifier_props_list.pDrmFormatModifierProperties = modifier_props;
++      wsi->GetPhysicalDeviceFormatProperties2KHR(wsi->pdevice,
++                                                 pCreateInfo->imageFormat,
++                                                 &format_props);
++
++      /* Call GetImageFormatProperties with every modifier and filter the list
++       * down to those that we know work.
++       */
++      modifier_prop_count = 0;
++      for (uint32_t i = 0; i < modifier_props_list.drmFormatModifierCount; i++) {
++         VkPhysicalDeviceImageDrmFormatModifierInfoEXT mod_info = {
++            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
++            .drmFormatModifier = modifier_props[i].drmFormatModifier,
++            .sharingMode = pCreateInfo->imageSharingMode,
++            .queueFamilyIndexCount = pCreateInfo->queueFamilyIndexCount,
++            .pQueueFamilyIndices = pCreateInfo->pQueueFamilyIndices,
++         };
++         VkPhysicalDeviceImageFormatInfo2 format_info = {
++            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
++            .format = pCreateInfo->imageFormat,
++            .type = VK_IMAGE_TYPE_2D,
++            .tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT,
++            .usage = pCreateInfo->imageUsage,
++            .flags = image_info.flags,
++         };
++
++         VkImageFormatListCreateInfoKHR format_list;
++         if (image_info.flags & VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT) {
++            format_list = image_format_list;
++            format_list.pNext = NULL;
++            __vk_append_struct(&format_info, &format_list);
++         }
++
++         VkImageFormatProperties2 format_props = {
++            .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2,
++            .pNext = NULL,
++         };
++         __vk_append_struct(&format_info, &mod_info);
++         result = wsi->GetPhysicalDeviceImageFormatProperties2(wsi->pdevice,
++                                                               &format_info,
++                                                               &format_props);
++         if (result == VK_SUCCESS)
++            modifier_props[modifier_prop_count++] = modifier_props[i];
++      }
++
++      uint32_t max_modifier_count = 0;
++      for (uint32_t l = 0; l < num_modifier_lists; l++)
++         max_modifier_count = MAX2(max_modifier_count, num_modifiers[l]);
++
++      image_modifiers = vk_alloc(&chain->alloc,
++                                 sizeof(*image_modifiers) *
++                                 max_modifier_count,
++                                 8,
++                                 VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
++      if (!image_modifiers) {
++         result = VK_ERROR_OUT_OF_HOST_MEMORY;
++         goto fail;
++      }
++
++      image_modifier_count = 0;
++      for (uint32_t l = 0; l < num_modifier_lists; l++) {
++         /* Walk the modifier lists and construct a list of supported
++          * modifiers.
++          */
++         for (uint32_t i = 0; i < num_modifiers[l]; i++) {
++            for (uint32_t j = 0; j < modifier_prop_count; j++) {
++               if (modifier_props[j].drmFormatModifier == modifiers[l][i])
++                  image_modifiers[image_modifier_count++] = modifiers[l][i];
++            }
++         }
++
++         /* We only want to take the modifiers from the first list */
++         if (image_modifier_count > 0)
++            break;
++      }
++
++      if (image_modifier_count > 0) {
++         image_modifier_list = (VkImageDrmFormatModifierListCreateInfoEXT) {
++            .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
++            .drmFormatModifierCount = image_modifier_count,
++            .pDrmFormatModifiers = image_modifiers,
++         };
++         image_info.tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
++         __vk_append_struct(&image_info, &image_modifier_list);
++      } else {
++         /* TODO: Add a proper error here */
++         assert(!"Failed to find a supported modifier!  This should never "
++                 "happen because LINEAR should always be available");
++         result = VK_ERROR_OUT_OF_HOST_MEMORY;
++         goto fail;
++      }
++   }
++
++   result = wsi->CreateImage(chain->device, &image_info,
++                             &chain->alloc, &image->image);
++   if (result != VK_SUCCESS)
++      goto fail;
++
++   VkMemoryRequirements reqs;
++   wsi->GetImageMemoryRequirements(chain->device, image->image, &reqs);
++
++   const struct wsi_memory_allocate_info memory_wsi_info = {
++      .sType = VK_STRUCTURE_TYPE_WSI_MEMORY_ALLOCATE_INFO_MESA,
++      .pNext = NULL,
++      .implicit_sync = true,
++   };
++   const VkExportMemoryAllocateInfo memory_export_info = {
++      .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
++      .pNext = &memory_wsi_info,
++      .handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT,
++   };
++   const VkMemoryDedicatedAllocateInfo memory_dedicated_info = {
++      .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
++      .pNext = &memory_export_info,
++      .image = image->image,
++      .buffer = VK_NULL_HANDLE,
++   };
++   const VkMemoryAllocateInfo memory_info = {
++      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
++      .pNext = &memory_dedicated_info,
++      .allocationSize = reqs.size,
++      .memoryTypeIndex = select_memory_type(wsi, true, reqs.memoryTypeBits),
++   };
++   result = wsi->AllocateMemory(chain->device, &memory_info,
++                                &chain->alloc, &image->memory);
++   if (result != VK_SUCCESS)
++      goto fail;
++
++   result = wsi->BindImageMemory(chain->device, image->image,
++                                 image->memory, 0);
++   if (result != VK_SUCCESS)
++      goto fail;
++
++   int fd = -1;
++   if (!wsi->sw) {
++      const VkMemoryGetFdInfoKHR memory_get_fd_info = {
++         .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
++         .pNext = NULL,
++         .memory = image->memory,
++         .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT,
++      };
++
++      result = wsi->GetMemoryFdKHR(chain->device, &memory_get_fd_info, &fd);
++      if (result != VK_SUCCESS)
++         goto fail;
++   }
++
++   if (!wsi->sw && num_modifier_lists > 0) {
++      VkImageDrmFormatModifierPropertiesEXT image_mod_props = {
++         .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
++      };
++      result = wsi->GetImageDrmFormatModifierPropertiesEXT(chain->device,
++                                                           image->image,
++                                                           &image_mod_props);
++      if (result != VK_SUCCESS) {
++         close(fd);
++         goto fail;
++      }
++      image->drm_modifier = image_mod_props.drmFormatModifier;
++      assert(image->drm_modifier != 0xffffffffffffff);
++
++      for (uint32_t j = 0; j < modifier_prop_count; j++) {
++         if (modifier_props[j].drmFormatModifier == image->drm_modifier) {
++            image->num_planes = modifier_props[j].drmFormatModifierPlaneCount;
++            break;
++         }
++      }
++
++      for (uint32_t p = 0; p < image->num_planes; p++) {
++         const VkImageSubresource image_subresource = {
++            .aspectMask = VK_IMAGE_ASPECT_PLANE_0_BIT << p,
++            .mipLevel = 0,
++            .arrayLayer = 0,
++         };
++         VkSubresourceLayout image_layout;
++         wsi->GetImageSubresourceLayout(chain->device, image->image,
++                                        &image_subresource, &image_layout);
++         image->sizes[p] = image_layout.size;
++         image->row_pitches[p] = image_layout.rowPitch;
++         image->offsets[p] = image_layout.offset;
++         if (p == 0) {
++            image->fds[p] = fd;
++         } else {
++            image->fds[p] = os_dupfd_cloexec(fd);
++            if (image->fds[p] == -1) {
++               for (uint32_t i = 0; i < p; i++)
++                  close(image->fds[i]);
++
++               result = VK_ERROR_OUT_OF_HOST_MEMORY;
++               goto fail;
++            }
++         }
++      }
++   } else {
++      const VkImageSubresource image_subresource = {
++         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
++         .mipLevel = 0,
++         .arrayLayer = 0,
++      };
++      VkSubresourceLayout image_layout;
++      wsi->GetImageSubresourceLayout(chain->device, image->image,
++                                     &image_subresource, &image_layout);
++
++      image->drm_modifier = 0xffffffffffffff;
++      image->num_planes = 1;
++      image->sizes[0] = reqs.size;
++      image->row_pitches[0] = image_layout.rowPitch;
++      image->offsets[0] = 0;
++      image->fds[0] = fd;
++   }
++
++   vk_free(&chain->alloc, modifier_props);
++   vk_free(&chain->alloc, image_modifiers);
++
++   return VK_SUCCESS;
++
++fail:
++   vk_free(&chain->alloc, modifier_props);
++   vk_free(&chain->alloc, image_modifiers);
++   wsi_destroy_image(chain, image);
++
++   return result;
++}
+--- mesa-21.2.6.orig/src/vulkan/wsi/wsi_common_drm.c
++++ mesa-21.2.6/src/vulkan/wsi/wsi_common_drm.c
+@@ -64,32 +64,6 @@
+ }
+ 
+ static uint32_t
+-select_memory_type(const struct wsi_device *wsi,
+-                   bool want_device_local,
+-                   uint32_t type_bits)
+-{
+-   assert(type_bits);
+-
+-   bool all_local = true;
+-   for (uint32_t i = 0; i < wsi->memory_props.memoryTypeCount; i++) {
+-       const VkMemoryType type = wsi->memory_props.memoryTypes[i];
+-       bool local = type.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+-
+-       if ((type_bits & (1 << i)) && local == want_device_local)
+-         return i;
+-       all_local &= local;
+-   }
+-
+-   /* ignore want_device_local when all memory types are device-local */
+-   if (all_local) {
+-      assert(!want_device_local);
+-      return ffs(type_bits) - 1;
+-   }
+-
+-   unreachable("No memory type found");
+-}
+-
+-static uint32_t
+ vk_format_size(VkFormat format)
+ {
+    switch (format) {
+@@ -101,325 +75,6 @@
+    }
+ }
+ 
+-VkResult
+-wsi_create_native_image(const struct wsi_swapchain *chain,
+-                        const VkSwapchainCreateInfoKHR *pCreateInfo,
+-                        uint32_t num_modifier_lists,
+-                        const uint32_t *num_modifiers,
+-                        const uint64_t *const *modifiers,
+-                        struct wsi_image *image)
+-{
+-   const struct wsi_device *wsi = chain->wsi;
+-   VkResult result;
+-
+-   memset(image, 0, sizeof(*image));
+-   for (int i = 0; i < ARRAY_SIZE(image->fds); i++)
+-      image->fds[i] = -1;
+-
+-   struct wsi_image_create_info image_wsi_info = {
+-      .sType = VK_STRUCTURE_TYPE_WSI_IMAGE_CREATE_INFO_MESA,
+-   };
+-   VkImageCreateInfo image_info = {
+-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+-      .pNext = &image_wsi_info,
+-      .flags = 0,
+-      .imageType = VK_IMAGE_TYPE_2D,
+-      .format = pCreateInfo->imageFormat,
+-      .extent = {
+-         .width = pCreateInfo->imageExtent.width,
+-         .height = pCreateInfo->imageExtent.height,
+-         .depth = 1,
+-      },
+-      .mipLevels = 1,
+-      .arrayLayers = 1,
+-      .samples = VK_SAMPLE_COUNT_1_BIT,
+-      .tiling = VK_IMAGE_TILING_OPTIMAL,
+-      .usage = pCreateInfo->imageUsage,
+-      .sharingMode = pCreateInfo->imageSharingMode,
+-      .queueFamilyIndexCount = pCreateInfo->queueFamilyIndexCount,
+-      .pQueueFamilyIndices = pCreateInfo->pQueueFamilyIndices,
+-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+-   };
+-
+-   VkImageFormatListCreateInfoKHR image_format_list;
+-   if (pCreateInfo->flags & VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR) {
+-      image_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT |
+-                          VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR;
+-
+-      const VkImageFormatListCreateInfoKHR *format_list =
+-         vk_find_struct_const(pCreateInfo->pNext,
+-                              IMAGE_FORMAT_LIST_CREATE_INFO_KHR);
+-
+-#ifndef NDEBUG
+-      assume(format_list && format_list->viewFormatCount > 0);
+-      bool format_found = false;
+-      for (int i = 0; i < format_list->viewFormatCount; i++)
+-         if (pCreateInfo->imageFormat == format_list->pViewFormats[i])
+-            format_found = true;
+-      assert(format_found);
+-#endif
+-
+-      image_format_list = *format_list;
+-      image_format_list.pNext = NULL;
+-      __vk_append_struct(&image_info, &image_format_list);
+-   }
+-
+-   VkImageDrmFormatModifierListCreateInfoEXT image_modifier_list;
+-
+-   uint32_t image_modifier_count = 0, modifier_prop_count = 0;
+-   struct VkDrmFormatModifierPropertiesEXT *modifier_props = NULL;
+-   uint64_t *image_modifiers = NULL;
+-   if (num_modifier_lists == 0) {
+-      /* If we don't have modifiers, fall back to the legacy "scanout" flag */
+-      image_wsi_info.scanout = true;
+-   } else {
+-      /* The winsys can't request modifiers if we don't support them. */
+-      assert(wsi->supports_modifiers);
+-      struct VkDrmFormatModifierPropertiesListEXT modifier_props_list = {
+-         .sType = VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
+-      };
+-      VkFormatProperties2 format_props = {
+-         .sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2,
+-         .pNext = &modifier_props_list,
+-      };
+-      wsi->GetPhysicalDeviceFormatProperties2KHR(wsi->pdevice,
+-                                                 pCreateInfo->imageFormat,
+-                                                 &format_props);
+-      assert(modifier_props_list.drmFormatModifierCount > 0);
+-      modifier_props = vk_alloc(&chain->alloc,
+-                                sizeof(*modifier_props) *
+-                                modifier_props_list.drmFormatModifierCount,
+-                                8,
+-                                VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+-      if (!modifier_props) {
+-         result = VK_ERROR_OUT_OF_HOST_MEMORY;
+-         goto fail;
+-      }
+-
+-      modifier_props_list.pDrmFormatModifierProperties = modifier_props;
+-      wsi->GetPhysicalDeviceFormatProperties2KHR(wsi->pdevice,
+-                                                 pCreateInfo->imageFormat,
+-                                                 &format_props);
+-
+-      /* Call GetImageFormatProperties with every modifier and filter the list
+-       * down to those that we know work.
+-       */
+-      modifier_prop_count = 0;
+-      for (uint32_t i = 0; i < modifier_props_list.drmFormatModifierCount; i++) {
+-         VkPhysicalDeviceImageDrmFormatModifierInfoEXT mod_info = {
+-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
+-            .drmFormatModifier = modifier_props[i].drmFormatModifier,
+-            .sharingMode = pCreateInfo->imageSharingMode,
+-            .queueFamilyIndexCount = pCreateInfo->queueFamilyIndexCount,
+-            .pQueueFamilyIndices = pCreateInfo->pQueueFamilyIndices,
+-         };
+-         VkPhysicalDeviceImageFormatInfo2 format_info = {
+-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
+-            .format = pCreateInfo->imageFormat,
+-            .type = VK_IMAGE_TYPE_2D,
+-            .tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT,
+-            .usage = pCreateInfo->imageUsage,
+-            .flags = image_info.flags,
+-         };
+-
+-         VkImageFormatListCreateInfoKHR format_list;
+-         if (image_info.flags & VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT) {
+-            format_list = image_format_list;
+-            format_list.pNext = NULL;
+-            __vk_append_struct(&format_info, &format_list);
+-         }
+-
+-         VkImageFormatProperties2 format_props = {
+-            .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2,
+-            .pNext = NULL,
+-         };
+-         __vk_append_struct(&format_info, &mod_info);
+-         result = wsi->GetPhysicalDeviceImageFormatProperties2(wsi->pdevice,
+-                                                               &format_info,
+-                                                               &format_props);
+-         if (result == VK_SUCCESS)
+-            modifier_props[modifier_prop_count++] = modifier_props[i];
+-      }
+-
+-      uint32_t max_modifier_count = 0;
+-      for (uint32_t l = 0; l < num_modifier_lists; l++)
+-         max_modifier_count = MAX2(max_modifier_count, num_modifiers[l]);
+-
+-      image_modifiers = vk_alloc(&chain->alloc,
+-                                 sizeof(*image_modifiers) *
+-                                 max_modifier_count,
+-                                 8,
+-                                 VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+-      if (!image_modifiers) {
+-         result = VK_ERROR_OUT_OF_HOST_MEMORY;
+-         goto fail;
+-      }
+-
+-      image_modifier_count = 0;
+-      for (uint32_t l = 0; l < num_modifier_lists; l++) {
+-         /* Walk the modifier lists and construct a list of supported
+-          * modifiers.
+-          */
+-         for (uint32_t i = 0; i < num_modifiers[l]; i++) {
+-            for (uint32_t j = 0; j < modifier_prop_count; j++) {
+-               if (modifier_props[j].drmFormatModifier == modifiers[l][i])
+-                  image_modifiers[image_modifier_count++] = modifiers[l][i];
+-            }
+-         }
+-
+-         /* We only want to take the modifiers from the first list */
+-         if (image_modifier_count > 0)
+-            break;
+-      }
+-
+-      if (image_modifier_count > 0) {
+-         image_modifier_list = (VkImageDrmFormatModifierListCreateInfoEXT) {
+-            .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
+-            .drmFormatModifierCount = image_modifier_count,
+-            .pDrmFormatModifiers = image_modifiers,
+-         };
+-         image_info.tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
+-         __vk_append_struct(&image_info, &image_modifier_list);
+-      } else {
+-         /* TODO: Add a proper error here */
+-         assert(!"Failed to find a supported modifier!  This should never "
+-                 "happen because LINEAR should always be available");
+-         result = VK_ERROR_OUT_OF_HOST_MEMORY;
+-         goto fail;
+-      }
+-   }
+-
+-   result = wsi->CreateImage(chain->device, &image_info,
+-                             &chain->alloc, &image->image);
+-   if (result != VK_SUCCESS)
+-      goto fail;
+-
+-   VkMemoryRequirements reqs;
+-   wsi->GetImageMemoryRequirements(chain->device, image->image, &reqs);
+-
+-   const struct wsi_memory_allocate_info memory_wsi_info = {
+-      .sType = VK_STRUCTURE_TYPE_WSI_MEMORY_ALLOCATE_INFO_MESA,
+-      .pNext = NULL,
+-      .implicit_sync = true,
+-   };
+-   const VkExportMemoryAllocateInfo memory_export_info = {
+-      .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
+-      .pNext = &memory_wsi_info,
+-      .handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT,
+-   };
+-   const VkMemoryDedicatedAllocateInfo memory_dedicated_info = {
+-      .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
+-      .pNext = &memory_export_info,
+-      .image = image->image,
+-      .buffer = VK_NULL_HANDLE,
+-   };
+-   const VkMemoryAllocateInfo memory_info = {
+-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+-      .pNext = &memory_dedicated_info,
+-      .allocationSize = reqs.size,
+-      .memoryTypeIndex = select_memory_type(wsi, true, reqs.memoryTypeBits),
+-   };
+-   result = wsi->AllocateMemory(chain->device, &memory_info,
+-                                &chain->alloc, &image->memory);
+-   if (result != VK_SUCCESS)
+-      goto fail;
+-
+-   result = wsi->BindImageMemory(chain->device, image->image,
+-                                 image->memory, 0);
+-   if (result != VK_SUCCESS)
+-      goto fail;
+-
+-   int fd = -1;
+-   if (!wsi->sw) {
+-      const VkMemoryGetFdInfoKHR memory_get_fd_info = {
+-         .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
+-         .pNext = NULL,
+-         .memory = image->memory,
+-         .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT,
+-      };
+-
+-      result = wsi->GetMemoryFdKHR(chain->device, &memory_get_fd_info, &fd);
+-      if (result != VK_SUCCESS)
+-         goto fail;
+-   }
+-
+-   if (!wsi->sw && num_modifier_lists > 0) {
+-      VkImageDrmFormatModifierPropertiesEXT image_mod_props = {
+-         .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
+-      };
+-      result = wsi->GetImageDrmFormatModifierPropertiesEXT(chain->device,
+-                                                           image->image,
+-                                                           &image_mod_props);
+-      if (result != VK_SUCCESS) {
+-         close(fd);
+-         goto fail;
+-      }
+-      image->drm_modifier = image_mod_props.drmFormatModifier;
+-      assert(image->drm_modifier != DRM_FORMAT_MOD_INVALID);
+-
+-      for (uint32_t j = 0; j < modifier_prop_count; j++) {
+-         if (modifier_props[j].drmFormatModifier == image->drm_modifier) {
+-            image->num_planes = modifier_props[j].drmFormatModifierPlaneCount;
+-            break;
+-         }
+-      }
+-
+-      for (uint32_t p = 0; p < image->num_planes; p++) {
+-         const VkImageSubresource image_subresource = {
+-            .aspectMask = VK_IMAGE_ASPECT_PLANE_0_BIT << p,
+-            .mipLevel = 0,
+-            .arrayLayer = 0,
+-         };
+-         VkSubresourceLayout image_layout;
+-         wsi->GetImageSubresourceLayout(chain->device, image->image,
+-                                        &image_subresource, &image_layout);
+-         image->sizes[p] = image_layout.size;
+-         image->row_pitches[p] = image_layout.rowPitch;
+-         image->offsets[p] = image_layout.offset;
+-         if (p == 0) {
+-            image->fds[p] = fd;
+-         } else {
+-            image->fds[p] = os_dupfd_cloexec(fd);
+-            if (image->fds[p] == -1) {
+-               for (uint32_t i = 0; i < p; i++)
+-                  close(image->fds[i]);
+-
+-               result = VK_ERROR_OUT_OF_HOST_MEMORY;
+-               goto fail;
+-            }
+-         }
+-      }
+-   } else {
+-      const VkImageSubresource image_subresource = {
+-         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+-         .mipLevel = 0,
+-         .arrayLayer = 0,
+-      };
+-      VkSubresourceLayout image_layout;
+-      wsi->GetImageSubresourceLayout(chain->device, image->image,
+-                                     &image_subresource, &image_layout);
+-
+-      image->drm_modifier = DRM_FORMAT_MOD_INVALID;
+-      image->num_planes = 1;
+-      image->sizes[0] = reqs.size;
+-      image->row_pitches[0] = image_layout.rowPitch;
+-      image->offsets[0] = 0;
+-      image->fds[0] = fd;
+-   }
+-
+-   vk_free(&chain->alloc, modifier_props);
+-   vk_free(&chain->alloc, image_modifiers);
+-
+-   return VK_SUCCESS;
+-
+-fail:
+-   vk_free(&chain->alloc, modifier_props);
+-   vk_free(&chain->alloc, image_modifiers);
+-   wsi_destroy_image(chain, image);
+-
+-   return result;
+-}
+-
+ static inline uint32_t
+ align_u32(uint32_t v, uint32_t a)
+ {
+--- mesa-21.2.6.orig/src/vulkan/wsi/wsi_common_private.h
++++ mesa-21.2.6/src/vulkan/wsi/wsi_common_private.h
+@@ -88,6 +88,11 @@
+ 
+ void wsi_swapchain_finish(struct wsi_swapchain *chain);
+ 
++uint32_t
++select_memory_type(const struct wsi_device *wsi,
++                   bool want_device_local,
++                   uint32_t type_bits);
++
+ VkResult
+ wsi_create_native_image(const struct wsi_swapchain *chain,
+                         const VkSwapchainCreateInfoKHR *pCreateInfo,
+--- mesa-21.2.6.orig/src/vulkan/wsi/wsi_common_wayland.c
++++ mesa-21.2.6/src/vulkan/wsi/wsi_common_wayland.c
+@@ -932,7 +932,7 @@
+       struct timespec current_time;
+       clock_gettime(CLOCK_MONOTONIC, &current_time);
+       if (timespec_after(&current_time, &end_time))
+-         return VK_NOT_READY;
++         break;
+ 
+       /* Try to read events from the server. */
+       ret = wl_display_prepare_read_queue(chain->display->wl_display,
+@@ -969,6 +969,8 @@
+       if (ret < 0)
+          return VK_ERROR_OUT_OF_DATE_KHR;
+    }
++
++   return VK_SUCCESS;
+ }
+ 
+ static void
+--- mesa-21.2.6.orig/src/vulkan/wsi/wsi_common_win32.c
++++ mesa-21.2.6/src/vulkan/wsi/wsi_common_win32.c
+@@ -281,27 +281,10 @@
+    return vk_outarray_status(&out);
+ }
+ 
+-static uint32_t
+-select_memory_type(const struct wsi_device *wsi,
+-                   VkMemoryPropertyFlags props,
+-                   uint32_t type_bits)
+-{
+-   for (uint32_t i = 0; i < wsi->memory_props.memoryTypeCount; i++) {
+-       const VkMemoryType type = wsi->memory_props.memoryTypes[i];
+-       if ((type_bits & (1 << i)) && (type.propertyFlags & props) == props)
+-         return i;
+-   }
+-
+-   unreachable("No memory type found");
+-}
+-
+-VkResult
+-wsi_create_native_image(const struct wsi_swapchain *chain,
+-                        const VkSwapchainCreateInfoKHR *pCreateInfo,
+-                        uint32_t num_modifier_lists,
+-                        const uint32_t *num_modifiers,
+-                        const uint64_t *const *modifiers,
+-                        struct wsi_image *image)
++static VkResult
++wsi_win32_create_wsi_image(const struct wsi_swapchain *chain,
++                           const VkSwapchainCreateInfoKHR *pCreateInfo,
++                           struct wsi_image *image)
+ {
+    const struct wsi_device *wsi = chain->wsi;
+    VkResult result;
+@@ -358,7 +341,6 @@
+       __vk_append_struct(&image_info, &image_format_list);
+    }
+ 
+-
+    result = wsi->CreateImage(chain->device, &image_info,
+                              &chain->alloc, &image->image);
+    if (result != VK_SUCCESS)
+@@ -367,6 +349,14 @@
+    VkMemoryRequirements reqs;
+    wsi->GetImageMemoryRequirements(chain->device, image->image, &reqs);
+ 
++   uint32_t memory_type_index;
++   for (memory_type_index = 0; i < wsi->memory_props.memoryTypeCount; memory_type_index++) {
++      VkMemoryPropertyFlags props = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
++      if ((reqs.memoryTypeBits & (1 << memory_type_index)) &&
++          (wsi->memory_props.memoryTypes[memory_type_index] & props) == props)
++         break;
++   }
++
+    const struct wsi_memory_allocate_info memory_wsi_info = {
+       .sType = VK_STRUCTURE_TYPE_WSI_MEMORY_ALLOCATE_INFO_MESA,
+       .pNext = NULL,
+@@ -387,8 +377,7 @@
+       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+       .pNext = &memory_dedicated_info,
+       .allocationSize = reqs.size,
+-      .memoryTypeIndex = select_memory_type(wsi, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+-                                            reqs.memoryTypeBits),
++      .memoryTypeIndex = memory_type_index,
+    };
+    result = wsi->AllocateMemory(chain->device, &memory_info,
+                                 &chain->alloc, &image->memory);
+@@ -431,9 +420,7 @@
+ {
+    struct wsi_win32_swapchain *chain = (struct wsi_win32_swapchain *) drv_chain;
+ 
+-   VkResult result = wsi_create_native_image(&chain->base, create_info,
+-                                             0, NULL, NULL,
+-                                             &image->base);
++   VkResult result = wsi_win32_create_wsi_image(&chain->base, create_info, &image->base);
+    if (result != VK_SUCCESS)
+       return result;
+ 

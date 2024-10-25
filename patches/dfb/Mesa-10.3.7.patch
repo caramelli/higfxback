@@ -38,7 +38,7 @@ test $DRM && install -m 644 src/mesa/drivers/dri/dri.pc $DESTDIR/dfb/lib/pkgconf
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
-cat > $DESTDIR/dfb/share/pkgconfig/mesa-build.pc << EOF
+cat > $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
 Name: Mesa
 Version: 10.3.7
 Description: Implementation of Khronos specifications
@@ -48,16 +48,16 @@ exec=\\
 /dfb/lib/libglapi.so.0 \\
 /dfb/lib/libmesaEGL.so.1 \\
 EOF
-test $DRM && echo /dfb/lib/libmesagbm.so.1 \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
-cat >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc << EOF
+test $DRM && echo /dfb/lib/libmesagbm.so.1 \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
 /dfb/lib/libmesaGL.so.1 \\
 /dfb/lib/libmesaGLESv1_CM.so.1 \\
 /dfb/lib/libmesaGLESv2.so.2 \\
 EOF
-test $DRM && echo /dfb/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
-echo /dfb/lib/egl/egl_gallium.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
-test $DRM && echo /dfb/lib/pkgconfig/dri.pc \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
-sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/mesa-build.pc
+test $DRM && echo /dfb/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc
+echo /dfb/lib/egl/egl_gallium.so \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc
+test $DRM && echo /dfb/lib/pkgconfig/dri.pc \\ >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc
 
 exit
 --- Mesa-10.3.7.orig/bin/config.rpath
