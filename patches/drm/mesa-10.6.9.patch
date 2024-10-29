@@ -3214,6 +3214,113 @@ exit
        return ret;
     };
  
+--- mesa-10.6.9.orig/src/gbm/main/gbm.c
++++ mesa-10.6.9/src/gbm/main/gbm.c
+@@ -205,6 +205,19 @@
+    return bo->stride;
+ }
+ 
++/** Get the stride for the given plane
++ *
++ * \param bo The buffer object
++ * \param plane for which you want the stride
++ *
++ * \sa gbm_bo_get_stride()
++ */
++GBM_EXPORT uint32_t
++gbm_bo_get_stride_for_plane(struct gbm_bo *bo, int plane)
++{
++   return bo->stride;
++}
++
+ /** Get the format of the buffer object
+  *
+  * The format of the pixels in the buffer.
+@@ -248,6 +261,32 @@
+    return bo->gbm->bo_get_fd(bo);
+ }
+ 
++/** Get the number of planes for the given bo.
++ *
++ * \param bo The buffer object
++ * \return The number of planes
++ */
++GBM_EXPORT int
++gbm_bo_get_plane_count(struct gbm_bo *bo)
++{
++   return 1;
++}
++
++/**
++ * Get the chosen modifier for the buffer object
++ *
++ * This function returns the modifier that was chosen for the object. These
++ * properties may be generic, or platform/implementation dependent.
++ *
++ * \param bo The buffer object
++ * \return Returns the selected modifier (chosen by the implementation) for the
++ * BO.
++ */
++GBM_EXPORT uint64_t
++gbm_bo_get_modifier(struct gbm_bo *bo)
++{
++   return 0;
++}
+ 
+ /** Write data into the buffer object
+  *
+@@ -268,6 +307,21 @@
+    return bo->gbm->bo_write(bo, buf, count);
+ }
+ 
++/** Get the offset for the data of the specified plane
++ *
++ * Extra planes, and even the first plane, may have an offset from the start of
++ * the buffer object. This function will provide the offset for the given plane
++ * to be used in various KMS APIs.
++ *
++ * \param bo The buffer object
++ * \return The offset
++ */
++GBM_EXPORT uint32_t
++gbm_bo_get_offset(struct gbm_bo *bo, int plane)
++{
++   return 0;
++}
++
+ /** Get the gbm device used to create the buffer object
+  *
+  * \param bo The buffer object
+--- mesa-10.6.9.orig/src/gbm/main/gbm.h
++++ mesa-10.6.9/src/gbm/main/gbm.h
+@@ -262,8 +262,14 @@
+ gbm_bo_get_stride(struct gbm_bo *bo);
+ 
+ uint32_t
++gbm_bo_get_stride_for_plane(struct gbm_bo *bo, int plane);
++
++uint32_t
+ gbm_bo_get_format(struct gbm_bo *bo);
+ 
++uint32_t
++gbm_bo_get_offset(struct gbm_bo *bo, int plane);
++
+ struct gbm_device *
+ gbm_bo_get_device(struct gbm_bo *bo);
+ 
+@@ -273,6 +279,12 @@
+ int
+ gbm_bo_get_fd(struct gbm_bo *bo);
+ 
++uint64_t
++gbm_bo_get_modifier(struct gbm_bo *bo);
++
++int
++gbm_bo_get_plane_count(struct gbm_bo *bo);
++
+ int
+ gbm_bo_write(struct gbm_bo *bo, const void *buf, size_t count);
+ 
 --- mesa-10.6.9.orig/src/loader/Makefile.am
 +++ mesa-10.6.9/src/loader/Makefile.am
 @@ -58,3 +58,18 @@

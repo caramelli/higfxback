@@ -6,9 +6,10 @@ REQUIRES="autotools-wrappers-lt-build libxext-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
-pkg-config --exists libxcursor-build && REQUIRES="$REQUIRES libxcursor-build"
-pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
-pkg-config --exists libxrandr-build && REQUIRES="$REQUIRES libxrandr-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcursor-build && REQUIRES="$REQUIRES libxcursor-build"
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build && REQUIRES="$REQUIRES libxrandr-build"
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
   GL=1

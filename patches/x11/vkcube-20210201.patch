@@ -1,0 +1,418 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="glslang-build libpng-build libxcb-build meson-build vulkan-loader-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -f vkcube.frag.spv.h.in vkcube.vert.spv.h.in
+PKG_CONFIG_PATH=/x11/lib/pkgconfig meson setup --prefix=/x11 build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/x11/bin
+install build/vkcube $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/vkcube-build.pc << EOF
+Name: vkcube
+Version: 20210201
+Description: Spinning Vulkan cube using Window System Integration
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/vkcube
+EOF
+
+exit
+--- vkcube-20210201.orig/common.h
++++ vkcube-20210201/common.h
+@@ -3,25 +3,28 @@
+ #include <sys/time.h>
+ #include <stdbool.h>
+ #include <string.h>
+-#include <strings.h>
+ 
++#if defined(HAVE_VULKAN_INTEL_H)
+ #include <xf86drm.h>
+ #include <xf86drmMode.h>
+ #include <drm_fourcc.h>
++#include <gbm.h>
++#endif
++
+ #include <png.h>
+ 
+ #include <xcb/xcb.h>
+ 
++#if defined(ENABLE_WAYLAND)
+ #include <wayland-client.h>
+ #include <xdg-shell-protocol.h>
++#define VK_USE_PLATFORM_WAYLAND_KHR
++#endif
+ 
+ #define VK_USE_PLATFORM_XCB_KHR
+-#define VK_USE_PLATFORM_WAYLAND_KHR
+ #define VK_PROTOTYPES
+ #include <vulkan/vulkan.h>
+ 
+-#include <gbm.h>
+-
+ #include "esUtil.h"
+ 
+ #define printflike(a, b) __attribute__((format(printf, (a), (b))))
+@@ -29,7 +32,10 @@
+ #define MAX_NUM_IMAGES 4
+ 
+ struct vkcube_buffer {
++#if defined(HAVE_VULKAN_INTEL_H)
+    struct gbm_bo *gbm_bo;
++   uint32_t fb;
++#endif
+    VkDeviceMemory mem;
+    VkImage image;
+    VkImageView view;
+@@ -37,7 +43,6 @@
+    VkFence fence;
+    VkCommandBuffer cmd_buffer;
+ 
+-   uint32_t fb;
+    uint32_t stride;
+ };
+ 
+@@ -53,8 +58,12 @@
+ 
+    bool protected;
+ 
++#if defined(HAVE_VULKAN_INTEL_H)
+    int fd;
++   drmModeCrtc *crtc;
++   drmModeConnector *connector;
+    struct gbm_device *gbm_device;
++#endif
+ 
+    struct {
+       xcb_connection_t *conn;
+@@ -81,8 +90,6 @@
+ 
+    VkSwapchainKHR swap_chain;
+ 
+-   drmModeCrtc *crtc;
+-   drmModeConnector *connector;
+    uint32_t width, height;
+ 
+    VkInstance instance;
+--- vkcube-20210201.orig/main.c
++++ vkcube-20210201/main.c
+@@ -37,38 +37,46 @@
+ 
+ #define _DEFAULT_SOURCE /* for major() */
+ 
++#include <assert.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+-#include <fcntl.h>
+ #include <unistd.h>
++#if defined(ENABLE_WAYLAND)
++#include <linux/input.h>
++#endif
++#if defined(ENABLE_WAYLAND) || defined(HAVE_VULKAN_INTEL_H)
+ #include <errno.h>
+-#include <sys/ioctl.h>
+-#include <sys/types.h>
+-#include <sys/sysmacros.h>
+-#include <sys/stat.h>
+-#include <signal.h>
++#include <poll.h>
++#endif
++#if defined(HAVE_VULKAN_INTEL_H)
++#include <fcntl.h>
+ #include <linux/kd.h>
+-#include <linux/vt.h>
+ #include <linux/major.h>
++#include <linux/vt.h>
++#include <signal.h>
++#include <sys/ioctl.h>
++#include <sys/stat.h>
+ #include <termios.h>
+-#include <poll.h>
+-#include <math.h>
+-#include <assert.h>
+-#include <sys/mman.h>
+-#include <linux/input.h>
++#include <vulkan/vulkan_intel.h>
++#endif
+ 
+ #include "common.h"
+ 
+ enum display_mode {
+    DISPLAY_MODE_AUTO = 0,
+    DISPLAY_MODE_HEADLESS,
++#if defined(HAVE_VULKAN_INTEL_H)
+    DISPLAY_MODE_KMS,
++#endif
++#if defined(ENABLE_WAYLAND)
+    DISPLAY_MODE_WAYLAND,
++#endif
+    DISPLAY_MODE_XCB,
+    DISPLAY_MODE_KHR,
+ };
+ 
+ static enum display_mode display_mode = DISPLAY_MODE_AUTO;
++static uint32_t width = 1024, height = 768;
+ static const char *arg_out_file = "./cube.png";
+ static bool protected_chain = false;
+ 
+@@ -440,11 +448,9 @@
+    return 0;
+ }
+ 
+-#ifdef HAVE_VULKAN_INTEL_H
+-
+ /* KMS display code - render to kernel modesetting fb */
+ 
+-#include <vulkan/vulkan_intel.h>
++#if defined(HAVE_VULKAN_INTEL_H)
+ 
+ static struct termios save_tio;
+ 
+@@ -658,19 +664,6 @@
+    }
+ }
+ 
+-#else
+-
+-static int
+-init_kms(struct vkcube *vc)
+-{
+-   return -1;
+-}
+-
+-static void
+-mainloop_vt(struct vkcube *vc)
+-{
+-}
+-
+ #endif
+ 
+ /* Swapchain-based code - shared between XCB and Wayland */
+@@ -1008,6 +1001,8 @@
+ 
+ /* Wayland display code - render to Wayland window */
+ 
++#if defined(ENABLE_WAYLAND)
++
+ static void
+ handle_xdg_surface_configure(void *data, struct xdg_surface *surface,
+                              uint32_t serial)
+@@ -1266,6 +1261,8 @@
+    }
+ }
+ 
++#endif
++
+ static int display_idx = -1;
+ static int display_mode_idx = -1;
+ static int display_plane_idx = -1;
+@@ -1516,12 +1513,16 @@
+    } else if (streq(s, "headless")) {
+       *mode = DISPLAY_MODE_HEADLESS;
+       return true;
++#if defined(HAVE_VULKAN_INTEL_H)
+    } else if (streq(s, "kms")) {
+       *mode = DISPLAY_MODE_KMS;
+       return true;
++#endif
++#if defined(ENABLE_WAYLAND)
+    } else if (streq(s, "wayland")) {
+       *mode = DISPLAY_MODE_WAYLAND;
+       return true;
++#endif
+    } else if (streq(s, "xcb")) {
+       *mode = DISPLAY_MODE_XCB;
+       return true;
+@@ -1547,6 +1548,10 @@
+       "                          \"kms\", \"wayland\", or \"xcb\". This option is\n"
+       "                          incompatible with '-n'.\n"
+       "\n"
++      "  -w                      Specify width.\n"
++      "\n"
++      "  -h                      Specify height.\n"
++      "\n"
+       "  -k <display:mode:plane> Select KHR configuration with 3 number separated\n"
+       "                          by the column character. To display the item\n"
+       "                          corresponding to those number, just omit the number.\n"
+@@ -1585,7 +1590,7 @@
+     * The initial ':' in the optstring makes getopt return ':' when an option
+     * is missing a required argument.
+     */
+-   static const char *optstring = "+:nm:o:k:p";
++   static const char *optstring = "+:nm:w:h:o:k:p";
+ 
+    int opt;
+    bool found_arg_headless = false;
+@@ -1602,6 +1607,12 @@
+          found_arg_headless = true;
+          display_mode = DISPLAY_MODE_HEADLESS;
+          break;
++      case 'w':
++         width = atoi(optarg);
++         break;
++      case 'h':
++         height = atoi(optarg);
++         break;
+       case 'k': {
+          char config[40], *saveptr, *t;
+          snprintf(config, sizeof(config), "%s", optarg);
+@@ -1645,25 +1656,33 @@
+ {
+    switch (display_mode) {
+    case DISPLAY_MODE_AUTO:
++#if defined(ENABLE_WAYLAND)
+       display_mode = DISPLAY_MODE_WAYLAND;
+       if (init_wayland(vc) == -1) {
+          fprintf(stderr, "failed to initialize wayland, falling back "
+                          "to xcb\n");
++#endif
+          display_mode = DISPLAY_MODE_XCB;
+          if (init_xcb(vc) == -1) {
+             fprintf(stderr, "failed to initialize xcb, falling back "
++#if defined(HAVE_VULKAN_INTEL_H)
+                             "to kms\n");
+             display_mode = DISPLAY_MODE_KMS;
+             if (init_kms(vc) == -1) {
+-               fprintf(stderr, "failed to initialize kms, falling "
+-                               "back to headless\n");
++               fprintf(stderr, "failed to initialize kms, falling back "
++#endif
++                               "to headless\n");
+                display_mode = DISPLAY_MODE_HEADLESS;
+                if (init_headless(vc) == -1) {
+                   fail("failed to initialize headless mode");
+                }
++#if defined(HAVE_VULKAN_INTEL_H)
+             }
++#endif
+          }
++#if defined(ENABLE_WAYLAND)
+       }
++#endif
+       break;
+    case DISPLAY_MODE_HEADLESS:
+       if (init_headless(vc) == -1)
+@@ -1673,14 +1692,18 @@
+       if (init_khr(vc) == -1)
+          fail("fail to initialize khr");
+       break;
++#if defined(HAVE_VULKAN_INTEL_H)
+    case DISPLAY_MODE_KMS:
+       if (init_kms(vc) == -1)
+          fail("failed to initialize kms");
+       break;
++#endif
++#if defined(ENABLE_WAYLAND)
+    case DISPLAY_MODE_WAYLAND:
+       if (init_wayland(vc) == -1)
+          fail("failed to initialize wayland");
+       break;
++#endif
+    case DISPLAY_MODE_XCB:
+       if (init_xcb(vc) == -1)
+          fail("failed to initialize xcb");
+@@ -1695,15 +1718,19 @@
+    case DISPLAY_MODE_AUTO:
+       assert(!"display mode is unset");
+       break;
++#if defined(ENABLE_WAYLAND)
+    case DISPLAY_MODE_WAYLAND:
+       mainloop_wayland(vc);
+       break;
++#endif
+    case DISPLAY_MODE_XCB:
+       mainloop_xcb(vc);
+       break;
++#if defined(HAVE_VULKAN_INTEL_H)
+    case DISPLAY_MODE_KMS:
+       mainloop_vt(vc);
+       break;
++#endif
+    case DISPLAY_MODE_KHR:
+       mainloop_khr(vc);
+       break;
+@@ -1722,11 +1749,15 @@
+    parse_args(argc, argv);
+ 
+    vc.model = cube_model;
++#if defined(HAVE_VULKAN_INTEL_H)
+    vc.gbm_device = NULL;
++#endif
+    vc.xcb.window = XCB_NONE;
++#if defined(ENABLE_WAYLAND)
+    vc.wl.surface = NULL;
+-   vc.width = 1024;
+-   vc.height = 768;
++#endif
++   vc.width = width;
++   vc.height = height;
+    vc.protected = protected_chain;
+    gettimeofday(&vc.start_tv, NULL);
+ 
+--- vkcube-20210201.orig/meson.build
++++ vkcube-20210201/meson.build
+@@ -3,26 +3,31 @@
+ 
+ cc = meson.get_compiler('c')
+ 
+-dep_libdrm = dependency('libdrm')
+-dep_gbm = dependency('gbm')
++dep_libdrm = dependency('libdrm', required : false)
++dep_gbm = dependency('gbm', required : false)
+ dep_libpng = dependency('libpng')
+-dep_wayland = dependency('wayland-client')
++dep_wayland = dependency('wayland-client', required : false)
+ dep_xcb = dependency('xcb')
+ dep_vulkan = dependency('vulkan')
+ dep_m = cc.find_library('m', required : false)
+ 
+-cc = meson.get_compiler('c')
+ defs = []
+ if cc.has_header('vulkan/vulkan_intel.h')
+   defs += '-DHAVE_VULKAN_INTEL_H'
+ endif
+ 
+-# See https://github.com/google/shaderc
+-prog_glslc = find_program('glslc', required : false)
++if dep_wayland.found()
++  defs += '-DENABLE_WAYLAND'
++  xdg_shell_protocol = 'xdg-shell-protocol.c'
++else
++  xdg_shell_protocol = []
++endif
++
++prog_glslang = find_program('glslangValidator', required : false)
+ prog_cp = find_program('cp')
+ 
+ vkcube_files = files(
+-  'xdg-shell-protocol.c',
++  xdg_shell_protocol,
+   'main.c',
+   'common.h',
+   'cube.c',
+@@ -30,11 +35,11 @@
+   'esUtil.h'
+ )
+ 
+-if prog_glslc.found()
++if prog_glslang.found()
+   gen = generator(
+-    prog_glslc,
++    prog_glslang,
+     output : '@PLAINNAME@.spv.h',
+-    arguments : [ '@INPUT@', '-mfmt=num', '-o', '@OUTPUT@' ]
++    arguments : [ '@INPUT@', '-V', '-x', '-o', '@OUTPUT@' ]
+   )
+ else
+   gen = generator(

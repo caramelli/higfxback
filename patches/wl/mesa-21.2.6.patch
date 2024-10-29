@@ -7,8 +7,10 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 pkg-config --exists zstd-build && REQUIRES="$REQUIRES zstd-build"
 
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists libdrm-build && REQUIRES="$REQUIRES libdrm-build"
+
 # configure
-PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup -Ddri-drivers= -Degl=disabled -Dgallium-drivers=swrast -Dglx=disabled -Dkmsdrm=disabled -Dopengl=false -Dplatforms=wayland -Dvulkan-drivers=swrast -Dvulkan-icd-dir=/wl/etc/vulkan/icd.d --prefix=/wl build
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup -Ddri-drivers= -Degl=disabled -Dgallium-drivers=swrast -Dglx=disabled -Dopengl=false -Dplatforms=wayland -Dvulkan-drivers=swrast -Dvulkan-icd-dir=/wl/etc/vulkan/icd.d --prefix=/wl build
 
 # build
 meson compile -C build
@@ -284,50 +286,25 @@ exit
 +#endif /* __NOUVEAU_DRM_H__ */
 --- mesa-21.2.6.orig/meson.build
 +++ mesa-21.2.6/meson.build
-@@ -164,7 +164,19 @@
- # Only build shared_glapi if at least one OpenGL API is enabled
- with_shared_glapi = with_shared_glapi and with_any_opengl
+@@ -531,7 +531,7 @@
+ endif
  
--system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos'].contains(host_machine.system())
-+_kmsdrm = get_option('kmsdrm')
-+if _kmsdrm == 'true'
-+  _kmsdrm = 'enabled'
-+  warning('kmsdrm option "true" deprecated, please use "enabled" instead.')
-+elif _kmsdrm == 'false'
-+  _kmsdrm = 'disabled'
-+  warning('kmsdrm option "false" deprecated, please use "disabled" instead.')
-+endif
-+if _kmsdrm == 'auto'
-+  system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos'].contains(host_machine.system())
-+else
-+  system_has_kms_drm = _kmsdrm == 'enabled'
-+endif
- 
- dri_drivers = get_option('dri-drivers')
- if dri_drivers.contains('auto')
-@@ -1565,11 +1577,16 @@
- endforeach
- 
- with_gallium_drisw_kms = false
--dep_libdrm = dependency(
--  'libdrm', version : '>=' + _drm_ver,
--  # GNU/Hurd includes egl_dri2, without drm.
--  required : (with_dri2 and host_machine.system() != 'gnu') or with_dri3
--)
-+
-+dep_libdrm = dependency('', required: false)
-+if system_has_kms_drm
-+  dep_libdrm = dependency(
-+    'libdrm', version : '>=' + _drm_ver,
-+    # GNU/Hurd includes egl_dri2, without drm.
-+    required : (with_dri2 and host_machine.system() != 'gnu') or with_dri3
-+  )
-+endif
-+
- if dep_libdrm.found()
-   pre_args += '-DHAVE_LIBDRM'
+ # GNU/Hurd includes egl_dri2, without drm.
+-with_dri2 = (with_dri or with_any_vk) and (with_dri_platform == 'drm' or
++with_dri2 = with_dri and (with_dri_platform == 'drm' or
+   host_machine.system() == 'gnu')
+ _dri3 = get_option('dri3')
+ if _dri3 == 'true'
+@@ -1575,6 +1575,8 @@
    if with_dri_platform == 'drm' and with_dri
-@@ -1908,8 +1925,8 @@
+     with_gallium_drisw_kms = true
+   endif
++else
++  system_has_kms_drm = false
+ endif
+ 
+ llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine']
+@@ -1908,8 +1910,8 @@
      wl_scanner_arg = 'code'
    endif
    dep_wl_protocols = dependency('wayland-protocols', version : '>= 1.8')
@@ -338,22 +315,6 @@ exit
    if with_egl
      dep_wayland_egl = dependency('wayland-egl-backend', version : '>= 3')
      dep_wayland_egl_headers = dep_wayland_egl.partial_dependency(compile_args : true)
---- mesa-21.2.6.orig/meson_options.txt
-+++ mesa-21.2.6/meson_options.txt
-@@ -28,6 +28,13 @@
-   description : 'window systems to support. If this is set to `auto`, all platforms applicable will be enabled.'
- )
- option(
-+  'kmsdrm',
-+  type : 'combo',
-+  value : 'auto',
-+  choices : ['auto', 'true', 'false', 'enabled', 'disabled'],
-+  description : 'Enable KMS/DRM support.'
-+)
-+option(
-   'egl-native-platform',
-   type : 'combo',
-   value : 'auto',
 --- mesa-21.2.6.orig/src/gallium/frontends/lavapipe/lvp_device.c
 +++ mesa-21.2.6/src/gallium/frontends/lavapipe/lvp_device.c
 @@ -1196,8 +1196,6 @@
