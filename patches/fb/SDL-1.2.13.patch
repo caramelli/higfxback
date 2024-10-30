@@ -7,11 +7,16 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
+if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
 # configure (ac-2.61; lt-1.5.26)
 libtoolize -c -f; cp acinclude.m4 aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 ./configure --disable-assembly --disable-static --prefix=/fb
-cd test; SDL_CFLAGS="-I../include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/fb/lib" ./configure --with-testdatadir=/fb/share/SDL/test; cd -
+cd test; SDL_CFLAGS="-I../include -I/fb/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/fb/lib" XPATH=-L/fb/lib ./configure --with-testdatadir=/fb/share/SDL/test; cd -
 
 # build
 make
@@ -37,6 +42,7 @@ install -m 644 include/SDL_loadso.h $DESTDIR/fb/include/SDL
 install -m 644 include/SDL_main.h $DESTDIR/fb/include/SDL
 install -m 644 include/SDL_mouse.h $DESTDIR/fb/include/SDL
 install -m 644 include/SDL_mutex.h $DESTDIR/fb/include/SDL
+test $GL && install -m 644 include/SDL_opengl.h $DESTDIR/fb/include/SDL
 install -m 644 include/SDL_platform.h $DESTDIR/fb/include/SDL
 install -m 644 include/SDL_quit.h $DESTDIR/fb/include/SDL
 install -m 644 include/SDL_rwops.h $DESTDIR/fb/include/SDL
@@ -66,6 +72,7 @@ install test/testcdrom $DESTDIR/fb/share/SDL/test
 install test/testcursor $DESTDIR/fb/share/SDL/test
 install test/testerror $DESTDIR/fb/share/SDL/test
 install test/testfile $DESTDIR/fb/share/SDL/test
+test $GL && install test/testgl $DESTDIR/fb/share/SDL/test
 install test/testiconv $DESTDIR/fb/share/SDL/test
 install test/testjoystick $DESTDIR/fb/share/SDL/test
 install test/testkeys $DESTDIR/fb/share/SDL/test
@@ -114,6 +121,9 @@ devel=\\
 /fb/include/SDL/SDL_main.h \\
 /fb/include/SDL/SDL_mouse.h \\
 /fb/include/SDL/SDL_mutex.h \\
+EOF
+test $GL && echo /fb/include/SDL/SDL_opengl.h \\ >> $DESTDIR/fb/share/pkgconfig/sdl-build.pc
+cat >> $DESTDIR/fb/share/pkgconfig/sdl-build.pc << EOF
 /fb/include/SDL/SDL_platform.h \\
 /fb/include/SDL/SDL_quit.h \\
 /fb/include/SDL/SDL_rwops.h \\
@@ -142,6 +152,9 @@ exec=\\
 /fb/share/SDL/test/testcursor \\
 /fb/share/SDL/test/testerror \\
 /fb/share/SDL/test/testfile \\
+EOF
+test $GL && echo /fb/share/SDL/test/testgl \\ >> $DESTDIR/fb/share/pkgconfig/sdl-build.pc
+cat >> $DESTDIR/fb/share/pkgconfig/sdl-build.pc << EOF
 /fb/share/SDL/test/testiconv \\
 /fb/share/SDL/test/testjoystick \\
 /fb/share/SDL/test/testkeys \\
@@ -176,6 +189,15 @@ exit
  AC_CANONICAL_HOST
  AC_C_BIGENDIAN
  if test x$ac_cv_c_bigendian = xyes; then
+@@ -66,7 +66,7 @@
+         BASE_LDFLAGS="-mno-cygwin"
+         ;;
+     *)
+-        BASE_CFLAGS="-D_GNU_SOURCE=1"
++        BASE_CFLAGS="-I$prefix/include -D_GNU_SOURCE=1"
+         BASE_LDFLAGS=""
+         ;;
+ esac
 @@ -345,8 +345,8 @@
          LIBS="$alsa_save_LIBS"
          if test x$have_alsa = xyes; then
@@ -187,6 +209,452 @@ exit
              if test "x`echo $ALSA_LIBS | grep -- -L`" = "x"; then
                  if test "x`ls /lib/libasound.so.* 2> /dev/null`" != "x"; then
                      ALSA_LIBS="-L/lib $ALSA_LIBS"
+@@ -1569,7 +1569,6 @@
+         AC_TRY_COMPILE([
+          #include <GL/gl.h>
+          #include <GL/glx.h>
+-         #include <GL/glu.h>
+         ],[
+         ],[
+         video_opengl=yes
+@@ -1582,6 +1581,26 @@
+     fi
+ }
+ 
++CheckOpenGLFBDev()
++{
++    if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
++        AC_MSG_CHECKING(for OpenGL (GLFBDev) support)
++        video_opengl=no
++        AC_TRY_COMPILE([
++         #include <GL/gl.h>
++         #include <GL/glfbdev.h>
++        ],[
++        ],[
++        video_opengl=yes
++        ])
++        AC_MSG_RESULT($video_opengl)
++        if test x$video_opengl = xyes; then
++            AC_DEFINE(SDL_VIDEO_OPENGL)
++            AC_DEFINE(SDL_VIDEO_OPENGL_GLFBDEV)
++        fi
++    fi
++}
++
+ dnl Find QNX RtP OpenGL
+ CheckOpenGLQNX()
+ {
+@@ -2265,6 +2284,7 @@
+         CheckQtopia
+         CheckPicoGUI
+         CheckOpenGLX11
++        CheckOpenGLFBDev
+         CheckInputEvents
+         CheckTslib
+         CheckUSBHID
+--- SDL-1.2.13.orig/include/SDL_config.h.in
++++ SDL-1.2.13/include/SDL_config.h.in
+@@ -294,6 +294,7 @@
+ /* Enable OpenGL support */
+ #undef SDL_VIDEO_OPENGL
+ #undef SDL_VIDEO_OPENGL_GLX
++#undef SDL_VIDEO_OPENGL_GLFBDEV
+ #undef SDL_VIDEO_OPENGL_WGL
+ #undef SDL_VIDEO_OPENGL_OSMESA
+ #undef SDL_VIDEO_OPENGL_OSMESA_DYNAMIC
+--- SDL-1.2.13.orig/include/SDL_opengl.h
++++ SDL-1.2.13/include/SDL_opengl.h
+@@ -42,7 +42,6 @@
+ #include <glu.h>	/* Header File For The GLU Library */
+ #else
+ #include <GL/gl.h>	/* Header File For The OpenGL Library */
+-#include <GL/glu.h>	/* Header File For The GLU Library */
+ #endif
+ #ifndef NO_SDL_GLEXT
+ #undef __glext_h_
+--- SDL-1.2.13.orig/src/video/fbcon/SDL_fbvideo.c
++++ SDL-1.2.13/src/video/fbcon/SDL_fbvideo.c
+@@ -64,6 +64,73 @@
+ */
+ #endif /* FB_TYPE_VGA_PLANES */
+ 
++#if SDL_VIDEO_OPENGL_GLFBDEV
++#include <dlfcn.h>
++#include <GL/glfbdev.h>
++
++struct fb_window {
++	int width;
++	int height;
++	int posx;
++	int posy;
++};
++
++struct SDL_PrivateGLData {
++	GLFBDevContextPtr glfbdev_context;
++	GLFBDevVisualPtr  glfbdev_visual;
++	GLFBDevBufferPtr  glfbdev_buffer;
++
++	void *(*glFBDevGetProcAddress)
++		( const char                     *procName );
++
++	GLFBDevVisualPtr (*glFBDevCreateVisual)
++		( const struct fb_fix_screeninfo *fixInfo,
++		  const struct fb_var_screeninfo *varInfo,
++		  const int                      *attribs );
++
++	void (*glFBDevDestroyVisual)
++		( GLFBDevVisualPtr                visual );
++
++	GLFBDevBufferPtr (*glFBDevCreateBuffer)
++		( const struct fb_fix_screeninfo *fixInfo,
++		  const struct fb_var_screeninfo *varInfo,
++		  const GLFBDevVisualPtr          visual,
++		  void                           *frontBuffer,
++		  void                           *backBuffer,
++		  size_t                          size );
++
++	void (*glFBDevDestroyBuffer)
++		( GLFBDevBufferPtr                buffer );
++
++	GLFBDevContextPtr (*glFBDevCreateContext)
++		( const GLFBDevVisualPtr          visual,
++		  GLFBDevContextPtr               share );
++
++	void (*glFBDevDestroyContext)
++		( GLFBDevContextPtr               context );
++
++	int (*glFBDevMakeCurrent)
++		( GLFBDevContextPtr               context,
++		  GLFBDevBufferPtr                drawBuffer,
++		  GLFBDevBufferPtr                readBuffer );
++
++	void (*glFBDevSwapBuffers)
++		( GLFBDevBufferPtr                buffer );
++
++	int (*glFBDevGetVisualAttrib)
++		( const GLFBDevVisualPtr          visual,
++		  int                             attrib );
++
++	void (*glFBDevSetWindow)
++		( GLFBDevBufferPtr                buffer,
++		  void                           *window );
++};
++
++#define glfbdev_context (this->gl_data->glfbdev_context)
++#define glfbdev_visual  (this->gl_data->glfbdev_visual)
++#define glfbdev_buffer  (this->gl_data->glfbdev_buffer)
++#endif
++ 
+ /* A list of video resolutions that we query for (sorted largest to smallest) */
+ static const SDL_Rect checkres[] = {
+ 	{  0, 0, 1600, 1200 },		/* 16 bpp: 0x11E, or 286 */
+@@ -147,6 +214,14 @@
+ static void FB_WaitVBL(_THIS);
+ static void FB_WaitIdle(_THIS);
+ static int FB_FlipHWSurface(_THIS, SDL_Surface *surface);
++#if SDL_VIDEO_OPENGL_GLFBDEV
++static int FB_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
++static int FB_GL_MakeCurrent(_THIS);
++static void FB_GL_SwapBuffers(_THIS);
++static int FB_GL_LoadLibrary(_THIS, const char *path);
++static void FB_GL_UnloadLibrary(_THIS);
++static void *FB_GL_GetProcAddress(_THIS, const char *proc);
++#endif
+ 
+ /* Internal palette functions */
+ static void FB_SavePalette(_THIS, struct fb_fix_screeninfo *finfo,
+@@ -207,6 +282,9 @@
+ static void FB_DeleteDevice(SDL_VideoDevice *device)
+ {
+ 	SDL_free(device->hidden);
++	if ( device->gl_data ) {
++		SDL_free(device->gl_data);
++	}
+ 	SDL_free(device);
+ }
+ 
+@@ -218,10 +296,20 @@
+ 	this = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
+ 	if ( this ) {
+ 		SDL_memset(this, 0, (sizeof *this));
++#if SDL_VIDEO_OPENGL_GLFBDEV
++		this->gl_data = (struct SDL_PrivateGLData *)
++				SDL_malloc((sizeof *this->gl_data));
++		SDL_memset(this->gl_data, 0, (sizeof *this->gl_data));
++#endif
+ 		this->hidden = (struct SDL_PrivateVideoData *)
+ 				SDL_malloc((sizeof *this->hidden));
++		SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+ 	}
+-	if ( (this == NULL) || (this->hidden == NULL) ) {
++	if ( (this == NULL) ||
++#if SDL_VIDEO_OPENGL_GLFBDEV
++	   (this->gl_data == NULL) ||
++#endif
++	   (this->hidden == NULL) ) {
+ 		SDL_OutOfMemory();
+ 		if ( this ) {
+ 			SDL_free(this);
+@@ -250,6 +338,13 @@
+ 	this->UnlockHWSurface = FB_UnlockHWSurface;
+ 	this->FlipHWSurface = FB_FlipHWSurface;
+ 	this->FreeHWSurface = FB_FreeHWSurface;
++#if SDL_VIDEO_OPENGL_GLFBDEV
++	this->GL_LoadLibrary = FB_GL_LoadLibrary;
++	this->GL_GetProcAddress = FB_GL_GetProcAddress;
++	this->GL_GetAttribute = FB_GL_GetAttribute;
++	this->GL_MakeCurrent = FB_GL_MakeCurrent;
++	this->GL_SwapBuffers = FB_GL_SwapBuffers;
++#endif
+ 	this->SetCaption = NULL;
+ 	this->SetIcon = NULL;
+ 	this->IconifyWindow = NULL;
+@@ -1069,6 +1164,48 @@
+ 	/* Set the update rectangle function */
+ 	this->UpdateRects = FB_DirectUpdate;
+ 
++	/* Set the OpenGL context */
++	if ( flags & SDL_OPENGL ) {
++#if SDL_VIDEO_OPENGL_GLFBDEV
++		int attribs[64];
++		struct fb_window window = { width, height, 0, 0 };
++
++		if ( FB_GL_LoadLibrary(this, NULL) < 0 ) {
++			return(NULL);
++		}
++
++		i = 0;
++		attribs[i++] = GLFBDEV_DOUBLE_BUFFER;
++		attribs[i++] = GLFBDEV_DEPTH_SIZE;
++		attribs[i++] = 1;
++		attribs[i++] = GLFBDEV_NONE;
++		glfbdev_visual = glFBDevCreateVisual(&finfo, &vinfo, attribs);
++		if ( ! glfbdev_visual ) {
++			SDL_SetError( "Could not create visual");
++			return(NULL);
++		}
++
++		glfbdev_buffer = this->gl_data->glFBDevCreateBuffer(&finfo, &vinfo, glfbdev_visual,
++		                                                    mapped_mem, NULL, finfo.smem_len);
++		if ( ! glfbdev_buffer ) {
++			SDL_SetError("Could not create window");
++			return(NULL);
++		}
++
++		this->gl_data->glFBDevSetWindow(glfbdev_buffer, &window);
++
++		glfbdev_context = glFBDevCreateContext(glfbdev_visual, NULL);
++		if ( ! glfbdev_context ) {
++			SDL_SetError("Could not create GL context");
++			return(NULL);
++		}
++
++		current->flags |= SDL_OPENGL;
++#else
++		return(NULL);
++#endif
++	}
++
+ 	/* We're done */
+ 	return(current);
+ }
+@@ -1636,6 +1773,26 @@
+ {
+ 	int i, j;
+ 
++#if SDL_VIDEO_OPENGL_GLFBDEV
++	/* Clean up OpenGL */
++	if ( this->screen ) {
++		this->screen->flags &= ~SDL_OPENGL;
++	}
++	if ( glfbdev_context ) {
++		glFBDevMakeCurrent(NULL, NULL, NULL);
++		glFBDevDestroyContext(glfbdev_context);
++		glfbdev_context = NULL;
++	}
++	if ( glfbdev_buffer ) {
++		glFBDevDestroyBuffer(glfbdev_buffer);
++		glfbdev_buffer = NULL;
++	}
++	if ( glfbdev_visual ) {
++		glFBDevDestroyVisual(glfbdev_visual);
++		glfbdev_visual = NULL;
++	}
++#endif
++
+ 	if ( this->screen ) {
+ 		/* Clear screen and tell SDL not to free the pixels */
+ 		if ( this->screen->pixels && FB_InGraphicsMode(this) ) {
+@@ -1698,4 +1855,169 @@
+ 	}
+ 	FB_CloseMouse(this);
+ 	FB_CloseKeyboard(this);
++
++#if SDL_VIDEO_OPENGL_GLFBDEV
++	/* Unload GL library */
++	FB_GL_UnloadLibrary(this);
++#endif
++}
++
++#if SDL_VIDEO_OPENGL_GLFBDEV
++
++static int FB_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
++{
++	struct fb_var_screeninfo vinfo;
++
++	if ( ioctl(console_fd, FBIOGET_VSCREENINFO, &vinfo) < 0 ) {
++		SDL_SetError("Couldn't get console screen info");
++		return(-1);
++	}
++
++	switch ( attrib ) {
++		case SDL_GL_RED_SIZE:
++			*value = vinfo.red.length;
++			break;
++		case SDL_GL_GREEN_SIZE:
++			*value = vinfo.green.length;
++			break;
++		case SDL_GL_BLUE_SIZE:
++			*value = vinfo.blue.length;
++			break;
++		case SDL_GL_ALPHA_SIZE:
++			*value = vinfo.transp.length;
++			break;
++		case SDL_GL_DOUBLEBUFFER:
++			*value = 1;
++			break;
++		case SDL_GL_BUFFER_SIZE:
++			*value = vinfo.red.length + vinfo.green.length + vinfo.blue.length + vinfo.transp.length;
++			break;
++		case SDL_GL_DEPTH_SIZE:
++			*value = this->gl_data->glFBDevGetVisualAttrib(glfbdev_visual, GLFBDEV_DEPTH_SIZE);
++			break;
++		default:
++			return(-1);
++	}
++}
++
++static int FB_GL_MakeCurrent(_THIS)
++{
++	int retval;
++
++	retval = this->gl_data->glFBDevMakeCurrent(glfbdev_context, glfbdev_buffer, glfbdev_buffer);
++	if ( ! retval ) {
++		SDL_SetError("Unable to make GL context current");
++		retval = -1;
++	}
++
++	return(retval);
++}
++
++static void FB_GL_SwapBuffers(_THIS)
++{
++	this->gl_data->glFBDevSwapBuffers(glfbdev_buffer);
++}
++
++static int FB_GL_LoadLibrary(_THIS, const char *path)
++{
++	void *handle = NULL;
++
++	if ( path == NULL ) {
++		path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
++		if ( path == NULL ) {
++			path = "libGL.so.1";
++		}
++	}
++
++	handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
++	if ( handle == NULL ) {
++		SDL_SetError("Failed loading %s", path);
++		return(-1);
++	}
++
++	/* Unload the old driver and reset the pointers */
++	FB_GL_UnloadLibrary(this);
++
++	/* Load new function pointers */
++	this->gl_data->glFBDevGetProcAddress =
++		(void *(*)(const char *)) dlsym(handle, "glFBDevGetProcAddress");
++	this->gl_data->glFBDevCreateVisual =
++		(GLFBDevVisualPtr (*)(const struct fb_fix_screeninfo *, const struct fb_var_screeninfo *, const int *)) dlsym(handle, "glFBDevCreateVisual");
++	this->gl_data->glFBDevDestroyVisual =
++		(void (*)(GLFBDevVisualPtr)) dlsym(handle, "glFBDevDestroyVisual");
++	this->gl_data->glFBDevCreateBuffer =
++		(GLFBDevBufferPtr (*)(const struct fb_fix_screeninfo *, const struct fb_var_screeninfo *, const GLFBDevVisualPtr visual, void *, void *, size_t)) dlsym(handle, "glFBDevCreateBuffer");
++	this->gl_data->glFBDevDestroyBuffer =
++		(void (*)(GLFBDevBufferPtr)) dlsym(handle, "glFBDevDestroyBuffer");
++	this->gl_data->glFBDevCreateContext =
++		(GLFBDevContextPtr (*)(const GLFBDevVisualPtr, GLFBDevContextPtr)) dlsym(handle, "glFBDevCreateContext");
++	this->gl_data->glFBDevDestroyContext =
++		(void (*)(GLFBDevContextPtr)) dlsym(handle, "glFBDevDestroyContext");
++	this->gl_data->glFBDevMakeCurrent =
++		(int (*)(GLFBDevContextPtr, GLFBDevBufferPtr, GLFBDevBufferPtr)) dlsym(handle, "glFBDevMakeCurrent");
++	this->gl_data->glFBDevSwapBuffers =
++		(void (*)(GLFBDevBufferPtr)) dlsym(handle, "glFBDevSwapBuffers");
++	this->gl_data->glFBDevGetVisualAttrib =
++		(int (*)(const GLFBDevVisualPtr visual, int attrib)) dlsym(handle, "glFBDevGetVisualAttrib");
++	this->gl_data->glFBDevSetWindow =
++		(void (*)(GLFBDevBufferPtr, void *)) dlsym(handle, "glFBDevSetWindow");
++
++	if ( (this->gl_data->glFBDevCreateVisual == NULL) || 
++	     (this->gl_data->glFBDevDestroyVisual == NULL) ||
++	     (this->gl_data->glFBDevCreateBuffer == NULL) ||
++	     (this->gl_data->glFBDevDestroyBuffer == NULL) ||
++	     (this->gl_data->glFBDevCreateContext == NULL) ||
++	     (this->gl_data->glFBDevDestroyContext == NULL) ||
++	     (this->gl_data->glFBDevMakeCurrent == NULL) ||
++	     (this->gl_data->glFBDevSwapBuffers == NULL) ||
++	     (this->gl_data->glFBDevGetVisualAttrib == NULL) ||
++	     (this->gl_data->glFBDevSetWindow == NULL)) {
++		SDL_SetError("Could not retrieve OpenGL functions");
++		return(-1);
++	}
++
++	this->gl_config.dll_handle = handle;
++	this->gl_config.driver_loaded = 1;
++	if ( path ) {
++		SDL_strlcpy(this->gl_config.driver_path, path,
++			SDL_arraysize(this->gl_config.driver_path));
++	} else {
++		*this->gl_config.driver_path = '\0';
++	}
++	return(0);
+ }
++
++static void FB_GL_UnloadLibrary(_THIS)
++{
++	if ( this->gl_config.driver_loaded ) {
++		dlclose(this->gl_config.dll_handle);
++
++		this->gl_data->glFBDevGetProcAddress = NULL;
++		this->gl_data->glFBDevCreateVisual = NULL;
++		this->gl_data->glFBDevDestroyVisual = NULL;
++		this->gl_data->glFBDevCreateBuffer = NULL;
++		this->gl_data->glFBDevDestroyBuffer = NULL;
++		this->gl_data->glFBDevCreateContext = NULL;
++		this->gl_data->glFBDevDestroyContext = NULL;
++		this->gl_data->glFBDevMakeCurrent = NULL;
++		this->gl_data->glFBDevSwapBuffers = NULL;
++		this->gl_data->glFBDevGetVisualAttrib = NULL;
++		this->gl_data->glFBDevSetWindow = NULL;
++
++		this->gl_config.dll_handle = NULL;
++		this->gl_config.driver_loaded = 0;
++	}
++}
++
++static void *FB_GL_GetProcAddress(_THIS, const char *proc)
++{
++	void *handle;
++	
++	handle = this->gl_config.dll_handle;
++	if ( this->gl_data->glFBDevGetProcAddress ) {
++		return this->gl_data->glFBDevGetProcAddress(proc);
++	}
++	return dlsym(handle, proc);
++}
++
++#endif
 --- SDL-1.2.13.orig/test/Makefile.in
 +++ SDL-1.2.13/test/Makefile.in
 @@ -4,7 +4,7 @@
