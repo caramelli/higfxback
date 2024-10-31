@@ -428,7 +428,7 @@ exit
 +		attribs[i++] = GLFBDEV_DEPTH_SIZE;
 +		attribs[i++] = 1;
 +		attribs[i++] = GLFBDEV_NONE;
-+		glfbdev_visual = glFBDevCreateVisual(&finfo, &vinfo, attribs);
++		glfbdev_visual = this->gl_data->glFBDevCreateVisual(&finfo, &vinfo, attribs);
 +		if ( ! glfbdev_visual ) {
 +			SDL_SetError( "Could not create visual");
 +			return(NULL);
@@ -443,7 +443,7 @@ exit
 +
 +		this->gl_data->glFBDevSetWindow(glfbdev_buffer, &window);
 +
-+		glfbdev_context = glFBDevCreateContext(glfbdev_visual, NULL);
++		glfbdev_context = this->gl_data->glFBDevCreateContext(glfbdev_visual, NULL);
 +		if ( ! glfbdev_context ) {
 +			SDL_SetError("Could not create GL context");
 +			return(NULL);
@@ -468,16 +468,16 @@ exit
 +		this->screen->flags &= ~SDL_OPENGL;
 +	}
 +	if ( glfbdev_context ) {
-+		glFBDevMakeCurrent(NULL, NULL, NULL);
-+		glFBDevDestroyContext(glfbdev_context);
++		this->gl_data->glFBDevMakeCurrent(NULL, NULL, NULL);
++		this->gl_data->glFBDevDestroyContext(glfbdev_context);
 +		glfbdev_context = NULL;
 +	}
 +	if ( glfbdev_buffer ) {
-+		glFBDevDestroyBuffer(glfbdev_buffer);
++		this->gl_data->glFBDevDestroyBuffer(glfbdev_buffer);
 +		glfbdev_buffer = NULL;
 +	}
 +	if ( glfbdev_visual ) {
-+		glFBDevDestroyVisual(glfbdev_visual);
++		this->gl_data->glFBDevDestroyVisual(glfbdev_visual);
 +		glfbdev_visual = NULL;
 +	}
 +#endif

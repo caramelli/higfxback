@@ -10,6 +10,12 @@ if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists glut-build; then
   REQUIRES="$REQUIRES glut-build"
 fi
 
+if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists sdl-build; then
+  PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build || { echo SDL with OpenGL support required; exit 1; }
+  SDL=1
+  REQUIRES="$REQUIRES sdl-build"
+fi
+
 # configure (ac-2.69; am-1.13; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-glesv1_cm --prefix=/fb
@@ -20,7 +26,7 @@ make
 # install
 install -d $DESTDIR/fb/bin
 install yagears $DESTDIR/fb/bin
-test $GLUT && install yagears-gui $DESTDIR/fb/bin
+test $GLUT || test $SDL && install yagears-gui $DESTDIR/fb/bin
 test $GLUT && install yagears-mosaic $DESTDIR/fb/bin
 
 # build.pc
@@ -34,7 +40,7 @@ Requires: $REQUIRES
 exec=\\
 /fb/bin/yagears \\
 EOF
-test $GLUT && echo /fb/bin/yagears-gui \\ >> $DESTDIR/fb/share/pkgconfig/yagears-build.pc
+test $GLUT || test $SDL && echo /fb/bin/yagears-gui \\ >> $DESTDIR/fb/share/pkgconfig/yagears-build.pc
 test $GLUT && echo /fb/bin/yagears-mosaic \\ >> $DESTDIR/fb/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/fb/share/pkgconfig/yagears-build.pc
 
