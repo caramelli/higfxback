@@ -1,13 +1,18 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build libxext-build orc-build pango-build tremor-build"
+REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build libxext-build orc-build pango-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if pkg-config --exists alsa-lib-build; then
   ALSA=1
   REQUIRES="$REQUIRES alsa-lib-build"
+fi
+
+if pkg-config --exists tremor-build; then
+  TREMOR=1
+  REQUIRES="$REQUIRES tremor-build"
 fi
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxv-build; then
@@ -172,7 +177,7 @@ install -d $DESTDIR/x11/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/ogg/.libs/libgstogg.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/pango/.libs/libgstpango.so $DESTDIR/x11/lib/gstreamer-1.0
-install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/x11/lib/gstreamer-1.0
+test $TREMOR && install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/x11/lib/gstreamer-1.0
 install gst/adder/.libs/libgstadder.so $DESTDIR/x11/lib/gstreamer-1.0
 install gst/app/.libs/libgstapp.so $DESTDIR/x11/lib/gstreamer-1.0
@@ -373,7 +378,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstaudiotestsrc.so \\
 /x11/lib/gstreamer-1.0/libgstencodebin.so \\
 /x11/lib/gstreamer-1.0/libgstgio.so \\
-/x11/lib/gstreamer-1.0/libgstivorbisdec \\
+EOF
+test $TREMOR && echo /x11/lib/gstreamer-1.0/libgstivorbisdec.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstogg.so \\
 /x11/lib/gstreamer-1.0/libgstpango.so \\
 /x11/lib/gstreamer-1.0/libgstplayback.so \\

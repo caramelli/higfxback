@@ -15,7 +15,7 @@ fi
 # configure (ac-2.61; lt-1.5.26)
 libtoolize -c -f; cp acinclude.m4 aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
-./configure --disable-assembly --disable-static --prefix=/fb
+./configure --disable-assembly --disable-rpath --disable-static --prefix=/fb
 cd test; SDL_CFLAGS="-I../include -I/fb/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/fb/lib" XPATH=-L/fb/lib ./configure --with-testdatadir=/fb/share/SDL/test; cd -
 
 # build

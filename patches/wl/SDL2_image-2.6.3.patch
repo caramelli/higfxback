@@ -12,14 +12,14 @@ pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
 
 # configure (ac-2.71; am-1.16; lt-2.2.6)
 libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
-PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --disable-static --disable-stb-image --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --disable-stb-image --prefix=/wl
 
 # build
 make
 
 # install
 install -d $DESTDIR/wl/bin
-install .libs/showimage $DESTDIR/wl/bin
+install .libs/showimage $DESTDIR/wl/bin/showimage2
 install -d $DESTDIR/wl/include/SDL2
 install -m 644 SDL_image.h $DESTDIR/wl/include/SDL2
 install -d $DESTDIR/wl/lib
@@ -42,8 +42,19 @@ devel=\\
 /wl/lib/pkgconfig/SDL2_image.pc
 
 exec=\\
-/wl/bin/showimage \\
+/wl/bin/showimage2 \\
 /wl/lib/libSDL2_image-2.0.so.0
 EOF
 
 exit
+--- SDL2_image-2.6.3.orig/configure.ac
++++ SDL2_image-2.6.3/configure.ac
+@@ -132,7 +132,7 @@
+         host_lib_path="$ac_default_prefix/$base_libdir $ac_default_prefix/$base_bindir /usr/$base_libdir /usr/local/$base_libdir"
+     fi
+     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
+-        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -1`]
++        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -n -1`]
+         if test x$lib != x; then
+             echo $lib
+             return

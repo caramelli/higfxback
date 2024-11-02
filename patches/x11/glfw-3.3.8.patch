@@ -226,16 +226,6 @@ exit
  
  set(GUI_ONLY_BINARIES boing gears heightmap particles sharing simple splitview
      wave)
---- glfw-3.3.8.orig/src/glfw3.pc.in
-+++ glfw-3.3.8/src/glfw3.pc.in
-@@ -8,6 +8,6 @@
- Version: @GLFW_VERSION@
- URL: https://www.glfw.org/
- Requires.private: @GLFW_PKG_DEPS@
--Libs: -L${libdir} -l@GLFW_LIB_NAME@
-+Libs: -L${libdir} -Wl,-rpath,${libdir} -l@GLFW_LIB_NAME@
- Libs.private: @GLFW_PKG_LIBS@
- Cflags: -I${includedir}
 --- glfw-3.3.8.orig/tests/CMakeLists.txt
 +++ glfw-3.3.8/tests/CMakeLists.txt
 @@ -1,8 +1,6 @@

@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build orc-build tremor-build"
+REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build orc-build"
 
 PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -13,6 +13,11 @@ fi
 if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists egl-opengl-stubs-build gudev-build libdrm-build libgbm-stub-build; then
   GL=1
   REQUIRES="$REQUIRES egl-opengl-stubs-build gudev-build libdrm-build libgbm-stub-build"
+fi
+
+if pkg-config --exists tremor-build; then
+  TREMOR=1
+  REQUIRES="$REQUIRES tremor-build"
 fi
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
@@ -245,7 +250,7 @@ install -d $DESTDIR/drm/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/drm/lib/gstreamer-1.0
 test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/ogg/.libs/libgstogg.so $DESTDIR/drm/lib/gstreamer-1.0
-install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/drm/lib/gstreamer-1.0
+test $TREMOR && install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/adder/.libs/libgstadder.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/app/.libs/libgstapp.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -532,7 +537,9 @@ cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstcompositor.so \\
 /drm/lib/gstreamer-1.0/libgstencoding.so \\
 /drm/lib/gstreamer-1.0/libgstgio.so \\
-/drm/lib/gstreamer-1.0/libgstivorbisdec \\
+EOF
+test $TREMOR && echo /drm/lib/gstreamer-1.0/libgstivorbisdec.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstogg.so \\
 EOF
 test $GL && echo /drm/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/drm/share/pkgconfig/gst-plugins-base-build.pc

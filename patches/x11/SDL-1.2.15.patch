@@ -17,7 +17,7 @@ fi
 # configure (ac-2.61; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
-LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xv --prefix=/x11
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-rpath --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xv --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
 cd test; SDL_CFLAGS="-I../include -I/x11/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/x11/lib" XPATH=-L/x11/lib ./configure --with-testdatadir=/x11/share/SDL/test; cd -
 
 # build
@@ -200,17 +200,6 @@ exit
  
  dnl Set various version strings - taken gratefully from the GTk sources
  #
-@@ -78,8 +79,8 @@
-         BASE_LDFLAGS="-mno-cygwin"
-         ;;
-     *)
--        BASE_CFLAGS="-D_GNU_SOURCE=1"
--        BASE_LDFLAGS=""
-+        BASE_CFLAGS="-I$prefix/include -D_GNU_SOURCE=1"
-+        BASE_LDFLAGS="-L$prefix/lib"
-         ;;
- esac
- BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
 @@ -368,8 +369,8 @@
          LIBS="$alsa_save_LIBS"
          if test x$have_alsa = xyes; then

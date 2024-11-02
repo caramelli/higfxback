@@ -12,14 +12,14 @@ pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
 
 # configure (ac-2.71; am-1.16; lt-2.2.6)
 libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
-PKG_CONFIG_PATH=/drm/lib/pkgconfig ./configure --disable-static --disable-stb-image --prefix=/drm
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --disable-stb-image --prefix=/drm
 
 # build
 make
 
 # install
 install -d $DESTDIR/drm/bin
-install .libs/showimage $DESTDIR/drm/bin
+install .libs/showimage $DESTDIR/drm/bin/showimage2
 install -d $DESTDIR/drm/include/SDL2
 install -m 644 include/SDL_image.h $DESTDIR/drm/include/SDL2
 install -d $DESTDIR/drm/lib
@@ -42,7 +42,7 @@ devel=\\
 /drm/lib/pkgconfig/SDL2_image.pc
 
 exec=\\
-/drm/bin/showimage \\
+/drm/bin/showimage2 \\
 /drm/lib/libSDL2_image-2.0.so.0
 EOF
 

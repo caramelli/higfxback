@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="directfb2-build freetype-build libpng-build meson-build"
+REQUIRES="directfb2-build freetype-build libpng-build libvorbis-build meson-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -125,11 +125,6 @@ if test $FUSIONSOUND && pkg-config --exists tremor-build; then
   REQUIRES="$REQUIRES tremor-build"
 fi
 
-if test $FUSIONSOUND && pkg-config --exists libvorbis-build; then
-  VORBIS=1
-  REQUIRES="$REQUIRES libvorbis-build"
-fi
-
 if pkg-config --exists libwebp-build; then
   WEBP=1
   REQUIRES="$REQUIRES libwebp-build"
@@ -180,7 +175,7 @@ test $FUSIONSOUND && test $FFMPEG && install build/interfaces/IFusionSoundMusicP
 test $FUSIONSOUND && test $MAD && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 test $FUSIONSOUND && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 test $FUSIONSOUND && test $TREMOR && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_tremor.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
-test $FUSIONSOUND && test $VORBIS && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/directfb-interface-font_ft2.pc $DESTDIR/dfb/lib/pkgconfig
 test $SFT && install -m 644 build/meson-private/directfb-interface-font_sft.pc $DESTDIR/dfb/lib/pkgconfig
@@ -216,7 +211,7 @@ test $FUSIONSOUND && test $FFMPEG && install -m 644 build/meson-private/fusionso
 test $FUSIONSOUND && test $MAD && install -m 644 build/meson-private/fusionsound-interface-musicprovider_mad.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && install -m 644 build/meson-private/fusionsound-interface-musicprovider_playlist.pc $DESTDIR/dfb/lib/pkgconfig
 test $FUSIONSOUND && test $TREMOR && install -m 644 build/meson-private/fusionsound-interface-musicprovider_tremor.pc $DESTDIR/dfb/lib/pkgconfig
-test $FUSIONSOUND && test $VORBIS && install -m 644 build/meson-private/fusionsound-interface-musicprovider_vorbis.pc $DESTDIR/dfb/lib/pkgconfig
+test $FUSIONSOUND && install -m 644 build/meson-private/fusionsound-interface-musicprovider_vorbis.pc $DESTDIR/dfb/lib/pkgconfig
 test $DESTDIR || /dfb/bin/dfb-update-pkgconfig
 test $FUSIONSOUND && { test $DESTDIR || /dfb/bin/fs-update-pkgconfig; }
 
@@ -274,7 +269,7 @@ test $FUSIONSOUND && test $FFMPEG && echo /dfb/lib/pkgconfig/fusionsound-interfa
 test $FUSIONSOUND && test $MAD && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_mad.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_playlist.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && test $TREMOR && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_tremor.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
-test $FUSIONSOUND && test $VORBIS && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_vorbis.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && echo /dfb/lib/pkgconfig/fusionsound-interface-musicprovider_vorbis.pc \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
 
@@ -325,7 +320,7 @@ test $FUSIONSOUND && test $FFMPEG && echo /dfb/lib/directfb-2.0-0/interfaces/IFu
 test $FUSIONSOUND && test $MAD && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 test $FUSIONSOUND && test $TREMOR && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_tremor.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
-test $FUSIONSOUND && test $VORBIS && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+test $FUSIONSOUND && echo /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 
 exit

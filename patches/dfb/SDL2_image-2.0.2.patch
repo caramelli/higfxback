@@ -11,14 +11,14 @@ pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
 
 # configure (ac-2.69; am-1.14; lt-2.2.6)
 libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c --foreign
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-static --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
 
 # build
 make
 
 # install
 install -d $DESTDIR/dfb/bin
-install .libs/showimage $DESTDIR/dfb/bin
+install .libs/showimage $DESTDIR/dfb/bin/showimage2
 install -d $DESTDIR/dfb/include/SDL2
 install -m 644 SDL_image.h $DESTDIR/dfb/include/SDL2
 install -d $DESTDIR/dfb/lib
@@ -41,7 +41,7 @@ devel=\\
 /dfb/lib/pkgconfig/SDL2_image.pc
 
 exec=\\
-/dfb/bin/showimage \\
+/dfb/bin/showimage2 \\
 /dfb/lib/libSDL2_image-2.0.so.0
 EOF
 
@@ -55,6 +55,15 @@ exit
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
+@@ -104,7 +105,7 @@
+         host_lib_path="/usr/$base_libdir /usr/local/$base_libdir"
+     fi
+     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
+-        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -1`]
++        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -n -1`]
+         if test x$lib != x; then
+             echo $lib
+             return
 --- SDL2_image-2.0.2.orig/showimage.c
 +++ SDL2_image-2.0.2/showimage.c
 @@ -54,6 +54,7 @@

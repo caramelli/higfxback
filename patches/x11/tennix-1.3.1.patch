@@ -1,0 +1,97 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build sdl_image-build sdl_mixer-build sdl_ttf-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix /x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install tennix $DESTDIR/x11/bin
+install -d $DESTDIR/x11/share/tennix
+install -m 644 tennix.tnx $DESTDIR/x11/share/tennix
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/tennix-build.pc << EOF
+Name: tennix
+Version: 1.3.1
+Description: Tennis game
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/tennix \\
+/x11/share/tennix/tennix.tnx
+EOF
+
+exit
+--- tennix-1.3.1.orig/configure
++++ tennix-1.3.1/configure
+@@ -72,22 +72,18 @@
+ 
+ check_cc() {
+     echo "int main() { return 0; }" | $CC $CFLAGS -x c -c -o configtest.o - 2>/dev/null
+-    rm -f configtest.o
+ }
+ 
+ check_cxx() {
+     echo "class A { public: A() {} }; int main() { A a; }" | $CXX $CFLAGS -x c++ -c -o configtest.o -
+-    rm -f configtest.o
+ }
+ 
+ check_linker_cc() {
+     echo "int main() { return 0; }" | $CC $CFLAGS $LDFLAGS -l$1 -x c -o configtest.o - 2>/dev/null
+-    rm -f configtest.o
+ }
+ 
+ check_header_cc() {
+     echo "#include <$1>" | $CC $CFLAGS -c -x c -o configtest.o -c - 2>/dev/null
+-    rm -f configtest.o
+ }
+ 
+ message_wrapper() {
+@@ -104,6 +100,12 @@
+ }
+ 
+ check_sdl_lib() {
++    if pkg-config pkg-config --exists sdl; then
++        CFLAGS="$(pkg-config --cflags sdl) $CFLAGS"
++        LDFLAGS="$(pkg-config --libs sdl) $LDFLAGS"
++        return 0
++    fi
++
+     if ! which sdl-config >/dev/null 2>&1; then
+         return 1
+     fi
+@@ -137,13 +139,9 @@
+     message_wrapper "Testing working C++ compiler ($CXX)" check_cxx || fail "C++ compiler ($CXX) not working"
+ }
+ 
+-check_sdl() {
+-    message_wrapper "Checking for SDL 1.2" check_sdl_lib
+-    cond_definition $? HAVE_SDL
+-}
+-
+ require_sdl() {
+-    check_sdl || fail "SDL not found"
++    message_wrapper "Checking for SDL 1.2" check_sdl_lib || fail "SDL not found"
++    cond_definition $? HAVE_SDL
+ }
+ 
+ check_voice_files() {
+@@ -322,6 +320,9 @@
+ # Parse command-line arguments
+ parse_arguments $*
+ 
++# Cleanup
++trap "rm -f configtest.o" EXIT
++
+ # Check for compatible OS and working compiler
+ check_os
+ check_compiler

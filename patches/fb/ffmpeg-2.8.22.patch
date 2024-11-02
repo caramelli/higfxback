@@ -25,7 +25,7 @@ fi
 pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
 
 # configure
-PKG_CONFIG_PATH=/fb/lib/pkgconfig ./configure --disable-static --disable-yasm --enable-gpl --enable-shared $X264 $X265 --prefix=/fb
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --disable-yasm --enable-gpl --enable-shared $X264 $X265 --prefix=/fb
 
 # build
 make

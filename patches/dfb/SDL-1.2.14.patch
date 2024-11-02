@@ -15,7 +15,7 @@ fi
 # configure (ac-2.61; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-assembly --disable-static --disable-video-fbcon --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-assembly --disable-rpath --disable-static --disable-video-fbcon --prefix=/dfb
 cd test; SDL_CFLAGS="-I../include -I/dfb/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/dfb/lib" XPATH=-L/dfb/lib ./configure --with-testdatadir=/dfb/share/SDL/test; cd -
 
 # build

@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires sdl2-build | gr
 
 # configure (ac-2.69; am-1.15; lt-2.4.2)
 libtoolize --ltdl -c -f; aclocal; autoconf; autoheader -f; cp README.md README; automake -a -c
-PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --disable-static --with-highscore-prefix=/x11/var/games/pinball --prefix=/x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --with-highscore-prefix=/x11/var/games/pinball --prefix=/x11
 
 # build
 make
@@ -61,7 +61,7 @@ install -d $DESTDIR/x11/share/pkgconfig
 cat > $DESTDIR/x11/share/pkgconfig/pinball.pc << EOF
 Name: pinball
 Version: 20230219
-Description: Pinball
+Description: Pinball game
 Requires: $REQUIRES
 
 exec=\\
@@ -123,7 +123,15 @@ exit
  AC_SUBST(INCLTDL)
  AC_SUBST(LIBLTDL)
  
-@@ -122,15 +124,11 @@
+@@ -55,7 +57,6 @@
+ fi
+ 
+ EM_DATADIR="$datadir/$PACKAGE_NAME"
+-AC_SUBST(EM_DATADIR)
+ eval EM_DATAPATH=`eval echo "$EM_DATADIR"`
+ AC_DEFINE_UNQUOTED(EM_DATADIR, "$EM_DATAPATH", [The data dir /usr/local/share/pinball])
+ 
+@@ -122,15 +123,11 @@
  	[enable_gles=no])
  if test "x$enable_gles" = "xyes"; then
    MATHLIB="-lm"
@@ -142,7 +150,7 @@ exit
    AC_DEFINE(HAVE_OPENGLES, [1], [Support for OpenGL ES])
  else
  case "$target" in
-@@ -150,9 +148,9 @@
+@@ -150,19 +147,18 @@
          ;;
      *)
          MATHLIB="-lm"
@@ -155,6 +163,27 @@ exit
              [AC_MSG_ERROR(*** OpenGL headers not found on system!)]
          )
          ;;
+ esac
+ fi
+ 
+-AC_SUBST(MATHLIB)
+ LIBS="$MATHLIB $LIBS"
+-AC_SUBST(GL_LIBS)
+ LIBS="$GL_LIBS $LIBS"
++CPPFLAGS="$GL_CFLAGS $CPPFLAGS"
+ 
+ dnl SDL ***************************************
+ PKG_CHECK_MODULES([SDL],
+@@ -292,9 +288,6 @@
+ AC_DEFINE(EM_USE_QUADTREE, [1], [Quadtree instead of octtree])
+ AC_DEFINE(EM_USE_SHARED_COLOR, [1], [One color per vertex])
+ 
+-dnl AC_SUBST(pkglibdir)
+-dnl AC_SUBST(pkgincludedir)
+-
+ AC_CONFIG_FILES([Makefile addon/Makefile base/Makefile data/Makefile data/tux/Makefile data/professor/Makefile src/Makefile test/Makefile pinball-config])
+ 
+ AC_OUTPUT
 --- pinball-20230219.orig/src/Pinball.cpp
 +++ pinball-20230219/src/Pinball.cpp
 @@ -11,7 +11,6 @@

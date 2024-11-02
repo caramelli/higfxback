@@ -21,7 +21,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 rm -rf src/video/khronos
-PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --disable-video-wayland-xcompose --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-rpath --disable-static --disable-video-wayland-xcompose --prefix=/wl
 cd test; SDL_CFLAGS="-I../include -I/wl/include" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/wl/lib" ./configure -with-testdatadir=/wl/share/SDL2/test; cd -
 
 # build

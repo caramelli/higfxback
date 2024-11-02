@@ -16,7 +16,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 rm -rf src/video/khronos
-PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --prefix=/drm
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-rpath --disable-static --prefix=/drm
 cd test; SDL_CFLAGS="-I../include -I/drm/include" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/drm/lib" ./configure -with-testdatadir=/drm/share/SDL2/test; cd -
 
 # build

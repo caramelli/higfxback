@@ -26,7 +26,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 rm -rf src/video/khronos
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --enable-video-directfb $FUSIONSOUND --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-rpath --disable-static --enable-video-directfb $FUSIONSOUND --prefix=/dfb
 cd test; SDL_CFLAGS="-I../include -I/dfb/include -I/dfb/include/directfb" SDL_LIBS="-L../build/.libs -lSDL2 -Wl,-rpath,/dfb/lib" ./configure --with-testdatadir=/dfb/share/SDL2/test; cd -
 
 # build

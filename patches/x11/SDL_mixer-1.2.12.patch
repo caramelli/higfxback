@@ -1,0 +1,68 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libvorbis-build sdl-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists flac-build && REQUIRES="$REQUIRES flac-build"
+
+# configure (ac-2.61; lt-2.2.6)
+libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install build/.libs/playmus $DESTDIR/x11/bin
+install build/.libs/playwave $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/SDL
+install -m 644 SDL_mixer.h $DESTDIR/x11/include/SDL
+install -d $DESTDIR/x11/lib
+install build/.libs/libSDL_mixer-1.2.so.0.* $DESTDIR/x11/lib/libSDL_mixer-1.2.so.0
+ln -sf libSDL_mixer-1.2.so.0 $DESTDIR/x11/lib/libSDL_mixer.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 SDL_mixer.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/sdl_mixer-build.pc << EOF
+Name: SDL_mixer
+Version: 1.2.12
+Description: Audio mixer library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/SDL/SDL_mixer.h \\
+/x11/lib/libSDL_mixer.so \\
+/x11/lib/pkgconfig/SDL_mixer.pc
+
+exec=\\
+/x11/bin/playmus \\
+/x11/bin/playwave \\
+/x11/lib/libSDL_mixer-1.2.so.0
+EOF
+
+exit
+--- SDL_mixer-1.2.12.orig/SDL_mixer.h
++++ SDL_mixer-1.2.12/SDL_mixer.h
+@@ -24,7 +24,6 @@
+ #ifndef _SDL_MIXER_H
+ #define _SDL_MIXER_H
+ 
+-#include "SDL_types.h"
+ #include "SDL_rwops.h"
+ #include "SDL_audio.h"
+ #include "SDL_endian.h"
+--- SDL_mixer-1.2.12.orig/configure.in
++++ SDL_mixer-1.2.12/configure.in
+@@ -1,6 +1,7 @@
+ dnl Process this file with autoconf to produce a configure script.
+ AC_INIT(README)
+ AC_CONFIG_AUX_DIR(build-scripts)
++AC_CONFIG_MACRO_DIR(acinclude)
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 

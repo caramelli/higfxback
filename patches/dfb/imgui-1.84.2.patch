@@ -30,8 +30,8 @@ rm -f imstb_textedit.h
 rm -f imstb_truetype.h
 
 # build
-test $GL && test $SDL2 && PKG_CONFIG_PATH=/dfb/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" make -C examples/example_sdl_opengl3
-test $VK && test $SDL2 && PKG_CONFIG_PATH=/dfb/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" make -C examples/example_sdl_vulkan
+test $GL && test $SDL2 && PKG_CONFIG_PATH=/dfb/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\" -I/dfb/include" LIBS=-Wl,-rpath,/dfb/lib make -C examples/example_sdl_opengl3
+test $VK && test $SDL2 && PKG_CONFIG_PATH=/dfb/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\" -I/dfb/include" LIBS=-Wl,-rpath,/dfb/lib make -C examples/example_sdl_vulkan
 
 # install
 install -d $DESTDIR/dfb/include/imgui
@@ -100,7 +100,7 @@ exit
  #endif
 --- imgui-1.84.2.orig/examples/example_sdl_opengl3/Makefile
 +++ imgui-1.84.2/examples/example_sdl_opengl3/Makefile
-@@ -21,9 +21,9 @@
+@@ -21,19 +21,18 @@
  SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
  OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
  UNAME_S := $(shell uname -s)
@@ -110,9 +110,10 @@ exit
 -CXXFLAGS = -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
  CXXFLAGS += -g -Wall -Wformat
- LIBS =
+-LIBS =
  
-@@ -32,8 +32,8 @@
+ ##---------------------------------------------------------------------
+ ## OPENGL ES
  ##---------------------------------------------------------------------
  
  ## This assumes a GL ES library available in the system, e.g. libGLESv2.so
@@ -123,7 +124,7 @@ exit
  ## If you're on a Raspberry Pi and want to use the legacy drivers,
  ## use the following instead:
  # LINUX_GL_LIBS = -L/opt/vc/lib -lbrcmGLESv2
-@@ -44,9 +44,9 @@
+@@ -44,9 +43,9 @@
  
  ifeq ($(UNAME_S), Linux) #LINUX
  	ECHO_MESSAGE = "Linux"
@@ -135,6 +136,15 @@ exit
  	CFLAGS = $(CXXFLAGS)
  endif
  
+@@ -85,7 +84,7 @@
+ 	@echo Build complete for $(ECHO_MESSAGE)
+ 
+ $(EXE): $(OBJS)
+-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
++	$(CXX) -o $@ $^ $(LIBS)
+ 
+ clean:
+ 	rm -f $(EXE) $(OBJS)
 --- imgui-1.84.2.orig/examples/example_sdl_opengl3/main.cpp
 +++ imgui-1.84.2/examples/example_sdl_opengl3/main.cpp
 @@ -8,9 +8,10 @@
@@ -169,7 +179,7 @@ exit
 +CXXFLAGS += -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -g -Wall -Wformat
 +CXXFLAGS += `pkg-config --cflags sdl2`
-+LIBS = `pkg-config --libs sdl2` -lvulkan
++LIBS += `pkg-config --libs sdl2` -lvulkan
 +
 +##---------------------------------------------------------------------
 +## BUILD RULES
@@ -187,7 +197,7 @@ exit
 +all: $(EXE)
 +
 +$(EXE): $(OBJS)
-+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
++	$(CXX) -o $@ $^ $(LIBS)
 +
 +clean:
 +	rm -f $(EXE) $(OBJS)
