@@ -1,37 +1,37 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="glslang-build libpng-build libxcb-build meson-build vulkan-loader-build"
+REQUIRES="directfb2-build glslang-build libpng-build meson-build vulkan-loader-build"
 
-PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -f vkcube.frag.spv.h.in vkcube.vert.spv.h.in
-PKG_CONFIG_PATH=/x11/lib/pkgconfig meson setup --prefix=/x11 build
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
 
 # build
 meson compile -C build
 
 # install
-install -d $DESTDIR/x11/bin
-install build/vkcube $DESTDIR/x11/bin
+install -d $DESTDIR/dfb/bin
+install build/vkcube $DESTDIR/dfb/bin
 
 # build.pc
-install -d $DESTDIR/x11/share/pkgconfig
-cat > $DESTDIR/x11/share/pkgconfig/vkcube-build.pc << EOF
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/vkcube-build.pc << EOF
 Name: vkcube
-Version: 20210201
+Version: 20201229
 Description: Spinning Vulkan cube using Window System Integration
 Requires: $REQUIRES
 
 exec=\\
-/x11/bin/vkcube
+/dfb/bin/vkcube
 EOF
 
 exit
---- vkcube-20210201.orig/common.h
-+++ vkcube-20210201/common.h
-@@ -3,25 +3,30 @@
+--- vkcube-20201229.orig/common.h
++++ vkcube-20201229/common.h
+@@ -3,25 +3,35 @@
  #include <sys/time.h>
  #include <stdbool.h>
  #include <string.h>
@@ -46,6 +46,11 @@ exit
 +
  #include <png.h>
  
++#if defined(ENABLE_DIRECTFB)
++#include <directfb.h>
++#define VK_USE_PLATFORM_DIRECTFB_EXT
++#endif
++
 +#if defined(ENABLE_XCB)
  #include <xcb/xcb.h>
 +#define VK_USE_PLATFORM_XCB_KHR
@@ -67,7 +72,7 @@ exit
  #include "esUtil.h"
  
  #define printflike(a, b) __attribute__((format(printf, (a), (b))))
-@@ -29,7 +34,10 @@
+@@ -29,7 +39,10 @@
  #define MAX_NUM_IMAGES 4
  
  struct vkcube_buffer {
@@ -78,7 +83,7 @@ exit
     VkDeviceMemory mem;
     VkImage image;
     VkImageView view;
-@@ -37,7 +45,6 @@
+@@ -37,7 +50,6 @@
     VkFence fence;
     VkCommandBuffer cmd_buffer;
  
@@ -86,9 +91,9 @@ exit
     uint32_t stride;
  };
  
-@@ -53,16 +60,23 @@
- 
-    bool protected;
+@@ -51,16 +63,31 @@
+ struct vkcube {
+    struct model model;
  
 +#if defined(HAVE_VULKAN_INTEL_H)
     int fd;
@@ -97,6 +102,14 @@ exit
     struct gbm_device *gbm_device;
 +#endif
  
++#if defined(ENABLE_DIRECTFB)
++   struct {
++      IDirectFB *dfb;
++      IDirectFBSurface *surface;
++      IDirectFBEventBuffer *event_buffer;
++   } directfb;
++#endif
++
 +#if defined(ENABLE_XCB)
     struct {
        xcb_connection_t *conn;
@@ -110,7 +123,7 @@ exit
     struct {
        struct wl_display *display;
        struct wl_compositor *compositor;
-@@ -74,6 +88,7 @@
+@@ -72,6 +99,7 @@
        struct xdg_toplevel *xdg_toplevel;
        bool wait_for_configure;
     } wl;
@@ -118,7 +131,7 @@ exit
  
     struct {
        VkDisplayModeKHR display_mode;
-@@ -81,8 +96,6 @@
+@@ -79,8 +107,6 @@
  
     VkSwapchainKHR swap_chain;
  
@@ -127,9 +140,9 @@ exit
     uint32_t width, height;
  
     VkInstance instance;
---- vkcube-20210201.orig/main.c
-+++ vkcube-20210201/main.c
-@@ -37,38 +37,48 @@
+--- vkcube-20201229.orig/main.c
++++ vkcube-20201229/main.c
+@@ -37,38 +37,51 @@
  
  #define _DEFAULT_SOURCE /* for major() */
  
@@ -182,15 +195,18 @@ exit
 +#if defined(ENABLE_XCB)
     DISPLAY_MODE_XCB,
 +#endif
++#if defined(ENABLE_DIRECTFB)
++   DISPLAY_MODE_DIRECTFB,
++#endif
     DISPLAY_MODE_KHR,
  };
  
  static enum display_mode display_mode = DISPLAY_MODE_AUTO;
 +static uint32_t width = 1024, height = 768;
  static const char *arg_out_file = "./cube.png";
- static bool protected_chain = false;
  
-@@ -440,12 +450,10 @@
+ void noreturn
+@@ -411,12 +424,10 @@
     return 0;
  }
  
@@ -204,7 +220,7 @@ exit
  static struct termios save_tio;
  
  static void
-@@ -658,21 +666,10 @@
+@@ -629,22 +640,11 @@
     }
  }
  
@@ -223,12 +239,14 @@ exit
 -
  #endif
  
-+#if defined(ENABLE_XCB) || defined(ENABLE_WAYLAND)
+-/* Swapchain-based code - shared between XCB and Wayland */
++#if defined(ENABLE_DIRECTFB) || defined(ENABLE_XCB) || defined(ENABLE_WAYLAND)
 +
- /* Swapchain-based code - shared between XCB and Wayland */
++/* Swapchain-based code - shared between DirectFB, XCB and Wayland */
  
  static VkFormat
-@@ -711,6 +708,8 @@
+ choose_surface_format(struct vkcube *vc)
+@@ -682,6 +682,8 @@
     return format;
  }
  
@@ -237,16 +255,103 @@ exit
  static void
  create_swapchain(struct vkcube *vc)
  {
-@@ -786,6 +785,8 @@
+@@ -756,6 +758,95 @@
     }
  }
  
++#if defined(ENABLE_DIRECTFB)
++
++/* DirectFB display code - render to DirectFB surface */
++
++// Return -1 on failure.
++static int
++init_directfb(struct vkcube *vc)
++{
++   DirectFBInit(NULL, NULL);
++   if (DirectFBCreate(&vc->directfb.dfb))
++      return -1;
++
++   DFBSurfaceDescription desc;
++   desc.flags = DSDESC_CAPS | DSDESC_WIDTH | DSDESC_HEIGHT;
++   desc.caps = DSCAPS_PRIMARY;
++   desc.width = vc->width;
++   desc.height = vc->height;
++   vc->directfb.dfb->CreateSurface(vc->directfb.dfb, &desc, &vc->directfb.surface);
++
++   vc->directfb.dfb->CreateInputEventBuffer(vc->directfb.dfb, DICAPS_KEYS, DFB_FALSE, &vc->directfb.event_buffer);
++
++   init_vk(vc, VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME);
++
++   PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT get_directfb_presentation_support =
++      (PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT)
++      vkGetInstanceProcAddr(vc->instance, "vkGetPhysicalDeviceDirectFBPresentationSupportEXT");
++   PFN_vkCreateDirectFBSurfaceEXT create_directfb_surface =
++      (PFN_vkCreateDirectFBSurfaceEXT)
++      vkGetInstanceProcAddr(vc->instance, "vkCreateDirectFBSurfaceEXT");
++
++   if (!get_directfb_presentation_support(vc->physical_device, 0,
++                                          vc->directfb.dfb)) {
++      fail("Vulkan not supported on given DirectFB surface");
++   }
++
++   create_directfb_surface(vc->instance,
++      &(VkDirectFBSurfaceCreateInfoEXT) {
++         .sType = VK_STRUCTURE_TYPE_DIRECTFB_SURFACE_CREATE_INFO_EXT,
++         .dfb = vc->directfb.dfb,
++         .surface = vc->directfb.surface,
++      }, NULL, &vc->surface);
++
++   vc->image_format = choose_surface_format(vc);
++
++   init_vk_objects(vc);
++
++   create_swapchain(vc);
++
++   return 0;
++}
++
++static void
++mainloop_directfb(struct vkcube *vc)
++{
++   DFBEvent event;
++
++   while (1) {
++      vc->directfb.event_buffer->GetEvent(vc->directfb.event_buffer, &event);
++      if (event.input.key_id == DIKI_ESCAPE)
++         exit(0);
++
++      uint32_t index;
++      VkResult result = vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
++                                              vc->semaphore, VK_NULL_HANDLE, &index);
++      if (result != VK_SUCCESS)
++         return;
++
++      assert(index <= MAX_NUM_IMAGES);
++      vc->model.render(vc, &vc->buffers[index], true);
++
++      vkQueuePresentKHR(vc->queue,
++         &(VkPresentInfoKHR) {
++            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
++            .swapchainCount = 1,
++            .pSwapchains = (VkSwapchainKHR[]) { vc->swap_chain, },
++            .pImageIndices = (uint32_t[]) { index, },
++            .pResults = &result,
++         });
++      if (result != VK_SUCCESS)
++         return;
++
++      vkQueueWaitIdle(vc->queue);
++   }
++}
++ 
++#endif
++
 +#if defined(ENABLE_XCB)
 +
  /* XCB display code - render to X window */
  
  static xcb_atom_t
-@@ -1006,6 +1007,10 @@
+@@ -976,6 +1067,10 @@
     }
  }
  
@@ -257,7 +362,7 @@ exit
  /* Wayland display code - render to Wayland window */
  
  static void
-@@ -1266,6 +1271,8 @@
+@@ -1236,6 +1331,8 @@
     }
  }
  
@@ -266,7 +371,7 @@ exit
  static int display_idx = -1;
  static int display_mode_idx = -1;
  static int display_plane_idx = -1;
-@@ -1516,15 +1523,21 @@
+@@ -1481,15 +1578,26 @@
     } else if (streq(s, "headless")) {
        *mode = DISPLAY_MODE_HEADLESS;
        return true;
@@ -285,30 +390,39 @@ exit
        *mode = DISPLAY_MODE_XCB;
        return true;
 +#endif
++#if defined(ENABLE_DIRECTFB)
++   } else if (streq(s, "directfb")) {
++      *mode = DISPLAY_MODE_DIRECTFB;
++      return true;
++#endif
     } else if (streq(s, "khr")) {
        *mode = DISPLAY_MODE_KHR;
        return true;
-@@ -1547,6 +1560,10 @@
-       "                          \"kms\", \"wayland\", or \"xcb\". This option is\n"
-       "                          incompatible with '-n'.\n"
+@@ -1509,8 +1617,12 @@
        "\n"
+       "  -m <mode>               Choose display backend, where <mode> is one of\n"
+       "                          \"auto\" (the default), \"headless\", \"khr\",\n"
+-      "                          \"kms\", \"wayland\", or \"xcb\". This option is\n"
+-      "                          incompatible with '-n'.\n"
++      "                          \"kms\", \"wayland\", \"xcb\", or \"directfb\".\n"
++      "                          This option is incompatible with '-n'.\n"
++      "\n"
 +      "  -w                      Specify width.\n"
 +      "\n"
 +      "  -h                      Specify height.\n"
-+      "\n"
+       "\n"
        "  -k <display:mode:plane> Select KHR configuration with 3 number separated\n"
        "                          by the column character. To display the item\n"
-       "                          corresponding to those number, just omit the number.\n"
-@@ -1585,7 +1602,7 @@
+@@ -1548,7 +1660,7 @@
      * The initial ':' in the optstring makes getopt return ':' when an option
      * is missing a required argument.
      */
--   static const char *optstring = "+:nm:o:k:p";
-+   static const char *optstring = "+:nm:w:h:o:k:p";
+-   static const char *optstring = "+:nm:o:k:";
++   static const char *optstring = "+:nm:w:h:o:k:";
  
     int opt;
     bool found_arg_headless = false;
-@@ -1602,6 +1619,12 @@
+@@ -1565,6 +1677,12 @@
           found_arg_headless = true;
           display_mode = DISPLAY_MODE_HEADLESS;
           break;
@@ -321,7 +435,7 @@ exit
        case 'k': {
           char config[40], *saveptr, *t;
           snprintf(config, sizeof(config), "%s", optarg);
-@@ -1645,25 +1668,43 @@
+@@ -1605,25 +1723,54 @@
  {
     switch (display_mode) {
     case DISPLAY_MODE_AUTO:
@@ -337,25 +451,42 @@ exit
           display_mode = DISPLAY_MODE_XCB;
           if (init_xcb(vc) == -1) {
              fprintf(stderr, "failed to initialize xcb, falling back "
-+#endif
-+#if defined(HAVE_VULKAN_INTEL_H)
-+#if defined(ENABLE_WAYLAND) || defined(ENABLE_XCB)
-                             "to kms\n");
-+#endif
-             display_mode = DISPLAY_MODE_KMS;
-             if (init_kms(vc) == -1) {
+-                            "to kms\n");
+-            display_mode = DISPLAY_MODE_KMS;
+-            if (init_kms(vc) == -1) {
 -               fprintf(stderr, "failed to initialize kms, falling "
 -                               "back to headless\n");
-+               fprintf(stderr, "failed to initialize kms, falling back "
+-               display_mode = DISPLAY_MODE_HEADLESS;
+-               if (init_headless(vc) == -1) {
+-                  fail("failed to initialize headless mode");
 +#endif
-+#if defined(ENABLE_WAYLAND) || defined(ENABLE_XCB) || defined(HAVE_VULKAN_INTEL_H)
-+                               "to headless\n");
++#if defined(ENABLE_DIRECTFB)
++#if defined(ENABLE_WAYLAND) || defined(ENABLE_XCB)
++                            "to directfb\n");
 +#endif
-                display_mode = DISPLAY_MODE_HEADLESS;
-                if (init_headless(vc) == -1) {
-                   fail("failed to initialize headless mode");
-                }
++            display_mode = DISPLAY_MODE_DIRECTFB;
++            if (init_directfb(vc) == -1) {
++               fprintf(stderr, "failed to initialize directfb, falling back "
++#endif
 +#if defined(HAVE_VULKAN_INTEL_H)
++#if defined(ENABLE_WAYLAND) || defined(ENABLE_XCB) || defined(ENABLE_DIRECTFB)
++                               "to kms\n");
++#endif
++               display_mode = DISPLAY_MODE_KMS;
++               if (init_kms(vc) == -1) {
++                  fprintf(stderr, "failed to initialize kms, falling back "
++#endif
++#if defined(ENABLE_WAYLAND) || defined(ENABLE_XCB) || defined(ENABLE_DIRECTFB) || defined(HAVE_VULKAN_INTEL_H)
++                                  "to headless\n");
++#endif
++                  display_mode = DISPLAY_MODE_HEADLESS;
++                  if (init_headless(vc) == -1) {
++                     fail("failed to initialize headless mode");
++                  }
++#if defined(HAVE_VULKAN_INTEL_H)
+                }
++#endif
++#if defined(ENABLE_DIRECTFB)
              }
 +#endif
 +#if defined(ENABLE_XCB)
@@ -367,7 +498,7 @@ exit
        break;
     case DISPLAY_MODE_HEADLESS:
        if (init_headless(vc) == -1)
-@@ -1673,18 +1714,24 @@
+@@ -1633,18 +1780,30 @@
        if (init_khr(vc) == -1)
           fail("fail to initialize khr");
        break;
@@ -389,10 +520,16 @@ exit
           fail("failed to initialize xcb");
        break;
 +#endif
++#if defined(ENABLE_DIRECTFB)
++   case DISPLAY_MODE_DIRECTFB:
++      if (init_directfb(vc) == -1)
++         fail("failed to initialize directfb");
++      break;
++#endif
     }
  }
  
-@@ -1695,15 +1742,21 @@
+@@ -1655,20 +1814,32 @@
     case DISPLAY_MODE_AUTO:
        assert(!"display mode is unset");
        break;
@@ -406,6 +543,11 @@ exit
        mainloop_xcb(vc);
        break;
 +#endif
++#if defined(ENABLE_DIRECTFB)
++   case DISPLAY_MODE_DIRECTFB:
++      mainloop_directfb(vc);
++      break;
++#endif
 +#if defined(HAVE_VULKAN_INTEL_H)
     case DISPLAY_MODE_KMS:
        mainloop_vt(vc);
@@ -414,12 +556,21 @@ exit
     case DISPLAY_MODE_KHR:
        mainloop_khr(vc);
        break;
-@@ -1722,11 +1775,17 @@
+    case DISPLAY_MODE_HEADLESS:
+       vc->model.render(vc, &vc->buffers[0], false);
++      vkQueueWaitIdle(vc->queue);
+       write_buffer(vc, &vc->buffers[0]);
+       break;
+    }
+@@ -1681,11 +1852,20 @@
     parse_args(argc, argv);
  
     vc.model = cube_model;
 +#if defined(HAVE_VULKAN_INTEL_H)
     vc.gbm_device = NULL;
++#endif
++#if defined(ENABLE_DIRECTFB)
++   vc.directfb.surface = NULL;
 +#endif
 +#if defined(ENABLE_XCB)
     vc.xcb.window = XCB_NONE;
@@ -431,12 +582,12 @@ exit
 +#endif
 +   vc.width = width;
 +   vc.height = height;
-    vc.protected = protected_chain;
     gettimeofday(&vc.start_tv, NULL);
  
---- vkcube-20210201.orig/meson.build
-+++ vkcube-20210201/meson.build
-@@ -3,26 +3,35 @@
+    init_display(&vc);
+--- vkcube-20201229.orig/meson.build
++++ vkcube-20201229/meson.build
+@@ -3,26 +3,40 @@
  
  cc = meson.get_compiler('c')
  
@@ -449,6 +600,7 @@ exit
 -dep_xcb = dependency('xcb')
 +dep_wayland = dependency('wayland-client', required : false)
 +dep_xcb = dependency('xcb', required : false)
++dep_directfb = dependency('directfb', required : false)
  dep_vulkan = dependency('vulkan')
  dep_m = cc.find_library('m', required : false)
  
@@ -471,6 +623,10 @@ exit
 +  defs += '-DENABLE_XCB'
 +endif
 +
++if dep_directfb.found()
++  defs += '-DENABLE_DIRECTFB'
++endif
++
 +prog_glslang = find_program('glslangValidator', required : false)
  prog_cp = find_program('cp')
  
@@ -480,7 +636,7 @@ exit
    'main.c',
    'common.h',
    'cube.c',
-@@ -30,11 +39,11 @@
+@@ -30,11 +44,11 @@
    'esUtil.h'
  )
  
@@ -495,3 +651,10 @@ exit
    )
  else
    gen = generator(
+@@ -51,5 +65,5 @@
+   c_args : [ defs, '-Wall',
+             '-Werror=implicit-function-declaration',
+ 	    '-Werror=missing-prototypes'],
+-  dependencies : [dep_libdrm, dep_gbm, dep_libpng, dep_wayland, dep_xcb, dep_vulkan, dep_m],
++  dependencies : [dep_libdrm, dep_gbm, dep_libpng, dep_wayland, dep_xcb, dep_directfb, dep_vulkan, dep_m],
+ )
