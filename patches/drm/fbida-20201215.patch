@@ -1,0 +1,226 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libdrm-build libexif-build libinput-build libxkbcommon-build meson-build poppler-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
+
+# configure
+rm -rf jpeg
+PKG_CONFIG_PATH=/drm/lib/pkgconfig meson setup --prefix=/drm build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/drm/bin
+install build/fbi $DESTDIR/drm/bin/kmsi
+install build/fbpdf $DESTDIR/drm/bin/kmspdf
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/fbida-build.pc << EOF
+Name: fbida
+Version: 20201215
+Description: KMS/DRM image and document viewers
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/kmsi \\
+/drm/bin/kmspdf
+EOF
+
+exit
+--- fbida-20201215.orig/fbcon.c
++++ fbida-20201215/fbcon.c
+@@ -241,7 +241,7 @@
+     return c;
+ }
+ 
+-int fbcon_tsm_draw_cb(struct tsm_screen *con, uint32_t id,
++int fbcon_tsm_draw_cb(struct tsm_screen *con, uint64_t id,
+                       const uint32_t *ch, size_t len,
+                       unsigned int width, unsigned int posx, unsigned int posy,
+                       const struct tsm_screen_attr *attr,
+--- fbida-20201215.orig/fbi.c
++++ fbida-20201215/fbi.c
+@@ -1224,6 +1224,7 @@
+     char             linebuffer[128];
+     struct flist     *fprev = NULL;
+     struct flist     *fnext = NULL;
++    char             *progname;
+ 
+ #if 0
+     /* debug aid, to attach gdb ... */
+@@ -1302,21 +1303,13 @@
+     device = cfg_get_str(O_DEVICE);
+     output = cfg_get_str(O_OUTPUT);
+     mode = cfg_get_str(O_VIDEO_MODE);
+-    if (device) {
+-        /* device specified */
+-        if (strncmp(device, "/dev/d", 6) == 0) {
+-            gfx = drm_init(device, output, mode, false);
+-        } else {
+-            framebuffer = true;
+-            gfx = fb_init(device, mode);
+-        }
++    progname = basename(argv[0]);
++
++    if (strcmp(progname, "kmsi") == 0) {
++        gfx = drm_init(device, output, mode, false);
+     } else {
+-        /* try drm first, failing that fb */
+-        gfx = drm_init(NULL, output, mode, false);
+-        if (!gfx) {
+-            framebuffer = true;
+-            gfx = fb_init(NULL, mode);
+-        }
++        framebuffer = true;
++        gfx = fb_init(device, mode);
+     }
+     if (!gfx) {
+         fprintf(stderr, "graphics init failed\n");
+--- fbida-20201215.orig/fbpdf.c
++++ fbida-20201215/fbpdf.c
+@@ -244,6 +244,7 @@
+     char key[32];
+     uint32_t keycode, keymod;
+     int index = 0;
++    char *progname;
+ 
+     setlocale(LC_ALL,"");
+ 
+@@ -296,22 +297,13 @@
+     fitwidth = GET_FIT_WIDTH();
+     pageflip = GET_PAGEFLIP();
+     use_libinput = GET_LIBINPUT();
++    progname = basename(argv[0]);
+ 
+-    if (device) {
+-        /* device specified */
+-        if (strncmp(device, "/dev/d", 6) == 0) {
+-            gfx = drm_init(device, output, mode, pageflip);
+-        } else {
+-            framebuffer = true;
+-            gfx = fb_init(device, mode);
+-        }
++    if (strcmp(progname, "kmspdf") == 0) {
++        gfx = drm_init(device, output, mode, pageflip);
+     } else {
+-        /* try drm first, failing that fb */
+-        gfx = drm_init(NULL, output, mode, pageflip);
+-        if (!gfx) {
+-            framebuffer = true;
+-            gfx = fb_init(NULL, mode);
+-        }
++        framebuffer = true;
++        gfx = fb_init(device, mode);
+     }
+     if (!gfx) {
+         fprintf(stderr, "graphics init failed\n");
+--- fbida-20201215.orig/jpegtools.c
++++ fbida-20201215/jpegtools.c
+@@ -231,7 +231,7 @@
+     cinfo->src->bytes_in_buffer = h->isize;
+ }
+ 
+-static int thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
++static boolean thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
+ {
+     fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
+     exit(1);
+--- fbida-20201215.orig/meson.build
++++ fbida-20201215/meson.build
+@@ -68,12 +68,6 @@
+     config.set('HAVE_SYSTEMD', true)
+ endif
+ 
+-# jpeg transformation support
+-jpeg_run     = run_command('scripts/jpeg-version.sh')
+-jpeg_ver     = jpeg_run.stdout().strip()
+-trans_src    = ''.join(['jpeg/', jpeg_ver,  '/transupp.c'])
+-trans_inc    = include_directories(''.join(['jpeg/', jpeg_ver]))
+-
+ # finish & write configuration
+ if motif_dep.found()
+     config.set('HAVE_MOTIF', true)
+@@ -92,7 +86,7 @@
+                  'vt.c', 'kbd.c', 'logind.c',
+                  'fbtools.c', 'drmtools.c', 'gfx.c',
+                  'filter.c', 'op.c', 'jpegtools.c',
+-                 trans_src, read_srcs ]
++                 read_srcs ]
+ fbi_deps     = [ drm_dep, pixman_dep, cairo_dep,
+                  exif_dep, image_deps, iconv_dep,
+                  math_dep, udev_dep, input_dep, xkb_dep, systemd_dep ]
+@@ -100,20 +94,20 @@
+ executable('fbi',
+            sources             : fbi_srcs,
+            dependencies        : fbi_deps,
+-           include_directories : trans_inc,
+            install             : true)
+ install_man('man/fbi.1')
++install_symlink('kmsi',
++                pointing_to : 'fbi',
++                install_dir : get_option('bindir'))
+ 
+ # build exiftran
+ exiftr_srcs  = [ 'exiftran.c', 'genthumbnail.c', 'jpegtools.c',
+-                 'filter.c', 'op.c', 'readers.c', 'rd/read-jpeg.c',
+-                 trans_src ]
++                 'filter.c', 'op.c', 'readers.c', 'rd/read-jpeg.c' ]
+ exiftr_deps  = [ jpeg_dep, exif_dep, math_dep, pixman_dep ]
+ 
+ executable('exiftran',
+            sources             : exiftr_srcs,
+            dependencies        : exiftr_deps,
+-           include_directories : trans_inc,
+            install             : true)
+ install_man('man/exiftran.1')
+ 
+@@ -133,6 +127,9 @@
+            sources             : fbpdf_srcs,
+            dependencies        : fbpdf_deps,
+            install             : true)
++install_symlink('kmspdf',
++                pointing_to : 'fbpdf',
++                install_dir : get_option('bindir'))
+ 
+ # build fbcon
+ fbcon_srcs   = [ 'fbcon.c', 'drmtools.c', 'fbtools.c', 'gfx.c',
+@@ -176,7 +173,7 @@
+                  'fileops.c', 'desktop.c', 'RegEdit.c', 'selections.c',
+                  'xdnd.c', 'filebutton.c', 'filelist.c', 'browser.c',
+                  'jpegtools.c', 'op.c', 'filter.c', 'lut.c', 'color.c',
+-                 trans_src, read_srcs, write_srcs,
++                 read_srcs, write_srcs,
+                  'rd/read-xwd.c', 'rd/read-xpm.c',
+                  ida_ad, ida_logo ]
+ ida_deps     = [ pixman_dep, exif_dep, image_deps, iconv_dep, math_dep,
+@@ -186,7 +183,6 @@
+     executable('ida',
+                sources             : ida_srcs,
+                dependencies        : ida_deps,
+-               include_directories : trans_inc,
+                install             : true)
+     install_man('man/ida.1')
+     custom_target('ida-app-defaults',
+--- fbida-20201215.orig/rd/read-jpeg.c
++++ fbida-20201215/rd/read-jpeg.c
+@@ -39,7 +39,7 @@
+     cinfo->src->bytes_in_buffer = h->tsize;
+ }
+ 
+-static int thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
++static boolean thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
+ {
+     fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
+     exit(1);
+--- fbida-20201215.orig/scripts/jpeg-version.sh
++++ fbida-20201215/scripts/jpeg-version.sh
+@@ -1,2 +1,2 @@
+ #!/bin/sh
+-echo JPEG_LIB_VERSION | cpp $CFLAGS -include jpeglib.h | tail -1
++echo JPEG_LIB_VERSION | cpp $CFLAGS -include jpeglib.h | tail -n -1

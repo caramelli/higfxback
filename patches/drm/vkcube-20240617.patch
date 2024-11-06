@@ -315,7 +315,8 @@ exit
  dep_xcb = dependency('xcb', required : get_option('xcb') == 'true')
  
  defs = []
- if cc.has_header('vulkan/vulkan_intel.h', dependencies: dep_vulkan)
+-if cc.has_header('vulkan/vulkan_intel.h', dependencies: dep_vulkan)
++if dep_libdrm.found() and dep_gbm.found() and cc.has_header('vulkan/vulkan_intel.h', dependencies: dep_vulkan)
 +  message('kms enabled')
    defs += '-DHAVE_VULKAN_INTEL_H'
  endif

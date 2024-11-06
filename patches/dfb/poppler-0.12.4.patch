@@ -5,15 +5,21 @@ REQUIRES="autotools-wrappers-lt-build cairo-build gcc-g++-build jpeg-build openj
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gdk-pixbuf-build; then
+  GDK_PIXBUF=1
+  REQUIRES="$REQUIRES gdk-pixbuf-build"
+fi
+
 # configure (ac-2.64; am-1.11; lt-2.2.6)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-abiword-output --disable-static --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-abiword-output --disable-gtk-test --disable-static --prefix=/dfb
 
 # build
 make
 
 # install
 install -d $DESTDIR/dfb/bin
+test $GDK_PIXBUF && install glib/.libs/test-poppler-glib $DESTDIR/dfb/bin
 install utils/.libs/pdffonts $DESTDIR/dfb/bin
 install utils/.libs/pdfimages $DESTDIR/dfb/bin
 install utils/.libs/pdfinfo $DESTDIR/dfb/bin
@@ -75,6 +81,9 @@ exec=\\
 /dfb/bin/pdftoppm \\
 /dfb/bin/pdftops \\
 /dfb/bin/pdftotext \\
+EOF
+test $GDK_PIXBUF && echo /dfb/bin/test-poppler-glib \\ >> $DESTDIR/dfb/share/pkgconfig/poppler-build.pc
+cat >> $DESTDIR/dfb/share/pkgconfig/poppler-build.pc << EOF
 /dfb/lib/libpoppler.so.5 \\
 /dfb/lib/libpoppler-glib.so.4
 EOF
@@ -82,28 +91,67 @@ EOF
 exit
 --- poppler-0.12.4.orig/configure.ac
 +++ poppler-0.12.4/configure.ac
-@@ -357,18 +357,21 @@
+@@ -339,36 +339,39 @@
+ 
+ if test x$enable_poppler_glib = xyes; then
+   if test x$enable_gdk = xyes; then
+-    PKG_CHECK_MODULES(GDK, gdk-2.0)
++    PKG_CHECK_MODULES(GDK, gdk-pixbuf-2.0)
+   elif test x$enable_gdk = xtry; then
+     if test x$enable_splash_output = xyes; then
+-      PKG_CHECK_MODULES(GDK, gdk-2.0,
++      PKG_CHECK_MODULES(GDK, gdk-pixbuf-2.0,
+                         [enable_gdk="yes"],
+                         [enable_gdk="no"])
+     elif test x$enable_cairo_output = xyes; then
+-      PKG_CHECK_MODULES(GDK, gdk-2.0,
++      PKG_CHECK_MODULES(GDK, gdk-pixbuf-2.0,
+                         [enable_gdk="yes"],
+ 			[enable_gdk="no"])
+     fi
+   elif test x$enable_splash_output = xyes; then
+-    PKG_CHECK_MODULES(GDK, gdk-2.0)
++    PKG_CHECK_MODULES(GDK, gdk-pixbuf-2.0)
+     AC_MSG_WARN("GDK is required by the glib wrapper when splash output device is
+                  enabled. If you want to comppile popler without GDK use --disable-splash-output too")
      enable_gdk=yes
    fi
    if test x$enable_gdk = xyes; then
-+    GDK_REQ="gdk-2.0 gdk-pixbuf-2.0"
++    GDK_PIXBUF_REQ="gdk-pixbuf-2.0"
      AC_DEFINE(POPPLER_WITH_GDK,[1], [Have GDK])
      GDK_FEATURE="#define POPPLER_WITH_GDK 1"
      POPPLER_GLIB_DISABLE_DEPRECATED="$POPPLER_GLIB_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED"
      POPPLER_GLIB_DISABLE_SINGLE_INCLUDES="$POPPLER_GLIB_DISABLE_SINGLE_INCLUDES -DGTK_DISABLE_SINGLE_INCLUDES"
    else
      GDK_FEATURE=""
-+    GDK_REQ=""
++    GDK_PIXBUF_REQ=""
    fi
  fi
  AM_CONDITIONAL(BUILD_WITH_GDK, test x$enable_gdk = xyes)
  AC_SUBST(GDK_CFLAGS)
  AC_SUBST(GDK_LIBS)
  AC_SUBST(GDK_FEATURE)
-+AC_SUBST(GDK_REQ)
++AC_SUBST(GDK_PIXBUF_REQ)
  
  AC_SUBST(POPPLER_GLIB_DISABLE_DEPRECATED)
  AC_SUBST(POPPLER_GLIB_DISABLE_SINGLE_INCLUDES)
+--- poppler-0.12.4.orig/glib/poppler-page.h
++++ poppler-0.12.4/glib/poppler-page.h
+@@ -24,7 +24,13 @@
+ #include "poppler.h"
+ 
+ #ifdef POPPLER_WITH_GDK
+-#include <gdk/gdk.h>
++typedef struct {
++  guint32 pixel;
++  guint16 red;
++  guint16 green;
++  guint16 blue;
++} GdkColor;
++
+ #include <gdk-pixbuf/gdk-pixbuf.h>
+ #endif
+ 
 --- poppler-0.12.4.orig/goo/PNGWriter.cc
 +++ poppler-0.12.4/goo/PNGWriter.cc
 @@ -14,6 +14,8 @@
@@ -133,7 +181,7 @@ exit
  Description: GLib wrapper for poppler
  Version: @VERSION@
 -Requires: @PC_REQUIRES@ gobject-2.0 gdk-2.0 gdk-pixbuf-2.0 @CAIRO_REQ@
-+Requires: @PC_REQUIRES@ gobject-2.0 @CAIRO_REQ@ @GDK_REQ@
++Requires: @PC_REQUIRES@ gobject-2.0 @CAIRO_REQ@ @GDK_PIXBUF_REQ@
  @PC_REQUIRES_PRIVATE@
  
  Libs: -L${libdir} -lpoppler-glib

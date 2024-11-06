@@ -14,7 +14,7 @@ fi
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -f examples/vulkan/vulkan.h
 rm -rf extlibs/headers
-cmake -DSFML_BUILD_EXAMPLES=ON -DSFML_EXAMPLES_DATADIR=/x11/share/SFML/examples -DCMAKE_INSTALL_PREFIX=/x11 -B build -G "$GENERATOR"
+cmake -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DSFML_BUILD_EXAMPLES=ON -DSFML_EXAMPLES_DATADIR=/x11/share/SFML/examples -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -B build -G "$GENERATOR"
 
 # build
 cmake --build build

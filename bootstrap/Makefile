@@ -128,9 +128,10 @@ rootfs: linux busybox binutils gcc syslinux
 	@install $(LINUX)/arch/x86/boot/bzImage rootfs/boot/bzImage
 	@install -d rootfs/dev
 	@install -d rootfs/etc
-	@echo none /proc proc defaults 0 0 > rootfs/etc/fstab
-	@echo none /sys sysfs defaults 0 0 >> rootfs/etc/fstab
-	@echo none /run tmpfs defaults 0 0 >> rootfs/etc/fstab
+	@echo proc /proc proc defaults 0 0 > rootfs/etc/fstab
+	@echo sysfs /sys sysfs defaults 0 0 >> rootfs/etc/fstab
+	@echo tmpfs /run tmpfs defaults 0 0 >> rootfs/etc/fstab
+	@echo tmpfs /tmp tmpfs defaults 0 0 >> rootfs/etc/fstab
 	@echo root::0:root > rootfs/etc/group
 	@echo root::0:0:root:/root:/bin/sh > rootfs/etc/passwd
 	@echo null:2345:sysinit:/etc/init.d/rcS > rootfs/etc/inittab

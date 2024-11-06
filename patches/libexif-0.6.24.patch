@@ -1,0 +1,65 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I auto-m4 -I m4m; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/libexif
+install -m 644 libexif/_stdint.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-byte-order.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-content.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-data.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-data-type.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-entry.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-format.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-ifd.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-log.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-mem.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-mnote-data.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-tag.h $DESTDIR/include/libexif
+install -m 644 libexif/exif-utils.h $DESTDIR/include/libexif
+install -d $DESTDIR/lib
+install libexif/.libs/libexif.so.12.* $DESTDIR/lib/libexif.so.12
+ln -sf libexif.so.12 $DESTDIR/lib/libexif.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libexif.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libexif-build.pc << EOF
+Name: libexif
+Version: 0.6.24
+Description: Exchangeable Image File Format (EXIF) library
+Requires: $REQUIRES
+
+devel=\\
+/include/libexif/_stdint.h \\
+/include/libexif/exif-byte-order.h \\
+/include/libexif/exif-content.h \\
+/include/libexif/exif-data-type.h \\
+/include/libexif/exif-data.h \\
+/include/libexif/exif-entry.h \\
+/include/libexif/exif-format.h \\
+/include/libexif/exif-ifd.h \\
+/include/libexif/exif-log.h \\
+/include/libexif/exif-mem.h \\
+/include/libexif/exif-mnote-data.h \\
+/include/libexif/exif-tag.h \\
+/include/libexif/exif-utils.h \\
+/lib/libexif.so \\
+/lib/pkgconfig/libexif.pc
+
+exec=\\
+/lib/libexif.so.12
+EOF
+
+exit

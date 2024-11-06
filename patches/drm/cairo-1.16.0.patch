@@ -1,0 +1,122 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build fontconfig-build glib-build libpng-build pixman-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+./configure --disable-interpreter --disable-static --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install util/cairo-trace/cairo-trace $DESTDIR/drm/bin
+install -d $DESTDIR/drm/include/cairo
+install -m 644 cairo-version.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo-deprecated.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo-features.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo-ft.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo-pdf.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo-ps.h $DESTDIR/drm/include/cairo
+install -m 644 src/cairo-svg.h $DESTDIR/drm/include/cairo
+install -m 644 util/cairo-gobject/cairo-gobject.h $DESTDIR/drm/include/cairo
+install -d $DESTDIR/drm/lib
+install src/.libs/libcairo.so.2.* $DESTDIR/drm/lib/libcairo.so.2
+ln -sf libcairo.so.2 $DESTDIR/drm/lib/libcairo.so
+install util/cairo-gobject/.libs/libcairo-gobject.so.2.* $DESTDIR/drm/lib/libcairo-gobject.so.2
+ln -sf libcairo-gobject.so.2 $DESTDIR/drm/lib/libcairo-gobject.so
+install -d $DESTDIR/drm/lib/cairo
+install util/cairo-trace/.libs/libcairo-trace.so $DESTDIR/drm/lib/cairo/libcairo-trace.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 src/cairo.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 src/cairo-ft.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 src/cairo-gobject.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 src/cairo-png.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/cairo-build.pc << EOF
+Name: cairo
+Version: 1.16.0
+Description: Cairo drawing library
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/cairo.h \\
+/drm/include/cairo-deprecated.h \\
+/drm/include/cairo-directfb.h \\
+/drm/include/cairo-features.h \\
+/drm/include/cairo-ft.h \\
+/drm/include/cairo-gobject.h \\
+/drm/include/cairo-pdf.h \\
+/drm/include/cairo-ps.h \\
+/drm/include/cairo-svg.h \\
+/drm/include/cairo-version.h \\
+/drm/lib/libcairo.so \\
+/drm/lib/libcairo-gobject.so \\
+/drm/lib/pkgconfig/cairo.pc \\
+/drm/lib/pkgconfig/cairo-ft.pc \\
+/drm/lib/pkgconfig/cairo-gobject.pc \\
+/drm/lib/pkgconfig/cairo-png.pc
+
+exec=\\
+/drm/bin/cairo-trace \\
+/drm/lib/libcairo.so.2 \\
+/drm/lib/libcairo-gobject.so.2 \\
+/drm/lib/cairo/libcairo-trace.so
+EOF
+
+exit
+--- cairo-1.16.0.orig/build/Makefile.am.changelog
++++ cairo-1.16.0/build/Makefile.am.changelog
+@@ -5,6 +5,8 @@
+ # segment that we put in 'ChangeLog'.  The old ones are named
+ # ChangeLog.pre-X.Y where X.Y is the version number of the major release.
+ 
++AUTOMAKE_OPTIONS = -Wno-portability
++
+ CURR_CHANGELOG_VERSION=$(CAIRO_VERSION_MAJOR).$$(echo "($(CAIRO_VERSION_MINOR)+1)/2*2" | bc)
+ # examines $version
+ PREV_CHANGELOG_VERSION=$$(if test "x$$(echo "($$version-0.1)*2/2"|bc)" = "x$$(echo "$$version*2/2"|bc)"; \
+--- cairo-1.16.0.orig/build/configure.ac.system
++++ cairo-1.16.0/build/configure.ac.system
+@@ -111,10 +111,10 @@
+ AC_CHECK_FUNCS([ctime_r localtime_r gmtime_r drand48 flockfile funlockfile getline link strndup])
+ 
+ dnl Check if the runtime platform is a native Win32 host.
+-AC_COMPILE_IFELSE([[
++AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[
+ #ifdef _WIN32
+  choke me
+-#endif]], [have_windows=no], [have_windows=yes])
++#endif]])], [have_windows=no], [have_windows=yes])
+ 
+ dnl Possible headers for mkdir
+ AC_CHECK_HEADERS([sys/stat.h io.h])
+--- cairo-1.16.0.orig/configure.ac
++++ cairo-1.16.0/configure.ac
+@@ -14,7 +14,7 @@
+ AC_CHECK_HEADERS([unistd.h sys/ioctl.h])
+ AC_C_TYPEOF
+ 
+-AM_INIT_AUTOMAKE([1.11 foreign -Wall no-define no-dist-gzip dist-xz])
++AM_INIT_AUTOMAKE([1.11 foreign -Wall no-define no-dist-gzip dist-xz subdir-objects])
+ AM_SILENT_RULES([yes])
+ m4_ifdef([AM_PROG_AR], [AM_PROG_AR]) dnl Workaround for Automake 1.12
+ 
+--- cairo-1.16.0.orig/test/Makefile.am
++++ cairo-1.16.0/test/Makefile.am
+@@ -2,6 +2,8 @@
+ 
+ include $(top_srcdir)/test/Makefile.sources
+ 
++AUTOMAKE_OPTIONS = -Wno-override
++
+ SUBDIRS=pdiff .
+ 
+ # Then we have a collection of tests that are only run if certain

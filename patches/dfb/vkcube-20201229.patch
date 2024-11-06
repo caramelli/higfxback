@@ -606,7 +606,8 @@ exit
  
 -cc = meson.get_compiler('c')
  defs = []
- if cc.has_header('vulkan/vulkan_intel.h')
+-if cc.has_header('vulkan/vulkan_intel.h')
++if dep_libdrm.found() and dep_gbm.found() and cc.has_header('vulkan/vulkan_intel.h')
    defs += '-DHAVE_VULKAN_INTEL_H'
  endif
  

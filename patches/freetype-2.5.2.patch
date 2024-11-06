@@ -1,0 +1,122 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; lt-2.4.2)
+cd builds/unix; \
+freetype_major=`sed -n 's/^#define  *FREETYPE_MAJOR  *\([^ ][^ ]*\).*$/\1/p' ../../include/freetype.h` && \
+freetype_minor=`sed -n 's/^#define  *FREETYPE_MINOR  *\([^ ][^ ]*\).*$/.\1/p' ../../include/freetype.h` && \
+freetype_patch=`sed -n 's/^#define  *FREETYPE_PATCH  *\([^ ][^ ]*\).*$/.\1/p' ../../include/freetype.h` && \
+sed -e "s;@VERSION@;$freetype_major$freetype_minor$freetype_patch;" < configure.raw > configure.ac; \
+cd -
+cd builds/unix; libtoolize -c -f -i; cat *.m4 > aclocal.m4; autoconf; cd -
+./configure --disable-static --without-png --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/freetype2
+install -m 644 include/freetype.h $DESTDIR/include/freetype2
+install -m 644 include/ft2build.h $DESTDIR/include/freetype2
+install -m 644 include/ftadvanc.h $DESTDIR/include/freetype2
+install -m 644 include/ftbbox.h $DESTDIR/include/freetype2
+install -m 644 include/ftbdf.h $DESTDIR/include/freetype2
+install -m 644 include/ftbitmap.h $DESTDIR/include/freetype2
+install -m 644 include/ftcache.h $DESTDIR/include/freetype2
+install -m 644 include/fterrdef.h $DESTDIR/include/freetype2
+install -m 644 include/fterrors.h $DESTDIR/include/freetype2
+install -m 644 include/ftglyph.h $DESTDIR/include/freetype2
+install -m 644 include/ftimage.h $DESTDIR/include/freetype2
+install -m 644 include/ftincrem.h $DESTDIR/include/freetype2
+install -m 644 include/ftlcdfil.h $DESTDIR/include/freetype2
+install -m 644 include/ftmm.h $DESTDIR/include/freetype2
+install -m 644 include/ftmodapi.h $DESTDIR/include/freetype2
+install -m 644 include/ftmoderr.h $DESTDIR/include/freetype2
+install -m 644 include/ftoutln.h $DESTDIR/include/freetype2
+install -m 644 include/ftsizes.h $DESTDIR/include/freetype2
+install -m 644 include/ftsnames.h $DESTDIR/include/freetype2
+install -m 644 include/ftstroke.h $DESTDIR/include/freetype2
+install -m 644 include/ftsynth.h $DESTDIR/include/freetype2
+install -m 644 include/ftsystem.h $DESTDIR/include/freetype2
+install -m 644 include/fttrigon.h $DESTDIR/include/freetype2
+install -m 644 include/fttypes.h $DESTDIR/include/freetype2
+install -m 644 include/ftxf86.h $DESTDIR/include/freetype2
+install -m 644 include/t1tables.h $DESTDIR/include/freetype2
+install -m 644 include/ttnameid.h $DESTDIR/include/freetype2
+install -m 644 include/tttables.h $DESTDIR/include/freetype2
+install -m 644 include/tttags.h $DESTDIR/include/freetype2
+install -d $DESTDIR/include/freetype2/config
+install -m 644 builds/unix/ftconfig.h $DESTDIR/include/freetype2/config
+install -m 644 include/config/ftheader.h $DESTDIR/include/freetype2/config
+install -m 644 include/config/ftoption.h $DESTDIR/include/freetype2/config
+install -m 644 include/config/ftstdlib.h $DESTDIR/include/freetype2/config
+install -d $DESTDIR/lib
+install objs/.libs/libfreetype.so.6.* $DESTDIR/lib/libfreetype.so.6
+ln -sf libfreetype.so.6 $DESTDIR/lib/libfreetype.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 builds/unix/freetype2.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/freetype-build.pc << EOF
+Name: freetype
+Version: 2.5.2
+Description: FreeType font engine
+Requires: $REQUIRES
+
+devel=\\
+/include/freetype2/freetype.h \\
+/include/freetype2/ft2build.h \\
+/include/freetype2/ftadvanc.h \\
+/include/freetype2/ftbbox.h \\
+/include/freetype2/ftbdf.h \\
+/include/freetype2/ftbitmap.h \\
+/include/freetype2/ftcache.h \\
+/include/freetype2/fterrdef.h \\
+/include/freetype2/fterrors.h \\
+/include/freetype2/ftglyph.h \\
+/include/freetype2/ftimage.h \\
+/include/freetype2/ftincrem.h \\
+/include/freetype2/ftlcdfil.h \\
+/include/freetype2/ftmm.h \\
+/include/freetype2/ftmodapi.h \\
+/include/freetype2/ftmoderr.h \\
+/include/freetype2/ftoutln.h \\
+/include/freetype2/ftsizes.h \\
+/include/freetype2/ftsnames.h \\
+/include/freetype2/ftstroke.h \\
+/include/freetype2/ftsynth.h \\
+/include/freetype2/ftsystem.h \\
+/include/freetype2/fttrigon.h \\
+/include/freetype2/fttypes.h \\
+/include/freetype2/ftxf86.h \\
+/include/freetype2/t1tables.h \\
+/include/freetype2/ttnameid.h \\
+/include/freetype2/tttables.h \\
+/include/freetype2/tttags.h \\
+/include/freetype2/config/ftconfig.h \\
+/include/freetype2/config/ftheader.h \\
+/include/freetype2/config/ftoption.h \\
+/include/freetype2/config/ftstdlib.h \\
+/lib/libfreetype.so \\
+/lib/pkgconfig/freetype2.pc
+
+exec=\\
+/lib/libfreetype.so.6
+EOF
+
+exit
+--- freetype-2.5.2.orig/builds/unix/configure.raw
++++ freetype-2.5.2/builds/unix/configure.raw
+@@ -12,6 +12,7 @@
+ # fully.
+ 
+ AC_INIT([FreeType], [@VERSION@], [freetype@nongnu.org], [freetype])
++AC_CONFIG_MACRO_DIR([.])
+ AC_CONFIG_SRCDIR([ftconfig.in])
+ 
+ 
