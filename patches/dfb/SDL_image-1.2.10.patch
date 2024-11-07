@@ -1,0 +1,56 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libpng-build sdl-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
+pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
+
+# configure (ac-2.63; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c --foreign
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install .libs/showimage $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/include/SDL
+install -m 644 SDL_image.h $DESTDIR/dfb/include/SDL
+install -d $DESTDIR/dfb/lib
+install .libs/libSDL_image-1.2.so.0.* $DESTDIR/dfb/lib/libSDL_image-1.2.so.0
+ln -sf libSDL_image-1.2.so.0 $DESTDIR/dfb/lib/libSDL_image.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 SDL_image.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/sdl_image-build.pc << EOF
+Name: SDL_image
+Version: 1.2.10
+Description: Image loading library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/SDL/SDL_image.h \\
+/dfb/lib/libSDL_image.so \\
+/dfb/lib/pkgconfig/SDL_image.pc
+
+exec=\\
+/dfb/bin/showimage \\
+/dfb/lib/libSDL_image-1.2.so.0
+EOF
+
+exit
+--- SDL_image-1.2.10.orig/configure.in
++++ SDL_image-1.2.10/configure.in
+@@ -1,5 +1,6 @@
+ dnl Process this file with autoconf to produce a configure script.
+ AC_INIT(README)
++AC_CONFIG_MACRO_DIR(acinclude)
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 

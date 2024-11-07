@@ -1,0 +1,112 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build sdl_image-build sdl_mixer-build sdl_ttf-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix /dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install tennix $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/share/tennix
+install -m 644 tennix.tnx $DESTDIR/dfb/share/tennix
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/tennix-build.pc << EOF
+Name: tennix
+Version: 1.2.1
+Description: Tennis game
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/tennix \\
+/dfb/share/tennix/tennix.tnx
+EOF
+
+exit
+--- tennix-1.2.1.orig/configure
++++ tennix-1.2.1/configure
+@@ -100,6 +100,12 @@
+ }
+ 
+ check_sdl_lib() {
++    if pkg-config --exists sdl; then
++        CFLAGS="$(pkg-config --cflags sdl) $CFLAGS"
++        LDFLAGS="$(pkg-config --libs sdl) $LDFLAGS"
++        return 0
++    fi
++
+     if ! which sdl-config >/dev/null 2>&1; then
+         return 1
+     fi
+@@ -133,13 +139,9 @@
+     message_wrapper "Testing working C++ compiler ($CXX)" check_cxx || fail "C++ compiler ($CXX) not working"
+ }
+ 
+-check_sdl() {
+-    message_wrapper "Checking for SDL 1.2" check_sdl_lib
+-    cond_definition $? HAVE_SDL
+-}
+-
+ require_sdl() {
+-    check_sdl || fail "SDL not found"
++    message_wrapper "Checking for SDL 1.2" check_sdl_lib || fail "SDL not found"
++    cond_definition $? HAVE_SDL
+ }
+ 
+ check_voice_files() {
+--- tennix-1.2.1.orig/src/SDL_rotozoom.h
++++ tennix-1.2.1/src/SDL_rotozoom.h
+@@ -21,7 +21,7 @@
+ #define M_PI	3.141592654
+ #endif
+ 
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ 
+ /* ---- Defines */
+ 
+--- tennix-1.2.1.orig/src/network.cc
++++ tennix-1.2.1/src/network.cc
+@@ -29,7 +29,7 @@
+ #include "network.h"
+ 
+ #include <assert.h>
+-#include <SDL/SDL_net.h>
++#include <SDL_net.h>
+ 
+ /* HELPER FUNCTIONS */
+ 
+--- tennix-1.2.1.orig/src/network.h
++++ tennix-1.2.1/src/network.h
+@@ -30,7 +30,7 @@
+ #include "input.h"
+ 
+ #ifdef HAVE_SDL_NET
+-#include <SDL/SDL_net.h>
++#include <SDL_net.h>
+ #endif
+ 
+ /* Vanity ports "STNX" and "MTNX" */
+--- tennix-1.2.1.orig/src/tennix.h
++++ tennix-1.2.1/src/tennix.h
+@@ -35,10 +35,10 @@
+ 
+ #include <sys/param.h>
+ 
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ 
+ #ifdef HAVE_SDL_NET
+-#include <SDL/SDL_net.h>
++#include <SDL_net.h>
+ #endif
+ 
+ typedef struct {

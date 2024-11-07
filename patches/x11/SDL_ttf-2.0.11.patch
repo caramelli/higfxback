@@ -71,3 +71,22 @@ exit
  else
      CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
      LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
+@@ -156,14 +160,11 @@
+         ;;
+     *)
+         MATHLIB="-lm"
+-        AC_PATH_X
+-        AC_PATH_XTRA
+-        if test x$have_x = xyes; then
+-            CFLAGS="$CFLAGS $X_CFLAGS"
+-            SYS_GL_LIBS="$X_LIBS -lGL"
+-        else
++        PKG_CHECK_MODULES([SYS_GL], [gl], [
++            CFLAGS="$CFLAGS $SYS_GL_CFLAGS"
++        ], [
+             SYS_GL_LIBS="-lGL"
+-        fi
++        ])
+         ;;
+ esac
+ AC_MSG_CHECKING(for OpenGL support)
