@@ -3,51 +3,51 @@
 # requires
 REQUIRES="autotools-wrappers-lt-build libpng-build sdl-build"
 
-PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
 pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
 
-# configure (ac-2.63; am-1.11; lt-2.2.6)
-libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c --foreign
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
+# configure (ac-2.59; am-1.9; lt-1.5.26)
+libtoolize -c -f; mv libtool.m4 acinclude; aclocal -I acinclude; autoconf; automake -a -c --foreign
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --prefix=/fb
 
 # build
 make
 
 # install
-install -d $DESTDIR/dfb/bin
-install .libs/showimage $DESTDIR/dfb/bin
-install -d $DESTDIR/dfb/include/SDL
-install -m 644 SDL_image.h $DESTDIR/dfb/include/SDL
-install -d $DESTDIR/dfb/lib
-install .libs/libSDL_image-1.2.so.0.* $DESTDIR/dfb/lib/libSDL_image-1.2.so.0
-ln -sf libSDL_image-1.2.so.0 $DESTDIR/dfb/lib/libSDL_image.so
-install -d $DESTDIR/dfb/lib/pkgconfig
-install -m 644 SDL_image.pc $DESTDIR/dfb/lib/pkgconfig
+install -d $DESTDIR/fb/bin
+install .libs/showimage $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/SDL
+install -m 644 SDL_image.h $DESTDIR/fb/include/SDL
+install -d $DESTDIR/fb/lib
+install .libs/libSDL_image-1.2.so.0.* $DESTDIR/fb/lib/libSDL_image-1.2.so.0
+ln -sf libSDL_image-1.2.so.0 $DESTDIR/fb/lib/libSDL_image.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 SDL_image.pc $DESTDIR/fb/lib/pkgconfig
 
 # build.pc
-install -d $DESTDIR/dfb/share/pkgconfig
-cat > $DESTDIR/dfb/share/pkgconfig/sdl_image-build.pc << EOF
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/sdl_image-build.pc << EOF
 Name: SDL_image
-Version: 1.2.10
+Version: 1.2.6
 Description: Image loading library for SDL
 Requires: $REQUIRES
 
 devel=\\
-/dfb/include/SDL/SDL_image.h \\
-/dfb/lib/libSDL_image.so \\
-/dfb/lib/pkgconfig/SDL_image.pc
+/fb/include/SDL/SDL_image.h \\
+/fb/lib/libSDL_image.so \\
+/fb/lib/pkgconfig/SDL_image.pc
 
 exec=\\
-/dfb/bin/showimage \\
-/dfb/lib/libSDL_image-1.2.so.0
+/fb/bin/showimage \\
+/fb/lib/libSDL_image-1.2.so.0
 EOF
 
 exit
---- SDL_image-1.2.10.orig/IMG_jpg.c
-+++ SDL_image-1.2.10/IMG_jpg.c
-@@ -255,7 +255,7 @@
+--- SDL_image-1.2.6.orig/IMG_jpg.c
++++ SDL_image-1.2.6/IMG_jpg.c
+@@ -253,7 +253,7 @@
  /*
   * Fill the input buffer --- called whenever buffer is emptied.
   */
@@ -56,9 +56,9 @@ exit
  {
  	my_source_mgr * src = (my_source_mgr *) cinfo->src;
  	int nbytes;
---- SDL_image-1.2.10.orig/IMG_png.c
-+++ SDL_image-1.2.10/IMG_png.c
-@@ -80,6 +80,8 @@
+--- SDL_image-1.2.6.orig/IMG_png.c
++++ SDL_image-1.2.6/IMG_png.c
+@@ -78,6 +78,8 @@
  	void (*png_destroy_read_struct) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr);
  	png_uint_32 (*png_get_IHDR) (png_structp png_ptr, png_infop info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_method, int *compression_method, int *filter_method);
  	png_voidp (*png_get_io_ptr) (png_structp png_ptr);
@@ -67,7 +67,7 @@ exit
  	png_uint_32 (*png_get_tRNS) (png_structp png_ptr, png_infop info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values);
  	png_uint_32 (*png_get_valid) (png_structp png_ptr, png_infop info_ptr, png_uint_32 flag);
  	void (*png_read_image) (png_structp png_ptr, png_bytepp image);
-@@ -91,6 +93,7 @@
+@@ -89,6 +91,7 @@
  	void (*png_set_read_fn) (png_structp png_ptr, png_voidp io_ptr, png_rw_ptr read_data_fn);
  	void (*png_set_strip_16) (png_structp png_ptr);
  	int (*png_sig_cmp) (png_bytep sig, png_size_t start, png_size_t num_to_check);
@@ -75,7 +75,7 @@ exit
  } lib;
  
  #ifdef LOAD_PNG_DYNAMIC
-@@ -136,6 +139,20 @@
+@@ -134,6 +137,20 @@
  			SDL_UnloadObject(lib.handle);
  			return -1;
  		}
@@ -96,7 +96,7 @@ exit
  		lib.png_get_tRNS =
  			(png_uint_32 (*) (png_structp, png_infop, png_bytep *, int *, png_color_16p *))
  			SDL_LoadFunction(lib.handle, "png_get_tRNS");
-@@ -213,6 +230,13 @@
+@@ -211,6 +228,13 @@
  			SDL_UnloadObject(lib.handle);
  			return -1;
  		}
@@ -110,7 +110,7 @@ exit
  	}
  	++lib.loaded;
  
-@@ -237,6 +261,8 @@
+@@ -235,6 +259,8 @@
  		lib.png_destroy_read_struct = png_destroy_read_struct;
  		lib.png_get_IHDR = png_get_IHDR;
  		lib.png_get_io_ptr = png_get_io_ptr;
@@ -119,7 +119,7 @@ exit
  		lib.png_get_tRNS = png_get_tRNS;
  		lib.png_get_valid = png_get_valid;
  		lib.png_read_image = png_read_image;
-@@ -248,6 +274,7 @@
+@@ -246,6 +272,7 @@
  		lib.png_set_read_fn = png_set_read_fn;
  		lib.png_set_strip_16 = png_set_strip_16;
  		lib.png_sig_cmp = png_sig_cmp;
@@ -127,7 +127,7 @@ exit
  	}
  	++lib.loaded;
  
-@@ -303,7 +330,7 @@
+@@ -301,7 +328,7 @@
  	png_structp png_ptr;
  	png_infop info_ptr;
  	png_uint_32 width, height;
@@ -136,7 +136,7 @@ exit
  	Uint32 Rmask;
  	Uint32 Gmask;
  	Uint32 Bmask;
-@@ -347,7 +374,7 @@
+@@ -345,7 +372,7 @@
  	 * the normal method of doing things with libpng).  REQUIRED unless you
  	 * set up your own error handlers in png_create_read_struct() earlier.
  	 */
@@ -145,7 +145,7 @@ exit
  		error = "Error reading the PNG file.";
  		goto done;
  	}
-@@ -410,15 +437,16 @@
+@@ -408,15 +435,16 @@
  			&color_type, &interlace_type, NULL, NULL);
  
  	/* Allocate the SDL surface to hold the image */
@@ -165,7 +165,7 @@ exit
  			Rmask = 0xFF000000 >> s;
  			Gmask = 0x00FF0000 >> s;
  			Bmask = 0x0000FF00 >> s;
-@@ -426,7 +454,7 @@
+@@ -424,7 +452,7 @@
  		}
  	}
  	surface = SDL_AllocSurface(SDL_SWSURFACE, width, height,
@@ -174,7 +174,7 @@ exit
  	if ( surface == NULL ) {
  		error = "Out of memory";
  		goto done;
-@@ -467,6 +495,9 @@
+@@ -465,6 +493,9 @@
  	/* Load the palette, if any */
  	palette = surface->format->palette;
  	if ( palette ) {
@@ -184,7 +184,7 @@ exit
  	    if(color_type == PNG_COLOR_TYPE_GRAY) {
  		palette->ncolors = 256;
  		for(i = 0; i < 256; i++) {
-@@ -474,12 +505,12 @@
+@@ -472,12 +503,12 @@
  		    palette->colors[i].g = i;
  		    palette->colors[i].b = i;
  		}
@@ -203,12 +203,52 @@ exit
  		}
  	    }
  	}
---- SDL_image-1.2.10.orig/configure.in
-+++ SDL_image-1.2.10/configure.in
-@@ -1,5 +1,6 @@
- dnl Process this file with autoconf to produce a configure script.
- AC_INIT(README)
-+AC_CONFIG_MACRO_DIR(acinclude)
+--- SDL_image-1.2.6.orig/SDL_image.pc.in
++++ SDL_image-1.2.6/SDL_image.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: SDL_image
++Description: image loading library for Simple DirectMedia Layer
++Version: @VERSION@
++Requires: sdl >= @SDL_VERSION@
++Libs: -L${libdir} -lSDL_image
++Cflags: -I${includedir}/SDL
+--- SDL_image-1.2.6.orig/acinclude/sdl.m4
++++ SDL_image-1.2.6/acinclude/sdl.m4
+@@ -37,11 +37,12 @@
+   fi
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
  
- dnl Set various version strings - taken gratefully from the GTk sources
- 
+--- SDL_image-1.2.6.orig/configure.in
++++ SDL_image-1.2.6/configure.in
+@@ -184,6 +184,9 @@
+                 if test x$png_lib = x; then
+                     png_lib=[`find_lib "libpng.so.[0-9]*"`]
+                 fi
++                if test x$png_lib = x; then
++                    png_lib=[`find_lib "libpng*.so.[0-9]*"`]
++                fi
+                 ;;
+         esac
+     else
+@@ -293,4 +296,5 @@
+ Makefile
+ SDL_image.spec
+ SDL_image.qpg
++SDL_image.pc
+ ])

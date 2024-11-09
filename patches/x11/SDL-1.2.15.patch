@@ -18,7 +18,7 @@ fi
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
 LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-rpath --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xv --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
-cd test; SDL_CFLAGS="-I../include -I/x11/include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/x11/lib" XPATH=-L/x11/lib ./configure --with-testdatadir=/x11/share/SDL/test; cd -
+cd test; PKG_CONFIG_PATH=/x11/lib/pkgconfig SDL_CFLAGS="-I../include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/x11/lib" ./configure --with-testdatadir=/x11/share/SDL/test; cd -
 
 # build
 make
@@ -275,7 +275,21 @@ exit
      SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
 --- SDL-1.2.15.orig/test/configure.in
 +++ SDL-1.2.15/test/configure.in
-@@ -101,5 +101,11 @@
+@@ -53,6 +53,13 @@
+     *)
+         EXE=""
+         MATHLIB="-lm"
++        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
++        if test x$PKG_CONFIG != xno; then
++            if $PKG_CONFIG --exists gl; then
++                CFLAGS="$CFLAGS `$PKG_CONFIG --cflags gl`"
++                XPATH=`$PKG_CONFIG --libs-only-L gl`
++            fi
++        fi
+         SYS_GL_LIBS="-lGL"
+         ;;
+ esac
+@@ -101,5 +108,11 @@
  fi
  AC_SUBST(GLLIB)
  

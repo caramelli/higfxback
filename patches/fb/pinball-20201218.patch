@@ -1,0 +1,373 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build gcc-g++-build sdl_image-build sdl_mixer-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build || { echo SDL with OpenGL support required; exit 1; }
+
+# configure (ac-2.69; am-1.15; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; cp README.md README; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --with-highscore-prefix=/fb/var/games/pinball --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install src/pinball $DESTDIR/fb/bin
+install -d $DESTDIR/fb/lib/pinball
+install -m 644 data/professor/libModuleProfessor.la $DESTDIR/fb/lib/pinball
+install data/professor/.libs/libModuleProfessor.so.0.* $DESTDIR/fb/lib/pinball/libModuleProfessor.so.0
+install -m 644 data/tux/libModuleTux.la $DESTDIR/fb/lib/pinball
+install data/tux/.libs/libModuleTux.so.0.* $DESTDIR/fb/lib/pinball/libModuleTux.so.0
+install -d $DESTDIR/fb/share/pinball
+install -m 644 data/font_34.png $DESTDIR/fb/share/pinball
+install -m 644 data/splash.png $DESTDIR/fb/share/pinball
+install -d $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/bump.wav $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/bumpsoft.wav $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/flip.wav $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/floor.png $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/gameover.wav $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/introp.ogg $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/nudge.wav $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/pinball.pbl $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/professor.ogg $DESTDIR/fb/share/pinball/professor
+install -m 644 data/professor/professor.png $DESTDIR/fb/share/pinball/professor
+install -d $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/bumphard.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/bumpsoft.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/bump.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/face2.png $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/flip.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/floor2.png $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/floor3.png $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/game.ogg $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/gameover.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/lock.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/intro.ogg $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/multiball.ogg $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/nudge.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/opentux.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/pinball.pbl $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/shoot.wav $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/tiles.png $DESTDIR/fb/share/pinball/tux
+install -m 644 data/tux/up.wav $DESTDIR/fb/share/pinball/tux
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/pinball.pc << EOF
+Name: pinball
+Version: 20201218
+Description: Pinball game
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/pinball \\
+/fb/lib/pinball/libModuleProfessor.la \\
+/fb/lib/pinball/libModuleProfessor.so.0 \\
+/fb/lib/pinball/libModuleTux.la \\
+/fb/lib/pinball/libModuleTux.so.0 \\
+/fb/share/pinball/font_34.png \\
+/fb/share/pinball/splash.png \\
+/fb/share/pinball/professor/bump.wav \\
+/fb/share/pinball/professor/bumpsoft.wav \\
+/fb/share/pinball/professor/flip.wav \\
+/fb/share/pinball/professor/floor.png \\
+/fb/share/pinball/professor/gameover.wav \\
+/fb/share/pinball/professor/introp.ogg \\
+/fb/share/pinball/professor/nudge.wav \\
+/fb/share/pinball/professor/pinball.pbl \\
+/fb/share/pinball/professor/professor.ogg \\
+/fb/share/pinball/professor/professor.png \\
+/fb/share/pinball/tux/bumphard.wav \\
+/fb/share/pinball/tux/bumpsoft.wav \\
+/fb/share/pinball/tux/bump.wav \\
+/fb/share/pinball/tux/face2.png \\
+/fb/share/pinball/tux/flip.wav \\
+/fb/share/pinball/tux/floor2.png \\
+/fb/share/pinball/tux/floor3.png \\
+/fb/share/pinball/tux/game.ogg \\
+/fb/share/pinball/tux/gameover.wav \\
+/fb/share/pinball/tux/lock.wav \\
+/fb/share/pinball/tux/intro.ogg \\
+/fb/share/pinball/tux/multiball.ogg \\
+/fb/share/pinball/tux/nudge.wav \\
+/fb/share/pinball/tux/opentux.wav \\
+/fb/share/pinball/tux/pinball.pbl \\
+/fb/share/pinball/tux/shoot.wav \\
+/fb/share/pinball/tux/tiles.png \\
+/fb/share/pinball/tux/up.wav
+EOF
+
+exit
+--- pinball-20201218.orig/Makefile.am
++++ pinball-20201218/Makefile.am
+@@ -9,3 +9,5 @@
+ pininclude_HEADERS = pinconfig.h
+ 
+ bin_SCRIPTS = pinball-config
++
++ACLOCAL_AMFLAGS = -I libltdl/m4
+--- pinball-20201218.orig/acinclude.m4
++++ pinball-20201218/acinclude.m4
+@@ -5,7 +5,7 @@
+ dnl AM_PATH_SDL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+ dnl Test for SDL, and define SDL_CFLAGS and SDL_LIBS
+ dnl
+-AC_DEFUN(AM_PATH_SDL,
++AC_DEFUN([AM_PATH_SDL],
+ [dnl 
+ dnl Get the cflags and libraries from the sdl-config script
+ dnl
+@@ -176,7 +176,7 @@
+ dnl
+ dnl AM_PATH_CPPUNIT([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+ dnl
+-AC_DEFUN(AM_PATH_CPPUNIT,
++AC_DEFUN([AM_PATH_CPPUNIT],
+ [
+ 
+ AC_ARG_WITH(cppunit-prefix,[  --with-cppunit-prefix=PFX   Prefix where CppUnit is installed (optional)],
+@@ -262,7 +262,7 @@
+ dnl AM_PATH_ALLEGRO([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+ dnl Test for ALLEGRO, and define ALLEGRO_CFLAGS and ALLEGRO_LIBS
+ dnl
+-AC_DEFUN(AM_PATH_ALLEGRO,
++AC_DEFUN([AM_PATH_ALLEGRO],
+ [dnl 
+ dnl Get the cflags and libraries from the allegro-config script
+ dnl
+--- pinball-20201218.orig/addon/Makefile.am
++++ pinball-20201218/addon/Makefile.am
+@@ -5,7 +5,7 @@
+ 
+ pinlib_LIBRARIES = libemilia_addon.a
+ 
+-INCLUDES = -I../base
++AM_CPPFLAGS = -I../base
+ 
+ libemilia_addon_a_SOURCES = \
+ BigSphere.cpp \
+--- pinball-20201218.orig/base/Engine.cpp
++++ pinball-20201218/base/Engine.cpp
+@@ -35,13 +35,6 @@
+ #include "TextureUtil.h"
+ #include "Profiler.h"
+ 
+-// TODO Remove glu
+-#if EM_USE_SDL
+-#if EM_DEBUG
+-#include <GL/glu.h>
+-#endif
+-#endif
+-
+ volatile int g_iStartTime = -1;
+ //volatile int g_iDesiredTime = -1;
+ volatile int g_iLastRender = 0;
+@@ -164,7 +157,6 @@
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   glColor3f(1, 1, 1);
+   glLoadIdentity();
+-  //gluLookAt(0,0,0, 0,0,-1, 0,1,0);
+ #endif
+ 
+ #if EM_USE_ALLEGRO
+--- pinball-20201218.orig/base/Makefile.am
++++ pinball-20201218/base/Makefile.am
+@@ -5,7 +5,7 @@
+ 
+ pinlib_LIBRARIES = libemilia_base.a
+ 
+-INCLUDES = -I../addon
++AM_CPPFLAGS = -I../addon
+ 
+ libemilia_base_a_SOURCES = \
+ AlignVisitor.cpp \
+--- pinball-20201218.orig/base/Private.h
++++ pinball-20201218/base/Private.h
+@@ -115,8 +115,7 @@
+ #define EM_GLERROR(a) \
+ 	GLenum error = glGetError(); \
+ 	if (error != GL_NO_ERROR) {  \
+-		const GLubyte* str = gluErrorString(error); \
+-		cerr << "OpenGL error: " << a << str << endl;    \
++		cerr << "OpenGL error: " << a << to_string(error) << endl; \
+ 	}
+ #else
+ #define EM_GLERROR(a)
+--- pinball-20201218.orig/base/TextureUtil.cpp
++++ pinball-20201218/base/TextureUtil.cpp
+@@ -16,11 +16,6 @@
+ #include <iostream>
+ 
+ #if EM_USE_SDL
+-#include <SDL_opengl.h> //should fix GL portability ; instead of <OpenGL/gl.h>
+-// TODO remove glu
+-#if EM_DEBUG
+-#include <GL/glu.h>
+-#endif
+ #include <SDL.h>
+ #include <SDL_image.h>
+ 
+--- pinball-20201218.orig/base/config-rzr.h
++++ pinball-20201218/base/config-rzr.h
+@@ -201,11 +201,8 @@
+ //#ifdef Polygon // Polygon Is A Macro So It Is Renamed To Be Used As AClass
+ //#undef Polygon // other solution is to write "class Polygon" instead of just Polygon
+ //#define Polygon PolygonClass
+-// ---- Texture  Engine // undefined reference to `gluErrorString@4
+ //#undef EM_GLERROR
+ //#define EM_GLERROR(a) EM_COUT(a,42)
+-#include <GL/glu.h>
+-//#define gluErrorString(x) x
+ //#endif 
+ #endif // msvc6
+ 
+--- pinball-20201218.orig/configure.ac
++++ pinball-20201218/configure.ac
+@@ -7,7 +7,8 @@
+ 	[pinball],
+ 	[http://pinball.sf.net])
+ 
+-AM_CONFIG_HEADER(pinconfig.h)
++AC_CONFIG_MACRO_DIRS([libltdl/m4])
++AC_CONFIG_HEADERS(pinconfig.h)
+ 
+ AC_CANONICAL_HOST
+ AC_CANONICAL_TARGET
+@@ -34,8 +35,8 @@
+ AC_DIAGNOSE([obsolete],[AC_LIBTOOL_DLOPEN: Remove this warning and the call to _LT_SET_OPTION when you
+ put the 'dlopen' option into LT_INIT's first parameter.])
+ 
+-LTDL_INIT
+ LT_INIT
++LTDL_INIT
+ 
+ AC_SUBST(INCLTDL)
+ AC_SUBST(LIBLTDL)
+@@ -122,14 +123,11 @@
+         ;;
+     *)
+         MATHLIB="-lm"
+-        AC_PATH_X
+-        AC_PATH_XTRA
+-        if test x$have_x = xyes; then
+-            CFLAGS="$CFLAGS $X_CFLAGS"
+-            SYS_GL_LIBS="$X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS -lGL -lGLU"
+-        else
+-            SYS_GL_LIBS="-lGL -lGLU"
+-        fi
++        PKG_CHECK_MODULES([SYS_GL], [gl], [
++            CPPFLAGS="$CPPFLAGS $SYS_GL_CFLAGS"
++        ], [
++            SYS_GL_LIBS="-lGL"
++        ])
+         ;;
+ esac
+ 
+--- pinball-20201218.orig/data/professor/Makefile.am
++++ pinball-20201218/data/professor/Makefile.am
+@@ -7,7 +7,7 @@
+ 
+ professorlib_LTLIBRARIES = libModuleProfessor.la
+ 
+-INCLUDES = -I../../base -I.../../addon -I../../src
++AM_CPPFLAGS = -I../../base -I.../../addon -I../../src
+ 
+ libModuleProfessor_la_LDFLAGS = -module
+ libModuleProfessor_la_SOURCES = ModuleProfessor.cpp
+--- pinball-20201218.orig/data/tux/Makefile.am
++++ pinball-20201218/data/tux/Makefile.am
+@@ -8,7 +8,7 @@
+ 
+ tuxlib_LTLIBRARIES = libModuleTux.la
+ 
+-INCLUDES = -I../../base -I.../../addon -I../../src
++AM_CPPFLAGS = -I../../base -I.../../addon -I../../src
+ 
+ libModuleTux_la_LDFLAGS = -module
+ libModuleTux_la_SOURCES = ModuleTux.cpp
+--- pinball-20201218.orig/helper.mk
++++ pinball-20201218/helper.mk
+@@ -250,7 +250,6 @@
+ 	${sudo} apt-get install -y \
+   debhelper \
+   docbook-utils \
+-  freeglut3-dev \
+   sgmlspl \
+ # EOL
+ 
+--- pinball-20201218.orig/src/Makefile.am
++++ pinball-20201218/src/Makefile.am
+@@ -7,7 +7,7 @@
+ 
+ pinlib_LIBRARIES = libemilia_pin.a
+ 
+-INCLUDES = -I../base -I../addon @INCLTDL@
++AM_CPPFLAGS = -I../base -I../addon @INCLTDL@
+ 
+ pinball_LDADD = libemilia_pin.a ../addon/libemilia_addon.a ../base/libemilia_base.a @LIBLTDL@
+ pinball_LDFLAGS = -export-dynamic
+@@ -58,7 +58,7 @@
+ 	${GCCLOCALDIR}g++ -g -W -Wall -O2 -o$@ $^ \
+ 	-lSDL_mixer -lvorbisfile -lvorbis -logg -lsmpeg \
+ 	-lSDL_image -lSDLmain -lSDL \
+-	-lglu32 -lopengl32 -ljpeg -lpng \
++	-lopengl32 -ljpeg -lpng \
+ 	-lwinmm -luser32 -lgdi32 -ldxguid \
+ 	-lmingw32 -lSDLmain -lSDL  -mwindows \
+ 	-L${GCCLOCALDIR}../lib
+--- pinball-20201218.orig/src/Pinball.cpp
++++ pinball-20201218/src/Pinball.cpp
+@@ -10,8 +10,6 @@
+ 
+ #include <fstream>
+ #include <string>
+-//#include <sstream>
+-#include <strstream>
+ #include <iostream>
+ 
+ #include <sys/stat.h>
+@@ -144,7 +142,7 @@
+     return EM_MENU_NOP;
+   }
+   const char * getText() {
+-    ostrstream stm;
++    ostringstream stm;
+     stm.clear();
+     string name(m_Name);
+     const char * keyname = Config::getInstance()->getKeyCommonName(Config::getInstance()->getKey(name));
+--- pinball-20201218.orig/src/pinball.dsp
++++ pinball-20201218/src/pinball.dsp
+@@ -50,7 +50,7 @@
+ # ADD BSC32 /nologo
+ LINK32=link.exe
+ # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+-# ADD LINK32 kernel32.lib Base.lib addon.lib SDL.lib SDLmain.lib SDL_mixer.lib SDL_image.lib opengl32.lib glu32.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\Release"
++# ADD LINK32 kernel32.lib Base.lib addon.lib SDL.lib SDLmain.lib SDL_mixer.lib SDL_image.lib opengl32.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\Release"
+ # SUBTRACT LINK32 /pdb:none
+ 
+ !ELSEIF  "$(CFG)" == "Pinball - Win32 Debug"
+@@ -75,7 +75,7 @@
+ # ADD BSC32 /nologo
+ LINK32=link.exe
+ # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+-# ADD LINK32 kernel32.lib Base.lib addon.lib SDL.lib SDLmain.lib SDL_mixer.lib SDL_image.lib opengl32.lib glu32.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\Debug/Pinballd.exe" /pdbtype:sept /libpath:"..\Debug"
++# ADD LINK32 kernel32.lib Base.lib addon.lib SDL.lib SDLmain.lib SDL_mixer.lib SDL_image.lib opengl32.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\Debug/Pinballd.exe" /pdbtype:sept /libpath:"..\Debug"
+ # SUBTRACT LINK32 /nodefaultlib
+ 
+ !ENDIF 
+--- pinball-20201218.orig/test/Makefile.am
++++ pinball-20201218/test/Makefile.am
+@@ -6,7 +6,7 @@
+ noinst_PROGRAMS = scale simple light texture load explode collision signal billboard font thread menu joy sound trans math misc varray unittest
+ # noinst_PROGRAMS = unittest
+ 
+-INCLUDES = -I../base -I../addon -I../src @INCLTDL@
++AM_CPPFLAGS = -I../base -I../addon -I../src @INCLTDL@
+ LDADD = ../src/libemilia_pin.a ../addon/libemilia_addon.a ../base/libemilia_base.a @LIBLTDL@
+ 
+ testlib_LTLIBRARIES = libModuleTest.la
