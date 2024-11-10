@@ -1,9 +1,9 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build egl-opengl-stubs-build gcc-g++-build flac-build freetype-build glad-build libvorbis-build minimp3-build openal-soft-build stb-build vulkan-loader-build"
+REQUIRES="cmake3-build egl-opengl-stubs-build gcc-g++-build flac-build freetype-build glad-build libvorbis-build minimp3-build openal-soft-build stb-build"
 
-PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
@@ -11,387 +11,374 @@ find examples -name gl.h | xargs rm -f
 rm -f examples/island/stb_perlin.h
 rm -f examples/vulkan/vulkan.h
 rm -rf extlibs/headers
-cmake -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DSFML_BUILD_EXAMPLES=ON -DSFML_EXAMPLES_DATADIR=/x11/share/SFML/examples -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -B build -G "$GENERATOR"
+cmake -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DSFML_USE_DRM=ON -DSFML_BUILD_EXAMPLES=ON -DSFML_EXAMPLES_DATADIR=/drm/share/SFML/examples -DCMAKE_INSTALL_PREFIX=/drm -DCMAKE_INSTALL_RPATH=/drm/lib -B build -G "$GENERATOR"
 
 # build
 cmake --build build
 
 # install
-install -d $DESTDIR/x11/include/SFML
-install -m 644 include/SFML/Audio.hpp $DESTDIR/x11/include/SFML
-install -m 644 include/SFML/Config.hpp $DESTDIR/x11/include/SFML
-install -m 644 include/SFML/Graphics.hpp $DESTDIR/x11/include/SFML
-install -m 644 include/SFML/Network.hpp $DESTDIR/x11/include/SFML
-install -m 644 include/SFML/System.hpp $DESTDIR/x11/include/SFML
-install -m 644 include/SFML/Window.hpp $DESTDIR/x11/include/SFML
-install -d $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/AlResource.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/Export.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/InputSoundFile.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/Listener.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/Music.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/OutputSoundFile.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/Sound.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundBuffer.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundBufferRecorder.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundFileFactory.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundFileFactory.inl $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundFileReader.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundFileWriter.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundRecorder.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundSource.hpp $DESTDIR/x11/include/SFML/Audio
-install -m 644 include/SFML/Audio/SoundStream.hpp $DESTDIR/x11/include/SFML/Audio
-install -d $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/BlendMode.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/CircleShape.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Color.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/ConvexShape.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Drawable.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Export.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Font.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Glsl.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Glsl.inl $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Glyph.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Image.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/PrimitiveType.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Rect.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Rect.inl $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/RectangleShape.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/RenderStates.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/RenderTarget.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/RenderTexture.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/RenderWindow.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Shader.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Shape.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Sprite.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Text.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Texture.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Transform.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Transformable.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/Vertex.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/VertexArray.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/VertexBuffer.hpp $DESTDIR/x11/include/SFML/Graphics
-install -m 644 include/SFML/Graphics/View.hpp $DESTDIR/x11/include/SFML/Graphics
-install -d $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/Export.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/Ftp.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/Http.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/IpAddress.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/Packet.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/Socket.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/SocketHandle.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/SocketSelector.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/TcpListener.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/TcpSocket.hpp $DESTDIR/x11/include/SFML/Network
-install -m 644 include/SFML/Network/UdpSocket.hpp $DESTDIR/x11/include/SFML/Network
-install -d $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Clock.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Err.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Export.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/FileInputStream.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/InputStream.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Lock.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/MemoryInputStream.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Mutex.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/NonCopyable.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Sleep.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/String.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/String.inl $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Thread.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Thread.inl $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/ThreadLocal.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/ThreadLocalPtr.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/ThreadLocalPtr.inl $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Time.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Utf.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Utf.inl $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Vector2.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Vector2.inl $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Vector3.hpp $DESTDIR/x11/include/SFML/System
-install -m 644 include/SFML/System/Vector3.inl $DESTDIR/x11/include/SFML/System
-install -d $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Clipboard.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Context.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/ContextSettings.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Cursor.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Event.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Export.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/GlResource.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Joystick.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Keyboard.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Mouse.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Sensor.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Touch.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/VideoMode.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Vulkan.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/Window.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/WindowBase.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/WindowHandle.hpp $DESTDIR/x11/include/SFML/Window
-install -m 644 include/SFML/Window/WindowStyle.hpp $DESTDIR/x11/include/SFML/Window
-install -d $DESTDIR/x11/lib
-install build/lib/libsfml-audio.so.2.* $DESTDIR/x11/lib/libsfml-audio.so.2
-ln -sf libsfml-audio.so.2 $DESTDIR/x11/lib/libsfml-audio.so
-install build/lib/libsfml-graphics.so.2.* $DESTDIR/x11/lib/libsfml-graphics.so.2
-ln -sf libsfml-graphics.so.2 $DESTDIR/x11/lib/libsfml-graphics.so
-install build/lib/libsfml-network.so.2.* $DESTDIR/x11/lib/libsfml-network.so.2
-ln -sf libsfml-network.so.2 $DESTDIR/x11/lib/libsfml-network.so
-install build/lib/libsfml-system.so.2.* $DESTDIR/x11/lib/libsfml-system.so.2
-ln -sf libsfml-system.so.2 $DESTDIR/x11/lib/libsfml-system.so
-install build/lib/libsfml-window.so.2.* $DESTDIR/x11/lib/libsfml-window.so.2
-ln -sf libsfml-window.so.2 $DESTDIR/x11/lib/libsfml-window.so
-install -d $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/tools/pkg-config/sfml-audio.pc $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/tools/pkg-config/sfml-graphics.pc $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/tools/pkg-config/sfml-network.pc $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/tools/pkg-config/sfml-system.pc $DESTDIR/x11/lib/pkgconfig
-install -m 644 build/tools/pkg-config/sfml-window.pc $DESTDIR/x11/lib/pkgconfig
-install -d $DESTDIR/x11/share/SFML/examples/ftp
-install build/examples/ftp/ftp $DESTDIR/x11/share/SFML/examples/ftp
-install -d $DESTDIR/x11/share/SFML/examples/island
-install build/examples/island/island $DESTDIR/x11/share/SFML/examples/island
-install -d $DESTDIR/x11/share/SFML/examples/island/resources
-install -m 644 examples/island/resources/terrain.frag $DESTDIR/x11/share/SFML/examples/island/resources
-install -m 644 examples/island/resources/terrain.vert $DESTDIR/x11/share/SFML/examples/island/resources
-install -m 644 examples/island/resources/tuffy.ttf $DESTDIR/x11/share/SFML/examples/island/resources
-install -d $DESTDIR/x11/share/SFML/examples/joystick
-install build/examples/joystick/joystick $DESTDIR/x11/share/SFML/examples/joystick
-install -d $DESTDIR/x11/share/SFML/examples/joystick/resources
-install -m 644 examples/joystick/resources/tuffy.ttf $DESTDIR/x11/share/SFML/examples/joystick/resources
-install -d $DESTDIR/x11/share/SFML/examples/opengl
-install build/examples/opengl/opengl $DESTDIR/x11/share/SFML/examples/opengl
-install -d $DESTDIR/x11/share/SFML/examples/opengl/resources
-install -m 644 examples/opengl/resources/background.jpg $DESTDIR/x11/share/SFML/examples/opengl/resources
-install -m 644 examples/opengl/resources/logo.png $DESTDIR/x11/share/SFML/examples/opengl/resources
-install -m 644 examples/opengl/resources/tuffy.ttf $DESTDIR/x11/share/SFML/examples/opengl/resources
-install -d $DESTDIR/x11/share/SFML/examples/shader
-install build/examples/shader/shader $DESTDIR/x11/share/SFML/examples/shader
-install -d $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/background.jpg $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/billboard.frag $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/billboard.geom $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/billboard.vert $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/blink.frag $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/blur.frag $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/devices.png $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/edge.frag $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/pixelate.frag $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/sfml.png $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/storm.vert $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/text-background.png $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/tuffy.ttf $DESTDIR/x11/share/SFML/examples/shader/resources
-install -m 644 examples/shader/resources/wave.vert $DESTDIR/x11/share/SFML/examples/shader/resources
-install -d $DESTDIR/x11/share/SFML/examples/sockets
-install build/examples/sockets/sockets $DESTDIR/x11/share/SFML/examples/sockets
-install -d $DESTDIR/x11/share/SFML/examples/sound
-install build/examples/sound/sound $DESTDIR/x11/share/SFML/examples/sound
-install -d $DESTDIR/x11/share/SFML/examples/sound/resources
-install -m 644 examples/sound/resources/ding.mp3 $DESTDIR/x11/share/SFML/examples/sound/resources
-install -m 644 examples/sound/resources/ding.flac $DESTDIR/x11/share/SFML/examples/sound/resources
-install -m 644 examples/sound/resources/doodle_pop.ogg $DESTDIR/x11/share/SFML/examples/sound/resources
-install -m 644 examples/sound/resources/killdeer.wav $DESTDIR/x11/share/SFML/examples/sound/resources
-install -d $DESTDIR/x11/share/SFML/examples/sound-capture
-install build/examples/sound_capture/sound-capture $DESTDIR/x11/share/SFML/examples/sound-capture
-install -d $DESTDIR/x11/share/SFML/examples/tennis
-install build/examples/tennis/tennis $DESTDIR/x11/share/SFML/examples/tennis
-install -d $DESTDIR/x11/share/SFML/examples/tennis/resources
-install -m 644 examples/tennis/resources/ball.wav $DESTDIR/x11/share/SFML/examples/tennis/resources
-install -m 644 examples/tennis/resources/sfml_logo.png $DESTDIR/x11/share/SFML/examples/tennis/resources
-install -m 644 examples/tennis/resources/tuffy.ttf $DESTDIR/x11/share/SFML/examples/tennis/resources
-install -d $DESTDIR/x11/share/SFML/examples/voip
-install build/examples/voip/voip $DESTDIR/x11/share/SFML/examples/voip
-install -d $DESTDIR/x11/share/SFML/examples/vulkan
-install build/examples/vulkan/vulkan $DESTDIR/x11/share/SFML/examples/vulkan
-install -d $DESTDIR/x11/share/SFML/examples/vulkan/resources
-install -m 644 examples/vulkan/resources/logo.png $DESTDIR/x11/share/SFML/examples/vulkan/resources
-install -m 644 examples/vulkan/resources/shader.frag.spv $DESTDIR/x11/share/SFML/examples/vulkan/resources
-install -m 644 examples/vulkan/resources/shader.vert.spv $DESTDIR/x11/share/SFML/examples/vulkan/resources
-install -d $DESTDIR/x11/share/SFML/examples/window
-install build/examples/window/window $DESTDIR/x11/share/SFML/examples/window
-install -d $DESTDIR/x11/share/SFML/examples/X11
-install build/examples/X11/X11Example $DESTDIR/x11/share/SFML/examples/X11
+install -d $DESTDIR/drm/include/SFML
+install -m 644 include/SFML/Audio.hpp $DESTDIR/drm/include/SFML
+install -m 644 include/SFML/Config.hpp $DESTDIR/drm/include/SFML
+install -m 644 include/SFML/Graphics.hpp $DESTDIR/drm/include/SFML
+install -m 644 include/SFML/Network.hpp $DESTDIR/drm/include/SFML
+install -m 644 include/SFML/System.hpp $DESTDIR/drm/include/SFML
+install -m 644 include/SFML/Window.hpp $DESTDIR/drm/include/SFML
+install -d $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/AlResource.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/Export.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/InputSoundFile.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/Listener.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/Music.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/OutputSoundFile.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/Sound.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundBuffer.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundBufferRecorder.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundFileFactory.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundFileFactory.inl $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundFileReader.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundFileWriter.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundRecorder.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundSource.hpp $DESTDIR/drm/include/SFML/Audio
+install -m 644 include/SFML/Audio/SoundStream.hpp $DESTDIR/drm/include/SFML/Audio
+install -d $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/BlendMode.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/CircleShape.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Color.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/ConvexShape.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Drawable.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Export.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Font.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Glsl.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Glsl.inl $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Glyph.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Image.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/PrimitiveType.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Rect.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Rect.inl $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/RectangleShape.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/RenderStates.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/RenderTarget.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/RenderTexture.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/RenderWindow.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Shader.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Shape.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Sprite.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Text.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Texture.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Transform.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Transformable.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/Vertex.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/VertexArray.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/VertexBuffer.hpp $DESTDIR/drm/include/SFML/Graphics
+install -m 644 include/SFML/Graphics/View.hpp $DESTDIR/drm/include/SFML/Graphics
+install -d $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/Export.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/Ftp.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/Http.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/IpAddress.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/Packet.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/Socket.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/SocketHandle.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/SocketSelector.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/TcpListener.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/TcpSocket.hpp $DESTDIR/drm/include/SFML/Network
+install -m 644 include/SFML/Network/UdpSocket.hpp $DESTDIR/drm/include/SFML/Network
+install -d $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Clock.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Err.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Export.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/FileInputStream.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/InputStream.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Lock.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/MemoryInputStream.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Mutex.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/NonCopyable.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Sleep.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/String.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/String.inl $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Thread.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Thread.inl $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/ThreadLocal.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/ThreadLocalPtr.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/ThreadLocalPtr.inl $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Time.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Utf.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Utf.inl $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Vector2.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Vector2.inl $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Vector3.hpp $DESTDIR/drm/include/SFML/System
+install -m 644 include/SFML/System/Vector3.inl $DESTDIR/drm/include/SFML/System
+install -d $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Clipboard.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Context.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/ContextSettings.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Cursor.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Event.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Export.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/GlResource.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Joystick.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Keyboard.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Mouse.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Sensor.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Touch.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/VideoMode.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Vulkan.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/Window.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/WindowBase.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/WindowHandle.hpp $DESTDIR/drm/include/SFML/Window
+install -m 644 include/SFML/Window/WindowStyle.hpp $DESTDIR/drm/include/SFML/Window
+install -d $DESTDIR/drm/lib
+install build/lib/libsfml-audio.so.2.* $DESTDIR/drm/lib/libsfml-audio.so.2
+ln -sf libsfml-audio.so.2 $DESTDIR/drm/lib/libsfml-audio.so
+install build/lib/libsfml-graphics.so.2.* $DESTDIR/drm/lib/libsfml-graphics.so.2
+ln -sf libsfml-graphics.so.2 $DESTDIR/drm/lib/libsfml-graphics.so
+install build/lib/libsfml-network.so.2.* $DESTDIR/drm/lib/libsfml-network.so.2
+ln -sf libsfml-network.so.2 $DESTDIR/drm/lib/libsfml-network.so
+install build/lib/libsfml-system.so.2.* $DESTDIR/drm/lib/libsfml-system.so.2
+ln -sf libsfml-system.so.2 $DESTDIR/drm/lib/libsfml-system.so
+install build/lib/libsfml-window.so.2.* $DESTDIR/drm/lib/libsfml-window.so.2
+ln -sf libsfml-window.so.2 $DESTDIR/drm/lib/libsfml-window.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/tools/pkg-config/sfml-audio.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/tools/pkg-config/sfml-graphics.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/tools/pkg-config/sfml-network.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/tools/pkg-config/sfml-system.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/tools/pkg-config/sfml-window.pc $DESTDIR/drm/lib/pkgconfig
+install -d $DESTDIR/drm/share/SFML/examples/ftp
+install build/examples/ftp/ftp $DESTDIR/drm/share/SFML/examples/ftp
+install -d $DESTDIR/drm/share/SFML/examples/island
+install build/examples/island/island $DESTDIR/drm/share/SFML/examples/island
+install -d $DESTDIR/drm/share/SFML/examples/island/resources
+install -m 644 examples/island/resources/terrain.frag $DESTDIR/drm/share/SFML/examples/island/resources
+install -m 644 examples/island/resources/terrain.vert $DESTDIR/drm/share/SFML/examples/island/resources
+install -m 644 examples/island/resources/tuffy.ttf $DESTDIR/drm/share/SFML/examples/island/resources
+install -d $DESTDIR/drm/share/SFML/examples/joystick
+install build/examples/joystick/joystick $DESTDIR/drm/share/SFML/examples/joystick
+install -d $DESTDIR/drm/share/SFML/examples/joystick/resources
+install -m 644 examples/joystick/resources/tuffy.ttf $DESTDIR/drm/share/SFML/examples/joystick/resources
+install -d $DESTDIR/drm/share/SFML/examples/opengl
+install build/examples/opengl/opengl $DESTDIR/drm/share/SFML/examples/opengl
+install -d $DESTDIR/drm/share/SFML/examples/opengl/resources
+install -m 644 examples/opengl/resources/background.jpg $DESTDIR/drm/share/SFML/examples/opengl/resources
+install -m 644 examples/opengl/resources/logo.png $DESTDIR/drm/share/SFML/examples/opengl/resources
+install -m 644 examples/opengl/resources/tuffy.ttf $DESTDIR/drm/share/SFML/examples/opengl/resources
+install -d $DESTDIR/drm/share/SFML/examples/shader
+install build/examples/shader/shader $DESTDIR/drm/share/SFML/examples/shader
+install -d $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/background.jpg $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/billboard.frag $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/billboard.geom $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/billboard.vert $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/blink.frag $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/blur.frag $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/devices.png $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/edge.frag $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/pixelate.frag $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/sfml.png $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/storm.vert $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/text-background.png $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/tuffy.ttf $DESTDIR/drm/share/SFML/examples/shader/resources
+install -m 644 examples/shader/resources/wave.vert $DESTDIR/drm/share/SFML/examples/shader/resources
+install -d $DESTDIR/drm/share/SFML/examples/sockets
+install build/examples/sockets/sockets $DESTDIR/drm/share/SFML/examples/sockets
+install -d $DESTDIR/drm/share/SFML/examples/sound
+install build/examples/sound/sound $DESTDIR/drm/share/SFML/examples/sound
+install -d $DESTDIR/drm/share/SFML/examples/sound/resources
+install -m 644 examples/sound/resources/ding.mp3 $DESTDIR/drm/share/SFML/examples/sound/resources
+install -m 644 examples/sound/resources/ding.flac $DESTDIR/drm/share/SFML/examples/sound/resources
+install -m 644 examples/sound/resources/doodle_pop.ogg $DESTDIR/drm/share/SFML/examples/sound/resources
+install -m 644 examples/sound/resources/killdeer.wav $DESTDIR/drm/share/SFML/examples/sound/resources
+install -d $DESTDIR/drm/share/SFML/examples/sound-capture
+install build/examples/sound_capture/sound-capture $DESTDIR/drm/share/SFML/examples/sound-capture
+install -d $DESTDIR/drm/share/SFML/examples/tennis
+install build/examples/tennis/tennis $DESTDIR/drm/share/SFML/examples/tennis
+install -d $DESTDIR/drm/share/SFML/examples/tennis/resources
+install -m 644 examples/tennis/resources/ball.wav $DESTDIR/drm/share/SFML/examples/tennis/resources
+install -m 644 examples/tennis/resources/sfml_logo.png $DESTDIR/drm/share/SFML/examples/tennis/resources
+install -m 644 examples/tennis/resources/tuffy.ttf $DESTDIR/drm/share/SFML/examples/tennis/resources
+install -d $DESTDIR/drm/share/SFML/examples/voip
+install build/examples/voip/voip $DESTDIR/drm/share/SFML/examples/voip
+install -d $DESTDIR/drm/share/SFML/examples/window
+install build/examples/window/window $DESTDIR/drm/share/SFML/examples/window
 
 # build.pc
-install -d $DESTDIR/x11/share/pkgconfig
-cat > $DESTDIR/x11/share/pkgconfig/sfml-build.pc << EOF
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/sfml-build.pc << EOF
 Name: SFML
-Version: 2.6.1
+Version: 2.6.2
 Description: Simple and Fast Multimedia Library
 Requires: $REQUIRES
 
 devel=\\
-/x11/include/SFML/Audio.hpp \\
-/x11/include/SFML/Config.hpp \\
-/x11/include/SFML/Graphics.hpp \\
-/x11/include/SFML/Network.hpp \\
-/x11/include/SFML/System.hpp \\
-/x11/include/SFML/Window.hpp \\
-/x11/include/SFML/Audio/AlResource.hpp \\
-/x11/include/SFML/Audio/Export.hpp \\
-/x11/include/SFML/Audio/InputSoundFile.hpp \\
-/x11/include/SFML/Audio/Listener.hpp \\
-/x11/include/SFML/Audio/Music.hpp \\
-/x11/include/SFML/Audio/OutputSoundFile.hpp \\
-/x11/include/SFML/Audio/Sound.hpp \\
-/x11/include/SFML/Audio/SoundBuffer.hpp \\
-/x11/include/SFML/Audio/SoundBufferRecorder.hpp \\
-/x11/include/SFML/Audio/SoundFileFactory.hpp \\
-/x11/include/SFML/Audio/SoundFileFactory.inl \\
-/x11/include/SFML/Audio/SoundFileReader.hpp \\
-/x11/include/SFML/Audio/SoundFileWriter.hpp \\
-/x11/include/SFML/Audio/SoundRecorder.hpp \\
-/x11/include/SFML/Audio/SoundSource.hpp \\
-/x11/include/SFML/Audio/SoundStream.hpp \\
-/x11/include/SFML/Graphics/BlendMode.hpp \\
-/x11/include/SFML/Graphics/CircleShape.hpp \\
-/x11/include/SFML/Graphics/Color.hpp \\
-/x11/include/SFML/Graphics/ConvexShape.hpp \\
-/x11/include/SFML/Graphics/Drawable.hpp \\
-/x11/include/SFML/Graphics/Export.hpp \\
-/x11/include/SFML/Graphics/Font.hpp \\
-/x11/include/SFML/Graphics/Glsl.hpp \\
-/x11/include/SFML/Graphics/Glsl.inl \\
-/x11/include/SFML/Graphics/Glyph.hpp \\
-/x11/include/SFML/Graphics/Image.hpp \\
-/x11/include/SFML/Graphics/PrimitiveType.hpp \\
-/x11/include/SFML/Graphics/Rect.hpp \\
-/x11/include/SFML/Graphics/Rect.inl \\
-/x11/include/SFML/Graphics/RectangleShape.hpp \\
-/x11/include/SFML/Graphics/RenderStates.hpp \\
-/x11/include/SFML/Graphics/RenderTarget.hpp \\
-/x11/include/SFML/Graphics/RenderTexture.hpp \\
-/x11/include/SFML/Graphics/RenderWindow.hpp \\
-/x11/include/SFML/Graphics/Shader.hpp \\
-/x11/include/SFML/Graphics/Shape.hpp \\
-/x11/include/SFML/Graphics/Sprite.hpp \\
-/x11/include/SFML/Graphics/Text.hpp \\
-/x11/include/SFML/Graphics/Texture.hpp \\
-/x11/include/SFML/Graphics/Transform.hpp \\
-/x11/include/SFML/Graphics/Transformable.hpp \\
-/x11/include/SFML/Graphics/Vertex.hpp \\
-/x11/include/SFML/Graphics/VertexArray.hpp \\
-/x11/include/SFML/Graphics/VertexBuffer.hpp \\
-/x11/include/SFML/Graphics/View.hpp \\
-/x11/include/SFML/Network/Export.hpp \\
-/x11/include/SFML/Network/Ftp.hpp \\
-/x11/include/SFML/Network/Http.hpp \\
-/x11/include/SFML/Network/IpAddress.hpp \\
-/x11/include/SFML/Network/Packet.hpp \\
-/x11/include/SFML/Network/Socket.hpp \\
-/x11/include/SFML/Network/SocketHandle.hpp \\
-/x11/include/SFML/Network/SocketSelector.hpp \\
-/x11/include/SFML/Network/TcpListener.hpp \\
-/x11/include/SFML/Network/TcpSocket.hpp \\
-/x11/include/SFML/Network/UdpSocket.hpp \\
-/x11/include/SFML/System/Clock.hpp \\
-/x11/include/SFML/System/Err.hpp \\
-/x11/include/SFML/System/Export.hpp \\
-/x11/include/SFML/System/FileInputStream.hpp \\
-/x11/include/SFML/System/InputStream.hpp \\
-/x11/include/SFML/System/Lock.hpp \\
-/x11/include/SFML/System/MemoryInputStream.hpp \\
-/x11/include/SFML/System/Mutex.hpp \\
-/x11/include/SFML/System/NonCopyable.hpp \\
-/x11/include/SFML/System/Sleep.hpp \\
-/x11/include/SFML/System/String.hpp \\
-/x11/include/SFML/System/String.inl \\
-/x11/include/SFML/System/Thread.hpp \\
-/x11/include/SFML/System/Thread.inl \\
-/x11/include/SFML/System/ThreadLocal.hpp \\
-/x11/include/SFML/System/ThreadLocalPtr.hpp \\
-/x11/include/SFML/System/ThreadLocalPtr.inl \\
-/x11/include/SFML/System/Time.hpp \\
-/x11/include/SFML/System/Utf.hpp \\
-/x11/include/SFML/System/Utf.inl \\
-/x11/include/SFML/System/Vector2.hpp \\
-/x11/include/SFML/System/Vector2.inl \\
-/x11/include/SFML/System/Vector3.hpp \\
-/x11/include/SFML/System/Vector3.inl \\
-/x11/include/SFML/Window/Clipboard.hpp \\
-/x11/include/SFML/Window/Context.hpp \\
-/x11/include/SFML/Window/ContextSettings.hpp \\
-/x11/include/SFML/Window/Cursor.hpp \\
-/x11/include/SFML/Window/Event.hpp \\
-/x11/include/SFML/Window/Export.hpp \\
-/x11/include/SFML/Window/GlResource.hpp \\
-/x11/include/SFML/Window/Joystick.hpp \\
-/x11/include/SFML/Window/Keyboard.hpp \\
-/x11/include/SFML/Window/Mouse.hpp \\
-/x11/include/SFML/Window/Sensor.hpp \\
-/x11/include/SFML/Window/Touch.hpp \\
-/x11/include/SFML/Window/VideoMode.hpp \\
-/x11/include/SFML/Window/Vulkan.hpp \\
-/x11/include/SFML/Window/Window.hpp \\
-/x11/include/SFML/Window/WindowBase.hpp \\
-/x11/include/SFML/Window/WindowHandle.hpp \\
-/x11/include/SFML/Window/WindowStyle.hpp \\
-/x11/lib/libsfml-audio.so \\
-/x11/lib/libsfml-graphics.so \\
-/x11/lib/libsfml-network.so \\
-/x11/lib/libsfml-system.so \\
-/x11/lib/libsfml-window.so \\
-/x11/lib/pkgconfig/sfml-audio.pc \\
-/x11/lib/pkgconfig/sfml-graphics.pc \\
-/x11/lib/pkgconfig/sfml-network.pc \\
-/x11/lib/pkgconfig/sfml-system.pc \\
-/x11/lib/pkgconfig/sfml-window.pc
+/drm/include/SFML/Audio.hpp \\
+/drm/include/SFML/Config.hpp \\
+/drm/include/SFML/Graphics.hpp \\
+/drm/include/SFML/Network.hpp \\
+/drm/include/SFML/System.hpp \\
+/drm/include/SFML/Window.hpp \\
+/drm/include/SFML/Audio/AlResource.hpp \\
+/drm/include/SFML/Audio/Export.hpp \\
+/drm/include/SFML/Audio/InputSoundFile.hpp \\
+/drm/include/SFML/Audio/Listener.hpp \\
+/drm/include/SFML/Audio/Music.hpp \\
+/drm/include/SFML/Audio/OutputSoundFile.hpp \\
+/drm/include/SFML/Audio/Sound.hpp \\
+/drm/include/SFML/Audio/SoundBuffer.hpp \\
+/drm/include/SFML/Audio/SoundBufferRecorder.hpp \\
+/drm/include/SFML/Audio/SoundFileFactory.hpp \\
+/drm/include/SFML/Audio/SoundFileFactory.inl \\
+/drm/include/SFML/Audio/SoundFileReader.hpp \\
+/drm/include/SFML/Audio/SoundFileWriter.hpp \\
+/drm/include/SFML/Audio/SoundRecorder.hpp \\
+/drm/include/SFML/Audio/SoundSource.hpp \\
+/drm/include/SFML/Audio/SoundStream.hpp \\
+/drm/include/SFML/Graphics/BlendMode.hpp \\
+/drm/include/SFML/Graphics/CircleShape.hpp \\
+/drm/include/SFML/Graphics/Color.hpp \\
+/drm/include/SFML/Graphics/ConvexShape.hpp \\
+/drm/include/SFML/Graphics/Drawable.hpp \\
+/drm/include/SFML/Graphics/Export.hpp \\
+/drm/include/SFML/Graphics/Font.hpp \\
+/drm/include/SFML/Graphics/Glsl.hpp \\
+/drm/include/SFML/Graphics/Glsl.inl \\
+/drm/include/SFML/Graphics/Glyph.hpp \\
+/drm/include/SFML/Graphics/Image.hpp \\
+/drm/include/SFML/Graphics/PrimitiveType.hpp \\
+/drm/include/SFML/Graphics/Rect.hpp \\
+/drm/include/SFML/Graphics/Rect.inl \\
+/drm/include/SFML/Graphics/RectangleShape.hpp \\
+/drm/include/SFML/Graphics/RenderStates.hpp \\
+/drm/include/SFML/Graphics/RenderTarget.hpp \\
+/drm/include/SFML/Graphics/RenderTexture.hpp \\
+/drm/include/SFML/Graphics/RenderWindow.hpp \\
+/drm/include/SFML/Graphics/Shader.hpp \\
+/drm/include/SFML/Graphics/Shape.hpp \\
+/drm/include/SFML/Graphics/Sprite.hpp \\
+/drm/include/SFML/Graphics/Text.hpp \\
+/drm/include/SFML/Graphics/Texture.hpp \\
+/drm/include/SFML/Graphics/Transform.hpp \\
+/drm/include/SFML/Graphics/Transformable.hpp \\
+/drm/include/SFML/Graphics/Vertex.hpp \\
+/drm/include/SFML/Graphics/VertexArray.hpp \\
+/drm/include/SFML/Graphics/VertexBuffer.hpp \\
+/drm/include/SFML/Graphics/View.hpp \\
+/drm/include/SFML/Network/Export.hpp \\
+/drm/include/SFML/Network/Ftp.hpp \\
+/drm/include/SFML/Network/Http.hpp \\
+/drm/include/SFML/Network/IpAddress.hpp \\
+/drm/include/SFML/Network/Packet.hpp \\
+/drm/include/SFML/Network/Socket.hpp \\
+/drm/include/SFML/Network/SocketHandle.hpp \\
+/drm/include/SFML/Network/SocketSelector.hpp \\
+/drm/include/SFML/Network/TcpListener.hpp \\
+/drm/include/SFML/Network/TcpSocket.hpp \\
+/drm/include/SFML/Network/UdpSocket.hpp \\
+/drm/include/SFML/System/Clock.hpp \\
+/drm/include/SFML/System/Err.hpp \\
+/drm/include/SFML/System/Export.hpp \\
+/drm/include/SFML/System/FileInputStream.hpp \\
+/drm/include/SFML/System/InputStream.hpp \\
+/drm/include/SFML/System/Lock.hpp \\
+/drm/include/SFML/System/MemoryInputStream.hpp \\
+/drm/include/SFML/System/Mutex.hpp \\
+/drm/include/SFML/System/NonCopyable.hpp \\
+/drm/include/SFML/System/Sleep.hpp \\
+/drm/include/SFML/System/String.hpp \\
+/drm/include/SFML/System/String.inl \\
+/drm/include/SFML/System/Thread.hpp \\
+/drm/include/SFML/System/Thread.inl \\
+/drm/include/SFML/System/ThreadLocal.hpp \\
+/drm/include/SFML/System/ThreadLocalPtr.hpp \\
+/drm/include/SFML/System/ThreadLocalPtr.inl \\
+/drm/include/SFML/System/Time.hpp \\
+/drm/include/SFML/System/Utf.hpp \\
+/drm/include/SFML/System/Utf.inl \\
+/drm/include/SFML/System/Vector2.hpp \\
+/drm/include/SFML/System/Vector2.inl \\
+/drm/include/SFML/System/Vector3.hpp \\
+/drm/include/SFML/System/Vector3.inl \\
+/drm/include/SFML/Window/Clipboard.hpp \\
+/drm/include/SFML/Window/Context.hpp \\
+/drm/include/SFML/Window/ContextSettings.hpp \\
+/drm/include/SFML/Window/Cursor.hpp \\
+/drm/include/SFML/Window/Event.hpp \\
+/drm/include/SFML/Window/Export.hpp \\
+/drm/include/SFML/Window/GlResource.hpp \\
+/drm/include/SFML/Window/Joystick.hpp \\
+/drm/include/SFML/Window/Keyboard.hpp \\
+/drm/include/SFML/Window/Mouse.hpp \\
+/drm/include/SFML/Window/Sensor.hpp \\
+/drm/include/SFML/Window/Touch.hpp \\
+/drm/include/SFML/Window/VideoMode.hpp \\
+/drm/include/SFML/Window/Vulkan.hpp \\
+/drm/include/SFML/Window/Window.hpp \\
+/drm/include/SFML/Window/WindowBase.hpp \\
+/drm/include/SFML/Window/WindowHandle.hpp \\
+/drm/include/SFML/Window/WindowStyle.hpp \\
+/drm/lib/libsfml-audio.so \\
+/drm/lib/libsfml-graphics.so \\
+/drm/lib/libsfml-network.so \\
+/drm/lib/libsfml-system.so \\
+/drm/lib/libsfml-window.so \\
+/drm/lib/pkgconfig/sfml-audio.pc \\
+/drm/lib/pkgconfig/sfml-graphics.pc \\
+/drm/lib/pkgconfig/sfml-network.pc \\
+/drm/lib/pkgconfig/sfml-system.pc \\
+/drm/lib/pkgconfig/sfml-window.pc
 
 exec=\\
-/x11/lib/libsfml-audio.so.2 \\
-/x11/lib/libsfml-graphics.so.2 \\
-/x11/lib/libsfml-network.so.2 \\
-/x11/lib/libsfml-system.so.2 \\
-/x11/lib/libsfml-window.so.2 \\
-/x11/share/SFML/examples/ftp/ftp \\
-/x11/share/SFML/examples/island/island \\
-/x11/share/SFML/examples/island/resources/terrain.frag \\
-/x11/share/SFML/examples/island/resources/terrain.vert \\
-/x11/share/SFML/examples/island/resources/tuffy.ttf \\
-/x11/share/SFML/examples/joystick/joystick \\
-/x11/share/SFML/examples/joystick/resources/tuffy.ttf \\
-/x11/share/SFML/examples/opengl/opengl \\
-/x11/share/SFML/examples/opengl/resources/background.jpg \\
-/x11/share/SFML/examples/opengl/resources/logo.png \\
-/x11/share/SFML/examples/opengl/resources/tuffy.ttf \\
-/x11/share/SFML/examples/shader/shader \\
-/x11/share/SFML/examples/shader/resources/background.jpg \\
-/x11/share/SFML/examples/shader/resources/billboard.frag \\
-/x11/share/SFML/examples/shader/resources/billboard.geom \\
-/x11/share/SFML/examples/shader/resources/billboard.vert \\
-/x11/share/SFML/examples/shader/resources/blink.frag \\
-/x11/share/SFML/examples/shader/resources/blur.frag \\
-/x11/share/SFML/examples/shader/resources/devices.png \\
-/x11/share/SFML/examples/shader/resources/edge.frag \\
-/x11/share/SFML/examples/shader/resources/pixelate.frag \\
-/x11/share/SFML/examples/shader/resources/sfml.png \\
-/x11/share/SFML/examples/shader/resources/storm.vert \\
-/x11/share/SFML/examples/shader/resources/text-background.png \\
-/x11/share/SFML/examples/shader/resources/tuffy.ttf \\
-/x11/share/SFML/examples/shader/resources/wave.vert \\
-/x11/share/SFML/examples/sockets/sockets \\
-/x11/share/SFML/examples/sound/sound \\
-/x11/share/SFML/examples/sound/resources/ding.flac \\
-/x11/share/SFML/examples/sound/resources/ding.mp3 \\
-/x11/share/SFML/examples/sound/resources/doodle_pop.ogg \\
-/x11/share/SFML/examples/sound/resources/killdeer.wav \\
-/x11/share/SFML/examples/sound-capture/sound-capture \\
-/x11/share/SFML/examples/tennis/tennis \\
-/x11/share/SFML/examples/tennis/resources \\
-/x11/share/SFML/examples/tennis/resources/ball.wav \\
-/x11/share/SFML/examples/tennis/resources/sfml_logo.png \\
-/x11/share/SFML/examples/tennis/resources/tuffy.ttf \\
-/x11/share/SFML/examples/voip/voip \\
-/x11/share/SFML/examples/vulkan/vulkan \\
-/x11/share/SFML/examples/vulkan/resources/logo.png \\
-/x11/share/SFML/examples/vulkan/resources/shader.frag.spv \\
-/x11/share/SFML/examples/vulkan/resources/shader.vert.spv \\
-/x11/share/SFML/examples/window/window \\
-/x11/share/SFML/examples/X11/X11Example
+/drm/lib/libsfml-audio.so.2 \\
+/drm/lib/libsfml-graphics.so.2 \\
+/drm/lib/libsfml-network.so.2 \\
+/drm/lib/libsfml-system.so.2 \\
+/drm/lib/libsfml-window.so.2 \\
+/drm/share/SFML/examples/ftp/ftp \\
+/drm/share/SFML/examples/island/island \\
+/drm/share/SFML/examples/island/resources/terrain.frag \\
+/drm/share/SFML/examples/island/resources/terrain.vert \\
+/drm/share/SFML/examples/island/resources/tuffy.ttf \\
+/drm/share/SFML/examples/joystick/joystick \\
+/drm/share/SFML/examples/joystick/resources/tuffy.ttf \\
+/drm/share/SFML/examples/opengl/opengl \\
+/drm/share/SFML/examples/opengl/resources/background.jpg \\
+/drm/share/SFML/examples/opengl/resources/logo.png \\
+/drm/share/SFML/examples/opengl/resources/tuffy.ttf \\
+/drm/share/SFML/examples/shader/shader \\
+/drm/share/SFML/examples/shader/resources/background.jpg \\
+/drm/share/SFML/examples/shader/resources/billboard.frag \\
+/drm/share/SFML/examples/shader/resources/billboard.geom \\
+/drm/share/SFML/examples/shader/resources/billboard.vert \\
+/drm/share/SFML/examples/shader/resources/blink.frag \\
+/drm/share/SFML/examples/shader/resources/blur.frag \\
+/drm/share/SFML/examples/shader/resources/devices.png \\
+/drm/share/SFML/examples/shader/resources/edge.frag \\
+/drm/share/SFML/examples/shader/resources/pixelate.frag \\
+/drm/share/SFML/examples/shader/resources/sfml.png \\
+/drm/share/SFML/examples/shader/resources/storm.vert \\
+/drm/share/SFML/examples/shader/resources/text-background.png \\
+/drm/share/SFML/examples/shader/resources/tuffy.ttf \\
+/drm/share/SFML/examples/shader/resources/wave.vert \\
+/drm/share/SFML/examples/sockets/sockets \\
+/drm/share/SFML/examples/sound/sound \\
+/drm/share/SFML/examples/sound/resources/ding.flac \\
+/drm/share/SFML/examples/sound/resources/ding.mp3 \\
+/drm/share/SFML/examples/sound/resources/doodle_pop.ogg \\
+/drm/share/SFML/examples/sound/resources/killdeer.wav \\
+/drm/share/SFML/examples/sound-capture/sound-capture \\
+/drm/share/SFML/examples/tennis/tennis \\
+/drm/share/SFML/examples/tennis/resources \\
+/drm/share/SFML/examples/tennis/resources/ball.wav \\
+/drm/share/SFML/examples/tennis/resources/sfml_logo.png \\
+/drm/share/SFML/examples/tennis/resources/tuffy.ttf \\
+/drm/share/SFML/examples/voip/voip \\
+/drm/share/SFML/examples/window/window
 EOF
 
 exit
---- SFML-2.6.1.orig/CMakeLists.txt
-+++ SFML-2.6.1/CMakeLists.txt
-@@ -68,6 +68,8 @@
+--- SFML-2.6.2.orig/CMakeLists.txt
++++ SFML-2.6.2/CMakeLists.txt
+@@ -57,6 +57,8 @@
      set(SFML_BUILD_EXAMPLES FALSE)
  endif()
  
@@ -400,8 +387,8 @@ exit
  # add options to select which modules to build
  sfml_set_option(SFML_BUILD_WINDOW TRUE BOOL "TRUE to build SFML's Window module. This setting is ignored, if the graphics module is built.")
  sfml_set_option(SFML_BUILD_GRAPHICS TRUE BOOL "TRUE to build SFML's Graphics module.")
---- SFML-2.6.1.orig/cmake/Macros.cmake
-+++ SFML-2.6.1/cmake/Macros.cmake
+--- SFML-2.6.2.orig/cmake/Macros.cmake
++++ SFML-2.6.2/cmake/Macros.cmake
 @@ -113,7 +113,7 @@
      # set the version and soversion of the target (for compatible systems -- mostly Linuxes)
      # except for Android which strips soversion suffixes
@@ -422,25 +409,8 @@ exit
      # link the target to its SFML dependencies
      if(THIS_DEPENDS)
          target_link_libraries(${target} PRIVATE ${THIS_DEPENDS})
---- SFML-2.6.1.orig/cmake/Modules/FindOpenAL.cmake
-+++ SFML-2.6.1/cmake/Modules/FindOpenAL.cmake
-@@ -0,0 +1,14 @@
-+#
-+# Try to find OpenAL library and include path.
-+# Once done this will define
-+#
-+# OPENAL_FOUND
-+# OPENAL_INCLUDE_DIR
-+# OPENAL_LIBRARY
-+#
-+
-+find_library(OPENAL_LIBRARY openal)
-+find_path(OPENAL_INCLUDE_DIR al.h PATH_SUFFIXES AL)
-+
-+include(FindPackageHandleStandardArgs)
-+find_package_handle_standard_args(OpenAL DEFAULT_MSG OPENAL_LIBRARY OPENAL_INCLUDE_DIR)
---- SFML-2.6.1.orig/cmake/Modules/FindOpenGL.cmake
-+++ SFML-2.6.1/cmake/Modules/FindOpenGL.cmake
+--- SFML-2.6.2.orig/cmake/Modules/FindOpenGL.cmake
++++ SFML-2.6.2/cmake/Modules/FindOpenGL.cmake
 @@ -0,0 +1,14 @@
 +#
 +# Try to find OpenGL library and include path.
@@ -456,29 +426,21 @@ exit
 +
 +include(FindPackageHandleStandardArgs)
 +find_package_handle_standard_args(OpenGL DEFAULT_MSG OPENGL_gl_LIBRARY OPENGL_INCLUDE_DIR)
---- SFML-2.6.1.orig/cmake/Modules/FindX11.cmake
-+++ SFML-2.6.1/cmake/Modules/FindX11.cmake
-@@ -0,0 +1,18 @@
-+#
-+# Try to find X11 library and include path.
-+# Once done this will define
-+#
-+# X11_FOUND
-+# X11_INCLUDE_DIR
-+# X11_X11_LIB
-+# X11_Xcursor_LIB
-+# X11_Xrandr_LIB
-+#
-+
-+find_library(X11_X11_LIB X11)
-+find_library(X11_Xcursor_LIB Xcursor)
-+find_library(X11_Xrandr_LIB Xrandr)
-+find_path(X11_INCLUDE_DIR X11/Xlib.h)
-+
-+include(FindPackageHandleStandardArgs)
-+find_package_handle_standard_args(X11 DEFAULT_MSG X11_X11_LIB X11_Xcursor_LIB X11_Xrandr_LIB X11_INCLUDE_DIR)
---- SFML-2.6.1.orig/examples/X11/CMakeLists.txt
-+++ SFML-2.6.1/examples/X11/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/CMakeLists.txt
++++ SFML-2.6.2/examples/CMakeLists.txt
+@@ -25,7 +25,9 @@
+         add_subdirectory(joystick)
+         add_subdirectory(shader)
+         add_subdirectory(island)
+-        add_subdirectory(vulkan)
++        if(NOT SFML_USE_DRM)
++            add_subdirectory(vulkan)
++        endif()
+     endif()
+ 
+     if(SFML_OS_WINDOWS)
+--- SFML-2.6.2.orig/examples/X11/CMakeLists.txt
++++ SFML-2.6.2/examples/X11/CMakeLists.txt
 @@ -10,4 +10,12 @@
                   DEPENDS sfml-window X11)
  
@@ -494,8 +456,8 @@ exit
 +endif()
 +target_include_directories(X11Example SYSTEM PRIVATE ${GLAD_GL_INCLUDE_PATH})
 +endif()
---- SFML-2.6.1.orig/examples/X11/X11.cpp
-+++ SFML-2.6.1/examples/X11/X11.cpp
+--- SFML-2.6.2.orig/examples/X11/X11.cpp
++++ SFML-2.6.2/examples/X11/X11.cpp
 @@ -5,7 +5,7 @@
  #include <SFML/Window.hpp>
  
@@ -505,8 +467,8 @@ exit
  
  #include <X11/Xlib.h>
  #include <iostream>
---- SFML-2.6.1.orig/examples/island/CMakeLists.txt
-+++ SFML-2.6.1/examples/island/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/island/CMakeLists.txt
++++ SFML-2.6.2/examples/island/CMakeLists.txt
 @@ -5,10 +5,29 @@
  set(SRC ${SRCROOT}/Island.cpp)
  
@@ -540,8 +502,8 @@ exit
 +endif()
 +target_include_directories(island SYSTEM PRIVATE ${STB_INCLUDE_PATH})
 +endif()
---- SFML-2.6.1.orig/examples/island/Island.cpp
-+++ SFML-2.6.1/examples/island/Island.cpp
+--- SFML-2.6.2.orig/examples/island/Island.cpp
++++ SFML-2.6.2/examples/island/Island.cpp
 @@ -85,7 +85,7 @@
      window.setVerticalSyncEnabled(true);
  
@@ -560,8 +522,8 @@ exit
      {
          prerequisitesSupported = false;
  
---- SFML-2.6.1.orig/examples/joystick/CMakeLists.txt
-+++ SFML-2.6.1/examples/joystick/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/joystick/CMakeLists.txt
++++ SFML-2.6.2/examples/joystick/CMakeLists.txt
 @@ -5,7 +5,13 @@
  set(SRC ${SRCROOT}/Joystick.cpp)
  
@@ -577,8 +539,8 @@ exit
                   DEPENDS sfml-graphics
 -                 RESOURCES_DIR resources)
 +                 RESOURCES_DIR ${RESOURCES_DIR})
---- SFML-2.6.1.orig/examples/joystick/Joystick.cpp
-+++ SFML-2.6.1/examples/joystick/Joystick.cpp
+--- SFML-2.6.2.orig/examples/joystick/Joystick.cpp
++++ SFML-2.6.2/examples/joystick/Joystick.cpp
 @@ -93,7 +93,7 @@
  
      // Load the text font
@@ -588,8 +550,8 @@ exit
          return EXIT_FAILURE;
  
      // Set up our string conversion parameters
---- SFML-2.6.1.orig/examples/opengl/CMakeLists.txt
-+++ SFML-2.6.1/examples/opengl/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/opengl/CMakeLists.txt
++++ SFML-2.6.2/examples/opengl/CMakeLists.txt
 @@ -12,11 +12,25 @@
  endif()
  
@@ -619,8 +581,8 @@ exit
 +endif()
 +target_include_directories(opengl SYSTEM PRIVATE ${GLAD_GL_INCLUDE_PATH})
 +endif()
---- SFML-2.6.1.orig/examples/opengl/OpenGL.cpp
-+++ SFML-2.6.1/examples/opengl/OpenGL.cpp
+--- SFML-2.6.2.orig/examples/opengl/OpenGL.cpp
++++ SFML-2.6.2/examples/opengl/OpenGL.cpp
 @@ -5,7 +5,7 @@
  #include <SFML/Graphics.hpp>
  
@@ -639,8 +601,8 @@ exit
  #endif
  }
  
---- SFML-2.6.1.orig/examples/shader/CMakeLists.txt
-+++ SFML-2.6.1/examples/shader/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/shader/CMakeLists.txt
++++ SFML-2.6.2/examples/shader/CMakeLists.txt
 @@ -7,7 +7,13 @@
      ${SRCROOT}/Shader.cpp)
  
@@ -656,8 +618,8 @@ exit
                   DEPENDS sfml-graphics
 -                 RESOURCES_DIR resources)
 +                 RESOURCES_DIR ${RESOURCES_DIR})
---- SFML-2.6.1.orig/examples/shader/Shader.cpp
-+++ SFML-2.6.1/examples/shader/Shader.cpp
+--- SFML-2.6.2.orig/examples/shader/Shader.cpp
++++ SFML-2.6.2/examples/shader/Shader.cpp
 @@ -24,12 +24,12 @@
      bool onLoad()
      {
@@ -745,8 +707,8 @@ exit
          return EXIT_FAILURE;
      sf::Sprite textBackground(textBackgroundTexture);
      textBackground.setPosition(0, 520);
---- SFML-2.6.1.orig/examples/sound/CMakeLists.txt
-+++ SFML-2.6.1/examples/sound/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/sound/CMakeLists.txt
++++ SFML-2.6.2/examples/sound/CMakeLists.txt
 @@ -5,7 +5,13 @@
  set(SRC ${SRCROOT}/Sound.cpp)
  
@@ -762,8 +724,8 @@ exit
                   DEPENDS sfml-audio
 -                 RESOURCES_DIR resources)
 +                 RESOURCES_DIR ${RESOURCES_DIR})
---- SFML-2.6.1.orig/examples/sound/Sound.cpp
-+++ SFML-2.6.1/examples/sound/Sound.cpp
+--- SFML-2.6.2.orig/examples/sound/Sound.cpp
++++ SFML-2.6.2/examples/sound/Sound.cpp
 @@ -15,7 +15,7 @@
  {
      // Load a sound buffer from a wav file
@@ -782,8 +744,8 @@ exit
          return;
  
      // Display music informations
---- SFML-2.6.1.orig/examples/tennis/CMakeLists.txt
-+++ SFML-2.6.1/examples/tennis/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/tennis/CMakeLists.txt
++++ SFML-2.6.2/examples/tennis/CMakeLists.txt
 @@ -11,8 +11,14 @@
  endif()
  
@@ -800,8 +762,8 @@ exit
                   DEPENDS sfml-audio sfml-graphics
 -                 RESOURCES_DIR resources)
 +                 RESOURCES_DIR ${RESOURCES_DIR})
---- SFML-2.6.1.orig/examples/tennis/Tennis.cpp
-+++ SFML-2.6.1/examples/tennis/Tennis.cpp
+--- SFML-2.6.2.orig/examples/tennis/Tennis.cpp
++++ SFML-2.6.2/examples/tennis/Tennis.cpp
 @@ -17,7 +17,7 @@
  #ifdef SFML_SYSTEM_IOS
      return "";
@@ -811,8 +773,8 @@ exit
  #endif
  }
  
---- SFML-2.6.1.orig/examples/vulkan/CMakeLists.txt
-+++ SFML-2.6.1/examples/vulkan/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/vulkan/CMakeLists.txt
++++ SFML-2.6.2/examples/vulkan/CMakeLists.txt
 @@ -5,10 +5,28 @@
  set(SRC ${SRCROOT}/Vulkan.cpp)
  
@@ -845,8 +807,8 @@ exit
 +endif()
 +target_include_directories(vulkan SYSTEM PRIVATE ${GLAD_VULKAN_INCLUDE_PATH})
 +endif()
---- SFML-2.6.1.orig/examples/vulkan/Vulkan.cpp
-+++ SFML-2.6.1/examples/vulkan/Vulkan.cpp
+--- SFML-2.6.2.orig/examples/vulkan/Vulkan.cpp
++++ SFML-2.6.2/examples/vulkan/Vulkan.cpp
 @@ -3,7 +3,7 @@
  // Headers
  ////////////////////////////////////////////////////////////
@@ -856,59 +818,7 @@ exit
  
  // Include graphics because we use sf::Image for loading images
  #include <SFML/Graphics.hpp>
-@@ -185,7 +185,7 @@
-     VulkanExample() :
-     window(sf::VideoMode(800, 600), "SFML window with Vulkan", sf::Style::Default),
-     vulkanAvailable(sf::Vulkan::isAvailable()),
--    maxFramesInFlight(2),
-+    maxFramesInFlight(0),
-     currentFrame(0),
-     swapchainOutOfDate(false),
-     instance(0),
-@@ -559,6 +559,8 @@
-             return;
-         }
- 
-+        VkPhysicalDeviceType deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
-+
-         // Look for a GPU that supports swapchains
-         for (std::size_t i = 0; i < devices.size(); i++)
-         {
-@@ -604,6 +606,12 @@
-             else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
-             {
-                 gpu = devices[i];
-+                deviceType = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
-+            }
-+            else if ((deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) && (deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU))
-+            {
-+                gpu = devices[i];
-+                deviceType = VK_PHYSICAL_DEVICE_TYPE_CPU;
-             }
-         }
- 
-@@ -804,12 +812,18 @@
-         swapchainExtent.width  = clamp<uint32_t>(window.getSize().x, surfaceCapabilities.minImageExtent.width,  surfaceCapabilities.maxImageExtent.width);
-         swapchainExtent.height = clamp<uint32_t>(window.getSize().y, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
- 
--        uint32_t imageCount = clamp<uint32_t>(2, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-+        maxFramesInFlight = surfaceCapabilities.minImageCount >= 2 ? 2 : surfaceCapabilities.minImageCount;
-+
-+        if (!maxFramesInFlight)
-+        {
-+            vulkanAvailable = false;
-+            return;
-+        }
- 
-         VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR();
-         swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-         swapchainCreateInfo.surface = surface;
--        swapchainCreateInfo.minImageCount = imageCount;
-+        swapchainCreateInfo.minImageCount = maxFramesInFlight;
-         swapchainCreateInfo.imageFormat = swapchainFormat.format;
-         swapchainCreateInfo.imageColorSpace = swapchainFormat.colorSpace;
-         swapchainCreateInfo.imageExtent = swapchainExtent;
-@@ -888,7 +902,7 @@
+@@ -888,7 +888,7 @@
          {
              sf::FileInputStream file;
  
@@ -917,7 +827,7 @@ exit
              {
                  vulkanAvailable = false;
                  return;
-@@ -916,7 +930,7 @@
+@@ -916,7 +916,7 @@
          {
              sf::FileInputStream file;
  
@@ -926,7 +836,7 @@ exit
              {
                  vulkanAvailable = false;
                  return;
-@@ -1751,7 +1765,7 @@
+@@ -1751,7 +1751,7 @@
          // Load the image data
          sf::Image imageData;
  
@@ -935,17 +845,8 @@ exit
          {
              vulkanAvailable = false;
              return;
-@@ -2495,7 +2509,7 @@
- 
-     bool vulkanAvailable;
- 
--    const unsigned int maxFramesInFlight;
-+    unsigned int maxFramesInFlight;
-     unsigned int currentFrame;
-     bool swapchainOutOfDate;
- 
---- SFML-2.6.1.orig/examples/window/CMakeLists.txt
-+++ SFML-2.6.1/examples/window/CMakeLists.txt
+--- SFML-2.6.2.orig/examples/window/CMakeLists.txt
++++ SFML-2.6.2/examples/window/CMakeLists.txt
 @@ -10,4 +10,12 @@
                   DEPENDS sfml-window)
  
@@ -960,8 +861,8 @@ exit
 +endif()
 +target_include_directories(window SYSTEM PRIVATE ${GLAD_GL_INCLUDE_PATH})
 +endif()
---- SFML-2.6.1.orig/examples/window/Window.cpp
-+++ SFML-2.6.1/examples/window/Window.cpp
+--- SFML-2.6.2.orig/examples/window/Window.cpp
++++ SFML-2.6.2/examples/window/Window.cpp
 @@ -4,7 +4,7 @@
  #include <SFML/Window.hpp>
  
@@ -971,8 +872,8 @@ exit
  
  #ifdef SFML_SYSTEM_IOS
  #include <SFML/Main.hpp>
---- SFML-2.6.1.orig/extlibs/headers/glad/include/glad/egl.h
-+++ SFML-2.6.1/extlibs/headers/glad/include/glad/egl.h
+--- SFML-2.6.2.orig/extlibs/headers/glad/include/glad/egl.h
++++ SFML-2.6.2/extlibs/headers/glad/include/glad/egl.h
 @@ -25,11 +25,11 @@
   *
   */
@@ -1777,8 +1678,8 @@ exit
 -#endif /* SF_GLAD_EGL_IMPLEMENTATION */
 +#endif /* GLAD_EGL_IMPLEMENTATION */
  
---- SFML-2.6.1.orig/extlibs/headers/glad/include/glad/gl.h
-+++ SFML-2.6.1/extlibs/headers/glad/include/glad/gl.h
+--- SFML-2.6.2.orig/extlibs/headers/glad/include/glad/gl.h
++++ SFML-2.6.2/extlibs/headers/glad/include/glad/gl.h
 @@ -26,8 +26,8 @@
   *
   */
@@ -17120,8 +17021,8 @@ exit
 -#endif /* SF_GLAD_GL_IMPLEMENTATION */
 +#endif /* GLAD_GL_IMPLEMENTATION */
  
---- SFML-2.6.1.orig/extlibs/headers/glad/include/glad/glx.h
-+++ SFML-2.6.1/extlibs/headers/glad/include/glad/glx.h
+--- SFML-2.6.2.orig/extlibs/headers/glad/include/glad/glx.h
++++ SFML-2.6.2/extlibs/headers/glad/include/glad/glx.h
 @@ -25,8 +25,8 @@
   *
   */
@@ -17749,8 +17650,8 @@ exit
 -#endif /* SF_GLAD_GLX_IMPLEMENTATION */
 +#endif /* GLAD_GLX_IMPLEMENTATION */
  
---- SFML-2.6.1.orig/extlibs/headers/glad/include/glad/wgl.h
-+++ SFML-2.6.1/extlibs/headers/glad/include/glad/wgl.h
+--- SFML-2.6.2.orig/extlibs/headers/glad/include/glad/wgl.h
++++ SFML-2.6.2/extlibs/headers/glad/include/glad/wgl.h
 @@ -25,13 +25,13 @@
   *
   */
@@ -18077,10 +17978,10 @@ exit
 -#endif /* SF_GLAD_WGL_IMPLEMENTATION */
 +#endif /* GLAD_WGL_IMPLEMENTATION */
  
---- SFML-2.6.1.orig/src/SFML/Audio/CMakeLists.txt
-+++ SFML-2.6.1/src/SFML/Audio/CMakeLists.txt
+--- SFML-2.6.2.orig/src/SFML/Audio/CMakeLists.txt
++++ SFML-2.6.2/src/SFML/Audio/CMakeLists.txt
 @@ -84,7 +84,15 @@
- target_link_libraries(sfml-audio PRIVATE OpenAL)
+ target_link_libraries(sfml-audio PRIVATE OpenAL::OpenAL)
  
  # minimp3 sources
 +if(IS_DIRECTORY "${PROJECT_SOURCE_DIR}/extlibs/headers/minimp3")
@@ -18095,8 +17996,8 @@ exit
  
  if(SFML_OS_ANDROID)
      target_link_libraries(sfml-audio PRIVATE android OpenSLES)
---- SFML-2.6.1.orig/src/SFML/Audio/SoundFileReaderMp3.cpp
-+++ SFML-2.6.1/src/SFML/Audio/SoundFileReaderMp3.cpp
+--- SFML-2.6.2.orig/src/SFML/Audio/SoundFileReaderMp3.cpp
++++ SFML-2.6.2/src/SFML/Audio/SoundFileReaderMp3.cpp
 @@ -39,8 +39,6 @@
  #pragma GCC diagnostic ignored "-Wstringop-overflow"
  #endif
@@ -18106,8 +18007,8 @@ exit
  #ifdef _MSC_VER
  #pragma warning(pop)
  #else
---- SFML-2.6.1.orig/src/SFML/Graphics/CMakeLists.txt
-+++ SFML-2.6.1/src/SFML/Graphics/CMakeLists.txt
+--- SFML-2.6.2.orig/src/SFML/Graphics/CMakeLists.txt
++++ SFML-2.6.2/src/SFML/Graphics/CMakeLists.txt
 @@ -93,10 +93,26 @@
  target_link_libraries(sfml-graphics PUBLIC sfml-window)
  
@@ -18135,8 +18036,8 @@ exit
  
  # let CMake know about our additional graphics libraries paths
  if(SFML_OS_WINDOWS)
---- SFML-2.6.1.orig/src/SFML/Graphics/GLExtensions.cpp
-+++ SFML-2.6.1/src/SFML/Graphics/GLExtensions.cpp
+--- SFML-2.6.2.orig/src/SFML/Graphics/GLExtensions.cpp
++++ SFML-2.6.2/src/SFML/Graphics/GLExtensions.cpp
 @@ -33,7 +33,7 @@
  // entities during unity builds of SFML.
  #ifndef SF_GLAD_GL_IMPLEMENTATION_INCLUDED
@@ -18146,8 +18047,8 @@ exit
  #include <glad/gl.h>
  #endif
  
---- SFML-2.6.1.orig/src/SFML/Graphics/GLExtensions.hpp
-+++ SFML-2.6.1/src/SFML/Graphics/GLExtensions.hpp
+--- SFML-2.6.2.orig/src/SFML/Graphics/GLExtensions.hpp
++++ SFML-2.6.2/src/SFML/Graphics/GLExtensions.hpp
 @@ -71,7 +71,7 @@
      // The following extensions are required.
  
@@ -18363,9 +18264,26 @@ exit
  
  namespace sf
  {
---- SFML-2.6.1.orig/src/SFML/Window/CMakeLists.txt
-+++ SFML-2.6.1/src/SFML/Window/CMakeLists.txt
-@@ -298,7 +298,15 @@
+--- SFML-2.6.2.orig/src/SFML/Window/CMakeLists.txt
++++ SFML-2.6.2/src/SFML/Window/CMakeLists.txt
+@@ -93,6 +93,7 @@
+ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
+     if(SFML_USE_DRM)
+         add_definitions(-DSFML_USE_DRM)
++        add_definitions(-D__GBM__)
+         set(PLATFORM_SRC
+             ${SRCROOT}/EGLCheck.cpp
+             ${SRCROOT}/EGLCheck.hpp
+@@ -289,7 +290,7 @@
+         sfml_find_package(DRM INCLUDE "DRM_INCLUDE_DIR" LINK "DRM_LIBRARY")
+         target_include_directories(sfml-window PRIVATE ${DRM_INCLUDE_DIR}/libdrm)
+         sfml_find_package(GBM INCLUDE "GBM_INCLUDE_DIR" LINK "GBM_LIBRARY")
+-        target_link_libraries(sfml-window PRIVATE drm gbm EGL)
++        target_link_libraries(sfml-window PRIVATE drm GBM)
+     else()
+         sfml_find_package(X11 INCLUDE "X11_INCLUDE_DIR" LINK "X11_X11_LIB" "X11_Xrandr_LIB" "X11_Xcursor_LIB")
+         target_link_libraries(sfml-window PRIVATE X11)
+@@ -298,7 +299,15 @@
  target_link_libraries(sfml-window PUBLIC sfml-system)
  
  # glad sources
@@ -18381,7 +18299,7 @@ exit
  
  # When static linking on macOS, we need to add this flag for objective C to work
  if ((NOT BUILD_SHARED_LIBS) AND SFML_OS_MACOSX)
-@@ -306,7 +314,15 @@
+@@ -306,7 +315,15 @@
  endif()
  
  # Vulkan headers
@@ -18398,115 +18316,29 @@ exit
  
  # CMake 3.11 and later prefer to choose GLVND, but we choose legacy OpenGL for backward compability
  # (unless the OpenGL_GL_PREFERENCE was explicitly set)
---- SFML-2.6.1.orig/src/SFML/Window/Unix/GlxContext.cpp
-+++ SFML-2.6.1/src/SFML/Window/Unix/GlxContext.cpp
-@@ -37,7 +37,7 @@
+--- SFML-2.6.2.orig/src/SFML/Window/DRM/DRMContext.cpp
++++ SFML-2.6.2/src/SFML/Window/DRM/DRMContext.cpp
+@@ -42,7 +42,7 @@
  // entities during unity builds of SFML.
- #ifndef SF_GLAD_GLX_IMPLEMENTATION_INCLUDED
- #define SF_GLAD_GLX_IMPLEMENTATION_INCLUDED
--#define SF_GLAD_GLX_IMPLEMENTATION
-+#define GLAD_GLX_IMPLEMENTATION
- #include <glad/glx.h>
+ #ifndef SF_GLAD_EGL_IMPLEMENTATION_INCLUDED
+ #define SF_GLAD_EGL_IMPLEMENTATION_INCLUDED
+-#define SF_GLAD_EGL_IMPLEMENTATION
++#define GLAD_EGL_IMPLEMENTATION
+ #include <glad/egl.h>
  #endif
  
-@@ -293,29 +293,18 @@
-     // We use the direct pointer to the MESA entry point instead of the alias
-     // because glx.h declares the entry point as an external function
-     // which would require us to link in an additional library
--    if (SF_GLAD_GLX_EXT_swap_control)
-+    if (GLAD_GLX_EXT_swap_control)
-     {
-         glXSwapIntervalEXT(m_display, m_pbuffer ? m_pbuffer : m_window, enabled ? 1 : 0);
-     }
--    else if (SF_GLAD_GLX_MESA_swap_control)
-+    else if (GLAD_GLX_MESA_swap_control)
-     {
-         result = glXSwapIntervalMESA(enabled ? 1 : 0);
-     }
--    else if (SF_GLAD_GLX_SGI_swap_control)
-+    else if (GLAD_GLX_SGI_swap_control)
-     {
-         result = glXSwapIntervalSGI(enabled ? 1 : 0);
-     }
--    else
--    {
--        static bool warned = false;
+@@ -766,9 +766,6 @@
+     if (m_scanOut)
+         flags |= GBM_BO_USE_SCANOUT;
+ 
+-    if (!gbm_device_is_format_supported(gbmDevice, fmt, flags))
+-        err() << "Warning: GBM surface format not supported." << std::endl;
 -
--        if (!warned)
--        {
--            err() << "Setting vertical sync not supported" << std::endl;
--
--            warned = true;
--        }
--    }
- 
-     if (result != 0)
-         err() << "Setting vertical sync failed" << std::endl;
-@@ -359,7 +348,7 @@
-             glXGetConfig(display, &visuals[i], GLX_DEPTH_SIZE,   &depth);
-             glXGetConfig(display, &visuals[i], GLX_STENCIL_SIZE, &stencil);
- 
--            if (SF_GLAD_GLX_ARB_multisample)
-+            if (GLAD_GLX_ARB_multisample)
-             {
-                 glXGetConfig(display, &visuals[i], GLX_SAMPLE_BUFFERS_ARB, &multiSampling);
-                 glXGetConfig(display, &visuals[i], GLX_SAMPLES_ARB,        &samples);
-@@ -370,7 +359,7 @@
-                 samples = 0;
-             }
- 
--            if (SF_GLAD_GLX_EXT_framebuffer_sRGB || SF_GLAD_GLX_ARB_framebuffer_sRGB)
-+            if (GLAD_GLX_EXT_framebuffer_sRGB || GLAD_GLX_ARB_framebuffer_sRGB)
-             {
-                 glXGetConfig(display, &visuals[i], GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &sRgb);
-             }
-@@ -417,7 +406,7 @@
-     glXGetConfig(m_display, visualInfo, GLX_DEPTH_SIZE,   &depth);
-     glXGetConfig(m_display, visualInfo, GLX_STENCIL_SIZE, &stencil);
- 
--    if (SF_GLAD_GLX_ARB_multisample)
-+    if (GLAD_GLX_ARB_multisample)
-     {
-         glXGetConfig(m_display, visualInfo, GLX_SAMPLE_BUFFERS_ARB, &multiSampling);
-         glXGetConfig(m_display, visualInfo, GLX_SAMPLES_ARB,        &samples);
-@@ -428,7 +417,7 @@
-         samples = 0;
-     }
- 
--    if (SF_GLAD_GLX_EXT_framebuffer_sRGB || SF_GLAD_GLX_ARB_framebuffer_sRGB)
-+    if (GLAD_GLX_EXT_framebuffer_sRGB || GLAD_GLX_ARB_framebuffer_sRGB)
-     {
-         glXGetConfig(m_display, visualInfo, GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &sRgb);
-     }
-@@ -478,7 +467,7 @@
-     XVisualInfo visualInfo = selectBestVisual(m_display, bitsPerPixel, m_settings);
- 
-     // Check if the shared context already exists and pbuffers are supported
--    if (shared && SF_GLAD_GLX_SGIX_pbuffer)
-+    if (shared && GLAD_GLX_SGIX_pbuffer)
-     {
-         // There are no GLX versions prior to 1.0
-         int major = 0;
-@@ -641,7 +630,7 @@
-         err() << "Failed to query GLX version, limited to legacy context creation" << std::endl;
- 
-     // Check if glXCreateContextAttribsARB is available (requires GLX 1.3 or greater)
--    bool hasCreateContextArb = SF_GLAD_GLX_ARB_create_context && ((major > 1) || (minor >= 3));
-+    bool hasCreateContextArb = GLAD_GLX_ARB_create_context && ((major > 1) || (minor >= 3));
- 
-     // Create the OpenGL context -- first try using glXCreateContextAttribsARB
-     if (hasCreateContextArb)
-@@ -689,7 +678,7 @@
-             }
- 
-             // Check if setting the profile is supported
--            if (SF_GLAD_GLX_ARB_create_context_profile)
-+            if (GLAD_GLX_ARB_create_context_profile)
-             {
-                 int profile = (m_settings.attributeFlags & ContextSettings::Core) ? GLX_CONTEXT_CORE_PROFILE_BIT_ARB : GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-                 int debug = (m_settings.attributeFlags & ContextSettings::Debug) ? GLX_CONTEXT_DEBUG_BIT_ARB : 0;
---- SFML-2.6.1.orig/src/SFML/Window/Unix/VulkanImplX11.cpp
-+++ SFML-2.6.1/src/SFML/Window/Unix/VulkanImplX11.cpp
+     m_gbmSurface = gbm_surface_create(
+         gbmDevice,
+         width,
+--- SFML-2.6.2.orig/src/SFML/Window/Unix/VulkanImplX11.cpp
++++ SFML-2.6.2/src/SFML/Window/Unix/VulkanImplX11.cpp
 @@ -30,7 +30,7 @@
  #include <dlfcn.h>
  #define VK_USE_PLATFORM_XLIB_KHR
@@ -18516,8 +18348,8 @@ exit
  #include <string>
  #include <map>
  #include <cstring>
---- SFML-2.6.1.orig/src/SFML/Window/Win32/VulkanImplWin32.cpp
-+++ SFML-2.6.1/src/SFML/Window/Win32/VulkanImplWin32.cpp
+--- SFML-2.6.2.orig/src/SFML/Window/Win32/VulkanImplWin32.cpp
++++ SFML-2.6.2/src/SFML/Window/Win32/VulkanImplWin32.cpp
 @@ -32,7 +32,7 @@
  #include <windows.h>
  #define VK_USE_PLATFORM_WIN32_KHR
@@ -18527,8 +18359,8 @@ exit
  #include <string>
  #include <map>
  #include <cstring>
---- SFML-2.6.1.orig/test/CMakeLists.txt
-+++ SFML-2.6.1/test/CMakeLists.txt
+--- SFML-2.6.2.orig/test/CMakeLists.txt
++++ SFML-2.6.2/test/CMakeLists.txt
 @@ -1,7 +1,15 @@
  set(SRCROOT "${PROJECT_SOURCE_DIR}/test/src")
  
