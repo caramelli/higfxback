@@ -58,6 +58,11 @@ elif test $GL && PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl-bu
   REQUIRES="$REQUIRES sdl-build"
 fi
 
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sfml-build; then
+  SFML=1
+  REQUIRES="$REQUIRES sfml-build"
+fi
+
 # configure
 PKG_CONFIG_PATH=/x11/lib/pkgconfig meson setup $EGL_OPENGL $VULKAN --prefix=/x11 build
 
@@ -67,10 +72,10 @@ meson compile -C build
 # install
 install -d $DESTDIR/x11/bin
 test $GL && install build/yagears2 $DESTDIR/x11/bin
-test $GL && test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SDL2 && install build/yagears2-gui $DESTDIR/x11/bin
+test $GL && test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SDL2 || test $SFML && install build/yagears2-gui $DESTDIR/x11/bin
 test $GLUT && install build/yagears2-mosaic $DESTDIR/x11/bin
 test $VK && install build/yagears2-vk $DESTDIR/x11/bin
-test $VK && test $GLFW || test $SDL2 && install build/yagears2-vk-gui $DESTDIR/x11/bin
+test $VK && test $GLFW || test $SDL2 || test $SFML && install build/yagears2-vk-gui $DESTDIR/x11/bin
 
 # build.pc
 install -d $DESTDIR/x11/share/pkgconfig
@@ -83,10 +88,10 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /x11/bin/yagears2 \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
-test $GL && test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SDL2 && echo /x11/bin/yagears2-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $GL && test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SDL2 || test $SFML && echo /x11/bin/yagears2-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 test $GLUT && echo /x11/bin/yagears2-mosaic \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 test $VK && echo /x11/bin/yagears2-vk \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
-test $VK && test $GLFW || test $SDL2 && echo /x11/bin/yagears2-vk-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $VK && test $GLFW || test $SDL2 || test $SFML && echo /x11/bin/yagears2-vk-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 
 exit

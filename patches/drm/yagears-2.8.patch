@@ -24,6 +24,11 @@ if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists sdl2-build; then
   REQUIRES="$REQUIRES sdl2-build"
 fi
 
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists sfml-build; then
+  SFML=1
+  REQUIRES="$REQUIRES sfml-build"
+fi
+
 # configure
 PKG_CONFIG_PATH=/drm/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/drm build
 
@@ -33,7 +38,7 @@ meson compile -C build
 # install
 install -d $DESTDIR/drm/bin
 test $GL && install build/yagears2 $DESTDIR/drm/bin
-test $GL && test $SDL2 && install build/yagears2-gui $DESTDIR/drm/bin
+test $GL && test $SDL2 || test $SFML && install build/yagears2-gui $DESTDIR/drm/bin
 test $VK && install build/yagears2-vk $DESTDIR/drm/bin
 test $VK && test $SDL2 && install build/yagears2-vk-gui $DESTDIR/drm/bin
 
@@ -48,7 +53,7 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /drm/bin/yagears2 \\ >> $DESTDIR/drm/share/pkgconfig/yagears2-build.pc
-test $GL && test $SDL2 && echo /drm/bin/yagears2-gui \\ >> $DESTDIR/drm/share/pkgconfig/yagears2-build.pc
+test $GL && test $SDL2 || test $SFML && echo /drm/bin/yagears2-gui \\ >> $DESTDIR/drm/share/pkgconfig/yagears2-build.pc
 test $VK && echo /drm/bin/yagears2-vk \\ >> $DESTDIR/drm/share/pkgconfig/yagears2-build.pc
 test $VK && test $SDL2 && echo /drm/bin/yagears2-vk-gui \\ >> $DESTDIR/drm/share/pkgconfig/yagears2-build.pc
 sed -i '$ s/ \\//' $DESTDIR/drm/share/pkgconfig/yagears2-build.pc

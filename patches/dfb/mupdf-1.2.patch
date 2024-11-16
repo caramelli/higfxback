@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -rf thirdparty
-sh ./Configure --disable-static --disable-x11 --prefix /dfb
+sh ./Configure --disable-static --prefix /dfb
 
 # build
 make
@@ -48,7 +48,7 @@ EOF
 exit
 --- mupdf-1.2.orig/Configure
 +++ mupdf-1.2/Configure
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,35 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -65,9 +65,6 @@ exit
 +    --disable-static)
 +      NOSTATIC=yes
 +    ;;
-+    --disable-x11)
-+      NOX11=yes
-+    ;;
 +    *)
 +      echo Unknown option \"$1\".
 +      exit 1
@@ -80,28 +77,16 @@ exit
 +
 +sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makerules
 +
-+if test -z $NOX11; then
-+  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n {$0="X11_LIBS := -lX11 -lXext"} 1' Makerules
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG ?=/s#=.*#= pkg-config#" Makerules
 +else
-+  awk -i inplace '/ifeq "\$\(OS\)" "Linux"/{n=NR+3} NR==n {$0="NOX11=yes"} 1' Makerules
++  sed -i "/^PKG_CONFIG ?=/s#=.*#= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config#" Makerules
 +fi
 +
 +sed -i "/^prefix=/s#=.*#=$PREFIX#" debian/mupdf.pc
 --- mupdf-1.2.orig/Makefile
 +++ mupdf-1.2/Makefile
-@@ -19,6 +19,11 @@
- include Makerules
- include Makethird
- 
-+ifeq "$(NOX11)" ""
-+CFLAGS += -I$(prefix)/include
-+LDFLAGS += -L$(prefix)/lib
-+endif
-+
- THIRD_LIBS := $(FREETYPE_LIB)
- THIRD_LIBS += $(JBIG2DEC_LIB)
- THIRD_LIBS += $(JPEG_LIB)
-@@ -37,7 +42,7 @@
+@@ -37,7 +37,7 @@
  CC_CMD = $(QUIET_CC) $(CC) $(CFLAGS) -o $@ -c $<
  CXX_CMD = $(QUIET_CXX) $(CXX) $(CFLAGS) -o $@ -c $<
  AR_CMD = $(QUIET_AR) $(AR) cr $@ $^
@@ -110,7 +95,7 @@ exit
  LINK_V8_CMD = $(QUIET_LINK) $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS_V8)
  MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
  
-@@ -55,6 +60,9 @@
+@@ -55,6 +55,9 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
@@ -120,7 +105,16 @@ exit
  $(OUT)/% : $(OUT)/%.o
  	$(LINK_CMD)
  
-@@ -79,7 +87,11 @@
+@@ -71,7 +74,7 @@
+ $(OUT)/%.o : cbz/%.c $(MUCBZ_HDR) | $(OUT)
+ 	$(CC_CMD)
+ $(OUT)/%.o : apps/%.c fitz/fitz.h pdf/mupdf.h xps/muxps.h cbz/mucbz.h | $(OUT)
+-	$(CC_CMD)
++	$(CC_CMD) $(X11_CFLAGS)
+ $(OUT)/%.o : scripts/%.c | $(OUT)
+ 	$(CC_CMD)
+ 
+@@ -79,7 +82,11 @@
  
  # --- Fitz, MuPDF, MuXPS and MuCBZ library ---
  
@@ -132,7 +126,7 @@ exit
  FITZ_V8_LIB := $(OUT)/libfitzv8.a
  
  FITZ_SRC := $(notdir $(wildcard fitz/*.c draw/*.c))
-@@ -162,16 +174,31 @@
+@@ -162,16 +169,31 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
@@ -167,7 +161,7 @@ exit
  
  MUVIEW_V8 := $(OUT)/mupdf-v8
  $(MUVIEW_V8) : $(FITZ_V8_LIB) $(THIRD_LIBS)
-@@ -211,8 +238,11 @@
+@@ -211,8 +233,11 @@
  install: $(FITZ_LIB) $(MUVIEW) $(MUDRAW) $(MUTOOL)
  	install -d $(DESTDIR)$(bindir) $(DESTDIR)$(libdir) $(DESTDIR)$(incdir) $(DESTDIR)$(mandir)/man1
  	install $(FITZ_LIB) $(DESTDIR)$(libdir)
@@ -182,11 +176,13 @@ exit
  # --- Clean and Default ---
 --- mupdf-1.2.orig/Makerules
 +++ mupdf-1.2/Makerules
-@@ -3,7 +3,12 @@
+@@ -3,7 +3,14 @@
  OS ?= $(shell uname)
  OS := $(OS:MINGW%=MINGW)
  
 +NOSTATIC ?= 
++
++PKG_CONFIG ?= pkg-config
 +
  CFLAGS += -Wall
 +ifeq "$(NOSTATIC)" "yes"
@@ -195,6 +191,36 @@ exit
  
  ifeq "$(build)" "debug"
  CFLAGS += -pipe -g -DDEBUG
+@@ -24,19 +31,24 @@
+ endif
+ 
+ ifeq "$(OS)" "Linux"
+-SYS_FREETYPE_INC := `pkg-config --cflags freetype2`
+-SYS_OPENJPEG_INC := `pkg-config --cflags libopenjpeg`
+-X11_LIBS := -lX11 -lXext
++SYS_FREETYPE_INC := `$(PKG_CONFIG) --cflags freetype2`
++SYS_OPENJPEG_INC := `$(PKG_CONFIG) --cflags libopenjpeg`
++ifeq "$(shell $(PKG_CONFIG) --exists x11 xext && echo yes)" "yes"
++X11_CFLAGS := `$(PKG_CONFIG) --cflags x11 xext)`
++X11_LIBS := `$(PKG_CONFIG) --libs x11 xext)`
++else
++NOX11=yes
++endif
+ endif
+ 
+ ifeq "$(OS)" "FreeBSD"
+-SYS_FREETYPE_INC := `pkg-config --cflags freetype2`
++SYS_FREETYPE_INC := `$(PKG_CONFIG) --cflags freetype2`
+ LDFLAGS += -L/usr/local/lib
+ X11_LIBS := -lX11 -lXext
+ endif
+ 
+ ifeq "$(OS)" "SunOS"
+-SYS_FREETYPE_INC := `pkg-config --cflags freetype2`
++SYS_FREETYPE_INC := `$(PKG_CONFIG) --cflags freetype2`
+ LDFLAGS += -L/usr/local/lib
+ X11_LIBS := -lX11 -lXext
+ endif
 --- mupdf-1.2.orig/debian/mupdf.pc
 +++ mupdf-1.2/debian/mupdf.pc
 @@ -1,4 +1,4 @@

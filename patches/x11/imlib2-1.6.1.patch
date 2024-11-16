@@ -1,0 +1,163 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build jpeg-build libpng-build libwebp-build libxext-build tiff-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_bumpmap $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_colorspace $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_conv $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_grab $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_poly $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_show $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_test $DESTDIR/x11/bin
+install src/bin/.libs/imlib2_view $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include
+install -m 644 src/lib/Imlib2.h $DESTDIR/x11/include
+install -d $DESTDIR/x11/lib
+install src/lib/.libs/libImlib2.so.1.* $DESTDIR/x11/lib/libImlib2.so.1
+ln -sf libImlib2.so.1 $DESTDIR/x11/lib/libImlib2.so
+install -d $DESTDIR/x11/lib/imlib2/filters
+install src/modules/filters/.libs/bumpmap.so $DESTDIR/x11/lib/imlib2/filters
+install -d $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/argb.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/bmp.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/bz2.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/ff.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/ico.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/jpeg.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/lbm.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/png.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/pnm.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/tga.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/tiff.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/webp.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/xpm.so $DESTDIR/x11/lib/imlib2/loaders
+install src/modules/loaders/.libs/zlib.so $DESTDIR/x11/lib/imlib2/loaders
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 imlib2.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/imlib2/data/fonts
+install -m 644 data/fonts/notepad.ttf $DESTDIR/x11/share/imlib2/data/fonts
+install -d $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/audio.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/bg.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/bulb.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/cal.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/calc.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/folder.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/globe.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/imlib2.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/lock.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/mail.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/menu.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/mush.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/paper.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/sh1.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/sh2.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/sh3.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/stop.png $DESTDIR/x11/share/imlib2/data/images
+install -m 644 data/images/tnt.png $DESTDIR/x11/share/imlib2/data/images
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/imlib2-build.pc << EOF
+Name: imlib2
+Version: 1.6.1
+Description: Image loading library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/Imlib2.h \\
+/x11/lib/libImlib2.so \\
+/x11/lib/pkgconfig/imlib2.pc
+
+exec=\\
+/x11/bin/imlib2_bumpmap \\
+/x11/bin/imlib2_colorspace \\
+/x11/bin/imlib2_conv \\
+/x11/bin/imlib2_grab \\
+/x11/bin/imlib2_poly \\
+/x11/bin/imlib2_show \\
+/x11/bin/imlib2_test \\
+/x11/bin/imlib2_view \\
+/x11/lib/libImlib2.so.1 \\
+/x11/lib/imlib2/filters/bumpmap.so \\
+/x11/lib/imlib2/loaders/argb.so \\
+/x11/lib/imlib2/loaders/bmp.so \\
+/x11/lib/imlib2/loaders/bz2.so \\
+/x11/lib/imlib2/loaders/ff.so \\
+/x11/lib/imlib2/loaders/ico.so \\
+/x11/lib/imlib2/loaders/jpeg.so \\
+/x11/lib/imlib2/loaders/lbm.so \\
+/x11/lib/imlib2/loaders/png.so \\
+/x11/lib/imlib2/loaders/pnm.so \\
+/x11/lib/imlib2/loaders/tga.so \\
+/x11/lib/imlib2/loaders/tiff.so \\
+/x11/lib/imlib2/loaders/webp.so \\
+/x11/lib/imlib2/loaders/xpm.so \\
+/x11/lib/imlib2/loaders/zlib.so \\
+/x11/share/imlib2/data/fonts/notepad.ttf \\
+/x11/share/imlib2/data/images/audio.png \\
+/x11/share/imlib2/data/images/bg.png \\
+/x11/share/imlib2/data/images/bulb.png \\
+/x11/share/imlib2/data/images/cal.png \\
+/x11/share/imlib2/data/images/calc.png \\
+/x11/share/imlib2/data/images/folder.png \\
+/x11/share/imlib2/data/images/globe.png \\
+/x11/share/imlib2/data/images/imlib2.png \\
+/x11/share/imlib2/data/images/lock.png \\
+/x11/share/imlib2/data/images/mail.png \\
+/x11/share/imlib2/data/images/menu.png \\
+/x11/share/imlib2/data/images/mush.png \\
+/x11/share/imlib2/data/images/paper.png \\
+/x11/share/imlib2/data/images/sh1.png \\
+/x11/share/imlib2/data/images/sh2.png \\
+/x11/share/imlib2/data/images/sh3.png \\
+/x11/share/imlib2/data/images/stop.png \\
+/x11/share/imlib2/data/images/tnt.png
+EOF
+
+exit
+--- imlib2-1.6.1.orig/src/lib/Makefile.am
++++ imlib2-1.6.1/src/lib/Makefile.am
+@@ -86,7 +86,7 @@
+ 
+ MY_LIBS = $(FREETYPE_LIBS) $(DLOPEN_LIBS) -lm
+ if BUILD_X11
+-MY_LIBS += -lXext -lX11 @X_SHM_FD_LIBS@
++MY_LIBS += $(X_LIBS) -lXext -lX11 @X_SHM_FD_LIBS@
+ endif
+ 
+ if BUILD_MMX
+--- imlib2-1.6.1.orig/src/modules/filters/Makefile.am
++++ imlib2-1.6.1/src/modules/filters/Makefile.am
+@@ -1,7 +1,7 @@
+ MAINTAINERCLEANFILES = Makefile.in
+ 
+ AM_CFLAGS            = $(CFLAGS_WARNINGS) $(CFLAGS_VISIBILITY)
+-AM_CPPFLAGS          = -I$(top_builddir) -I$(top_srcdir)/src/lib
++AM_CPPFLAGS          = -I$(top_builddir) -I$(top_srcdir)/src/lib $(X_CFLAGS)
+ 
+ pkgdir                = $(libdir)/imlib2/filters
+ pkg_LTLIBRARIES       = testfilter.la bumpmap.la colormod.la
+--- imlib2-1.6.1.orig/src/modules/loaders/Makefile.am
++++ imlib2-1.6.1/src/modules/loaders/Makefile.am
+@@ -1,7 +1,7 @@
+ MAINTAINERCLEANFILES = Makefile.in
+ 
+ AM_CFLAGS            = $(CFLAGS_WARNINGS) $(CFLAGS_VISIBILITY)
+-AM_CPPFLAGS          = -I$(top_builddir) -I$(top_srcdir)/src/lib
++AM_CPPFLAGS          = -I$(top_builddir) -I$(top_srcdir)/src/lib $(X_CFLAGS)
+ 
+ pkgdir               = $(libdir)/imlib2/loaders
+ 

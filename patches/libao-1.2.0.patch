@@ -1,0 +1,212 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists alsa-lib-build; then
+  ALSA=1
+  REQUIRES="$REQUIRES alsa-lib-build"
+fi
+
+# configure (ac-2.69; am-1.13; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/ao
+install -m 644 include/ao/ao.h $DESTDIR/include/ao
+install -m 644 include/ao/os_types.h $DESTDIR/include/ao
+install -d $DESTDIR/lib
+install src/.libs/libao.so.4.* $DESTDIR/lib/libao.so.4
+ln -sf libao.so.4 $DESTDIR/lib/libao.so
+install -d $DESTDIR/lib/ao/plugins-4
+test $ALSA && install src/plugins/alsa/.libs/libalsa.so $DESTDIR/lib/ao/plugins-4
+install src/plugins/oss/.libs/liboss.so $DESTDIR/lib/ao/plugins-4
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 ao.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libao-build.pc << EOF
+Name: libao
+Version: 1.2.0
+Description: audio output library
+Requires: $REQUIRES
+
+devel=\\
+/include/ao/ao.h \\
+/include/ao/os_types.h \\
+/lib/libao.so \\
+/lib/pkgconfig/ao.pc
+
+exec=\\
+/lib/libao.so.4 \\
+EOF
+test $ALSA && echo /lib/ao/plugins-4/libalsa.so \\ >> $DESTDIR/share/pkgconfig/libao-build.pc
+cat >> $DESTDIR/share/pkgconfig/libao-build.pc << EOF
+/lib/ao/plugins-4/liboss.so
+EOF
+
+exit
+--- libao-1.2.0.orig/configure.ac
++++ libao-1.2.0/configure.ac
+@@ -1,12 +1,12 @@
+ dnl Process this file with autoconf to produce a configure script.
+ 
+ AC_INIT([libao],[1.2.0],[monty@xiph.org])
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([gnu 1.6])
+ 
+ AM_MAINTAINER_MODE
+ 
+-dnl $$$ben: Is that neccessary ? And why ?
+-AM_DISABLE_STATIC
++LT_INIT([disable-static])
+ 
+ dnl Library versioning
+ LIB_CURRENT=5
+@@ -33,7 +33,6 @@
+ AC_PROG_CC
+ AC_LIBTOOL_WIN32_DLL
+ AC_LIBTOOL_DLOPEN
+-AM_PROG_LIBTOOL
+ 
+ dnl ====================================
+ dnl Check dlopen 
+--- libao-1.2.0.orig/src/Makefile.am
++++ libao-1.2.0/src/Makefile.am
+@@ -3,7 +3,7 @@
+ AUTOMAKE_OPTIONS = foreign
+ SUBDIRS = . plugins
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include -I$(top_srcdir)/include/ao -DAO_PLUGIN_PATH=\"@plugindir@\"
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include -I$(top_srcdir)/include/ao -DAO_PLUGIN_PATH=\"@plugindir@\"
+ 
+ lib_LTLIBRARIES = libao.la
+ 
+--- libao-1.2.0.orig/src/plugins/alsa/Makefile.am
++++ libao-1.2.0/src/plugins/alsa/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(alsaltlibs)
+--- libao-1.2.0.orig/src/plugins/arts/Makefile.am
++++ libao-1.2.0/src/plugins/arts/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @ARTS_CFLAGS@
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @ARTS_CFLAGS@
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(artsltlibs)
+--- libao-1.2.0.orig/src/plugins/esd/Makefile.am
++++ libao-1.2.0/src/plugins/esd/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @ESD_CFLAGS@
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @ESD_CFLAGS@
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(esdltlibs)
+--- libao-1.2.0.orig/src/plugins/irix/Makefile.am
++++ libao-1.2.0/src/plugins/irix/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(irixltlibs)
+--- libao-1.2.0.orig/src/plugins/macosx/Makefile.am
++++ libao-1.2.0/src/plugins/macosx/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(macosxltlibs)
+--- libao-1.2.0.orig/src/plugins/nas/Makefile.am
++++ libao-1.2.0/src/plugins/nas/Makefile.am
+@@ -16,7 +16,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @NAS_CFLAGS@
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include @NAS_CFLAGS@
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(nasltlibs)
+--- libao-1.2.0.orig/src/plugins/oss/Makefile.am
++++ libao-1.2.0/src/plugins/oss/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(ossltlibs)
+--- libao-1.2.0.orig/src/plugins/pulse/Makefile.am
++++ libao-1.2.0/src/plugins/pulse/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(pulseltlibs)
+--- libao-1.2.0.orig/src/plugins/roar/Makefile.am
++++ libao-1.2.0/src/plugins/roar/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(roarltlibs)
+--- libao-1.2.0.orig/src/plugins/sndio/Makefile.am
++++ libao-1.2.0/src/plugins/sndio/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(sndioltlibs)
+--- libao-1.2.0.orig/src/plugins/sun/Makefile.am
++++ libao-1.2.0/src/plugins/sun/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ endif
+ 
+-INCLUDES = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include/ao -I$(top_srcdir)/include
+ 
+ libdir = $(plugindir)
+ lib_LTLIBRARIES = $(sunltlibs)

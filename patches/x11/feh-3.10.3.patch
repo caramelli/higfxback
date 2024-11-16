@@ -1,0 +1,114 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="imlib2-build make-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists file-build && REQUIRES="$REQUIRES file-build"
+pkg-config --exists libcurl-build && REQUIRES="$REQUIRES libcurl-build"
+pkg-config --exists libexif-build && REQUIRES="$REQUIRES libexif-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
+
+# configure
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --prefix /x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install src/feh $DESTDIR/x11/bin
+install -d $DESTDIR/x11/share/feh/fonts
+install -m 644 share/fonts/yudit.ttf $DESTDIR/x11/share/feh/fonts
+install -d $DESTDIR/x11/share/feh/images
+install -m 644 share/images/menubg_default.png $DESTDIR/x11/share/feh/images
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/feh-build.pc << EOF
+Name: feh
+Version: 3.10.3
+Description: Imlib2-based image viewer
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/feh \\
+/x11/share/feh/fonts/yudit.ttf \\
+/x11/share/feh/images/menubg_default.png
+EOF
+
+exit
+--- feh-3.10.3.orig/Configure
++++ feh-3.10.3/Configure
+@@ -0,0 +1,28 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" config.mk
++
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG ?=/s#=.*#= pkg-config#" config.mk
++else
++  sed -i "/^PKG_CONFIG ?=/s#=.*#= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config#" config.mk
++fi
+--- feh-3.10.3.orig/config.mk
++++ feh-3.10.3/config.mk
+@@ -1,15 +1,17 @@
+ PACKAGE ?= feh
+ VERSION ?= ${shell git describe --dirty}
+ 
++PKG_CONFIG ?= pkg-config
++
+ app ?= 0
+-curl ?= 1
++curl ?= ${shell $(PKG_CONFIG) --exists libcurl && echo 1 || echo 0}
+ debug ?= 0
+-exif ?= 0
++exif ?= ${shell $(PKG_CONFIG) --exists libexif && echo 1 || echo 0}
+ help ?= 0
+-magic ?= 0
++magic ?= ${shell $(PKG_CONFIG) --exists libmagic && echo 1 || echo 0}
+ mkstemps ?= 1
+ verscmp ?= 1
+-xinerama ?= 1
++xinerama ?= ${shell $(PKG_CONFIG) --exists xinerama && echo 1 || echo 0}
+ 
+ # Prefix for all installed files
+ PREFIX ?= /usr/local
+@@ -36,12 +38,15 @@
+ scalable_icon_dir = ${icon_dir}/scalable/apps
+ 
+ # default CFLAGS
+-CFLAGS ?= -g -O2
++CFLAGS ?= ${shell $(PKG_CONFIG) --cflags x11} -g -O2
+ CFLAGS += -Wall -Wextra -pedantic
+ 
+ # Settings for glibc >= 2.19 - may need to be adjusted for other systems
+ CFLAGS += -std=c11 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DARWIN_C_SOURCE
+ 
++# default LDLIBS
++LDLIBS ?= ${shell $(PKG_CONFIG) --libs-only-L x11} -Wl,-rpath,$(PREFIX)/lib
++
+ ifeq (${curl},1)
+ 	CFLAGS += -DHAVE_LIBCURL
+ 	LDLIBS += -lcurl

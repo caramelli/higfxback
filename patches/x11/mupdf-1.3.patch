@@ -9,7 +9,7 @@ pkg-config --exists openssl-build && REQUIRES="$REQUIRES openssl-build"
 
 # configure
 rm -rf thirdparty
-sh ./Configure --disable-static --with-x11-include /x11/include --with-x11-lib /x11/lib --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-static --prefix /x11
 
 # build
 make
@@ -135,13 +135,10 @@ EOF
 exit
 --- mupdf-1.3.orig/Configure
 +++ mupdf-1.3/Configure
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,35 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
-+
-+SYS_X11_CFLAGS="\$(shell pkg-config --cflags x11 xext 2> /dev/null)"
-+SYS_X11_LIBS="\$(shell pkg-config --libs x11 xext 2> /dev/null)"
 +
 +while : ; do
 +  case "$1" in
@@ -155,14 +152,6 @@ exit
 +    --disable-static)
 +      NOSTATIC=yes
 +    ;;
-+    --with-x11-include)
-+      SYS_X11_CFLAGS=-I$2
-+      shift
-+    ;;
-+    --with-x11-lib)
-+      SYS_X11_LIBS="-L$2 -lX11 -lXext"
-+      shift
-+    ;;
 +    *)
 +      echo Unknown option \"$1\".
 +      exit 1
@@ -175,8 +164,11 @@ exit
 +
 +sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makerules
 +
-+sed -i "/^SYS_X11_CFLAGS ?=/s#=.*#= $SYS_X11_CFLAGS#" Makerules
-+sed -i "/^SYS_X11_LIBS ?=/s#=.*#= $SYS_X11_LIBS#" Makerules
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG ?=/s#=.*#= pkg-config#" Makerules
++else
++  sed -i "/^PKG_CONFIG ?=/s#=.*#= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config#" Makerules
++fi
 +
 +sed -i "/^prefix=/s#=.*#=$PREFIX#" platform/debian/mupdf.pc
 --- mupdf-1.3.orig/Makefile
@@ -310,11 +302,13 @@ exit
  	$(MAKE) V8_PRESENT=no
 --- mupdf-1.3.orig/Makerules
 +++ mupdf-1.3/Makerules
-@@ -4,7 +4,12 @@
+@@ -4,7 +4,14 @@
  OS := $(OS:MINGW%=MINGW)
  OS := $(OS:Windows_NT=MINGW)
  
 +NOSTATIC ?= 
++
++PKG_CONFIG ?= pkg-config
 +
  CFLAGS += -Wall
 +ifeq "$(NOSTATIC)" "yes"
@@ -323,28 +317,43 @@ exit
  
  ifeq "$(build)" "debug"
  CFLAGS += -pipe -g -DDEBUG
-@@ -55,15 +60,20 @@
- SYS_OPENSSL_LIBS = $(shell pkg-config --libs libcrypto)
+@@ -50,20 +57,30 @@
+ # Other Unixes use pkg-config for system libraries.
+ else
+ 
+-ifeq "$(shell pkg-config --exists libcrypto && echo yes)" "yes"
+-SYS_OPENSSL_CFLAGS = -DHAVE_OPENSSL $(shell pkg-config --cflags libcrypto)
+-SYS_OPENSSL_LIBS = $(shell pkg-config --libs libcrypto)
++ifeq "$(shell $(PKG_CONFIG) --exists libcrypto && echo yes)" "yes"
++SYS_OPENSSL_CFLAGS = -DHAVE_OPENSSL $(shell $(PKG_CONFIG) --cflags libcrypto)
++SYS_OPENSSL_LIBS = $(shell $(PKG_CONFIG) --libs libcrypto)
  endif
  
-+SYS_CURL_CFLAGS = $(shell pkg-config --cflags libcurl)
-+SYS_CURL_LIBS = $(shell pkg-config --libs libcurl)
++ifeq "$(shell $(PKG_CONFIG) --exists libcurl && echo yes)" "yes"
++SYS_CURL_CFLAGS = $(shell $(PKG_CONFIG) --cflags libcurl)
++SYS_CURL_LIBS = $(shell $(PKG_CONFIG) --libs libcurl)
  SYS_CURL_DEPS = -lpthread -lrt
++else
++NOCURL := yes
++endif
  
 -SYS_X11_CFLAGS = $(shell pkg-config --cflags x11 xext)
 -SYS_X11_LIBS = $(shell pkg-config --libs x11 xext)
-+SYS_X11_CFLAGS ?= $(shell pkg-config --cflags x11 xext 2> /dev/null)
-+SYS_X11_LIBS ?= $(shell pkg-config --libs x11 xext 2> /dev/null)
-+ifeq "$(SYS_X11_LIBS)" ""
-+NOX11 ?= yes
++ifeq "$(shell $(PKG_CONFIG) --exists x11 xext && echo yes)" "yes"
++SYS_X11_CFLAGS = $(shell $(PKG_CONFIG) --cflags x11 xext)
++SYS_X11_LIBS = $(shell $(PKG_CONFIG) --libs x11 xext)
++else
++NOX11 := yes
 +endif
  
- SYS_FREETYPE_CFLAGS = $(shell pkg-config --cflags freetype2)
- SYS_FREETYPE_LIBS = $(shell pkg-config --libs freetype2)
+-SYS_FREETYPE_CFLAGS = $(shell pkg-config --cflags freetype2)
+-SYS_FREETYPE_LIBS = $(shell pkg-config --libs freetype2)
 -SYS_OPENJPEG_CFLAGS = $(shell pkg-config --cflags libopenjpeg1)
 -SYS_OPENJPEG_LIBS = $(shell pkg-config --libs libopenjpeg1)
-+SYS_OPENJPEG_CFLAGS = $(shell pkg-config --cflags libopenjp2)
-+SYS_OPENJPEG_LIBS = $(shell pkg-config --libs libopenjp2)
++SYS_FREETYPE_CFLAGS = $(shell $(PKG_CONFIG) --cflags freetype2)
++SYS_FREETYPE_LIBS = $(shell $(PKG_CONFIG) --libs freetype2)
++SYS_OPENJPEG_CFLAGS = $(shell $(PKG_CONFIG) --cflags libopenjp2)
++SYS_OPENJPEG_LIBS = $(shell $(PKG_CONFIG) --libs libopenjp2)
  SYS_JBIG2DEC_LIBS = -ljbig2dec
  SYS_JPEG_LIBS = -ljpeg
  SYS_ZLIB_LIBS = -lz

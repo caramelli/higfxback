@@ -20,6 +20,8 @@ install -m 644 src/lib/Imlib2.h $DESTDIR/dfb/include
 install -d $DESTDIR/dfb/lib
 install src/lib/.libs/libImlib2.so.1.* $DESTDIR/dfb/lib/libImlib2.so.1
 ln -sf libImlib2.so.1 $DESTDIR/dfb/lib/libImlib2.so
+install -d $DESTDIR/dfb/lib/imlib2/filters
+install src/modules/filters/.libs/bumpmap.so $DESTDIR/dfb/lib/imlib2/filters
 install -d $DESTDIR/dfb/lib/imlib2/loaders
 install src/modules/loaders/.libs/argb.so $DESTDIR/dfb/lib/imlib2/loaders
 install src/modules/loaders/.libs/bmp.so $DESTDIR/dfb/lib/imlib2/loaders
@@ -52,6 +54,7 @@ devel=\\
 exec=\\
 /dfb/bin/imlib2_conv \\
 /dfb/lib/libImlib2.so.1 \\
+/dfb/lib/imlib2/filters/bumpmap.so \\
 /dfb/lib/imlib2/loaders/argb.so \\
 /dfb/lib/imlib2/loaders/bmp.so \\
 /dfb/lib/imlib2/loaders/bz2.so \\

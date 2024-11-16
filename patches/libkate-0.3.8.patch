@@ -1,0 +1,83 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libogg-build libpng-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.65; am-1.11; lt-2.2.6b)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-kdj --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install tools/.libs/katalyzer $DESTDIR/bin
+install tools/.libs/katedec $DESTDIR/bin
+install tools/.libs/kateenc $DESTDIR/bin
+install -d $DESTDIR/include/kate
+install -m 644 include/kate/kate.h $DESTDIR/include/kate
+install -m 644 include/kate/kate_config.h $DESTDIR/include/kate
+install -m 644 include/kate/oggkate.h $DESTDIR/include/kate
+install -d $DESTDIR/lib
+install lib/.libs/libkate.so.1.* $DESTDIR/lib/libkate.so.1
+ln -sf libkate.so.1 $DESTDIR/lib/libkate.so
+install lib/.libs/liboggkate.so.1.* $DESTDIR/lib/liboggkate.so.1
+ln -sf liboggkate.so.1 $DESTDIR/lib/liboggkate.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 misc/pkgconfig/kate.pc $DESTDIR/lib/pkgconfig
+install -m 644 misc/pkgconfig/oggkate.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libkate-build.pc << EOF
+Name: libkate
+Version: 0.3.8
+Description: Karaoke and text library for Ogg
+Requires: $REQUIRES
+
+devel=\\
+/include/kate/kate.h \\
+/include/kate/kate_config.h \\
+/include/kate/oggkate.h \\
+/lib/libkate.so.1 \\
+/lib/liboggkate.so.1 \\
+/lib/pkgconfig/kate.pc \\
+/lib/pkgconfig/oggkate.pc
+
+exec=\\
+/bin/katalyzer \\
+/bin/katedec \\
+/bin/kateenc \\
+/lib/libkate.so \\
+/lib/liboggkate.so
+EOF
+
+exit
+--- libkate-0.3.8.orig/configure.ac
++++ libkate-0.3.8/configure.ac
+@@ -2,6 +2,7 @@
+ 
+ AC_CONFIG_SRCDIR([include/kate/kate.h.in])
+ AC_CONFIG_AUX_DIR([misc/autotools])
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ AC_PREREQ(2.53)
+ 
+@@ -117,7 +118,13 @@
+ fi
+ AM_CONDITIONAL(HAVE_OGG_MERGE,test "x${OGG_MERGE}" != "x")
+ 
+-AM_PATH_PYTHON(, HAVE_PYTHON=yes, HAVE_PYTHON=no)
++AC_ARG_ENABLE(kdj, [  --disable-kdj           Install KateDJ tool (default enabled)])
++if test "x$enable_kdj" != "xno"
++then
++  AM_PATH_PYTHON(, HAVE_PYTHON=yes, HAVE_PYTHON=no)
++else
++  HAVE_PYTHON="no"
++fi
+ AM_CONDITIONAL(HAVE_PYTHON,test "${HAVE_PYTHON}" = "yes")
+ 
+ AC_CHECK_PROGS(GENHASH,md5sum md5 sha1sum)

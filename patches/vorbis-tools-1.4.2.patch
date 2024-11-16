@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libao-build libvorbis-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists curl-build && REQUIRES="$REQUIRES curl-build"
+pkg-config --exists flac-build && REQUIRES="$REQUIRES flac-build"
+pkg-config --exists libkate-build && REQUIRES="$REQUIRES libkate-build"
+pkg-config --exists speex-build && REQUIRES="$REQUIRES speex-build"
+
+# configure (ac-2.69; am-1.15)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install ogg123/ogg123 $DESTDIR/bin
+install oggdec/oggdec $DESTDIR/bin
+install oggenc/oggenc $DESTDIR/bin
+install ogginfo/ogginfo $DESTDIR/bin
+install vcut/vcut $DESTDIR/bin
+install vorbiscomment/vorbiscomment $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/vorbis-tools-build.pc << EOF
+Name: vorbis-tools
+Version: 1.4.2
+Description: A collection of Ogg Vorbis utilities
+Requires: $REQUIRES
+
+exec=\\
+/bin/ogg123 \\
+/bin/oggdec \\
+/bin/oggenc \\
+/bin/ogginfo \\
+/bin/vcut \\
+/bin/vorbiscomment
+EOF
+
+exit
+--- vorbis-tools-1.4.2.orig/configure.ac
++++ vorbis-tools-1.4.2/configure.ac
+@@ -31,8 +31,6 @@
+ AC_PROG_CC
+ CFLAGS="$cflags_save"
+ 
+-AC_PROG_LIBTOOL
+-
+ ALL_LINGUAS="be cs da en_GB eo es fr hr hu nl pl ro ru sk sv uk vi"
+ AM_GNU_GETTEXT
+ 

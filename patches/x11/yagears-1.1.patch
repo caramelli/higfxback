@@ -30,6 +30,11 @@ elif PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl2-build; then
   REQUIRES="$REQUIRES sdl2-build"
 fi
 
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sfml-build; then
+  SFML=1
+  REQUIRES="$REQUIRES sfml-build"
+fi
+
 # configure (ac-2.69; am-1.14; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-egl-drm --disable-egl-fbdev --disable-gl-fbdev --disable-glesv1_cm --prefix=/x11
@@ -40,7 +45,7 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install yagears $DESTDIR/x11/bin
-test $GLFW || test $GLUT || test $GTK2 || test $SDL && install yagears-gui $DESTDIR/x11/bin
+test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && install yagears-gui $DESTDIR/x11/bin
 test $GLUT && install yagears-mosaic $DESTDIR/x11/bin
 
 # build.pc
@@ -54,7 +59,7 @@ Requires: $REQUIRES
 exec=\\
 /x11/bin/yagears \\
 EOF
-test $GLFW || test $GLUT || test $GTK2 || test $SDL && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 test $GLUT && echo /x11/bin/yagears-mosaic \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 
