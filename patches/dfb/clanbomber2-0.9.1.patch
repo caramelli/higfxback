@@ -1,0 +1,480 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build directfb2-media-build fusionsound2-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.61; am-1.9)
+aclocal; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install clanbomber/clanbomber2 $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/share/clanbomber2
+install -m 644 clanbomber/decker.ttf $DESTDIR/dfb/share/clanbomber2
+install -d $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Arena.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Big_Block.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Big_Standard.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Blast_Matrix.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Bloody_Ring.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Boiling_Egg.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Bomb_Attack.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Broken_Heart.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Crammed.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Death_Corridor.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Dilemma.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/FearCircle.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/FearCircle_Remix.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/FireWheels.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Football.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Four_Instance.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Ghostbear.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Hard_Work.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Hole_Run.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Huge_Standard.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Juicy_Lucy.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Kitchen.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Meeting.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/MungoBane.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Obstacle_Race.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Overkill.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Prison_Cells.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Redirection.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Sixty_Nine.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Small_Standard.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Snake_Race.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Tiny_Standard.map $DESTDIR/dfb/share/clanbomber2/maps
+install -m 644 clanbomber/maps/Whole_Mess.map $DESTDIR/dfb/share/clanbomber2/maps
+install -d $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_bsd.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_dull_blue.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_dull_green.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_dull_red.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_dull_yellow.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_snake.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_spider.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bomber_tux.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/bombs.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/cb_logo_small.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/clanbomber_title_andi.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/corpse_parts.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/cup2.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/explosion2.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/extras2.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/fischlustig_logo.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/game_status.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/horst_evil.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/level_selection.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/map_editor.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/maptile_addons.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/maptiles.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/not_available.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/observer.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/playersetup.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/ps_controls.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/ps_teamlamps.png $DESTDIR/dfb/share/clanbomber2/pics
+install -m 644 clanbomber/pics/ps_teams.png $DESTDIR/dfb/share/clanbomber2/pics
+install -d $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/break.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/clear.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/corpse_explode.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/crunch.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/deepfall.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/die.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/explode.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/forward.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/horny.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/hurry_up.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/joint.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/klatsch.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/menu_back.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/putbomb.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/rewind.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/schnief.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/splash1a.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/splash2a.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/stop.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/time_over.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/typewriter.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/whoosh.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/winlevel.wav $DESTDIR/dfb/share/clanbomber2/wavs
+install -m 644 clanbomber/wavs/wow.wav $DESTDIR/dfb/share/clanbomber2/wavs
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/clanbomber2-build.pc << EOF
+Name: clanbomber2
+Version: 0.9.1
+Description: Bomberman game
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/clanbomber2 \\
+/dfb/share/clanbomber2/decker.ttf \\
+/dfb/share/clanbomber2/maps/Arena.map \\
+/dfb/share/clanbomber2/maps/Big_Block.map \\
+/dfb/share/clanbomber2/maps/Big_Standard.map \\
+/dfb/share/clanbomber2/maps/Blast_Matrix.map \\
+/dfb/share/clanbomber2/maps/Bloody_Ring.map \\
+/dfb/share/clanbomber2/maps/Boiling_Egg.map \\
+/dfb/share/clanbomber2/maps/Bomb_Attack.map \\
+/dfb/share/clanbomber2/maps/Broken_Heart.map \\
+/dfb/share/clanbomber2/maps/Crammed.map \\
+/dfb/share/clanbomber2/maps/Death_Corridor.map \\
+/dfb/share/clanbomber2/maps/Dilemma.map \\
+/dfb/share/clanbomber2/maps/FearCircle.map \\
+/dfb/share/clanbomber2/maps/FearCircle_Remix.map \\
+/dfb/share/clanbomber2/maps/FireWheels.map \\
+/dfb/share/clanbomber2/maps/Football.map \\
+/dfb/share/clanbomber2/maps/Four_Instance.map \\
+/dfb/share/clanbomber2/maps/Ghostbear.map \\
+/dfb/share/clanbomber2/maps/Hard_Work.map \\
+/dfb/share/clanbomber2/maps/Hole_Run.map \\
+/dfb/share/clanbomber2/maps/Huge_Standard.map \\
+/dfb/share/clanbomber2/maps/Juicy_Lucy.map \\
+/dfb/share/clanbomber2/maps/Kitchen.map \\
+/dfb/share/clanbomber2/maps/Meeting.map \\
+/dfb/share/clanbomber2/maps/MungoBane.map \\
+/dfb/share/clanbomber2/maps/Obstacle_Race.map \\
+/dfb/share/clanbomber2/maps/Overkill.map \\
+/dfb/share/clanbomber2/maps/Prison_Cells.map \\
+/dfb/share/clanbomber2/maps/Redirection.map \\
+/dfb/share/clanbomber2/maps/Sixty_Nine.map \\
+/dfb/share/clanbomber2/maps/Small_Standard.map \\
+/dfb/share/clanbomber2/maps/Snake_Race.map \\
+/dfb/share/clanbomber2/maps/Tiny_Standard.map \\
+/dfb/share/clanbomber2/maps/Whole_Mess.map \\
+/dfb/share/clanbomber2/pics/bomber_bsd.png \\
+/dfb/share/clanbomber2/pics/bomber_dull_blue.png \\
+/dfb/share/clanbomber2/pics/bomber_dull_green.png \\
+/dfb/share/clanbomber2/pics/bomber_dull_red.png \\
+/dfb/share/clanbomber2/pics/bomber_dull_yellow.png \\
+/dfb/share/clanbomber2/pics/bomber_snake.png \\
+/dfb/share/clanbomber2/pics/bomber_spider.png \\
+/dfb/share/clanbomber2/pics/bomber_tux.png \\
+/dfb/share/clanbomber2/pics/bombs.png \\
+/dfb/share/clanbomber2/pics/cb_logo_small.png \\
+/dfb/share/clanbomber2/pics/clanbomber_title_andi.png \\
+/dfb/share/clanbomber2/pics/corpse_parts.png \\
+/dfb/share/clanbomber2/pics/cup2.png \\
+/dfb/share/clanbomber2/pics/explosion2.png \\
+/dfb/share/clanbomber2/pics/extras2.png \\
+/dfb/share/clanbomber2/pics/fischlustig_logo.png \\
+/dfb/share/clanbomber2/pics/game_status.png \\
+/dfb/share/clanbomber2/pics/horst_evil.png \\
+/dfb/share/clanbomber2/pics/level_selection.png \\
+/dfb/share/clanbomber2/pics/map_editor.png \\
+/dfb/share/clanbomber2/pics/maptile_addons.png \\
+/dfb/share/clanbomber2/pics/maptiles.png \\
+/dfb/share/clanbomber2/pics/not_available.png \\
+/dfb/share/clanbomber2/pics/observer.png \\
+/dfb/share/clanbomber2/pics/playersetup.png \\
+/dfb/share/clanbomber2/pics/ps_controls.png \\
+/dfb/share/clanbomber2/pics/ps_teamlamps.png \\
+/dfb/share/clanbomber2/pics/ps_teams.png \\
+/dfb/share/clanbomber2/wavs/break.wav \\
+/dfb/share/clanbomber2/wavs/clear.wav \\
+/dfb/share/clanbomber2/wavs/corpse_explode.wav \\
+/dfb/share/clanbomber2/wavs/crunch.wav \\
+/dfb/share/clanbomber2/wavs/deepfall.wav \\
+/dfb/share/clanbomber2/wavs/die.wav \\
+/dfb/share/clanbomber2/wavs/explode.wav \\
+/dfb/share/clanbomber2/wavs/forward.wav \\
+/dfb/share/clanbomber2/wavs/horny.wav \\
+/dfb/share/clanbomber2/wavs/hurry_up.wav \\
+/dfb/share/clanbomber2/wavs/joint.wav \\
+/dfb/share/clanbomber2/wavs/klatsch.wav \\
+/dfb/share/clanbomber2/wavs/menu_back.wav \\
+/dfb/share/clanbomber2/wavs/putbomb.wav \\
+/dfb/share/clanbomber2/wavs/rewind.wav \\
+/dfb/share/clanbomber2/wavs/schnief.wav \\
+/dfb/share/clanbomber2/wavs/splash1a.wav \\
+/dfb/share/clanbomber2/wavs/splash2a.wav \\
+/dfb/share/clanbomber2/wavs/stop.wav \\
+/dfb/share/clanbomber2/wavs/time_over.wav \\
+/dfb/share/clanbomber2/wavs/typewriter.wav \\
+/dfb/share/clanbomber2/wavs/whoosh.wav \\
+/dfb/share/clanbomber2/wavs/winlevel.wav \\
+/dfb/share/clanbomber2/wavs/wow.wav
+EOF
+
+exit
+--- clanbomber2-0.9.1.orig/clanbomber/ClanBomber.cpp
++++ clanbomber2-0.9.1/clanbomber/ClanBomber.cpp
+@@ -173,7 +173,8 @@
+ 		exit(1);
+ 	}
+ 
+-	dfb->GetInterface (dfb, "IFusionSound", NULL, NULL, (void**) &sound);
++	FusionSoundInit( NULL, NULL );
++	FusionSoundCreate( &sound );
+ 
+ 	primary->SetDrawingFlags( primary, DSDRAW_NOFX );
+ 	primary->SetColor( primary, 0, 0, 0, 0xFF );
+--- clanbomber2-0.9.1.orig/clanbomber/Client.cpp
++++ clanbomber2-0.9.1/clanbomber/Client.cpp
+@@ -71,7 +71,7 @@
+     #define CLIENTMSG(x...)
+ #endif
+ 
+-Client::Client(ClanBomberApplication* app, char* srv_name)
++Client::Client(ClanBomberApplication* app, const char* srv_name)
+ {
+     cb_app=app;
+     bombers_updated=false;
+@@ -204,7 +204,7 @@
+     int bytes_received=-1;
+     int buf[4096];
+     int bufsize=sizeof(buf);
+-    size_t addr_len=sizeof(struct sockaddr);
++    socklen_t addr_len=sizeof(struct sockaddr);
+     memset((char*)&server_addr, 0, addr_len);
+     int brecv=recvfrom(my_udp_socket, buf, bufsize, 0, (sockaddr*)&server_addr, &addr_len);
+     bytes_received=brecv;
+--- clanbomber2-0.9.1.orig/clanbomber/Client.h
++++ clanbomber2-0.9.1/clanbomber/Client.h
+@@ -76,7 +76,7 @@
+ class Client
+ {
+     public:
+-        Client(ClanBomberApplication* app, char* server_name);
++        Client(ClanBomberApplication* app, const char* server_name);
+         ~Client();
+         static int receive_from_server_thread(void* param);
+         static void printt(void);
+--- clanbomber2-0.9.1.orig/clanbomber/Config.cpp
++++ clanbomber2-0.9.1/clanbomber/Config.cpp
+@@ -563,7 +563,7 @@
+ 		bomber[7].set_name( "You" );
+ 	}
+ 
+-	ofstream configfile(path+filename);
++	ofstream configfile(string(path.get_string()) + string(filename.get_string()));
+ 
+ 	configfile << CURRENT_CONFIGFILE_VERSION << std::endl; // version
+ 
+--- clanbomber2-0.9.1.orig/clanbomber/Explosion.h
++++ clanbomber2-0.9.1/clanbomber/Explosion.h
+@@ -32,7 +32,7 @@
+ 	virtual void show();
+ 	virtual void act();
+ 	
+-	char* get_name()
++	const char* get_name()
+ 	{
+ 		return "Explosion";
+ 	}
+--- clanbomber2-0.9.1.orig/clanbomber/Extra.h
++++ clanbomber2-0.9.1/clanbomber/Extra.h
+@@ -33,7 +33,7 @@
+ 
+ 	void act();
+ 	
+-	char* get_name()
++	const char* get_name()
+ 	{
+ 		return "Extra";
+ 	}
+--- clanbomber2-0.9.1.orig/clanbomber/GameObject.cpp
++++ clanbomber2-0.9.1/clanbomber/GameObject.cpp
+@@ -30,7 +30,7 @@
+ 
+ #include <math.h>
+ 
+-char* GameObject::objecttype2string(ObjectType t)
++const char* GameObject::objecttype2string(ObjectType t)
+ {
+     switch(t) {
+         case GameObject::BOMB:
+--- clanbomber2-0.9.1.orig/clanbomber/GameObject.h
++++ clanbomber2-0.9.1/clanbomber/GameObject.h
+@@ -105,7 +105,7 @@
+ 		CORPSE_PART
+ 	} ObjectType;
+ 
+-	static char* objecttype2string(ObjectType t);
++	static const char* objecttype2string(ObjectType t);
+ 
+ 	virtual ObjectType	get_type() const =0;
+ 	virtual void		stop(bool by_arrow=false);
+--- clanbomber2-0.9.1.orig/clanbomber/GameStatus_Team.cpp
++++ clanbomber2-0.9.1/clanbomber/GameStatus_Team.cpp
+@@ -35,7 +35,7 @@
+ static GameStatus_Team* game_status_team = NULL;
+ static SimpleTimer demo_mode_timer;
+ 
+-char* GameStatus_Team::team_names[4] = { "BLOOD TEAM", "GOLD TEAM", "WATER TEAM", "LEAF TEAM" };
++const char* GameStatus_Team::team_names[4] = { "BLOOD TEAM", "GOLD TEAM", "WATER TEAM", "LEAF TEAM" };
+ 	
+ #include <math.h>
+ 
+--- clanbomber2-0.9.1.orig/clanbomber/GameStatus_Team.h
++++ clanbomber2-0.9.1/clanbomber/GameStatus_Team.h
+@@ -44,7 +44,7 @@
+ 	
+ 	static team_color team_colors[4];
+ 				
+-	static char* team_names[4];
++	static const char* team_names[4];
+ };
+ 
+ #endif
+--- clanbomber2-0.9.1.orig/clanbomber/Makefile.am
++++ clanbomber2-0.9.1/clanbomber/Makefile.am
+@@ -10,6 +10,7 @@
+ 
+ INCLUDES = $(DIRECTFB_CFLAGS) $(FUSIONSOUND_CFLAGS)
+ LDADD = $(DIRECTFB_LIBS) $(FUSIONSOUND_LIBS)
++LDADD += -lpthread
+ 
+ AM_CPPFLAGS = \
+ 	-DDATADIR=\"@DATADIR@/@PACKAGE@/\"
+--- clanbomber2-0.9.1.orig/clanbomber/Map.cpp
++++ clanbomber2-0.9.1/clanbomber/Map.cpp
+@@ -688,7 +688,7 @@
+ 	filename = getenv("HOME");
+ 	filename += "/.clanbomber/maps.disabled";
+ 
+-	ofstream map_selection_file(filename);
++	ofstream map_selection_file(filename.get_string());
+ 	CL_Iterator<MapEntry> map_entry_iterator(map_list);
+ 	while (map_entry_iterator.next() != NULL) {
+ 		if (!(map_entry_iterator()->is_enabled())) {
+--- clanbomber2-0.9.1.orig/clanbomber/Map.h
++++ clanbomber2-0.9.1/clanbomber/Map.h
+@@ -73,7 +73,7 @@
+ 	// static stuff
+ 	static CL_List<MapEntry> map_list;
+ 	bool is_received_by_client;
+-	char* current_server_map_name;
++	const char* current_server_map_name;
+ 	
+ 	unsigned int get_current_map_name_checksum();
+ 	int get_map_name_checksums(unsigned int** chesksum_array);
+--- clanbomber2-0.9.1.orig/clanbomber/MapEntry.cpp
++++ clanbomber2-0.9.1/clanbomber/MapEntry.cpp
+@@ -15,6 +15,7 @@
+  *                                                                         *
+  ***************************************************************************/
+ 
++#include <assert.h>
+ #include <stdio.h>
+ 
+ #include "ClanBomber.h"
+@@ -44,6 +45,7 @@
+ 	enabled = true;
+ 	
+ 	// extract map name
++	assert(filename.get_length()-4 > 0);
+ 	map_name = filename.mid( 0, filename.get_length()-4 );
+ 	
+ 	// is the file writable?
+--- clanbomber2-0.9.1.orig/clanbomber/Menu.cpp
++++ clanbomber2-0.9.1/clanbomber/Menu.cpp
+@@ -310,7 +310,7 @@
+ 	}
+ 	primary->SetFont( primary, Resources::Font_small()  );
+ 	primary->SetColor(primary, 0xFF, 0xFF, 0xFF, 0xFF );
+-	primary->DrawString( primary, "V"VERSION, -1, right_border+20, vert+20, DSTF_TOPRIGHT );
++	primary->DrawString( primary, "V" VERSION, -1, right_border+20, vert+20, DSTF_TOPRIGHT );
+ 	primary->Flip( primary, NULL, DSFLIP_WAITFORSYNC  );
+ }
+ 
+--- clanbomber2-0.9.1.orig/clanbomber/Resources.cpp
++++ clanbomber2-0.9.1/clanbomber/Resources.cpp
+@@ -640,7 +640,7 @@
+      ret_rect->h = sprite_height;
+ }
+ 
+-IDirectFBSurface* Resources::load_surface(char *filename)
++IDirectFBSurface* Resources::load_surface(const char *filename)
+ {
+ 	
+ 	IDirectFBImageProvider *provider;
+@@ -701,9 +701,9 @@
+ 
+ }
+ 
+-IFusionSoundBuffer* Resources::load_sample(char *filename)
++IFusionSoundBuffer* Resources::load_sample(const char *filename)
+ {
+-     DFBResult            ret;
++     DirectResult         ret;
+      int                  fd;
+      FSBufferDescription  desc;
+      IFusionSoundBuffer  *buffer;
+@@ -821,7 +821,7 @@
+       
+      ret = sound->CreateBuffer (sound, &desc, &buffer);
+      if (ret) {
+-          DirectFBError ("IFusionSound::CreateBuffer", ret);
++          FusionSoundError ("sound->CreateBuffer( sound, &desc, &buffer )", ret);
+           close (fd);
+           return NULL;
+      }
+--- clanbomber2-0.9.1.orig/clanbomber/Resources.h
++++ clanbomber2-0.9.1/clanbomber/Resources.h
+@@ -125,11 +125,11 @@
+ 
+ protected:	
+ 
+-	static IDirectFBSurface* load_surface( char *filename );
++	static IDirectFBSurface* load_surface( const char *filename );
+ 	
+ 	static int sample_read_chunk_header( int fd, char *magic);
+ 	static DFBResult sample_read_file_header( int fd );
+-	static IFusionSoundBuffer* load_sample( char *filename );
++	static IFusionSoundBuffer* load_sample( const char *filename );
+ 
+ 	static IDirectFBFont *fnt_big;
+ 	static IDirectFBFont *fnt_small;
+--- clanbomber2-0.9.1.orig/clanbomber/Server.cpp
++++ clanbomber2-0.9.1/clanbomber/Server.cpp
+@@ -295,7 +295,7 @@
+     int bytes_received=-1;
+     int buf[4096];
+     int bufsize=sizeof(buf);
+-    size_t addr_len=sizeof(struct sockaddr);
++    socklen_t addr_len=sizeof(struct sockaddr);
+     memset((char*)&client_addr, 0, addr_len);
+     int brecv=recvfrom(my_udp_socket, buf, bufsize, 0, (sockaddr*)&client_addr, &addr_len);
+     bytes_received=brecv;
+--- clanbomber2-0.9.1.orig/clanbomber/Timer.cpp
++++ clanbomber2-0.9.1/clanbomber/Timer.cpp
+@@ -19,7 +19,7 @@
+ #include <sys/time.h>
+ #include "Timer.h"
+ 
+-int Timer::begin_time = 0;
++long Timer::begin_time = 0;
+ float Timer::elapsed = 0;
+ 
+ Timer::Timer()
+--- clanbomber2-0.9.1.orig/clanbomber/Timer.h
++++ clanbomber2-0.9.1/clanbomber/Timer.h
+@@ -29,7 +29,7 @@
+ 	static long get_time();
+ protected:
+ 
+-	static int begin_time;
++	static long begin_time;
+ 	static float elapsed;
+ };
+ 
+--- clanbomber2-0.9.1.orig/clanbomber/clanstring.h
++++ clanbomber2-0.9.1/clanbomber/clanstring.h
+@@ -334,7 +334,7 @@
+ 	{
+ 		if (str==NULL)
+ 		{
+-			return "";
++			return (char*)"";
+ 		}
+ 		return str;
+ 	}
