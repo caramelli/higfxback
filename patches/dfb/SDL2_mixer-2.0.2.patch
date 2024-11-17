@@ -1,11 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build libvorbis-build sdl2-build"
+REQUIRES="autotools-wrappers-lt-build sdl2-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists flac-build && REQUIRES="$REQUIRES flac-build"
+pkg-config --exists libvorbis-build && REQUIRES="$REQUIRES libvorbis-build"
 
 # configure (ac-2.69; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf

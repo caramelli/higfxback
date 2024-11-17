@@ -7,6 +7,8 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build || { echo SDL with OpenGL support required; exit 1; }
 
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl_mixer-build | grep -q libvorbis-build || { echo SDL_mixer with Vorbis support required; exit 1; }
+
 # configure (ac-2.69; am-1.15; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; cp README.md README; automake -a -c
 PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --with-highscore-prefix=/fb/var/games/pinball --prefix=/fb

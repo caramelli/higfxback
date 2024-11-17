@@ -7,6 +7,8 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
 
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2_mixer-build | grep -q libvorbis-build || { echo SDL2_mixer with Vorbis support required; exit 1; }
+
 # configure (ac-2.69; am-1.15; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; cp README.md README; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --with-highscore-prefix=/wl/var/games/pinball --prefix=/wl
@@ -130,10 +132,11 @@ exit
 -  AC_CHECK_HEADER(
 -      [GLES/gl.h],
 -      [ac_cv_search_glLoadMatrixx="none required"],
+-      [AC_MSG_ERROR(*** OpenGL ES headers not found on system!)]
 +  PKG_CHECK_MODULES(
 +      [GL], [glesv1_cm],
 +      [CPPFLAGS="$CPPFLAGS $GL_CFLAGS"],
-       [AC_MSG_ERROR(*** OpenGL ES headers not found on system!)]
++      [AC_MSG_ERROR(*** OpenGL ES not found on system!)]
    )
 -  AC_ARG_WITH(gles-library,
 -  	[AS_HELP_STRING([--with-gles-library=LIBRARY],[OpenGL ES library @<:@default=GLESv1_CM@:>@])],
@@ -142,19 +145,21 @@ exit
    AC_DEFINE(HAVE_OPENGLES, [1], [Support for OpenGL ES])
  else
  case "$target" in
-@@ -151,9 +149,9 @@
+@@ -151,10 +149,10 @@
          ;;
      *)
          MATHLIB="-lm"
 -        AC_CHECK_HEADER(
 -            [GL/gl.h],
 -            AC_SEARCH_LIBS(glVertex3f, [opengl32 GL GL2 OpenGL], [test $ac_cv_search_glVertex3f = "none required" || GL_LIBS="$ac_cv_search_gVertex3f $GL_LIBS"], [AC_MSG_ERROR(*** OpenGL library not found on system!)]),
+-            [AC_MSG_ERROR(*** OpenGL headers not found on system!)]
 +        PKG_CHECK_MODULES(
 +            [GL], [gl],
 +            [CPPFLAGS="$CPPFLAGS $GL_CFLAGS"],
-             [AC_MSG_ERROR(*** OpenGL headers not found on system!)]
++            [AC_MSG_ERROR(*** OpenGL not found on system!)]
          )
          ;;
+ esac
 --- pinball-20230305.orig/src/Pinball.cpp
 +++ pinball-20230305/src/Pinball.cpp
 @@ -10,8 +10,6 @@

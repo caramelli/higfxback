@@ -5,6 +5,8 @@ REQUIRES="make-build sdl_image-build sdl_mixer-build sdl_ttf-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl_mixer-build | grep -q libvorbis-build || { echo SDL_mixer with Vorbis support required; exit 1; }
+
 # configure
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix /dfb
 
