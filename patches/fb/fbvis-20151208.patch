@@ -1,0 +1,106 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lodepng-build make-build stb-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -f lodepng.*
+rm -f stb_image.c
+sh ./Configure --lodepng-file lodepng/lodepng.cpp --stb_image-file stb/stb_image.h --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install fbvis $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbvis-build.pc << EOF
+Name: fbvis
+Version: 20151208
+Description: Linux Framebuffer image viewer
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/fbvis
+EOF
+
+exit
+--- fbvis-20151208.orig/Configure
++++ fbvis-20151208/Configure
+@@ -0,0 +1,38 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++LODEPNG_FILE=lodepng.c
++
++STB_IMAGE_FILE=stb_image.c
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --lodepng-file)
++      LODEPNG_FILE=$2
++      shift
++    ;;
++    --stb_image-file)
++      STB_IMAGE_FILE=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++
++sed -i "/^LODEPNG_FILE =/s#=.*#= $LODEPNG_FILE#" Makefile
++
++sed -i "/^STB_IMAGE_FILE =/s#=.*#= $STB_IMAGE_FILE#" Makefile
+--- fbvis-20151208.orig/Makefile
++++ fbvis-20151208/Makefile
+@@ -1,11 +1,17 @@
++PREFIX = /usr/local
++LODEPNG_FILE = lodepng.c
++STB_IMAGE_FILE = stb_image.c
+ CC = cc
+ CFLAGS = -Wall -O2 -DSTB_IMAGE_IMPLEMENTATION
++CFLAGS += -DLODEPNG_FILE=\"$(LODEPNG_FILE)\" -DSTB_IMAGE_FILE=\"$(STB_IMAGE_FILE)\"
+ LDFLAGS = -lm
+ 
+ all: fbvis
+ %.o: %.c
+ 	$(CC) -c $(CFLAGS) $<
+-fbvis: fbvis.o draw.o ppm.o stb_image.o lodepng.o
++fbvis: fbvis.o draw.o ppm.o
+ 	$(CC) -o $@ $^ $(LDFLAGS)
+ clean:
+ 	rm -f *.o fbvis
++install: all
++	install -D fbvis $(DESTDIR)$(PREFIX)/fbvis
+--- fbvis-20151208.orig/fbvis.c
++++ fbvis-20151208/fbvis.c
+@@ -13,7 +13,8 @@
+ #include <unistd.h>
+ #include <pty.h>
+ #include "draw.h"
+-#include "lodepng.h"
++#include LODEPNG_FILE
++#include STB_IMAGE_FILE
+ 
+ /* optimized version of fb_val() */
+ #define FB_VAL(r, g, b)	fb_val(r, g, b)
