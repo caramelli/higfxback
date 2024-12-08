@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build gcc-g++-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69)
+autoconf; cd lib; autoconf -I ..; cd ../src; autoconf -I ..; autoheader; cd ../tests; autoconf; cd ../doc; autoconf -I ..; cd ..
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/gperf $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gperf-build.pc << EOF
+Name: gperf
+Version: 3.1
+Description: GNU perfect hash function generator
+Requires: $REQUIRES
+
+devel=\\
+/bin/gperf
+EOF
+
+exit

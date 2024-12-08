@@ -1,13 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build cairo-build"
+REQUIRES="autotools-wrappers-lt-build cairo-build harfbuzz-old-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.10; lt-1.5.26)
 libtoolize -c -f; aclocal -I . -I m4; autoconf; autoheader; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --prefix=/dfb
+rm -rf pango/opentype
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --with-system-harfbuzz --prefix=/dfb
 
 # build
 make
@@ -15,6 +16,7 @@ make
 # install
 install -d $DESTDIR/dfb/bin
 install pango/.libs/pango-querymodules $DESTDIR/dfb/bin
+install pango-view/.libs/pangoft2-view $DESTDIR/dfb/bin/pango-view
 install -d $DESTDIR/dfb/etc/pango
 install -d $DESTDIR/dfb/include/pango-1.0/pango
 install -m 644 pango/pango.h $DESTDIR/dfb/include/pango-1.0/pango
@@ -108,6 +110,7 @@ devel=\\
 
 exec=\\
 /dfb/bin/pango-querymodules \\
+/dfb/bin/pango-view \\
 /dfb/lib/libpango-1.0.so.0 \\
 /dfb/lib/libpangocairo-1.0.so.0 \\
 /dfb/lib/libpangoft2-1.0.so.0 \\
@@ -115,6 +118,56 @@ exec=\\
 EOF
 
 exit
+--- pango-1.22.4.orig/configure.in
++++ pango-1.22.4/configure.in
+@@ -198,6 +198,10 @@
+                               [disable all source autogeneration rules])],,
+               [enable_rebuilds=yes])
+ 
++AC_ARG_WITH(system-harfbuzz,
++   AC_HELP_STRING([--with-system-harfbuzz],
++                  [use system harfbuzz library @<:@default=no@:>@]))
++
+ AM_CONDITIONAL(CROSS_COMPILING, [test $cross_compiling = yes])
+ 
+ # define a MAINT-like variable REBUILD which is set if Perl
+@@ -250,7 +254,17 @@
+   # By freetype, we really always mean freetype+fontconfig
+   FREETYPE_CFLAGS="$FREETYPE_CFLAGS $FONTCONFIG_CFLAGS"
+   FREETYPE_LIBS="$FREETYPE_LIBS $FONTCONFIG_LIBS"
++
++  if test "x$with_system_harfbuzz" = "xyes"; then
++    PKG_CHECK_MODULES(OPENTYPE, harfbuzz-1)
++  else
++    OPENTYPE_LIBS="opentype/libharfbuzz-1.la"
++    OPENTYPE_DEPS="$OPENTYPE_LIBS"
++    OPENTYPE_SUBDIR=opentype
++  fi
+ fi
++AC_SUBST(OPENTYPE_DEPS)
++AC_SUBST(OPENTYPE_SUBDIR)
+ AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
+ 
+ #
+@@ -938,7 +952,6 @@
+ Makefile 
+ pango/Makefile
+ pango/mini-fribidi/Makefile
+-pango/opentype/Makefile
+ pango/pango.rc
+ pango/pangoft2.rc
+ pango/pangowin32.rc
+@@ -973,6 +986,10 @@
+ pango-zip.sh
+ ])
+ 
++if test "x$with_system_harfbuzz" != "xyes"; then
++  AC_CONFIG_FILES([pango/opentype/Makefile])
++fi
++
+ AC_CONFIG_FILES([tests/runtests.sh],
+ 	        [chmod +x tests/runtests.sh])
+ 
 --- pango-1.22.4.orig/m4/gtk-doc.m4
 +++ pango-1.22.4/m4/gtk-doc.m4
 @@ -0,0 +1,39 @@
@@ -157,3 +210,42 @@ exit
 +  AM_CONDITIONAL([ENABLE_GTK_DOC], [test x$enable_gtk_doc = xyes])
 +  AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], [test -n "$LIBTOOL"])
 +])
+--- pango-1.22.4.orig/pango/Makefile.am
++++ pango-1.22.4/pango/Makefile.am
+@@ -4,15 +4,11 @@
+ # which are more like other make's VPATH.
+ GPATH = $(srcdir)
+ 
+-if HAVE_FREETYPE
+-OPENTYPE_SUBDIR=opentype
+-endif
+-
+ FRIBIDI_SUBDIR=mini-fribidi
+ 
+ SUBDIRS = $(OPENTYPE_SUBDIR) $(FRIBIDI_SUBDIR)
+ 
+-DIST_SUBDIRS = mini-fribidi opentype
++DIST_SUBDIRS = mini-fribidi
+ 
+ INCLUDES =						\
+ 	-DG_LOG_DOMAIN=\"Pango\"			\
+@@ -191,16 +187,17 @@
+ lib_LTLIBRARIES += libpangoft2-1.0.la
+ endif
+ 
++libpangoft2_1_0_la_CFLAGS = $(OPENTYPE_CFLAGS)
+ libpangoft2_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
+ libpangoft2_1_0_la_LIBADD =			\
+-	opentype/libharfbuzz-1.la		\
++	$(OPENTYPE_LIBS)			\
+ 	libpango-$(PANGO_API_VERSION).la	\
+ 	$(INCLUDED_FC_MODULES)			\
+ 	$(GLIB_LIBS)				\
+ 	$(FREETYPE_LIBS)			\
+ 	$(libm)
+ libpangoft2_1_0_la_DEPENDENCIES =		\
+-	opentype/libharfbuzz-1.la		\
++	$(OPENTYPE_DEPS)			\
+ 	libpango-$(PANGO_API_VERSION).la	\
+ 	$(INCLUDED_FC_MODULES)
+ libpangoft2_1_0_la_SOURCES =   	\

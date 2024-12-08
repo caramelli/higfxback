@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build orc-build"
+REQUIRES="autotools-wrappers-lt-build gstreamer-build libvorbis-build orc-build pango-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -246,6 +246,7 @@ install -d $DESTDIR/wl/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/wl/lib/gstreamer-1.0
 test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/ogg/.libs/libgstogg.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/pango/.libs/libgstpango.so $DESTDIR/wl/lib/gstreamer-1.0
 test $TREMOR && install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/wl/lib/gstreamer-1.0
 install gst/adder/.libs/libgstadder.so $DESTDIR/wl/lib/gstreamer-1.0
@@ -530,6 +531,7 @@ EOF
 test $TREMOR && echo /wl/lib/gstreamer-1.0/libgstivorbisdec.so \\ >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc
 cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstogg.so \\
+/wl/lib/gstreamer-1.0/libgstpango.so \\
 EOF
 test $GL && echo /wl/lib/gstreamer-1.0/libgstopengl.so \\ >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc
 cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc << EOF

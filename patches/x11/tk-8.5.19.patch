@@ -1,0 +1,403 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build libx11-build tcl-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.59)
+cd unix; autoconf; cd -
+./unix/configure --disable-stub --with-tcl=/lib --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install wish $DESTDIR/x11/bin/wish8.5
+ln -sf wish8.5 $DESTDIR/x11/bin/wish
+install -d $DESTDIR/x11/include
+install -m 644 generic/tk.h $DESTDIR/x11/include
+install -m 644 generic/tkDecls.h $DESTDIR/x11/include
+install -d $DESTDIR/x11/lib
+install libtk8.5.so.0 $DESTDIR/x11/lib
+ln -sf libtk8.5.so.0 $DESTDIR/x11/lib/libtk8.5.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 tk.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/lib/tk8.5
+install -m 644 library/button.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/comdlg.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/clrpick.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/dialog.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/entry.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/listbox.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/menu.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/msgbox.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/optMenu.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/palette.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/panedwindow.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/scale.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/scrlbar.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/spinbox.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/tclIndex $DESTDIR/x11/lib/tk8.5
+install -m 644 library/text.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/tk.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/tkfbox.tcl $DESTDIR/x11/lib/tk8.5
+install -m 644 library/xmfbox.tcl $DESTDIR/x11/lib/tk8.5
+install -d $DESTDIR/x11/lib/tk8.5/images
+install -m 644 library/images/logo64.gif $DESTDIR/x11/lib/tk8.5/images
+install -d $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/altTheme.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/button.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/clamTheme.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/classicTheme.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/combobox.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/cursors.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/defaults.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/entry.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/fonts.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/menubutton.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/notebook.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/panedwindow.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/progress.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/scale.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/scrollbar.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/sizegrip.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/spinbox.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/treeview.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/ttk.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -m 644 library/ttk/utils.tcl $DESTDIR/x11/lib/tk8.5/ttk
+install -d $DESTDIR/x11/share/tk8.5/demos
+install library/demos/widget $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/anilabel.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/aniwave.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/arrow.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/bind.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/bitmap.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/button.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/check.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/clrpick.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/colors.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/combo.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/cscroll.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ctext.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/dialog1.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/dialog2.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/entry1.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/entry2.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/entry3.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/filebox.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/floor.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/form.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/goldberg.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/hscale.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/icon.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/image1.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/image2.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/items.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/knightstour.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/label.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/labelframe.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/mclist.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/menu.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/menubu.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/msgbox.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/paned1.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/paned2.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/pendulum.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/plot.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/puzzle.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/radio.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ruler.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/sayings.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/search.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/spin.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/states.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/style.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/text.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/textpeer.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/toolbar.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/tree.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ttkbut.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ttkmenu.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ttknote.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ttkpane.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ttkprogress.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/ttkscale.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/twind.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/unicodeout.tcl $DESTDIR/x11/share/tk8.5/demos
+install -m 644 library/demos/vscale.tcl $DESTDIR/x11/share/tk8.5/demos
+install -d $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/earth.gif $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/earthris.gif $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/face.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/flagdown.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/flagup.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/gray25.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/letters.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/noletter.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/pattern.xbm $DESTDIR/x11/share/tk8.5/demos/images
+install -m 644 library/demos/images/teapot.ppm $DESTDIR/x11/share/tk8.5/demos/images
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/tk-build.pc << EOF
+Name: tk
+Version: 8.5.19
+Description: Toolkit for Tcl
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/tk.h \\
+/x11/include/tkDecls.h \\
+/x11/lib/libtk8.5.so \\
+/x11/lib/pkgconfig/tk.pc
+
+exec=\\
+/x11/bin/wish \\
+/x11/bin/wish8.5 \\
+/x11/lib/libtk8.5.so.0 \\
+/x11/lib/tk8.5/button.tcl \\
+/x11/lib/tk8.5/clrpick.tcl \\
+/x11/lib/tk8.5/comdlg.tcl \\
+/x11/lib/tk8.5/dialog.tcl \\
+/x11/lib/tk8.5/entry.tcl \\
+/x11/lib/tk8.5/listbox.tcl \\
+/x11/lib/tk8.5/menu.tcl \\
+/x11/lib/tk8.5/msgbox.tcl \\
+/x11/lib/tk8.5/optMenu.tcl \\
+/x11/lib/tk8.5/palette.tcl \\
+/x11/lib/tk8.5/panedwindow.tcl \\
+/x11/lib/tk8.5/scale.tcl \\
+/x11/lib/tk8.5/scrlbar.tcl \\
+/x11/lib/tk8.5/spinbox.tcl \\
+/x11/lib/tk8.5/tclIndex \\
+/x11/lib/tk8.5/text.tcl \\
+/x11/lib/tk8.5/tk.tcl \\
+/x11/lib/tk8.5/tkfbox.tcl \\
+/x11/lib/tk8.5/xmfbox.tcl \\
+/x11/lib/tk8.5/images/logo64.gif \\
+/x11/lib/tk8.5/ttk/altTheme.tcl \\
+/x11/lib/tk8.5/ttk/button.tcl \\
+/x11/lib/tk8.5/ttk/clamTheme.tcl \\
+/x11/lib/tk8.5/ttk/classicTheme.tcl \\
+/x11/lib/tk8.5/ttk/combobox.tcl \\
+/x11/lib/tk8.5/ttk/cursors.tcl \\
+/x11/lib/tk8.5/ttk/defaults.tcl \\
+/x11/lib/tk8.5/ttk/entry.tcl \\
+/x11/lib/tk8.5/ttk/fonts.tcl \\
+/x11/lib/tk8.5/ttk/menubutton.tcl \\
+/x11/lib/tk8.5/ttk/notebook.tcl \\
+/x11/lib/tk8.5/ttk/panedwindow.tcl \\
+/x11/lib/tk8.5/ttk/progress.tcl \\
+/x11/lib/tk8.5/ttk/scale.tcl \\
+/x11/lib/tk8.5/ttk/scrollbar.tcl \\
+/x11/lib/tk8.5/ttk/sizegrip.tcl \\
+/x11/lib/tk8.5/ttk/spinbox.tcl \\
+/x11/lib/tk8.5/ttk/treeview.tcl \\
+/x11/lib/tk8.5/ttk/ttk.tcl \\
+/x11/lib/tk8.5/ttk/utils.tcl \\
+/x11/share/tk8.5/demos/anilabel.tcl \\
+/x11/share/tk8.5/demos/aniwave.tcl \\
+/x11/share/tk8.5/demos/arrow.tcl \\
+/x11/share/tk8.5/demos/bind.tcl \\
+/x11/share/tk8.5/demos/bitmap.tcl \\
+/x11/share/tk8.5/demos/button.tcl \\
+/x11/share/tk8.5/demos/check.tcl \\
+/x11/share/tk8.5/demos/clrpick.tcl \\
+/x11/share/tk8.5/demos/colors.tcl \\
+/x11/share/tk8.5/demos/combo.tcl \\
+/x11/share/tk8.5/demos/cscroll.tcl \\
+/x11/share/tk8.5/demos/ctext.tcl \\
+/x11/share/tk8.5/demos/dialog1.tcl \\
+/x11/share/tk8.5/demos/dialog2.tcl \\
+/x11/share/tk8.5/demos/entry1.tcl \\
+/x11/share/tk8.5/demos/entry2.tcl \\
+/x11/share/tk8.5/demos/entry3.tcl \\
+/x11/share/tk8.5/demos/filebox.tcl \\
+/x11/share/tk8.5/demos/floor.tcl \\
+/x11/share/tk8.5/demos/form.tcl \\
+/x11/share/tk8.5/demos/goldberg.tcl \\
+/x11/share/tk8.5/demos/hscale.tcl \\
+/x11/share/tk8.5/demos/icon.tcl \\
+/x11/share/tk8.5/demos/image1.tcl \\
+/x11/share/tk8.5/demos/image2.tcl \\
+/x11/share/tk8.5/demos/items.tcl \\
+/x11/share/tk8.5/demos/knightstour.tcl \\
+/x11/share/tk8.5/demos/label.tcl \\
+/x11/share/tk8.5/demos/labelframe.tcl \\
+/x11/share/tk8.5/demos/mclist.tcl \\
+/x11/share/tk8.5/demos/menu.tcl \\
+/x11/share/tk8.5/demos/menubu.tcl \\
+/x11/share/tk8.5/demos/msgbox.tcl \\
+/x11/share/tk8.5/demos/paned1.tcl \\
+/x11/share/tk8.5/demos/paned2.tcl \\
+/x11/share/tk8.5/demos/pendulum.tcl \\
+/x11/share/tk8.5/demos/plot.tcl \\
+/x11/share/tk8.5/demos/puzzle.tcl \\
+/x11/share/tk8.5/demos/radio.tcl \\
+/x11/share/tk8.5/demos/ruler.tcl \\
+/x11/share/tk8.5/demos/sayings.tcl \\
+/x11/share/tk8.5/demos/search.tcl \\
+/x11/share/tk8.5/demos/spin.tcl \\
+/x11/share/tk8.5/demos/states.tcl \\
+/x11/share/tk8.5/demos/style.tcl \\
+/x11/share/tk8.5/demos/text.tcl \\
+/x11/share/tk8.5/demos/textpeer.tcl \\
+/x11/share/tk8.5/demos/toolbar.tcl \\
+/x11/share/tk8.5/demos/tree.tcl \\
+/x11/share/tk8.5/demos/ttkbut.tcl \\
+/x11/share/tk8.5/demos/ttkmenu.tcl \\
+/x11/share/tk8.5/demos/ttknote.tcl \\
+/x11/share/tk8.5/demos/ttkpane.tcl \\
+/x11/share/tk8.5/demos/ttkprogress.tcl \\
+/x11/share/tk8.5/demos/ttkscale.tcl \\
+/x11/share/tk8.5/demos/twind.tcl \\
+/x11/share/tk8.5/demos/unicodeout.tcl \\
+/x11/share/tk8.5/demos/vscale.tcl \\
+/x11/share/tk8.5/demos/widget \\
+/x11/share/tk8.5/demos/images/earth.gif \\
+/x11/share/tk8.5/demos/images/earthris.gif \\
+/x11/share/tk8.5/demos/images/face.xbm \\
+/x11/share/tk8.5/demos/images/flagdown.xbm \\
+/x11/share/tk8.5/demos/images/flagup.xbm \\
+/x11/share/tk8.5/demos/images/gray25.xbm \\
+/x11/share/tk8.5/demos/images/letters.xbm \\
+/x11/share/tk8.5/demos/images/noletter.xbm \\
+/x11/share/tk8.5/demos/images/pattern.xbm \\
+/x11/share/tk8.5/demos/images/teapot.ppm \\
+EOF
+
+exit
+--- tk-8.5.19.orig/library/demos/ttkpane.tcl
++++ tk-8.5.19/library/demos/ttkpane.tcl
+@@ -52,16 +52,10 @@
+     after $delay [list every $delay $script]
+ }
+ set zones {
+-    :Europe/Berlin
+-    :America/Argentina/Buenos_Aires
+-    :Africa/Johannesburg
+     :Europe/London
+-    :America/Los_Angeles
+-    :Europe/Moscow
++    :Europe/Paris
+     :America/New_York
+-    :Asia/Singapore
+-    :Australia/Sydney
+-    :Asia/Tokyo
++    :Australia/Melbourne
+ }
+ # Force a pre-load of all the timezones needed; otherwise can end up
+ # poor-looking synch problems!
+--- tk-8.5.19.orig/unix/Makefile.in
++++ tk-8.5.19/unix/Makefile.in
+@@ -94,7 +94,7 @@
+ CONFIG_INSTALL_DIR	= $(INSTALL_ROOT)$(libdir)
+ 
+ # Directory in which to install the demo files:
+-DEMO_INSTALL_DIR	= $(INSTALL_ROOT)$(TK_LIBRARY)/demos
++DEMO_INSTALL_DIR	= $(INSTALL_ROOT)$(prefix)/share/tk$(VERSION)/demos
+ 
+ # The directory containing the Tcl sources and headers appropriate
+ # for this version of Tk ("srcdir" will be replaced or has already
+@@ -275,6 +275,8 @@
+ SHLIB_LD_LIBS		= @SHLIB_LD_LIBS@
+ TK_SHLIB_LD_EXTRAS	= @TK_SHLIB_LD_EXTRAS@
+ 
++SHLIB_SUFFIX		= @SHLIB_SUFFIX@
++
+ # Additional search flags needed to find the various shared libraries
+ # at run-time.  The first symbol is for use when creating a binary
+ # with cc, and the second is for use when running ld directly.
+@@ -715,7 +717,11 @@
+ 	    fi
+ 	@echo "Installing $(LIB_FILE) to $(DLL_INSTALL_DIR)/"
+ 	@@INSTALL_LIB@
+-	@chmod 555 "$(DLL_INSTALL_DIR)/$(LIB_FILE)"
++	@if test "x$(TK_SHARED_BUILD)" = "x1"; then \
++	    ln -sf $(LIB_FILE) $(DLL_INSTALL_DIR)/`basename $(LIB_FILE) $(SHLIB_SUFFIX).0`$(SHLIB_SUFFIX); \
++	else \
++	    chmod 644 "$(DLL_INSTALL_DIR)/$(LIB_FILE)"; \
++	fi
+ 	@if test -f "tk${MAJOR_VERSION}${MINOR_VERSION}.dll"; then \
+ 	    $(INSTALL_LIBRARY) "tk${MAJOR_VERSION}${MINOR_VERSION}.dll" "$(DLL_INSTALL_DIR)";\
+ 	    chmod 555 "$(DLL_INSTALL_DIR)/tk${MAJOR_VERSION}${MINOR_VERSION}.dll";\
+--- tk-8.5.19.orig/unix/configure.in
++++ tk-8.5.19/unix/configure.in
+@@ -751,6 +751,15 @@
+ #       stub support.
+ #--------------------------------------------------------------------
+ 
++AC_ARG_ENABLE(stub,
++    AC_HELP_STRING([--disable-stub],
++    [disable stub support (default: on)]),
++    [enable_stub=$enableval], [enable_stub=yes])
++
++if test "$enable_stub" = yes ; then
++
++TK_SUPPORTS_STUBS=1
++
+ # Replace ${VERSION} with contents of ${TK_VERSION}
+ eval "TK_STUB_LIB_FILE=libtkstub${TK_UNSHARED_LIB_SUFFIX}"
+ eval "TK_STUB_LIB_DIR=${libdir}"
+@@ -766,6 +775,12 @@
+ TK_BUILD_STUB_LIB_PATH="`pwd`/${TK_STUB_LIB_FILE}"
+ TK_STUB_LIB_PATH="${TK_STUB_LIB_DIR}/${TK_STUB_LIB_FILE}"
+ 
++else
++
++TK_SUPPORTS_STUBS=0
++
++fi
++
+ # Install time header dir can be set via --includedir
+ eval "TK_INCLUDE_SPEC=\"-I${includedir}\""
+ 
+@@ -784,6 +799,7 @@
+ AC_SUBST(TK_LIB_FILE)
+ AC_SUBST(TK_LIB_FLAG)
+ AC_SUBST(TK_LIB_SPEC)
++AC_SUBST(TK_SUPPORTS_STUBS)
+ AC_SUBST(TK_STUB_LIB_FILE)
+ AC_SUBST(TK_STUB_LIB_FLAG)
+ AC_SUBST(TK_STUB_LIB_SPEC)
+--- tk-8.5.19.orig/unix/tcl.m4
++++ tk-8.5.19/unix/tcl.m4
+@@ -1420,6 +1420,7 @@
+ 	Linux*|GNU*|NetBSD-Debian)
+ 	    SHLIB_CFLAGS="-fPIC"
+ 	    SHLIB_SUFFIX=".so"
++	    SHARED_LIB_SUFFIX='${VERSION}.so.0'
+ 
+ 	    CFLAGS_OPTIMIZE="-O2"
+ 	    # egcs-2.91.66 on Redhat Linux 6.0 generates lots of warnings
+@@ -1428,6 +1429,7 @@
+ 	    #CFLAGS_OPTIMIZE="${CFLAGS_OPTIMIZE} -D__NO_STRING_INLINES -D__NO_MATH_INLINES"
+ 
+ 	    SHLIB_LD='${CC} -shared ${CFLAGS} ${LDFLAGS}'
++	    TK_SHLIB_LD_EXTRAS="-Wl,-soname,\${TK_LIB_FILE}"
+ 	    DL_OBJS="tclLoadDl.o"
+ 	    DL_LIBS="-ldl"
+ 	    LDFLAGS="$LDFLAGS -Wl,--export-dynamic"
+@@ -2067,7 +2069,7 @@
+ 
+     AS_IF([test "${SHARED_BUILD}" = 1 -a "${SHLIB_SUFFIX}" != ""], [
+         LIB_SUFFIX=${SHARED_LIB_SUFFIX}
+-        MAKE_LIB='${SHLIB_LD} -o [$]@ ${OBJS} ${SHLIB_LD_LIBS} ${TCL_SHLIB_LD_EXTRAS} ${TK_SHLIB_LD_EXTRAS} ${LD_SEARCH_FLAGS}'
++        MAKE_LIB='${SHLIB_LD} -o [$]@ ${OBJS} ${SHLIB_LD_LIBS} ${TCL_SHLIB_LD_EXTRAS} ${TK_SHLIB_LD_EXTRAS} ${LD_SEARCH_FLAGS}; ln -sf $(LIB_FILE) `basename $(LIB_FILE) $(SHLIB_SUFFIX).0`\${SHLIB_SUFFIX}'
+         AS_IF([test "${SHLIB_SUFFIX}" = ".dll"], [
+             INSTALL_LIB='$(INSTALL_LIBRARY) $(LIB_FILE) "$(BIN_INSTALL_DIR)/$(LIB_FILE)";if test -f $(LIB_FILE).a; then $(INSTALL_DATA) $(LIB_FILE).a "$(LIB_INSTALL_DIR)"; fi;'
+             DLL_INSTALL_DIR="\$(BIN_INSTALL_DIR)"
+--- tk-8.5.19.orig/unix/tkConfig.sh.in
++++ tk-8.5.19/unix/tkConfig.sh.in
+@@ -76,6 +76,9 @@
+ TK_CC_SEARCH_FLAGS='@CC_SEARCH_FLAGS@'
+ TK_LD_SEARCH_FLAGS='@LD_SEARCH_FLAGS@'
+ 
++# Tk supports stub.
++TK_SUPPORTS_STUBS=@TK_SUPPORTS_STUBS@
++
+ # The name of the Tk stub library (.a):
+ TK_STUB_LIB_FILE='@TK_STUB_LIB_FILE@'
+ 

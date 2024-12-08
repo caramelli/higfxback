@@ -1,0 +1,213 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build freetype-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.61; am-1.9; lt-1.5.26)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/.libs/harfbuzz-dump $DESTDIR/bin
+install -d $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz.h $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz-buffer.h $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz-gdef.h $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz-global.h $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz-gpos.h $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz-gsub.h $DESTDIR/include/harfbuzz-1
+install -m 644 src/harfbuzz-open.h $DESTDIR/include/harfbuzz-1
+install -d $DESTDIR/include/harfbuzz-1/opentype
+ln -sf ../harfbuzz.h $DESTDIR/include/harfbuzz-1/opentype/harfbuzz.h
+install -d $DESTDIR/lib
+install src/.libs/libharfbuzz-1.so.0.* $DESTDIR/lib/libharfbuzz-1.so.0
+ln -sf libharfbuzz-1.so.0 $DESTDIR/lib/libharfbuzz-1.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/harfbuzz-1.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/harfbuzz-old-build.pc << EOF
+Name: harfbuzz-old
+Version: 20070216
+Description: OpenType text shaping library
+Requires: $REQUIRES
+
+devel=\\
+/include/harfbuzz-1/harfbuzz.h \\
+/include/harfbuzz-1/harfbuzz-buffer.h \\
+/include/harfbuzz-1/harfbuzz-gdef.h \\
+/include/harfbuzz-1/harfbuzz-global.h \\
+/include/harfbuzz-1/harfbuzz-gpos.h \\
+/include/harfbuzz-1/harfbuzz-gsub.h \\
+/include/harfbuzz-1/harfbuzz-open.h \\
+/include/harfbuzz-1/opentype/harfbuzz.h \\
+/lib/libharfbuzz-1.so \\
+/lib/pkgconfig/harfbuzz-1.pc
+
+exec=\\
+/bin/harfbuzz-dump \\
+/lib/libharfbuzz-1.so.0
+EOF
+
+exit
+--- harfbuzz-old-20070216.orig/configure.ac
++++ harfbuzz-old-20070216/configure.ac
+@@ -14,15 +14,12 @@
+ 
+ AC_PATH_PROG(ft_config,freetype-config,no)
+ if test "$ft_config" = "no"; then
+-    AC_MSG_ERROR([You must have freetype installed; see http://www.freetype.org/])
++    PKG_CHECK_MODULES([FREETYPE], [freetype2])
++else
++    FREETYPE_CFLAGS="`$ft_config --cflags`"
++    FREETYPE_LIBS="`$ft_config --libs`"
+ fi
+ 
+-FREETYPE_CFLAGS="`$ft_config --cflags`"
+-FREETYPE_LIBS="`$ft_config --libs`"
+-
+-AC_SUBST(FREETYPE_LIBS)
+-AC_SUBST(FREETYPE_CFLAGS)
+-
+ PKG_CHECK_MODULES([FONTCONFIG], [fontconfig])
+ AC_SUBST(FONTCONFIG_CFLAGS)
+ AC_SUBST(FONTCONFIG_LIBS)
+@@ -52,6 +49,7 @@
+ 
+ AC_OUTPUT([
+ Makefile
++src/harfbuzz-1.pc
+ src/Makefile
+ tests/Makefile
+ tests/linebreaking/Makefile
+--- harfbuzz-old-20070216.orig/src/Makefile.am
++++ harfbuzz-old-20070216/src/Makefile.am
+@@ -3,7 +3,7 @@
+ INCLUDES = 					\
+ 	$(FREETYPE_CFLAGS)
+ 
+-noinst_LTLIBRARIES = libharfbuzz-1.la
++lib_LTLIBRARIES = libharfbuzz-1.la
+ 
+ MAINSOURCES =  \
+ 	harfbuzz-global.c \
+@@ -13,15 +13,7 @@
+ 	harfbuzz-gdef.c \
+ 	harfbuzz-gpos.c \
+ 	harfbuzz-gsub.c \
+-	harfbuzz-open.c \
+-	harfbuzz-shaper.cpp \
+-	harfbuzz-tibetan.cpp \
+-	harfbuzz-khmer.cpp \
+-	harfbuzz-indic.cpp \
+-	harfbuzz-hebrew.cpp \
+-	harfbuzz-arabic.cpp \
+-	harfbuzz-hangul.cpp \
+-	harfbuzz-myanmar.cpp
++	harfbuzz-open.c
+ 
+ EXTRA_SOURCES = harfbuzz.c
+ 
+@@ -54,13 +46,19 @@
+ libharfbuzz_1_la_LIBADD = \
+ 	$(FREETYPE_LIBS)
+ 
+-#noinst_PROGRAMS = harfbuzz-dump
+-#
+-#harfbuzz_dump_SOURCES = 	\
+-#	harfbuzz-dump-main.c
+-#
+-#harfbuzz_dump_LDADD = 		\
+-#	libharfbuzz-1.la
++libharfbuzzdir = $(includedir)/harfbuzz-1
++libharfbuzz_HEADERS = $(PUBLICHEADERS)
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = harfbuzz-1.pc
++
++noinst_PROGRAMS = harfbuzz-dump
++
++harfbuzz_dump_SOURCES = 	\
++	harfbuzz-dump-main.c
++
++harfbuzz_dump_LDADD = 		\
++	libharfbuzz-1.la
+ 
+ EXTRA_DIST = 		\
+ 	README		\
+--- harfbuzz-old-20070216.orig/src/harfbuzz-1.pc.in
++++ harfbuzz-old-20070216/src/harfbuzz-1.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: HarfBuzz
++Description: OpenType text shaping library
++Version: @VERSION@
++
++Libs: -L${libdir} -lharfbuzz-1
++Cflags: -I${includedir}/harfbuzz-1
+--- harfbuzz-old-20070216.orig/src/harfbuzz-gdef.c
++++ harfbuzz-old-20070216/src/harfbuzz-gdef.c
+@@ -169,7 +169,7 @@
+     return HB_Err_Invalid_Argument;
+ 
+   if (( error = HB_open_stream(face, TTAG_GDEF, &stream) ))
+-    return error;
++    return error == HB_Err_Table_Missing ? HB_Err_Not_Covered : error;
+ 
+   if (( error = HB_New_GDEF_Table ( &gdef ) ))
+     return error;
+--- harfbuzz-old-20070216.orig/src/harfbuzz-gpos.c
++++ harfbuzz-old-20070216/src/harfbuzz-gpos.c
+@@ -74,11 +74,8 @@
+   if ( !retptr )
+     return HB_Err_Invalid_Argument;
+ 
+-  if ( !stream )
+-    return HB_Err_Invalid_Face_Handle;
+-
+   if (( error = HB_open_stream(face, TTAG_GPOS, &stream) ))
+-    return error;
++    return error == HB_Err_Table_Missing ? HB_Err_Not_Covered : error;
+ 
+   base_offset = FILE_Pos();
+ 
+--- harfbuzz-old-20070216.orig/src/harfbuzz-gsub.c
++++ harfbuzz-old-20070216/src/harfbuzz-gsub.c
+@@ -45,7 +45,7 @@
+     return HB_Err_Invalid_Argument;
+ 
+   if (( error = HB_open_stream(face, TTAG_GSUB, &stream) ))
+-    return error;
++    return error == HB_Err_Table_Missing ? HB_Err_Not_Covered : error;
+ 
+   base_offset = FILE_Pos();
+ 
+--- harfbuzz-old-20070216.orig/src/harfbuzz.h
++++ harfbuzz-old-20070216/src/harfbuzz.h
+@@ -14,15 +14,10 @@
+ #define HARFBUZZ_H
+ 
+ #include "harfbuzz-global.h"
+-#include "harfbuzz-external.h"
+ #include "harfbuzz-open.h"
+ #include "harfbuzz-buffer.h"
+ #include "harfbuzz-gdef.h"
+ #include "harfbuzz-gsub.h"
+ #include "harfbuzz-gpos.h"
+-#ifdef HARFBUZZ_DUMP
+-#include "harfbuzz-dump.h"
+-#endif
+-#include "harfbuzz-shaper.h"
+ 
+ #endif /* HARFBUZZ_OPEN_H */

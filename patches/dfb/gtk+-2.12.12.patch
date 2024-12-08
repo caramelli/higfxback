@@ -622,7 +622,7 @@ exit
  ## Makefile.am for GTK+
  
 -SRC_SUBDIRS = gdk-pixbuf gdk gtk modules demos tests perf contrib
-+SRC_SUBDIRS = $(GDK_PIXBUF_SUBDIRS) gdk gtk modules demos tests perf contrib
++SRC_SUBDIRS = $(GDK_PIXBUF_SUBDIR) gdk gtk modules demos tests perf contrib
  SUBDIRS = po po-properties $(SRC_SUBDIRS) docs m4macros
  
  # require automake 1.4
@@ -742,7 +742,7 @@ exit
  fi
  
  if test ! -f $srcdir/gtk/gtkbuiltincache.h && 
-@@ -1047,12 +1094,34 @@
+@@ -1047,12 +1094,32 @@
  
  AC_SUBST(REBUILD_PNGS)
  
@@ -760,24 +760,22 @@ exit
  GDK_PIXBUF_DEP_LIBS="`$PKG_CONFIG --libs $GDK_PIXBUF_PACKAGES` $GDK_PIXBUF_EXTRA_LIBS"
  GDK_PIXBUF_DEP_CFLAGS="`$PKG_CONFIG --cflags  gthread-2.0 $GDK_PIXBUF_PACKAGES $PNG_DEP_CFLAGS_PACKAGES` $GDK_PIXBUF_EXTRA_CFLAGS"
  
++GDK_PIXBUF_LIBS="\$(top_builddir)/gdk-pixbuf/libgdk_pixbuf-\$(GTK_API_VERSION).la"
 +GDK_PIXBUF_CFLAGS="$GDK_PIXBUF_DEP_CFLAGS"
-+GDK_PIXBUF_DEPS="\$(top_builddir)/gdk-pixbuf/libgdk_pixbuf-\$(GTK_API_VERSION).la"
-+GDK_PIXBUF_LIBS="$GDK_PIXBUF_DEPS"
++GDK_PIXBUF_DEPS="$GDK_PIXBUF_LIBS"
 +GDK_PIXBUF_PC=gdk-pixbuf-2.0.pc
-+GDK_PIXBUF_SUBDIRS=gdk-pixbuf
++GDK_PIXBUF_SUBDIR=gdk-pixbuf
 +
 +fi
 +
-+AC_SUBST(GDK_PIXBUF_CFLAGS)
 +AC_SUBST(GDK_PIXBUF_DEPS)
-+AC_SUBST(GDK_PIXBUF_LIBS)
 +AC_SUBST(GDK_PIXBUF_PC)
-+AC_SUBST(GDK_PIXBUF_SUBDIRS)
++AC_SUBST(GDK_PIXBUF_SUBDIR)
 +
  ########################################
  # Windowing system checks
  ########################################
-@@ -1755,11 +1824,9 @@
+@@ -1755,11 +1822,9 @@
  config.h.win32
  gtk-zip.sh
  Makefile
@@ -789,7 +787,7 @@ exit
  gdk-2.0-uninstalled.pc
  gtk+-2.0-uninstalled.pc
  m4macros/Makefile
-@@ -1780,10 +1847,6 @@
+@@ -1780,10 +1845,6 @@
  docs/faq/Makefile
  docs/tools/Makefile
  docs/tutorial/Makefile
@@ -800,7 +798,7 @@ exit
  gdk/Makefile
  gdk/x11/Makefile
  gdk/win32/Makefile
-@@ -1814,6 +1877,16 @@
+@@ -1814,6 +1875,16 @@
  contrib/gdk-pixbuf-xlib/Makefile
  contrib/gdk-pixbuf-xlib/gdk-pixbuf-xlib-2.0.pc
  ])
