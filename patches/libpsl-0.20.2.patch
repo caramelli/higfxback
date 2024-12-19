@@ -1,0 +1,77 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists python2-build; then
+  REQUIRES="$REQUIRES python2-build"
+elif pkg-config --exists python3-build; then
+  REQUIRES="$REQUIRES python3-build"
+else
+  echo Python 2 or Python 3 packages required; exit 1
+fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-builtin --disable-runtime --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install tools/.libs/psl $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 include/libpsl.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libpsl.so.5.* $DESTDIR/lib/libpsl.so.5
+ln -sf libpsl.so.5 $DESTDIR/lib/libpsl.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 libpsl.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libpsl-build.pc << EOF
+Name: libpsl
+Version: 0.20.2
+Description: Public Suffix List library
+Requires: $REQUIRES
+
+devel=\\
+/include/libpsl.h \\
+/lib/libpsl.so \\
+/lib/pkgconfig/libpsl.pc
+
+exec=\\
+/bin/psl \\
+/lib/libpsl.so.5
+EOF
+
+exit
+--- libpsl-0.20.2.orig/src/Makefile.am
++++ libpsl-0.20.2/src/Makefile.am
+@@ -28,7 +28,7 @@
+ # Build rule for suffix_dafsa.c
+ # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
+ suffixes_dafsa.c: $(PSL_FILE) $(srcdir)/psl-make-dafsa
+-	$(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.c
++	$(PYTHON) $(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.c
+ 
+ EXTRA_DIST = psl-make-dafsa LICENSE.chromium
+ 
+--- libpsl-0.20.2.orig/tests/Makefile.am
++++ libpsl-0.20.2/tests/Makefile.am
+@@ -29,9 +29,9 @@
+ # check-local target works in parallel to the tests, so the test suite will likely fail
+ BUILT_SOURCES = psl.dafsa psl_ascii.dafsa
+ psl.dafsa:
+-	$(top_srcdir)/src/psl-make-dafsa --output-format=binary "$(PSL_FILE)" psl.dafsa
++	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary "$(PSL_FILE)" psl.dafsa
+ psl_ascii.dafsa:
+-	$(top_srcdir)/src/psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
++	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
+ 
+ clean-local:
+ 	rm -f psl.dafsa psl_ascii.dafsa

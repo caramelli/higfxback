@@ -5,6 +5,11 @@ REQUIRES="autotools-wrappers-lt-build flac-build gdk-pixbuf-build gst-plugins-ba
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if pkg-config --exists libsoup-build; then
+  SOUP=1
+  REQUIRES="$REQUIRES libsoup-build"
+fi
+
 # configure (ac-2.69; am-1.16; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --prefix=/wl
@@ -19,6 +24,7 @@ install ext/flac/.libs/libgstflac.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/gdk_pixbuf/.libs/libgstgdkpixbuf.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/jpeg/.libs/libgstjpeg.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/libpng/.libs/libgstpng.so $DESTDIR/wl/lib/gstreamer-1.0
+test $SOUP && install ext/soup/.libs/libgstsoup.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/speex/.libs/libgstspeex.so $DESTDIR/wl/lib/gstreamer-1.0
 install gst/law/.libs/libgstalaw.so $DESTDIR/wl/lib/gstreamer-1.0
 install gst/alpha/.libs/libgstalpha.so $DESTDIR/wl/lib/gstreamer-1.0
@@ -121,6 +127,9 @@ exec=\\
 /wl/lib/gstreamer-1.0/libgstrtsp.so \\
 /wl/lib/gstreamer-1.0/libgstshapewipe.so \\
 /wl/lib/gstreamer-1.0/libgstsmpte.so \\
+EOF
+test $SOUP && echo /wl/lib/gstreamer-1.0/libgstsoup.so \\ >> $DESTDIR/wl/share/pkgconfig/gst-plugins-good-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-good-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstspectrum.so \\
 /wl/lib/gstreamer-1.0/libgstspeex.so \\
 /wl/lib/gstreamer-1.0/libgstudp.so \\

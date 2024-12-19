@@ -1,0 +1,84 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libxml2-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/etc/xml
+test -f $DESTDIR/etc/xml/catalog || xmlcatalog --noout --create $DESTDIR/etc/xml/catalog
+for DTDVERSION in 4.1.2 4.2 4.3 4.4 4.5; do \
+  xmlcatalog --noout --add "public" "-//OASIS//DTD DocBook XML V$DTDVERSION//EN" "http://www.oasis-open.org/docbook/xml/$DTDVERSION/docbookx.dtd" $DESTDIR/etc/xml/catalog; \
+  xmlcatalog --noout --add "rewriteSystem" "http://www.oasis-open.org/docbook/xml/$DTDVERSION" "/share/xml/docbook/xml-dtd-4.5" $DESTDIR/etc/xml/catalog; \
+  xmlcatalog --noout --add "rewriteURI" "http://www.oasis-open.org/docbook/xml/$DTDVERSION" "/share/xml/docbook/xml-dtd-4.5" $DESTDIR/etc/xml/catalog; \
+done
+install -d $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 calstblx.dtd $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 dbcentx.mod $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 dbgenent.mod $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 dbhierx.mod $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 dbnotnx.mod $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 dbpoolx.mod $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 docbookx.dtd $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -m 644 htmltblx.mod $DESTDIR/share/xml/docbook/xml-dtd-4.5
+install -d $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isoamsa.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isoamsb.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isoamsc.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isoamsn.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isoamso.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isoamsr.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isobox.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isocyr1.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isocyr2.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isodia.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isogrk1.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isogrk2.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isogrk3.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isogrk4.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isolat1.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isolat2.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isonum.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isopub.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+install -m 644 ent/isotech.ent $DESTDIR/share/xml/docbook/xml-dtd-4.5/ent
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/docbook-xml-build.pc << EOF
+Name: docbook-xml
+Version: 4.5
+Description: XML DTD for DocBook
+
+devel=\\
+/etc/xml/catalog \\
+/share/xml/docbook/xml-dtd-4.5/calstblx.dtd \\
+/share/xml/docbook/xml-dtd-4.5/dbcentx.mod \\
+/share/xml/docbook/xml-dtd-4.5/dbgenent.mod \\
+/share/xml/docbook/xml-dtd-4.5/dbhierx.mod \\
+/share/xml/docbook/xml-dtd-4.5/dbnotnx.mod \\
+/share/xml/docbook/xml-dtd-4.5/dbpoolx.mod \\
+/share/xml/docbook/xml-dtd-4.5/docbookx.dtd \\
+/share/xml/docbook/xml-dtd-4.5/htmltblx.mod \\
+/share/xml/docbook/xml-dtd-4.5/ent/isoamsa.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isoamsb.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isoamsc.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isoamsn.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isoamso.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isoamsr.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isobox.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isocyr1.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isocyr2.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isodia.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isogrk1.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isogrk2.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isogrk3.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isogrk4.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isolat1.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isolat2.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isonum.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isopub.ent \\
+/share/xml/docbook/xml-dtd-4.5/ent/isotech.ent
+EOF
+
+exit

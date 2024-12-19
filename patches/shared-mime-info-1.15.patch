@@ -1,0 +1,65 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build itstool-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16)
+aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --with-noarch-pkgconfigdir=/lib/pkgconfig --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install update-mime-database $DESTDIR/bin
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 shared-mime-info.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/mime/packages
+install -m 644 freedesktop.org.xml $DESTDIR/share/mime/packages
+XDG_DATA_DIRS=$DESTDIR/share $DESTDIR/bin/update-mime-database $DESTDIR/share/mime
+find $DESTDIR/share/mime ! -name freedesktop.org.xml ! -name magic ! -path $DESTDIR/share/mime ! -path $DESTDIR/share/mime/packages | xargs rm -rf
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/shared-mime-info-build.pc << EOF
+Name: shared-mime-info
+Version: 1.15
+Description: shared MIME database
+Requires: $REQUIRES
+
+devel=\\
+/lib/pkgconfig/shared-mime-info.pc
+
+exec=\\
+/bin/update-mime-database \\
+/share/mime/magic \\
+/share/mime/packages/freedesktop.org.xml
+EOF
+
+exit
+--- shared-mime-info-1.15.orig/Makefile.am
++++ shared-mime-info-1.15/Makefile.am
+@@ -39,8 +39,7 @@
+ 
+ CLEANFILES = freedesktop.org.xml po/stamp-it
+ 
+-pkgconfigdir = $(datadir)/pkgconfig
+-pkgconfig_DATA = shared-mime-info.pc
++noarch_pkgconfig_DATA = shared-mime-info.pc
+ 
+ $(pkgconfig_DATA): config.status
+ 
+--- shared-mime-info-1.15.orig/configure.ac
++++ shared-mime-info-1.15/configure.ac
+@@ -4,6 +4,8 @@
+ 
+ AC_CONFIG_HEADERS([config.h])
+ 
++PKG_NOARCH_INSTALLDIR
++
+ # Enable silent build when available (Automake 1.11)
+ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+ 

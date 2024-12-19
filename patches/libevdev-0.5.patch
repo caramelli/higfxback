@@ -1,9 +1,17 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build python3-build"
+REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists python2-build; then
+  REQUIRES="$REQUIRES python2-build"
+elif pkg-config --exists python3-build; then
+  REQUIRES="$REQUIRES python3-build"
+else
+  echo Python 2 or Python 3 packages required; exit 1
+fi
 
 # configure (ac-2.69; am-1.13; lt-2.4.2)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c

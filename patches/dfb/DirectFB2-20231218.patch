@@ -11,7 +11,6 @@ if pkg-config --exists libdrm-build; then
 fi
 
 # configure
-sed -i '1s|.*|#!/bin/env python3|' src/core/fluxcomp.py
 meson setup --prefix=/dfb build
 
 # build
@@ -449,6 +448,14 @@ exit
  add_global_arguments('-Wstrict-prototypes', language: 'c')
  
  pkgconfig = import('pkgconfig')
+--- DirectFB2-20231218.orig/src/core/fluxcomp.py
++++ DirectFB2-20231218/src/core/fluxcomp.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python3
++#!/bin/env python3
+ 
+ license = """
+ /*
 --- DirectFB2-20231218.orig/src/meson.build
 +++ DirectFB2-20231218/src/meson.build
 @@ -182,6 +182,7 @@

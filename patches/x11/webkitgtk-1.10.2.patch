@@ -1,0 +1,1196 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build gcc-g++-build gperf-build gtk2-build icu4c-build libsoup-build ruby-build shared-mime-info-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I Source/autotools; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-geolocation --disable-video --disable-webkit2 --with-gtk=2.0 --libexecdir=/x11/lib --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install Programs/GtkLauncher $DESTDIR/x11/bin
+install Programs/.libs/jsc-1 $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/JavaScript.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/JSBase.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/JSContextRef.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/JSObjectRef.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/JSStringRef.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/JSValueRef.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -m 644 Source/JavaScriptCore/API/WebKitAvailability.h $DESTDIR/x11/include/webkitgtk-1.0/JavaScriptCore
+install -d $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/webkitdom.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMAttr.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMBarInfo.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMBlob.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCDATASection.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCharacterData.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMComment.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMConsole.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCSSRule.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCSSRuleList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCSSStyleDeclaration.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCSSStyleSheet.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCSSValue.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMCustom.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDatabase.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/webkitdomdefines.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDocument.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDocumentFragment.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDocumentType.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMApplicationCache.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMImplementation.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMMimeType.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMMimeTypeArray.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMPlugin.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMPluginArray.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMSecurityPolicy.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMSelection.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMSettableTokenList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMStringList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMStringMap.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMTokenList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMDOMWindow.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMEntityReference.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMEvent.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMEventTarget.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMFile.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMFileList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMGamepad.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMGamepadList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMGeolocation.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHistory.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLAnchorElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLAppletElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLAreaElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLBRElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLBaseElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLBaseFontElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLBodyElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLButtonElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLCanvasElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLCollection.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLDListElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLDetailsElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLDirectoryElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLDivElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLDocument.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLEmbedElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLFieldSetElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLFontElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLFormElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLFrameElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLFrameSetElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLHeadElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLHeadingElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLHRElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLHtmlElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLIFrameElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLImageElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLInputElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLKeygenElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLLabelElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLLegendElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLLIElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLLinkElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLMapElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLMarqueeElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLMediaElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLMenuElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLMetaElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLModElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLObjectElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLOListElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLOptGroupElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLOptionElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLOptionsCollection.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLParagraphElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLParamElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLPreElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLQuoteElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLScriptElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLSelectElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLStyleElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTableCaptionElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTableCellElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTableColElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTableElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTableRowElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTableSectionElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTextAreaElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLTitleElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMHTMLUListElement.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMLocation.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMMediaError.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMMediaList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMMediaQueryList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMMemoryInfo.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMMessagePort.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMMouseEvent.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMNamedNodeMap.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMNavigator.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMNode.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMNodeFilter.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMNodeIterator.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMNodeList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMObject.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMProcessingInstruction.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMRange.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMScreen.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMStorage.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMStorageInfo.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMStyleMedia.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMStyleSheet.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMStyleSheetList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMText.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMTimeRanges.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMTreeWalker.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMUIEvent.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMValidityState.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMWebKitAnimation.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMWebKitAnimationList.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMWebKitNamedFlow.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMWebKitPoint.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMXPathExpression.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMXPathNSResolver.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/WebKitDOMXPathResult.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 DerivedSources/webkit/webkitenumtypes.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkit.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitapplicationcache.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitdefines.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitdownload.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkiterror.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitfavicondatabase.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitfilechooserrequest.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitgeolocationpolicydecision.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitglobals.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkithittestresult.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkiticondatabase.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitnetworkrequest.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitnetworkresponse.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitsecurityorigin.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitsoupauthdialog.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitspellchecker.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitversion.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitviewportattributes.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebbackforwardlist.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebdatabase.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebdatasource.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebframe.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebhistoryitem.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebinspector.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebnavigationaction.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebplugin.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebplugindatabase.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebpolicydecision.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebresource.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebsettings.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebview.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -m 644 Source/WebKit/gtk/webkit/webkitwebwindowfeatures.h $DESTDIR/x11/include/webkitgtk-1.0/webkit
+install -d $DESTDIR/x11/lib
+install .libs/libjavascriptcoregtk-1.0.so.0.* $DESTDIR/x11/lib/libjavascriptcoregtk-1.0.so.0
+ln -sf libjavascriptcoregtk-1.0.so.0 $DESTDIR/x11/lib/libjavascriptcoregtk-1.0.so
+install .libs/libwebkitgtk-1.0.so.0.* $DESTDIR/x11/lib/libwebkitgtk-1.0.so.0
+ln -sf libwebkitgtk-1.0.so.0 $DESTDIR/x11/lib/libwebkitgtk-1.0.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 Source/JavaScriptCore/javascriptcoregtk-1.0.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 Source/WebKit/gtk/webkit-1.0.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/webkitgtk-1.0/resources
+install -m 644 Source/WebKit/gtk/resources/error.html $DESTDIR/x11/share/webkitgtk-1.0/resources
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/webkitgtk-build.pc << EOF
+Name: webkitgtk
+Version: 1.10.2
+Description: Web content rendering engine for GTK
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/webkitgtk-1.0/JavaScriptCore/JSBase.h \\
+/x11/include/webkitgtk-1.0/JavaScriptCore/JSContextRef.h \\
+/x11/include/webkitgtk-1.0/JavaScriptCore/JSObjectRef.h \\
+/x11/include/webkitgtk-1.0/JavaScriptCore/JSStringRef.h \\
+/x11/include/webkitgtk-1.0/JavaScriptCore/JSValueRef.h \\
+/x11/include/webkitgtk-1.0/JavaScriptCore/JavaScript.h \\
+/x11/include/webkitgtk-1.0/JavaScriptCore/WebKitAvailability.h \\
+/x11/include/webkitgtk-1.0/webkit/webkit.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitapplicationcache.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitdefines.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitdom.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMAttr.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMBarInfo.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMBlob.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCDATASection.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCharacterData.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMComment.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMConsole.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCSSRule.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCSSRuleList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCSSStyleDeclaration.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCSSStyleSheet.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCSSValue.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMCustom.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDatabase.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitdomdefines.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDocument.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDocumentFragment.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDocumentType.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMApplicationCache.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMImplementation.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMMimeType.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMMimeTypeArray.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMPlugin.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMPluginArray.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMSecurityPolicy.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMSelection.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMSettableTokenList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMStringList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMStringMap.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMTokenList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMDOMWindow.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMEntityReference.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMEvent.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMEventTarget.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMFile.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMFileList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMGamepad.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMGamepadList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMGeolocation.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHistory.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLAnchorElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLAppletElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLAreaElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLBRElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLBaseElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLBaseFontElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLBodyElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLButtonElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLCanvasElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLCollection.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLDListElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLDetailsElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLDirectoryElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLDivElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLDocument.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLEmbedElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLFieldSetElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLFontElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLFormElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLFrameElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLFrameSetElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLHeadElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLHeadingElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLHRElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLHtmlElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLIFrameElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLImageElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLInputElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLKeygenElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLLabelElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLLegendElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLLIElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLLinkElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLMapElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLMarqueeElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLMediaElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLMenuElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLMetaElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLModElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLObjectElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLOListElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLOptGroupElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLOptionElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLOptionsCollection.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLParagraphElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLParamElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLPreElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLQuoteElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLScriptElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLSelectElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLStyleElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTableCaptionElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTableCellElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTableColElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTableElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTableRowElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTableSectionElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTextAreaElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLTitleElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMHTMLUListElement.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMLocation.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMMediaError.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMMediaList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMMediaQueryList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMMemoryInfo.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMMessagePort.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMMouseEvent.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMNamedNodeMap.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMNavigator.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMNode.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMNodeFilter.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMNodeIterator.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMNodeList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMObject.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMProcessingInstruction.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMRange.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMScreen.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMStorage.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMStorageInfo.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMStyleMedia.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMStyleSheet.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMStyleSheetList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMText.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMTimeRanges.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMTreeWalker.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMUIEvent.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMValidityState.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMWebKitAnimation.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMWebKitAnimationList.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMWebKitNamedFlow.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMWebKitPoint.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMXPathExpression.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMXPathNSResolver.h \\
+/x11/include/webkitgtk-1.0/webkit/WebKitDOMXPathResult.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitdownload.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitenumtypes.h \\
+/x11/include/webkitgtk-1.0/webkit/webkiterror.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitfavicondatabase.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitfilechooserrequest.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitgeolocationpolicydecision.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitglobals.h \\
+/x11/include/webkitgtk-1.0/webkit/webkithittestresult.h \\
+/x11/include/webkitgtk-1.0/webkit/webkiticondatabase.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitnetworkrequest.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitnetworkresponse.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitsecurityorigin.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitsoupauthdialog.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitspellchecker.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitversion.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitviewportattributes.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebbackforwardlist.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebdatabase.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebdatasource.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebframe.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebhistoryitem.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebinspector.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebnavigationaction.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebplugin.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebplugindatabase.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebpolicydecision.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebresource.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebsettings.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebview.h \\
+/x11/include/webkitgtk-1.0/webkit/webkitwebwindowfeatures.h \\
+/x11/lib/libjavascriptcoregtk-1.0.so \\
+/x11/lib/libwebkitgtk-1.0.so \\
+/x11/lib/pkgconfig/javascriptcoregtk-1.0.pc \\
+/x11/lib/pkgconfig/webkit-1.0.pc
+
+exec=\\
+/x11/bin/GtkLauncher \\
+/x11/bin/jsc-1 \\
+/x11/lib/libjavascriptcoregtk-1.0.so.0 \\
+/x11/lib/libwebkitgtk-1.0.so.0 \\
+/x11/share/webkitgtk-1.0/resources/error.html
+EOF
+
+exit
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/API/OpaqueJSString.cpp
++++ webkitgtk-1.10.2/Source/JavaScriptCore/API/OpaqueJSString.cpp
+@@ -41,14 +41,14 @@
+ 
+ UString OpaqueJSString::ustring() const
+ {
+-    if (this && m_characters)
++    if (m_characters)
+         return UString(m_characters, m_length);
+     return UString();
+ }
+ 
+ Identifier OpaqueJSString::identifier(JSGlobalData* globalData) const
+ {
+-    if (!this || !m_characters)
++    if (!m_characters)
+         return Identifier(globalData, static_cast<const char*>(0));
+ 
+     return Identifier(globalData, m_characters, m_length);
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/API/OpaqueJSString.h
++++ webkitgtk-1.10.2/Source/JavaScriptCore/API/OpaqueJSString.h
+@@ -48,8 +48,8 @@
+ 
+     JS_EXPORT_PRIVATE static PassRefPtr<OpaqueJSString> create(const JSC::UString&);
+ 
+-    UChar* characters() { return this ? m_characters : 0; }
+-    unsigned length() { return this ? m_length : 0; }
++    UChar* characters() { return m_characters; }
++    unsigned length() { return m_length; }
+ 
+     JSC::UString ustring() const;
+     JSC::Identifier identifier(JSC::JSGlobalData*) const;
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/dfg/DFGByteCodeParser.cpp
++++ webkitgtk-1.10.2/Source/JavaScriptCore/dfg/DFGByteCodeParser.cpp
+@@ -365,7 +365,7 @@
+             InlineCallFrame* inlineCallFrame = stack->m_inlineCallFrame;
+             if (!inlineCallFrame)
+                 break;
+-            if (operand >= inlineCallFrame->stackOffset - RegisterFile::CallFrameHeaderSize)
++            if (operand >= static_cast<int>(inlineCallFrame->stackOffset - RegisterFile::CallFrameHeaderSize))
+                 continue;
+             if (operand == inlineCallFrame->stackOffset + CallFrame::thisArgumentOffset())
+                 continue;
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/offlineasm/generate_offset_extractor.rb
++++ webkitgtk-1.10.2/Source/JavaScriptCore/offlineasm/generate_offset_extractor.rb
+@@ -42,7 +42,7 @@
+ def emitMagicNumber
+     OFFSET_MAGIC_NUMBERS.each {
+         | number |
+-        $output.puts "#{number},"
++        $output.puts "unsigned(#{number}),"
+     }
+ end
+ 
+@@ -120,7 +120,7 @@
+         | settings, ast, backend, index |
+         OFFSET_HEADER_MAGIC_NUMBERS.each {
+             | number |
+-            $output.puts "#{number},"
++            $output.puts "unsigned(#{number}),"
+         }
+ 
+         offsetsList = ast.filter(StructOffset).uniq.sort
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/parser/SourceProvider.h
++++ webkitgtk-1.10.2/Source/JavaScriptCore/parser/SourceProvider.h
+@@ -65,9 +65,6 @@
+         TextPosition startPosition() const { return m_startPosition; }
+         intptr_t asID()
+         {
+-            ASSERT(this);
+-            if (!this) // Be defensive in release mode.
+-                return nullID;
+             return reinterpret_cast<intptr_t>(this);
+         }
+ 
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/runtime/Identifier.cpp
++++ webkitgtk-1.10.2/Source/JavaScriptCore/runtime/Identifier.cpp
+@@ -150,8 +150,8 @@
+         UChar c = (*r)[0];
+         if (c <= maxSingleCharacterString)
+             r = globalData->smallStrings.singleCharacterStringRep(c);
+-            if (r->isIdentifier())
+-                return r;
++        if (r->isIdentifier())
++            return r;
+     }
+ 
+     return *globalData->identifierTable->add(r).iterator;
+--- webkitgtk-1.10.2.orig/Source/JavaScriptCore/runtime/Identifier.h
++++ webkitgtk-1.10.2/Source/JavaScriptCore/runtime/Identifier.h
+@@ -180,7 +180,7 @@
+         
+         if (!length)
+             return StringImpl::empty();
+-        CharBuffer<T> buf = {s, length}; 
++        CharBuffer<T> buf = {s, static_cast<unsigned>(length)}; 
+         HashSet<StringImpl*>::AddResult addResult = globalData->identifierTable->add<CharBuffer<T>, IdentifierCharBufferTranslator<T> >(buf);
+         
+         // If the string is newly-translated, then we need to adopt it.
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/Assertions.h
++++ webkitgtk-1.10.2/Source/WTF/wtf/Assertions.h
+@@ -328,7 +328,7 @@
+ #if COMPILER_SUPPORTS(C_STATIC_ASSERT)
+ #define COMPILE_ASSERT(exp, name) _Static_assert((exp), #name)
+ #else
+-#define COMPILE_ASSERT(exp, name) typedef int dummy##name [(exp) ? 1 : -1]
++#define COMPILE_ASSERT(exp, name) static_assert((exp), #name)
+ #endif
+ #endif
+ 
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/Compiler.h
++++ webkitgtk-1.10.2/Source/WTF/wtf/Compiler.h
+@@ -122,7 +122,7 @@
+ 
+ /* Specific compiler features */
+ #if COMPILER(GCC) && !COMPILER(CLANG)
+-#if GCC_VERSION_AT_LEAST(4, 7, 0) && __cplusplus >= 201103L
++#if GCC_VERSION_AT_LEAST(4, 7, 0) && defined(__cplusplus) && __cplusplus >= 201103L
+ #define WTF_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES 1
+ #define WTF_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS 1
+ #define WTF_COMPILER_SUPPORTS_CXX_NULLPTR 1
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/HashMap.h
++++ webkitgtk-1.10.2/Source/WTF/wtf/HashMap.h
+@@ -134,29 +134,35 @@
+     private:
+         AddResult inlineAdd(const KeyType&, MappedPassInReferenceType);
+ 
+-        class HashMapKeysProxy : private HashMap {
++        HashTableType m_impl;
++    };
++
++    template<typename KeyArg, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg>
++    class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>::HashMapKeysProxy : 
++        private HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> {
+         public:
+-            typedef typename HashMap::iterator::Keys iterator;
+-            typedef typename HashMap::const_iterator::Keys const_iterator;
+-            
++            typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> HashMapType;
++            typedef typename HashMapType::iterator::Keys iterator;
++            typedef typename HashMapType::const_iterator::Keys const_iterator;
++
+             iterator begin()
+             {
+-                return HashMap::begin().keys();
++                return HashMapType::begin().keys();
+             }
+-            
++
+             iterator end()
+             {
+-                return HashMap::end().keys();
++                return HashMapType::end().keys();
+             }
+ 
+             const_iterator begin() const
+             {
+-                return HashMap::begin().keys();
++                return HashMapType::begin().keys();
+             }
+-            
++
+             const_iterator end() const
+             {
+-                return HashMap::end().keys();
++                return HashMapType::end().keys();
+             }
+ 
+         private:
+@@ -167,31 +173,34 @@
+             HashMapKeysProxy(const HashMapKeysProxy&);
+             HashMapKeysProxy& operator=(const HashMapKeysProxy&);
+             ~HashMapKeysProxy();
+-        };
++    };
+ 
+-        class HashMapValuesProxy : private HashMap {
++    template<typename KeyArg, typename MappedArg, typename HashArg,  typename KeyTraitsArg, typename MappedTraitsArg>
++    class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>::HashMapValuesProxy : 
++        private HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> {
+         public:
+-            typedef typename HashMap::iterator::Values iterator;
+-            typedef typename HashMap::const_iterator::Values const_iterator;
+-            
++            typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> HashMapType;
++            typedef typename HashMapType::iterator::Values iterator;
++            typedef typename HashMapType::const_iterator::Values const_iterator;
++
+             iterator begin()
+             {
+-                return HashMap::begin().values();
++                return HashMapType::begin().values();
+             }
+-            
++
+             iterator end()
+             {
+-                return HashMap::end().values();
++                return HashMapType::end().values();
+             }
+ 
+             const_iterator begin() const
+             {
+-                return HashMap::begin().values();
++                return HashMapType::begin().values();
+             }
+-            
++
+             const_iterator end() const
+             {
+-                return HashMap::end().values();
++                return HashMapType::end().values();
+             }
+ 
+         private:
+@@ -202,9 +211,6 @@
+             HashMapValuesProxy(const HashMapValuesProxy&);
+             HashMapValuesProxy& operator=(const HashMapValuesProxy&);
+             ~HashMapValuesProxy();
+-        };
+-
+-        HashTableType m_impl;
+     };
+ 
+     template<typename KeyTraits, typename MappedTraits> struct HashMapValueTraits : KeyValuePairHashTraits<KeyTraits, MappedTraits> {
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/Vector.h
++++ webkitgtk-1.10.2/Source/WTF/wtf/Vector.h
+@@ -481,8 +481,6 @@
+         typedef VectorBuffer<T, inlineCapacity> Buffer;
+         typedef VectorTypeOperations<T> TypeOperations;
+ 
+-        class VectorReverseProxy;
+-
+     public:
+         typedef T ValueType;
+ 
+@@ -555,9 +553,6 @@
+         const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+         const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+ 
+-        VectorReverseProxy& reversed() { return static_cast<VectorReverseProxy&>(*this); }
+-        const VectorReverseProxy& reversed() const { return static_cast<const VectorReverseProxy&>(*this); }
+-
+         T& first() { return at(0); }
+         const T& first() const { return at(0); }
+         T& last() { return at(size() - 1); }
+@@ -634,28 +629,32 @@
+         template<typename U> U* expandCapacity(size_t newMinCapacity, U*); 
+         template<typename U> void appendSlowCase(const U&);
+ 
+-        class VectorReverseProxy : private Vector {
++        class VectorReverseProxy {
+         public:
++            VectorReverseProxy(Vector& vector) : m_vector(vector) {}
++
+             typedef typename Vector::reverse_iterator iterator;
+             typedef typename Vector::const_reverse_iterator const_iterator;
+             
+-            iterator begin() { return Vector::rbegin(); }
+-            iterator end() { return Vector::rend(); }
+-            const_iterator begin() const { return Vector::rbegin(); }
+-            const_iterator end() const { return Vector::rend(); }
++            iterator begin() { return m_vector.rbegin(); }
++            iterator end() { return m_vector.rend(); }
++            const_iterator begin() const { return m_vector.rbegin(); }
++            const_iterator end() const { return m_vector.rend(); }
+ 
+         private:
+-            friend class Vector;
++            Vector& m_vector;
+ 
+             // These are intentionally not implemented.
+             VectorReverseProxy();
+-            VectorReverseProxy(const VectorReverseProxy&);
+             VectorReverseProxy& operator=(const VectorReverseProxy&);
+-            ~VectorReverseProxy();
+         };
+ 
+         size_t m_size;
+         Buffer m_buffer;
++
++    public:
++        VectorReverseProxy reversed() { return VectorReverseProxy(*this); }
++        const VectorReverseProxy reversed() const { return VectorReverseProxy(*this); }
+     };
+ 
+ #if PLATFORM(QT)
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/dtoa/utils.h
++++ webkitgtk-1.10.2/Source/WTF/wtf/dtoa/utils.h
+@@ -291,7 +291,7 @@
+     inline Dest BitCast(const Source& source) {
+         // Compile time assertion: sizeof(Dest) == sizeof(Source)
+         // A compile error here means your Dest and Source have different sizes.
+-        typedef char VerifySizesAreEqual[sizeof(Dest) == sizeof(Source) ? 1 : -1];
++        static_assert(sizeof(Dest) == sizeof(Source), "Source and destination sizes must be equal");
+         
+         Dest dest;
+         memcpy(&dest, &source, sizeof(dest));
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/text/AtomicString.cpp
++++ webkitgtk-1.10.2/Source/WTF/wtf/text/AtomicString.cpp
+@@ -244,7 +244,7 @@
+     if (!s)
+         return 0;
+ 
+-    int length = 0;
++    unsigned length = 0;
+     while (s[length] != UChar(0))
+         length++;
+ 
+--- webkitgtk-1.10.2.orig/Source/WTF/wtf/unicode/UTF8.cpp
++++ webkitgtk-1.10.2/Source/WTF/wtf/unicode/UTF8.cpp
+@@ -276,7 +276,7 @@
+ // This table contains as many values as there might be trailing bytes
+ // in a UTF-8 sequence.
+ static const UChar32 offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL, 
+-            0x03C82080UL, 0xFA082080UL, 0x82082080UL };
++            0x03C82080UL, static_cast<UChar32>(0xFA082080UL), static_cast<UChar32>(0x82082080UL) };
+ 
+ static inline UChar32 readUTF8Sequence(const char*& sequence, unsigned length)
+ {
+--- webkitgtk-1.10.2.orig/Source/WebCore/bindings/scripts/preprocessor.pm
++++ webkitgtk-1.10.2/Source/WebCore/bindings/scripts/preprocessor.pm
+@@ -50,7 +50,7 @@
+         } elsif (($Config::Config{'osname'}) =~ /solaris/i) {
+             $preprocessor = "/usr/sfw/bin/gcc";
+         } else {
+-            $preprocessor = "/usr/bin/gcc";
++            $preprocessor = "g++";
+         }
+         push(@args, qw(-E -P -x c++));
+     }
+--- webkitgtk-1.10.2.orig/Source/WebCore/css/CSSPropertyNames.in
++++ webkitgtk-1.10.2/Source/WebCore/css/CSSPropertyNames.in
+@@ -341,7 +341,9 @@
+ -webkit-min-logical-width
+ -webkit-min-logical-height
+ -webkit-nbsp-mode
++#if defined(ENABLE_CSS3_FLEXBOX) && ENABLE_CSS3_FLEXBOX
+ -webkit-order
++#endif
+ -webkit-padding-after
+ -webkit-padding-before
+ -webkit-padding-end
+--- webkitgtk-1.10.2.orig/Source/WebCore/dom/make_names.pl
++++ webkitgtk-1.10.2/Source/WebCore/dom/make_names.pl
+@@ -67,7 +67,7 @@
+ } elsif (($Config::Config{'osname'}) =~ /solaris/i) {
+     $gccLocation = "/usr/sfw/bin/gcc";
+ } else {
+-    $gccLocation = "/usr/bin/gcc";
++    $gccLocation = "g++";
+ }
+ my $preprocessor = $gccLocation . " -E -x c++";
+ 
+--- webkitgtk-1.10.2.orig/Source/WebCore/html/HTMLElement.cpp
++++ webkitgtk-1.10.2/Source/WebCore/html/HTMLElement.cpp
+@@ -500,7 +500,7 @@
+     else
+         newChild = Text::create(document(), text);
+ 
+-    if (!this || !parentNode())
++    if (!parentNode())
+         ec = HIERARCHY_REQUEST_ERR;
+     if (ec)
+         return;
+--- webkitgtk-1.10.2.orig/Source/WebCore/page/FrameView.cpp
++++ webkitgtk-1.10.2/Source/WebCore/page/FrameView.cpp
+@@ -1304,7 +1304,7 @@
+     if (printing) {
+         if (m_mediaTypeWhenNotPrinting.isNull())
+             m_mediaTypeWhenNotPrinting = mediaType();
+-            setMediaType("print");
++        setMediaType("print");
+     } else {
+         if (!m_mediaTypeWhenNotPrinting.isNull())
+             setMediaType(m_mediaTypeWhenNotPrinting);
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/gtk/FileSystemGtk.cpp
++++ webkitgtk-1.10.2/Source/WebCore/platform/gtk/FileSystemGtk.cpp
+@@ -220,9 +220,9 @@
+     GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, reinterpret_cast<char*>(sharedResourcesPath), &hmodule);
+ 
+     GOwnPtr<gchar> runtimeDir(g_win32_get_package_installation_directory_of_module(hmodule));
+-    GOwnPtr<gchar> dataPath(g_build_filename(runtimeDir.get(), "share", "webkitgtk-"WEBKITGTK_API_VERSION_STRING, NULL));
++    GOwnPtr<gchar> dataPath(g_build_filename(runtimeDir.get(), "share", "webkitgtk-" WEBKITGTK_API_VERSION_STRING, NULL));
+ #else
+-    GOwnPtr<gchar> dataPath(g_build_filename(DATA_DIR, "webkitgtk-"WEBKITGTK_API_VERSION_STRING, NULL));
++    GOwnPtr<gchar> dataPath(g_build_filename(DATA_DIR, "webkitgtk-" WEBKITGTK_API_VERSION_STRING, NULL));
+ #endif
+ 
+     cachedPath = dataPath.get();
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp
++++ webkitgtk-1.10.2/Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp
+@@ -25,6 +25,9 @@
+  */
+ 
+ #include "config.h"
++
++#if USE(ACCELERATED_COMPOSITING)
++
+ #include "RedirectedXCompositeWindow.h"
+ 
+ #include "GLContextGLX.h"
+@@ -262,3 +265,5 @@
+ }
+ 
+ } // namespace WebCore
++
++#endif
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/gtk/ScrollbarThemeGtk.cpp
++++ webkitgtk-1.10.2/Source/WebCore/platform/gtk/ScrollbarThemeGtk.cpp
+@@ -239,9 +239,10 @@
+ 
+     ScrollbarControlPartMask allButtons = BackButtonStartPart | BackButtonEndPart
+                                          | ForwardButtonStartPart | ForwardButtonEndPart;
+-    if (scrollMask & TrackBGPart || scrollMask & ThumbPart || scrollMask & allButtons)
++    if (scrollMask & TrackBGPart || scrollMask & ThumbPart || scrollMask & allButtons) {
+         paintScrollbarBackground(graphicsContext, scrollbar);
+         paintTrackBackground(graphicsContext, scrollbar, trackPaintRect);
++    }
+ 
+     // Paint the back and forward buttons.
+     if (scrollMask & BackButtonStartPart)
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/network/soup/CookieJarSoup.cpp
++++ webkitgtk-1.10.2/Source/WebCore/platform/network/soup/CookieJarSoup.cpp
+@@ -29,6 +29,10 @@
+ #include "KURL.h"
+ #include "NetworkingContext.h"
+ #include "ResourceHandle.h"
++#include <libsoup/soup-cookie.h>
++#include <libsoup/soup-date.h>
++#include <libsoup/soup-session.h>
++#include <libsoup/soup-uri.h>
+ #include <wtf/gobject/GRefPtr.h>
+ #include <wtf/text/CString.h>
+ 
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/network/soup/CookieJarSoup.h
++++ webkitgtk-1.10.2/Source/WebCore/platform/network/soup/CookieJarSoup.h
+@@ -28,7 +28,7 @@
+ #define CookieJarSoup_h
+ 
+ #include "CookieJar.h"
+-#include <libsoup/soup.h>
++#include <libsoup/soup-cookie-jar.h>
+ 
+ namespace WebCore {
+ 
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/network/soup/DNSSoup.cpp
++++ webkitgtk-1.10.2/Source/WebCore/platform/network/soup/DNSSoup.cpp
+@@ -30,6 +30,7 @@
+ 
+ #include "GOwnPtrSoup.h"
+ #include "ResourceHandle.h"
++#include <libsoup/soup-session.h>
+ #include <wtf/MainThread.h>
+ #include <wtf/text/CString.h>
+ 
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/network/soup/ResourceRequest.h
++++ webkitgtk-1.10.2/Source/WebCore/platform/network/soup/ResourceRequest.h
+@@ -29,7 +29,7 @@
+ 
+ #include "ResourceRequestBase.h"
+ 
+-#include <libsoup/soup.h>
++#include <libsoup/soup-message.h>
+ 
+ namespace WebCore {
+ 
+--- webkitgtk-1.10.2.orig/Source/WebCore/platform/network/soup/ResourceResponse.h
++++ webkitgtk-1.10.2/Source/WebCore/platform/network/soup/ResourceResponse.h
+@@ -28,7 +28,7 @@
+ 
+ #include "ResourceResponseBase.h"
+ 
+-#include <libsoup/soup.h>
++#include <libsoup/soup-message.h>
+ #include <wtf/gobject/GRefPtr.h>
+ 
+ namespace WebCore {
+--- webkitgtk-1.10.2.orig/Source/WebCore/rendering/RenderBlock.cpp
++++ webkitgtk-1.10.2/Source/WebCore/rendering/RenderBlock.cpp
+@@ -6850,7 +6850,7 @@
+ 
+     // See if we're in the last region.
+     LayoutUnit pageOffset = offsetFromLogicalTopOfFirstPage() + logicalOffset;
+-    RenderRegion* region = enclosingRenderFlowThread()->renderRegionForLine(pageOffset, this);
++    RenderRegion* region = enclosingRenderFlowThread()->renderRegionForLine(pageOffset, true);
+     if (!region)
+         return false;
+     if (region->isLastRegion())
+--- webkitgtk-1.10.2.orig/Source/WebCore/rendering/style/RenderStyle.cpp
++++ webkitgtk-1.10.2/Source/WebCore/rendering/style/RenderStyle.cpp
+@@ -664,14 +664,14 @@
+         || rareInheritedData->m_imageRendering != other->rareInheritedData->m_imageRendering)
+         return StyleDifferenceRepaint;
+         
+-        // FIXME: The current spec is being reworked to remove dependencies between exclusions and affected 
+-        // content. There's a proposal to use floats instead. In that case, wrap-shape should actually relayout 
+-        // the parent container. For sure, I will have to revisit this code, but for now I've added this in order 
+-        // to avoid having diff() == StyleDifferenceEqual where wrap-shapes actually differ.
+-        // Tracking bug: https://bugs.webkit.org/show_bug.cgi?id=62991
+-        if (rareNonInheritedData->m_wrapShapeInside != other->rareNonInheritedData->m_wrapShapeInside
+-            || rareNonInheritedData->m_wrapShapeOutside != other->rareNonInheritedData->m_wrapShapeOutside)
+-            return StyleDifferenceRepaint;
++    // FIXME: The current spec is being reworked to remove dependencies between exclusions and affected 
++    // content. There's a proposal to use floats instead. In that case, wrap-shape should actually relayout 
++    // the parent container. For sure, I will have to revisit this code, but for now I've added this in order 
++    // to avoid having diff() == StyleDifferenceEqual where wrap-shapes actually differ.
++    // Tracking bug: https://bugs.webkit.org/show_bug.cgi?id=62991
++    if (rareNonInheritedData->m_wrapShapeInside != other->rareNonInheritedData->m_wrapShapeInside
++        || rareNonInheritedData->m_wrapShapeOutside != other->rareNonInheritedData->m_wrapShapeOutside)
++        return StyleDifferenceRepaint;
+ 
+ #if USE(ACCELERATED_COMPOSITING)
+     if (rareNonInheritedData.get() != other->rareNonInheritedData.get()) {
+--- webkitgtk-1.10.2.orig/Source/WebKit/gtk/WebCoreSupport/DumpRenderTreeSupportGtk.cpp
++++ webkitgtk-1.10.2/Source/WebKit/gtk/WebCoreSupport/DumpRenderTreeSupportGtk.cpp
+@@ -743,6 +743,8 @@
+ #if ENABLE(GEOLOCATION)
+     GeolocationClientMock* mock = static_cast<GeolocationClientMock*>(GeolocationController::from(core(webView))->client());
+     return mock->numberOfPendingPermissionRequests();
++#else
++    return 0;
+ #endif
+ }
+ 
+--- webkitgtk-1.10.2.orig/Source/WebKit/gtk/po/GNUmakefile.am
++++ webkitgtk-1.10.2/Source/WebKit/gtk/po/GNUmakefile.am
+@@ -17,11 +17,11 @@
+ 
+ DOMAIN += $(GETTEXT_PACKAGE)
+ 
+-MSGFMT := $(shell which msgfmt)
++MSGFMT := $(shell which msgfmt 2> /dev/null)
+ 
+-XGETTEXT := $(shell which xgettext)
++XGETTEXT := $(shell which xgettext 2> /dev/null)
+ 
+-MSGMERGE := $(shell which msgmerge)
++MSGMERGE := $(shell which msgmerge 2> /dev/null)
+ 
+ MSGMERGE_UPDATE := $(MSGMERGE) --update
+ 
+@@ -31,7 +31,7 @@
+ 
+ USER_LINGUAS += $(filter $(LINGUAS),$(PO_LINGUAS))
+ 
+-USE_LINGUAS += $(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else LLINGUAS="$(PO_LINGUAS)"; fi; for lang in $$LLINGUAS; do printf "$$lang "; done)
++USE_LINGUAS += $(shell if test -n "$(MSGFMT)"; then if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else LLINGUAS="$(PO_LINGUAS)"; fi; for lang in $$LLINGUAS; do printf "$$lang "; done; fi)
+ 
+ MOFILES += $(USE_LINGUAS:%=Source/WebKit/gtk/po/%.mo)
+ 
+@@ -71,6 +71,7 @@
+ # Note that $(DOMAIN).pot is not touched if it doesn't need to be changed.
+ $(DOMAIN).pot-update: $(POTFILES) $(srcdir)/Source/WebKit/gtk/po/POTFILES
+ 	test -d Source/WebKit/gtk/po/ || mkdir -p Source/WebKit/gtk/po/
++	test -n "$(XGETTEXT)" || exit 0 \
+ 	package_gnu=''; \
+ 	if test -n '$(MSGID_BUGS_ADDRESS)' || test '$(PACKAGE_BUGREPORT)' = '@'PACKAGE_BUGREPORT'@'; then \
+ 	  msgid_bugs_address='$(MSGID_BUGS_ADDRESS)'; \
+--- webkitgtk-1.10.2.orig/Source/WebKit/gtk/tests/testatk.c
++++ webkitgtk-1.10.2/Source/WebKit/gtk/tests/testatk.c
+@@ -1978,7 +1978,7 @@
+     g_setenv("GTK_MODULES", "gail", TRUE);
+ 
+     /* Following lines were taken from gtk_test_init(). */
+-    g_test_init(&argc, &argv, 0);
++    g_test_init(&argc, &argv, NULL);
+     gtk_disable_setlocale();
+     setlocale(LC_ALL, "C");
+ 
+--- webkitgtk-1.10.2.orig/Source/autotools/gtk-doc.m4
++++ webkitgtk-1.10.2/Source/autotools/gtk-doc.m4
+@@ -0,0 +1,67 @@
++dnl -*- mode: autoconf -*-
++
++# serial 1
++
++dnl Usage:
++dnl   GTK_DOC_CHECK([minimum-gtk-doc-version])
++AC_DEFUN([GTK_DOC_CHECK],
++[
++  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
++  AC_BEFORE([AC_PROG_LIBTOOL],[$0])dnl setup libtool first
++  AC_BEFORE([AM_PROG_LIBTOOL],[$0])dnl setup libtool first
++
++  dnl check for tools we added during development
++  AC_PATH_PROG([GTKDOC_CHECK],[gtkdoc-check])
++  AC_PATH_PROGS([GTKDOC_REBASE],[gtkdoc-rebase],[true])
++  AC_PATH_PROG([GTKDOC_MKPDF],[gtkdoc-mkpdf])
++
++  dnl for overriding the documentation installation directory
++  AC_ARG_WITH([html-dir],
++    AS_HELP_STRING([--with-html-dir=PATH], [path to installed docs]),,
++    [with_html_dir='${datadir}/gtk-doc/html'])
++  HTML_DIR="$with_html_dir"
++  AC_SUBST([HTML_DIR])
++
++  dnl enable/disable documentation building
++  AC_ARG_ENABLE([gtk-doc],
++    AS_HELP_STRING([--enable-gtk-doc],
++                   [use gtk-doc to build documentation [[default=no]]]),,
++    [enable_gtk_doc=no])
++
++  if test x$enable_gtk_doc = xyes; then
++    ifelse([$1],[],
++      [PKG_CHECK_EXISTS([gtk-doc],,
++                        AC_MSG_ERROR([gtk-doc not installed and --enable-gtk-doc requested]))],
++      [PKG_CHECK_EXISTS([gtk-doc >= $1],,
++                        AC_MSG_ERROR([You need to have gtk-doc >= $1 installed to build $PACKAGE_NAME]))])
++    dnl don't check for glib if we build glib
++    if test "x$PACKAGE_NAME" != "xglib"; then
++      dnl don't fail if someone does not have glib
++      PKG_CHECK_MODULES(GTKDOC_DEPS, glib-2.0 >= 2.10.0 gobject-2.0  >= 2.10.0,,)
++    fi
++  fi
++
++  AC_MSG_CHECKING([whether to build gtk-doc documentation])
++  AC_MSG_RESULT($enable_gtk_doc)
++
++  dnl enable/disable output formats
++  AC_ARG_ENABLE([gtk-doc-html],
++    AS_HELP_STRING([--enable-gtk-doc-html],
++                   [build documentation in html format [[default=yes]]]),,
++    [enable_gtk_doc_html=yes])
++    AC_ARG_ENABLE([gtk-doc-pdf],
++      AS_HELP_STRING([--enable-gtk-doc-pdf],
++                     [build documentation in pdf format [[default=no]]]),,
++      [enable_gtk_doc_pdf=no])
++
++  if test -z "$GTKDOC_MKPDF"; then
++    enable_gtk_doc_pdf=no
++  fi
++
++
++  AM_CONDITIONAL([ENABLE_GTK_DOC], [test x$enable_gtk_doc = xyes])
++  AM_CONDITIONAL([GTK_DOC_BUILD_HTML], [test x$enable_gtk_doc_html = xyes])
++  AM_CONDITIONAL([GTK_DOC_BUILD_PDF], [test x$enable_gtk_doc_pdf = xyes])
++  AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], [test -n "$LIBTOOL"])
++  AM_CONDITIONAL([GTK_DOC_USE_REBASE], [test -n "$GTKDOC_REBASE"])
++])
+--- webkitgtk-1.10.2.orig/Tools/DumpRenderTree/TestNetscapePlugIn/PluginObject.cpp
++++ webkitgtk-1.10.2/Tools/DumpRenderTree/TestNetscapePlugIn/PluginObject.cpp
+@@ -34,6 +34,8 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <wtf/ExportMacros.h>
++#include <wtf/Assertions.h>
+ 
+ // Helper function which takes in the plugin window object for logging to the console object.
+ static void pluginLogWithWindowObject(NPObject* windowObject, NPP instance, const char* message)
+@@ -60,6 +62,7 @@
+     browser->releaseobject(consoleObject);
+ }
+ 
++WTF_ATTRIBUTE_PRINTF(2, 0)
+ void pluginLogWithArguments(NPP instance, const char* format, va_list args)
+ {
+     const size_t messageBufferSize = 2048;
+@@ -80,6 +83,7 @@
+ }
+ 
+ // Helper function to log to the console object.
++WTF_ATTRIBUTE_PRINTF(2, 3)
+ void pluginLog(NPP instance, const char* format, ...)
+ {
+     va_list args;
+--- webkitgtk-1.10.2.orig/Tools/DumpRenderTree/gtk/ImageDiff.cpp
++++ webkitgtk-1.10.2/Tools/DumpRenderTree/gtk/ImageDiff.cpp
+@@ -157,7 +157,7 @@
+         return; // Don't bail out, as we can still use the percentage output.
+     }
+ 
+-    printf("Content-Length: %"G_GSIZE_FORMAT"\n", bufferSize);
++    printf("Content-Length: %" G_GSIZE_FORMAT"\n", bufferSize);
+     fwrite(buffer, 1, bufferSize, stdout);
+ }
+ 
+--- webkitgtk-1.10.2.orig/Tools/GNUmakefile.am
++++ webkitgtk-1.10.2/Tools/GNUmakefile.am
+@@ -201,7 +201,8 @@
+ 	-I$(srcdir)/Tools/DumpRenderTree/TestNetscapePlugIn \
+ 	-I$(srcdir)/Tools/DumpRenderTree/TestNetscapePlugIn/unix/ForwardingHeaders \
+ 	$(global_cppflags) \
+-	$(javascriptcore_cppflags)
++	$(javascriptcore_cppflags) \
++	$(X11_CFLAGS)
+ 
+ # For the Gtk port we want to use XP_UNIX both on X11 and Mac
+ if !TARGET_WIN32
+@@ -305,7 +306,7 @@
+ 	if test "$$installfiles" = './Documentation/webkitgtk/html/*'; \
+ 	then echo 1>&2 'No documentation to install' ; \
+ 	else \
+-	  DOC_MODULE_VERSION=`cat ./Documentation/webkitgtk/version.xml`; \
++	  DOC_MODULE_VERSION=`cat ./Documentation/webkitgtk/version.xml 2> /dev/null`; \
+ 	  if test -n "$(DOC_MODULE_VERSION)"; then \
+ 	    installdir="$(DESTDIR)$(HTML_DIR)/webkitgtk-$(DOC_MODULE_VERSION)"; \
+ 	  else \
+@@ -326,7 +327,7 @@
+ 	if test "$$installfiles" = './Documentation/webkit2gtk/html/*'; \
+ 	then echo 1>&2 'No documentation to install' ; \
+ 	else \
+-	  DOC_MODULE_VERSION=`cat ./Documentation/webkit2gtk/version.xml`; \
++	  DOC_MODULE_VERSION=`cat ./Documentation/webkit2gtk/version.xml 2> /dev/null`; \
+ 	  if test -n "$(DOC_MODULE_VERSION)"; then \
+ 	    installdir="$(DESTDIR)$(HTML_DIR)/webkit2gtk-$(DOC_MODULE_VERSION)"; \
+ 	  else \
+@@ -343,10 +344,12 @@
+ 	  fi; \
+ 	fi
+ endif
++if ENABLE_GTK_DOC
+ 	@$(AM_V_GEN)$(PYTHON) $(srcdir)/Tools/gtk/generate-gtkdoc --rebase --virtual-root=$${DESTDIR}
++endif
+ 
+ uninstall-local:
+-	@DOC_MODULE_VERSION=`cat ./Documentation/webkitgtk/version.xml`; \
++	@DOC_MODULE_VERSION=`cat ./Documentation/webkitgtk/version.xml 2> /dev/null`; \
+ 	if test -n "$(DOC_MODULE_VERSION)"; then \
+ 	  installdir="$(DESTDIR)$(HTML_DIR)/webkitgtk-$(DOC_MODULE_VERSION)"; \
+ 	else \
+@@ -354,7 +357,7 @@
+ 	fi; \
+ 	rm -rf $${installdir}
+ if ENABLE_WEBKIT2
+-	@DOC_MODULE_VERSION=`cat ./Documentation/webkit2gtk/version.xml`; \
++	@DOC_MODULE_VERSION=`cat ./Documentation/webkit2gtk/version.xml 2> /dev/null`; \
+ 	if test -n "$(DOC_MODULE_VERSION)"; then \
+ 	  installdir="$(DESTDIR)$(HTML_DIR)/webkit2gtk-$(DOC_MODULE_VERSION)"; \
+ 	else \
+--- webkitgtk-1.10.2.orig/configure.ac
++++ webkitgtk-1.10.2/configure.ac
+@@ -87,10 +87,10 @@
+ # This is to tell automake not to include '-g' if C{XX,}FLAGS is not set
+ # For more info - http://www.gnu.org/software/automake/manual/autoconf.html#C_002b_002b-Compiler
+ if test -z "$CXXFLAGS"; then
+-   CXXFLAGS=""
++   CXXFLAGS="-Wno-deprecated-declarations"
+ fi
+ if test -z "$CFLAGS"; then
+-   CFLAGS=""
++   CFLAGS="-Wno-deprecated-declarations"
+ fi
+ 
+ PKG_PROG_PKG_CONFIG
+@@ -100,10 +100,7 @@
+    AC_MSG_ERROR([You need 'perl' to compile WebKit])
+ fi
+ 
+-AC_PATH_PROG(PYTHON, python)
+-if test -z "$PYTHON"; then
+-   AC_MSG_ERROR([You need 'python' to compile WebKit])
+-fi
++AM_PATH_PYTHON
+ 
+ AC_PATH_PROG(RUBY, ruby)
+ if test -z "$RUBY"; then
+@@ -420,14 +417,14 @@
+         *)
+             AC_PATH_PROG(icu_config, icu-config, no)
+             if test "$icu_config" = "no"; then
+-                AC_MSG_ERROR([Cannot find icu-config. The ICU library is needed.])
++                PKG_CHECK_MODULES([UNICODE], [icu-i18n])
++            else
++                # We don't use --cflags as this gives us a lot of things that we don't
++                # necessarily want, like debugging and optimization flags
++                # See man (1) icu-config for more info.
++                UNICODE_CFLAGS=`$icu_config --cppflags`
++                UNICODE_LIBS=`$icu_config --ldflags-libsonly`
+             fi
+-
+-            # We don't use --cflags as this gives us a lot of things that we don't
+-            # necessarily want, like debugging and optimization flags
+-            # See man (1) icu-config for more info.
+-            UNICODE_CFLAGS=`$icu_config --cppflags`
+-            UNICODE_LIBS=`$icu_config --ldflags-libsonly`
+             ;;
+     esac
+ fi
+@@ -496,6 +493,7 @@
+    PKG_CHECK_MODULES(GTK, gtk+-$GTK_API_VERSION >= $GTK_REQUIRED_VERSION)
+ 
+    if test "$with_target" = "x11" && test "$os_win32" = "no"; then
++      PKG_CHECK_MODULES([X11], [x11])
+       # check for XT
+       PKG_CHECK_MODULES([XT],
+                         [xt],

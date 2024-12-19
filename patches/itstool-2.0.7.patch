@@ -1,0 +1,28 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxml2-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16)
+aclocal; autoconf; automake -a -c
+./configure --prefix=
+
+# install
+install -d $DESTDIR/bin
+install itstool $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/itstool-build.pc << EOF
+Name: itstool
+Version: 2.0.7
+Description: Tool for translating XML with PO files using Internationalization Tag Set (ITS)
+Requires: $REQUIRES
+
+devel=\\
+/bin/itstool
+EOF
+
+exit

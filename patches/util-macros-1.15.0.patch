@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68; am-1.11)
 aclocal; autoconf; automake -a -c
-./configure --with-noarch-pkgconfigdir=/lib/pkgconfig --prefix=
+./configure --prefix=
 
 # install
 install -d $DESTDIR/share/aclocal
@@ -31,23 +31,12 @@ EOF
 exit
 --- util-macros-1.15.0.orig/Makefile.am
 +++ util-macros-1.15.0/Makefile.am
-@@ -29,8 +29,7 @@
+@@ -29,7 +29,7 @@
  install-data-hook:
  	rm -f $(DESTDIR)$(aclocaldir)/xorgversion.m4
  
 -pkgconfigdir = $(datadir)/pkgconfig
--pkgconfig_DATA = xorg-macros.pc
-+noarch_pkgconfig_DATA = xorg-macros.pc
++pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = xorg-macros.pc
  
  .PHONY: ChangeLog
- 
---- util-macros-1.15.0.orig/configure.ac
-+++ util-macros-1.15.0/configure.ac
-@@ -29,6 +29,7 @@
- AC_CONFIG_SRCDIR([Makefile.am])
- AM_INIT_AUTOMAKE([foreign dist-bzip2])
- AM_MAINTAINER_MODE
-+PKG_NOARCH_INSTALLDIR
- 
- # Checks for programs.
- AC_PROG_INSTALL

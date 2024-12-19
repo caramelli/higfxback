@@ -1,0 +1,54 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build tcl-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; lt-2.2.6)
+libtoolize -c -f -i; cat m4/* > aclocal.m4; autoconf; autoheader
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install sqlite3 $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 sqlite3.h $DESTDIR/include
+install -d $DESTDIR/lib
+install .libs/libsqlite3.so.0.* $DESTDIR/lib/libsqlite3.so.0
+ln -sf libsqlite3.so.0 $DESTDIR/lib/libsqlite3.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 sqlite3.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/sqlite-build.pc << EOF
+Name: sqlite
+Version: 3.46.1
+Description: Serverless SQL database engine
+Requires: $REQUIRES
+
+devel=\\
+/include/sqlite3.h \\
+/lib/libsqlite3.so \\
+/lib/pkgconfig/sqlite3.pc
+
+exec=\\
+/bin/sqlite3 \\
+/lib/libsqlite3.so.0
+EOF
+
+exit
+--- sqlite-3.46.1.orig/configure.ac
++++ sqlite-3.46.1/configure.ac
+@@ -88,6 +88,7 @@
+ #########
+ # Programs needed
+ #
++AC_CONFIG_MACRO_DIR([m4])
+ LT_INIT
+ AC_PROG_INSTALL
+ 

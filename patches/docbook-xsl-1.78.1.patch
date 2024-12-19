@@ -1,0 +1,149 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="docbook-xml-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/etc/xml
+test -f $DESTDIR/etc/xml/catalog || xmlcatalog --noout --create $DESTDIR/etc/xml/catalog
+xmlcatalog --noout --add "rewriteSystem" "http://docbook.sourceforge.net/release/xsl/current" "/share/xml/docbook/xsl-stylesheets-1.78.1" $DESTDIR/etc/xml/catalog
+xmlcatalog --noout --add "rewriteURI" "http://docbook.sourceforge.net/release/xsl/current" "/share/xml/docbook/xsl-stylesheets-1.78.1" $DESTDIR/etc/xml/catalog
+install -d $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1
+install -m 644 VERSION.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1
+install -d $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/common.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/en.xml $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/entities.ent $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/gentext.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/l10n.dtd $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/l10n.xml $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/l10n.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/labels.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/olink.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/pi.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/stripns.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/subtitles.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/table.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/targets.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/titles.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -m 644 common/utility.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/common
+install -d $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/admon.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/annotations.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/autoidx.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/autotoc.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/biblio.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/biblio-iso690.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/block.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/callout.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/chunk.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/chunk-code.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/chunk-common.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/chunker.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/component.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/division.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/docbook.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/ebnf.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/footnote.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/formal.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/glossary.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/graphics.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/html.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/html-rtf.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/htmltbl.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/index.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/info.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/inline.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/keywords.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/lists.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/math.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/param.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/pi.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/qandaset.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/refentry.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/sections.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/synop.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/table.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/task.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/titlepage.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/titlepage.templates.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/toc.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/verbatim.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -m 644 html/xref.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/html
+install -d $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/lib
+install -m 644 lib/lib.xsl $DESTDIR/share/xml/docbook/xsl-stylesheets-1.78.1/lib
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/docbook-xsl-build.pc << EOF
+Name: docbook-xsl
+Version: 1.78.1
+Description: XSL stylesheets for DocBook XML transformations
+
+devel=\\
+/etc/xml/catalog \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/VERSION.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/common.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/en.xml \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/entities.ent \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/gentext.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/l10n.dtd \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/l10n.xml \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/l10n.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/labels.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/olink.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/pi.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/stripns.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/subtitles.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/table.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/targets.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/titles.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/common/utility.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/admon.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/annotations.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/autoidx.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/autotoc.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/biblio.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/biblio-iso690.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/block.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/callout.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/chunk.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/chunk-code.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/chunk-common.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/chunker.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/component.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/division.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/docbook.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/ebnf.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/footnote.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/formal.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/glossary.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/graphics.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/html.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/html-rtf.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/htmltbl.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/index.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/info.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/inline.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/keywords.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/lists.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/math.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/param.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/pi.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/qandaset.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/refentry.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/sections.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/synop.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/table.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/task.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/titlepage.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/titlepage.templates.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/toc.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/verbatim.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/html/xref.xsl \\
+/share/xml/docbook/xsl-stylesheets-1.78.1/lib/lib.xsl
+EOF
+
+exit

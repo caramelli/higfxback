@@ -6,7 +6,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # install
 install -d $DESTDIR/bin
-sed '1s|.*|#!/bin/env python3|' meson.py > $DESTDIR/bin/meson && chmod +x $DESTDIR/bin/meson
+install meson.py $DESTDIR/bin/meson
 install -d $DESTDIR/lib/python3/mesonbuild
 install -m 644 mesonbuild/_pathlib.py $DESTDIR/lib/python3/mesonbuild
 install -m 644 mesonbuild/arglist.py $DESTDIR/lib/python3/mesonbuild
@@ -348,3 +348,11 @@ devel=\\
 EOF
 
 exit
+--- meson-0.63.3.orig/meson.py
++++ meson-0.63.3/meson.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python3
++#!/bin/env python3
+ 
+ # Copyright 2016 The Meson development team
+ 

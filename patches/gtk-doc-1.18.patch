@@ -1,0 +1,88 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build docbook-xsl-build libxslt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.65; am-1.11; lt-2.2.6b)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install gtkdoc-check $DESTDIR/bin
+install gtkdoc-depscan $DESTDIR/bin
+install gtkdoc-fixxref $DESTDIR/bin
+install gtkdoc-mkdb $DESTDIR/bin
+install gtkdoc-mkhtml $DESTDIR/bin
+install gtkdoc-mkman $DESTDIR/bin
+install gtkdoc-mkpdf $DESTDIR/bin
+install gtkdoc-mktmpl $DESTDIR/bin
+install gtkdoc-rebase $DESTDIR/bin
+install gtkdoc-scan $DESTDIR/bin
+install gtkdoc-scangobj $DESTDIR/bin
+install gtkdoc-scanobj $DESTDIR/bin
+install gtkdocize $DESTDIR/bin
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 gtk-doc.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/gtk-doc/data
+install -m 644 devhelp2.xsl $DESTDIR/share/gtk-doc/data
+install -m 644 gtk-doc.xsl $DESTDIR/share/gtk-doc/data
+install -m 644 gtkdoc-common.pl $DESTDIR/share/gtk-doc/data
+install -m 644 home.png $DESTDIR/share/gtk-doc/data
+install -m 644 left.png $DESTDIR/share/gtk-doc/data
+install -m 644 right.png $DESTDIR/share/gtk-doc/data
+install -m 644 style.css $DESTDIR/share/gtk-doc/data
+install -m 644 up.png $DESTDIR/share/gtk-doc/data
+install -m 644 version-greater-or-equal.xsl $DESTDIR/share/gtk-doc/data
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gtk-doc-build.pc << EOF
+Name: gtk-doc
+Version: 1.18
+Description: GTK DocBook documentation tools
+Requires: $REQUIRES
+
+devel=\\
+/bin/gtkdoc-check \\
+/bin/gtkdoc-depscan \\
+/bin/gtkdoc-fixxref \\
+/bin/gtkdoc-mkdb \\
+/bin/gtkdoc-mkhtml \\
+/bin/gtkdoc-mkman \\
+/bin/gtkdoc-mkpdf \\
+/bin/gtkdoc-mktmpl \\
+/bin/gtkdoc-rebase \\
+/bin/gtkdoc-scan \\
+/bin/gtkdoc-scangobj \\
+/bin/gtkdoc-scanobj \\
+/bin/gtkdocize \\
+/lib/pkgconfig/gtk-doc.pc \\
+/share/gtk-doc/data/devhelp2.xsl \\
+/share/gtk-doc/data/gtk-doc.xsl \\
+/share/gtk-doc/data/gtkdoc-common.pl \\
+/share/gtk-doc/data/home.png \\
+/share/gtk-doc/data/left.png \\
+/share/gtk-doc/data/right.png \\
+/share/gtk-doc/data/style.css \\
+/share/gtk-doc/data/up.png \\
+/share/gtk-doc/data/version-greater-or-equal.xsl
+EOF
+
+exit
+--- gtk-doc-1.18.orig/Makefile.am
++++ gtk-doc-1.18/Makefile.am
+@@ -40,7 +40,7 @@
+ 	up.png			\
+ 	style.css
+ 
+-pkgconfigdir = $(datadir)/pkgconfig
++pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = gtk-doc.pc
+ 
+ aclocaldir = $(datadir)/aclocal

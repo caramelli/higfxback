@@ -1,0 +1,140 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="glib-build libpsl-build libxml2-build meson-build sqlite-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+meson setup -Dgnome=false -Dgssapi=false -Dvapi=false --prefix=/ build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 build/libsoup/soup-enum-types.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 build/libsoup/soup-version.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-address.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-auth.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-auth-domain.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-auth-domain-basic.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-auth-domain-digest.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-auth-manager.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-autocleanups.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-cache.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-content-decoder.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-content-sniffer.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-cookie.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-cookie-jar.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-cookie-jar-db.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-cookie-jar-text.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-date.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-form.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-headers.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-logger.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-message.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-message-body.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-message-headers.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-method.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-misc.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-multipart.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-multipart-input-stream.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-proxy-resolver.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-proxy-resolver-default.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-proxy-uri-resolver.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-status.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-request.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-request-data.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-request-file.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-request-http.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-requester.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-server.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-session.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-session-async.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-session-feature.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-session-sync.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-socket.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-tld.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-types.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-uri.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-value-utils.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-websocket.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-websocket-connection.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-xmlrpc.h $DESTDIR/include/libsoup-2.4/libsoup
+install -m 644 libsoup/soup-xmlrpc-old.h $DESTDIR/include/libsoup-2.4/libsoup
+install -d $DESTDIR/lib
+install build/libsoup/libsoup-2.4.so.1.*[!p] $DESTDIR/lib/libsoup-2.4.so.1
+ln -sf libsoup-2.4.so.1 $DESTDIR/lib/libsoup-2.4.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/meson-private/libsoup-2.4.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libsoup-build.pc << EOF
+Name: libsoup
+Version: 2.66.5
+Description: HTTP client/server library
+Requires: $REQUIRES
+
+devel=\\
+/include/libsoup-2.4/libsoup/soup.h \\
+/include/libsoup-2.4/libsoup/soup-address.h \\
+/include/libsoup-2.4/libsoup/soup-auth.h \\
+/include/libsoup-2.4/libsoup/soup-auth-domain-basic.h \\
+/include/libsoup-2.4/libsoup/soup-auth-domain-digest.h \\
+/include/libsoup-2.4/libsoup/soup-auth-domain.h \\
+/include/libsoup-2.4/libsoup/soup-auth-manager.h \\
+/include/libsoup-2.4/libsoup/soup-autocleanups.h \\
+/include/libsoup-2.4/libsoup/soup-cache.h \\
+/include/libsoup-2.4/libsoup/soup-content-decoder.h \\
+/include/libsoup-2.4/libsoup/soup-content-sniffer.h \\
+/include/libsoup-2.4/libsoup/soup-cookie.h \\
+/include/libsoup-2.4/libsoup/soup-cookie-jar-db.h \\
+/include/libsoup-2.4/libsoup/soup-cookie-jar-text.h \\
+/include/libsoup-2.4/libsoup/soup-cookie-jar.h \\
+/include/libsoup-2.4/libsoup/soup-date.h \\
+/include/libsoup-2.4/libsoup/soup-enum-types.h \\
+/include/libsoup-2.4/libsoup/soup-form.h \\
+/include/libsoup-2.4/libsoup/soup-headers.h \\
+/include/libsoup-2.4/libsoup/soup-logger.h \\
+/include/libsoup-2.4/libsoup/soup-message-body.h \\
+/include/libsoup-2.4/libsoup/soup-message-headers.h \\
+/include/libsoup-2.4/libsoup/soup-message.h \\
+/include/libsoup-2.4/libsoup/soup-method.h \\
+/include/libsoup-2.4/libsoup/soup-misc.h \\
+/include/libsoup-2.4/libsoup/soup-multipart.h \\
+/include/libsoup-2.4/libsoup/soup-multipart-input-stream.h \\
+/include/libsoup-2.4/libsoup/soup-proxy-resolver.h \\
+/include/libsoup-2.4/libsoup/soup-proxy-resolver-default.h \\
+/include/libsoup-2.4/libsoup/soup-proxy-uri-resolver.h \\
+/include/libsoup-2.4/libsoup/soup-request.h \\
+/include/libsoup-2.4/libsoup/soup-request-data.h \\
+/include/libsoup-2.4/libsoup/soup-request-file.h \\
+/include/libsoup-2.4/libsoup/soup-request-http.h \\
+/include/libsoup-2.4/libsoup/soup-requester.h \\
+/include/libsoup-2.4/libsoup/soup-server.h \\
+/include/libsoup-2.4/libsoup/soup-session.h \\
+/include/libsoup-2.4/libsoup/soup-session-async.h \\
+/include/libsoup-2.4/libsoup/soup-session-feature.h \\
+/include/libsoup-2.4/libsoup/soup-session-sync.h \\
+/include/libsoup-2.4/libsoup/soup-socket.h \\
+/include/libsoup-2.4/libsoup/soup-status.h \\
+/include/libsoup-2.4/libsoup/soup-tld.h \\
+/include/libsoup-2.4/libsoup/soup-types.h \\
+/include/libsoup-2.4/libsoup/soup-uri.h \\
+/include/libsoup-2.4/libsoup/soup-value-utils.h \\
+/include/libsoup-2.4/libsoup/soup-version.h \\
+/include/libsoup-2.4/libsoup/soup-websocket-connection.h \\
+/include/libsoup-2.4/libsoup/soup-websocket.h \\
+/include/libsoup-2.4/libsoup/soup-xmlrpc.h \\
+/include/libsoup-2.4/libsoup/soup-xmlrpc-old.h \\
+/lib/libsoup-2.4.so \\
+/lib/pkgconfig/libsoup-2.4.pc
+
+exec=\\
+/lib/libsoup-2.4.so.1
+EOF
+
+exit
