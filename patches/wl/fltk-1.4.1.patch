@@ -1,0 +1,1936 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build gcc-g++-build jpeg-build libdecor-build nanosvg-build weston-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glu-build; then
+  GL=1
+  GLU=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+elif PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+# configure (ac-2.71)
+autoconf
+rm -rf libdecor/src
+rm -rf nanosvg
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-x11 --enable-cairo --enable-shared --with-xdg-runtime-dir=/tmp/xdg --with-weston=/wl/bin/weston --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install fltk-options/fltk-options $DESTDIR/wl/bin
+install fluid/fluid $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/FL
+install -m 644 FL/Enumerations.H $DESTDIR/wl/include/FL
+install -m 644 FL/filename.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl.H $DESTDIR/wl/include/FL
+install -m 644 FL/fl_ask.H $DESTDIR/wl/include/FL
+install -m 644 FL/fl_attr.h $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Bitmap.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Box.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Browser.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Browser_.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Button.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Cairo.H $DESTDIR/wl/include/FL
+install -m 644 FL/fl_casts.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Check_Button.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Choice.H $DESTDIR/wl/include/FL
+install -m 644 FL/fl_config.h $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Device.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Double_Window.H $DESTDIR/wl/include/FL
+install -m 644 FL/fl_draw.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Export.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_File_Browser.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_File_Chooser.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_File_Icon.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_File_Input.H $DESTDIR/wl/include/FL
+test $GL && install -m 644 FL/Fl_Gl_Window.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Graphics_Driver.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Group.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Image.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Input.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Input_.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Light_Button.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Menu_.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Menu_Button.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Menu_Item.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Menu_Window.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Multi_Label.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Output.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Pack.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Pixmap.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Plugin.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Preferences.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Rect.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Return_Button.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Round_Button.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_RGB_Image.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Secret_Input.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Single_Window.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Scroll.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Scrollbar.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Slider.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Text_Buffer.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Text_Display.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Text_Editor.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Tile.H $DESTDIR/wl/include/FL
+install -m 644 FL/fl_types.h $DESTDIR/wl/include/FL
+install -m 644 FL/fl_utf8.h $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Valuator.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Widget.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Window.H $DESTDIR/wl/include/FL
+install -m 644 FL/Fl_Wizard.H $DESTDIR/wl/include/FL
+install -m 644 FL/platform.H $DESTDIR/wl/include/FL
+install -m 644 FL/platform_types.h $DESTDIR/wl/include/FL
+install -m 644 FL/wayland.H $DESTDIR/wl/include/FL
+install -d $DESTDIR/wl/lib
+install src/libfltk.so.1 $DESTDIR/wl/lib
+ln -sf libfltk.so.1 $DESTDIR/wl/lib/libfltk.so
+install src/libfltk_forms.so.1 $DESTDIR/wl/lib
+ln -sf libfltk_forms.so.1 $DESTDIR/wl/lib/libfltk_forms.so
+test $GL && install src/libfltk_gl.so.1 $DESTDIR/wl/lib
+test $GL && ln -sf libfltk_gl.so.1 $DESTDIR/wl/lib/libfltk_gl.so
+install src/libfltk_images.so.1 $DESTDIR/wl/lib
+ln -sf libfltk_images.so.1 $DESTDIR/wl/lib/libfltk_images.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 fltk.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 fltk-forms.pc $DESTDIR/wl/lib/pkgconfig
+test $GL && install -m 644 fltk-gl.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 fltk-images.pc $DESTDIR/wl/lib/pkgconfig
+install -d $DESTDIR/wl/share/fltk/test
+install test/adjuster $DESTDIR/wl/share/fltk/test
+install test/animated $DESTDIR/wl/share/fltk/test
+install test/arc $DESTDIR/wl/share/fltk/test
+install test/ask $DESTDIR/wl/share/fltk/test
+install test/bitmap $DESTDIR/wl/share/fltk/test
+install test/blocks $DESTDIR/wl/share/fltk/test
+install test/boxtype $DESTDIR/wl/share/fltk/test
+install test/browser $DESTDIR/wl/share/fltk/test
+install test/button $DESTDIR/wl/share/fltk/test
+install test/buttons $DESTDIR/wl/share/fltk/test
+install test/cairo_test $DESTDIR/wl/share/fltk/test
+install test/checkers $DESTDIR/wl/share/fltk/test
+install test/clipboard $DESTDIR/wl/share/fltk/test
+install test/clock $DESTDIR/wl/share/fltk/test
+install test/colbrowser $DESTDIR/wl/share/fltk/test
+install test/color_chooser $DESTDIR/wl/share/fltk/test
+install test/contrast $DESTDIR/wl/share/fltk/test
+install test/coordinates $DESTDIR/wl/share/fltk/test
+test $GL && install test/cube $DESTDIR/wl/share/fltk/test
+test $GL && install test/CubeView $DESTDIR/wl/share/fltk/test
+install test/cursor $DESTDIR/wl/share/fltk/test
+install test/curve $DESTDIR/wl/share/fltk/test
+install test/demo $DESTDIR/wl/share/fltk/test
+install -m 644 test/demo.menu $DESTDIR/wl/share/fltk/test
+install test/device $DESTDIR/wl/share/fltk/test
+install test/doublebuffer $DESTDIR/wl/share/fltk/test
+install test/editor $DESTDIR/wl/share/fltk/test
+install test/fast_slow $DESTDIR/wl/share/fltk/test
+install test/file_chooser $DESTDIR/wl/share/fltk/test
+install test/flex_demo $DESTDIR/wl/share/fltk/test
+install test/flex_login $DESTDIR/wl/share/fltk/test
+install test/fltk-versions $DESTDIR/wl/share/fltk/test
+install test/fonts $DESTDIR/wl/share/fltk/test
+install test/forms $DESTDIR/wl/share/fltk/test
+test $GLU && install test/fractals $DESTDIR/wl/share/fltk/test
+test $GL && install test/fullscreen $DESTDIR/wl/share/fltk/test
+test $GLU && install test/glpuzzle $DESTDIR/wl/share/fltk/test
+test $GL && install test/glut_test $DESTDIR/wl/share/fltk/test
+install test/grid_alignment $DESTDIR/wl/share/fltk/test
+install test/grid_buttons $DESTDIR/wl/share/fltk/test
+install test/grid_dialog $DESTDIR/wl/share/fltk/test
+install test/grid_login $DESTDIR/wl/share/fltk/test
+install test/handle_events $DESTDIR/wl/share/fltk/test
+install test/handle_keys $DESTDIR/wl/share/fltk/test
+install test/hello $DESTDIR/wl/share/fltk/test
+install test/help_dialog $DESTDIR/wl/share/fltk/test
+install -m 644 test/help_dialog.html $DESTDIR/wl/share/fltk/test
+install test/icon $DESTDIR/wl/share/fltk/test
+install test/iconize $DESTDIR/wl/share/fltk/test
+install test/image $DESTDIR/wl/share/fltk/test
+install test/inactive $DESTDIR/wl/share/fltk/test
+install test/input $DESTDIR/wl/share/fltk/test
+install test/input_choice $DESTDIR/wl/share/fltk/test
+install test/keyboard $DESTDIR/wl/share/fltk/test
+install test/label $DESTDIR/wl/share/fltk/test
+install test/line_style $DESTDIR/wl/share/fltk/test
+install test/line_style_docs $DESTDIR/wl/share/fltk/test
+install test/mandelbrot $DESTDIR/wl/share/fltk/test
+install test/menubar $DESTDIR/wl/share/fltk/test
+install test/message $DESTDIR/wl/share/fltk/test
+install test/minimum $DESTDIR/wl/share/fltk/test
+install test/native-filechooser $DESTDIR/wl/share/fltk/test
+install test/navigation $DESTDIR/wl/share/fltk/test
+install test/offscreen $DESTDIR/wl/share/fltk/test
+install test/output $DESTDIR/wl/share/fltk/test
+install test/overlay $DESTDIR/wl/share/fltk/test
+install test/pack $DESTDIR/wl/share/fltk/test
+install test/pixmap $DESTDIR/wl/share/fltk/test
+install test/pixmap_browser $DESTDIR/wl/share/fltk/test
+install test/preferences $DESTDIR/wl/share/fltk/test
+install test/radio $DESTDIR/wl/share/fltk/test
+install test/resize $DESTDIR/wl/share/fltk/test
+install test/resize-example1 $DESTDIR/wl/share/fltk/test
+install test/resize-example2 $DESTDIR/wl/share/fltk/test
+install test/resize-example3a $DESTDIR/wl/share/fltk/test
+install test/resize-example3b $DESTDIR/wl/share/fltk/test
+install test/resize-example3c $DESTDIR/wl/share/fltk/test
+install test/resize-example4a $DESTDIR/wl/share/fltk/test
+install test/resize-example4b $DESTDIR/wl/share/fltk/test
+install test/resize-example5a $DESTDIR/wl/share/fltk/test
+install test/resize-example5b $DESTDIR/wl/share/fltk/test
+install test/resize-example5c $DESTDIR/wl/share/fltk/test
+install test/resizebox $DESTDIR/wl/share/fltk/test
+install -m 644 test/rgb.txt $DESTDIR/wl/share/fltk/test
+install test/rotated_text $DESTDIR/wl/share/fltk/test
+install test/scroll $DESTDIR/wl/share/fltk/test
+test $GL && install test/shape $DESTDIR/wl/share/fltk/test
+install test/subwindow $DESTDIR/wl/share/fltk/test
+install test/sudoku $DESTDIR/wl/share/fltk/test
+install test/symbols $DESTDIR/wl/share/fltk/test
+install test/table $DESTDIR/wl/share/fltk/test
+install test/tabs $DESTDIR/wl/share/fltk/test
+install test/terminal $DESTDIR/wl/share/fltk/test
+install test/threads $DESTDIR/wl/share/fltk/test
+install test/tile $DESTDIR/wl/share/fltk/test
+install test/tiled_image $DESTDIR/wl/share/fltk/test
+install test/tree $DESTDIR/wl/share/fltk/test
+install test/twowin $DESTDIR/wl/share/fltk/test
+test $GL && install test/unittests $DESTDIR/wl/share/fltk/test
+install test/utf8 $DESTDIR/wl/share/fltk/test
+install test/valuators $DESTDIR/wl/share/fltk/test
+install test/windowfocus $DESTDIR/wl/share/fltk/test
+install test/wizard $DESTDIR/wl/share/fltk/test
+install -d $DESTDIR/wl/share/fltk/test/images
+install -m 644 test/images/Fl_Value_Input.png $DESTDIR/wl/share/fltk/test/images
+install -m 644 test/images/Fl_Value_Output.png $DESTDIR/wl/share/fltk/test/images
+install -m 644 test/images/FL200.png $DESTDIR/wl/share/fltk/test/images
+install -m 644 test/images/tiny.png $DESTDIR/wl/share/fltk/test/images
+install -m 644 test/images/fltk_animated.gif $DESTDIR/wl/share/fltk/test/images
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+Name: fltk
+Version: 1.4.1
+Description: Fast Light ToolKit
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/FL/Enumerations.H \\
+/wl/include/FL/filename.H \\
+/wl/include/FL/Fl.H \\
+/wl/include/FL/fl_ask.H \\
+/wl/include/FL/fl_attr.h \\
+/wl/include/FL/Fl_Bitmap.H \\
+/wl/include/FL/Fl_Box.H \\
+/wl/include/FL/Fl_Browser.H \\
+/wl/include/FL/Fl_Browser_.H \\
+/wl/include/FL/Fl_Button.H \\
+/wl/include/FL/Fl_Cairo.H \\
+/wl/include/FL/fl_casts.H \\
+/wl/include/FL/Fl_Check_Button.H \\
+/wl/include/FL/Fl_Choice.H \\
+/wl/include/FL/fl_config.h \\
+/wl/include/FL/Fl_Device.H \\
+/wl/include/FL/Fl_Double_Window.H \\
+/wl/include/FL/fl_draw.H \\
+/wl/include/FL/Fl_Export.H \\
+/wl/include/FL/Fl_File_Browser.H \\
+/wl/include/FL/Fl_File_Chooser.H \\
+/wl/include/FL/Fl_File_Icon.H \\
+/wl/include/FL/Fl_File_Input.H \\
+EOF
+test $GL && echo /wl/include/FL/Fl_Gl_Window.H \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/include/FL/Fl_Graphics_Driver.H \\
+/wl/include/FL/Fl_Group.H \\
+/wl/include/FL/Fl_Image.H \\
+/wl/include/FL/Fl_Input.H \\
+/wl/include/FL/Fl_Input_.H \\
+/wl/include/FL/Fl_Light_Button.H \\
+/wl/include/FL/Fl_Menu_.H \\
+/wl/include/FL/Fl_Menu_Button.H \\
+/wl/include/FL/Fl_Menu_Item.H \\
+/wl/include/FL/Fl_Menu_Window.H \\
+/wl/include/FL/Fl_Multi_Label.H \\
+/wl/include/FL/Fl_Output.H \\
+/wl/include/FL/Fl_Pack.H \\
+/wl/include/FL/Fl_Pixmap.H \\
+/wl/include/FL/Fl_Plugin.H \\
+/wl/include/FL/Fl_Preferences.H \\
+/wl/include/FL/Fl_RGB_Image.H \\
+/wl/include/FL/Fl_Rect.H \\
+/wl/include/FL/Fl_Return_Button.H \\
+/wl/include/FL/Fl_Round_Button.H \\
+/wl/include/FL/Fl_Scroll.H \\
+/wl/include/FL/Fl_Scrollbar.H \\
+/wl/include/FL/Fl_Secret_Input.H \\
+/wl/include/FL/Fl_Single_Window.H \\
+/wl/include/FL/Fl_Slider.H \\
+/wl/include/FL/Fl_Text_Buffer.H \\
+/wl/include/FL/Fl_Text_Display.H \\
+/wl/include/FL/Fl_Text_Editor.H \\
+/wl/include/FL/Fl_Tile.H \\
+/wl/include/FL/fl_types.h \\
+/wl/include/FL/fl_utf8.h \\
+/wl/include/FL/Fl_Valuator.H \\
+/wl/include/FL/Fl_Widget.H \\
+/wl/include/FL/Fl_Window.H \\
+/wl/include/FL/Fl_Wizard.H \\
+/wl/include/FL/platform.H \\
+/wl/include/FL/platform_types.h \\
+/wl/include/FL/wayland.H \\
+/wl/lib/libfltk.so \\
+/wl/lib/libfltk_forms.so \\
+EOF
+test $GL && echo /wl/lib/libfltk_gl.so \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/lib/libfltk_images.so \\
+/wl/lib/pkgconfig/fltk.pc \\
+/wl/lib/pkgconfig/fltk-forms.pc \\
+EOF
+test $GL && echo /wl/lib/pkgconfig/fltk-gl.pc \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/lib/pkgconfig/fltk-images.pc
+
+exec=\\
+/wl/bin/fltk-options \\
+/wl/bin/fluid \\
+/wl/lib/libfltk.so.1 \\
+/wl/lib/libfltk_forms.so.1 \\
+EOF
+test $GL && echo /wl/lib/libfltk_gl.so.1 \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/lib/libfltk_images.so.1 \\
+/wl/share/fltk/test/adjuster \\
+/wl/share/fltk/test/animated \\
+/wl/share/fltk/test/arc \\
+/wl/share/fltk/test/ask \\
+/wl/share/fltk/test/bitmap \\
+/wl/share/fltk/test/blocks \\
+/wl/share/fltk/test/boxtype \\
+/wl/share/fltk/test/browser \\
+/wl/share/fltk/test/button \\
+/wl/share/fltk/test/buttons \\
+/wl/share/fltk/test/cairo_test \\
+/wl/share/fltk/test/checkers \\
+/wl/share/fltk/test/clipboard \\
+/wl/share/fltk/test/clock \\
+/wl/share/fltk/test/colbrowser \\
+/wl/share/fltk/test/color_chooser \\
+/wl/share/fltk/test/contrast \\
+/wl/share/fltk/test/coordinates \\
+EOF
+test $GL && echo /wl/share/fltk/test/cube \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+test $GL && echo /wl/share/fltk/test/CubeView \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/share/fltk/test/cursor \\
+/wl/share/fltk/test/curve \\
+/wl/share/fltk/test/demo \\
+/wl/share/fltk/test/demo.menu \\
+/wl/share/fltk/test/device \\
+/wl/share/fltk/test/doublebuffer \\
+/wl/share/fltk/test/editor \\
+/wl/share/fltk/test/fast_slow \\
+/wl/share/fltk/test/file_chooser \\
+/wl/share/fltk/test/flex_demo \\
+/wl/share/fltk/test/flex_login \\
+/wl/share/fltk/test/fltk-versions \\
+/wl/share/fltk/test/fonts \\
+/wl/share/fltk/test/forms \\
+EOF
+test $GLU && echo /wl/share/fltk/test/fractals \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+test $GL && echo /wl/share/fltk/test/fullscreen \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+test $GLU && echo /wl/share/fltk/test/glpuzzle \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+test $GL && echo /wl/share/fltk/test/glut_test \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/share/fltk/test/grid_alignment \\
+/wl/share/fltk/test/grid_buttons \\
+/wl/share/fltk/test/grid_dialog \\
+/wl/share/fltk/test/grid_login \\
+/wl/share/fltk/test/handle_events \\
+/wl/share/fltk/test/handle_keys \\
+/wl/share/fltk/test/hello \\
+/wl/share/fltk/test/help_dialog \\
+/wl/share/fltk/test/help_dialog.html \\
+/wl/share/fltk/test/icon \\
+/wl/share/fltk/test/iconize \\
+/wl/share/fltk/test/image \\
+/wl/share/fltk/test/inactive \\
+/wl/share/fltk/test/input \\
+/wl/share/fltk/test/input_choice \\
+/wl/share/fltk/test/keyboard \\
+/wl/share/fltk/test/label \\
+/wl/share/fltk/test/line_style \\
+/wl/share/fltk/test/line_style_docs \\
+/wl/share/fltk/test/mandelbrot \\
+/wl/share/fltk/test/menubar \\
+/wl/share/fltk/test/message \\
+/wl/share/fltk/test/minimum \\
+/wl/share/fltk/test/native-filechooser \\
+/wl/share/fltk/test/navigation \\
+/wl/share/fltk/test/offscreen \\
+/wl/share/fltk/test/output \\
+/wl/share/fltk/test/overlay \\
+/wl/share/fltk/test/pack \\
+/wl/share/fltk/test/pixmap \\
+/wl/share/fltk/test/pixmap_browser \\
+/wl/share/fltk/test/preferences \\
+/wl/share/fltk/test/radio \\
+/wl/share/fltk/test/resize \\
+/wl/share/fltk/test/resize-example1 \\
+/wl/share/fltk/test/resize-example2 \\
+/wl/share/fltk/test/resize-example3a \\
+/wl/share/fltk/test/resize-example3b \\
+/wl/share/fltk/test/resize-example3c \\
+/wl/share/fltk/test/resize-example4a \\
+/wl/share/fltk/test/resize-example4b \\
+/wl/share/fltk/test/resize-example5a \\
+/wl/share/fltk/test/resize-example5b \\
+/wl/share/fltk/test/resize-example5c \\
+/wl/share/fltk/test/resizebox \\
+/wl/share/fltk/test/rgb.txt \\
+/wl/share/fltk/test/rotated_text \\
+/wl/share/fltk/test/scroll \\
+EOF
+test $GL && echo /wl/share/fltk/test/shape \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/share/fltk/test/subwindow \\
+/wl/share/fltk/test/sudoku \\
+/wl/share/fltk/test/symbols \\
+/wl/share/fltk/test/table \\
+/wl/share/fltk/test/tabs \\
+/wl/share/fltk/test/terminal \\
+/wl/share/fltk/test/threads \\
+/wl/share/fltk/test/tile \\
+/wl/share/fltk/test/tiled_image \\
+/wl/share/fltk/test/tree \\
+/wl/share/fltk/test/twowin \\
+EOF
+test $GL && echo /wl/share/fltk/test/unittests \\ >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
+/wl/share/fltk/test/utf8 \\
+/wl/share/fltk/test/valuators \\
+/wl/share/fltk/test/windowfocus \\
+/wl/share/fltk/test/wizard \\
+/wl/share/fltk/test/images/FL200.png \\
+/wl/share/fltk/test/images/Fl_Value_Input.png \\
+/wl/share/fltk/test/images/Fl_Value_Output.png \\
+/wl/share/fltk/test/images/fltk_animated.gif \\
+/wl/share/fltk/test/images/tiny.png
+EOF
+
+exit
+--- fltk-1.4.1.orig/configh.in
++++ fltk-1.4.1/configh.in
+@@ -256,6 +256,30 @@
+ #define HAVE_TRUNC 0
+ 
+ /*
++ * HAVE_MKOSTEMP:
++ *
++ * Whether or not mkostemp() is available.
++ */
++
++#undef HAVE_MKOSTEMP
++
++/*
++ * HAVE_POSIX_FALLOCATE:
++ *
++ * Whether or not posix_fallocate() is available.
++ */
++
++#undef HAVE_POSIX_FALLOCATE
++
++/*
++ * HAVE_MEMFD_CREATE:
++ *
++ * Whether or not memfd_create() is available.
++ */
++
++#undef HAVE_MEMFD_CREATE
++
++/*
+  * Do we have various image libraries?
+  */
+ 
+--- fltk-1.4.1.orig/configure.ac
++++ fltk-1.4.1/configure.ac
+@@ -28,7 +28,7 @@
+ FLTK_VERSION_MINOR=$(echo AC_PACKAGE_VERSION | awk -F. '{print $2}')
+ FLTK_VERSION_PATCH=$(echo AC_PACKAGE_VERSION | awk -F. '{print $3}')
+ 
+-FL_DSO_VERSION="${FLTK_VERSION_MAJOR}.${FLTK_VERSION_MINOR}"
++FL_DSO_VERSION="${FLTK_VERSION_MAJOR}"
+ FL_ABI_VERSION="${FLTK_VERSION_MAJOR}.${FLTK_VERSION_MINOR}.0"
+ 
+ AC_SUBST(FLTK_VERSION)
+@@ -208,9 +208,9 @@
+ 
+ 
+ dnl Define the libraries and link options we will need.
+-LINKFLTK="../lib/libfltk.a"
+-LINKFLTKGL="../lib/libfltk_gl.a"
+-LINKFLTKIMG="../lib/libfltk_images.a"
++LINKSTATIC="../lib/libfltk.a"
++LINKSTATICGL="../lib/libfltk_gl.a"
++LINKSTATICIMG="../lib/libfltk_images.a"
+ GLDEMOS="gldemos"
+ 
+ LIBEXT=".a"
+@@ -229,13 +229,13 @@
+ dnl which is 'yes' (enabled) in 1.4.0 (default may be changed later)
+ AS_IF([test x$enable_forms != xno], [
+     build_forms="yes"
+-    LINKFLTKFORMS="../lib/libfltk_forms.a"
++    LINKSTATICFORMS="../lib/libfltk_forms.a"
+     FLLIBNAME="../lib/libfltk_forms.a"
+     FLLIBBASENAME="libfltk_forms.a"
+     AC_DEFINE([FLTK_HAVE_FORMS])
+ ], [
+     build_forms="no"
+-    LINKFLTKFORMS=""
++    LINKSTATICFORMS=""
+     FLLIBNAME=""
+     FLLIBBASENAME=""
+ ])
+@@ -244,8 +244,6 @@
+ dnl Check for Cairo library unless disabled...
+ CAIRODIR=""
+ CAIROFLAGS=""
+-LINKFLTKCAIRO=""
+-FLTKCAIROOPTION=""
+ CAIROLIBS=""
+ 
+ AS_IF([test x$enable_cairoext = xyes], [
+@@ -256,10 +254,6 @@
+         CAIROFLAGS="$($PKGCONFIG --cflags cairo)"
+         CAIROLIBS="$($PKGCONFIG --libs cairo)"
+         CXXFLAGS="$CAIROFLAGS $CXXFLAGS"
+-        LINKFLTKCAIRO="../lib/libfltk_cairo.a"
+-        FLTKCAIROOPTION="-L ../cairo -lfltk_cairo$SHAREDSUFFIX"
+-        LIBS="$CAIROLIBS $LIBS"
+-        LINKFLTK="$LINKFLTK $LINKFLTKCAIRO"
+     ], [
+         AC_MSG_ERROR([Cairo requested but not found.])
+     ])
+@@ -270,8 +264,6 @@
+         CAIROFLAGS="$($PKGCONFIG --cflags cairo)"
+         CAIROLIBS="$($PKGCONFIG --libs cairo)"
+         CXXFLAGS="$CAIROFLAGS $CXXFLAGS"
+-        LINKFLTKCAIRO="../lib/libfltk_cairo.a"
+-        FLTKCAIROOPTION="-L ../cairo -lfltk_cairo$SHAREDSUFFIX"
+     ], [
+         AC_MSG_ERROR([Cairo requested but not found.])
+     ])
+@@ -280,8 +272,6 @@
+ AC_SUBST(CAIRODIR)
+ AC_SUBST(CAIROFLAGS)
+ AC_SUBST(CAIROLIBS)
+-AC_SUBST(LINKFLTKCAIRO)
+-AC_SUBST(FLTKCAIROOPTION)
+ 
+ AC_SUBST(GLDEMOS)
+ AC_SUBST(GLLIBNAME)
+@@ -289,9 +279,9 @@
+ AC_SUBST(CAIROLIBNAME)
+ AC_SUBST(LIBEXT)
+ AC_SUBST(LIBNAME)
+-AC_SUBST(LINKFLTK)
+-AC_SUBST(LINKFLTKGL)
+-AC_SUBST(LINKFLTKIMG)
++AC_SUBST(LINKSTATIC)
++AC_SUBST(LINKSTATICGL)
++AC_SUBST(LINKSTATICIMG)
+ 
+ AC_SUBST(LIBBASENAME)
+ AC_SUBST(GLLIBBASENAME)
+@@ -451,7 +441,10 @@
+         DSOCOMMAND="\$(CXX) \$(DSOFLAGS) -Wl,-soname,\$@ \$(LDLIBS) -shared $DEBUGFLAG -o"
+     ])
+ 
+-    LINKSHARED="-L../src $FLTKCAIROOPTION -lfltk_images$SHAREDSUFFIX -lfltk$SHAREDSUFFIX"
++    LINKSHARED="-L../src -lfltk$SHAREDSUFFIX"
++    LINKSHAREDFORMS="-L../src -lfltk_forms$SHAREDSUFFIX"
++    LINKSHAREDGL="-L../src -lfltk_gl$SHAREDSUFFIX"
++    LINKSHAREDIMG="-L../src -lfltk_images$SHAREDSUFFIX"
+ ], [
+     DSOCOMMAND="echo"
+     DSOLINK=""
+@@ -464,20 +457,23 @@
+     SHAREDSUFFIX=""
+     FLUID="fluid"
+     FLTK_OPTIONS="fltk-options"
+-    LINKSHARED="$LINKFLTKCAIRO ../lib/libfltk_images.a ../lib/libfltk.a"
++    LINKSHARED=""
++    LINKSHAREDIMG=""
++    LINKSHAREDFORMS=""
+ ])
+ 
+ dnl reset FLDSONAME if the Forms compatibility library is disabled (not built):
+ dnl overwrite the variable because this is easier than adding conditional code above
+ AS_IF([test x$build_forms = xno], [
+     FLDSONAME=""
++    LINKSHAREDFORMS=""
+ ])
+ 
+ AC_SUBST([FLLIBNAME])
+ AC_SUBST([FLLIBBASENAME])
+ AC_SUBST([FLDSONAME])
+-AC_SUBST([LINKFLTKFORMS])
+-AC_SUBST([LINKSHARED])
++AC_SUBST([LINKSTATICFORMS])
++AC_SUBST([LINKSHAREDFORMS])
+ 
+ 
+ dnl Define the fluid executable used when building the test programs.
+@@ -498,6 +494,9 @@
+ AC_SUBST([IMGDSONAME])
+ AC_SUBST([CAIRODSONAME])
+ AC_SUBST([SHAREDSUFFIX])
++AC_SUBST([LINKSHARED])
++AC_SUBST([LINKSHAREDGL])
++AC_SUBST([LINKSHAREDIMG])
+ AC_SUBST([FLUID])
+ AC_SUBST([FLUID_BUILD])
+ AC_SUBST([FLTK_OPTIONS])
+@@ -639,6 +638,9 @@
+ AC_CHECK_FUNCS([trunc])
+ 
+ 
++AC_CHECK_FUNCS([mkostemp posix_fallocate memfd_create])
++
++
+ dnl Check for largefile support...
+ AC_SYS_LARGEFILE
+ 
+@@ -726,7 +728,7 @@
+ AS_IF([test x$enable_localjpeg = xyes -o x$sysjpeglib_ok = xno], [
+     JPEGINC="-I../jpeg"
+     JPEG="jpeg"
+-    IMAGELIBS="-lfltk_jpeg $IMAGELIBS"
++    IMAGELIBS="-L../lib -lfltk_jpeg $IMAGELIBS"
+     STATICIMAGELIBS="\$libdir/libfltk_jpeg.a $STATICIMAGELIBS"
+     AC_DEFINE([HAVE_LIBJPEG])
+     # Finally, warn user if system lib was requested but not found
+@@ -816,7 +818,7 @@
+     ZLIBINC="-I../zlib"
+     ZLIB="zlib"
+     LIBS="-lfltk_z $LIBS"
+-    IMAGELIBS="-lfltk_z $IMAGELIBS"
++    IMAGELIBS="-L../lib -lfltk_z $IMAGELIBS"
+     STATICIMAGELIBS="\$libdir/libfltk_z.a $STATICIMAGELIBS"
+     AC_DEFINE([HAVE_LIBZ])
+     ac_cv_lib_z_gzgets=no # fc: is still necessary ?
+@@ -838,7 +840,7 @@
+ AS_IF([test x$enable_localpng = xyes -o x$syspnglib_ok = xno], [
+     PNGINC="-I../png"
+     PNG="png"
+-    IMAGELIBS="-lfltk_png $IMAGELIBS"
++    IMAGELIBS="-L../lib -lfltk_png $IMAGELIBS"
+     STATICIMAGELIBS="\$libdir/libfltk_png.a $STATICIMAGELIBS"
+     AC_DEFINE([HAVE_LIBPNG])
+     AC_DEFINE([HAVE_PNG_H])
+@@ -883,6 +885,7 @@
+ dnl Check for pthreads for multi-threaded apps...
+ have_pthread=no
+ PTHREAD_FLAGS=""
++PTHREAD_LIBS=""
+ 
+ dnl Test whether we want to check for pthreads. We must not do it on Windows
+ dnl unless we run under Cygwin with --enable-cygwin, since we always use
+@@ -916,6 +919,7 @@
+             AS_IF([test $have_pthread = yes], [
+                 AC_DEFINE([HAVE_PTHREAD])
+                 PTHREAD_FLAGS="-D_THREAD_SAFE -D_REENTRANT"
++                PTHREAD_LIBS="$flag $PTHREAD_LIBS"
+ 
+                 # Solaris requires -D_POSIX_PTHREAD_SEMANTICS to
+                 # be POSIX-compliant... :(
+@@ -945,6 +949,7 @@
+ ])
+ 
+ AC_SUBST([PTHREAD_FLAGS])
++AC_SUBST([PTHREAD_LIBS])
+ AC_SUBST([HAVE_PTHREAD_MUTEX_RECURSIVE])
+ 
+ 
+@@ -961,6 +966,16 @@
+ INSTALL_DESKTOP=""
+ UNINSTALL_DESKTOP=""
+ 
++AC_ARG_WITH([weston], AS_HELP_STRING([--with-weston="path"], [weston program to launch with the headless backend to run fluid -c])], [
++    WESTON="$withval"
++])
++AC_SUBST(WESTON)
++
++AC_ARG_WITH([xdg-runtime-dir], AS_HELP_STRING([--with-xdg-runtime-dir="directory"], [XDG runtime directory])], [
++    XDG_RUNTIME_DIR="$withval"
++])
++AC_SUBST(XDG_RUNTIME_DIR)
++
+ AS_IF([test x$enable_fluid != xno], [FLUIDDIR="fluid"])
+ 
+ dnl Option use_std - allow std::string and maybe more
+@@ -1002,7 +1017,7 @@
+             GLLIBS="-lglu32 $GLLIBS"
+         ])
+     ], [
+-        LINKFLTKGL=""
++        LINKSTATICGL=""
+         GLLIBNAME=""
+         GLDSONAME=""
+         GLDEMOS=""
+@@ -1057,7 +1072,7 @@
+         AC_DEFINE([HAVE_GL_GLU_H])
+         GLLIBS="-framework OpenGL"
+     ], [
+-        LINKFLTKGL=""
++        LINKSTATICGL=""
+         GLLIBNAME=""
+         GLDSONAME=""
+         GLDEMOS=""
+@@ -1094,14 +1109,15 @@
+         ])
+       ],[
+         missing="no"
+-        AS_IF([$PKGCONFIG --exists 'wayland-client >= 1.18'],[],[missing="yes"])
++        AS_IF([$PKGCONFIG --exists 'wayland-client >= 1.17'],[],[missing="yes"])
+         AS_IF([$PKGCONFIG --exists 'wayland-protocols >= 1.15'],[],[missing="yes"])
+         AS_IF([$PKGCONFIG --exists wayland-cursor],[],[missing="yes"])
++        AS_IF([$PKGCONFIG --exists wayland-scanner],[],[missing="yes"])
+         AS_IF([$PKGCONFIG --exists xkbcommon],[],[missing="yes"])
+         AS_IF([$PKGCONFIG --exists pangocairo],[],[missing="yes"])
+         AS_IF([test x$missing = xyes], [
+-            AC_MSG_WARN([These packages 'wayland-client>=1.18 wayland-protocols>=1.15 wayland-cursor xkbcommon  pangocairo' are required to build FLTK for wayland.])
+-            AC_MSG_WARN([At least one of them is missing.])
++          AC_MSG_WARN([These packages 'wayland-client>=1.17 wayland-protocols>=1.15 wayland-cursor wayland-scanner xkbcommon pangocairo' are required to build FLTK for wayland.])
++          AC_MSG_WARN([At least one of them is missing.])
+           AS_IF([test x$enable_wayland = xyes], [
+             AC_MSG_ERROR([Building for Wayland is not possible. Aborting.])
+           ],[
+@@ -1121,6 +1137,8 @@
+       BUILD="WAYLAND"
+       AC_DEFINE([FLTK_USE_WAYLAND])
+       graphics="Wayland"
++      WAYLAND_PROTOCOLS=$($PKGCONFIG --variable=pkgdatadir wayland-protocols)
++      WAYLAND_SCANNER=$($PKGCONFIG --variable=wayland_scanner wayland-scanner)
+       AS_IF([test x$enable_x11 != xno], [
+        AC_DEFINE([FLTK_USE_X11]) # to build a hybrid Wayland/X11 library
+        BUILD="WAYLANDX11"
+@@ -1129,8 +1147,8 @@
+       AS_IF([$PKGCONFIG --exists 'libdecor-0 >= 0.2.0'],
+       [
+         plugin_dir="$($PKGCONFIG --variable=libdir libdecor-0)/libdecor/plugins-1"
+-        CFLAGS="$CFLAGS -DUSE_SYSTEM_LIBDECOR"
+-        CXXFLAGS="$CXXFLAGS -DUSE_SYSTEM_LIBDECOR"
++        CFLAGS="$CFLAGS -DUSE_SYSTEM_LIBDECOR $($PKGCONFIG --cflags libdecor-0)"
++        CXXFLAGS="$CXXFLAGS -DUSE_SYSTEM_LIBDECOR $($PKGCONFIG --cflags libdecor-0)"
+         CFLAGS="$CFLAGS -DLIBDECOR_PLUGIN_DIR=\\\"$plugin_dir\\\" "
+         LIBS="$LIBS $($PKGCONFIG --libs libdecor-0)"
+       ],
+@@ -1139,6 +1157,8 @@
+         CXXFLAGS="$CXXFLAGS -DUSE_SYSTEM_LIBDECOR=0"
+       ]
+       )
++      CFLAGS="$CFLAGS $($PKGCONFIG --cflags wayland-client)"
++      CXXFLAGS="$CXXFLAGS $($PKGCONFIG --cflags wayland-client)"
+       LIBS="$LIBS $($PKGCONFIG --libs wayland-cursor) $($PKGCONFIG --libs wayland-client) $($PKGCONFIG --libs xkbcommon) $($PKGCONFIG --libs pangocairo) "
+       AS_IF([test x$enable_x11 != xno], [LIBS="$LIBS $($PKGCONFIG --libs x11)"] )
+       LIBS="$LIBS -ldl"
+@@ -1158,15 +1178,20 @@
+               AS_IF([$PKGCONFIG --exists wayland-egl], [
+                 AC_DEFINE([HAVE_GL])
+                 GLLIBS="$($PKGCONFIG --libs wayland-egl) $($PKGCONFIG --libs egl) $($PKGCONFIG --libs gl) $GLLIBS"
+-          ])])])
+-          AS_IF([$PKGCONFIG --exists glu], [
+-             AC_DEFINE([HAVE_GL_GLU_H])
+-             GLLIBS="$($PKGCONFIG --libs glu) $GLLIBS"
++                AS_IF([$PKGCONFIG --exists glu], [
++                   AC_DEFINE([HAVE_GL_GLU_H])
++                   GLLIBS="$($PKGCONFIG --libs glu) $GLLIBS"
++                ])
++              ])
++            ])
++          ], [
++            LINKSTATICGL=""
++            GLLIBNAME=""
++            GLDSONAME=""
++            GLDEMOS=""
+           ])
+-          AC_CHECK_LIB([GL], [glXGetProcAddressARB], [AC_DEFINE([HAVE_GLXGETPROCADDRESSARB])
+-             ],, [-lm])
+       ], [
+-          LINKFLTKGL=""
++          LINKSTATICGL=""
+           GLLIBNAME=""
+           GLDSONAME=""
+           GLDEMOS=""
+@@ -1291,13 +1316,13 @@
+         ])
+ 
+         AS_IF([test x$ac_cv_lib_GL_glXMakeCurrent != xyes -a x$ac_cv_lib_MesaGL_glXMakeCurrent != xyes], [
+-            LINKFLTKGL=""
++            LINKSTATICGL=""
+             GLLIBNAME=""
+             GLDSONAME=""
+             GLDEMOS=""
+         ])
+     ], [
+-        LINKFLTKGL=""
++        LINKSTATICGL=""
+         GLLIBNAME=""
+         GLDSONAME=""
+         GLDEMOS=""
+@@ -1501,6 +1526,8 @@
+ AC_SUBST([HLINKS])
+ AC_SUBST([OSX_ONLY])
+ AC_SUBST([THREADS])
++AC_SUBST([WAYLAND_PROTOCOLS])
++AC_SUBST([WAYLAND_SCANNER])
+ 
+ AC_SUBST([FLUIDDIR])
+ 
+@@ -1939,6 +1966,7 @@
+ AC_CONFIG_HEADERS([config.h:configh.in])
+ AC_CONFIG_HEADERS([FL/fl_config.h:fl_config.in])
+ AC_CONFIG_FILES([makeinclude fltk.list fltk-config fltk.spec FL/Makefile])
++AC_CONFIG_FILES([fltk.pc fltk-forms.pc fltk-gl.pc fltk-images.pc])
+ AC_OUTPUT
+ 
+ dnl Make sure the fltk-config script is executable...
+--- fltk-1.4.1.orig/fltk-forms.pc.in
++++ fltk-1.4.1/fltk-forms.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-forms
++Description: FLTK Forms Library
++Version: @FLTK_VERSION@
++Requires: fltk
++Libs: -L${libdir} -lfltk_forms
++Cflags: -I${includedir}
+--- fltk-1.4.1.orig/fltk-gl.pc.in
++++ fltk-1.4.1/fltk-gl.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-gl
++Description: FLTK GL Library
++Version: @FLTK_VERSION@
++Requires: fltk gl
++Libs: -L${libdir} -lfltk_gl
++Cflags: -I${includedir}
+--- fltk-1.4.1.orig/fltk-images.pc.in
++++ fltk-1.4.1/fltk-images.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-images
++Description: FLTK Images Library
++Version: @FLTK_VERSION@
++Requires: fltk
++Libs: -L${libdir} -lfltk_images
++Cflags: -I${includedir}
+--- fltk-1.4.1.orig/fltk-options/Makefile
++++ fltk-1.4.1/fltk-options/Makefile
+@@ -27,7 +27,7 @@
+ 
+ fltk-options$(EXEEXT):	$(OBJECTS) $(LIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) -o $@ $(OBJECTS) $(LINKFLTKIMG) $(LDFLAGS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) -o $@ $(OBJECTS) $(LINKSTATIC) $(LDFLAGS) $(LDLIBS)
+ 	$(OSX_ONLY) $(RM) -r -f fltk-options.app
+ 	$(OSX_ONLY) mkdir -p fltk-options.app/Contents/MacOS fltk-options.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) fltk-options fltk-options.app/Contents/MacOS
+@@ -36,7 +36,7 @@
+ 
+ fltk-options-shared$(EXEEXT):	$(OBJECTS) ../src/$(DSONAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) -o $@ $(OBJECTS) $(LINKSHARED) $(LDFLAGS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) -o $@ $(OBJECTS) $(LINKSHARED) $(LDFLAGS)
+ 
+ clean:
+ 	-$(RM) *.o core.* *~ *.bck *.bak
+--- fltk-1.4.1.orig/fltk.pc.in
++++ fltk-1.4.1/fltk.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk
++Description: FLTK Library
++Version: @FLTK_VERSION@
++Requires: @CAIRODIR@
++Libs: -L${libdir} -lfltk
++Cflags: -I${includedir}
+--- fltk-1.4.1.orig/fluid/Fd_Snap_Action.cxx
++++ fltk-1.4.1/fluid/Fd_Snap_Action.cxx
+@@ -149,7 +149,6 @@
+  Write presets to a Preferences database.
+  */
+ void Fd_Layout_Preset::write(Fl_Preferences &prefs) {
+-  assert(this);
+   Fl_Preferences p_win(prefs, "Window");
+   p_win.set("left_margin", left_window_margin);
+   p_win.set("right_margin", right_window_margin);
+@@ -189,7 +188,6 @@
+  Read presets from a Preferences database.
+  */
+ void Fd_Layout_Preset::read(Fl_Preferences &prefs) {
+-  assert(this);
+   Fl_Preferences p_win(prefs, "Window");
+   p_win.get("left_margin", left_window_margin, 15);
+   p_win.get("right_margin", right_window_margin, 15);
+@@ -322,7 +320,6 @@
+  Write a presets suite to a Preferences database.
+  */
+ void Fd_Layout_Suite::write(Fl_Preferences &prefs) {
+-  assert(this);
+   assert(name_);
+   prefs.set("name", name_);
+   for (int i = 0; i < 3; ++i) {
+@@ -336,7 +333,6 @@
+  Read a presets suite from a Preferences database.
+  */
+ void Fd_Layout_Suite::read(Fl_Preferences &prefs) {
+-  assert(this);
+   for (int i = 0; i < 3; ++i) {
+     Fl_Preferences prefs_preset(prefs, Fl_Preferences::Name(i));
+     assert(layout[i]);
+@@ -600,7 +596,6 @@
+  Release allocated resources.
+  */
+ Fd_Layout_List::~Fd_Layout_List() {
+-  assert(this);
+   if (!list_is_static_) {
+     ::free(main_menu_);
+     ::free(choice_menu_);
+@@ -622,7 +617,6 @@
+     preset_menu = (Fl_Menu_Item*)main_menubar->find_item(select_layout_preset_cb);
+     assert(preset_menu);
+   }
+-  assert(this);
+   assert(current_suite_ >= 0 );
+   assert(current_suite_ < list_size_);
+   assert(current_preset_ >= 0 );
+@@ -661,7 +655,6 @@
+  Save all user layouts to the FLUID user preferences.
+  */
+ int Fd_Layout_List::save(const Fl_String &filename) {
+-  assert(this);
+   Fl_Preferences prefs(filename.c_str(), "layout.fluid.fltk.org", NULL, (Fl_Preferences::Root)(Fl_Preferences::C_LOCALE|Fl_Preferences::CLEAR));
+   prefs.clear();
+   write(prefs, FD_STORE_FILE);
+--- fltk-1.4.1.orig/fluid/Makefile
++++ fltk-1.4.1/fluid/Makefile
+@@ -69,7 +69,7 @@
+ 
+ fluid$(EXEEXT):		$(OBJECTS) $(LIBNAME) $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) -o $@ $(OBJECTS) $(LINKFLTKIMG) $(LDFLAGS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) -o $@ $(OBJECTS) $(LINKSTATICIMG) $(LDFLAGS) $(LDLIBS) $(IMAGELIBS)
+ 	$(OSX_ONLY) $(RM) -r -f fluid.app
+ 	$(OSX_ONLY) mkdir -p fluid.app/Contents/MacOS fluid.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) fluid fluid.app/Contents/MacOS
+@@ -78,7 +78,7 @@
+ 
+ fluid-shared$(EXEEXT):	$(OBJECTS) ../src/$(DSONAME) ../src/$(IMGDSONAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) -o $@ $(OBJECTS) $(LINKSHARED) $(LDFLAGS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) -o $@ $(OBJECTS) $(LINKSHAREDIMG) $(LDFLAGS) -lz
+ 
+ clean:
+ 	-$(RM) *.o core.* *~ *.bck *.bak
+--- fltk-1.4.1.orig/libdecor/build/Makefile
++++ fltk-1.4.1/libdecor/build/Makefile
+@@ -16,65 +16,53 @@
+ 
+ include ../../makeinclude
+ 
+-OBJECTS =  fl_libdecor.o libdecor-cairo-blur.o fl_libdecor-plugins.o \
++OBJECTS =  fl_libdecor.o fl_libdecor-plugins.o \
+   ../../src/xdg-decoration-protocol.o ../../src/xdg-shell-protocol.o \
+-  ../../src/text-input-protocol.o ../../src/gtk-shell-protocol.o desktop-settings.o os-compatibility.o
+-
+-PROTOCOLS = `pkg-config --variable=pkgdatadir wayland-protocols`
++  ../../src/text-input-protocol.o ../../src/gtk-shell-protocol.o
+ 
+ Linux_CFLAGS =
+ FreeBSD_CFLAGS = -I/usr/local/include
+ EXTRA_DECOR =  ${${UNAME}_CFLAGS}
+ 
+-CFLAGS_DECOR =  -I. -I../.. -I../../src -I../src -I../src/plugins $(EXTRA_DECOR) -fPIC -D_GNU_SOURCE \
+-   -DHAVE_MEMFD_CREATE -DHAVE_MKOSTEMP -DHAVE_POSIX_FALLOCATE
++CFLAGS_DECOR =  -I. -I../.. -I../../src -I../src -I../src/plugins $(EXTRA_DECOR) -fPIC -D_GNU_SOURCE
+ 
+ all : $(OBJECTS)
+ 
+ depend:
+ 	: echo "libdecor/build: make depend..."
+ 
+-fl_libdecor.o : fl_libdecor.c ../src/libdecor.c ../../src/xdg-shell-protocol.c ../../src/xdg-decoration-protocol.c ../../src/text-input-protocol.c ../../src/gtk-shell-protocol.c
++fl_libdecor.o : fl_libdecor.c ../../src/xdg-shell-protocol.c ../../src/xdg-decoration-protocol.c ../../src/text-input-protocol.c ../../src/gtk-shell-protocol.c
+ 	$(CC) $(CFLAGS) $(CFLAGS_DECOR) -c  fl_libdecor.c -DLIBDECOR_PLUGIN_API_VERSION=1
+ 
+-fl_libdecor-plugins.o : fl_libdecor-plugins.c ../src/plugins/cairo/libdecor-cairo.c
+-	$(CC) $(CFLAGS) $(CFLAGS_DECOR) -c  fl_libdecor-plugins.c  -DLIBDECOR_PLUGIN_API_VERSION=1
+-
+-libdecor-cairo-blur.o : ../src/plugins/common/libdecor-cairo-blur.c
+-	$(CC) $(CFLAGS_DECOR) -c  ../src/plugins/common/libdecor-cairo-blur.c
+-
+-os-compatibility.o : ../src/os-compatibility.c
+-	$(CC) $(CFLAGS_DECOR) -c  ../src/os-compatibility.c
+-
+-desktop-settings.o : ../src/desktop-settings.c
+-	$(CC) $(CFLAGS_DECOR)  -c ../src/desktop-settings.c $(LIBDECORDBUS)
++fl_libdecor-plugins.o : fl_libdecor-plugins.c
++	$(CC) $(CFLAGS) $(CFLAGS_DECOR) -c  fl_libdecor-plugins.c $(LIBDECORDBUS) -DLIBDECOR_PLUGIN_API_VERSION=1
+ 
+ ../../src/xdg-shell-protocol.c :
+-	wayland-scanner private-code $(PROTOCOLS)/stable/xdg-shell/xdg-shell.xml \
++	$(WAYLAND_SCANNER) private-code $(PROTOCOLS)/stable/xdg-shell/xdg-shell.xml \
+ 	    ../../src/xdg-shell-protocol.c
+-	wayland-scanner client-header $(PROTOCOLS)/stable/xdg-shell/xdg-shell.xml \
++	$(WAYLAND_SCANNER) client-header $(PROTOCOLS)/stable/xdg-shell/xdg-shell.xml \
+ 	    ../../src/xdg-shell-client-protocol.h
+ 
+ ../../src/xdg-decoration-protocol.c :
+-	wayland-scanner private-code \
++	$(WAYLAND_SCANNER) private-code \
+ 	    $(PROTOCOLS)/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml \
+ 	    ../../src/xdg-decoration-protocol.c
+-	wayland-scanner client-header \
++	$(WAYLAND_SCANNER) client-header \
+ 	    $(PROTOCOLS)/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml \
+ 	    ../../src/xdg-decoration-client-protocol.h
+ 
+ ../../src/text-input-protocol.c :
+-	wayland-scanner private-code \
++	$(WAYLAND_SCANNER) private-code \
+ 	    $(PROTOCOLS)/unstable/text-input/text-input-unstable-v3.xml \
+ 	    ../../src/text-input-protocol.c
+-	wayland-scanner client-header \
++	$(WAYLAND_SCANNER) client-header \
+ 	    $(PROTOCOLS)/unstable/text-input/text-input-unstable-v3.xml \
+ 	    ../../src/text-input-client-protocol.h
+ 
+ ../../src/gtk-shell-protocol.c :
+-	wayland-scanner private-code \
++	$(WAYLAND_SCANNER) private-code \
+ 	    gtk-shell.xml ../../src/gtk-shell-protocol.c
+-	wayland-scanner client-header \
++	$(WAYLAND_SCANNER) client-header \
+ 	    gtk-shell.xml ../../src/gtk-shell-client-protocol.h
+ 
+ install:
+--- fltk-1.4.1.orig/libdecor/build/fl_desktop-settings.h
++++ fltk-1.4.1/libdecor/build/fl_desktop-settings.h
+@@ -0,0 +1,34 @@
++//
++// Interface with the libdecor library for the Fast Light Tool Kit (FLTK).
++//
++// Copyright 2024 by Bill Spitzak and others.
++//
++// This library is free software. Distribution and use rights are outlined in
++// the file "COPYING" which should have been included with this file.  If this
++// file is missing or damaged, see the license at:
++//
++//     https://www.fltk.org/COPYING.php
++//
++// Please see the following page on how to report bugs and issues:
++//
++//     https://www.fltk.org/bugs.php
++//
++
++#ifndef FL_DESKTOP_SETTINGS_H
++#define FL_DESKTOP_SETTINGS_H
++
++#if ! USE_SYSTEM_LIBDECOR
++
++// add "fl_" prefix to desktop-settings.h symbols
++#define libdecor_get_cursor_settings fl_libdecor_get_cursor_settings
++#define libdecor_get_color_scheme fl_libdecor_get_color_scheme
++
++#include "../src/desktop-settings.h"
++
++#else
++
++#include <desktop-settings.h>
++
++#endif // ! USE_SYSTEM_LIBDECOR
++
++#endif // ! FL_DESKTOP_SETTINGS_H
+--- fltk-1.4.1.orig/libdecor/build/fl_libdecor-plugin.h
++++ fltk-1.4.1/libdecor/build/fl_libdecor-plugin.h
+@@ -0,0 +1,47 @@
++//
++// Interface with the libdecor library for the Fast Light Tool Kit (FLTK).
++//
++// Copyright 2024 by Bill Spitzak and others.
++//
++// This library is free software. Distribution and use rights are outlined in
++// the file "COPYING" which should have been included with this file.  If this
++// file is missing or damaged, see the license at:
++//
++//     https://www.fltk.org/COPYING.php
++//
++// Please see the following page on how to report bugs and issues:
++//
++//     https://www.fltk.org/bugs.php
++//
++
++#ifndef FL_LIBDECOR_PLUGIN_H
++#define FL_LIBDECOR_PLUGIN_H
++
++#if ! USE_SYSTEM_LIBDECOR
++
++// add "fl_" prefix to libdecor-plugin.h symbols
++#define libdecor_frame_get_wl_surface fl_libdecor_frame_get_wl_surface
++#define libdecor_frame_get_content_width fl_libdecor_frame_get_content_width
++#define libdecor_frame_get_content_height fl_libdecor_frame_get_content_height
++#define libdecor_frame_get_window_state fl_libdecor_frame_get_window_state
++#define libdecor_frame_get_capabilities fl_libdecor_frame_get_capabilities
++#define libdecor_frame_dismiss_popup fl_libdecor_frame_dismiss_popup
++#define libdecor_frame_toplevel_commit fl_libdecor_frame_toplevel_commit
++#define libdecor_get_wl_display fl_libdecor_get_wl_display
++#define libdecor_notify_plugin_ready fl_libdecor_notify_plugin_ready
++#define libdecor_notify_plugin_error fl_libdecor_notify_plugin_error
++#define libdecor_state_get_content_width fl_libdecor_state_get_content_width
++#define libdecor_state_get_content_height fl_libdecor_state_get_content_height
++#define libdecor_state_get_window_state fl_libdecor_state_get_window_state
++#define libdecor_plugin_init fl_libdecor_plugin_init
++#define libdecor_plugin_release fl_libdecor_plugin_release
++
++#include "../src/libdecor-plugin.h"
++
++#else
++
++#include <libdecor-plugin.h>
++
++#endif // ! USE_SYSTEM_LIBDECOR
++
++#endif // ! FL_LIBDECOR_PLUGIN_H
+--- fltk-1.4.1.orig/libdecor/build/fl_libdecor-plugins.c
++++ fltk-1.4.1/libdecor/build/fl_libdecor-plugins.c
+@@ -23,10 +23,12 @@
+  */
+ 
+ #include <dlfcn.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include "fl_libdecor.h"
++#include "fl_libdecor-plugin.h"
++#include "fl_desktop-settings.h"
+ #include <pango/pangocairo.h>
+-#include <dlfcn.h>
+ 
+ #ifndef HAVE_GTK
+ #  define HAVE_GTK 0
+@@ -35,7 +37,6 @@
+ enum plugin_kind { UNKNOWN, SSD, CAIRO, GTK3 };
+ 
+ #if USE_SYSTEM_LIBDECOR
+-#  include "../src/libdecor-plugin.h"
+ 
+ enum component {NONE}; /* details are not necessary*/
+ enum decoration_type {DECORATION_TYPE_NONE}; /* details are not necessary*/
+@@ -58,6 +59,9 @@
+ 
+ const struct libdecor_plugin_description *fl_libdecor_plugin_description = NULL;
+ 
++#  include "../src/desktop-settings.c"
++#  include "../src/os-compatibility.c"
++#  include "../src/plugins/common/libdecor-cairo-blur.c"
+ #  if HAVE_GTK
+ #    include "../src/plugins/gtk/libdecor-gtk.c"
+ #  else
+--- fltk-1.4.1.orig/libdecor/build/fl_libdecor.c
++++ fltk-1.4.1/libdecor/build/fl_libdecor.c
+@@ -27,6 +27,7 @@
+ static void *dlopen_corrected(const char *, int);
+ #define dlopen(A, B) dlopen_corrected(A, B)
+ #include "fl_libdecor.h"
++#include "fl_libdecor-plugin.h"
+ #undef libdecor_new
+ #define libdecor_new libdecor_new_orig
+ #undef libdecor_frame_set_minimized
+--- fltk-1.4.1.orig/libdecor/build/fl_libdecor.h
++++ fltk-1.4.1/libdecor/build/fl_libdecor.h
+@@ -68,25 +68,12 @@
+ #define libdecor_configuration_get_content_size fl_libdecor_configuration_get_content_size
+ #define libdecor_configuration_get_window_state fl_libdecor_configuration_get_window_state
+ 
+-// add "fl_" prefix to libdecor-plugin.h symbols
+-#define libdecor_frame_get_wl_surface fl_libdecor_frame_get_wl_surface
+-#define libdecor_frame_get_content_width fl_libdecor_frame_get_content_width
+-#define libdecor_frame_get_content_height fl_libdecor_frame_get_content_height
+-#define libdecor_frame_get_window_state fl_libdecor_frame_get_window_state
+-#define libdecor_frame_get_capabilities fl_libdecor_frame_get_capabilities
+-#define libdecor_frame_dismiss_popup fl_libdecor_frame_dismiss_popup
+-#define libdecor_frame_toplevel_commit fl_libdecor_frame_toplevel_commit
+-#define libdecor_get_wl_display fl_libdecor_get_wl_display
+-#define libdecor_notify_plugin_ready fl_libdecor_notify_plugin_ready
+-#define libdecor_notify_plugin_error fl_libdecor_notify_plugin_error
+-#define libdecor_state_get_content_width fl_libdecor_state_get_content_width
+-#define libdecor_state_get_content_height fl_libdecor_state_get_content_height
+-#define libdecor_state_get_window_state fl_libdecor_state_get_window_state
+-#define libdecor_plugin_init fl_libdecor_plugin_init
+-#define libdecor_plugin_release fl_libdecor_plugin_release
++#include "../src/libdecor.h"
+ 
+-#endif // ! USE_SYSTEM_LIBDECOR
++#else
+ 
+-#include "../src/libdecor.h"
++#include <libdecor.h>
++
++#endif // ! USE_SYSTEM_LIBDECOR
+ 
+ #endif // ! FL_LIBDECOR_H
+--- fltk-1.4.1.orig/makeinclude.in
++++ fltk-1.4.1/makeinclude.in
+@@ -58,12 +58,26 @@
+ CC		= @CC@
+ MAKEDEPEND	= @MAKEDEPEND@
+ 
++# Wayland protocol files
++PROTOCOLS	= @WAYLAND_PROTOCOLS@
++
++# Wayland scanner
++WAYLAND_SCANNER	= @WAYLAND_SCANNER@
++
++# Weston compositor
++WESTON		= @WESTON@
++
++# XDG runtime directory
++XDG_RUNTIME_DIR	= @XDG_RUNTIME_DIR@
++
+ # (Windows) resource compiler
+ RC		= @RC@
+ 
+ # flags for C++ compiler:
+ ARCHFLAGS	= @ARCHFLAGS@
+ OPTIM		= @OPTIM@
++PTHREAD_FLAGS	= @PTHREAD_FLAGS@
++PTHREAD_LIBS	= @PTHREAD_LIBS@
+ CFLAGS		= $(OPTIM) @LARGEFILE@ @PTHREAD_FLAGS@ @CPPFLAGS@ @CFLAGS@
+ CXXFLAGS	= $(OPTIM) @LARGEFILE@ @PTHREAD_FLAGS@ @CPPFLAGS@ @CXXFLAGS@ $(FLTKFLAGS)
+ 
+@@ -96,18 +110,19 @@
+ AUDIOLIBS	= @AUDIOLIBS@
+ CAIROLIBS	= @CAIROLIBS@
+ CAIROFLAGS	= @CAIROFLAGS@
++GLLIBS		= @GLLIBS@
++IMAGELIBS	= @IMAGELIBS@
+ DSOFLAGS	= -L. @DSOFLAGS@
+ LDFLAGS		= $(OPTIM) @LDFLAGS@
+ LDLIBS		= @LIBS@
+-GLDLIBS		= @GLLIBS@ @LIBS@
+-LINKFLTK	= @LINKFLTK@
+-LINKFLTKGL	= @LINKFLTKGL@
+-LINKFLTKFORMS	= @LINKFLTKFORMS@ @LINKFLTK@
+-LINKFLTKIMG	= @LINKFLTKIMG@ @LINKFLTK@ $(IMAGELIBS)
+-LINKFLTKCAIRO	= @LINKFLTKCAIRO@ $(CAIROLIBS)
+-FLTKCAIROOPTION = @FLTKCAIROOPTION@
+-LINKSHARED	= @DSOLINK@ @LINKSHARED@ $(IMAGELIBS) $(CAIROLIBS)
+-IMAGELIBS	= -L../lib @IMAGELIBS@
++LINKSTATIC	= @LINKSTATIC@
++LINKSTATICFORMS	= @LINKSTATICFORMS@ @LINKSTATIC@
++LINKSTATICGL	= @LINKSTATICGL@ @LINKSTATIC@
++LINKSTATICIMG	= @LINKSTATICIMG@ @LINKSTATIC@
++LINKSHARED	= @LINKSHARED@
++LINKSHAREDFORMS	= @LINKSHAREDFORMS@ @LINKSHARED@
++LINKSHAREDGL	= @LINKSHAREDGL@ @LINKSHARED@
++LINKSHAREDIMG	= @LINKSHAREDIMG@ @LINKSHARED@
+ 
+ # optional extra build step for fluid:
+ FLUIDDIR  = @FLUIDDIR@
+@@ -167,11 +182,6 @@
+ # Build commands and filename extensions...
+ .SUFFIXES:	.0 .1 .3 .6 .c .cxx .mm .h .fl .man .o .z $(EXEEXT)
+ 
+-.o$(EXEEXT):
+-	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(LDFLAGS) $< $(LINKFLTK) $(LDLIBS) -o $@
+-	$(OSX_ONLY) ../fltk-config --post $@
+-
+ .c.o:
+ 	echo Compiling $<...
+ 	$(CC) -I.. $(ARCHFLAGS) @PNGINC@ @JPEGINC@ @ZLIBINC@ $(CFLAGS) -c $< -o $@
+--- fltk-1.4.1.orig/src/Fl_SVG_Image.cxx
++++ fltk-1.4.1/src/Fl_SVG_Image.cxx
+@@ -28,8 +28,8 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+-#include "../nanosvg/nanosvg.h"
+-#include "../nanosvg/nanosvgrast.h"
++#include <nanosvg/nanosvg.h>
++#include <nanosvg/nanosvgrast.h>
+ 
+ #if defined(HAVE_LIBZ)
+ #include <zlib.h>
+--- fltk-1.4.1.orig/src/Makefile
++++ fltk-1.4.1/src/Makefile
+@@ -424,11 +424,10 @@
+ CFILES_XFT = $(XLIBCFILES)
+ 
+ CFILES_WAYLANDX11 = $(WLCFILES)
+-EXTRA_OBJECTS_WAYLAND =  ../libdecor/build/fl_libdecor.o ../libdecor/build/libdecor-cairo-blur.o \
++EXTRA_OBJECTS_WAYLAND =  ../libdecor/build/fl_libdecor.o \
+   ../libdecor/build/fl_libdecor-plugins.o \
+   xdg-decoration-protocol.o xdg-shell-protocol.o text-input-protocol.o \
+-  gtk-shell-protocol.o \
+-  ../libdecor/build/desktop-settings.o ../libdecor/build/os-compatibility.o
++  gtk-shell-protocol.o
+ EXTRA_OBJECTS_WAYLANDX11 = $(EXTRA_OBJECTS_WAYLAND)
+ EXTRA_CXXFLAGS_WAYLAND = -I.
+ EXTRA_CXXFLAGS_WAYLANDX11 = $(EXTRA_CXXFLAGS_WAYLAND)
+@@ -530,13 +529,13 @@
+ 
+ libfltk_gl.so.$(FL_DSO_VERSION): $(GLOBJECTS) libfltk.so.$(FL_DSO_VERSION)
+ 	echo $(DSOCOMMAND) $@ ...
+-	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. -lfltk $(LDFLAGS) $(LDLIBS) $(GLDLIBS)
++	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. $(GLLIBS) -lfltk $(LDFLAGS) $(LDLIBS)
+ 	$(RM) libfltk_gl.so
+ 	$(LN) libfltk_gl.so.$(FL_DSO_VERSION) libfltk_gl.so
+ 
+ libfltk_gl.sl.$(FL_DSO_VERSION): $(GLOBJECTS) libfltk.sl.$(FL_DSO_VERSION)
+ 	echo $(DSOCOMMAND) $@ ...
+-	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. -lfltk
++	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. $(GLLIBS) -lfltk
+ 	$(RM) libfltk_gl.sl
+ 	$(LN) libfltk_gl.sl.$(FL_DSO_VERSION) libfltk_gl.sl
+ 
+@@ -546,7 +545,7 @@
+ 		-install_name $(libdir)/$@ \
+ 		-current_version $(FL_VERSION) \
+ 		-compatibility_version $(FL_ABI_VERSION) \
+-		$(GLOBJECTS) -L. $(GLDLIBS) -lfltk
++		$(GLOBJECTS) -L. $(LDFLAGS) $(LDLIBS) $(GLLIBS) -lfltk
+ 	$(RM) libfltk_gl.dylib
+ 	$(LN) libfltk_gl.$(FL_DSO_VERSION).dylib libfltk_gl.dylib
+ 
+@@ -621,7 +620,7 @@
+ 	echo $(DSOCOMMAND) $(GLLIBNAME) ...
+ 	$(DSOCOMMAND) $(GLLIBNAME) -Wl,--no-whole-archive \
+ 		-Wl,--out-implib=libfltk_gl.dll.a \
+-		-L. -lfltk $(GLDLIBS)
++		-L. -lfltk $(GLLIBS) $(LDLIBS)
+ 
+ cygfltknox_images-$(FL_DSO_VERSION).dll: $(IMGLIBNAME) cygfltknox-$(FL_DSO_VERSION).dll
+ 	echo $(DSOCOMMAND) $(IMGLIBNAME) ...
+@@ -649,7 +648,7 @@
+ 	echo $(DSOCOMMAND) $(GLLIBNAME) ...
+ 	$(DSOCOMMAND) $(GLLIBNAME) -Wl,--no-whole-archive \
+ 		-Wl,--out-implib=libfltk_gl.dll.a \
+-		-L. -lfltk $(GLDLIBS)
++		-L. -lfltk $(GLLIBS) $(LDLIBS)
+ 
+ cygfltk_images-$(FL_DSO_VERSION).dll: $(IMGLIBNAME) cygfltk-$(FL_DSO_VERSION).dll
+ 	echo $(DSOCOMMAND) $(IMGLIBNAME) ...
+@@ -673,7 +672,7 @@
+ 	echo $(DSOCOMMAND) $(GLLIBNAME) ...
+ 	$(DSOCOMMAND) $(GLLIBNAME) -Wl,--no-whole-archive \
+ 		-Wl,--out-implib=libfltk_gl.dll.a \
+-		-L. -lfltk $(GLDLIBS)
++		-L. -lfltk $(GLLIBS) $(LDLIBS)
+ 
+ #-----------------------------------------------------
+ # See STR #1585 for --exclude-libs
+--- fltk-1.4.1.orig/src/drivers/Cairo/Fl_Cairo_Graphics_Driver.cxx
++++ fltk-1.4.1/src/drivers/Cairo/Fl_Cairo_Graphics_Driver.cxx
+@@ -944,7 +944,7 @@
+     uint32_t *q = (uint32_t *)(BGRA + j * stride);
+     int k = 0;
+     uint32_t mask32;
+-    uchar p;
++    uchar p = 0;
+     for (int i = 0; i < bm->data_w(); i++) {
+       if (k == 0) {
+ #if WORDS_BIGENDIAN
+--- fltk-1.4.1.orig/src/drivers/Wayland/Fl_Wayland_Graphics_Driver.cxx
++++ fltk-1.4.1/src/drivers/Wayland/Fl_Wayland_Graphics_Driver.cxx
+@@ -19,15 +19,12 @@
+ #include "Fl_Wayland_Window_Driver.H"
+ #include <FL/Fl_Image_Surface.H>
+ #include <sys/mman.h>
++#include <fcntl.h> // for O_CLOEXEC
+ #include <unistd.h> // for close()
+ #include <errno.h>
+ #include <string.h> // for strerror()
+ #include <cairo/cairo.h>
+ 
+-extern "C" {
+-#  include "../../../libdecor/src/os-compatibility.h" // for libdecor_os_create_anonymous_file()
+-}
+-
+ // used by create_shm_buffer and do_buffer_release
+ struct wl_shm_pool *Fl_Wayland_Graphics_Driver::current_pool = NULL;
+ 
+@@ -76,10 +73,19 @@
+     pool_size = default_pool_size;
+     if (buffer->draw_buffer.data_size > pool_size)
+       pool_size = 2 * buffer->draw_buffer.data_size; // a larger pool is needed
+-    int fd = libdecor_os_create_anonymous_file(pool_size);
++    const char *path;
++    char *name;
++    path = getenv("XDG_RUNTIME_DIR");
++    name = (char*)malloc(strlen(path) + sizeof("/fltk-shared-XXXXXX"));
++    strcpy(name, path);
++    strcat(name, "/fltk-shared-XXXXXX");
++    int fd = mkostemp(name, O_CLOEXEC);
+     if (fd < 0) {
+-      Fl::fatal("libdecor_os_create_anonymous_file failed: %s\n", strerror(errno));
++      Fl::fatal("create anonymous file failed: %s\n", strerror(errno));
+     }
++    ftruncate(fd, pool_size);
++    unlink(name);
++    free(name);
+     pool_data = (struct wld_shm_pool_data*)calloc(1, sizeof(struct wld_shm_pool_data));
+     pool_data->pool_memory = (char*)mmap(NULL, pool_size, PROT_READ | PROT_WRITE,
+                                          MAP_SHARED, fd, 0);
+--- fltk-1.4.1.orig/src/drivers/Wayland/Fl_Wayland_Screen_Driver.cxx
++++ fltk-1.4.1/src/drivers/Wayland/Fl_Wayland_Screen_Driver.cxx
+@@ -46,7 +46,7 @@
+ #include <errno.h>
+ #include <string.h> // for strerror()
+ extern "C" {
+-  bool libdecor_get_cursor_settings(char **theme, int *size);
++  #include "../../../libdecor/build/fl_desktop-settings.h"
+   bool fl_is_surface_from_GTK_titlebar (struct wl_surface *surface, struct libdecor_frame *frame,
+                                         bool *using_GTK);
+ }
+@@ -386,7 +386,7 @@
+ 
+ 
+ static void try_update_cursor(struct Fl_Wayland_Screen_Driver::seat *seat) {
+-  if (wl_list_empty(&seat->pointer_outputs)) return;
++  if (wl_list_empty(&seat->pointer_outputs) || !seat->xkb_context) return;
+   struct pointer_output *pointer_output;
+   int scale = 1;
+ 
+--- fltk-1.4.1.orig/src/drivers/Wayland/Fl_Wayland_Window_Driver.cxx
++++ fltk-1.4.1/src/drivers/Wayland/Fl_Wayland_Window_Driver.cxx
+@@ -43,7 +43,7 @@
+ };
+ 
+ extern "C" {
+-# include "../../../libdecor/src/libdecor-plugin.h"
++# include "../../../libdecor/build/fl_libdecor-plugin.h"
+   uchar *fl_libdecor_titlebar_buffer(struct libdecor_frame *frame, int *w, int *h, int *stride);
+ }
+ 
+--- fltk-1.4.1.orig/src/makedepend
++++ fltk-1.4.1/src/makedepend
+@@ -3817,8 +3817,6 @@
+ Fl_SVG_Image.o: ../FL/Fl_Valuator.H
+ Fl_SVG_Image.o: ../FL/Fl_Widget.H
+ Fl_SVG_Image.o: ../FL/platform_types.h
+-Fl_SVG_Image.o: ../nanosvg/nanosvg.h
+-Fl_SVG_Image.o: ../nanosvg/nanosvgrast.h
+ Fl_SVG_Image.o: Fl_Screen_Driver.H
+ Fl_SVG_Image.o: Fl_System_Driver.H
+ fl_symbols.o: ../config.h
+@@ -5068,8 +5066,6 @@
+ gl_start.o: Fl_Gl_Window_Driver.H
+ nanosvg.o: ../config.h
+ nanosvg.o: ../FL/fl_config.h
+-nanosvg.o: ../nanosvg/nanosvg.h
+-nanosvg.o: ../nanosvg/nanosvgrast.h
+ numericsort.o: ../FL/filename.H
+ numericsort.o: ../FL/fl_config.h
+ numericsort.o: ../FL/Fl_Export.H
+--- fltk-1.4.1.orig/src/nanosvg.cxx
++++ fltk-1.4.1/src/nanosvg.cxx
+@@ -54,7 +54,7 @@
+ #define NANOSVG_IMPLEMENTATION          // use nanosvg.h implementation
+ #define NANOSVGRAST_IMPLEMENTATION      // use nanosvgrast.h implementation
+ 
+-#include "../nanosvg/nanosvg.h"
+-#include "../nanosvg/nanosvgrast.h"
++#include <nanosvg/nanosvg.h>
++#include <nanosvg/nanosvgrast.h>
+ 
+ #endif // FLTK_USE_SVG
+--- fltk-1.4.1.orig/test/Makefile
++++ fltk-1.4.1/test/Makefile
+@@ -16,6 +16,30 @@
+ 
+ include ../makeinclude
+ 
++ifeq ($(DSONAME),)
++	LINKFLTK = $(LINKSTATIC) $(LDLIBS)
++else
++	LINKFLTK = $(LINKSHARED)
++endif
++
++ifeq ($(DSONAME),)
++	LINKFLTKFORMS = $(LINKSTATICFORMS) $(LDLIBS)
++else
++	LINKFLTKFORMS = $(LINKSHAREDFORMS)
++endif
++
++ifeq ($(DSONAME),)
++	LINKFLTKGL = $(LINKSTATICGL) $(LDLIBS) $(GLLIBS)
++else
++	LINKFLTKGL = $(LINKSHAREDGL)
++endif
++
++ifeq ($(IMGDSONAME),)
++	LINKFLTKIMG = $(LINKSTATICIMG) $(LDLIBS) $(IMAGELIBS)
++else
++	LINKFLTKIMG = $(LINKSHAREDIMG)
++endif
++
+ CPPUNITTEST = \
+ 	unittests.cxx \
+ 	unittest_about.cxx \
+@@ -54,6 +78,7 @@
+ 	colbrowser.cxx \
+ 	color_chooser.cxx \
+ 	contrast.cxx \
++	coordinates.cxx \
+ 	cube.cxx \
+ 	CubeMain.cxx \
+ 	CubeView.cxx \
+@@ -80,6 +105,8 @@
+ 	grid_buttons \
+ 	grid_dialog \
+ 	grid_login \
++	handle_events.cxx \
++	handle_keys.cxx \
+ 	hello.cxx \
+ 	help_dialog.cxx \
+ 	icon.cxx \
+@@ -156,6 +183,7 @@
+ 	colbrowser$(EXEEXT) \
+ 	color_chooser$(EXEEXT) \
+ 	contrast$(EXEEXT) \
++	coordinates$(EXEEXT) \
+ 	cursor$(EXEEXT) \
+ 	curve$(EXEEXT) \
+ 	demo$(EXEEXT) \
+@@ -172,6 +200,8 @@
+ 	grid_buttons$(EXEEXT) \
+ 	grid_dialog$(EXEEXT) \
+ 	grid_login$(EXEEXT) \
++	handle_events$(EXEEXT) \
++	handle_keys$(EXEEXT) \
+ 	hello$(EXEEXT) \
+ 	help_dialog$(EXEEXT) \
+ 	icon$(EXEEXT) \
+@@ -232,10 +262,10 @@
+ 	tabs$(EXEEXT) \
+ 	terminal$(EXEEXT) \
+ 	tree$(EXEEXT) \
+-	valuators$(EXEEXT) \
+-	CubeView$(EXEEXT)
++	valuators$(EXEEXT)
+ 
+ GLALL = \
++	CubeView$(EXEEXT) \
+ 	cube$(EXEEXT) \
+ 	fractals$(EXEEXT) \
+ 	fullscreen$(EXEEXT) \
+@@ -340,12 +370,22 @@
+ # FLUID file rules
+ .fl.cxx .fl.h:
+ 	echo Generating $@ and header from $<...
+-	$(FLUID_BUILD) -c $<
++	if [ -z "$(WESTON)" ]; then \
++		$(FLUID_BUILD) -c $<; \
++	else \
++		XDG_RUNTIME_DIR=$(XDG_RUNTIME_DIR) $(WESTON) -Bheadless-backend.so > /dev/null 2>&1 & \
++		XDG_RUNTIME_DIR=$(XDG_RUNTIME_DIR) $(FLUID_BUILD) -c $< && sleep 1 && kill %1; \
++	fi
+ 
+ # All demos depend on the FLTK library...
+ $(ALL): $(LIBNAME)
+ 
+ # General demos...
++.o$(EXEEXT):
++	echo Linking $@...
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) $< $(LINKFLTK) -o $@
++	$(OSX_ONLY) ../fltk-config --post $@
++
+ unittests$(EXEEXT): $(OBJUNITTEST)
+ 
+ adjuster$(EXEEXT): adjuster.o
+@@ -368,7 +408,7 @@
+ 
+ blocks$(EXEEXT): blocks.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) blocks.o -o $@ $(AUDIOLIBS) $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) blocks.o -o $@ $(AUDIOLIBS) $(LINKFLTK)
+ 	$(OSX_ONLY) $(RM) -f -r blocks.app
+ 	$(OSX_ONLY) mkdir -p blocks.app/Contents/MacOS blocks.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) blocks$(EXEEXT) blocks.app/Contents/MacOS
+@@ -377,7 +417,7 @@
+ 
+ checkers$(EXEEXT): checkers.o checkers_pieces.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) checkers.o checkers_pieces.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) checkers.o checkers_pieces.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) $(RM) -f -r checkers.app
+ 	$(OSX_ONLY) mkdir -p checkers.app/Contents/MacOS checkers.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) checkers$(EXEEXT) checkers.app/Contents/MacOS
+@@ -391,14 +431,14 @@
+ 
+ clipboard$(EXEEXT): clipboard.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) clipboard.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) clipboard.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ clock$(EXEEXT): clock.o
+ 
+ colbrowser$(EXEEXT): colbrowser.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ colbrowser.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ colbrowser.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) mkdir -p colbrowser.app/Contents/Resources
+ 	$(OSX_ONLY) cp -f rgb.txt colbrowser.app/Contents/Resources/
+@@ -407,27 +447,29 @@
+ 
+ contrast$(EXEEXT): contrast.o
+ 
++coordinates$(EXEEXT): coordinates.o
++
+ cursor$(EXEEXT): cursor.o
+ 
+ curve$(EXEEXT): curve.o
+ 
+ demo$(EXEEXT): demo.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ demo.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ demo.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) mkdir -p demo.app/Contents/Resources
+ 	$(OSX_ONLY) cp -f demo.menu demo.app/Contents/Resources/
+ 
+ device$(EXEEXT): device.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) device.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) device.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ doublebuffer$(EXEEXT): doublebuffer.o
+ 
+ editor$(EXEEXT): editor.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) editor.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) editor.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) cp -f mac-resources/editor.plist editor.app/Contents/Info.plist
+ 
+@@ -436,7 +478,7 @@
+ 
+ file_chooser$(EXEEXT): file_chooser.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) file_chooser.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) file_chooser.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ flex_demo$(EXEEXT): flex_demo.o
+@@ -447,9 +489,9 @@
+ 
+ fonts$(EXEEXT): fonts.o
+ 
+-forms$(EXEEXT): forms.o
++forms$(EXEEXT): forms.o $(FLLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ forms.o $(LINKFLTKFORMS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ forms.o $(LINKFLTKFORMS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ grid_alignment$(EXEEXT): grid_alignment.o
+@@ -460,11 +502,15 @@
+ 
+ grid_login$(EXEEXT): grid_login.o
+ 
++handle_events$(EXEEXT): handle_events.o
++
++handle_keys$(EXEEXT): handle_keys.o
++
+ hello$(EXEEXT): hello.o
+ 
+ help_dialog$(EXEEXT): help_dialog.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) help_dialog.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) help_dialog.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) mkdir -p help_dialog.app/Contents/Resources
+ 	$(OSX_ONLY) cp -f help_dialog.html help_dialog.app/Contents/Resources/
+@@ -484,14 +530,14 @@
+ 
+ keyboard$(EXEEXT): keyboard_ui.o keyboard.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ keyboard.o keyboard_ui.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ keyboard.o keyboard_ui.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ keyboard_ui.o:	keyboard_ui.h
+ keyboard_ui.cxx:	keyboard_ui.fl ../fluid/fluid$(EXEEXT)
+ 
+ label$(EXEEXT): label.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ label.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ label.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ line_style$(EXEEXT): line_style.o
+@@ -502,7 +548,7 @@
+ 
+ mandelbrot$(EXEEXT): mandelbrot_ui.o mandelbrot.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ mandelbrot.o mandelbrot_ui.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ mandelbrot.o mandelbrot_ui.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ mandelbrot_ui.o:	mandelbrot_ui.h
+ mandelbrot_ui.cxx:	mandelbrot_ui.fl ../fluid/fluid$(EXEEXT)
+@@ -515,16 +561,16 @@
+ 
+ native-filechooser$(EXEEXT): native-filechooser.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) native-filechooser.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) native-filechooser.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ navigation$(EXEEXT): navigation.o
+ 
+ offscreen$(EXEEXT): offscreen.o
+ 
+-output$(EXEEXT): output.o $(FLLIBNAME)
++output$(EXEEXT): output.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ output.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ output.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ overlay$(EXEEXT): overlay.o
+@@ -533,12 +579,12 @@
+ 
+ pixmap$(EXEEXT): pixmap.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ pixmap.o $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ pixmap.o $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ pixmap_browser$(EXEEXT): pixmap_browser.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) pixmap_browser.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) pixmap_browser.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ preferences$(EXEEXT):	preferences.o
+@@ -556,52 +602,52 @@
+ 
+ resize-example1$(EXEEXT): resize-example1.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example1.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example1.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example2$(EXEEXT): resize-example2.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example2.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example2.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example3a$(EXEEXT): resize-example3a.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example3a.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example3a.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example3b$(EXEEXT): resize-example3b.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example3b.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example3b.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example3c$(EXEEXT): resize-example3c.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example3c.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example3c.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example4a$(EXEEXT): resize-example4a.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example4a.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example4a.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example4b$(EXEEXT): resize-example4b.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example4b.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example4b.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example5a$(EXEEXT): resize-example5a.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example5a.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example5a.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example5b$(EXEEXT): resize-example5b.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example5b.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example5b.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ resize-example5c$(EXEEXT): resize-example5c.o resize-arrows.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) resize-example5c.o resize-arrows.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) resize-example5c.o resize-arrows.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ rotated_text$(EXEEXT): rotated_text.o
+@@ -610,9 +656,9 @@
+ 
+ subwindow$(EXEEXT): subwindow.o
+ 
+-sudoku: sudoku.o
++sudoku: sudoku.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) sudoku.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) sudoku.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG)
+ 	$(OSX_ONLY) $(RM) -f -r sudoku.app
+ 	$(OSX_ONLY) mkdir -p sudoku.app/Contents/MacOS sudoku.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) sudoku$(EXEEXT) sudoku.app/Contents/MacOS
+@@ -622,7 +668,7 @@
+ sudoku.exe: sudoku.o sudoku.rc
+ 	echo Linking $@...
+ 	$(RC) sudoku.rc sudokures.o
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) sudoku.o sudokures.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) sudoku.o sudokures.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG)
+ 
+ symbols$(EXEEXT): symbols.o
+ 
+@@ -635,6 +681,8 @@
+ terminal.cxx:	terminal.fl ../fluid/fluid$(EXEEXT)
+ 
+ threads$(EXEEXT): threads.o
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ threads.o $(LINKFLTK) $(PTHREAD_LIBS)
++	$(OSX_ONLY) ../fltk-config --post $@
+ # This ensures that we have this dependency even if threads are not
+ # enabled in the current tree...
+ threads.o:	threads.h
+@@ -657,9 +705,9 @@
+ # OpenGL demos...
+ CubeView$(EXEEXT): CubeMain.o CubeView.o CubeViewUI.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ \
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ \
+ 		CubeMain.o CubeView.o CubeViewUI.o \
+-		$(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++		$(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ CubeMain.o: CubeViewUI.h CubeView.h CubeViewUI.cxx
+ CubeView.o: CubeView.h
+@@ -668,45 +716,45 @@
+ 
+ cube$(EXEEXT): cube.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ cube.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ cube.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ fractals$(EXEEXT): fractals.o fracviewer.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ fractals.o fracviewer.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ fractals.o fracviewer.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ fullscreen$(EXEEXT): fullscreen.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ fullscreen.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ fullscreen.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ glpuzzle$(EXEEXT): glpuzzle.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ glpuzzle.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ glpuzzle.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ gl_overlay$(EXEEXT): gl_overlay.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ gl_overlay.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ gl_overlay.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ glut_test$(EXEEXT): glut_test.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ glut_test.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ glut_test.o $(LINKFLTKGL)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ unittests$(EXEEXT): $(OBJUNITTEST)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJUNITTEST) $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ $(OBJUNITTEST) $(LINKFLTKGL)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ shape$(EXEEXT): shape.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ shape.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ shape.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ cairo_test$(EXEEXT): cairo_test.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(CAIROFLAGS) $(LDFLAGS) -o $@ cairo_test.o $(LINKFLTK) $(CAIROLIBS) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(CAIROFLAGS) $(LDFLAGS) -o $@ cairo_test.o $(LINKFLTK) $(CAIROLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+--- fltk-1.4.1.orig/test/demo.cxx
++++ fltk-1.4.1/test/demo.cxx
+@@ -396,11 +396,17 @@
+   const char *path = app_path;
+   if (!strncmp(cmdbuf, "fluid", 5))
+     path = fluid_path;
+-  else if (!strncmp(cmdbuf, "fltk-options", 5))
++  else if (!strncmp(cmdbuf, "fltk-options", 12))
+     path = options_path;
+ 
+   // format commandline with optional parameters
+ 
++  snprintf(command, sizeof(command), "%s/%s%s", path, cmdbuf, suffix);
++  if (fl_access(command, 0)) {
++    snprintf(command, sizeof(command), "%s%s", cmdbuf, suffix);
++    goto run_command;
++  }
++
+ #if defined(USE_MAC_OS) // macOS
+ 
+   if (params[0]) {
+@@ -419,6 +425,8 @@
+ 
+ #endif
+ 
++  run_command:
++
+   // finally, execute program (the system specific part)
+ 
+ #ifdef _WIN32

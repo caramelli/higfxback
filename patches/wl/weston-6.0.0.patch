@@ -6,13 +6,13 @@ REQUIRES="autotools-wrappers-lt-build cairo-build libinput-build libxkbcommon-bu
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build libdrm-build libgbm-stub-build; then
-  COMPOSITOR="--disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+  COMPOSITOR="--disable-wayland-compositor --disable-x11-compositor"
   DEFAULT_BACKEND=drm
   DRM=1
   GL=1
   REQUIRES="$REQUIRES egl-opengl-stubs-build libdrm-build libgbm-stub-build"
 else
-  COMPOSITOR="--disable-drm-compositor --disable-headless-compositor --disable-wayland-compositor --disable-x11-compositor"
+  COMPOSITOR="--disable-drm-compositor --disable-wayland-compositor --disable-x11-compositor"
   DEFAULT_BACKEND=fbdev
   if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
     GL=1
@@ -60,6 +60,7 @@ install -d $DESTDIR/wl/lib/libweston-6
 test $DRM && install .libs/drm-backend.so $DESTDIR/wl/lib/libweston-6
 install .libs/fbdev-backend.so $DESTDIR/wl/lib/libweston-6
 test $DRM && install .libs/gl-renderer.so $DESTDIR/wl/lib/libweston-6
+install .libs/headless-backend.so $DESTDIR/wl/lib/libweston-6
 install -d $DESTDIR/wl/lib/weston
 install .libs/desktop-shell.so $DESTDIR/wl/lib/weston
 install weston-desktop-shell $DESTDIR/wl/lib/weston
@@ -111,9 +112,12 @@ cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/lib/libweston-desktop-6.so.0 \\
 EOF
 test $DRM && echo /wl/lib/libweston-6/drm-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
-echo /wl/lib/libweston-6/fbdev-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/lib/libweston-6/fbdev-backend.so \\
+EOF
 test $DRM && echo /wl/lib/libweston-6/gl-renderer.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/lib/libweston-6/headless-backend.so \\
 /wl/lib/weston/desktop-shell.so \\
 /wl/lib/weston/weston-desktop-shell \\
 /wl/lib/weston/weston-keyboard \\

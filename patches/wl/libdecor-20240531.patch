@@ -1,0 +1,302 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="meson-build pango-build wayland-protocols-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+# configure
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup -Ddbus=disabled -Dgtk=disabled --prefix=/wl build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/wl/bin
+install build/demo/libdecor-demo $DESTDIR/wl/bin
+test $GL && install build/demo/libdecor-egl $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/libdecor-0
+install -m 644 src/desktop-settings.h $DESTDIR/wl/include/libdecor-0
+install -m 644 src/libdecor.h $DESTDIR/wl/include/libdecor-0
+install -m 644 src/libdecor-plugin.h $DESTDIR/wl/include/libdecor-0
+install -d $DESTDIR/wl/lib
+install build/src/libdecor-0.so.0.*[!p] $DESTDIR/wl/lib/libdecor-0.so.0
+ln -sf libdecor-0.so.0 $DESTDIR/wl/lib/libdecor-0.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/meson-private/libdecor-0.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/libdecor-build.pc << EOF
+Name: libdecor
+Version: 20240531
+Description: Wayland client side decorations library
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/libdecor-0/desktop-settings.h \\
+/wl/include/libdecor-0/libdecor.h \\
+/wl/include/libdecor-0/libdecor-plugin.h \\
+/wl/lib/libdecor-0.so \\
+/wl/lib/pkgconfig/libdecor-0.pc
+
+exec=\\
+/wl/bin/libdecor-demo \\
+EOF
+test $GL && echo /wl/bin/libdecor-egl \\ >> $DESTDIR/wl/share/pkgconfig/libdecor-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/libdecor-build.pc << EOF
+/wl/lib/libdecor-0.so.0
+EOF
+
+exit
+--- libdecor-20240531.orig/demo/demo.c
++++ libdecor-20240531/demo/demo.c
+@@ -48,7 +48,7 @@
+ 
+ struct window;
+ 
+-static const size_t chk = 16;
++#define chk 16
+ static const int DEFAULT_WIDTH = 30*chk;
+ static const int DEFAULT_HEIGHT = 20*chk;
+ 
+--- libdecor-20240531.orig/demo/meson.build
++++ libdecor-20240531/demo/meson.build
+@@ -1,12 +1,10 @@
+-add_languages('cpp')
+-
+ wayland_cursor_dep = dependency('wayland-cursor')
+ 
+ math_dep = cc.find_library('m')
+ 
+-egl_dep = dependency('egl')
+-gl_dep = dependency('opengl')
+-wayland_egl_dep = dependency('wayland-egl')
++egl_dep = dependency('egl', required: false)
++gl_dep = dependency('gl', required: false)
++wayland_egl_dep = dependency('wayland-egl', required: false)
+ 
+ xkb_dep = dependency('xkbcommon')
+ 
+@@ -44,14 +42,18 @@
+   dependencies: [
+     libdecor_dep,
+     wayland_cursor_dep,
+-    desktop_settings_dep,
+     os_compatibility_dep,
+     xkb_dep],
+   install: get_option('install_demo'),
+ )
+ 
++if egl_dep.found() and gl_dep.found() and wayland_egl_dep.found()
++
+ executable('libdecor-egl',
+   sources: 'egl.c',
++  c_args: [
++    '-DEGL_NO_X11',
++  ],
+   dependencies: [
+     libdecor_dep,
+     wayland_egl_dep,
+@@ -61,6 +63,10 @@
+   install: get_option('install_demo'),
+ )
+ 
++endif
++
++if add_languages('cpp', required: false)
++
+ executable('libdecor-c++-demo',
+   sources: [
+     'c++-demo.cc',
+@@ -75,8 +81,9 @@
+   dependencies: [
+     libdecor_dep,
+     wayland_cursor_dep,
+-    desktop_settings_dep,
+     os_compatibility_dep,
+     xkb_dep],
+   install: get_option('install_demo'),
+ )
++
++endif
+--- libdecor-20240531.orig/meson.build
++++ libdecor-20240531/meson.build
+@@ -1,6 +1,6 @@
+ project('libdecor', 'c',
+   version: '0.2.2',
+-  meson_version: '>= 0.49.0',
++  meson_version: '>= 0.51.0',
+   license: 'MIT',
+   default_options: [
+     'c_std=c99',
+@@ -38,12 +38,13 @@
+   '-Wno-missing-field-initializers',
+   ]), language: 'c')
+ 
+-wayland_client_req = '>= 1.18'
++wayland_client_req = '>= 1.17'
+ wayland_protocols_req = '>= 1.15'
+ dbus_req = '>= 1.0'
+ 
+ wayland_client_dep = dependency('wayland-client', version: wayland_client_req)
+ wayland_protocols_dep = dependency('wayland-protocols', version: wayland_protocols_req)
++wayland_scanner_dep = dependency('wayland-scanner')
+ dl_dep = cc.find_library('dl', required: true)
+ 
+ dbus_dep = dependency('dbus-1', version: dbus_req, required: get_option('dbus'))
+--- libdecor-20240531.orig/src/desktop-settings.c
++++ libdecor-20240531/src/desktop-settings.c
+@@ -118,7 +118,7 @@
+ 	return true;
+ }
+ 
+-bool
++LIBDECOR_EXPORT bool
+ libdecor_get_cursor_settings(char **theme, int *size)
+ {
+ 	static const char name[] = "org.gnome.desktop.interface";
+@@ -167,7 +167,7 @@
+ 	return get_cursor_settings_from_env(theme, size);
+ }
+ 
+-enum libdecor_color_scheme
++LIBDECOR_EXPORT enum libdecor_color_scheme
+ libdecor_get_color_scheme()
+ {
+ 	static const char name[] = "org.freedesktop.appearance";
+@@ -199,13 +199,13 @@
+ 	return color;
+ }
+ #else
+-bool
++LIBDECOR_EXPORT bool
+ libdecor_get_cursor_settings(char **theme, int *size)
+ {
+ 	return get_cursor_settings_from_env(theme, size);
+ }
+ 
+-uint32_t
++LIBDECOR_EXPORT uint32_t
+ libdecor_get_color_scheme()
+ {
+ 	return LIBDECOR_COLOR_SCHEME_DEFAULT;
+--- libdecor-20240531.orig/src/desktop-settings.h
++++ libdecor-20240531/src/desktop-settings.h
+@@ -28,6 +28,16 @@
+ 
+ #include <stdbool.h>
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#if defined(__GNUC__) && __GNUC__ >= 4
++#define LIBDECOR_EXPORT __attribute__ ((visibility("default")))
++#else
++#define LIBDECOR_EXPORT
++#endif
++
+ enum libdecor_color_scheme {
+ 	LIBDECOR_COLOR_SCHEME_DEFAULT,
+ 	LIBDECOR_COLOR_SCHEME_PREFER_DARK,
+@@ -39,3 +49,7 @@
+ 
+ enum libdecor_color_scheme
+ libdecor_get_color_scheme();
++
++#ifdef __cplusplus
++}
++#endif
+--- libdecor-20240531.orig/src/meson.build
++++ libdecor-20240531/src/meson.build
+@@ -8,6 +8,7 @@
+ ]
+ 
+ libdecor_sources = [
++  'desktop-settings.c',
+   'libdecor.c',
+   'libdecor-fallback.c',
+ ]
+@@ -21,7 +22,7 @@
+ 
+ libdecor_built_sources = []
+ 
+-wayland_scanner = find_program('wayland-scanner')
++wayland_scanner = find_program(wayland_scanner_dep.get_variable(pkgconfig: 'wayland_scanner'))
+ 
+ # Format:
+ #  - protocol stability
+@@ -32,7 +33,7 @@
+   ['unstable', 'xdg-decoration', '1'],
+ ]
+ 
+-protocols_dir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
++protocols_dir = wayland_protocols_dep.get_variable(pkgconfig: 'pkgdatadir')
+ assert(protocols_dir != '', 'Could not get pkgdatadir from wayland-protocols.pc')
+ 
+ foreach p: wayland_protocols
+@@ -67,19 +68,6 @@
+   )
+ endforeach
+ 
+-## desktop settings
+-desktop_settings = static_library('desktop_settings',
+-  sources: ['desktop-settings.c'],
+-  include_directories: [top_includepath],
+-  dependencies: [dbus_dep],
+-  gnu_symbol_visibility: 'hidden',
+-)
+-
+-desktop_settings_dep = declare_dependency(
+-  link_with: desktop_settings,
+-  dependencies: [dbus_dep],
+-)
+-
+ ## os compatibility
+ os_compatibility = static_library('os_compatibility',
+   sources: ['os-compatibility.c'],
+@@ -104,7 +92,7 @@
+   dependencies: [
+     wayland_client_dep,
+     dl_dep,
+-    desktop_settings_dep,
++    dbus_dep,
+   ],
+   install: true
+ )
+--- libdecor-20240531.orig/src/plugins/cairo/meson.build
++++ libdecor-20240531/src/plugins/cairo/meson.build
+@@ -15,7 +15,6 @@
+     libdecor_dep,
+     pangocairo_dep,
+     wayland_cursor_dep,
+-    desktop_settings_dep,
+     os_compatibility_dep,
+   ],
+   link_with: plugin_common,
+--- libdecor-20240531.orig/src/plugins/common/libdecor-cairo-blur.h
++++ libdecor-20240531/src/plugins/common/libdecor-cairo-blur.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include <cairo/cairo.h>
++#include <cairo.h>
+ 
+ int
+ blur_surface(cairo_surface_t *surface, int margin);
+--- libdecor-20240531.orig/src/plugins/gtk/meson.build
++++ libdecor-20240531/src/plugins/gtk/meson.build
+@@ -15,7 +15,6 @@
+     cairo_dep,
+     math_dep,
+     wayland_cursor_dep,
+-    desktop_settings_dep,
+     os_compatibility_dep,
+     gtk_dep,
+   ],

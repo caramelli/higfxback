@@ -19,6 +19,11 @@ fi
 
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists fltk-build; then
+  FLTK=1
+  REQUIRES="$REQUIRES fltk-build"
+fi
+
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   test $VK && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires glfw-build | grep -q vulkan-loader-build || { echo GLFW with Vulkan support required; exit 1; }
   GLFW=1
@@ -46,7 +51,7 @@ meson compile -C build
 # install
 install -d $DESTDIR/wl/bin
 test $GL && install build/yagears2 $DESTDIR/wl/bin
-test $GL && test $GLFW || test $GLUT || test $SDL2 && install build/yagears2-gui $DESTDIR/wl/bin
+test $GL && test $FLTK || test $GLFW || test $GLUT || test $SDL2 && install build/yagears2-gui $DESTDIR/wl/bin
 test $GLUT && install build/yagears2-mosaic $DESTDIR/wl/bin
 test $VK && install build/yagears2-vk $DESTDIR/wl/bin
 test $VK && test $GLFW || test $SDL2 && install build/yagears2-vk-gui $DESTDIR/wl/bin
@@ -62,7 +67,7 @@ Requires: $REQUIRES
 exec=\\
 EOF
 test $GL && echo /wl/bin/yagears2 \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
-test $GL && test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
+test $GL && test $FLTK || test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears2-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $GLUT && echo /wl/bin/yagears2-mosaic \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $VK && echo /wl/bin/yagears2-vk \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
 test $VK && test $GLFW || test $SDL2 && echo /wl/bin/yagears2-vk-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears2-build.pc
@@ -104,7 +109,39 @@ exit
  endif()
  
  # Vulkan WSIs
-@@ -516,6 +516,7 @@
+@@ -421,17 +421,20 @@
+ 
+ if(ENABLE_FLTK)
+   message(STATUS "Checking for fltk-config")
+-  find_program(FLTK_CONFIG fltk-config)
+-  if(FLTK_CONFIG)
+-    message(STATUS "  Found")
+-    execute_process(COMMAND ${FLTK_CONFIG} --cflags OUTPUT_VARIABLE FLTK_CFLAGS)
+-    string(STRIP ${FLTK_CFLAGS} FLTK_CFLAGS)
+-    separate_arguments(FLTK_CFLAGS)
+-    execute_process(COMMAND ${FLTK_CONFIG} --use-gl --ldflags OUTPUT_VARIABLE FLTK_LDFLAGS)
+-    string(STRIP ${FLTK_LDFLAGS} FLTK_LDFLAGS)
+-  else()
+-    message(STATUS "  Not found")
+-    set(ENABLE_FLTK OFF)
++  pkg_check_modules(GLFW glfw3)
++  if(NOT GLFW_FOUND)
++    find_program(FLTK_CONFIG fltk-config)
++    if(FLTK_CONFIG)
++      message(STATUS "  Found")
++      execute_process(COMMAND ${FLTK_CONFIG} --cflags OUTPUT_VARIABLE FLTK_CFLAGS)
++      string(STRIP ${FLTK_CFLAGS} FLTK_CFLAGS)
++      separate_arguments(FLTK_CFLAGS)
++      execute_process(COMMAND ${FLTK_CONFIG} --use-gl --ldflags OUTPUT_VARIABLE FLTK_LDFLAGS)
++      string(STRIP ${FLTK_LDFLAGS} FLTK_LDFLAGS)
++    else()
++      message(STATUS "  Not found")
++      set(ENABLE_FLTK OFF)
++    endif()
+   endif()
+ endif()
+ set(FLTK ${ENABLE_FLTK})
+@@ -516,6 +519,7 @@
      pkg_check_modules(SDL sdl2)
      if(NOT SDL_FOUND)
        set(ENABLE_SDL OFF)
@@ -112,7 +149,7 @@ exit
      endif()
    else()
      set(ENABLE_SDL OFF)
-@@ -631,9 +632,17 @@
+@@ -631,9 +635,17 @@
  
  # Build rules
  
@@ -133,7 +170,7 @@ exit
  
  if(ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB OR ENABLE_VK_D2D)
    set(VK ON)
-@@ -643,21 +652,27 @@
+@@ -643,21 +655,27 @@
  
  set(MOSAIC ${ENABLE_GLUT})
  
@@ -156,16 +193,16 @@ exit
 +if(PNG)
 +set(PNG_SOURCE png_image.c)
 +endif()
- 
++
 +if(TIFF)
 +set(TIFF_SOURCE tiff_image.c)
 +endif()
-+
+ 
 +if(OPENGL)
  if(GL)
  set(GL_SOURCE gl_gears.c)
  endif()
-@@ -675,14 +690,6 @@
+@@ -675,14 +693,6 @@
  set(GLESV2_SOURCE glesv2_gears.c)
  endif()
  
@@ -180,7 +217,7 @@ exit
  add_library(yagears gears_engine.c ${GL_SOURCE} ${GLESV1_CM_SOURCE} ${GLESV2_SOURCE} ${VERT_XXD_FILE} ${FRAG_XXD_FILE} image_loader.c ${PNG_SOURCE} ${TIFF_SOURCE})
  target_compile_options(yagears PRIVATE ${GL_CFLAGS} ${GLESV1_CM_CFLAGS} ${GLESV2_CFLAGS} ${PNG_CFLAGS} ${TIFF_CFLAGS})
  target_link_libraries(yagears ${GL_LDFLAGS} ${GLESV1_CM_LDFLAGS} ${GLESV2_LDFLAGS} ${PNG_LDFLAGS} ${TIFF_LDFLAGS})
-@@ -691,6 +698,7 @@
+@@ -691,6 +701,7 @@
  target_compile_options(yagears2 PRIVATE ${WAFFLE_CFLAGS} ${EGL_CFLAGS} ${X11_CFLAGS} ${DIRECTFB_CFLAGS} ${WAYLAND_EGL_CFLAGS} ${XCB_CFLAGS} ${DRM_CFLAGS} ${RPI_CFLAGS})
  target_link_libraries(yagears2 -Wl,--whole-archive yagears -Wl,--no-whole-archive ${WAFFLE_LDFLAGS} ${EGL_LDFLAGS} ${X11_LDFLAGS} ${DIRECTFB_LDFLAGS} ${WAYLAND_EGL_LDFLAGS} ${XCB_LDFLAGS} ${DRM_LDFLAGS} ${RPI_LDFLAGS})
  install(TARGETS yagears2 DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -276,7 +313,32 @@ exit
  fi
  
  # Vulkan WSIs
-@@ -532,6 +533,9 @@
+@@ -456,14 +457,16 @@
+ fi
+ 
+ if test x$enable_fltk = xyes; then
+-  AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
+-  if test x$FLTK_CONFIG != xno; then
+-    FLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+-    FLTK_LIBS=`$FLTK_CONFIG --use-gl --ldflags`
+-    AC_SUBST(FLTK_CFLAGS)
+-    AC_SUBST(FLTK_LIBS)
+-  else
+-    enable_fltk=no
++  PKG_CHECK_MODULES(FLTK, fltk-gl, , enable_fltk=no)
++  if test x$enable_fltk = xno; then
++    AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
++    if test x$FLTK_CONFIG != xno; then
++      FLTK_CFLAGS=`$FLTK_CONFIG --cflags`
++      FLTK_LIBS=`$FLTK_CONFIG --use-gl --ldflags`
++      AC_SUBST(FLTK_CFLAGS)
++      AC_SUBST(FLTK_LIBS)
++      enable_fltk=yes
++    fi
+   fi
+ fi
+ if test x$enable_fltk = xyes; then
+@@ -532,6 +535,9 @@
    AC_MSG_RESULT([$with_sdl])
    if test x$with_sdl = x2; then
      PKG_CHECK_MODULES(SDL, sdl2, , enable_sdl=no)
@@ -286,7 +348,7 @@ exit
    else
      enable_sdl=no
    fi
-@@ -632,19 +636,20 @@
+@@ -632,19 +638,20 @@
  
  # Build rules
  
@@ -303,15 +365,134 @@ exit
  AM_CONDITIONAL(MOSAIC, test x$enable_glut = xyes)
  
 -AM_CONDITIONAL(GUI, test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
+-
+-AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes -o x$enable_vk_d2d = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes)
 +AM_CONDITIONAL(GUI, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes && test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
  
--AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes -o x$enable_vk_d2d = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes)
--
 -AM_CONDITIONAL(PNG, test x$enable_png = xyes)
 -AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
 +AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes -o x$enable_vk_d2d = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes -a x$with_sdl = x2)
  
  AC_OUTPUT(Makefile)
+--- yagears-2.7.orig/gl_gears.c
++++ yagears-2.7/gl_gears.c
+@@ -25,6 +25,7 @@
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include "engine.h"
+ 
+ #include "image_loader.h"
+@@ -38,6 +39,7 @@
+ #define GEAR2 2
+ 
+ struct gear {
++  char *gl_version;
+   GLuint list;
+ };
+ 
+@@ -264,8 +266,9 @@
+     delete_gear(gears, GEAR0);
+   }
+ 
+-  printf("%s\n", glGetString(GL_VERSION));
++  printf("%s\n", gears->gl_version);
+ 
++  free(gears->gl_version);
+   free(gears);
+ }
+ 
+@@ -282,6 +285,8 @@
+     return NULL;
+   }
+ 
++  gears->gl_version = strdup((char *)glGetString(GL_VERSION));
++
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_NORMALIZE);
+   glEnable(GL_LIGHTING);
+--- yagears-2.7.orig/glesv1_cm_gears.c
++++ yagears-2.7/glesv1_cm_gears.c
+@@ -26,6 +26,7 @@
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include "engine.h"
+ 
+ #include "image_loader.h"
+@@ -54,6 +55,7 @@
+ };
+ 
+ struct gears {
++  char *gl_version;
+   void *lib_handle;
+   void           (*glBindBuffer)(GLenum, GLuint);
+   void           (*glBufferData)(GLenum, GLsizeiptr, const GLvoid *, GLenum);
+@@ -374,12 +376,13 @@
+     delete_gear(gears, GEAR0);
+   }
+ 
+-  printf("%s\n", gears->glGetString(GL_VERSION));
++  printf("%s\n", gears->gl_version);
+ 
+   if (gears->lib_handle) {
+     dlclose(gears->lib_handle);
+   }
+ 
++  free(gears->gl_version);
+   free(gears);
+ }
+ 
+@@ -438,6 +441,8 @@
+   DLSYM(glVertexPointer);
+   DLSYM(glViewport);
+ 
++  gears->gl_version = strdup((char *)gears->glGetString(GL_VERSION));
++
+   gears->glEnable(GL_DEPTH_TEST);
+   gears->glEnable(GL_NORMALIZE);
+   gears->glEnable(GL_LIGHTING);
+--- yagears-2.7.orig/glesv2_gears.c
++++ yagears-2.7/glesv2_gears.c
+@@ -138,6 +138,8 @@
+ };
+ 
+ struct gears {
++  char *gl_version;
++  char *gl_shading_language_version;
+   void *lib_handle;
+   void           (*glAttachShader)(GLuint, GLuint);
+   void           (*glBindAttribLocation)(GLuint, GLuint, const GLchar *);
+@@ -479,13 +481,15 @@
+     gears->glDeleteProgram(gears->program);
+   }
+ 
+-  printf("%s\n", gears->glGetString(GL_VERSION));
+-  printf("%s\n", gears->glGetString(GL_SHADING_LANGUAGE_VERSION));
++  printf("%s\n", gears->gl_version);
++  printf("%s\n", gears->gl_shading_language_version);
+ 
+   if (gears->lib_handle) {
+     dlclose(gears->lib_handle);
+   }
+ 
++  free(gears->gl_version);
++  free(gears->gl_shading_language_version);
+   free(gears);
+ }
+ 
+@@ -560,6 +564,9 @@
+   DLSYM(glVertexAttribPointer);
+   DLSYM(glViewport);
+ 
++  gears->gl_version = strdup((char *)gears->glGetString(GL_VERSION));
++  gears->gl_shading_language_version = strdup((char *)gears->glGetString(GL_SHADING_LANGUAGE_VERSION));
++
+   gears->glEnable(GL_DEPTH_TEST);
+ 
+   gears->program = gears->glCreateProgram();
 --- yagears-2.7.orig/gui.cc
 +++ yagears-2.7/gui.cc
 @@ -38,7 +38,11 @@
@@ -326,7 +507,103 @@ exit
  void glutLeaveMainLoop();
  void glutExit();
  }
-@@ -1178,6 +1182,7 @@
+@@ -74,8 +78,7 @@
+ #if defined(FLTK)
+ #include <FL/Fl.H>
+ #include <FL/Fl_Gl_Window.H>
+-void fl_open_display();
+-void fl_close_display();
++#include <FL/platform.H>
+ #endif
+ 
+ #include "gears_engine.h"
+@@ -200,12 +203,9 @@
+ #if defined(FLTK)
+ class FlGlWindow : public Fl_Gl_Window {
+ public:
+-int idle_id, quit;
+-
+ FlGlWindow() : Fl_Gl_Window(0, 0, 0, 0)
+ {
+-  idle_id = 1;
+-  quit = 0;
++  Fl::add_idle(idle, this);
+ }
+ 
+ private:
+@@ -216,28 +216,26 @@
+   if (animate) frames++;
+ }
+ 
+-public:
+-void idle()
++static
++void idle(void *data)
+ {
+   if (animate) {
+     if (!frames) return;
+-    redraw();
++    ((Fl_Window *)data)->redraw();
+   }
+   else {
+     if (frames) frames = 0;
+   }
+ }
+ 
+-private:
+ int handle(int event)
+ {
+-  if (event != FL_KEYDOWN)
+-    return 0;
++  if (event == FL_MOVE || event == FL_SHORTCUT)
++    return 1;
+ 
+   switch (Fl::event_key()) {
+     case FL_Escape:
+-      idle_id = 0;
+-      quit = 1;
++      Fl::program_should_quit(1);
+       return 1;
+     case ' ':
+       animate = !animate;
+@@ -272,7 +270,7 @@
+       }
+       break;
+     default:
+-      return 0;
++      return Fl_Gl_Window::handle(event);
+   }
+ 
+   if (!animate) {
+@@ -904,7 +902,8 @@
+   Ecore_Animator *ecore_animator_id;
+   #endif
+   #if defined(FLTK)
+-  FlGlWindow *fltk_win;
++  Fl_Window fltk_win(0, 0);
++  FlGlWindow flgl_win;
+   #endif
+   #if defined(GLFW)
+   GLFWwindow *glfw_win;
+@@ -1155,12 +1154,11 @@
+ 
+   #if defined(FLTK)
+   if (!strcmp(toolkit, "fltk")) {
+-    fltk_win = new FlGlWindow;
+-    fltk_win->label("yagears");
+-    fltk_win->resize(win_posx, win_posy, win_width, win_height);
+-    fltk_win->show();
+-    while (!fltk_win->valid())
+-      Fl::check();
++    fltk_win.label("yagears");
++    fltk_win.resize(win_posx, win_posy, win_width, win_height);
++    flgl_win.resize(win_posx, win_posy, win_width, win_height);
++    fltk_win.show();
++    Fl::check();
+   }
+   #endif
+ 
+@@ -1178,6 +1176,7 @@
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
      glutInitWindowSize(win_width, win_height);
      glutInitWindowPosition(win_posx, win_posy);
@@ -334,7 +611,7 @@ exit
      glut_win = glutCreateWindow("yagears");
      glutDisplayFunc(glutDisplay);
      glutIdleFunc(glutIdle);
-@@ -1229,6 +1234,7 @@
+@@ -1229,6 +1228,7 @@
    #if defined(SDL)
    if (!strcmp(toolkit, "sdl")) {
      #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -342,7 +619,25 @@ exit
      sdl_win = SDL_CreateWindow("yagears", win_posx, win_posy, win_width, win_height, SDL_WINDOW_OPENGL);
      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gears_engine_version(gears_engine));
      SDL_GL_CreateContext(sdl_win);
-@@ -1331,7 +1337,7 @@
+@@ -1275,15 +1275,8 @@
+ 
+   #if defined(FLTK)
+   if (!strcmp(toolkit, "fltk")) {
+-    fltk_win->redraw();
+-    Fl::check();
+-    while (1) {
+-      if (fltk_win->idle_id)
+-        fltk_win->idle();
+-      Fl::check();
+-      if (fltk_win->quit)
+-        break;
+-    }
++    while (!Fl::program_should_quit() && fltk_win.shown())
++      Fl::wait(1e20);
+   }
+   #endif
+ 
+@@ -1331,7 +1324,7 @@
          SDL_Idle();
          #endif
        SDL_Event event;
@@ -351,6 +646,20 @@ exit
          #if SDL_VERSION_ATLEAST(2, 0, 0)
          SDL_KeyDownEvent(sdl_win, &event, &sdl_idle_id);
          #else
+@@ -1389,13 +1382,6 @@
+   }
+   #endif
+ 
+-  #if defined(FLTK)
+-  if (!strcmp(toolkit, "fltk")) {
+-    delete fltk_win;
+-    fl_close_display();
+-  }
+-  #endif
+-
+   #if defined(GLFW)
+   if (!strcmp(toolkit, "glfw")) {
+     glfwDestroyWindow(glfw_win);
 --- yagears-2.7.orig/main.c
 +++ yagears-2.7/main.c
 @@ -1443,7 +1443,7 @@
@@ -490,16 +799,27 @@ exit
  
      if enable_vk_x11
        if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
-@@ -430,7 +430,7 @@
+@@ -428,11 +428,14 @@
+ 
+ fltk_dep = []
  if enable_fltk
-   fltk_config = find_program('fltk-config', required: false)
-   if fltk_config.found()
+-  fltk_config = find_program('fltk-config', required: false)
+-  if fltk_config.found()
 -    fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags').stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags').stdout().strip().split(' '))
-+    fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags', check: true).stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags', check: true).stdout().strip().split(' '))
-   else
-     enable_fltk = false
+-  else
+-    enable_fltk = false
++  fltk_dep = dependency('fltk-gl', required: false)
++  if not fltk_dep.found()
++    fltk_config = find_program('fltk-config', required: false)
++    if fltk_config.found()
++      fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags', check: true).stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags', check: true).stdout().strip().split(' '))
++    else
++      enable_glfw = false
++    endif
    endif
-@@ -519,6 +519,7 @@
+ endif
+ config_h.set('FLTK', enable_fltk, description: 'Support for FLTK graphical user interface')
+@@ -519,6 +522,7 @@
      sdl_dep = dependency('sdl2', required: false)
      if not sdl_dep.found()
        enable_sdl = false
@@ -507,7 +827,7 @@ exit
      endif
    else
      enable_sdl = false
-@@ -547,7 +548,7 @@
+@@ -547,7 +551,7 @@
  if enable_wx
    wx_config = find_program('wx-config', required: false)
    if wx_config.found()
@@ -516,7 +836,7 @@ exit
    else
      enable_wx = false
    endif
-@@ -631,9 +632,17 @@
+@@ -631,9 +635,17 @@
  
  # Build rules
  
@@ -537,7 +857,7 @@ exit
  
  if enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb or enable_vk_d2d
    VK = true
-@@ -643,21 +652,29 @@
+@@ -643,21 +655,29 @@
  
  MOSAIC = enable_glut
  
@@ -561,17 +881,17 @@ exit
 +if PNG
 +png_source = 'png_image.c'
 +endif
- 
++
 +tiff_source = []
 +if TIFF
 +tiff_source = 'tiff_image.c'
 +endif
-+
+ 
 +if OPENGL
  gl_source = []
  if GL
  gl_source = 'gl_gears.c'
-@@ -678,16 +695,6 @@
+@@ -678,16 +698,6 @@
  glesv2_source = 'glesv2_gears.c'
  endif
  
@@ -588,7 +908,7 @@ exit
  libyagears = static_library('yagears',
                              'gears_engine.c', gl_source, glesv1_cm_source, glesv2_source, vert_xxd_file, frag_xxd_file, 'image_loader.c', png_source, tiff_source,
                              dependencies: [gl_dep, glesv1_cm_dep, glesv2_dep, png_dep, tiff_dep])
-@@ -697,6 +704,7 @@
+@@ -697,6 +707,7 @@
             dependencies: [waffle_dep, egl_dep, x11_dep, directfb_dep, wayland_egl_dep, xcb_dep, drm_dep, rpi_dep],
             link_whole: libyagears,
             install: true)
@@ -596,7 +916,7 @@ exit
  
  if VK
  vert_spv_file = custom_target('vert_spv', command: [glslang_validator, '@INPUT@', '-V', '-x'], input: 'vulkan_gears.vert', output: 'vert.spv')
-@@ -726,7 +734,7 @@
+@@ -726,7 +737,7 @@
  
  if VK_GUI
  executable('yagears2-vk-gui',

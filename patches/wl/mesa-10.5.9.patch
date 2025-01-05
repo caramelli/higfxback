@@ -16,7 +16,7 @@ fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
-PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 $SYSFS --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-gallium-llvm $DRI --enable-gallium-egl --enable-gallium-osmesa --enable-gles1 --enable-gles2 $SYSFS --with-gallium-drivers=swrast --with-osmesa-lib-name=GL --prefix=/wl
 
 # build
 make
@@ -817,6 +817,17 @@ exit
  dnl XA configuration
  dnl
  if test "x$enable_xa" = xyes; then
+@@ -1621,8 +1638,8 @@
+     AC_MSG_ERROR([cannot build egl state tracker without EGL library])
+ fi
+ 
+-PKG_CHECK_MODULES([WAYLAND_SCANNER], [wayland_scanner],
+-        WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland_scanner`,
++PKG_CHECK_MODULES([WAYLAND_SCANNER], [wayland-scanner],
++        WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`,
+         WAYLAND_SCANNER='')
+ if test "x$WAYLAND_SCANNER" = x; then
+     AC_PATH_PROG([WAYLAND_SCANNER], [wayland-scanner])
 @@ -2258,6 +2275,7 @@
  		src/gallium/drivers/vc4/kernel/Makefile
  		src/gallium/state_trackers/clover/Makefile

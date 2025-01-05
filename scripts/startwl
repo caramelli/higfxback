@@ -6,7 +6,7 @@ REQUIRES="weston-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || return
 
-install -d -m 700 /wl/var/xdg
+install -d -m 700 /tmp/xdg
 
 test $BACKEND && rm -f /wl/etc/xdg/weston/weston.ini
 
@@ -26,7 +26,7 @@ EOF
 fi
 
 export PATH=/bin:/wl/bin
-export XDG_RUNTIME_DIR=/wl/var/xdg
+export XDG_RUNTIME_DIR=/tmp/xdg
 
 weston --tty=7 &
 sleep 1

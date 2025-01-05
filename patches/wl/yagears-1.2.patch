@@ -5,6 +5,11 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-b
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists fltk-build; then
+  FLTK=1
+  REQUIRES="$REQUIRES fltk-build"
+fi
+
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   GLFW=1
   REQUIRES="$REQUIRES glfw-build"
@@ -31,7 +36,7 @@ make
 # install
 install -d $DESTDIR/wl/bin
 install yagears $DESTDIR/wl/bin
-test $GLFW || test $GLUT || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
+test $FLTK || test $GLFW || test $GLUT || test $SDL2 && install yagears-gui $DESTDIR/wl/bin
 test $GLUT && install yagears-mosaic $DESTDIR/wl/bin
 
 # build.pc
@@ -45,11 +50,149 @@ Requires: $REQUIRES
 exec=\\
 /wl/bin/yagears \\
 EOF
-test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
+test $FLTK || test $GLFW || test $GLUT || test $SDL2 && echo /wl/bin/yagears-gui \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 test $GLUT && echo /wl/bin/yagears-mosaic \\ >> $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/yagears-build.pc
 
 exit
+--- yagears-1.2.orig/configure.ac
++++ yagears-1.2/configure.ac
+@@ -281,14 +281,16 @@
+ fi
+ 
+ if test x$enable_fltk = xyes; then
+-  AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
+-  if test x$FLTK_CONFIG != xno; then
+-    FLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+-    FLTK_LIBS=`$FLTK_CONFIG --use-gl --ldflags`
+-    AC_SUBST(FLTK_CFLAGS)
+-    AC_SUBST(FLTK_LIBS)
+-  else
+-    enable_fltk=no
++  PKG_CHECK_MODULES(FLTK, fltk-gl, , enable_fltk=no)
++  if test x$enable_fltk = xno; then
++    AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
++    if test x$FLTK_CONFIG != xno; then
++      FLTK_CFLAGS=`$FLTK_CONFIG --cflags`
++      FLTK_LIBS=`$FLTK_CONFIG --use-gl --ldflags`
++      AC_SUBST(FLTK_CFLAGS)
++      AC_SUBST(FLTK_LIBS)
++      enable_fltk=yes
++    fi
+   fi
+ fi
+ if test x$enable_fltk = xyes; then
+--- yagears-1.2.orig/gl_gears.c
++++ yagears-1.2/gl_gears.c
+@@ -25,6 +25,7 @@
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include "engine.h"
+ 
+ #include "image_loader.h"
+@@ -42,6 +43,7 @@
+ };
+ 
+ struct gears {
++  char *gl_version;
+   struct gear *gear[3];
+ };
+ 
+@@ -264,8 +266,9 @@
+     delete_gear(gears, GEAR0);
+   }
+ 
+-  printf("%s\n", glGetString(GL_VERSION));
++  printf("%s\n", gears->gl_version);
+ 
++  free(gears->gl_version);
+   free(gears);
+ }
+ 
+@@ -282,6 +285,8 @@
+     return NULL;
+   }
+ 
++  gears->gl_version = strdup((char *)glGetString(GL_VERSION));
++
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_NORMALIZE);
+   glEnable(GL_LIGHTING);
+--- yagears-1.2.orig/glesv1_cm_gears.c
++++ yagears-1.2/glesv1_cm_gears.c
+@@ -25,6 +25,7 @@
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include "engine.h"
+ 
+ #include "image_loader.h"
+@@ -53,6 +54,7 @@
+ };
+ 
+ struct gears {
++  char *gl_version;
+   struct gear *gear[3];
+ };
+ 
+@@ -343,8 +345,9 @@
+     delete_gear(gears, GEAR0);
+   }
+ 
+-  printf("%s\n", glGetString(GL_VERSION));
++  printf("%s\n", gears->gl_version);
+ 
++  free(gears->gl_version);
+   free(gears);
+ }
+ 
+@@ -361,6 +364,8 @@
+     return NULL;
+   }
+ 
++  gears->gl_version = strdup((char *)glGetString(GL_VERSION));
++
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_NORMALIZE);
+   glEnable(GL_LIGHTING);
+--- yagears-1.2.orig/glesv2_gears.c
++++ yagears-1.2/glesv2_gears.c
+@@ -137,6 +137,8 @@
+ };
+ 
+ struct gears {
++  char *gl_version;
++  char *gl_shading_language_version;
+   GLuint program;
+   struct gear *gear[3];
+   float Projection[16];
+@@ -443,9 +445,11 @@
+     glDeleteProgram(gears->program);
+   }
+ 
+-  printf("%s\n", glGetString(GL_VERSION));
+-  printf("%s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
++  printf("%s\n", gears->gl_version);
++  printf("%s\n", gears->gl_shading_language_version);
+ 
++  free(gears->gl_version);
++  free(gears->gl_shading_language_version);
+   free(gears);
+ }
+ 
+@@ -500,6 +504,9 @@
+     return NULL;
+   }
+ 
++  gears->gl_version = strdup((char *)glGetString(GL_VERSION));
++  gears->gl_shading_language_version = strdup((char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
++
+   glEnable(GL_DEPTH_TEST);
+ 
+   gears->program = glCreateProgram();
 --- yagears-1.2.orig/gui.cc
 +++ yagears-1.2/gui.cc
 @@ -38,7 +38,11 @@
@@ -64,7 +207,103 @@ exit
  void glutLeaveMainLoop();
  void glutExit();
  }
-@@ -1178,6 +1182,7 @@
+@@ -74,8 +78,7 @@
+ #if defined(FLTK)
+ #include <FL/Fl.H>
+ #include <FL/Fl_Gl_Window.H>
+-void fl_open_display();
+-void fl_close_display();
++#include <FL/platform.H>
+ #endif
+ 
+ #include "gears_engine.h"
+@@ -200,12 +203,9 @@
+ #if defined(FLTK)
+ class FlGlWindow : public Fl_Gl_Window {
+ public:
+-int idle_id, quit;
+-
+ FlGlWindow() : Fl_Gl_Window(0, 0, 0, 0)
+ {
+-  idle_id = 1;
+-  quit = 0;
++  Fl::add_idle(idle, this);
+ }
+ 
+ private:
+@@ -216,28 +216,26 @@
+   if (animate) frames++;
+ }
+ 
+-public:
+-void idle()
++static
++void idle(void *data)
+ {
+   if (animate) {
+     if (!frames) return;
+-    redraw();
++    ((Fl_Window *)data)->redraw();
+   }
+   else {
+     if (frames) frames = 0;
+   }
+ }
+ 
+-private:
+ int handle(int event)
+ {
+-  if (event != FL_KEYDOWN)
+-    return 0;
++  if (event == FL_MOVE || event == FL_SHORTCUT)
++    return 1;
+ 
+   switch (Fl::event_key()) {
+     case FL_Escape:
+-      idle_id = 0;
+-      quit = 1;
++      Fl::program_should_quit(1);
+       return 1;
+     case ' ':
+       animate = !animate;
+@@ -272,7 +270,7 @@
+       }
+       break;
+     default:
+-      return 0;
++      return Fl_Gl_Window::handle(event);
+   }
+ 
+   if (!animate) {
+@@ -904,7 +902,8 @@
+   Ecore_Animator *ecore_animator_id;
+   #endif
+   #if defined(FLTK)
+-  FlGlWindow *fltk_win;
++  Fl_Window fltk_win(0, 0);
++  FlGlWindow flgl_win;
+   #endif
+   #if defined(GLFW)
+   GLFWwindow *glfw_win;
+@@ -1155,12 +1154,11 @@
+ 
+   #if defined(FLTK)
+   if (!strcmp(toolkit, "fltk")) {
+-    fltk_win = new FlGlWindow;
+-    fltk_win->label("yagears");
+-    fltk_win->resize(win_posx, win_posy, win_width, win_height);
+-    fltk_win->show();
+-    while (!fltk_win->valid())
+-      Fl::check();
++    fltk_win.label("yagears");
++    fltk_win.resize(win_posx, win_posy, win_width, win_height);
++    flgl_win.resize(win_posx, win_posy, win_width, win_height);
++    fltk_win.show();
++    Fl::check();
+   }
+   #endif
+ 
+@@ -1178,6 +1176,7 @@
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
      glutInitWindowSize(win_width, win_height);
      glutInitWindowPosition(win_posx, win_posy);
@@ -72,7 +311,25 @@ exit
      glut_win = glutCreateWindow("yagears");
      glutDisplayFunc(glutDisplay);
      glutIdleFunc(glutIdle);
-@@ -1332,7 +1337,7 @@
+@@ -1276,15 +1275,8 @@
+ 
+   #if defined(FLTK)
+   if (!strcmp(toolkit, "fltk")) {
+-    fltk_win->redraw();
+-    Fl::check();
+-    while (1) {
+-      if (fltk_win->idle_id)
+-        fltk_win->idle();
+-      Fl::check();
+-      if (fltk_win->quit)
+-        break;
+-    }
++    while (!Fl::program_should_quit() && fltk_win.shown())
++      Fl::wait(1e20);
+   }
+   #endif
+ 
+@@ -1332,7 +1324,7 @@
          SDL_Idle();
          #endif
        SDL_Event event;
@@ -81,6 +338,20 @@ exit
          #if SDL_VERSION_ATLEAST(2, 0, 0)
          SDL_KeyDownEvent(sdl_win, &event, &sdl_idle_id);
          #else
+@@ -1390,13 +1382,6 @@
+   }
+   #endif
+ 
+-  #if defined(FLTK)
+-  if (!strcmp(toolkit, "fltk")) {
+-    delete fltk_win;
+-    fl_close_display();
+-  }
+-  #endif
+-
+   #if defined(GLFW)
+   if (!strcmp(toolkit, "glfw")) {
+     glfwDestroyWindow(glfw_win);
 --- yagears-1.2.orig/mosaic.c
 +++ yagears-1.2/mosaic.c
 @@ -24,6 +24,10 @@
