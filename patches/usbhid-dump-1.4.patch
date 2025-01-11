@@ -1,0 +1,54 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libusb-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/usbhid-dump $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/usbhid-dump-build.pc << EOF
+Name: usbhid-dump
+Version: 1.4
+Description: USB Human Interface Device (HID) dumping utility
+Requires: $REQUIRES
+
+exec=\\
+/bin/usbhid-dump
+EOF
+
+exit
+--- usbhid-dump-1.4.orig/configure.ac
++++ usbhid-dump-1.4/configure.ac
+@@ -43,6 +43,7 @@
+ #
+ AC_PROG_CC
+ AC_PROG_INSTALL
++m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+ AC_PROG_LIBTOOL
+ 
+ #
+--- usbhid-dump-1.4.orig/src/usbhid-dump.c
++++ usbhid-dump-1.4/src/usbhid-dump.c
+@@ -526,8 +526,8 @@
+     /* Create libusb context */
+     LIBUSB_GUARD(libusb_init(&ctx), "create libusb context");
+ 
+-    /* Set libusb debug level */
+-    libusb_set_debug(ctx, 3);
++    /* Set libusb debug level to informational only */
++    libusb_set_option(ctx, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
+ 
+     /* Open device list */
+     LIBUSB_GUARD(uhd_dev_list_open(ctx, bus_num, dev_addr,

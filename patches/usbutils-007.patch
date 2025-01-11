@@ -1,0 +1,175 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build hwdata-build libusb-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists python2-build; then
+  PYTHON=1
+  REQUIRES="$REQUIRES python2-build"
+fi
+
+# configure (ac-2.69; am-1.12)
+aclocal; autoconf; autoheader -f; automake -a -c
+rm -rf usbhid-dump
+./configure --disable-usbids --with-system-usbhid-dump --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install lsusb $DESTDIR/bin
+test $PYTHON && install lsusb.py $DESTDIR/bin
+install usb-devices $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/usbutils-build.pc << EOF
+Name: usbutils
+Version: 007
+Description: USB utilities
+Requires: $REQUIRES
+
+exec=\\
+/bin/lsusb \\
+EOF
+test $PYTHON && echo /bin/lsusb.py \\ >> $DESTDIR/share/pkgconfig/usbutils-build.pc
+cat >> $DESTDIR/share/pkgconfig/usbutils-build.pc << EOF
+/bin/usb-devices
+EOF
+
+exit
+--- usbutils-007.orig/Makefile.am
++++ usbutils-007/Makefile.am
+@@ -1,5 +1,5 @@
+ SUBDIRS = \
+-	usbhid-dump
++	$(USBHID_DUMP_SUBDIR)
+ 
+ AM_LDFLAGS = \
+ 	-Wl,--as-needed
+@@ -24,7 +24,7 @@
+ 
+ lsusb_CPPFLAGS = \
+ 	$(AM_CPPFLAGS) $(LIBUSB_CFLAGS) \
+-	-DDATADIR=\"$(datadir)\"
++	-DHWDATADIR=\"$(HWDATADIR)\"
+ 
+ lsusb_LDADD = \
+ 	$(LIBUSB_LIBS)
+@@ -60,21 +60,25 @@
+ 	gzip -c -9 $< > $@
+ 
+ update-usbids.sh: $(srcdir)/update-usbids.sh.in
+-	sed 's|@usbids@|$(datadir)/usb.ids|g' $< >$@
++	sed 's|@usbids@|$(HWDATADIR)/usb.ids|g' $< >$@
+ 	chmod 755 $@
+ endif
+ 
+ lsusb.8: $(srcdir)/lsusb.8.in
+-	sed 's|VERSION|$(VERSION)|g;s|@usbids@|$(datadir)/usb.ids|g' $< >$@
++	sed 's|VERSION|$(VERSION)|g;s|@usbids@|$(HWDATADIR)/usb.ids|g' $< >$@
+ 
+ usb-devices.1: $(srcdir)/usb-devices.1.in
+ 	sed 's|VERSION|$(VERSION)|g' $< >$@
+ 
+-pkgconfigdir = $(datarootdir)/pkgconfig
+-pkgconfig_DATA = usbutils.pc
++FORCE:
++
++lsusb.py: FORCE
++	sed -i "s|^usbids = .*|usbids = \"$(HWDATADIR)/usb.ids\"|" $@
++
++noarch_pkgconfig_DATA = usbutils.pc
+ 
+ usbutils.pc: $(srcdir)/usbutils.pc.in
+-	sed 's|@usbids@|$(datadir)/usb.ids|g;s|@VERSION[@]|$(VERSION)|g' $< >$@
++	sed 's|@usbids@|$(HWDATADIR)/usb.ids|g;s|@VERSION[@]|$(VERSION)|g' $< >$@
+ 
+ DISTCLEANFILES = \
+ 	usb.ids.gz \
+--- usbutils-007.orig/configure.ac
++++ usbutils-007/configure.ac
+@@ -2,7 +2,9 @@
+ 	[007],
+ 	[linux-usb@vger.kernel.org])
+ AC_PREREQ(2.60)
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([check-news foreign 1.9 dist-bzip2])
++PKG_NOARCH_INSTALLDIR
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ AC_PREFIX_DEFAULT([/usr])
+ 
+@@ -26,11 +28,23 @@
+ 
+ PKG_CHECK_MODULES(LIBUSB, libusb-1.0 >= 1.0.0)
+ 
++PKG_CHECK_MODULES(HWDATA, hwdata, 
++	AC_SUBST(HWDATADIR, $($PKG_CONFIG --variable=pkgdatadir hwdata)),
++	AC_SUBST(HWDATADIR, ${datadir}))
++
+ AC_CONFIG_HEADERS([config.h])
+ AC_CONFIG_FILES([
+ 	Makefile
+ ])
+-AC_CONFIG_SUBDIRS([usbhid-dump])
++
++AC_ARG_WITH(system-usbhid-dump,
++	AC_HELP_STRING([--with-system-usbhid-dump], [use system usbhid-dump utility]))
++
++if test "x$with_system_usbhid_dump" != "xyes"; then
++	USBHID_DUMP_SUBDIR=usbhid-dump
++	AC_CONFIG_SUBDIRS([usbhid-dump])
++fi
++AC_SUBST(USBHID_DUMP_SUBDIR)
+ 
+ AC_OUTPUT
+ AC_MSG_RESULT([
+@@ -42,7 +56,7 @@
+ 	datadir:                ${datadir}
+ 	mandir:                 ${mandir}
+ 
+-	usb.ids:                ${datadir}/usb.ids
++	usb.ids:                ${HWDATADIR}/usb.ids
+ 	zlib:                   ${USE_ZLIB}
+ 
+ 	compiler:               ${CC}
+--- usbutils-007.orig/lsusb.c
++++ usbutils-007/lsusb.c
+@@ -4027,15 +4027,15 @@
+ 
+ 
+ 	/* by default, print names as well as numbers */
+-	err = names_init(DATADIR "/usb.ids");
++	err = names_init(HWDATADIR "/usb.ids");
+ #ifdef HAVE_LIBZ
+ 	if (err != 0)
+-		err = names_init(DATADIR "/usb.ids.gz");
++		err = names_init(HWDATADIR "/usb.ids.gz");
+ #endif
+ 	if (err != 0)
+ 		fprintf(stderr, "%s: cannot open \"%s\", %s\n",
+ 				argv[0],
+-				DATADIR "/usb.ids",
++				HWDATADIR "/usb.ids",
+ 				strerror(err));
+ 	status = 0;
+ 
+--- usbutils-007.orig/lsusb.py
++++ usbutils-007/lsusb.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/env python2
+ # lsusb.py
+ # Displays your USB devices in reasonable form.
+ # (c) Kurt Garloff <garloff@suse.de>, 2/2009, GPL v2 or v3.
+--- usbutils-007.orig/usb-devices
++++ usbutils-007/usb-devices
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/bin/sh
+ 
+ # Copyright: 2009 Greg Kroah-Hartman <greg@kroah.com>
+ #            2009 Randy Dunlap <rdunlap@xenotime.net>

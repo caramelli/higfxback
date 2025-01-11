@@ -1,0 +1,859 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build scons-build sdl-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists elfutils-build && REQUIRES="$REQUIRES elfutils-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists gtk2-build && REQUIRES="$REQUIRES gtk2-build" || GTK=--disable-gtk
+
+# configure
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure $GTK --disable-lua --disable-opengl --prefix /x11
+
+# build
+scons3 -j8
+
+# install
+install -d $DESTDIR/x11/bin
+install src/fceux $DESTDIR/x11/bin
+install fceux-net-server $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/fceux-build.pc << EOF
+Name: fceux
+Version: 2.2.3
+Description: Family Computer Emulator Ultra
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/fceux \\
+/x11/bin/fceux-net-server
+EOF
+
+exit
+--- fceux-2.2.3.orig/Configure
++++ fceux-2.2.3/Configure
+@@ -0,0 +1,45 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++GTK=1
++LUA=1
++OPENGL=1
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --disable-gtk)
++      GTK=0
++    ;;
++    --disable-lua)
++      LUA=0
++    ;;
++    --disable-opengl)
++      OPENGL=0
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "s#prefix = \".*#prefix = \"$PREFIX\"#" SConstruct
++
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "s#env\['PKG_CONFIG'\] = \".*#env['PKG_CONFIG'] = \"pkg-config\"#" SConstruct
++else
++  sed -i "s#env\['PKG_CONFIG'\] = \".*#env['PKG_CONFIG'] = \"PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config\"#" SConstruct
++fi
++
++sed -i "/BoolVariable('GTK'/s#\(.*\)[01]#\1$GTK#" SConstruct
++sed -i "/BoolVariable('LUA'/s#\(.*\)[01]#\1$LUA#" SConstruct
++sed -i "/BoolVariable('OPENGL'/s#\(.*\)[01]#\1$OPENGL#" SConstruct
+--- fceux-2.2.3.orig/SConstruct
++++ fceux-2.2.3/SConstruct
+@@ -35,6 +35,12 @@
+ prefix = GetOption('prefix')
+ env = Environment(options = opts)
+ 
++AddOption('--pkg-config', dest='pkg_config', type='string', nargs=1, action='store', help='path to pkg-config utility')
++
++env['PKG_CONFIG'] = GetOption('pkg_config')
++if env['PKG_CONFIG'] == None:
++  env['PKG_CONFIG'] = "pkg-config"
++
+ if env['RELEASE']:
+   env.Append(CPPDEFINES=["PUBLIC_RELEASE"])
+   env['DEBUG'] = 0
+@@ -44,32 +50,32 @@
+   env['LSB_FIRST'] = 0
+ 
+ # Default compiler flags:
+-env.Append(CCFLAGS = ['-Wall', '-Wno-write-strings', '-Wno-sign-compare'])
++env.Append(CCFLAGS = ['-Wall', '-Wno-write-strings', '-Wno-sign-compare', '-Wno-parentheses', '-Wno-unused-local-typedefs', '-Wno-unknown-pragmas'])
+ 
+-if os.environ.has_key('PLATFORM'):
++if 'PLATFORM' in os.environ:
+   env.Replace(PLATFORM = os.environ['PLATFORM'])
+-if os.environ.has_key('CC'):
++if 'CC' in os.environ:
+   env.Replace(CC = os.environ['CC'])
+-if os.environ.has_key('CXX'):
++if 'CXX' in os.environ:
+   env.Replace(CXX = os.environ['CXX'])
+-if os.environ.has_key('WINDRES'):
++if 'WINDRES' in os.environ:
+   env.Replace(WINDRES = os.environ['WINDRES'])
+-if os.environ.has_key('CFLAGS'):
++if 'CFLAGS' in os.environ:
+   env.Append(CCFLAGS = os.environ['CFLAGS'].split())
+-if os.environ.has_key('CXXFLAGS'):
++if 'CXXFLAGS' in os.environ:
+   env.Append(CXXFLAGS = os.environ['CXXFLAGS'].split())
+-if os.environ.has_key('CPPFLAGS'):
++if 'CPPFLAGS' in os.environ:
+   env.Append(CPPFLAGS = os.environ['CPPFLAGS'].split())
+-if os.environ.has_key('LDFLAGS'):
++if 'LDFLAGS' in os.environ:
+   env.Append(LINKFLAGS = os.environ['LDFLAGS'].split())
+-if os.environ.has_key('PKG_CONFIG_PATH'):
++if 'PKG_CONFIG_PATH' in os.environ:
+   env['ENV']['PKG_CONFIG_PATH'] = os.environ['PKG_CONFIG_PATH']
+-if not os.environ.has_key('PKG_CONFIG_PATH') and env['PLATFORM'] == 'darwin':
++if 'PKG_CONFIG_PATH' not in os.environ and env['PLATFORM'] == 'darwin':
+   env['ENV']['PKG_CONFIG_PATH'] = "/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig"
+-if os.environ.has_key('PKG_CONFIG_LIBDIR'):
++if 'PKG_CONFIG_LIBDIR' in os.environ:
+   env['ENV']['PKG_CONFIG_LIBDIR'] = os.environ['PKG_CONFIG_LIBDIR']
+ 
+-print "platform: ", env['PLATFORM']
++print("platform: ", env['PLATFORM'])
+ 
+ # compile with clang
+ if env['CLANG']:
+@@ -102,28 +108,31 @@
+   else:
+     assert conf.CheckLibWithHeader('z', 'zlib.h', 'c', 'inflate;', 1), "please install: zlib"
+   if env['SDL2']:
+-    if not conf.CheckLib('SDL2'):
+-      print 'Did not find libSDL2 or SDL2.lib, exiting!'
++    if os.system("%s --exists sdl2" % env['PKG_CONFIG']):
++      print('Did not find libSDL2 or SDL2.lib, exiting!')
+       Exit(1)
+     env.Append(CPPDEFINES=["_SDL2"])
+-    env.ParseConfig('pkg-config sdl2 --cflags --libs')
++    env.ParseConfig('%s --cflags --libs sdl2' % env['PKG_CONFIG'])
+   else:
+-    if not conf.CheckLib('SDL'):
+-      print 'Did not find libSDL or SDL.lib, exiting!'
++    if os.system("%s --exists sdl" % env['PKG_CONFIG']):
++      print('Did not find libSDL or SDL.lib, exiting!')
+       Exit(1)
+-    env.ParseConfig('sdl-config --cflags --libs')
++    env.ParseConfig('%s --cflags --libs sdl' % env['PKG_CONFIG'])
+   if env['GTK']:
+-    if not conf.CheckLib('gtk-x11-2.0'):
+-      print 'Could not find libgtk-2.0, exiting!'
++    if os.system("%s --exists gtk+-2.0" % env['PKG_CONFIG']):
++      print('Could not find libgtk-2.0, exiting!')
+       Exit(1)
+     # Add compiler and linker flags from pkg-config
+-    config_string = 'pkg-config --cflags --libs gtk+-2.0'
++    config_string = '%s --cflags --libs gtk+-2.0' % env['PKG_CONFIG']
+     env.ParseConfig(config_string)
+     env.Append(CPPDEFINES=["_GTK2"])
+     env.Append(CCFLAGS = ["-D_GTK"])
+   if env['GTK3']:
++    if os.system("%s --exists gtk+-3.0" % env['PKG_CONFIG']):
++      print('Could not find libgtk-3.0, exiting!')
++      Exit(1)
+     # Add compiler and linker flags from pkg-config
+-    config_string = 'pkg-config --cflags --libs gtk+-3.0'
++    config_string = '%s --cflags --libs gtk+-3.0' % env['PKG_CONFIG']
+     env.ParseConfig(config_string)
+     env.Append(CPPDEFINES=["_GTK3"])
+     env.Append(CCFLAGS = ["-D_GTK"])
+@@ -153,7 +162,7 @@
+         env.Append(CCFLAGS = ["-I/usr/include/lua"])
+         lua_available = True
+       if lua_available == False:
+-        print 'Could not find liblua, exiting!'
++        print('Could not find liblua, exiting!')
+         Exit(1)
+     else:
+       env.Append(CCFLAGS = ["-Isrc/lua/src"])
+@@ -162,14 +171,14 @@
+   if env['PLATFORM'] != 'darwin':
+     env.Append(LINKFLAGS=['-Wl,--as-needed'])
+   
+-  ### Search for gd if we're not in Windows
+-  if (env['PLATFORM'] != 'win32' and env['PLATFORM'] != 'cygwin') and (env['CREATE_AVI'] or env['LOGO']):
++  if env['LOGO']:
+     gd = conf.CheckLib('gd', autoadd=1)
+     if gd == 0:
+       env['LOGO'] = 0
+-      print 'Did not find libgd, you won\'t be able to create a logo screen for your avis.'
++      print('Did not find libgd, you won\'t be able to create a logo screen for your avis.')
+    
+-  if env['OPENGL'] and conf.CheckLibWithHeader('GL', 'GL/gl.h', 'c', autoadd=1):
++  if env['OPENGL'] and not os.system("%s --exists gl" % env['PKG_CONFIG']):
++    env.ParseConfig('%s --cflags --libs gl' % env['PKG_CONFIG'])
+     conf.env.Append(CCFLAGS = "-DOPENGL")
+   conf.env.Append(CPPDEFINES = ['PSS_STYLE=1'])
+   
+@@ -181,8 +190,8 @@
+ if env['FRAMESKIP']:
+   env.Append(CPPDEFINES = ['FRAMESKIP'])
+ 
+-print "base CPPDEFINES:",env['CPPDEFINES']
+-print "base CCFLAGS:",env['CCFLAGS']
++print("base CPPDEFINES:",env['CPPDEFINES'])
++print("base CCFLAGS:",env['CCFLAGS'])
+ 
+ if env['DEBUG']:
+   env.Append(CPPDEFINES=["_DEBUG"], CCFLAGS = ['-g', '-O0'])
+@@ -205,6 +214,8 @@
+ exe_suffix = ''
+ if env['PLATFORM'] == 'win32':
+   exe_suffix = '.exe'
++else:
++  env.Append(LINKFLAGS=["-Wl,-rpath," + prefix + "/lib"])
+ 
+ fceux_src = 'src/fceux' + exe_suffix
+ fceux_dst = 'bin/fceux' + exe_suffix
+@@ -232,10 +243,14 @@
+ 
+ desktop_src = 'fceux.desktop'
+ 
+-env.Install(prefix + "/bin/", [fceux, fceux_net_server_src])
+-env.InstallAs(prefix + '/share/fceux/', share_src)
+-env.Install(prefix + '/share/fceux/', auxlib_src)
+-env.Install(prefix + '/share/pixmaps/', image_src)
+-env.Install(prefix + '/share/applications/', desktop_src)
+-env.Install(prefix + "/share/man/man6/", [man_src, man_net_src])
+-env.Alias('install', prefix)
++DESTDIR = os.getenv('DESTDIR', '')
++
++if 'install' in COMMAND_LINE_TARGETS:
++  env.Install(DESTDIR + prefix + "/bin/", [fceux, fceux_net_server_src])
++  env.InstallAs(DESTDIR + prefix + '/share/fceux/', share_src)
++  env.Install(DESTDIR + prefix + '/share/fceux/', auxlib_src)
++  env.Install(DESTDIR + prefix + '/share/pixmaps/', image_src)
++  env.Install(DESTDIR + prefix + '/share/applications/', desktop_src)
++  env.Install(DESTDIR + prefix + "/share/man/man6/", [man_src, man_net_src])
++
++env.Alias('install', DESTDIR + prefix)
+--- fceux-2.2.3.orig/fceux-server/server.cpp
++++ fceux-2.2.3/fceux-server/server.cpp
+@@ -127,7 +127,7 @@
+    else if(!strncasecmp(buf,"password",strlen("password")))
+    {
+     char *pass = 0;
+-    sscanf(buf,"%*s %as",&pass);
++    sscanf(buf,"%*s %ms",&pass);
+     if(pass)
+     {
+      struct md5_context md5;
+@@ -392,7 +392,7 @@
+ 			 if(!client->nickname)
+ 			  asprintf(&client->nickname,"*Player %s",mps);
+ 
+-			 printf("Client %d assigned to game %d as player %s <%s>\n",client->id,(GameEntry*)client->game - Games,mps, client->nickname);
++			 printf("Client %d assigned to game %td as player %s <%s>\n",client->id,(GameEntry*)client->game - Games,mps, client->nickname);
+ 
+ 			 int x;
+ 			 GameEntry *tg=(GameEntry *)client->game;
+@@ -529,7 +529,6 @@
+ static void KillClient(ClientEntry *client)
+ {
+  GameEntry *game;
+- uint8 *mps;
+  char *bmsg;
+ 
+  game = (GameEntry *)client->game;
+@@ -547,13 +546,13 @@
+      game->Players[w] = NULL;
+ 
+   time_t curtime = time(0);
+-  printf("Player <%s> disconnected from game %d on %s",client->nickname,game-Games,ctime(&curtime)); 
++  printf("Player <%s> disconnected from game %td on %s",client->nickname,game-Games,ctime(&curtime)); 
+   asprintf(&bmsg, "* Player %s <%s> left.",MakeMPS(client),client->nickname);
+   if(tc == client->localplayers)	/* If total players for this game = total local
+ 					   players for this client, destroy the game.
+ 					*/
+   {
+-   printf("Game %d destroyed.\n",game-Games);
++   printf("Game %td destroyed.\n",game-Games);
+    memset(game, 0, sizeof(GameEntry));
+    game = 0;
+   }
+@@ -604,7 +603,7 @@
+  if(!game) /* Hmm, no game found.  Guess we'll have to create one. */
+  {
+   game=fegame;
+-  printf("Game %d added\n",game-Games);
++  printf("Game %td added\n",game-Games);
+   memset(game, 0, sizeof(GameEntry));
+   game->MaxPlayers = 4;
+   memcpy(game->id, id, 16);
+@@ -680,7 +679,6 @@
+     ServerConfig.ConnectTimeout = DEFAULT_TIMEOUT;
+     ServerConfig.FrameDivisor = DEFAULT_FRAMEDIVISOR;
+   }
+-  char* configfile = 0;
+    
+   
+   for(i=1; i<argc ;i++)
+@@ -838,7 +836,6 @@
+    if(Clients[n].TCPSocket != -1) continue;
+    if((Clients[n].TCPSocket = accept(ListenSocket, (struct sockaddr *)&sockin, &sockin_len)) != -1)
+    {
+-    struct sockaddr_in usockin;
+     /* We have a new client.  Yippie. */
+ 
+     fcntl(Clients[n].TCPSocket, F_SETFL, fcntl(Clients[n].TCPSocket, F_GETFL) | O_NONBLOCK);
+@@ -885,7 +882,6 @@
+     {
+      ClientEntry *client = Games[whichgame].Players[n];
+      if(!client || !Games[whichgame].IsUnique[n]) continue;
+-     int localplayers = client->localplayers;
+ 
+      while(CheckNBTCPReceive(client)) {};
+     } // catch
+--- fceux-2.2.3.orig/src/SConscript
++++ fceux-2.2.3/src/SConscript
+@@ -33,7 +33,7 @@
+   platform_files = SConscript('drivers/sdl/SConscript')
+ file_list.append(platform_files)
+ 
+-print env['LINKFLAGS']
++print(env['LINKFLAGS'])
+ 
+ if env['PLATFORM'] == 'win32':
+   fceux = env.Program('fceux.exe', file_list)
+--- fceux-2.2.3.orig/src/boards/178.cpp
++++ fceux-2.2.3/src/boards/178.cpp
+@@ -37,8 +37,8 @@
+ // highly experimental, not actually working, just curious if it hapen to work with some other decoder
+ // SND Registers
+ static uint8 pcm_enable = 0;
+-static int16 pcm_latch = 0x3F6, pcm_clock = 0x3F6;
+-static writefunc pcmwrite;
++//static int16 pcm_latch = 0x3F6, pcm_clock = 0x3F6;
++//static writefunc pcmwrite;
+ 
+ static SFORMAT StateRegs[] =
+ {
+--- fceux-2.2.3.orig/src/boards/28.cpp
++++ fceux-2.2.3/src/boards/28.cpp
+@@ -127,14 +127,12 @@
+ 
+ static DECLFW(WriteEXP)
+ {
+-	uint32 addr = A;
+ 	uint8 value = V;
+ 	reg = value & 0x81;
+ }
+ 
+ static DECLFW(WritePRG)
+ {
+-	uint32 addr = A;
+ 	uint8 value = V;
+ 	switch (reg)
+ 	{
+--- fceux-2.2.3.orig/src/boards/bonza.cpp
++++ fceux-2.2.3/src/boards/bonza.cpp
+@@ -82,7 +82,6 @@
+ byte_8CE5:           .BYTE   0,$74,  0,  0,$12
+ byte_8C29:           .BYTE   0,$76,  0,  0,  8
+ byte_8CC6:           .BYTE   0,$78,  0,  0,$12
+-*/
+ 
+ static uint8 sim0reset[0x1F] = {
+ 	0x3B, 0xE9, 0x00, 0xFF, 0xC1, 0x10, 0x31, 0xFE,
+@@ -90,6 +89,7 @@
+ 	0x56, 0x53, 0x43, 0xAD, 0x10, 0x10, 0x10, 0x10,
+ 	0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10
+ };
++*/
+ 
+ static void Sync(void) {
+ 	setprg32(0x8000, prg_reg);
+--- fceux-2.2.3.orig/src/boards/fk23c.cpp
++++ fceux-2.2.3/src/boards/fk23c.cpp
+@@ -86,11 +86,6 @@
+ //PRG wrapper
+ static void BMCFK23CPW(uint32 A, uint8 V)
+ {
+-  uint32 bank = (EXPREGS[1] & 0x1F);
+-  uint32 hiblock = ((EXPREGS[0] & 8) << 4)|((EXPREGS[0] & 0x80) << 1)|(UNIFchrrama?((EXPREGS[2] & 0x40)<<3):0);
+-  uint32 block = (EXPREGS[1] & 0x60) | hiblock;
+-  uint32 extra = (EXPREGS[3] & 2);
+-
+   if((EXPREGS[0]&7)==4)
+     setprg32(0x8000,EXPREGS[1]>>1);
+   else if ((EXPREGS[0]&7)==3)
+--- fceux-2.2.3.orig/src/boards/unrom512.cpp
++++ fceux-2.2.3/src/boards/unrom512.cpp
+@@ -40,8 +40,6 @@
+ static uint8 *flashdata;
+ static uint32 *flash_write_count;
+ static uint8 *FlashPage[32];
+-static uint32 *FlashWriteCountPage[32];
+-static uint8 flashloaded = false;
+ 
+ static uint8 flash_save=0, flash_state=0, flash_mode=0, flash_bank;
+ static void (*WLSync)(void);
+--- fceux-2.2.3.orig/src/conddebug.cpp
++++ fceux-2.2.3/src/conddebug.cpp
+@@ -352,9 +352,9 @@
+ 	Condition* t1;
+ 	Condition* mid;
+ 
+-    t = (Condition*)FCEU_dmalloc(sizeof(Condition));
+-    if (!t)
+-        return NULL;
++	t = (Condition*)FCEU_dmalloc(sizeof(Condition));
++	if (!t)
++		return NULL;
+ 
+ 	memset(t, 0, sizeof(Condition));
+ 
+--- fceux-2.2.3.orig/src/drawing.cpp
++++ fceux-2.2.3/src/drawing.cpp
+@@ -395,10 +395,6 @@
+ 	int c = ch - 32;
+ 	return (c < 0 || c > 98) ? 0 : c;
+ }
+-static int JoedCharWidth(uint8 ch)
+-{
+-	return Font6x7[FixJoedChar(ch)*8];
+-}
+ 
+ char target[64][256];
+ 
+--- fceux-2.2.3.orig/src/drivers/common/config.cpp
++++ fceux-2.2.3/src/drivers/common/config.cpp
+@@ -123,10 +123,6 @@
+ {
+ 	for(CFGMAP::iterator it(cfgmap.begin()); it != cfgmap.end(); it++)
+ 	{
+-		if(it->first.size()>30 || it->second.size()>30)
+-		{
+-			int zzz=9;
+-		}
+ 		fprintf(fp,"%s %s\n",it->first.c_str(),it->second.c_str());
+ 	}
+ }
+--- fceux-2.2.3.orig/src/drivers/common/vidblit.cpp
++++ fceux-2.2.3/src/drivers/common/vidblit.cpp
+@@ -88,11 +88,11 @@
+ 
+ static void CalculateShift(uint32 *CBM, int *cshiftr, int *cshiftl)
+ {
+-	int a,x,z,y;
++	int a,x,z;
+ 	cshiftl[0]=cshiftl[1]=cshiftl[2]=-1;
+ 	for(a=0;a<3;a++)
+ 	{
+-		for(x=0,y=-1,z=0;x<32;x++)
++		for(x=0,z=0;x<32;x++)
+ 		{
+ 			if(CBM[a]&(1<<x))
+ 			{
+--- fceux-2.2.3.orig/src/drivers/sdl/SConscript
++++ fceux-2.2.3/src/drivers/sdl/SConscript
+@@ -1,7 +1,7 @@
+ # Fix compliation error about 'XKeysymToString' by linking X11 explicitly
+ # Thanks Antonio Ospite!
+ Import('env')
+-config_string = 'pkg-config --cflags --libs x11'
++config_string = '%s --cflags --libs x11' % env['PKG_CONFIG']
+ env.ParseConfig(config_string)
+ Export('env')
+ 
+--- fceux-2.2.3.orig/src/drivers/sdl/config.h
++++ fceux-2.2.3/src/drivers/sdl/config.h
+@@ -23,6 +23,7 @@
+ 	HK_MAX};
+ 
+ 
++__attribute__((unused))
+ static const char* HotkeyStrings[HK_MAX] = {
+ 		"CheatMenu",
+ 		"BindState",
+--- fceux-2.2.3.orig/src/drivers/sdl/gui.cpp
++++ fceux-2.2.3/src/drivers/sdl/gui.cpp
+@@ -95,7 +95,7 @@
+ 	//SDL_Surface *screen;
+ //	SDL_Event event;
+ //	KillVideo();
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if 1
+ 	return 0; // TODO - SDL 2.0
+ #else
+ 	//screen = SDL_SetVideoMode(420, 200, 8, 0);
+@@ -925,9 +925,11 @@
+ 	GtkWidget* hbox1;
+ 	GtkWidget* scalerLbl;
+ 	GtkWidget* scalerCombo;
++#ifdef OPENGL	
+ 	GtkWidget* glChk;
+ 	GtkWidget* linearChk;
+ 	GtkWidget* dbChk;
++#endif
+ 	GtkWidget* palHbox;
+ 	GtkWidget* palLbl;
+ 	GtkWidget* palCombo;
+@@ -1238,7 +1240,7 @@
+ 		mixerFrames[i] = gtk_frame_new(mixerStrings[i]);
+ 		gtk_container_add(GTK_CONTAINER(mixerFrames[i]), mixers[i]);
+ 		gtk_box_pack_start(GTK_BOX(mixerHbox), mixerFrames[i], FALSE, TRUE, 5);
+-		g_signal_connect(mixers[i], "button-release-event", G_CALLBACK(mixerChanged), (gpointer)i); 
++		g_signal_connect(mixers[i], "button-release-event", G_CALLBACK(mixerChanged), GINT_TO_POINTER(i)); 
+ 	}
+ 	
+ 	// sync with cfg
+--- fceux-2.2.3.orig/src/drivers/sdl/input.cpp
++++ fceux-2.2.3/src/drivers/sdl/input.cpp
+@@ -995,7 +995,6 @@
+ 	// shut down the video and joystick subsystems
+ 	bcpv = KillVideo ();
+ #endif
+-	SDL_Surface *screen;
+ 
+ 	bcpj = KillJoysticks ();
+ 
+@@ -1035,7 +1034,7 @@
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+ 			// TODO - SDL2
+ #else
+-			screen = SDL_SetVideoMode (420, 200, 8, 0);
++			SDL_SetVideoMode (420, 200, 8, 0);
+ 			SDL_WM_SetCaption ("Button Config", 0);
+ #endif
+ 		}
+@@ -1670,6 +1669,7 @@
+ 				inputNum = bc->ButtonNum[which];
+ 				inputDirection = "";
+ 			}
++			sprintf (name, "js%i:%s%i%s", joyNum, inputType, inputNum, inputDirection);
+ 	}
+ 
+ 	return name;
+--- fceux-2.2.3.orig/src/drivers/sdl/sdl-video.cpp
++++ fceux-2.2.3/src/drivers/sdl/sdl-video.cpp
+@@ -55,7 +55,7 @@
+ extern Config *g_config;
+ 
+ // STATIC GLOBALS
+-extern SDL_Surface *s_screen;
++static SDL_Surface *s_screen;
+ 
+ static SDL_Surface *s_BlitBuf; // Buffer when using hardware-accelerated blits.
+ static SDL_Surface *s_IconSurface = NULL;
+--- fceux-2.2.3.orig/src/drivers/sdl/sdl-video.h
++++ fceux-2.2.3/src/drivers/sdl/sdl-video.h
+@@ -9,7 +9,6 @@
+ uint32 PtoV(uint16 x, uint16 y);
+ bool FCEUD_ShouldDrawInputAids();
+ bool FCEUI_AviDisableMovieMessages();
+-static SDL_Surface *s_screen;
+ bool FCEUI_AviEnableHUDrecording();
+ void FCEUI_SetAviEnableHUDrecording(bool enable);
+ bool FCEUI_AviDisableMovieMessages();
+--- fceux-2.2.3.orig/src/drivers/videolog/nesvideos-piece.cpp
++++ fceux-2.2.3/src/drivers/videolog/nesvideos-piece.cpp
+@@ -586,13 +586,25 @@
+             }
+             if(i_size > 0)
+                 fwrite(&muxbuf[0], 1, i_size, vidfp);
+-        }
+-        else
+-#endif
+-        {
++
+         raw_fallback:
+             fwrite(data, 1, bytes, vidfp);
++
++            if(eventfp)
++            {
++                LockF el(eventfp);
++                off_t vidpos = ftello(vidfp);
++                off_t audpos = ftello(audfp);
++                fprintf(eventfp,
++                    "%llX %llX Mark\n",
++                    (long long)vidpos, (long long)audpos);
++                fflush(eventfp);
++            }
++
++            return;
+         }
++#endif
++        fwrite(data, 1, bytes, vidfp);
+ 
+         if(eventfp)
+         {
+--- fceux-2.2.3.orig/src/drivers/videolog/rgbtorgb.cpp
++++ fceux-2.2.3/src/drivers/videolog/rgbtorgb.cpp
+@@ -644,7 +644,6 @@
+     unsigned height = npixels / width;
+     unsigned pos = 0;
+     unsigned ypos = 0;
+-    unsigned stride = width*PixStride;
+ 
+     /* This function is based on code from x264 svn version 711 */
+     /* TODO: Apply MMX optimization for 24-bit pixels */
+@@ -795,12 +794,10 @@
+ template<int roffs,int rbits, int goffs,int gbits, int boffs,int bbits>
+ void Convert_2byte_To_YUY2Frame(const void* data, unsigned char* dest, unsigned npixels, unsigned width)
+ {
+-    const unsigned PixStride = 2;
+     const unsigned char* src = (const unsigned char*) data;
+     unsigned height = npixels / width;
+     unsigned pos = 0;
+     unsigned ypos = 0;
+-    unsigned stride = width*PixStride;
+ 
+     for(unsigned y=0; y<height; ++y)
+     {
+--- fceux-2.2.3.orig/src/fceu.cpp
++++ fceux-2.2.3/src/fceu.cpp
+@@ -657,7 +657,8 @@
+ ///Skip may be passed in, if FRAMESKIP is #defined, to cause this to emulate more than one frame
+ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int skip) {
+ 	//skip initiates frame skip if 1, or frame skip and sound skip if 2
+-	int r, ssize;
++	int r __attribute__((unused));
++	int ssize;
+ 
+ 	JustFrameAdvanced = false;
+ 
+@@ -1214,6 +1215,8 @@
+ 	switch (command) {
+ 	case GI_POWER:
+ 		cart->Power();
++	default:
++		break;
+ 	}
+ }
+ 
+--- fceux-2.2.3.orig/src/fds.cpp
++++ fceux-2.2.3/src/fds.cpp
+@@ -92,6 +92,9 @@
+ 	switch (h) {
+ 	case GI_CLOSE: FDSClose(); break;
+ 	case GI_POWER: FDSInit(); break;
++	case GI_RESETM2:
++	case GI_RESETSAVE:
++		break;
+ 	}
+ }
+ 
+--- fceux-2.2.3.orig/src/input.cpp
++++ fceux-2.2.3/src/input.cpp
+@@ -479,6 +479,7 @@
+ 		joyports[port].driver=FCEU_InitSNESMouse(port);
+ 		break;
+ 	case SI_NONE:
++	case SI_UNSET:
+ 		joyports[port].driver=&DummyJPort;
+ 		break;
+ 	}
+@@ -489,6 +490,7 @@
+ 	switch(portFC.type)
+ 	{
+ 	case SIFC_NONE:
++	case SIFC_UNSET:
+ 		portFC.driver=&DummyPortFC;
+ 		break;
+ 	case SIFC_ARKANOID:
+@@ -713,7 +715,6 @@
+ 	"TAS Editor",
+ };
+ 
+-static void CommandUnImpl(void);
+ static void CommandToggleDip(void);
+ static void CommandStateLoad(void);
+ static void CommandStateSave(void);
+@@ -921,11 +922,6 @@
+ 	}
+ }
+ 
+-static void CommandUnImpl(void)
+-{
+-	FCEU_DispMessage("command '%s' unimplemented.",0, FCEUI_CommandTable[i].name);
+-}
+-
+ static void CommandToggleDip(void)
+ {
+ 	if (GameInfo->type==GIT_VSUNI)
+@@ -1260,7 +1256,7 @@
+ 	// FIXME this will always evaluate to true, should this be
+ 	// if (*lastSavestateMade...) to check if it holds a string or just
+ 	// a '\0'?
+-	if (lastSavestateMade && (undoSS || redoSS))
++	if (lastSavestateMade[0] && (undoSS || redoSS))
+ 		SwapSaveState();
+ }
+ 
+--- fceux-2.2.3.orig/src/movie.cpp
++++ fceux-2.2.3/src/movie.cpp
+@@ -693,6 +693,8 @@
+ 			state = VALUE;
+ 			if(isnewline) goto commit;
+ 			value += c;
++		default:
++			break;
+ 		}
+ 		goto done;
+ 
+--- fceux-2.2.3.orig/src/nsf.cpp
++++ fceux-2.2.3/src/nsf.cpp
+@@ -153,6 +153,8 @@
+ 		break;
+ 	case GI_RESETM2:
+ 	case GI_POWER: NSF_init();break;
++	default:
++		break;
+ 	}
+ }
+ 
+--- fceux-2.2.3.orig/src/oldmovie.cpp
++++ fceux-2.2.3/src/oldmovie.cpp
+@@ -93,7 +93,7 @@
+ }
+ 
+ //backwards compat
+-static void FCEUI_LoadMovie_v1(char *fname, int _read_only);
++//static void FCEUI_LoadMovie_v1(char *fname, int _read_only);
+ //static int FCEUI_MovieGetInfo_v1(const char* fname, MOVIE_INFO* info);
+ 
+ //int _old_FCEUI_MovieGetInfo(const char* fname, MOVIE_INFO* info)
+@@ -539,7 +539,7 @@
+ 
+ 	uint32 framecount;
+ 	uint32 rerecord_count;
+-	int movieConvertOffset1=0, movieConvertOffset2=0,movieSyncHackOn=0;
++	int movieSyncHackOn __attribute__((unused)) = 0;
+ 
+ 
+ 	EMUFILE* fp = FCEUD_UTF8_fstream(fname, "rb");
+--- fceux-2.2.3.orig/src/palette.cpp
++++ fceux-2.2.3/src/palette.cpp
+@@ -86,6 +86,7 @@
+ 	(type) (y + to_rgb [4] * i + to_rgb [5] * q)\
+ )
+ 
++__attribute__((unused))
+ static void ApplyDeemphasisNTSC(int entry, u8& r, u8& g, u8& b)
+ {
+ 				static float const to_float = 1.0f / 0xFF;
+@@ -251,6 +252,7 @@
+ }
+ 
+ //classic algorithm
++__attribute__((unused))
+ static void ApplyDeemphasisClassic(int entry, u8& r, u8& g, u8& b)
+ {
+ 	//DEEMPH BITS MAY BE ORDERED WRONG. PLEASE CHECK
+--- fceux-2.2.3.orig/src/pputile.inc
++++ fceux-2.2.3/src/pputile.inc
+@@ -3,7 +3,7 @@
+ uint32 vadr;
+ 
+ #ifndef PPUT_MMC5SP
+-	register uint8 zz;
++	register uint8 zz __attribute__((unused));
+ #else
+ 	uint8 xs, ys;
+ 	xs = X1;
+--- fceux-2.2.3.orig/src/state.cpp
++++ fceux-2.2.3/src/state.cpp
+@@ -1048,7 +1048,7 @@
+ 	//Both files must exist
+ 	//--------------------------------------------------------------------------------------------
+ 
+-	if (!lastSavestateMade)
++	if (!lastSavestateMade[0])
+ 	{
+ 		FCEUI_DispMessage("Can't Undo",0);
+ 		FCEUI_printf("Undo savestate was attempted but unsuccessful because there was not a recently used savestate.\n");
+@@ -1153,7 +1153,7 @@
+ void RedoLoadState()
+ {
+ 	if (!redoLS) return;
+-	if (lastLoadstateMade && redoLS)
++	if (lastLoadstateMade[0] && redoLS)
+ 	{
+ 		FCEUSS_Load(lastLoadstateMade);
+ 		FCEUI_printf("Redoing %s\n",lastLoadstateMade);
+--- fceux-2.2.3.orig/src/utils/xstring.cpp
++++ fceux-2.2.3/src/utils/xstring.cpp
+@@ -231,8 +231,8 @@
+ 			{
+ 				Base64Table[ input[0] >> 2 ],
+ 				Base64Table[ ((input[0] & 0x03) << 4) | (input[1] >> 4) ],
+-				n<2 ? '=' : Base64Table[ ((input[1] & 0x0F) << 2) | (input[2] >> 6) ],
+-				n<3 ? '=' : Base64Table[ input[2] & 0x3F ]
++				static_cast<unsigned char> (n<2 ? '=' : Base64Table[ ((input[1] & 0x0F) << 2) | (input[2] >> 6) ]),
++				static_cast<unsigned char> (n<3 ? '=' : Base64Table[ input[2] & 0x3F ])
+ 			};
+ 			ret.append(output, output+4);
+ 		}
+@@ -296,9 +296,9 @@
+ 			}
+ 			unsigned char outpacket[3] =
+ 			{
+-				(converted[0] << 2) | (converted[1] >> 4),
+-				(converted[1] << 4) | (converted[2] >> 2),
+-				(converted[2] << 6) | (converted[3])
++				static_cast<unsigned char>((converted[0] << 2) | (converted[1] >> 4)),
++				static_cast<unsigned char>((converted[1] << 4) | (converted[2] >> 2)),
++				static_cast<unsigned char>((converted[2] << 6) | (converted[3]))
+ 			};
+ 			int outlen = (input[2] == '=') ? 1 : (input[3] == '=' ? 2 : 3);
+ 			if(outlen > len) outlen = len;
+--- fceux-2.2.3.orig/src/video.cpp
++++ fceux-2.2.3/src/video.cpp
+@@ -246,7 +246,6 @@
+ 	//Fancy input display code
+ 	if(input_display)
+ 	{
+-		extern uint32 JSAutoHeld;
+ 		uint32 held;
+ 
+ 		int controller, c, ci, color;
+@@ -272,6 +271,7 @@
+ 			// This doesn't work in anything except windows for now.
+ 			// It doesn't get set anywhere in other ports.
+ #ifdef WIN32
++			extern uint32 JSAutoHeld;
+ 			if (!oldInputDisplay) ci = FCEUMOV_Mode(MOVIEMODE_PLAY) ? 0:GetGamepadPressedImmediate() >> (controller * 8);
+ 			else ci = 0;
+ 
+--- fceux-2.2.3.orig/src/x6502.cpp
++++ fceux-2.2.3/src/x6502.cpp
+@@ -318,8 +318,8 @@
+ #define LD_ZP(op)  {uint8 A; uint8 x; GetZP(A); x=RdRAM(A); op; break;}
+ #define LD_ZPX(op)  {uint8 A; uint8 x; GetZPI(A,_X); x=RdRAM(A); op; break;}
+ #define LD_ZPY(op)  {uint8 A; uint8 x; GetZPI(A,_Y); x=RdRAM(A); op; break;}
+-#define LD_AB(op)  {unsigned int A; uint8 x; GetAB(A); x=RdMem(A); op; break; }
+-#define LD_ABI(reg,op)  {unsigned int A; uint8 x; GetABIRD(A,reg); x=RdMem(A); op; break;}
++#define LD_AB(op)  {unsigned int A; uint8 x __attribute__((unused)); GetAB(A); x=RdMem(A); op; break; }
++#define LD_ABI(reg,op)  {unsigned int A; uint8 x __attribute__((unused)); GetABIRD(A,reg); x=RdMem(A); op; break;}
+ #define LD_ABX(op)  LD_ABI(_X,op)
+ #define LD_ABY(op)  LD_ABI(_Y,op)
+ #define LD_IX(op)  {unsigned int A; uint8 x; GetIX(A); x=RdMem(A); op; break;}

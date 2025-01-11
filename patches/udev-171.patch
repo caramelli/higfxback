@@ -12,9 +12,16 @@ else
   GUDEV=--disable-gudev
 fi
 
+if pkg-config --exists hwdata-build; then
+  HWDATA=1
+  REQUIRES="$REQUIRES hwdata-build"
+else
+  HWDB=--disable-hwdb
+fi
+
 # configure (ac-2.68; am-1.11; lt-2.4)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
-./configure $GUDEV --disable-hwdb --disable-introspection --disable-keymap --disable-udev_acl --libexecdir=/lib/udev --sbindir=/bin --prefix=
+./configure $GUDEV $HWDB --disable-introspection --disable-keymap --disable-udev_acl --libexecdir=/lib/udev --sbindir=/bin --prefix=
 
 # build
 make
@@ -54,6 +61,8 @@ install extras/firmware/firmware $DESTDIR/lib/udev
 install extras/input_id/input_id $DESTDIR/lib/udev
 install extras/path_id/path_id $DESTDIR/lib/udev
 install extras/scsi_id/scsi_id $DESTDIR/lib/udev
+test $HWDATA && install extras/usb-db/pci-db $DESTDIR/lib/udev
+test $HWDATA && install extras/usb-db/usb-db $DESTDIR/lib/udev
 install extras/usb_id/usb_id $DESTDIR/lib/udev
 install extras/v4l_id/v4l_id $DESTDIR/lib/udev
 install -d $DESTDIR/lib/pkgconfig
@@ -104,7 +113,13 @@ cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
 /lib/udev/firmware \\
 /lib/udev/input_id \\
 /lib/udev/path_id \\
+EOF
+test $HWDATA && echo /lib/udev/pci-db \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
 /lib/udev/scsi_id \\
+EOF
+test $HWDATA && echo /lib/udev/usb-db \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
 /lib/udev/usb_id \\
 /lib/udev/v4l_id
 EOF
@@ -125,6 +140,41 @@ exit
  
  if WITH_SYSTEMD
  systemdsystemunit_DATA = \
+--- udev-171.orig/configure.ac
++++ udev-171/configure.ac
+@@ -87,20 +87,14 @@
+ 	AS_HELP_STRING([--disable-hwdb], [disable hardware database support]),
+ 	[], [enable_hwdb=yes])
+ if test "x$enable_hwdb" = xyes; then
+-	if test "x$cross_compiling" = "xno" ; then
+-		AC_CHECK_FILES([/usr/share/pci.ids], [pciids=/usr/share/pci.ids])
+-		AC_CHECK_FILES([/usr/share/hwdata/pci.ids], [pciids=/usr/share/hwdata/pci.ids])
+-		AC_CHECK_FILES([/usr/share/misc/pci.ids], [pciids=/usr/share/misc/pci.ids])
+-	fi
+-
+ 	AC_ARG_WITH(usb-ids-path,
+ 		[AS_HELP_STRING([--with-usb-ids-path=DIR], [Path to usb.ids file])],
+ 		[USB_DATABASE=${withval}],
+ 		[if test -n "$usbids" ; then
+ 			USB_DATABASE="$usbids"
+ 		else
+-			PKG_CHECK_MODULES(USBUTILS, usbutils >= 0.82)
+-			AC_SUBST([USB_DATABASE], [$($PKG_CONFIG --variable=usbids usbutils)])
++			PKG_CHECK_MODULES(HWDATA, hwdata)
++			AC_SUBST([USB_DATABASE], [$($PKG_CONFIG --variable=pkgdatadir hwdata)/usb.ids])
+ 		fi])
+ 	AC_MSG_CHECKING([for USB database location])
+ 	AC_MSG_RESULT([$USB_DATABASE])
+@@ -112,7 +106,8 @@
+ 		[if test -n "$pciids" ; then
+ 			PCI_DATABASE="$pciids"
+ 		else
+-			AC_MSG_ERROR([pci.ids not found, try --with-pci-ids-path=])
++			PKG_CHECK_MODULES(HWDATA, hwdata)
++			AC_SUBST([PCI_DATABASE], [$($PKG_CONFIG --variable=pkgdatadir hwdata)/pci.ids])
+ 		fi])
+ 	AC_MSG_CHECKING([for PCI database location])
+ 	AC_MSG_RESULT([$PCI_DATABASE])
 --- udev-171.orig/extras/mtd_probe/mtd_probe.h
 +++ udev-171/extras/mtd_probe/mtd_probe.h
 @@ -18,6 +18,7 @@

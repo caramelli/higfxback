@@ -1,0 +1,564 @@
+# This file is part of HiGFXback
+
+REQUIRES="python2-build python3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/bin
+install script/scons-configure-cache $DESTDIR/bin
+install script/scons2 $DESTDIR/bin
+install script/scons3 $DESTDIR/bin
+install script/scons2-time $DESTDIR/bin
+install script/scons3-time $DESTDIR/bin
+install script/sconsign $DESTDIR/bin
+install -d $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/__init__.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Action.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Builder.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/CacheDir.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Conftest.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/cpp.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/dblite.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Debug.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Defaults.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Environment.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Errors.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Executor.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Job.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Memoize.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/PathList.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/SConf.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/SConsign.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Subst.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Taskmaster.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Util.py $DESTDIR/lib/python2/SCons
+install -m 644 engine/SCons/Warnings.py $DESTDIR/lib/python2/SCons
+install -m 644 script/scons $DESTDIR/lib/python2/SCons/scons.py
+install -m 644 script/scons-time $DESTDIR/lib/python2/SCons/scons-time.py
+install -d $DESTDIR/lib/python2/SCons/compat
+install -m 644 engine/SCons/compat/__init__.py $DESTDIR/lib/python2/SCons/compat
+install -d $DESTDIR/lib/python2/SCons/Node
+install -m 644 engine/SCons/Node/__init__.py $DESTDIR/lib/python2/SCons/Node
+install -m 644 engine/SCons/Node/Alias.py $DESTDIR/lib/python2/SCons/Node
+install -m 644 engine/SCons/Node/FS.py $DESTDIR/lib/python2/SCons/Node
+install -m 644 engine/SCons/Node/Python.py $DESTDIR/lib/python2/SCons/Node
+install -d $DESTDIR/lib/python2/SCons/Platform
+install -m 644 engine/SCons/Platform/__init__.py $DESTDIR/lib/python2/SCons/Platform
+install -m 644 engine/SCons/Platform/cygwin.py $DESTDIR/lib/python2/SCons/Platform
+install -m 644 engine/SCons/Platform/mingw.py $DESTDIR/lib/python2/SCons/Platform
+install -m 644 engine/SCons/Platform/posix.py $DESTDIR/lib/python2/SCons/Platform
+install -m 644 engine/SCons/Platform/virtualenv.py $DESTDIR/lib/python2/SCons/Platform
+install -m 644 engine/SCons/Platform/win32.py $DESTDIR/lib/python2/SCons/Platform
+install -d $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/__init__.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/C.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/D.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/Dir.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/Fortran.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/LaTeX.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/Prog.py $DESTDIR/lib/python2/SCons/Scanner
+install -m 644 engine/SCons/Scanner/SWIG.py $DESTDIR/lib/python2/SCons/Scanner
+install -d $DESTDIR/lib/python2/SCons/Script
+install -m 644 engine/SCons/Script/__init__.py $DESTDIR/lib/python2/SCons/Script
+install -m 644 engine/SCons/Script/Interactive.py $DESTDIR/lib/python2/SCons/Script
+install -m 644 engine/SCons/Script/Main.py $DESTDIR/lib/python2/SCons/Script
+install -m 644 engine/SCons/Script/SConscript.py $DESTDIR/lib/python2/SCons/Script
+install -m 644 engine/SCons/Script/SConsOptions.py $DESTDIR/lib/python2/SCons/Script
+install -d $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/__init__.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/ar.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/as.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/cc.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/cxx.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/DCommon.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/default.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/dmd.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/dvipdf.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/dvips.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/f77.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/f90.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/f95.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/filesystem.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/fortran.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/FortranCommon.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/g++.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/g77.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gas.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gcc.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gdc.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gfortran.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gnulink.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gs.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/gxx.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/ifl.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/ifort.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/install.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/jar.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/javac.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/JavaCommon.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/javah.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/latex.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/ldc.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/lex.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/link.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/m4.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/pdf.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/pdflatex.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/pdftex.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/rmic.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/rpcgen.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/rpm.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/swig.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/tar.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/tex.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/textfile.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/wix.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/yacc.py $DESTDIR/lib/python2/SCons/Tool
+install -m 644 engine/SCons/Tool/zip.py $DESTDIR/lib/python2/SCons/Tool
+install -d $DESTDIR/lib/python2/SCons/Variables
+install -m 644 engine/SCons/Variables/__init__.py $DESTDIR/lib/python2/SCons/Variables
+install -m 644 engine/SCons/Variables/BoolVariable.py $DESTDIR/lib/python2/SCons/Variables
+install -m 644 engine/SCons/Variables/EnumVariable.py $DESTDIR/lib/python2/SCons/Variables
+install -m 644 engine/SCons/Variables/ListVariable.py $DESTDIR/lib/python2/SCons/Variables
+install -m 644 engine/SCons/Variables/PackageVariable.py $DESTDIR/lib/python2/SCons/Variables
+install -m 644 engine/SCons/Variables/PathVariable.py $DESTDIR/lib/python2/SCons/Variables
+install -d $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/__init__.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Action.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Builder.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/CacheDir.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Conftest.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/cpp.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/dblite.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Debug.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Defaults.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Environment.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Errors.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Executor.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Job.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Memoize.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/PathList.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/SConf.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/SConsign.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Subst.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Taskmaster.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Util.py $DESTDIR/lib/python3/SCons
+install -m 644 engine/SCons/Warnings.py $DESTDIR/lib/python3/SCons
+install -m 644 script/scons $DESTDIR/lib/python3/SCons/scons.py
+install -m 644 script/scons-time $DESTDIR/lib/python3/SCons/scons-time.py
+install -d $DESTDIR/lib/python3/SCons/compat
+install -m 644 engine/SCons/compat/__init__.py $DESTDIR/lib/python3/SCons/compat
+install -d $DESTDIR/lib/python3/SCons/Node
+install -m 644 engine/SCons/Node/__init__.py $DESTDIR/lib/python3/SCons/Node
+install -m 644 engine/SCons/Node/Alias.py $DESTDIR/lib/python3/SCons/Node
+install -m 644 engine/SCons/Node/FS.py $DESTDIR/lib/python3/SCons/Node
+install -m 644 engine/SCons/Node/Python.py $DESTDIR/lib/python3/SCons/Node
+install -d $DESTDIR/lib/python3/SCons/Platform
+install -m 644 engine/SCons/Platform/__init__.py $DESTDIR/lib/python3/SCons/Platform
+install -m 644 engine/SCons/Platform/cygwin.py $DESTDIR/lib/python3/SCons/Platform
+install -m 644 engine/SCons/Platform/mingw.py $DESTDIR/lib/python3/SCons/Platform
+install -m 644 engine/SCons/Platform/posix.py $DESTDIR/lib/python3/SCons/Platform
+install -m 644 engine/SCons/Platform/virtualenv.py $DESTDIR/lib/python3/SCons/Platform
+install -m 644 engine/SCons/Platform/win32.py $DESTDIR/lib/python3/SCons/Platform
+install -d $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/__init__.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/C.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/D.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/Dir.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/Fortran.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/LaTeX.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/Prog.py $DESTDIR/lib/python3/SCons/Scanner
+install -m 644 engine/SCons/Scanner/SWIG.py $DESTDIR/lib/python3/SCons/Scanner
+install -d $DESTDIR/lib/python3/SCons/Script
+install -m 644 engine/SCons/Script/__init__.py $DESTDIR/lib/python3/SCons/Script
+install -m 644 engine/SCons/Script/Interactive.py $DESTDIR/lib/python3/SCons/Script
+install -m 644 engine/SCons/Script/Main.py $DESTDIR/lib/python3/SCons/Script
+install -m 644 engine/SCons/Script/SConscript.py $DESTDIR/lib/python3/SCons/Script
+install -m 644 engine/SCons/Script/SConsOptions.py $DESTDIR/lib/python3/SCons/Script
+install -d $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/__init__.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/ar.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/as.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/cc.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/cxx.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/DCommon.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/default.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/dmd.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/dvipdf.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/dvips.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/f77.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/f90.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/f95.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/filesystem.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/fortran.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/FortranCommon.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/g++.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/g77.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gas.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gcc.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gdc.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gfortran.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gnulink.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gs.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/gxx.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/ifl.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/ifort.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/install.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/jar.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/javac.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/JavaCommon.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/javah.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/latex.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/ldc.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/lex.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/link.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/m4.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/pdf.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/pdflatex.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/pdftex.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/rmic.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/rpcgen.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/rpm.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/swig.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/tar.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/tex.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/textfile.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/wix.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/yacc.py $DESTDIR/lib/python3/SCons/Tool
+install -m 644 engine/SCons/Tool/zip.py $DESTDIR/lib/python3/SCons/Tool
+install -d $DESTDIR/lib/python3/SCons/Variables
+install -m 644 engine/SCons/Variables/__init__.py $DESTDIR/lib/python3/SCons/Variables
+install -m 644 engine/SCons/Variables/BoolVariable.py $DESTDIR/lib/python3/SCons/Variables
+install -m 644 engine/SCons/Variables/EnumVariable.py $DESTDIR/lib/python3/SCons/Variables
+install -m 644 engine/SCons/Variables/ListVariable.py $DESTDIR/lib/python3/SCons/Variables
+install -m 644 engine/SCons/Variables/PackageVariable.py $DESTDIR/lib/python3/SCons/Variables
+install -m 644 engine/SCons/Variables/PathVariable.py $DESTDIR/lib/python3/SCons/Variables
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/scons-build.pc << EOF
+Name: scons
+Version: 3.1.2
+Description: Software Constructor build automation tool
+Requires: $REQUIRES
+
+devel=\\
+/bin/scons-configure-cache \\
+/bin/scons2 \\
+/bin/scons2-time \\
+/bin/scons3 \\
+/bin/scons3-time \\
+/bin/sconsign \\
+/lib/python2/SCons/__init__.py \\
+/lib/python2/SCons/Action.py \\
+/lib/python2/SCons/Builder.py \\
+/lib/python2/SCons/CacheDir.py \\
+/lib/python2/SCons/Conftest.py \\
+/lib/python2/SCons/cpp.py \\
+/lib/python2/SCons/dblite.py \\
+/lib/python2/SCons/Debug.py \\
+/lib/python2/SCons/Defaults.py \\
+/lib/python2/SCons/Environment.py \\
+/lib/python2/SCons/Errors.py \\
+/lib/python2/SCons/Executor.py \\
+/lib/python2/SCons/Job.py \\
+/lib/python2/SCons/Memoize.py \\
+/lib/python2/SCons/PathList.py \\
+/lib/python2/SCons/SConf.py \\
+/lib/python2/SCons/scons.py \\
+/lib/python2/SCons/scons-time.py \\
+/lib/python2/SCons/SConsign.py \\
+/lib/python2/SCons/Subst.py \\
+/lib/python2/SCons/Taskmaster.py \\
+/lib/python2/SCons/Util.py \\
+/lib/python2/SCons/Warnings.py \\
+/lib/python2/SCons/compat/__init__.py \\
+/lib/python2/SCons/Node/__init__.py \\
+/lib/python2/SCons/Node/Alias.py \\
+/lib/python2/SCons/Node/FS.py \\
+/lib/python2/SCons/Node/Python.py \\
+/lib/python2/SCons/Platform/__init__.py \\
+/lib/python2/SCons/Platform/cygwin.py \\
+/lib/python2/SCons/Platform/mingw.py \\
+/lib/python2/SCons/Platform/posix.py \\
+/lib/python2/SCons/Platform/virtualenv.py \\
+/lib/python2/SCons/Platform/win32.py \\
+/lib/python2/SCons/Scanner/__init__.py \\
+/lib/python2/SCons/Scanner/C.py \\
+/lib/python2/SCons/Scanner/D.py \\
+/lib/python2/SCons/Scanner/Dir.py \\
+/lib/python2/SCons/Scanner/Fortran.py \\
+/lib/python2/SCons/Scanner/LaTeX.py \\
+/lib/python2/SCons/Scanner/Prog.py \\
+/lib/python2/SCons/Scanner/SWIG.py \\
+/lib/python2/SCons/Script/__init__.py \\
+/lib/python2/SCons/Script/Interactive.py \\
+/lib/python2/SCons/Script/Main.py \\
+/lib/python2/SCons/Script/SConsOptions.py \\
+/lib/python2/SCons/Script/SConscript.py \\
+/lib/python2/SCons/Tool/__init__.py \\
+/lib/python2/SCons/Tool/ar.py \\
+/lib/python2/SCons/Tool/as.py \\
+/lib/python2/SCons/Tool/cc.py \\
+/lib/python2/SCons/Tool/cxx.py \\
+/lib/python2/SCons/Tool/DCommon.py \\
+/lib/python2/SCons/Tool/default.py \\
+/lib/python2/SCons/Tool/dmd.py \\
+/lib/python2/SCons/Tool/dvipdf.py \\
+/lib/python2/SCons/Tool/dvips.py \\
+/lib/python2/SCons/Tool/f77.py \\
+/lib/python2/SCons/Tool/f90.py \\
+/lib/python2/SCons/Tool/f95.py \\
+/lib/python2/SCons/Tool/filesystem.py \\
+/lib/python2/SCons/Tool/fortran.py \\
+/lib/python2/SCons/Tool/FortranCommon.py \\
+/lib/python2/SCons/Tool/g++.py \\
+/lib/python2/SCons/Tool/g77.py \\
+/lib/python2/SCons/Tool/gas.py \\
+/lib/python2/SCons/Tool/gcc.py \\
+/lib/python2/SCons/Tool/gdc.py \\
+/lib/python2/SCons/Tool/gfortran.py \\
+/lib/python2/SCons/Tool/gnulink.py \\
+/lib/python2/SCons/Tool/gs.py \\
+/lib/python2/SCons/Tool/gxx.py \\
+/lib/python2/SCons/Tool/ifl.py \\
+/lib/python2/SCons/Tool/ifort.py \\
+/lib/python2/SCons/Tool/install.py \\
+/lib/python2/SCons/Tool/jar.py \\
+/lib/python2/SCons/Tool/javac.py \\
+/lib/python2/SCons/Tool/JavaCommon.py \\
+/lib/python2/SCons/Tool/javah.py \\
+/lib/python2/SCons/Tool/latex.py \\
+/lib/python2/SCons/Tool/ldc.py \\
+/lib/python2/SCons/Tool/lex.py \\
+/lib/python2/SCons/Tool/link.py \\
+/lib/python2/SCons/Tool/m4.py \\
+/lib/python2/SCons/Tool/pdf.py \\
+/lib/python2/SCons/Tool/pdflatex.py \\
+/lib/python2/SCons/Tool/pdftex.py \\
+/lib/python2/SCons/Tool/rmic.py \\
+/lib/python2/SCons/Tool/rpcgen.py \\
+/lib/python2/SCons/Tool/rpm.py \\
+/lib/python2/SCons/Tool/swig.py \\
+/lib/python2/SCons/Tool/tar.py \\
+/lib/python2/SCons/Tool/tex.py \\
+/lib/python2/SCons/Tool/textfile.py \\
+/lib/python2/SCons/Tool/wix.py \\
+/lib/python2/SCons/Tool/yacc.py \\
+/lib/python2/SCons/Tool/zip.py \\
+/lib/python2/SCons/Variables/__init__.py \\
+/lib/python2/SCons/Variables/BoolVariable.py \\
+/lib/python2/SCons/Variables/EnumVariable.py \\
+/lib/python2/SCons/Variables/ListVariable.py \\
+/lib/python2/SCons/Variables/PackageVariable.py \\
+/lib/python2/SCons/Variables/PathVariable.py \\
+/lib/python3/SCons/__init__.py \\
+/lib/python3/SCons/Action.py \\
+/lib/python3/SCons/Builder.py \\
+/lib/python3/SCons/CacheDir.py \\
+/lib/python3/SCons/Conftest.py \\
+/lib/python3/SCons/cpp.py \\
+/lib/python3/SCons/dblite.py \\
+/lib/python3/SCons/Debug.py \\
+/lib/python3/SCons/Defaults.py \\
+/lib/python3/SCons/Environment.py \\
+/lib/python3/SCons/Errors.py \\
+/lib/python3/SCons/Executor.py \\
+/lib/python3/SCons/Job.py \\
+/lib/python3/SCons/Memoize.py \\
+/lib/python3/SCons/PathList.py \\
+/lib/python3/SCons/SConf.py \\
+/lib/python3/SCons/scons.py \\
+/lib/python3/SCons/scons-time.py \\
+/lib/python3/SCons/SConsign.py \\
+/lib/python3/SCons/Subst.py \\
+/lib/python3/SCons/Taskmaster.py \\
+/lib/python3/SCons/Util.py \\
+/lib/python3/SCons/Warnings.py \\
+/lib/python3/SCons/compat/__init__.py \\
+/lib/python3/SCons/Node/__init__.py \\
+/lib/python3/SCons/Node/Alias.py \\
+/lib/python3/SCons/Node/FS.py \\
+/lib/python3/SCons/Node/Python.py \\
+/lib/python3/SCons/Platform/__init__.py \\
+/lib/python3/SCons/Platform/cygwin.py \\
+/lib/python3/SCons/Platform/mingw.py \\
+/lib/python3/SCons/Platform/posix.py \\
+/lib/python3/SCons/Platform/virtualenv.py \\
+/lib/python3/SCons/Platform/win32.py \\
+/lib/python3/SCons/Scanner/__init__.py \\
+/lib/python3/SCons/Scanner/C.py \\
+/lib/python3/SCons/Scanner/D.py \\
+/lib/python3/SCons/Scanner/Dir.py \\
+/lib/python3/SCons/Scanner/Fortran.py \\
+/lib/python3/SCons/Scanner/LaTeX.py \\
+/lib/python3/SCons/Scanner/Prog.py \\
+/lib/python3/SCons/Scanner/SWIG.py \\
+/lib/python3/SCons/Script/__init__.py \\
+/lib/python3/SCons/Script/Interactive.py \\
+/lib/python3/SCons/Script/Main.py \\
+/lib/python3/SCons/Script/SConsOptions.py \\
+/lib/python3/SCons/Script/SConscript.py \\
+/lib/python3/SCons/Tool/__init__.py \\
+/lib/python3/SCons/Tool/ar.py \\
+/lib/python3/SCons/Tool/as.py \\
+/lib/python3/SCons/Tool/cc.py \\
+/lib/python3/SCons/Tool/cxx.py \\
+/lib/python3/SCons/Tool/DCommon.py \\
+/lib/python3/SCons/Tool/default.py \\
+/lib/python3/SCons/Tool/dmd.py \\
+/lib/python3/SCons/Tool/dvipdf.py \\
+/lib/python3/SCons/Tool/dvips.py \\
+/lib/python3/SCons/Tool/f77.py \\
+/lib/python3/SCons/Tool/f90.py \\
+/lib/python3/SCons/Tool/f95.py \\
+/lib/python3/SCons/Tool/filesystem.py \\
+/lib/python3/SCons/Tool/fortran.py \\
+/lib/python3/SCons/Tool/FortranCommon.py \\
+/lib/python3/SCons/Tool/g++.py \\
+/lib/python3/SCons/Tool/g77.py \\
+/lib/python3/SCons/Tool/gas.py \\
+/lib/python3/SCons/Tool/gcc.py \\
+/lib/python3/SCons/Tool/gdc.py \\
+/lib/python3/SCons/Tool/gfortran.py \\
+/lib/python3/SCons/Tool/gnulink.py \\
+/lib/python3/SCons/Tool/gs.py \\
+/lib/python3/SCons/Tool/gxx.py \\
+/lib/python3/SCons/Tool/ifl.py \\
+/lib/python3/SCons/Tool/ifort.py \\
+/lib/python3/SCons/Tool/install.py \\
+/lib/python3/SCons/Tool/jar.py \\
+/lib/python3/SCons/Tool/javac.py \\
+/lib/python3/SCons/Tool/JavaCommon.py \\
+/lib/python3/SCons/Tool/javah.py \\
+/lib/python3/SCons/Tool/latex.py \\
+/lib/python3/SCons/Tool/ldc.py \\
+/lib/python3/SCons/Tool/lex.py \\
+/lib/python3/SCons/Tool/link.py \\
+/lib/python3/SCons/Tool/m4.py \\
+/lib/python3/SCons/Tool/pdf.py \\
+/lib/python3/SCons/Tool/pdflatex.py \\
+/lib/python3/SCons/Tool/pdftex.py \\
+/lib/python3/SCons/Tool/rmic.py \\
+/lib/python3/SCons/Tool/rpcgen.py \\
+/lib/python3/SCons/Tool/rpm.py \\
+/lib/python3/SCons/Tool/swig.py \\
+/lib/python3/SCons/Tool/tar.py \\
+/lib/python3/SCons/Tool/tex.py \\
+/lib/python3/SCons/Tool/textfile.py \\
+/lib/python3/SCons/Tool/wix.py \\
+/lib/python3/SCons/Tool/yacc.py \\
+/lib/python3/SCons/Tool/zip.py \\
+/lib/python3/SCons/Variables/__init__.py \\
+/lib/python3/SCons/Variables/BoolVariable.py \\
+/lib/python3/SCons/Variables/EnumVariable.py \\
+/lib/python3/SCons/Variables/ListVariable.py \\
+/lib/python3/SCons/Variables/PackageVariable.py \\
+/lib/python3/SCons/Variables/PathVariable.py
+EOF
+
+exit
+--- scons-3.1.2.orig/script/scons
++++ scons-3.1.2/script/scons
+@@ -190,7 +190,7 @@
+ # END STANDARD SCons SCRIPT HEADER
+ ##############################################################################
+ 
+-if __name__ == "__main__":
++def main():
+     try:
+         import SCons.Script
+     except ImportError:
+@@ -203,6 +203,9 @@
+     # with the proper exit status when done.
+     SCons.Script.main()
+ 
++if __name__ == "__main__":
++    sys.exit(main())
++
+ # Local Variables:
+ # tab-width:4
+ # indent-tabs-mode:nil
+--- scons-3.1.2.orig/script/scons-configure-cache
++++ scons-3.1.2/script/scons-configure-cache
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env python
++#! /bin/env python3
+ #
+ # SCons - a Software Constructor
+ #
+--- scons-3.1.2.orig/script/scons-time
++++ scons-3.1.2/script/scons-time
+@@ -1220,18 +1220,12 @@
+                 result.extend(list(range(int(x), int(y)+1)))
+         return result
+ 
+-    def scons_path(self, dir):
+-        return os.path.join(dir, 'src', 'script', 'scons.py')
+-
+-    def scons_lib_dir_path(self, dir):
+-        return os.path.join(dir, 'src', 'engine')
+-
+     def prep_subversion_run(self, commands, removals):
+         self.svn_tmpdir = tempfile.mkdtemp(prefix=self.name + '-svn-')
+         removals.append((shutil.rmtree, 'rm -rf %%s', self.svn_tmpdir))
+ 
+-        self.scons = self.scons_path(self.svn_tmpdir)
+-        self.scons_lib_dir = self.scons_lib_dir_path(self.svn_tmpdir)
++        self.scons = os.path.join(self.svn_tmpdir, 'src', 'script', 'scons.py')
++        self.scons_lib_dir = os.path.join(self.svn_tmpdir, 'src', 'engine')
+ 
+         commands.extend([
+             '%(svn)s co %(svn_co_flag)s -r %(run_number)s %(subversion_url)s %(svn_tmpdir)s',
+@@ -1258,10 +1252,10 @@
+             self.outdir = os.path.join(self.orig_cwd, self.outdir)
+ 
+         if self.scons is None:
+-            self.scons = self.scons_path(self.orig_cwd)
++            self.scons = os.path.join(os.path.dirname(__file__), 'scons.py')
+ 
+         if self.scons_lib_dir is None:
+-            self.scons_lib_dir = self.scons_lib_dir_path(self.orig_cwd)
++            self.scons_lib_dir = os.path.dirname(os.__file__)
+ 
+         if self.scons_wrapper is None:
+             self.scons_wrapper = self.scons
+--- scons-3.1.2.orig/script/scons2
++++ scons-3.1.2/script/scons2
+@@ -0,0 +1,6 @@
++#!/bin/env python2
++
++from sys import exit
++from SCons import scons
++
++exit(scons.main())
+--- scons-3.1.2.orig/script/scons2-time
++++ scons-3.1.2/script/scons2-time
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++exec python2 -m SCons.scons-time $@
+--- scons-3.1.2.orig/script/scons3
++++ scons-3.1.2/script/scons3
+@@ -0,0 +1,6 @@
++#!/bin/env python3
++
++from sys import exit
++from SCons import scons
++
++exit(scons.main())
+--- scons-3.1.2.orig/script/scons3-time
++++ scons-3.1.2/script/scons3-time
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++exec python3 -m SCons.scons-time $@
+--- scons-3.1.2.orig/script/sconsign
++++ scons-3.1.2/script/sconsign
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env python
++#! /bin/env python3
+ #
+ # SCons - a Software Constructor
+ #
