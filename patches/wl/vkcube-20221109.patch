@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 # configure
 rm -f vkcube.frag.spv.h.in vkcube.vert.spv.h.in
-PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup --prefix=/wl build
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup --prefix=/wl build
 
 # build
 meson compile -C build
@@ -304,7 +304,7 @@ exit
  #endif
 --- vkcube-20221109.orig/meson.build
 +++ vkcube-20221109/meson.build
-@@ -7,14 +7,15 @@
+@@ -7,14 +7,16 @@
  
  dep_vulkan = dependency('vulkan')
  dep_libpng = dependency('libpng')
@@ -314,6 +314,7 @@ exit
 +dep_gbm = dependency('gbm', required : get_option('kms') == 'true')
  dep_wayland_client = dependency('wayland-client', required : get_option('wayland') == 'true')
  dep_wayland_protocols = dependency('wayland-protocols', version : '>= 1.12', required : get_option('wayland') == 'true')
++dep_wayland_scanner = dependency('wayland-scanner', required : get_option('wayland') == 'true')
  dep_xcb = dependency('xcb', required : get_option('xcb') == 'true')
  
  defs = []
@@ -323,6 +324,15 @@ exit
    defs += '-DHAVE_VULKAN_INTEL_H'
  endif
  
+@@ -22,7 +24,7 @@
+   message('wayland enabled')
+   defs += '-DENABLE_WAYLAND'
+ 
+-  wayland_scanner = find_program('wayland-scanner')
++  wayland_scanner = find_program(dep_wayland_scanner.get_variable(pkgconfig: 'wayland_scanner'))
+   wayland_protocols_dir = dep_wayland_protocols.get_pkgconfig_variable('pkgdatadir')
+ 
+   xdg_shell_xml_path = wayland_protocols_dir + '/stable/xdg-shell/xdg-shell.xml'
 --- vkcube-20221109.orig/meson_options.txt
 +++ vkcube-20221109/meson_options.txt
 @@ -1,2 +1,3 @@

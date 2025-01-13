@@ -1,0 +1,183 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="fontconfig-build jpeg-build libexif-build libpng-build make-build tiff-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists curl-build && REQUIRES="$REQUIRES curl-build"
+pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
+
+# configure
+rm -rf jpeg
+sh ./Configure --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install exiftran $DESTDIR/fb/bin
+install fbi $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbida-build.pc << EOF
+Name: fbida
+Version: 2.09
+Description: Linux Framebuffer image viewer
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/exiftran \\
+/fb/bin/fbi
+EOF
+
+exit
+--- fbida-2.09.orig/Configure
++++ fbida-2.09/Configure
+@@ -0,0 +1,22 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^prefix/s#=.*#= $PREFIX#" mk/Variables.mk
+--- fbida-2.09.orig/GNUmakefile
++++ fbida-2.09/GNUmakefile
+@@ -28,12 +28,6 @@
+ 
+ include $(srcdir)/mk/Autoconf.mk
+ 
+-ac_jpeg_ver = $(shell \
+-	$(call ac_init,for libjpeg version);\
+-	$(call ac_s_cmd,echo -e '\#include <jpeglib.h>\nJPEG_LIB_VERSION' \
+-		| cpp | tail -n 1);\
+-	$(call ac_fini))
+-
+ define make-config
+ LIB		:= $(LIB)
+ RESDIR		:= $(call ac_resdir)
+@@ -52,12 +46,8 @@
+ HAVE_LIBCURL	:= $(call ac_lib,curl_easy_init,curl)
+ HAVE_LIBLIRC	:= $(call ac_lib,lirc_init,lirc_client)
+ HAVE_MOTIF	:= $(call ac_lib,XmStringGenerate,Xm,-L/usr/X11R6/$(LIB) -lXpm -lXt -lXext -lX11)
+-JPEG_VER        := $(call ac_jpeg_ver)
+ endef
+ 
+-# transposing
+-CFLAGS  += -Ijpeg/$(JPEG_VER)
+-
+ # transparent http/ftp access using curl depends on fopencookie (glibc)
+ ifneq ($(HAVE_GLIBC),yes)
+   HAVE_LIBCURL	:= no
+@@ -124,7 +114,6 @@
+ thumbnail.cgi : LDLIBS += -lexif -lm
+ 
+ exiftran: exiftran.o genthumbnail.o jpegtools.o \
+-	jpeg/$(JPEG_VER)/transupp.o \
+ 	filter.o op.o readers.o rd/read-jpeg.o
+ thumbnail.cgi: thumbnail.cgi.o
+ 
+@@ -136,7 +125,7 @@
+ OBJS_IDA := \
+ 	ida.o man.o hex.o x11.o viewer.o dither.o icons.o \
+ 	parseconfig.o idaconfig.o fileops.o desktop.o \
+-	RegEdit.o selections.o xdnd.o jpeg/$(JPEG_VER)/transupp.o \
++	RegEdit.o selections.o xdnd.o \
+ 	filebutton.o filelist.o browser.o jpegtools.o \
+ 	op.o filter.o lut.o color.o \
+ 	rd/read-xwd.o rd/read-xpm.o 
+@@ -173,7 +162,7 @@
+ OBJS_FBI := \
+ 	fbi.o fbtools.o fb-gui.o desktop.o \
+ 	parseconfig.o fbiconfig.o \
+-	jpegtools.o jpeg/$(JPEG_VER)/transupp.o \
++	jpegtools.o \
+ 	dither.o filter.o op.o
+ 
+ OBJS_FBI += $(filter-out wr/%,$(call ac_lib_mkvar,$(fbi_libs),OBJS))
+@@ -189,12 +178,8 @@
+ ########################################################################
+ # general rules
+ 
+-.PHONY: check-libjpeg build install clean distclean realclean
+-build: check-libjpeg $(TARGETS)
+-
+-check-libjpeg:
+-	@test -d jpeg/$(JPEG_VER) || \
+-		( echo "Need files from libjpeg $(JPEG_VER) in jpeg/"; false)
++.PHONY: build install clean distclean realclean
++build: $(TARGETS)
+ 
+ install: build
+ 	$(INSTALL_DIR) $(bindir)
+@@ -215,7 +200,7 @@
+ endif
+ 
+ clean:
+-	-rm -f *.o jpeg/$(JPEG_VER)/*.o rd/*.o wr/*.o $(depfiles) core core.*
++	-rm -f *.o rd/*.o wr/*.o $(depfiles) core core.*
+ 
+ realclean distclean: clean
+ 	-rm -f Make.config
+--- fbida-2.09.orig/jpegtools.c
++++ fbida-2.09/jpegtools.c
+@@ -220,7 +220,7 @@
+     cinfo->src->bytes_in_buffer = h->isize;
+ }
+ 
+-static int thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
++static boolean thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
+ {
+     fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
+     exit(1);
+--- fbida-2.09.orig/mk/Variables.mk
++++ fbida-2.09/mk/Variables.mk
+@@ -4,7 +4,7 @@
+ # directories
+ DESTDIR	=
+ srcdir	?= .
+-prefix	?= /usr/local
++prefix	?= /fb
+ bindir	=  $(DESTDIR)$(prefix)/bin
+ sbindir	=  $(DESTDIR)$(prefix)/sbin
+ libdir  =  $(DESTDIR)$(prefix)/$(LIB)
+--- fbida-2.09.orig/rd/read-jpeg.c
++++ fbida-2.09/rd/read-jpeg.c
+@@ -39,7 +39,7 @@
+     cinfo->src->bytes_in_buffer = h->tsize;
+ }
+ 
+-static int thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
++static boolean thumbnail_src_fill(struct jpeg_decompress_struct *cinfo)
+ {
+     fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
+     exit(1);
+--- fbida-2.09.orig/rd/read-tiff.c
++++ fbida-2.09/rd/read-tiff.c
+@@ -55,7 +55,7 @@
+ 		"nsamples=%d, depth=%d fo=%d pm=%d scanline=%" PRId32 "\n",
+ 		h->width,h->height,h->config,h->nsamples,h->depth,
+ 		h->fillorder,h->photometric,
+-		TIFFScanlineSize(h->tif));
++		(uint32_t)TIFFScanlineSize(h->tif));
+ 
+     if (PHOTOMETRIC_PALETTE   == h->photometric  ||
+ 	PHOTOMETRIC_YCBCR     == h->photometric  ||

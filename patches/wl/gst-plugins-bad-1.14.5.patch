@@ -36,7 +36,7 @@ fi
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
-PATH=/bin:/wl/bin PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-decklink --disable-fbdev --disable-kms --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-decklink --disable-fbdev --disable-kms --prefix=/wl
 
 # build
 make
@@ -245,7 +245,20 @@ EOF
 exit
 --- gst-plugins-bad-1.14.5.orig/configure.ac
 +++ gst-plugins-bad-1.14.5/configure.ac
-@@ -1900,8 +1900,13 @@
+@@ -1317,7 +1317,11 @@
+ 
+ dnl **** Wayland ****
+ translit(dnm, m, l) AM_CONDITIONAL(USE_WAYLAND, true)
+-AC_PATH_PROG([wayland_scanner], [wayland-scanner])
++PKG_CHECK_MODULES([wayland_scanner], [wayland-scanner], [
++  wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
++], [
++  AC_PATH_PROG([wayland_scanner], [wayland-scanner])
++])
+ AG_GST_CHECK_FEATURE(WAYLAND, [wayland sink], wayland , [
+   PKG_CHECK_MODULES(WAYLAND, wayland-client >= 1.4.0 libdrm >= 2.4.55 wayland-protocols >= 1.4, [
+     if test "x$wayland_scanner" != "x"; then
+@@ -1900,8 +1904,13 @@
  translit(dnm, m, l) AM_CONDITIONAL(USE_OPENJPEG, true)
  AG_GST_CHECK_FEATURE(OPENJPEG, [openjpeg library], openjpeg, [
    HAVE_OPENJPEG="no"

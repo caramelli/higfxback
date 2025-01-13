@@ -16,6 +16,7 @@ meson compile -C build
 
 # install
 install -d $DESTDIR/drm/bin
+install build/exiftran $DESTDIR/drm/bin
 install build/fbi $DESTDIR/drm/bin/kmsi
 install build/fbpdf $DESTDIR/drm/bin/kmspdf
 
@@ -28,6 +29,7 @@ Description: KMS/DRM image and document viewers
 Requires: $REQUIRES
 
 exec=\\
+/drm/bin/exiftran \\
 /drm/bin/kmsi \\
 /drm/bin/kmspdf
 EOF
