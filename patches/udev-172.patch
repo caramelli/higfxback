@@ -1,0 +1,264 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists glib-build; then
+  GLIB=1
+  REQUIRES="$REQUIRES glib-build"
+else
+  GUDEV=--disable-gudev
+fi
+
+if pkg-config --exists hwdata-build; then
+  HWDATA=1
+  REQUIRES="$REQUIRES hwdata-build"
+else
+  HWDB=--disable-hwdb
+fi
+
+# configure (ac-2.68; am-1.11; lt-2.4)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure $GUDEV $HWDB --disable-introspection --disable-keymap --disable-udev_acl --libexecdir=/lib/udev --sbindir=/bin --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install udev/mdevd $DESTDIR/bin
+install udev/udevd $DESTDIR/bin
+install udev/udevadm $DESTDIR/bin
+ln -sf udevadm $DESTDIR/bin/mdev
+install -d $DESTDIR/etc/udev
+install -m 644 udev.conf $DESTDIR/etc/udev
+install -d $DESTDIR/etc/udev/rules.d
+cat > $DESTDIR/etc/udev/rules.d/udev.rules << EOF
+SUBSYSTEM=="input", IMPORT{program}="input_id %p"
+EOF
+install -d $DESTDIR/include
+install -m 644 libudev/libudev.h $DESTDIR/include
+test $GLIB && install -d $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudev.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevclient.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevdevice.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevenumerator.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevenums.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevenumtypes.h $DESTDIR/include/gudev-1.0/gudev
+test $GLIB && install -m 644 extras/gudev/gudevtypes.h $DESTDIR/include/gudev-1.0/gudev
+install -d $DESTDIR/lib
+test $GLIB && install extras/gudev/.libs/libgudev-1.0.so.0.* $DESTDIR/lib/libgudev-1.0.so.0
+test $GLIB && ln -sf libgudev-1.0.so.0 $DESTDIR/lib/libgudev-1.0.so
+install libudev/.libs/libudev.so.0.* $DESTDIR/lib/libudev.so.0
+ln -sf libudev.so.0 $DESTDIR/lib/libudev.so
+install -d $DESTDIR/lib/udev
+install extras/accelerometer/accelerometer $DESTDIR/lib/udev
+install extras/ata_id/ata_id $DESTDIR/lib/udev
+install extras/cdrom_id/cdrom_id $DESTDIR/lib/udev
+install extras/collect/collect $DESTDIR/lib/udev
+install extras/firmware/firmware $DESTDIR/lib/udev
+install extras/input_id/input_id $DESTDIR/lib/udev
+install extras/path_id/path_id $DESTDIR/lib/udev
+install extras/scsi_id/scsi_id $DESTDIR/lib/udev
+test $HWDATA && install extras/usb-db/pci-db $DESTDIR/lib/udev
+test $HWDATA && install extras/usb-db/usb-db $DESTDIR/lib/udev
+install extras/usb_id/usb_id $DESTDIR/lib/udev
+install extras/v4l_id/v4l_id $DESTDIR/lib/udev
+install -d $DESTDIR/lib/pkgconfig
+test $GLIB && install -m 644 extras/gudev/gudev-1.0.pc $DESTDIR/lib/pkgconfig
+install -m 644 libudev/libudev.pc $DESTDIR/lib/pkgconfig
+install -m 644 udev/udev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+Name: udev
+Version: 172
+Description: Userspace Device management
+Requires: $REQUIRES
+
+devel=\\
+/include/libudev.h \\
+EOF
+test $GLIB && echo /include/gudev-1.0/gudev/gudev.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevclient.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevdevice.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenumerator.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenums.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevenumtypes.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /include/gudev-1.0/gudev/gudevtypes.h \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+test $GLIB && echo /lib/libgudev-1.0.so \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+/lib/libudev.so \\
+EOF
+test $GLIB && echo /lib/pkgconfig/gudev-1.0.pc \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+/lib/pkgconfig/libudev.pc \\
+/lib/pkgconfig/udev.pc
+
+exec=\\
+/bin/mdevd \\
+/bin/udevd \\
+/bin/udevadm \\
+/etc/udev/udev.conf \\
+/etc/udev/rules.d/udev.rules \\
+EOF
+test $GLIB && echo /lib/libgudev-1.0.so.0 \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+/lib/libudev.so.0 \\
+/lib/udev/accelerometer \\
+/lib/udev/ata_id \\
+/lib/udev/cdrom_id \\
+/lib/udev/collect \\
+/lib/udev/firmware \\
+/lib/udev/input_id \\
+/lib/udev/path_id \\
+EOF
+test $HWDATA && echo /lib/udev/pci-db \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+/lib/udev/scsi_id \\
+EOF
+test $HWDATA && echo /lib/udev/usb-db \\ >> $DESTDIR/share/pkgconfig/udev-build.pc
+cat >> $DESTDIR/share/pkgconfig/udev-build.pc << EOF
+/lib/udev/usb_id \\
+/lib/udev/v4l_id
+EOF
+test $GLIB && ln -sf udev-build.pc $DESTDIR/share/pkgconfig/gudev-build.pc
+ln -sf udev-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
+ln -sf udev-build.pc $DESTDIR/share/pkgconfig/udevd-build.pc
+
+exit
+--- udev-172.orig/Makefile.am
++++ udev-172/Makefile.am
+@@ -124,8 +124,7 @@
+ udevconfdir = $(sysconfdir)/udev
+ dist_udevconf_DATA = udev.conf
+ 
+-sharepkgconfigdir = $(datadir)/pkgconfig
+-sharepkgconfig_DATA = udev/udev.pc
++pkgconfig_DATA += udev/udev.pc
+ 
+ if WITH_SYSTEMD
+ systemdsystemunit_DATA = \
+--- udev-172.orig/configure.ac
++++ udev-172/configure.ac
+@@ -93,20 +93,14 @@
+ 	AS_HELP_STRING([--disable-hwdb], [disable hardware database support]),
+ 	[], [enable_hwdb=yes])
+ if test "x$enable_hwdb" = xyes; then
+-	if test "x$cross_compiling" = "xno" ; then
+-		AC_CHECK_FILES([/usr/share/pci.ids], [pciids=/usr/share/pci.ids])
+-		AC_CHECK_FILES([/usr/share/hwdata/pci.ids], [pciids=/usr/share/hwdata/pci.ids])
+-		AC_CHECK_FILES([/usr/share/misc/pci.ids], [pciids=/usr/share/misc/pci.ids])
+-	fi
+-
+ 	AC_ARG_WITH(usb-ids-path,
+ 		[AS_HELP_STRING([--with-usb-ids-path=DIR], [Path to usb.ids file])],
+ 		[USB_DATABASE=${withval}],
+ 		[if test -n "$usbids" ; then
+ 			USB_DATABASE="$usbids"
+ 		else
+-			PKG_CHECK_MODULES(USBUTILS, usbutils >= 0.82)
+-			AC_SUBST([USB_DATABASE], [$($PKG_CONFIG --variable=usbids usbutils)])
++			PKG_CHECK_MODULES(HWDATA, hwdata)
++			AC_SUBST([USB_DATABASE], [$($PKG_CONFIG --variable=pkgdatadir hwdata)/usb.ids])
+ 		fi])
+ 	AC_MSG_CHECKING([for USB database location])
+ 	AC_MSG_RESULT([$USB_DATABASE])
+@@ -118,7 +112,8 @@
+ 		[if test -n "$pciids" ; then
+ 			PCI_DATABASE="$pciids"
+ 		else
+-			AC_MSG_ERROR([pci.ids not found, try --with-pci-ids-path=])
++			PKG_CHECK_MODULES(HWDATA, hwdata)
++			AC_SUBST([PCI_DATABASE], [$($PKG_CONFIG --variable=pkgdatadir hwdata)/pci.ids])
+ 		fi])
+ 	AC_MSG_CHECKING([for PCI database location])
+ 	AC_MSG_RESULT([$PCI_DATABASE])
+--- udev-172.orig/extras/mtd_probe/mtd_probe.h
++++ udev-172/extras/mtd_probe/mtd_probe.h
+@@ -18,6 +18,7 @@
+  */
+ 
+ #include <mtd/mtd-user.h>
++#include <stdint.h>
+ 
+ /* Full oob structure as written on the flash */
+ struct sm_oob {
+--- udev-172.orig/libudev/libudev-private.h
++++ udev-172/libudev/libudev-private.h
+@@ -183,7 +183,6 @@
+ size_t util_strscpyl(char *dest, size_t size, const char *src, ...) __attribute__((sentinel));
+ int udev_util_replace_whitespace(const char *str, char *to, size_t len);
+ int udev_util_replace_chars(char *str, const char *white);
+-int udev_util_encode_string(const char *str, char *str_enc, size_t len);
+ unsigned int util_string_hash32(const char *key);
+ uint64_t util_string_bloom64(const char *str);
+ 
+--- udev-172.orig/libudev/libudev-util.c
++++ udev-172/libudev/libudev-util.c
+@@ -446,7 +446,7 @@
+  *
+  * Returns: 0 if the entire string was copied, non-zero otherwise.
+  **/
+-int udev_util_encode_string(const char *str, char *str_enc, size_t len)
++UDEV_EXPORT int udev_util_encode_string(const char *str, char *str_enc, size_t len)
+ {
+ 	size_t i, j;
+ 
+--- udev-172.orig/libudev/libudev.h
++++ udev-172/libudev/libudev.h
+@@ -175,6 +175,13 @@
+ struct udev_list_entry *udev_queue_get_queued_list_entry(struct udev_queue *udev_queue);
+ struct udev_list_entry *udev_queue_get_failed_list_entry(struct udev_queue *udev_queue);
+ 
++/*
++ * udev_util
++ *
++ * udev specific utilities
++ */
++int udev_util_encode_string(const char *str, char *str_enc, size_t len);
++
+ #ifdef __cplusplus
+ } /* extern "C" */
+ #endif
+--- udev-172.orig/udev/udevadm.c
++++ udev-172/udev/udevadm.c
+@@ -63,7 +63,7 @@
+ {
+ 	const struct command *cmd;
+ 
+-	printf("Usage: udevadm [--help] [--version] [--debug] COMMAND [COMMAND OPTIONS]\n");
++	printf("Usage: udevadm [--help] [--version] [--debug] [--scan] COMMAND [COMMAND OPTIONS]\n");
+ 	for (cmd = cmds; cmd->name != NULL; cmd++)
+ 		if (cmd->help != NULL)
+ 			printf("  %-12s %s\n", cmd->name, cmd->help);
+@@ -131,6 +131,7 @@
+ 	static const struct option options[] = {
+ 		{ "debug", no_argument, NULL, 'd' },
+ 		{ "help", no_argument, NULL, 'h' },
++		{ "scan", no_argument, NULL, 's' },
+ 		{ "version", no_argument, NULL, 'V' },
+ 		{}
+ 	};
+@@ -149,7 +150,7 @@
+ 	for (;;) {
+ 		int option;
+ 
+-		option = getopt_long(argc, argv, "+dhV", options, NULL);
++		option = getopt_long(argc, argv, "+dhsV", options, NULL);
+ 		if (option == -1)
+ 			break;
+ 
+@@ -162,6 +163,9 @@
+ 		case 'h':
+ 			rc = help(udev, argc, argv);
+ 			goto out;
++		case 's':
++			rc = run_command(udev, &cmds[1], argc, argv);
++			goto out;
+ 		case 'V':
+ 			rc = version(udev, argc, argv);
+ 			goto out;

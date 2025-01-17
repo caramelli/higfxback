@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
-PATH=/bin:/x11/bin PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
 make
@@ -680,6 +680,28 @@ exec=\\
 EOF
 
 exit
+--- gtk+-2.24.32.orig/configure.ac
++++ gtk+-2.24.32/configure.ac
+@@ -914,14 +914,17 @@
+ AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
+ 
+ if test $cross_compiling = yes; then
++  AC_PATH_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, no)
+   AC_PATH_PROG(GTK_UPDATE_ICON_CACHE, gtk-update-icon-cache, no)
+   if test x$GTK_UPDATE_ICON_CACHE = xno; then
+     REBUILD_PNGS=#
+   fi
++else
++  PKG_CHECK_MODULES(GDK_PIXBUF_CSOURCE, gdk-pixbuf-2.0,
++    [GDK_PIXBUF_CSOURCE=`$PKG_CONFIG --variable=gdk_pixbuf_csource gdk-pixbuf-2.0`],
++    [AC_PATH_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, no)])
+ fi
+ 
+-AC_PATH_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, no)
+-
+ if test ! -f $srcdir/gtk/gtkbuiltincache.h && 
+    test "x$REBUILD_PNGS" = "x#" ; then
+      AC_MSG_ERROR([
 --- gtk+-2.24.32.orig/gdk-2.0.pc.in
 +++ gtk+-2.24.32/gdk-2.0.pc.in
 @@ -8,5 +8,5 @@

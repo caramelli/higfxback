@@ -1553,7 +1553,7 @@ exit
  	cube$(EXEEXT) \
  	fractals$(EXEEXT) \
  	fullscreen$(EXEEXT) \
-@@ -340,12 +370,22 @@
+@@ -340,12 +370,23 @@
  # FLUID file rules
  .fl.cxx .fl.h:
  	echo Generating $@ and header from $<...
@@ -1561,6 +1561,7 @@ exit
 +	if [ -z "$(WESTON)" ]; then \
 +		$(FLUID_BUILD) -c $<; \
 +	else \
++		test -d $(XDG_RUNTIME_DIR) || install -d -m 700 $(XDG_RUNTIME_DIR) && \
 +		XDG_RUNTIME_DIR=$(XDG_RUNTIME_DIR) $(WESTON) -Bheadless-backend.so > /dev/null 2>&1 & \
 +		XDG_RUNTIME_DIR=$(XDG_RUNTIME_DIR) $(FLUID_BUILD) -c $< && sleep 1 && kill %1; \
 +	fi
@@ -1577,7 +1578,7 @@ exit
  unittests$(EXEEXT): $(OBJUNITTEST)
  
  adjuster$(EXEEXT): adjuster.o
-@@ -368,7 +408,7 @@
+@@ -368,7 +409,7 @@
  
  blocks$(EXEEXT): blocks.o
  	echo Linking $@...
@@ -1586,7 +1587,7 @@ exit
  	$(OSX_ONLY) $(RM) -f -r blocks.app
  	$(OSX_ONLY) mkdir -p blocks.app/Contents/MacOS blocks.app/Contents/Resources
  	$(OSX_ONLY) $(INSTALL_BIN) blocks$(EXEEXT) blocks.app/Contents/MacOS
-@@ -377,7 +417,7 @@
+@@ -377,7 +418,7 @@
  
  checkers$(EXEEXT): checkers.o checkers_pieces.o
  	echo Linking $@...
@@ -1595,7 +1596,7 @@ exit
  	$(OSX_ONLY) $(RM) -f -r checkers.app
  	$(OSX_ONLY) mkdir -p checkers.app/Contents/MacOS checkers.app/Contents/Resources
  	$(OSX_ONLY) $(INSTALL_BIN) checkers$(EXEEXT) checkers.app/Contents/MacOS
-@@ -391,14 +431,14 @@
+@@ -391,14 +432,14 @@
  
  clipboard$(EXEEXT): clipboard.o $(IMGLIBNAME)
  	echo Linking $@...
@@ -1612,7 +1613,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  	$(OSX_ONLY) mkdir -p colbrowser.app/Contents/Resources
  	$(OSX_ONLY) cp -f rgb.txt colbrowser.app/Contents/Resources/
-@@ -407,27 +447,29 @@
+@@ -407,27 +448,29 @@
  
  contrast$(EXEEXT): contrast.o
  
@@ -1645,7 +1646,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  	$(OSX_ONLY) cp -f mac-resources/editor.plist editor.app/Contents/Info.plist
  
-@@ -436,7 +478,7 @@
+@@ -436,7 +479,7 @@
  
  file_chooser$(EXEEXT): file_chooser.o $(IMGLIBNAME)
  	echo Linking $@...
@@ -1654,7 +1655,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  
  flex_demo$(EXEEXT): flex_demo.o
-@@ -447,9 +489,9 @@
+@@ -447,9 +490,9 @@
  
  fonts$(EXEEXT): fonts.o
  
@@ -1666,7 +1667,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  
  grid_alignment$(EXEEXT): grid_alignment.o
-@@ -460,11 +502,15 @@
+@@ -460,11 +503,15 @@
  
  grid_login$(EXEEXT): grid_login.o
  
@@ -1683,7 +1684,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  	$(OSX_ONLY) mkdir -p help_dialog.app/Contents/Resources
  	$(OSX_ONLY) cp -f help_dialog.html help_dialog.app/Contents/Resources/
-@@ -484,14 +530,14 @@
+@@ -484,14 +531,14 @@
  
  keyboard$(EXEEXT): keyboard_ui.o keyboard.o
  	echo Linking $@...
@@ -1700,7 +1701,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  
  line_style$(EXEEXT): line_style.o
-@@ -502,7 +548,7 @@
+@@ -502,7 +549,7 @@
  
  mandelbrot$(EXEEXT): mandelbrot_ui.o mandelbrot.o
  	echo Linking $@...
@@ -1709,7 +1710,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  mandelbrot_ui.o:	mandelbrot_ui.h
  mandelbrot_ui.cxx:	mandelbrot_ui.fl ../fluid/fluid$(EXEEXT)
-@@ -515,16 +561,16 @@
+@@ -515,16 +562,16 @@
  
  native-filechooser$(EXEEXT): native-filechooser.o $(IMGLIBNAME)
  	echo Linking $@...
@@ -1729,7 +1730,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  
  overlay$(EXEEXT): overlay.o
-@@ -533,12 +579,12 @@
+@@ -533,12 +580,12 @@
  
  pixmap$(EXEEXT): pixmap.o $(IMGLIBNAME)
  	echo Linking $@...
@@ -1744,7 +1745,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  
  preferences$(EXEEXT):	preferences.o
-@@ -556,52 +602,52 @@
+@@ -556,52 +603,52 @@
  
  resize-example1$(EXEEXT): resize-example1.o resize-arrows.o
  	echo Linking $@...
@@ -1807,7 +1808,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  
  rotated_text$(EXEEXT): rotated_text.o
-@@ -610,9 +656,9 @@
+@@ -610,9 +657,9 @@
  
  subwindow$(EXEEXT): subwindow.o
  
@@ -1819,7 +1820,7 @@ exit
  	$(OSX_ONLY) $(RM) -f -r sudoku.app
  	$(OSX_ONLY) mkdir -p sudoku.app/Contents/MacOS sudoku.app/Contents/Resources
  	$(OSX_ONLY) $(INSTALL_BIN) sudoku$(EXEEXT) sudoku.app/Contents/MacOS
-@@ -622,7 +668,7 @@
+@@ -622,7 +669,7 @@
  sudoku.exe: sudoku.o sudoku.rc
  	echo Linking $@...
  	$(RC) sudoku.rc sudokures.o
@@ -1828,7 +1829,7 @@ exit
  
  symbols$(EXEEXT): symbols.o
  
-@@ -635,6 +681,8 @@
+@@ -635,6 +682,8 @@
  terminal.cxx:	terminal.fl ../fluid/fluid$(EXEEXT)
  
  threads$(EXEEXT): threads.o
@@ -1837,7 +1838,7 @@ exit
  # This ensures that we have this dependency even if threads are not
  # enabled in the current tree...
  threads.o:	threads.h
-@@ -657,9 +705,9 @@
+@@ -657,9 +706,9 @@
  # OpenGL demos...
  CubeView$(EXEEXT): CubeMain.o CubeView.o CubeViewUI.o
  	echo Linking $@...
@@ -1849,7 +1850,7 @@ exit
  	$(OSX_ONLY) ../fltk-config --post $@
  CubeMain.o: CubeViewUI.h CubeView.h CubeViewUI.cxx
  CubeView.o: CubeView.h
-@@ -668,45 +716,45 @@
+@@ -668,45 +717,45 @@
  
  cube$(EXEEXT): cube.o
  	echo Linking $@...

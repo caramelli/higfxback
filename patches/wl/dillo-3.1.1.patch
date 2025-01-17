@@ -1,0 +1,166 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build fltk-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists openssl-build && REQUIRES="$REQUIRES openssl-build"
+
+# configure (ac-2.72; am-1.16)
+aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-xembed --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install dpid/dpid $DESTDIR/wl/bin
+install dpid/dpidc $DESTDIR/wl/bin
+install src/dillo $DESTDIR/wl/bin
+install -d $DESTDIR/wl/etc/dillo
+install dillorc $DESTDIR/wl/etc/dillo
+install dpid/dpidrc $DESTDIR/wl/etc/dillo
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/dillo-build.pc << EOF
+Name: dillo
+Version: 3.1.1
+Description: web browser
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/dillo \\
+/wl/bin/dpid \\
+/wl/bin/dpidc \\
+/wl/etc/dillorc \\
+/wl/etc/dpidrc
+
+exit
+--- dillo-3.1.1.orig/configure.ac
++++ dillo-3.1.1/configure.ac
+@@ -187,24 +187,23 @@
+ fi
+ 
+ 
+-dnl -------------------------
+-dnl Test for FLTK 1.3 library
+-dnl -------------------------
++dnl ---------------------
++dnl Test for FLTK library
++dnl ---------------------
+ dnl
+ dnl For debugging and to be user friendly
+-AC_PATH_PROG(FLTK_CONFIG,fltk-config)
+-AC_MSG_CHECKING([FLTK 1.3])
+-fltk_version="`$FLTK_CONFIG --version 2>/dev/null`"
+-case $fltk_version in
+-  1.3.*) AC_MSG_RESULT(yes)
++PKG_CHECK_MODULES(FLTK,fltk, [
++  LIBFLTK_CXXFLAGS=`$PKG_CONFIG --cflags fltk`
++  LIBFLTK_LIBS=`$PKG_CONFIG --libs fltk`;
++], [
++  AC_PATH_PROG(FLTK_CONFIG,fltk-config)
++  if test "x$FLTK_CONFIG" != x; then
+          LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
+-         LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+-         LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`;;
+-  ?*)    AC_MSG_RESULT(no)
+-         AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version);;
+-  *)     AC_MSG_RESULT(no)
+-         AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
+-esac
++         LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`
++  else
++         AC_MSG_ERROR(FLTK required)
++  fi
++])
+ 
+ dnl -----------------------------------
+ dnl Test for X11 (only on some systems)
+--- dillo-3.1.1.orig/dw/fltkplatform.cc
++++ dillo-3.1.1/dw/fltkplatform.cc
+@@ -25,9 +25,7 @@
+ 
+ #include <FL/fl_draw.H>
+ #include <FL/Fl_Box.H>
+-#include <FL/Fl_Tooltip.H>
+ #include <FL/Fl_Menu_Window.H>
+-#include <FL/Fl_Paged_Device.H>
+ 
+ /*
+  * Local data
+--- dillo-3.1.1.orig/dw/fltkui.hh
++++ dillo-3.1.1/dw/fltkui.hh
+@@ -6,8 +6,7 @@
+ #endif
+ 
+ #include <FL/Fl_Button.H>
+-#include <FL/Fl_Menu.H>
+-#include <FL/Fl_Text_Buffer.H>
++#include <FL/Fl_Menu_Item.H>
+ 
+ namespace dw {
+ namespace fltk {
+--- dillo-3.1.1.orig/dw/fltkviewbase.hh
++++ dillo-3.1.1/dw/fltkviewbase.hh
+@@ -5,7 +5,6 @@
+ #include <sys/time.h>     // for time_t in FreeBSD
+ 
+ #include <FL/Fl_Group.H>
+-#include <FL/x.H>
+ 
+ #include "fltkcore.hh"
+ 
+--- dillo-3.1.1.orig/dw/fltkviewport.cc
++++ dillo-3.1.1/dw/fltkviewport.cc
+@@ -23,7 +23,6 @@
+ 
+ #include <FL/Fl.H>
+ #include <FL/fl_draw.H>
+-#include <FL/names.h>
+ 
+ #include <stdio.h>
+ #include "../lout/msg.h"
+--- dillo-3.1.1.orig/src/tipwin.cc
++++ dillo-3.1.1/src/tipwin.cc
+@@ -22,7 +22,6 @@
+ #include <FL/Fl.H>
+ #include <FL/Fl_Group.H>
+ #include <FL/Fl_Menu_Window.H>
+-#include <FL/Fl_Tooltip.H>
+ #include <FL/Fl_Button.H>
+ 
+ #include "prefs.h"
+--- dillo-3.1.1.orig/src/ui.cc
++++ dillo-3.1.1/src/ui.cc
+@@ -28,7 +28,6 @@
+ #include <FL/Fl.H>
+ #include <FL/Fl_Pixmap.H>
+ #include <FL/Fl_Box.H>
+-#include <FL/names.h>
+ 
+ // Include image data
+ #include "pixmaps.h"
+--- dillo-3.1.1.orig/src/ui.hh
++++ dillo-3.1.1/src/ui.hh
+@@ -9,7 +9,6 @@
+ #include <FL/Fl_Input.H>
+ #include <FL/Fl_Output.H>
+ #include <FL/Fl_Image.H>
+-#include <FL/Fl_Tabs.H>
+ 
+ #include "tipwin.hh"
+ #include "findbar.hh"
+--- dillo-3.1.1.orig/src/uicmd.cc
++++ dillo-3.1.1/src/uicmd.cc
+@@ -30,7 +30,6 @@
+ #include <FL/Fl_Box.H>
+ #include <FL/Fl_Pack.H>
+ #include <FL/Fl_Scroll.H>
+-#include <FL/names.h>
+ 
+ #include "paths.hh"
+ #include "keys.hh"

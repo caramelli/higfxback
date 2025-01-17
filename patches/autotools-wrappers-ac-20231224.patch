@@ -22,6 +22,7 @@ cd autoconf-2.68; ./configure --program-suffix=-2.68 --prefix=; cd -
 cd autoconf-2.69; ./configure --program-suffix=-2.69 --prefix=; cd -
 cd autoconf-2.70; ./configure --program-suffix=-2.70 --prefix=; cd -
 cd autoconf-2.71; ./configure --program-suffix=-2.71 --prefix=; cd -
+cd autoconf-2.72; ./configure --program-suffix=-2.72 --prefix=; cd -
 
 # build
 make pkgdatadir=/share/autoconf-2.52.20101002 -C autoconf-2.52-20101002
@@ -40,6 +41,7 @@ make pkgdatadir=/share/autoconf-2.68 -C autoconf-2.68
 make pkgdatadir=/share/autoconf-2.69 -C autoconf-2.69
 make pkgdatadir=/share/autoconf-2.70 -C autoconf-2.70
 make pkgdatadir=/share/autoconf-2.71 -C autoconf-2.71
+make pkgdatadir=/share/autoconf-2.72 -C autoconf-2.72
 
 # install
 install -d $DESTDIR/bin
@@ -349,11 +351,36 @@ install -m 644 autoconf-2.71/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.71
 install -m 644 autoconf-2.71/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.71/m4sugar
 install -m 644 autoconf-2.71/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.71/m4sugar
 
+install autoconf-2.72/bin/autoconf $DESTDIR/bin/autoconf-2.72
+install autoconf-2.72/bin/autoheader $DESTDIR/bin/autoheader-2.72
+install autoconf-2.72/bin/autom4te $DESTDIR/bin/autom4te-2.72
+install -d $DESTDIR/share/autoconf-2.72
+install -m 644 autoconf-2.72/lib/autom4te.cfg $DESTDIR/share/autoconf-2.72
+install -d $DESTDIR/share/autoconf-2.72/autoconf
+install -m 644 autoconf-2.72/lib/autoconf/autoconf.m4f $DESTDIR/share/autoconf-2.72/autoconf
+install -m 644 autoconf-2.72/lib/autoconf/trailer.m4 $DESTDIR/share/autoconf-2.72/autoconf
+install -d $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/C4che.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/ChannelDefs.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/Channels.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/Config.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/Configure_ac.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/FileUtils.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/General.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/Getopt.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/Request.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -m 644 autoconf-2.72/lib/Autom4te/XFile.pm $DESTDIR/share/autoconf-2.72/Autom4te
+install -d $DESTDIR/share/autoconf-2.72/m4sugar
+install -m 644 autoconf-2.72/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.72/m4sugar
+install -m 644 autoconf-2.72/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.72/m4sugar
+install -m 644 autoconf-2.72/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.72/m4sugar
+
+
 # build.pc
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/autotools-wrappers-ac-build.pc << EOF
 Name: autotools-wrappers-ac
-Version: 20221207
+Version: 20231224
 Description: GNU Autoconf wrapper
 Requires: $REQUIRES
 
@@ -376,6 +403,7 @@ devel=\\
 /bin/autoconf-2.69 \\
 /bin/autoconf-2.70 \\
 /bin/autoconf-2.71 \\
+/bin/autoconf-2.72 \\
 /bin/autoheader \\
 /bin/autoheader-2.52.20101002 \\
 /bin/autoheader-2.52.20121002 \\
@@ -393,6 +421,7 @@ devel=\\
 /bin/autoheader-2.69 \\
 /bin/autoheader-2.70 \\
 /bin/autoheader-2.71 \\
+/bin/autoheader-2.72 \\
 /bin/autom4te \\
 /bin/autom4te-2.59 \\
 /bin/autom4te-2.60 \\
@@ -407,6 +436,7 @@ devel=\\
 /bin/autom4te-2.69 \\
 /bin/autom4te-2.70 \\
 /bin/autom4te-2.71 \\
+/bin/autom4te-2.72 \\
 /share/autoconf-2.52.20101002/autoconf.m4f \\
 /share/autoconf-2.52.20121002/autoconf.m4f \\
 /share/autoconf-2.52.20150926/autoconf.m4f \\
@@ -592,6 +622,21 @@ devel=\\
 /share/autoconf-2.71/m4sugar/foreach.m4 \\
 /share/autoconf-2.71/m4sugar/m4sh.m4 \\
 /share/autoconf-2.71/m4sugar/m4sugar.m4
+/share/autoconf-2.72/autoconf/autoconf.m4f \\
+/share/autoconf-2.72/autoconf/trailer.m4 \\
+/share/autoconf-2.72/Autom4te/C4che.pm \\
+/share/autoconf-2.72/Autom4te/ChannelDefs.pm \\
+/share/autoconf-2.72/Autom4te/Channels.pm \\
+/share/autoconf-2.72/Autom4te/Config.pm \\
+/share/autoconf-2.72/Autom4te/Configure_ac.pm \\
+/share/autoconf-2.72/Autom4te/FileUtils.pm \\
+/share/autoconf-2.72/Autom4te/General.pm \\
+/share/autoconf-2.72/Autom4te/Getopt.pm \\
+/share/autoconf-2.72/Autom4te/Request.pm \\
+/share/autoconf-2.72/Autom4te/XFile.pm \\
+/share/autoconf-2.72/m4sugar/foreach.m4 \\
+/share/autoconf-2.72/m4sugar/m4sh.m4 \\
+/share/autoconf-2.72/m4sugar/m4sugar.m4
 EOF
 
 exit

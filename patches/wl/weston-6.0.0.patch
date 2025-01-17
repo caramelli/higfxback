@@ -22,6 +22,11 @@ else
   fi
 fi
 
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists pango-build; then
+  PANGO=1
+  REQUIRES="$REQUIRES pango-build"
+fi
+
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=$DEFAULT_BACKEND-backend.so ./configure $COMPOSITOR --disable-fullscreen-shell --disable-ivi-shell --disable-weston-launch --disable-xcompose --disable-xwayland --enable-autotools --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
@@ -37,6 +42,7 @@ install weston-clickdot $DESTDIR/wl/bin
 install weston-cliptest $DESTDIR/wl/bin
 install weston-confine $DESTDIR/wl/bin
 install weston-dnd $DESTDIR/wl/bin
+test $PANGO && install weston-editor $DESTDIR/wl/bin
 install weston-eventdemo $DESTDIR/wl/bin
 install weston-flower $DESTDIR/wl/bin
 install weston-fullscreen $DESTDIR/wl/bin
@@ -88,6 +94,9 @@ exec=\\
 /wl/bin/weston-cliptest \\
 /wl/bin/weston-confine \\
 /wl/bin/weston-dnd \\
+EOF
+test $PANGO && echo /wl/bin/weston-editor \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/bin/weston-eventdemo \\
 /wl/bin/weston-flower \\
 /wl/bin/weston-fullscreen \\

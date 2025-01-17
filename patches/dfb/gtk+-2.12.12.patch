@@ -8,7 +8,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 # configure (ac-2.62; am-1.7; lt-1.5.26)
 libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
 rm -rf gdk-pixbuf*
-PATH=/bin:/dfb/bin PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --with-gdktarget=directfb --with-system-gdk-pixbuf --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --with-gdktarget=directfb --with-system-gdk-pixbuf --prefix=/dfb
 
 # build
 make
@@ -706,43 +706,25 @@ exit
  # Checks to see if we should compile in MMX support (there will be
  # a runtime test when the code is actually run to see if it should
  # be used - this just checks if we can compile it.)
-@@ -1021,7 +1055,7 @@
- AM_CONDITIONAL(USE_MMX, test x$use_mmx_asm = xyes)
- 
- REBUILD_PNGS=
--if test -z "$LIBPNG"; then
-+if test "x$with_system_gdk_pixbuf" != "xyes" && test -z "$LIBPNG"; then
-   REBUILD_PNGS=#
- fi
- 
-@@ -1029,12 +1063,25 @@
- 
- AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
- 
--if test $cross_compiling = yes; then
-+if test "x$with_system_gdk_pixbuf" = "xyes" || test $cross_compiling = yes; then
-   AC_PATH_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, no)
-+else
-+  GDK_PIXBUF_CSOURCE="GDK_PIXBUF_MODULE_FILE=\$(top_builddir)/gdk-pixbuf/gdk-pixbuf.loaders \$(top_builddir)/gdk-pixbuf/gdk-pixbuf-csource"
-+  GDK_PIXBUF_CSOURCE_DEPS="\$(top_builddir)/gdk-pixbuf/gdk-pixbuf-csource \$(top_builddir)/gdk-pixbuf/gdk-pixbuf.loaders"
-+  AC_SUBST(GDK_PIXBUF_CSOURCE_DEPS)
-+fi
-+
-+if test $cross_compiling = yes; then
-   AC_PATH_PROG(GTK_UPDATE_ICON_CACHE, gtk-update-icon-cache, no)
+@@ -1035,6 +1069,17 @@
    if test x$GTK_UPDATE_ICON_CACHE = xno; then
      REBUILD_PNGS=#
    fi
 +else
 +  if test "x$with_system_gdk_pixbuf" = "xyes"; then
++    PKG_CHECK_MODULES(GDK_PIXBUF_CSOURCE, gdk-pixbuf-2.0,
++      [GDK_PIXBUF_CSOURCE=`$PKG_CONFIG --variable=gdk_pixbuf_csource gdk-pixbuf-2.0`],
++      [AC_PATH_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, no)])
 +    GTK_UPDATE_ICON_CACHE="./gtk-update-icon-cache"
 +  else
++    GDK_PIXBUF_CSOURCE="GDK_PIXBUF_MODULE_FILE=\$(top_builddir)/gdk-pixbuf/gdk-pixbuf.loaders \$(top_builddir)/gdk-pixbuf/gdk-pixbuf-csource"
++    GDK_PIXBUF_CSOURCE_DEPS="\$(top_builddir)/gdk-pixbuf/gdk-pixbuf-csource \$(top_builddir)/gdk-pixbuf/gdk-pixbuf.loaders"
 +    GTK_UPDATE_ICON_CACHE="GDK_PIXBUF_MODULE_FILE=\$(top_builddir)/gdk-pixbuf/gdk-pixbuf.loaders ./gtk-update-icon-cache"
 +  fi
  fi
  
  if test ! -f $srcdir/gtk/gtkbuiltincache.h && 
-@@ -1047,12 +1094,32 @@
+@@ -1047,12 +1092,32 @@
  
  AC_SUBST(REBUILD_PNGS)
  
@@ -775,7 +757,7 @@ exit
  ########################################
  # Windowing system checks
  ########################################
-@@ -1755,11 +1822,9 @@
+@@ -1755,11 +1820,9 @@
  config.h.win32
  gtk-zip.sh
  Makefile
@@ -787,7 +769,7 @@ exit
  gdk-2.0-uninstalled.pc
  gtk+-2.0-uninstalled.pc
  m4macros/Makefile
-@@ -1780,10 +1845,6 @@
+@@ -1780,10 +1843,6 @@
  docs/faq/Makefile
  docs/tools/Makefile
  docs/tutorial/Makefile
@@ -798,7 +780,7 @@ exit
  gdk/Makefile
  gdk/x11/Makefile
  gdk/win32/Makefile
-@@ -1814,6 +1875,16 @@
+@@ -1814,6 +1873,16 @@
  contrib/gdk-pixbuf-xlib/Makefile
  contrib/gdk-pixbuf-xlib/gdk-pixbuf-xlib-2.0.pc
  ])
