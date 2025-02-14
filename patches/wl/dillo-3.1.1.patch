@@ -20,8 +20,10 @@ install dpid/dpid $DESTDIR/wl/bin
 install dpid/dpidc $DESTDIR/wl/bin
 install src/dillo $DESTDIR/wl/bin
 install -d $DESTDIR/wl/etc/dillo
-install dillorc $DESTDIR/wl/etc/dillo
-install dpid/dpidrc $DESTDIR/wl/etc/dillo
+install -m 644 dillorc $DESTDIR/wl/etc/dillo
+install -m 644 dpid/dpidrc $DESTDIR/wl/etc/dillo
+install -d $DESTDIR/wl/lib/dillo/dpi/file
+install dpi/file.dpi $DESTDIR/wl/lib/dillo/dpi/file
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
@@ -36,7 +38,9 @@ exec=\\
 /wl/bin/dpid \\
 /wl/bin/dpidc \\
 /wl/etc/dillorc \\
-/wl/etc/dpidrc
+/wl/etc/dpidrc \\
+/wl/lib/dillo/dpi/file/file.dpi
+EOF
 
 exit
 --- dillo-3.1.1.orig/configure.ac

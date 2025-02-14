@@ -1,0 +1,1245 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build cairo-build gcc-g++-build jpeg-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires cairo-build | grep -q libxext-build || { echo cairo with Xlib support required; exit 1; }
+
+pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxcursor-build && REQUIRES="$REQUIRES libxcursor-build"
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glu-build; then
+  GL=1
+  GLU=1
+  REQUIRES="$REQUIRES glu-build"
+elif PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+# configure (ac-2.71)
+autoconf
+rm -rf jpeg
+rm -rf png
+rm -rf zlib
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-xft --enable-cairo --enable-shared --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install fluid/fluid $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/FL
+install -m 644 FL/abi-version.h $DESTDIR/x11/include/FL
+install -m 644 FL/Enumerations.H $DESTDIR/x11/include/FL
+install -m 644 FL/filename.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl.H $DESTDIR/x11/include/FL
+install -m 644 FL/fl_ask.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Bitmap.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Box.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Browser.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Browser_.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Button.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Cairo.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Check_Button.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Choice.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Device.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Double_Window.H $DESTDIR/x11/include/FL
+install -m 644 FL/fl_draw.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Export.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_File_Browser.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_File_Chooser.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_File_Icon.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_File_Input.H $DESTDIR/x11/include/FL
+test $GL && install -m 644 FL/Fl_Gl_Window.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Group.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Image.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Input.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Input_.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Light_Button.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Menu_.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Menu_Button.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Menu_Item.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Menu_Window.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Multi_Label.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Output.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Pack.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Pixmap.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Plugin.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Preferences.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Return_Button.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Round_Button.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_RGB_Image.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Secret_Input.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Single_Window.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Scroll.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Scrollbar.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Slider.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Text_Buffer.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Text_Display.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Text_Editor.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Tile.H $DESTDIR/x11/include/FL
+install -m 644 FL/fl_types.h $DESTDIR/x11/include/FL
+install -m 644 FL/fl_utf8.h $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Valuator.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Widget.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Window.H $DESTDIR/x11/include/FL
+install -m 644 FL/Fl_Wizard.H $DESTDIR/x11/include/FL
+install -m 644 FL/platform.H $DESTDIR/x11/include/FL
+install -m 644 FL/x.H $DESTDIR/x11/include/FL
+install -d $DESTDIR/x11/lib
+install cairo/libfltk_cairo.so.1 $DESTDIR/x11/lib
+ln -sf libfltk_cairo.so.1 $DESTDIR/x11/lib/libfltk_cairo.so
+install src/libfltk.so.1 $DESTDIR/x11/lib
+ln -sf libfltk.so.1 $DESTDIR/x11/lib/libfltk.so
+install src/libfltk_forms.so.1 $DESTDIR/x11/lib
+ln -sf libfltk_forms.so.1 $DESTDIR/x11/lib/libfltk_forms.so
+test $GL && install src/libfltk_gl.so.1 $DESTDIR/x11/lib
+test $GL && ln -sf libfltk_gl.so.1 $DESTDIR/x11/lib/libfltk_gl.so
+install src/libfltk_images.so.1 $DESTDIR/x11/lib
+ln -sf libfltk_images.so.1 $DESTDIR/x11/lib/libfltk_images.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 fltk.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 fltk-cairo.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 fltk-forms.pc $DESTDIR/x11/lib/pkgconfig
+test $GL && install -m 644 fltk-gl.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 fltk-images.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/fltk/test
+install test/adjuster $DESTDIR/x11/share/fltk/test
+install test/animated $DESTDIR/x11/share/fltk/test
+install test/arc $DESTDIR/x11/share/fltk/test
+install test/ask $DESTDIR/x11/share/fltk/test
+install test/bitmap $DESTDIR/x11/share/fltk/test
+install test/blocks $DESTDIR/x11/share/fltk/test
+install test/boxtype $DESTDIR/x11/share/fltk/test
+install test/browser $DESTDIR/x11/share/fltk/test
+install test/button $DESTDIR/x11/share/fltk/test
+install test/buttons $DESTDIR/x11/share/fltk/test
+install test/cairo_test $DESTDIR/x11/share/fltk/test
+install test/checkers $DESTDIR/x11/share/fltk/test
+install test/clock $DESTDIR/x11/share/fltk/test
+install test/colbrowser $DESTDIR/x11/share/fltk/test
+install test/color_chooser $DESTDIR/x11/share/fltk/test
+test $GL && install test/cube $DESTDIR/x11/share/fltk/test
+test $GL && install test/CubeView $DESTDIR/x11/share/fltk/test
+install test/cursor $DESTDIR/x11/share/fltk/test
+install test/curve $DESTDIR/x11/share/fltk/test
+install test/demo $DESTDIR/x11/share/fltk/test
+install -m 644 test/demo.menu $DESTDIR/x11/share/fltk/test
+install test/device $DESTDIR/x11/share/fltk/test
+install test/doublebuffer $DESTDIR/x11/share/fltk/test
+install test/editor $DESTDIR/x11/share/fltk/test
+install test/fast_slow $DESTDIR/x11/share/fltk/test
+install test/file_chooser $DESTDIR/x11/share/fltk/test
+install test/fltk-versions $DESTDIR/x11/share/fltk/test
+install test/fonts $DESTDIR/x11/share/fltk/test
+install test/forms $DESTDIR/x11/share/fltk/test
+test $GLU && install test/fractals $DESTDIR/x11/share/fltk/test
+test $GL && install test/fullscreen $DESTDIR/x11/share/fltk/test
+test $GLU && install test/glpuzzle $DESTDIR/x11/share/fltk/test
+install test/hello $DESTDIR/x11/share/fltk/test
+install test/help $DESTDIR/x11/share/fltk/test
+install -m 644 test/help_dialog.html $DESTDIR/x11/share/fltk/test
+install test/icon $DESTDIR/x11/share/fltk/test
+install test/iconize $DESTDIR/x11/share/fltk/test
+install test/image $DESTDIR/x11/share/fltk/test
+install test/inactive $DESTDIR/x11/share/fltk/test
+install test/input $DESTDIR/x11/share/fltk/test
+install test/input_choice $DESTDIR/x11/share/fltk/test
+install test/keyboard $DESTDIR/x11/share/fltk/test
+install test/label $DESTDIR/x11/share/fltk/test
+install test/line_style $DESTDIR/x11/share/fltk/test
+install test/list_visuals $DESTDIR/x11/share/fltk/test
+install test/mandelbrot $DESTDIR/x11/share/fltk/test
+install test/menubar $DESTDIR/x11/share/fltk/test
+install test/message $DESTDIR/x11/share/fltk/test
+install test/minimum $DESTDIR/x11/share/fltk/test
+install test/native-filechooser $DESTDIR/x11/share/fltk/test
+install test/navigation $DESTDIR/x11/share/fltk/test
+install test/offscreen $DESTDIR/x11/share/fltk/test
+install test/output $DESTDIR/x11/share/fltk/test
+install test/overlay $DESTDIR/x11/share/fltk/test
+install test/pack $DESTDIR/x11/share/fltk/test
+install test/pixmap $DESTDIR/x11/share/fltk/test
+install test/pixmap_browser $DESTDIR/x11/share/fltk/test
+install test/preferences $DESTDIR/x11/share/fltk/test
+install test/radio $DESTDIR/x11/share/fltk/test
+install test/resize $DESTDIR/x11/share/fltk/test
+install test/resizebox $DESTDIR/x11/share/fltk/test
+install -m 644 test/rgb.txt $DESTDIR/x11/share/fltk/test
+install test/rotated_text $DESTDIR/x11/share/fltk/test
+install test/scroll $DESTDIR/x11/share/fltk/test
+test $GL && install test/shape $DESTDIR/x11/share/fltk/test
+install test/subwindow $DESTDIR/x11/share/fltk/test
+install test/sudoku $DESTDIR/x11/share/fltk/test
+install test/symbols $DESTDIR/x11/share/fltk/test
+install test/table $DESTDIR/x11/share/fltk/test
+install test/tabs $DESTDIR/x11/share/fltk/test
+install test/threads $DESTDIR/x11/share/fltk/test
+install test/tile $DESTDIR/x11/share/fltk/test
+install test/tiled_image $DESTDIR/x11/share/fltk/test
+install test/tree $DESTDIR/x11/share/fltk/test
+install test/twowin $DESTDIR/x11/share/fltk/test
+install test/unittests $DESTDIR/x11/share/fltk/test
+install test/utf8 $DESTDIR/x11/share/fltk/test
+install test/valuators $DESTDIR/x11/share/fltk/test
+install test/windowfocus $DESTDIR/x11/share/fltk/test
+install -d $DESTDIR/x11/share/fltk/test/images
+install -m 644 test/images/Fl_Value_Input.png $DESTDIR/x11/share/fltk/test/images
+install -m 644 test/images/Fl_Value_Output.png $DESTDIR/x11/share/fltk/test/images
+install -m 644 test/images/FL200.png $DESTDIR/x11/share/fltk/test/images
+install -m 644 test/images/tiny.png $DESTDIR/x11/share/fltk/test/images
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+Name: fltk
+Version: 1.3.11
+Description: Fast Light ToolKit
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/FL/abi-version.h \\
+/x11/include/FL/Enumerations.H \\
+/x11/include/FL/filename.H \\
+/x11/include/FL/Fl.H \\
+/x11/include/FL/fl_ask.H \\
+/x11/include/FL/Fl_Bitmap.H \\
+/x11/include/FL/Fl_Box.H \\
+/x11/include/FL/Fl_Browser.H \\
+/x11/include/FL/Fl_Browser_.H \\
+/x11/include/FL/Fl_Button.H \\
+/x11/include/FL/Fl_Cairo.H \\
+/x11/include/FL/Fl_Check_Button.H \\
+/x11/include/FL/Fl_Choice.H \\
+/x11/include/FL/Fl_Device.H \\
+/x11/include/FL/Fl_Double_Window.H \\
+/x11/include/FL/fl_draw.H \\
+/x11/include/FL/Fl_Export.H \\
+/x11/include/FL/Fl_File_Browser.H \\
+/x11/include/FL/Fl_File_Chooser.H \\
+/x11/include/FL/Fl_File_Icon.H \\
+/x11/include/FL/Fl_File_Input.H \\
+EOF
+test $GL && echo /x11/include/FL/Fl_Gl_Window.H \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/include/FL/Fl_Group.H \\
+/x11/include/FL/Fl_Image.H \\
+/x11/include/FL/Fl_Input.H \\
+/x11/include/FL/Fl_Input_.H \\
+/x11/include/FL/Fl_Light_Button.H \\
+/x11/include/FL/Fl_Menu_.H \\
+/x11/include/FL/Fl_Menu_Button.H \\
+/x11/include/FL/Fl_Menu_Item.H \\
+/x11/include/FL/Fl_Menu_Window.H \\
+/x11/include/FL/Fl_Multi_Label.H \\
+/x11/include/FL/Fl_Output.H \\
+/x11/include/FL/Fl_Pack.H \\
+/x11/include/FL/Fl_Pixmap.H \\
+/x11/include/FL/Fl_Plugin.H \\
+/x11/include/FL/Fl_Preferences.H \\
+/x11/include/FL/Fl_RGB_Image.H \\
+/x11/include/FL/Fl_Return_Button.H \\
+/x11/include/FL/Fl_Round_Button.H \\
+/x11/include/FL/Fl_Scroll.H \\
+/x11/include/FL/Fl_Scrollbar.H \\
+/x11/include/FL/Fl_Secret_Input.H \\
+/x11/include/FL/Fl_Single_Window.H \\
+/x11/include/FL/Fl_Slider.H \\
+/x11/include/FL/Fl_Text_Buffer.H \\
+/x11/include/FL/Fl_Text_Display.H \\
+/x11/include/FL/Fl_Text_Editor.H \\
+/x11/include/FL/Fl_Tile.H \\
+/x11/include/FL/fl_types.h \\
+/x11/include/FL/fl_utf8.h \\
+/x11/include/FL/Fl_Valuator.H \\
+/x11/include/FL/Fl_Widget.H \\
+/x11/include/FL/Fl_Window.H \\
+/x11/include/FL/Fl_Wizard.H \\
+/x11/include/FL/platform.H \\
+/x11/include/FL/x.H \\
+/x11/lib/libfltk.so \\
+/x11/lib/libfltk_cairo.so \\
+/x11/lib/libfltk_forms.so \\
+EOF
+test $GL && echo /x11/lib/libfltk_gl.so \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/lib/libfltk_images.so \\
+/x11/lib/pkgconfig/fltk.pc \\
+/x11/lib/pkgconfig/fltk-cairo.pc \\
+/x11/lib/pkgconfig/fltk-forms.pc \\
+EOF
+test $GL && echo /x11/lib/pkgconfig/fltk-gl.pc \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/lib/pkgconfig/fltk-images.pc
+
+exec=\\
+/x11/bin/fluid \\
+/x11/lib/libfltk.so.1 \\
+/x11/lib/libfltk_cairo.so.1 \\
+/x11/lib/libfltk_forms.so.1 \\
+EOF
+test $GL && echo /x11/lib/libfltk_gl.so.1 \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/lib/libfltk_images.so.1 \\
+/x11/share/fltk/test/adjuster \\
+/x11/share/fltk/test/animated \\
+/x11/share/fltk/test/arc \\
+/x11/share/fltk/test/ask \\
+/x11/share/fltk/test/bitmap \\
+/x11/share/fltk/test/blocks \\
+/x11/share/fltk/test/boxtype \\
+/x11/share/fltk/test/browser \\
+/x11/share/fltk/test/button \\
+/x11/share/fltk/test/buttons \\
+/x11/share/fltk/test/cairo_test \\
+/x11/share/fltk/test/checkers \\
+/x11/share/fltk/test/clock \\
+/x11/share/fltk/test/colbrowser \\
+/x11/share/fltk/test/color_chooser \\
+EOF
+test $GL && echo /x11/share/fltk/test/cube \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+test $GL && echo /x11/share/fltk/test/CubeView \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/share/fltk/test/cursor \\
+/x11/share/fltk/test/curve \\
+/x11/share/fltk/test/demo \\
+/x11/share/fltk/test/demo.menu \\
+/x11/share/fltk/test/device \\
+/x11/share/fltk/test/doublebuffer \\
+/x11/share/fltk/test/editor \\
+/x11/share/fltk/test/fast_slow \\
+/x11/share/fltk/test/file_chooser \\
+/x11/share/fltk/test/fltk-versions \\
+/x11/share/fltk/test/fonts \\
+/x11/share/fltk/test/forms \\
+EOF
+test $GLU && echo /x11/share/fltk/test/fractals \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+test $GL && echo /x11/share/fltk/test/fullscreen \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+test $GLU && echo /x11/share/fltk/test/glpuzzle \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/share/fltk/test/hello \\
+/x11/share/fltk/test/help \\
+/x11/share/fltk/test/help_dialog.html \\
+/x11/share/fltk/test/icon \\
+/x11/share/fltk/test/iconize \\
+/x11/share/fltk/test/image \\
+/x11/share/fltk/test/inactive \\
+/x11/share/fltk/test/input \\
+/x11/share/fltk/test/input_choice \\
+/x11/share/fltk/test/keyboard \\
+/x11/share/fltk/test/label \\
+/x11/share/fltk/test/line_style \\
+/x11/share/fltk/test/list_visuals \\
+/x11/share/fltk/test/mandelbrot \\
+/x11/share/fltk/test/menubar \\
+/x11/share/fltk/test/message \\
+/x11/share/fltk/test/minimum \\
+/x11/share/fltk/test/native-filechooser \\
+/x11/share/fltk/test/navigation \\
+/x11/share/fltk/test/offscreen \\
+/x11/share/fltk/test/output \\
+/x11/share/fltk/test/overlay \\
+/x11/share/fltk/test/pack \\
+/x11/share/fltk/test/pixmap \\
+/x11/share/fltk/test/pixmap_browser \\
+/x11/share/fltk/test/preferences \\
+/x11/share/fltk/test/radio \\
+/x11/share/fltk/test/resize \\
+/x11/share/fltk/test/resizebox \\
+/x11/share/fltk/test/rgb.txt \\
+/x11/share/fltk/test/rotated_text \\
+/x11/share/fltk/test/scroll \\
+EOF
+test $GL && echo /x11/share/fltk/test/shape \\ >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/fltk-build.pc << EOF
+/x11/share/fltk/test/subwindow \\
+/x11/share/fltk/test/sudoku \\
+/x11/share/fltk/test/symbols \\
+/x11/share/fltk/test/table \\
+/x11/share/fltk/test/tabs \\
+/x11/share/fltk/test/threads \\
+/x11/share/fltk/test/tile \\
+/x11/share/fltk/test/tiled_image \\
+/x11/share/fltk/test/tree \\
+/x11/share/fltk/test/twowin \\
+/x11/share/fltk/test/unittests \\
+/x11/share/fltk/test/utf8 \\
+/x11/share/fltk/test/valuators \\
+/x11/share/fltk/test/windowfocus \\
+/x11/share/fltk/test/images/FL200.png \\
+/x11/share/fltk/test/images/Fl_Value_Input.png \\
+/x11/share/fltk/test/images/Fl_Value_Output.png \\
+/x11/share/fltk/test/images/tiny.png
+EOF
+
+exit
+--- fltk-1.3.11.orig/FL/x.H
++++ fltk-1.3.11/FL/x.H
+@@ -68,23 +68,28 @@
+ extern FL_EXPORT const XEvent* fl_xevent;
+ extern FL_EXPORT ulong fl_event_time;
+ 
++extern FL_EXPORT Pixmap fl_createPixmap(unsigned int width, unsigned int height, unsigned int depth);
++extern FL_EXPORT GC fl_createGC(Pixmap pixmap);
++extern FL_EXPORT void fl_freeGC();
++extern FL_EXPORT void fl_freePixmap(Pixmap pixmap);
++
+ // off-screen pixmaps: create, destroy, draw into, copy to window:
+ typedef ulong Fl_Offscreen;
+-#    define fl_create_offscreen(w,h) XCreatePixmap(fl_display, RootWindow(fl_display, fl_screen), w, h, fl_visual->depth)
+-#    define fl_create_offscreen_with_alpha(w,h) XCreatePixmap(fl_display, RootWindow(fl_display, fl_screen), w, h, 32)
++#    define fl_create_offscreen(w,h) fl_createPixmap(w, h, fl_visual->depth)
++#    define fl_create_offscreen_with_alpha(w,h) fl_createPixmap(w, h, 32)
+ // begin/end are macros that save the old state in local variables:
+ #    define fl_begin_offscreen(pixmap) \
+   Window _sw=fl_window; fl_window=pixmap; \
+-  GC _sgc = fl_gc; if (!_sgc) fl_gc = XCreateGC(fl_display, pixmap, 0, 0); \
++  GC _sgc = fl_gc; if (!_sgc) fl_gc = fl_createGC(pixmap); \
+   Fl_Surface_Device *_ss = Fl_Surface_Device::surface(); Fl_Display_Device::display_device()->set_current(); \
+   fl_push_no_clip()
+ #    define fl_end_offscreen() \
+   fl_pop_clip(); fl_window = _sw; _ss->set_current(); \
+-  if (!_sgc) XFreeGC(fl_display, fl_gc); \
++  if (!_sgc) fl_freeGC(); \
+     fl_gc = _sgc
+ 
+ extern FL_EXPORT void fl_copy_offscreen(int x, int y, int w, int h, Fl_Offscreen pixmap, int srcx, int srcy);
+-#    define fl_delete_offscreen(pixmap) XFreePixmap(fl_display, pixmap)
++#    define fl_delete_offscreen(pixmap) fl_freePixmap(pixmap)
+ 
+ // Bitmap masks
+ typedef ulong Fl_Bitmask;
+--- fltk-1.3.11.orig/configure.ac
++++ fltk-1.3.11/configure.ac
+@@ -33,6 +33,7 @@
+ CXXFLAGS="${CXXFLAGS:=}"
+ DSOFLAGS="${DSOFLAGS:=}"
+ LDFLAGS="${LDFLAGS:=}"
++LIBS="${LDFLAGS:=}"
+ OPTIM="${OPTIM:=}"
+ 
+ dnl Find compiler commands...
+@@ -52,7 +53,7 @@
+ FLTK_VERSION_MAJOR=1
+ FLTK_VERSION_MINOR=3
+ FLTK_VERSION_PATCH=11
+-FL_DSO_VERSION=${FLTK_VERSION_MAJOR}.${FLTK_VERSION_MINOR}
++FL_DSO_VERSION=${FLTK_VERSION_MAJOR}
+ FL_ABI_VERSION=${FLTK_VERSION_MAJOR}.${FLTK_VERSION_MINOR}.0
+ FLTK_VERSION=${FLTK_VERSION_MAJOR}.${FLTK_VERSION_MINOR}.${FLTK_VERSION_PATCH}
+ 
+@@ -89,10 +90,10 @@
+ esac
+ 
+ dnl Define the libraries and link options we will need.
+-LINKFLTK="../lib/libfltk.a"
+-LINKFLTKFORMS="../lib/libfltk_forms.a"
+-LINKFLTKGL="../lib/libfltk_gl.a"
+-LINKFLTKIMG="../lib/libfltk_images.a"
++LINKSTATIC="../lib/libfltk.a"
++LINKSTATICFORMS="../lib/libfltk_forms.a"
++LINKSTATICGL="../lib/libfltk_gl.a"
++LINKSTATICIMG="../lib/libfltk_images.a"
+ GLDEMOS="gldemos"
+ 
+ LIBEXT=".a"
+@@ -111,7 +112,7 @@
+ dnl Check for Cairo library unless disabled...
+ CAIRODIR=""
+ CAIROFLAGS=""
+-LINKFLTKCAIRO=""
++LINKSTATICCAIRO=""
+ FLTKCAIROOPTION=""
+ CAIROLIBS=""
+ 
+@@ -125,13 +126,13 @@
+ 	  dnl we do not rely on pkg-config .
+ 	  CAIRODIR="cairo"
+ 	  CAIROFLAGS="`pkg-config --cflags cairo`"
+-	  CAIROLIBS="-lcairo -lpixman-1"
++	  CAIROLIBS="`pkg-config --libs cairo`"
+ 	  CXXFLAGS="$CAIROFLAGS $CXXFLAGS"
+-	  LINKFLTKCAIRO="../lib/libfltk_cairo.a"
++	  LINKSTATICCAIRO="../lib/libfltk_cairo.a"
+ 	  FLTKCAIROOPTION="-L ../cairo -lfltk_cairo$SHAREDSUFFIX"
+ 	  LIBS="$CAIROLIBS $LIBS"
+-	  dnl $LINKFLTKCAIRO
+-	  LINKFLTK+=" $LINKFLTKCAIRO"
++	  dnl $LINKSTATICCAIRO
++	  LINKSTATIC="$LINKSTATIC $LINKSTATICCAIRO"
+ else
+     if test x$enable_cairo = xyes; then
+ 	  AC_DEFINE(FLTK_HAVE_CAIRO)
+@@ -139,9 +140,9 @@
+ 	  dnl we do not rely on pkg-config .
+ 	  CAIRODIR="cairo"
+ 	  CAIROFLAGS="`pkg-config --cflags cairo`"
+-	  CAIROLIBS="-lcairo -lpixman-1"
++	  CAIROLIBS="`pkg-config --libs cairo`"
+ 	  CXXFLAGS="$CAIROFLAGS $CXXFLAGS"
+-	  LINKFLTKCAIRO="../lib/libfltk_cairo.a"
++	  LINKSTATICCAIRO="../lib/libfltk_cairo.a"
+ 	  FLTKCAIROOPTION="-L ../cairo -lfltk_cairo$SHAREDSUFFIX"
+     fi
+ fi
+@@ -149,7 +150,7 @@
+ AC_SUBST(CAIRODIR)
+ AC_SUBST(CAIROFLAGS)
+ AC_SUBST(CAIROLIBS)
+-AC_SUBST(LINKFLTKCAIRO)
++AC_SUBST(LINKSTATICCAIRO)
+ AC_SUBST(FLTKCAIROOPTION)
+ 
+ AC_SUBST(FLLIBNAME)
+@@ -159,10 +160,10 @@
+ AC_SUBST(CAIROLIBNAME)
+ AC_SUBST(LIBEXT)
+ AC_SUBST(LIBNAME)
+-AC_SUBST(LINKFLTK)
+-AC_SUBST(LINKFLTKFORMS)
+-AC_SUBST(LINKFLTKGL)
+-AC_SUBST(LINKFLTKIMG)
++AC_SUBST(LINKSTATIC)
++AC_SUBST(LINKSTATICFORMS)
++AC_SUBST(LINKSTATICGL)
++AC_SUBST(LINKSTATICIMG)
+ 
+ AC_SUBST(LIBBASENAME)
+ AC_SUBST(FLLIBBASENAME)
+@@ -359,7 +360,10 @@
+ 	    ;;
+     esac
+ 
+-    LINKSHARED="-L../src $FLTKCAIROOPTION -lfltk_images$SHAREDSUFFIX -lfltk_forms$SHAREDSUFFIX -lfltk$SHAREDSUFFIX"
++    LINKSHARED="-L../src -lfltk$SHAREDSUFFIX"
++    LINKSHAREDFORMS="-L../src -lfltk_forms$SHAREDSUFFIX"
++    LINKSHAREDGL="-L../src -lfltk_gl$SHAREDSUFFIX"
++    LINKSHAREDIMG="-L../src -lfltk_images$SHAREDSUFFIX"
+ else
+     DSOCOMMAND="echo"
+     DSOLINK=""
+@@ -371,7 +375,10 @@
+     PICFLAG=0
+     SHAREDSUFFIX=""
+     FLUID="fluid"
+-    LINKSHARED="$LINKFLTKCAIRO ../lib/libfltk_images.a ../lib/libfltk_forms.a ../lib/libfltk.a"
++    LINKSHARED=""
++    LINKSHAREDFORMS=""
++    LINKSHAREDGL=""
++    LINKSHAREDIMG=""
+ fi
+ 
+ dnl Define the fluid executable used when building the test programs.
+@@ -394,6 +401,9 @@
+ AC_SUBST(CAIRODSONAME)
+ AC_SUBST(SHAREDSUFFIX)
+ AC_SUBST(LINKSHARED)
++AC_SUBST(LINKSHAREDFORMS)
++AC_SUBST(LINKSHAREDGL)
++AC_SUBST(LINKSHAREDIMG)
+ AC_SUBST(FLUID)
+ AC_SUBST(FLUID_BUILD)
+ 
+@@ -418,10 +428,10 @@
+     INSTALL="`pwd`/install-sh -c"
+ fi
+ AC_PATH_PROG(NROFF,nroff)
+-if test "x$NROFF" = "x:"; then
++if test "x$NROFF" = "x"; then
+     # Try groff instead of nroff...
+     AC_PATH_PROG(GROFF,groff)
+-    if test "x$GROFF" = "x:"; then
++    if test "x$GROFF" = "x"; then
+ 	NROFF="echo"
+     else
+ 	NROFF="$GROFF -T ascii"
+@@ -673,7 +683,7 @@
+ AS_IF([test x$enable_localjpeg = xyes -o x$sysjpeglib_ok = xno], [
+     JPEGINC="-I../jpeg"
+     JPEG="jpeg"
+-    IMAGELIBS="-lfltk_jpeg $IMAGELIBS"
++    IMAGELIBS="-L../lib -lfltk_jpeg $IMAGELIBS"
+     STATICIMAGELIBS="\$libdir/libfltk_jpeg.a $STATICIMAGELIBS"
+     AC_DEFINE([HAVE_LIBJPEG])
+     # Finally, warn user if system lib was requested but not found
+@@ -741,7 +751,7 @@
+     ZLIBINC="-I../zlib"
+     ZLIB="zlib"
+     LIBS="-lfltk_z $LIBS"
+-    IMAGELIBS="-lfltk_z $IMAGELIBS"
++    IMAGELIBS="-L../lib -lfltk_z $IMAGELIBS"
+     STATICIMAGELIBS="\$libdir/libfltk_z.a $STATICIMAGELIBS"
+     AC_DEFINE([HAVE_LIBZ])
+     ac_cv_lib_z_gzgets=no # fc: is still necessary ?
+@@ -762,7 +772,7 @@
+ AS_IF([test x$enable_localpng = xyes -o x$syspnglib_ok = xno], [
+     PNGINC="-I../png"
+     PNG="png"
+-    IMAGELIBS="-lfltk_png $IMAGELIBS"
++    IMAGELIBS="-L../lib -lfltk_png $IMAGELIBS"
+     STATICIMAGELIBS="\$libdir/libfltk_png.a $STATICIMAGELIBS"
+     AC_DEFINE([HAVE_LIBPNG])
+     AC_DEFINE([HAVE_PNG_H])
+@@ -803,6 +813,7 @@
+ dnl Check for pthreads for multi-threaded apps...
+ have_pthread=no
+ PTHREAD_FLAGS=""
++PTHREAD_LIBS=""
+ 
+ dnl Test whether we want to check for pthreads. We must not do it on Windows
+ dnl unless we run under Cygwin with --enable-cygwin, since we always use
+@@ -841,6 +852,7 @@
+ 	    if test $have_pthread = yes; then
+ 		AC_DEFINE(HAVE_PTHREAD)
+ 		PTHREAD_FLAGS="-D_THREAD_SAFE -D_REENTRANT"
++		PTHREAD_LIBS="$flag $PTHREAD_LIBS"
+ 
+ 		# Solaris requires -D_POSIX_PTHREAD_SEMANTICS to
+ 		# be POSIX-compliant... :(
+@@ -856,6 +868,7 @@
+ fi
+ 
+ AC_SUBST(PTHREAD_FLAGS)
++AC_SUBST(PTHREAD_LIBS)
+ 
+ dnl Define OS-specific stuff...
+ HLINKS=
+@@ -892,7 +905,6 @@
+ 		AC_DEFINE(HAVE_GL_GLU_H)
+ 		GLLIBS="-lglu32 $GLLIBS")
+ 	else
+-	    LINKFLTKGL=""
+ 	    GLLIBNAME=""
+ 	    GLDSONAME=""
+ 	    GLDEMOS=""
+@@ -930,7 +942,6 @@
+ 	    AC_DEFINE(HAVE_GL_GLU_H)
+ 	    GLLIBS="-framework OpenGL"
+ 	else
+-	    LINKFLTKGL=""
+ 	    GLLIBNAME=""
+ 	    GLDSONAME=""
+ 	    GLDEMOS=""
+@@ -968,6 +979,7 @@
+ 	    AC_MSG_WARN([Ignoring libraries "$X_PRE_LIBS" requested by configure.])
+ 	fi
+ 
++	XLIBS="-lX11"
+ 	LIBS="$LIBS -lX11 $X_EXTRA_LIBS"
+ 	CFLAGS="$CFLAGS $X_CFLAGS"
+ 	CXXFLAGS="$CXXFLAGS $X_CFLAGS"
+@@ -1006,13 +1018,11 @@
+ 	    )
+ 
+ 	    if test x$ac_cv_lib_GL_glXMakeCurrent != xyes -a x$ac_cv_lib_MesaGL_glXMakeCurrent != xyes; then
+-		LINKFLTKGL=""
+ 		GLLIBNAME=""
+ 		GLDSONAME=""
+ 		GLDEMOS=""
+ 	    fi
+ 	else
+-	    LINKFLTKGL=""
+ 	    GLLIBNAME=""
+ 	    GLDSONAME=""
+ 	    GLDEMOS=""
+@@ -1085,6 +1095,7 @@
+ 		[X11/extensions/Xdbe.h],
+ 		[AC_CHECK_LIB(Xext, XdbeQueryExtension,
+ 		    [AC_DEFINE(HAVE_XDBE)
++		     XLIBS="-lXext $XLIBS"
+ 		     LIBS="-lXext $LIBS"
+ 		     xdbe_found=yes])],
+ 		[],
+@@ -1183,6 +1194,7 @@
+ AC_SUBST(HLINKS)
+ AC_SUBST(OSX_ONLY)
+ AC_SUBST(THREADS)
++AC_SUBST(XLIBS)
+ 
+ AC_SUBST(INSTALL_DESKTOP)
+ AC_SUBST(UNINSTALL_DESKTOP)
+@@ -1605,9 +1617,10 @@
+ AC_SUBST(BINARY_DIR)
+ 
+ dnl Write all of the files...
+-AC_CONFIG_HEADER(config.h:configh.in)
+-AC_CONFIG_HEADER(FL/abi-version.h:abi-version.in)
++AC_CONFIG_HEADERS(config.h:configh.in)
++AC_CONFIG_HEADERS(FL/abi-version.h:abi-version.in)
+ AC_CONFIG_FILES([makeinclude fltk.list fltk-config fltk.spec FL/Makefile])
++AC_CONFIG_FILES([fltk.pc fltk-forms.pc fltk-gl.pc fltk-images.pc fltk-cairo.pc])
+ AC_OUTPUT
+ 
+ dnl Make sure the fltk-config script is executable...
+--- fltk-1.3.11.orig/fltk-cairo.pc.in
++++ fltk-1.3.11/fltk-cairo.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-images
++Description: FLTK Cairo Library
++Version: @FLTK_VERSION@
++Requires: fltk
++Libs: -L${libdir} -lfltk_cairo
++Cflags: -I${includedir}
+--- fltk-1.3.11.orig/fltk-forms.pc.in
++++ fltk-1.3.11/fltk-forms.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-forms
++Description: FLTK Forms Library
++Version: @FLTK_VERSION@
++Requires: fltk
++Libs: -L${libdir} -lfltk_forms
++Cflags: -I${includedir}
+--- fltk-1.3.11.orig/fltk-gl.pc.in
++++ fltk-1.3.11/fltk-gl.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-gl
++Description: FLTK GL Library
++Version: @FLTK_VERSION@
++Requires: fltk gl
++Libs: -L${libdir} -lfltk_gl
++Cflags: -I${includedir}
+--- fltk-1.3.11.orig/fltk-images.pc.in
++++ fltk-1.3.11/fltk-images.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk-images
++Description: FLTK Images Library
++Version: @FLTK_VERSION@
++Requires: fltk
++Libs: -L${libdir} -lfltk_images
++Cflags: -I${includedir}
+--- fltk-1.3.11.orig/fltk.pc.in
++++ fltk-1.3.11/fltk.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: fltk
++Description: FLTK Library
++Version: @FLTK_VERSION@
++Libs: -L${libdir} -lfltk
++Cflags: -I${includedir}
+--- fltk-1.3.11.orig/fluid/Makefile
++++ fltk-1.3.11/fluid/Makefile
+@@ -48,7 +48,7 @@
+ fluid$(EXEEXT):		$(OBJECTS) $(LIBNAME) $(FLLIBNAME) \
+ 			$(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) -o $@ $(OBJECTS) $(LINKFLTKFORMS) $(LINKFLTKIMG) $(LDFLAGS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) -o $@ $(OBJECTS) $(LINKSTATICFORMS) $(LINKSTATICIMG) $(LDFLAGS) $(LDLIBS) $(IMAGELIBS)
+ 	$(OSX_ONLY) $(RM) -r -f fluid.app
+ 	$(OSX_ONLY) mkdir -p fluid.app/Contents/MacOS fluid.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) fluid fluid.app/Contents/MacOS
+@@ -58,7 +58,7 @@
+ fluid-shared$(EXEEXT):	$(OBJECTS) ../src/$(DSONAME) ../src/$(FLDSONAME) \
+ 			../src/$(IMGDSONAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) -o $@ $(OBJECTS) $(LINKSHARED) $(LDFLAGS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) -o $@ $(OBJECTS) $(LINKSHAREDFORMS) $(LINKSHAREDIMG) $(LDFLAGS) $(IMAGELIBS)
+ 
+ clean:
+ 	-$(RM) *.o core.* *~ *.bck *.bak
+--- fltk-1.3.11.orig/makeinclude.in
++++ fltk-1.3.11/makeinclude.in
+@@ -60,6 +60,8 @@
+ # flags for C++ compiler:
+ ARCHFLAGS	= @ARCHFLAGS@
+ OPTIM		= @OPTIM@
++PTHREAD_FLAGS	= @PTHREAD_FLAGS@
++PTHREAD_LIBS	= @PTHREAD_LIBS@
+ CFLAGS		= $(OPTIM) @LARGEFILE@ @PTHREAD_FLAGS@ @CPPFLAGS@ @CFLAGS@
+ CXXFLAGS	= $(OPTIM) @LARGEFILE@ @PTHREAD_FLAGS@ @CPPFLAGS@ @CXXFLAGS@ $(FLTKFLAGS)
+ 
+@@ -89,18 +91,22 @@
+ AUDIOLIBS	= @AUDIOLIBS@
+ CAIROLIBS	= @CAIROLIBS@
+ CAIROFLAGS	= @CAIROFLAGS@
++GLLIBS		= @GLLIBS@
++IMAGELIBS	= @IMAGELIBS@
++XLIBS		= @XLIBS@
+ DSOFLAGS	= -L. @DSOFLAGS@
+ LDFLAGS		= $(OPTIM) @LDFLAGS@
+ LDLIBS		= @LIBS@
+-GLDLIBS		= @GLLIBS@ @LIBS@
+-LINKFLTK	= @LINKFLTK@
+-LINKFLTKGL	= @LINKFLTKGL@
+-LINKFLTKFORMS	= @LINKFLTKFORMS@ @LINKFLTK@
+-LINKFLTKIMG	= @LINKFLTKIMG@ @LINKFLTK@ $(IMAGELIBS)
+-LINKFLTKCAIRO	= @LINKFLTKCAIRO@ $(CAIROLIBS)
+-FLTKCAIROOPTION = @FLTKCAIROOPTION@
+-LINKSHARED	= @DSOLINK@ @LINKSHARED@ $(IMAGELIBS) $(CAIROLIBS)
+-IMAGELIBS	= -L../lib @IMAGELIBS@
++LINKSTATIC	= @LINKSTATIC@
++LINKSTATICFORMS	= @LINKSTATICFORMS@ @LINKSTATIC@
++LINKSTATICGL	= @LINKSTATICGL@ @LINKSTATIC@
++LINKSTATICIMG	= @LINKSTATICIMG@ @LINKSTATIC@
++LINKSTATICCAIRO	= @LINKSTATICCAIRO@ @LINKSTATIC@
++LINKSHARED	= @LINKSHARED@
++LINKSHAREDFORMS	= @LINKSHAREDFORMS@ @LINKSHARED@
++LINKSHAREDGL	= @LINKSHAREDGL@ @LINKSHARED@
++LINKSHAREDIMG	= @LINKSHAREDIMG@ @LINKSHARED@
++LINKSHAREDCAIRO	= @FLTKCAIROOPTION@ @LINKSHARED@
+ 
+ # image libraries to build...
+ IMAGEDIRS	= @JPEG@ @ZLIB@ @PNG@
+@@ -150,11 +156,6 @@
+ # Build commands and filename extensions...
+ .SUFFIXES:	.0 .1 .3 .6 .c .cxx .mm .h .fl .man .o .z $(EXEEXT)
+ 
+-.o$(EXEEXT):
+-	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(LDFLAGS) $< $(LINKFLTK) $(LDLIBS) -o $@
+-	$(OSX_ONLY) ../fltk-config --post $@
+-
+ .c.o:
+ 	echo Compiling $<...
+ 	$(CC) -I.. $(ARCHFLAGS) @PNGINC@ @JPEGINC@ @ZLIBINC@ $(CFLAGS) -c $< -o $@
+--- fltk-1.3.11.orig/src/Fl_Double_Window.cxx
++++ fltk-1.3.11/src/Fl_Double_Window.cxx
+@@ -168,6 +168,22 @@
+ char fl_can_do_alpha_blending() {
+   return Fl_X::xrender_supported();
+ }
++
++Pixmap fl_createPixmap(unsigned int width, unsigned int height, unsigned int depth) {
++  return XCreatePixmap(fl_display, RootWindow(fl_display, fl_screen), width, height, depth);
++}
++
++GC fl_createGC(Pixmap pixmap) {
++  return XCreateGC(fl_display, pixmap, 0, 0);
++}
++
++void fl_freeGC() {
++  XFreeGC(fl_display, fl_gc);
++}
++
++void fl_freePixmap(Pixmap pixmap) {
++  XFreePixmap(fl_display, pixmap);
++}
+ #elif defined(WIN32)
+ 
+ // Code used to switch output to an off-screen window.  See macros in
+--- fltk-1.3.11.orig/src/Fl_Gl_Device_Plugin.cxx
++++ fltk-1.3.11/src/Fl_Gl_Device_Plugin.cxx
+@@ -20,6 +20,7 @@
+ #include <FL/Fl_Printer.H>
+ #include <FL/Fl_Gl_Window.H>
+ #include "Fl_Gl_Choice.H"
++#include <FL/gl.h>
+ #include <FL/Fl_RGB_Image.H>
+ #include "FL/Fl.H"
+ 
+--- fltk-1.3.11.orig/src/Fl_Gl_Overlay.cxx
++++ fltk-1.3.11/src/Fl_Gl_Overlay.cxx
+@@ -22,6 +22,7 @@
+ #include <FL/Fl.H>
+ #include <FL/x.H>
+ #include "Fl_Gl_Choice.H"
++#include <FL/gl.h>
+ #include <FL/Fl_Gl_Window.H>
+ #include <stdlib.h>
+ 
+--- fltk-1.3.11.orig/src/Fl_Gl_Window.cxx
++++ fltk-1.3.11/src/Fl_Gl_Window.cxx
+@@ -24,10 +24,7 @@
+ #include <FL/Fl.H>
+ #include <FL/x.H>
+ #include "Fl_Gl_Choice.H"
+-#ifdef __APPLE__
+ #include <FL/gl.h>
+-#include <OpenGL/OpenGL.h>
+-#endif
+ #include <FL/Fl_Gl_Window.H>
+ #include <stdlib.h>
+ #include <FL/fl_utf8.h>
+--- fltk-1.3.11.orig/src/Makefile
++++ fltk-1.3.11/src/Makefile
+@@ -309,13 +309,13 @@
+ 
+ libfltk_gl.so.$(FL_DSO_VERSION): $(GLOBJECTS) libfltk.so.$(FL_DSO_VERSION)
+ 	echo $(DSOCOMMAND) $@ ...
+-	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. -lfltk $(LDLIBS) $(GLDLIBS)
++	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. $(GLLIBS) -lfltk $(LDLIBS)
+ 	$(RM) libfltk_gl.so
+ 	$(LN) libfltk_gl.so.$(FL_DSO_VERSION) libfltk_gl.so
+ 
+ libfltk_gl.sl.$(FL_DSO_VERSION): $(GLOBJECTS) libfltk.sl.$(FL_DSO_VERSION)
+ 	echo $(DSOCOMMAND) $@ ...
+-	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. -lfltk
++	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. $(GLLIBS) -lfltk
+ 	$(RM) libfltk_gl.sl
+ 	$(LN) libfltk_gl.sl.$(FL_DSO_VERSION) libfltk_gl.sl
+ 
+@@ -325,7 +325,7 @@
+ 		-install_name $(libdir)/$@ \
+ 		-current_version $(FL_VERSION) \
+ 		-compatibility_version $(FL_ABI_VERSION) \
+-		$(GLOBJECTS) -L. $(GLDLIBS) -lfltk
++		$(GLOBJECTS) -L. $(LDLIBS) $(GLLIBS) -lfltk
+ 	$(RM) libfltk_gl.dylib
+ 	$(LN) libfltk_gl.$(FL_DSO_VERSION).dylib libfltk_gl.dylib
+ 
+@@ -400,7 +400,7 @@
+ 	echo $(DSOCOMMAND) $(GLLIBNAME) ...
+ 	$(DSOCOMMAND) $(GLLIBNAME) -Wl,--no-whole-archive \
+ 		-Wl,--out-implib=libfltk_gl.dll.a \
+-		-L. -lfltk $(GLDLIBS)
++		-L. -lfltk $(GLLIBS) $(LDLIBS)
+ 
+ cygfltknox_images-$(FL_DSO_VERSION).dll: $(IMGLIBNAME) cygfltknox-$(FL_DSO_VERSION).dll
+ 	echo $(DSOCOMMAND) $(IMGLIBNAME) ...
+@@ -428,7 +428,7 @@
+ 	echo $(DSOCOMMAND) $(GLLIBNAME) ...
+ 	$(DSOCOMMAND) $(GLLIBNAME) -Wl,--no-whole-archive \
+ 		-Wl,--out-implib=libfltk_gl.dll.a \
+-		-L. -lfltk $(GLDLIBS)
++		-L. -lfltk $(GLLIBS) $(LDLIBS)
+ 
+ cygfltk_images-$(FL_DSO_VERSION).dll: $(IMGLIBNAME) cygfltk-$(FL_DSO_VERSION).dll
+ 	echo $(DSOCOMMAND) $(IMGLIBNAME) ...
+@@ -452,7 +452,7 @@
+ 	echo $(DSOCOMMAND) $(GLLIBNAME) ...
+ 	$(DSOCOMMAND) $(GLLIBNAME) -Wl,--no-whole-archive \
+ 		-Wl,--out-implib=libfltk_gl.dll.a \
+-		-L. -lfltk $(GLDLIBS)
++		-L. -lfltk $(GLLIBS) $(LDLIBS)
+ 
+ #-----------------------------------------------------
+ # See STR #1585 for --exclude-libs
+--- fltk-1.3.11.orig/src/glut_compatability.cxx
++++ fltk-1.3.11/src/glut_compatability.cxx
+@@ -446,7 +446,7 @@
+ #  elif (HAVE_DLSYM && HAVE_DLFCN_H)
+   char symbol[1024];
+ 
+-  snprintf(symbol, sizeof(symbol), "_%s", procName);
++  snprintf(symbol, sizeof(symbol), "%s", procName);
+ 
+ #    ifdef RTLD_DEFAULT
+   return (GLUTproc)dlsym(RTLD_DEFAULT, symbol);
+--- fltk-1.3.11.orig/test/Makefile
++++ fltk-1.3.11/test/Makefile
+@@ -16,6 +16,36 @@
+ 
+ include ../makeinclude
+ 
++ifeq ($(DSONAME),)
++	LINKFLTK = $(LINKSTATIC) $(LDLIBS)
++else
++	LINKFLTK = $(LINKSHARED)
++endif
++
++ifeq ($(FLDSONAME),)
++	LINKFLTKFORMS = $(LINKSTATICFORMS) $(LDLIBS)
++else
++	LINKFLTKFORMS = $(LINKSHAREDFORMS)
++endif
++
++ifeq ($(GLDSONAME),)
++	LINKFLTKGL = $(LINKSTATICGL) $(LDLIBS) $(GLLIBS)
++else
++	LINKFLTKGL = $(LINKSHAREDGL)
++endif
++
++ifeq ($(IMGDSONAME),)
++	LINKFLTKIMG = $(LINKSTATICIMG) $(LDLIBS) $(IMAGELIBS)
++else
++	LINKFLTKIMG = $(LINKSHAREDIMG)
++endif
++
++ifeq ($(CAIRODSONAME),)
++	LINKFLTKCAIRO = $(LINKSTATICCAIRO) $(LDLIBS)
++else
++	LINKFLTKCAIRO = $(LINKSHAREDCAIRO)
++endif
++
+ CPPFILES =\
+ 	adjuster.cxx \
+ 	animated.cxx \
+@@ -276,6 +306,11 @@
+ $(ALL): $(LIBNAME)
+ 
+ # General demos...
++.o$(EXEEXT):
++	echo Linking $@...
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) $< $(LINKFLTK) -o $@
++	$(OSX_ONLY) ../fltk-config --post $@
++
+ unittests$(EXEEXT): unittests.o
+ 
+ unittests.o: unittests.cxx unittest_about.cxx unittest_points.cxx unittest_lines.cxx unittest_circles.cxx \
+@@ -302,7 +337,7 @@
+ 
+ blocks$(EXEEXT): blocks.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) blocks.o -o $@ $(AUDIOLIBS) $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) blocks.o -o $@ $(AUDIOLIBS) $(LINKFLTK)
+ 	$(OSX_ONLY) $(RM) -f -r blocks.app
+ 	$(OSX_ONLY) mkdir -p blocks.app/Contents/MacOS blocks.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) blocks$(EXEEXT) blocks.app/Contents/MacOS
+@@ -311,7 +346,7 @@
+ 
+ checkers$(EXEEXT): checkers.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) checkers.o -o $@ $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) checkers.o -o $@ $(LINKFLTK)
+ 	$(OSX_ONLY) $(RM) -f -r checkers.app
+ 	$(OSX_ONLY) mkdir -p checkers.app/Contents/MacOS checkers.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) checkers$(EXEEXT) checkers.app/Contents/MacOS
+@@ -322,12 +357,15 @@
+ 
+ colbrowser$(EXEEXT): colbrowser.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ colbrowser.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ colbrowser.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) mkdir -p colbrowser.app/Contents/Resources
+ 	$(OSX_ONLY) cp -f rgb.txt colbrowser.app/Contents/Resources/
+ 
+ color_chooser$(EXEEXT): color_chooser.o
++	echo Linking $@...
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ color_chooser.o $(LINKFLTK) $(XLIBS)
++	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ cursor$(EXEEXT): cursor.o
+ 
+@@ -335,21 +373,21 @@
+ 
+ demo$(EXEEXT): demo.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ demo.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ demo.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) mkdir -p demo.app/Contents/Resources
+ 	$(OSX_ONLY) cp -f demo.menu demo.app/Contents/Resources/
+ 
+ device$(EXEEXT): device.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) device.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) device.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ doublebuffer$(EXEEXT): doublebuffer.o
+ 
+ editor$(EXEEXT): editor.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) editor.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) editor.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) cp -f mac-resources/editor.plist editor.app/Contents/Info.plist
+ 
+@@ -358,7 +396,7 @@
+ 
+ file_chooser$(EXEEXT): file_chooser.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) file_chooser.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) file_chooser.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ fltk-versions$(EXEEXT): fltk-versions.o
+@@ -367,14 +405,14 @@
+ 
+ forms$(EXEEXT): forms.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ forms.o $(LINKFLTKFORMS) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ forms.o $(LINKFLTKFORMS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ hello$(EXEEXT): hello.o
+ 
+ help$(EXEEXT): help.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) help.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) help.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 	$(OSX_ONLY) mkdir -p help.app/Contents/Resources
+ 	$(OSX_ONLY) cp -f help_dialog.html help.app/Contents/Resources/
+@@ -384,6 +422,9 @@
+ iconize$(EXEEXT): iconize.o
+ 
+ image$(EXEEXT): image.o
++	echo Linking $@...
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ image.o $(LINKFLTK) $(XLIBS)
++	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ inactive$(EXEEXT): inactive.o
+ inactive.cxx:	inactive.fl ../fluid/fluid$(EXEEXT)
+@@ -394,23 +435,26 @@
+ 
+ keyboard$(EXEEXT): keyboard_ui.o keyboard.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ keyboard.o keyboard_ui.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ keyboard.o keyboard_ui.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ keyboard_ui.o:	keyboard_ui.h
+ keyboard_ui.cxx:	keyboard_ui.fl ../fluid/fluid$(EXEEXT)
+ 
+ label$(EXEEXT): label.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ label.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ label.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ line_style$(EXEEXT): line_style.o
+ 
+ list_visuals$(EXEEXT): list_visuals.o
++	echo Linking $@...
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ list_visuals.o $(LINKFLTK) $(XLIBS)
++	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ mandelbrot$(EXEEXT): mandelbrot_ui.o mandelbrot.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ mandelbrot.o mandelbrot_ui.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ mandelbrot.o mandelbrot_ui.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ mandelbrot_ui.o:	mandelbrot_ui.h
+ mandelbrot_ui.cxx:	mandelbrot_ui.fl ../fluid/fluid$(EXEEXT)
+@@ -423,7 +467,7 @@
+ 
+ native-filechooser$(EXEEXT): native-filechooser.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) native-filechooser.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) native-filechooser.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ navigation$(EXEEXT): navigation.o
+@@ -432,7 +476,7 @@
+ 
+ output$(EXEEXT): output.o $(FLLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ output.o $(LINKFLTK) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ output.o $(LINKFLTK)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ overlay$(EXEEXT): overlay.o
+@@ -443,7 +487,7 @@
+ 
+ pixmap_browser$(EXEEXT): pixmap_browser.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) pixmap_browser.o -o $@ $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) pixmap_browser.o -o $@ $(LINKFLTKIMG)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ preferences$(EXEEXT):	preferences.o
+@@ -465,9 +509,9 @@
+ 
+ subwindow$(EXEEXT): subwindow.o
+ 
+-sudoku: sudoku.o
++sudoku: sudoku.o $(IMGLIBNAME)
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) sudoku.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) sudoku.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG) $(XLIBS)
+ 	$(OSX_ONLY) $(RM) -f -r sudoku.app
+ 	$(OSX_ONLY) mkdir -p sudoku.app/Contents/MacOS sudoku.app/Contents/Resources
+ 	$(OSX_ONLY) $(INSTALL_BIN) sudoku$(EXEEXT) sudoku.app/Contents/MacOS
+@@ -477,7 +521,7 @@
+ sudoku.exe: sudoku.o sudoku.rc
+ 	echo Linking $@...
+ 	$(RC) sudoku.rc sudokures.o
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) sudoku.o sudokures.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG) $(LDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) sudoku.o sudokures.o -o $@ $(AUDIOLIBS) $(LINKFLTKIMG)
+ 
+ symbols$(EXEEXT): symbols.o
+ 
+@@ -487,6 +531,8 @@
+ tabs.cxx:	tabs.fl ../fluid/fluid$(EXEEXT)
+ 
+ threads$(EXEEXT): threads.o
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ threads.o $(LINKFLTK) $(PTHREAD_LIBS)
++	$(OSX_ONLY) ../fltk-config --post $@
+ # This ensures that we have this dependency even if threads are not
+ # enabled in the current tree...
+ threads.o:	threads.h
+@@ -494,6 +540,9 @@
+ tile$(EXEEXT): tile.o
+ 
+ tiled_image$(EXEEXT): tiled_image.o
++	echo Linking $@...
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ tiled_image.o $(LINKFLTK) $(XLIBS)
++	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ tree$(EXEEXT): tree.o
+ tree.cxx:	tree.fl ../fluid/fluid$(EXEEXT)
+@@ -509,9 +558,9 @@
+ # OpenGL demos...
+ CubeView$(EXEEXT): CubeMain.o CubeView.o CubeViewUI.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ \
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ \
+ 		CubeMain.o CubeView.o CubeViewUI.o \
+-		$(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++		$(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ CubeMain.o: CubeViewUI.h CubeView.h CubeViewUI.cxx
+ CubeView.o: CubeView.h
+@@ -520,35 +569,35 @@
+ 
+ cube$(EXEEXT): cube.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ cube.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ cube.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ fractals$(EXEEXT): fractals.o fracviewer.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ fractals.o fracviewer.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ fractals.o fracviewer.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ fullscreen$(EXEEXT): fullscreen.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ fullscreen.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ fullscreen.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ glpuzzle$(EXEEXT): glpuzzle.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ glpuzzle.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ glpuzzle.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ gl_overlay$(EXEEXT): gl_overlay.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ gl_overlay.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ gl_overlay.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ shape$(EXEEXT): shape.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ shape.o $(LINKFLTKGL) $(LINKFLTK) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o $@ shape.o $(LINKFLTKGL) $(GLLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@
+ 
+ cairo_test$(EXEEXT): cairo_test.o
+ 	echo Linking $@...
+-	$(CXX) $(ARCHFLAGS) $(CXXFLAGS) $(CAIROFLAGS) $(LDFLAGS) -o $@ cairo_test.o $(LINKFLTK) $(LINKFLTKCAIRO) $(GLDLIBS)
++	$(CXX) $(ARCHFLAGS) $(CAIROFLAGS) $(LDFLAGS) -o $@ cairo_test.o $(LINKFLTKCAIRO) $(CAIROLIBS)
+ 	$(OSX_ONLY) ../fltk-config --post $@

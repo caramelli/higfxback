@@ -20,6 +20,7 @@ fi
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists fltk-build; then
+  PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires fltk-build | grep -q gl.*-build || { echo FLTK with OpenGL support required; exit 1; }
   FLTK=1
   REQUIRES="$REQUIRES fltk-build"
 fi
@@ -109,10 +110,11 @@ exit
  endif()
  
  # Vulkan WSIs
-@@ -421,17 +421,20 @@
+@@ -420,18 +420,21 @@
+ set(EFL ${ENABLE_EFL})
  
  if(ENABLE_FLTK)
-   message(STATUS "Checking for fltk-config")
+-  message(STATUS "Checking for fltk-config")
 -  find_program(FLTK_CONFIG fltk-config)
 -  if(FLTK_CONFIG)
 -    message(STATUS "  Found")
@@ -124,8 +126,9 @@ exit
 -  else()
 -    message(STATUS "  Not found")
 -    set(ENABLE_FLTK OFF)
-+  pkg_check_modules(GLFW glfw3)
-+  if(NOT GLFW_FOUND)
++  pkg_check_modules(FLTK fltk-gl)
++  if(NOT FLTK_FOUND)
++    message(STATUS "Checking for fltk-config")
 +    find_program(FLTK_CONFIG fltk-config)
 +    if(FLTK_CONFIG)
 +      message(STATUS "  Found")

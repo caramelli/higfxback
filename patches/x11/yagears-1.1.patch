@@ -5,6 +5,12 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build libx11
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists fltk-build; then
+  PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires fltk-build | grep -q gl.*-build || { echo FLTK with OpenGL support required; exit 1; }
+  FLTK=1
+  REQUIRES="$REQUIRES fltk-build"
+fi
+
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists glfw-build; then
   GLFW=1
   REQUIRES="$REQUIRES glfw-build"
@@ -45,7 +51,7 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install yagears $DESTDIR/x11/bin
-test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && install yagears-gui $DESTDIR/x11/bin
+test $FLTK || test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && install yagears-gui $DESTDIR/x11/bin
 test $GLUT && install yagears-mosaic $DESTDIR/x11/bin
 
 # build.pc
@@ -59,7 +65,7 @@ Requires: $REQUIRES
 exec=\\
 /x11/bin/yagears \\
 EOF
-test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+test $FLTK || test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 test $GLUT && echo /x11/bin/yagears-mosaic \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 
@@ -97,6 +103,31 @@ exit
        fi
      fi
  
+@@ -276,14 +281,16 @@
+ fi
+ 
+ if test x$enable_fltk = xyes; then
+-  AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
+-  if test x$FLTK_CONFIG != xno; then
+-    FLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+-    FLTK_LIBS=`$FLTK_CONFIG --use-gl --ldflags`
+-    AC_SUBST(FLTK_CFLAGS)
+-    AC_SUBST(FLTK_LIBS)
+-  else
+-    enable_fltk=no
++  PKG_CHECK_MODULES(FLTK, fltk-gl, , enable_fltk=no)
++  if test x$enable_fltk = xno; then
++    AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
++    if test x$FLTK_CONFIG != xno; then
++      FLTK_CFLAGS=`$FLTK_CONFIG --cflags`
++      FLTK_LIBS=`$FLTK_CONFIG --use-gl --ldflags`
++      AC_SUBST(FLTK_CFLAGS)
++      AC_SUBST(FLTK_LIBS)
++      enable_fltk=yes
++    fi
+   fi
+ fi
+ if test x$enable_fltk = xyes; then
 --- yagears-1.1.orig/gui.cc
 +++ yagears-1.1/gui.cc
 @@ -38,7 +38,11 @@

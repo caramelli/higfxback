@@ -7,6 +7,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 pkg-config --exists alsa-lib-build && REQUIRES="$REQUIRES alsa-lib-build"
 
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxrandr-build && REQUIRES="$REQUIRES libxrandr-build"
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
@@ -17,7 +18,7 @@ fi
 # configure (ac-2.61; lt-2.2.6)
 libtoolize -c -f -i; cat acinclude/* > aclocal.m4; autoconf
 cd test; cp acinclude.m4 aclocal.m4; autoconf; cd -
-LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-rpath --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xinerama --disable-video-x11-xme --disable-video-x11-xv --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-assembly --disable-dga --disable-rpath --disable-static --disable-video-fbcon --disable-video-x11-vm --disable-video-x11-xme --disable-video-x11-xv --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
 cd test; PKG_CONFIG_PATH=/x11/lib/pkgconfig SDL_CFLAGS="-I../include" SDL_LIBS="-L../build/.libs -lSDL -Wl,-rpath,/x11/lib" ./configure --with-testdatadir=/x11/share/SDL/test; cd -
 
 # build

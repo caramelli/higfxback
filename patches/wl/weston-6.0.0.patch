@@ -1,9 +1,11 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build cairo-build libinput-build libxkbcommon-build xkeyboard-config-build wayland-protocols-build"
+REQUIRES="autotools-wrappers-lt-build cairo-build jpeg-build libinput-build libxkbcommon-build xkeyboard-config-build wayland-protocols-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build libdrm-build libgbm-stub-build; then
   COMPOSITOR="--disable-wayland-compositor --disable-x11-compositor"

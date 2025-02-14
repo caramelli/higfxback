@@ -6,6 +6,7 @@ REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libpng-build tiff-b
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists fltk-build; then
+  PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires fltk-build | grep -q gl.*-build || { echo FLTK with OpenGL support required; exit 1; }
   FLTK=1
   REQUIRES="$REQUIRES fltk-build"
 fi
