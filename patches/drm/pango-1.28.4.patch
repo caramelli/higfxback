@@ -3,124 +3,124 @@
 # requires
 REQUIRES="autotools-wrappers-lt-build cairo-build harfbuzz-old-build"
 
-PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.63; am-1.11; lt-2.2.6)
+# configure (ac-2.65; am-1.11; lt-2.2.6b)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
 rm -rf pango/opentype
-PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --with-system-harfbuzz=old --prefix=/wl
+PKG_CONFIG_PATH=/drm/lib/pkgconfig ./configure --with-system-harfbuzz=old --prefix=/drm
 
 # build
 make
 
 # install
-install -d $DESTDIR/wl/bin
-install pango/.libs/pango-querymodules $DESTDIR/wl/bin
-install pango-view/.libs/pango-view $DESTDIR/wl/bin
-install -d $DESTDIR/wl/etc/pango
-install -d $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-attributes.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-bidi-type.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-break.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-context.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-coverage.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-engine.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-enum-types.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-features.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-font.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-fontmap.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-fontset.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-glyph-item.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-glyph.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-gravity.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-item.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-language.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-layout.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-matrix.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-renderer.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-script.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-tabs.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-types.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pango-utils.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pangocairo.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pangofc-decoder.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pangofc-font.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pangofc-fontmap.h $DESTDIR/wl/include/pango-1.0/pango
-install -m 644 pango/pangoft2.h $DESTDIR/wl/include/pango-1.0/pango
-install -d $DESTDIR/wl/lib
-install pango/.libs/libpango-1.0.so.0.* $DESTDIR/wl/lib/libpango-1.0.so.0
-ln -sf libpango-1.0.so.0 $DESTDIR/wl/lib/libpango-1.0.so
-install pango/.libs/libpangocairo-1.0.so.0.* $DESTDIR/wl/lib/libpangocairo-1.0.so.0
-ln -sf libpangocairo-1.0.so.0 $DESTDIR/wl/lib/libpangocairo-1.0.so
-install pango/.libs/libpangoft2-1.0.so.0.* $DESTDIR/wl/lib/libpangoft2-1.0.so.0
-ln -sf libpangoft2-1.0.so.0 $DESTDIR/wl/lib/libpangoft2-1.0.so
-install -d $DESTDIR/wl/lib/pango/1.6.0/modules
-install modules/basic/.libs/pango-basic-fc.so $DESTDIR/wl/lib/pango/1.6.0/modules
-install -d $DESTDIR/wl/lib/pkgconfig
-install -m 644 pango.pc $DESTDIR/wl/lib/pkgconfig
-install -m 644 pangocairo.pc $DESTDIR/wl/lib/pkgconfig
-install -m 644 pangoft2.pc $DESTDIR/wl/lib/pkgconfig
-LD_LIBRARY_PATH=$DESTDIR/wl/lib $DESTDIR/wl/bin/pango-querymodules > $DESTDIR/wl/etc/pango/pango.modules
+install -d $DESTDIR/drm/bin
+install pango/.libs/pango-querymodules $DESTDIR/drm/bin
+install pango-view/.libs/pango-view $DESTDIR/drm/bin
+install -d $DESTDIR/drm/etc/pango
+install -d $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-attributes.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-bidi-type.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-break.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-context.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-coverage.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-engine.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-enum-types.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-features.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-font.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-fontmap.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-fontset.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-glyph-item.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-glyph.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-gravity.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-item.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-language.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-layout.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-matrix.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-renderer.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-script.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-tabs.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-types.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pango-utils.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pangocairo.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pangofc-decoder.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pangofc-font.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pangofc-fontmap.h $DESTDIR/drm/include/pango-1.0/pango
+install -m 644 pango/pangoft2.h $DESTDIR/drm/include/pango-1.0/pango
+install -d $DESTDIR/drm/lib
+install pango/.libs/libpango-1.0.so.0.* $DESTDIR/drm/lib/libpango-1.0.so.0
+ln -sf libpango-1.0.so.0 $DESTDIR/drm/lib/libpango-1.0.so
+install pango/.libs/libpangocairo-1.0.so.0.* $DESTDIR/drm/lib/libpangocairo-1.0.so.0
+ln -sf libpangocairo-1.0.so.0 $DESTDIR/drm/lib/libpangocairo-1.0.so
+install pango/.libs/libpangoft2-1.0.so.0.* $DESTDIR/drm/lib/libpangoft2-1.0.so.0
+ln -sf libpangoft2-1.0.so.0 $DESTDIR/drm/lib/libpangoft2-1.0.so
+install -d $DESTDIR/drm/lib/pango/1.6.0/modules
+install modules/basic/.libs/pango-basic-fc.so $DESTDIR/drm/lib/pango/1.6.0/modules
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 pango.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pangocairo.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pangoft2.pc $DESTDIR/drm/lib/pkgconfig
+LD_LIBRARY_PATH=$DESTDIR/drm/lib $DESTDIR/drm/bin/pango-querymodules > $DESTDIR/drm/etc/pango/pango.modules
 
 # build.pc
-install -d $DESTDIR/wl/share/pkgconfig
-cat > $DESTDIR/wl/share/pkgconfig/pango-build.pc << EOF
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/pango-build.pc << EOF
 Name: pango
-Version: 1.26.2
+Version: 1.28.4
 Description: A library for layout and rendering of text
 Requires: $REQUIRES
 
 devel=\\
-/wl/include/pango-1.0/pango/pango.h \\
-/wl/include/pango-1.0/pango/pango-attributes.h \\
-/wl/include/pango-1.0/pango/pango-bidi-type.h \\
-/wl/include/pango-1.0/pango/pango-break.h \\
-/wl/include/pango-1.0/pango/pango-context.h \\
-/wl/include/pango-1.0/pango/pango-coverage.h \\
-/wl/include/pango-1.0/pango/pango-engine.h \\
-/wl/include/pango-1.0/pango/pango-enum-types.h \\
-/wl/include/pango-1.0/pango/pango-features.h \\
-/wl/include/pango-1.0/pango/pango-font.h \\
-/wl/include/pango-1.0/pango/pango-fontmap.h \\
-/wl/include/pango-1.0/pango/pango-fontset.h \\
-/wl/include/pango-1.0/pango/pango-glyph-item.h \\
-/wl/include/pango-1.0/pango/pango-glyph.h \\
-/wl/include/pango-1.0/pango/pango-gravity.h \\
-/wl/include/pango-1.0/pango/pango-item.h \\
-/wl/include/pango-1.0/pango/pango-language.h \\
-/wl/include/pango-1.0/pango/pango-layout.h \\
-/wl/include/pango-1.0/pango/pango-matrix.h \\
-/wl/include/pango-1.0/pango/pango-renderer.h \\
-/wl/include/pango-1.0/pango/pango-script.h \\
-/wl/include/pango-1.0/pango/pango-tabs.h \\
-/wl/include/pango-1.0/pango/pango-types.h \\
-/wl/include/pango-1.0/pango/pango-utils.h \\
-/wl/include/pango-1.0/pango/pangocairo.h \\
-/wl/include/pango-1.0/pango/pangofc-decoder.h \\
-/wl/include/pango-1.0/pango/pangofc-font.h \\
-/wl/include/pango-1.0/pango/pangofc-fontmap.h \\
-/wl/include/pango-1.0/pango/pangoft2.h \\
-/wl/lib/libpango-1.0.so \\
-/wl/lib/libpangocairo-1.0.so \\
-/wl/lib/libpangoft2-1.0.so \\
-/wl/lib/pkgconfig/pango.pc \\
-/wl/lib/pkgconfig/pangocairo.pc \\
-/wl/lib/pkgconfig/pangoft2.pc
+/drm/include/pango-1.0/pango/pango.h \\
+/drm/include/pango-1.0/pango/pango-attributes.h \\
+/drm/include/pango-1.0/pango/pango-bidi-type.h \\
+/drm/include/pango-1.0/pango/pango-break.h \\
+/drm/include/pango-1.0/pango/pango-context.h \\
+/drm/include/pango-1.0/pango/pango-coverage.h \\
+/drm/include/pango-1.0/pango/pango-engine.h \\
+/drm/include/pango-1.0/pango/pango-enum-types.h \\
+/drm/include/pango-1.0/pango/pango-features.h \\
+/drm/include/pango-1.0/pango/pango-font.h \\
+/drm/include/pango-1.0/pango/pango-fontmap.h \\
+/drm/include/pango-1.0/pango/pango-fontset.h \\
+/drm/include/pango-1.0/pango/pango-glyph-item.h \\
+/drm/include/pango-1.0/pango/pango-glyph.h \\
+/drm/include/pango-1.0/pango/pango-gravity.h \\
+/drm/include/pango-1.0/pango/pango-item.h \\
+/drm/include/pango-1.0/pango/pango-language.h \\
+/drm/include/pango-1.0/pango/pango-layout.h \\
+/drm/include/pango-1.0/pango/pango-matrix.h \\
+/drm/include/pango-1.0/pango/pango-renderer.h \\
+/drm/include/pango-1.0/pango/pango-script.h \\
+/drm/include/pango-1.0/pango/pango-tabs.h \\
+/drm/include/pango-1.0/pango/pango-types.h \\
+/drm/include/pango-1.0/pango/pango-utils.h \\
+/drm/include/pango-1.0/pango/pangocairo.h \\
+/drm/include/pango-1.0/pango/pangofc-decoder.h \\
+/drm/include/pango-1.0/pango/pangofc-font.h \\
+/drm/include/pango-1.0/pango/pangofc-fontmap.h \\
+/drm/include/pango-1.0/pango/pangoft2.h \\
+/drm/lib/libpango-1.0.so \\
+/drm/lib/libpangocairo-1.0.so \\
+/drm/lib/libpangoft2-1.0.so \\
+/drm/lib/pkgconfig/pango.pc \\
+/drm/lib/pkgconfig/pangocairo.pc \\
+/drm/lib/pkgconfig/pangoft2.pc
 
 exec=\\
-/wl/bin/pango-querymodules \\
-/wl/bin/pango-view \\
-/wl/lib/libpango-1.0.so.0 \\
-/wl/lib/libpangocairo-1.0.so.0 \\
-/wl/lib/libpangoft2-1.0.so.0 \\
-/wl/lib/pango/1.6.0/modules/pango-basic-fc.so
+/drm/bin/pango-querymodules \\
+/drm/bin/pango-view \\
+/drm/lib/libpango-1.0.so.0 \\
+/drm/lib/libpangocairo-1.0.so.0 \\
+/drm/lib/libpangoft2-1.0.so.0 \\
+/drm/lib/pango/1.6.0/modules/pango-basic-fc.so
 EOF
 
 exit
---- pango-1.26.2.orig/configure.in
-+++ pango-1.26.2/configure.in
-@@ -52,6 +52,7 @@
+--- pango-1.28.4.orig/configure.in
++++ pango-1.28.4/configure.in
+@@ -36,6 +36,7 @@
          [http://bugzilla.gnome.org/enter_bug.cgi?product=pango])
  
  AC_CONFIG_SRCDIR([pango.pc.in])
@@ -128,7 +128,7 @@ exit
  
  dnl -Wno-portability tells automake to stop complaining about the
  dnl usage of GNU Make specific features.
-@@ -226,6 +227,11 @@
+@@ -210,6 +211,11 @@
                                [disable all source autogeneration rules])],,
                [enable_rebuilds=yes])
  
@@ -140,7 +140,7 @@ exit
  AM_CONDITIONAL(CROSS_COMPILING, [test $cross_compiling = yes])
  
  have_x=false
-@@ -265,7 +271,22 @@
+@@ -249,7 +255,22 @@
    # By freetype, we really always mean freetype+fontconfig
    FREETYPE_CFLAGS="$FREETYPE_CFLAGS $FONTCONFIG_CFLAGS"
    FREETYPE_LIBS="$FREETYPE_LIBS $FONTCONFIG_LIBS"
@@ -163,7 +163,7 @@ exit
  AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
  
  #
-@@ -981,7 +1002,6 @@
+@@ -946,7 +967,6 @@
  Makefile 
  pango/Makefile
  pango/mini-fribidi/Makefile
@@ -171,7 +171,7 @@ exit
  pango/pango.rc
  pango/pangoft2.rc
  pango/pangowin32.rc
-@@ -1018,6 +1038,10 @@
+@@ -983,6 +1003,10 @@
  pango-zip.sh
  ])
  
@@ -182,9 +182,9 @@ exit
  AC_CONFIG_FILES([tests/runtests.sh],
  	        [chmod +x tests/runtests.sh])
  
---- pango-1.26.2.orig/m4/gtk-doc.m4
-+++ pango-1.26.2/m4/gtk-doc.m4
-@@ -0,0 +1,39 @@
+--- pango-1.28.4.orig/m4/gtk-doc.m4
++++ pango-1.28.4/m4/gtk-doc.m4
+@@ -0,0 +1,67 @@
 +dnl -*- mode: autoconf -*-
 +
 +# serial 1
@@ -193,8 +193,15 @@ exit
 +dnl   GTK_DOC_CHECK([minimum-gtk-doc-version])
 +AC_DEFUN([GTK_DOC_CHECK],
 +[
++  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
 +  AC_BEFORE([AC_PROG_LIBTOOL],[$0])dnl setup libtool first
 +  AC_BEFORE([AM_PROG_LIBTOOL],[$0])dnl setup libtool first
++
++  dnl check for tools we added during development
++  AC_PATH_PROG([GTKDOC_CHECK],[gtkdoc-check])
++  AC_PATH_PROGS([GTKDOC_REBASE],[gtkdoc-rebase],[true])
++  AC_PATH_PROG([GTKDOC_MKPDF],[gtkdoc-mkpdf])
++
 +  dnl for overriding the documentation installation directory
 +  AC_ARG_WITH([html-dir],
 +    AS_HELP_STRING([--with-html-dir=PATH], [path to installed docs]),,
@@ -213,31 +220,51 @@ exit
 +      [PKG_CHECK_EXISTS([gtk-doc],,
 +                        AC_MSG_ERROR([gtk-doc not installed and --enable-gtk-doc requested]))],
 +      [PKG_CHECK_EXISTS([gtk-doc >= $1],,
-+                        AC_MSG_ERROR([You need to have gtk-doc >= $1 installed to build gtk-doc]))])
++                        AC_MSG_ERROR([You need to have gtk-doc >= $1 installed to build $PACKAGE_NAME]))])
++    dnl don't check for glib if we build glib
++    if test "x$PACKAGE_NAME" != "xglib"; then
++      dnl don't fail if someone does not have glib
++      PKG_CHECK_MODULES(GTKDOC_DEPS, glib-2.0 >= 2.10.0 gobject-2.0  >= 2.10.0,,)
++    fi
 +  fi
 +
 +  AC_MSG_CHECKING([whether to build gtk-doc documentation])
 +  AC_MSG_RESULT($enable_gtk_doc)
 +
-+  AC_PATH_PROGS(GTKDOC_CHECK,gtkdoc-check,)
++  dnl enable/disable output formats
++  AC_ARG_ENABLE([gtk-doc-html],
++    AS_HELP_STRING([--enable-gtk-doc-html],
++                   [build documentation in html format [[default=yes]]]),,
++    [enable_gtk_doc_html=yes])
++    AC_ARG_ENABLE([gtk-doc-pdf],
++      AS_HELP_STRING([--enable-gtk-doc-pdf],
++                     [build documentation in pdf format [[default=no]]]),,
++      [enable_gtk_doc_pdf=no])
++
++  if test -z "$GTKDOC_MKPDF"; then
++    enable_gtk_doc_pdf=no
++  fi
++
 +
 +  AM_CONDITIONAL([ENABLE_GTK_DOC], [test x$enable_gtk_doc = xyes])
++  AM_CONDITIONAL([GTK_DOC_BUILD_HTML], [test x$enable_gtk_doc_html = xyes])
++  AM_CONDITIONAL([GTK_DOC_BUILD_PDF], [test x$enable_gtk_doc_pdf = xyes])
 +  AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], [test -n "$LIBTOOL"])
++  AM_CONDITIONAL([GTK_DOC_USE_REBASE], [test -n "$GTKDOC_REBASE"])
 +])
---- pango-1.26.2.orig/pango/Makefile.am
-+++ pango-1.26.2/pango/Makefile.am
-@@ -4,10 +4,6 @@
- # which are more like other make's VPATH.
- GPATH = $(srcdir)
+--- pango-1.28.4.orig/pango/Makefile.am
++++ pango-1.28.4/pango/Makefile.am
+@@ -10,17 +10,13 @@
+ INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) --add-include-path=.
+ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) --includedir=.
  
 -if HAVE_FREETYPE
 -OPENTYPE_SUBDIR=opentype
 -endif
 -
  EXTRA_DIST = 
- BUILT_GIRSOURCES =
  
-@@ -15,7 +11,7 @@
+ FRIBIDI_SUBDIR=mini-fribidi
  
  SUBDIRS = $(OPENTYPE_SUBDIR) $(FRIBIDI_SUBDIR)
  
@@ -246,7 +273,7 @@ exit
  
  INCLUDES =						\
  	-DG_LOG_DOMAIN=\"Pango\"			\
-@@ -238,16 +234,17 @@
+@@ -235,16 +231,17 @@
  	pangofc-decoder.c	\
  	pangoft2.c
  
@@ -266,37 +293,8 @@ exit
  	libpango-$(PANGO_API_VERSION).la	\
  	$(INCLUDED_FC_MODULES)
  libpangoft2_1_0_la_SOURCES =   	\
---- pango-1.26.2.orig/pango/opentype/hb-ot-layout.cc
-+++ pango-1.26.2/pango/opentype/hb-ot-layout.cc
-@@ -279,7 +279,6 @@
- 
- void
- hb_ot_layout_build_glyph_classes (hb_face_t      *face,
--				  uint16_t        num_total_glyphs,
- 				  hb_codepoint_t *glyphs,
- 				  unsigned char  *klasses,
- 				  uint16_t        count)
-@@ -293,7 +292,7 @@
-     return;
- 
-   if (layout->new_gdef.len == 0) {
--    layout->new_gdef.klasses = (unsigned char *) calloc (num_total_glyphs, sizeof (unsigned char));
-+    layout->new_gdef.klasses = (unsigned char *) calloc (count, sizeof (unsigned char));
-     layout->new_gdef.len = count;
-   }
- 
---- pango-1.26.2.orig/pango/opentype/hb-ot-layout.h
-+++ pango-1.26.2/pango/opentype/hb-ot-layout.h
-@@ -66,7 +66,6 @@
- 
- void
- hb_ot_layout_build_glyph_classes (hb_face_t      *face,
--				  uint16_t        num_total_glyphs,
- 				  hb_codepoint_t *glyphs,
- 				  unsigned char  *klasses,
- 				  uint16_t        count);
---- pango-1.26.2.orig/pango/pango-ot-buffer.c
-+++ pango-1.26.2/pango/pango-ot-buffer.c
+--- pango-1.28.4.orig/pango/pango-ot-buffer.c
++++ pango-1.28.4/pango/pango-ot-buffer.c
 @@ -25,26 +25,47 @@
  #include "pangofc-private.h"
  #include "pango-impl-utils.h"
@@ -485,8 +483,8 @@ exit
    if (buffer->applied_gpos)
      {
        gboolean scale = FALSE;
---- pango-1.26.2.orig/pango/pango-ot-info.c
-+++ pango-1.26.2/pango/pango-ot-info.c
+--- pango-1.28.4.orig/pango/pango-ot-info.c
++++ pango-1.28.4/pango/pango-ot-info.c
 @@ -23,12 +23,22 @@
  
  #include "pango-ot-private.h"
@@ -560,7 +558,7 @@ exit
        info->face = face;
  
 +#ifndef HARFBUZZ_OLD
-       if (face->stream->base != NULL) {
+       if (face->stream->read == NULL) {
  	hb_blob_t *blob;
  
 @@ -163,16 +193,25 @@
@@ -593,7 +591,7 @@ exit
      case G_UNICODE_COMBINING_MARK:
      case G_UNICODE_ENCLOSING_MARK:
      case G_UNICODE_NON_SPACING_MARK:
--      *class = 3;		/* Mark glyph (non-spacing combining glyph) */
+-      *class = HB_OT_LAYOUT_GLYPH_CLASS_MARK;		/* Mark glyph (non-spacing combining glyph) */
 +      *class = 8;		/* Mark glyph (non-spacing combining glyph) */
        return TRUE;
      case G_UNICODE_UNASSIGNED:
@@ -601,7 +599,7 @@ exit
        return FALSE;		/* Unknown, don't assign a class; classes get
  				 * propagated during GSUB application */
      default:
--      *class = 1;               /* Base glyph (single character, spacing glyph) */
+-      *class = HB_OT_LAYOUT_GLYPH_CLASS_BASE_GLYPH;	/* Base glyph (single character, spacing glyph) */
 +      *class = 2;		/* Base glyph (single character, spacing glyph) */
        return TRUE;
      }
@@ -634,22 +632,20 @@ exit
  
    for (i = 0, j = 0; i < glyph_infos->len; i++)
      {
-@@ -301,8 +350,12 @@
+@@ -301,7 +350,12 @@
  
    g_array_free (glyph_infos, TRUE);
  
--  hb_ot_layout_build_glyph_classes (info->hb_face, info->face->num_glyphs,
--				    glyph_indices, classes, j);
 +#ifdef HARFBUZZ_OLD
 +  HB_GDEF_Build_ClassDefinition (info->gdef, info->face->num_glyphs, j,
 +				 glyph_indices, classes);
 +#else
-+  hb_ot_layout_build_glyph_classes (info->hb_face, glyph_indices, classes, j);
+   hb_ot_layout_build_glyph_classes (info->hb_face, glyph_indices, classes, j);
 +#endif
  
    g_free (glyph_indices);
    g_free (classes);
-@@ -311,6 +364,122 @@
+@@ -310,6 +364,122 @@
      FT_Set_Charmap (info->face, old_charmap);
  }
  
@@ -772,7 +768,7 @@ exit
  static hb_tag_t
  get_hb_table_type (PangoOTTableType table_type)
  {
-@@ -320,6 +489,7 @@
+@@ -319,6 +489,7 @@
      default:                  return HB_TAG_NONE;
    }
  }
@@ -780,7 +776,7 @@ exit
  
  /**
   * pango_ot_info_find_script:
-@@ -346,11 +516,65 @@
+@@ -345,11 +516,65 @@
  			   PangoOTTag        script_tag,
  			   guint            *script_index)
  {
@@ -846,7 +842,7 @@ exit
  }
  
  /**
-@@ -382,6 +606,62 @@
+@@ -381,6 +606,62 @@
  			     guint            *language_index,
  			     guint            *required_feature_index)
  {
@@ -909,7 +905,7 @@ exit
    gboolean ret;
    unsigned l_index;
    hb_tag_t tt = get_hb_table_type (table_type);
-@@ -398,6 +678,7 @@
+@@ -397,6 +678,7 @@
  						    required_feature_index);
  
    return ret;
@@ -917,7 +913,7 @@ exit
  }
  
  /**
-@@ -430,6 +711,52 @@
+@@ -429,6 +711,52 @@
  			     guint             language_index,
  			     guint            *feature_index)
  {
@@ -970,7 +966,7 @@ exit
    hb_tag_t tt = get_hb_table_type (table_type);
  
    return hb_ot_layout_language_find_feature (info->hb_face, tt,
-@@ -437,6 +764,7 @@
+@@ -436,6 +764,7 @@
  					     language_index,
  					     feature_tag,
  					     feature_index);
@@ -978,7 +974,7 @@ exit
  }
  
  /**
-@@ -453,14 +781,31 @@
+@@ -452,14 +781,31 @@
  pango_ot_info_list_scripts (PangoOTInfo      *info,
  			    PangoOTTableType  table_type)
  {
@@ -1011,7 +1007,7 @@ exit
  
    return result;
  }
-@@ -483,14 +828,42 @@
+@@ -482,14 +828,42 @@
  			      guint             script_index,
  			      PangoOTTag        language_tag G_GNUC_UNUSED)
  {
@@ -1055,7 +1051,7 @@ exit
  
    return result;
  }
-@@ -517,18 +890,64 @@
+@@ -516,18 +890,64 @@
  			      guint             script_index,
  			      guint             language_index)
  {
@@ -1121,7 +1117,7 @@ exit
  void
  _pango_ot_info_substitute  (const PangoOTInfo    *info,
  			    const PangoOTRuleset *ruleset,
-@@ -539,14 +958,12 @@
+@@ -538,14 +958,12 @@
    for (i = 0; i < ruleset->rules->len; i++)
      {
        PangoOTRule *rule = &g_array_index (ruleset->rules, PangoOTRule, i);
@@ -1136,7 +1132,7 @@ exit
        lookup_count = G_N_ELEMENTS (lookup_indexes);
        hb_ot_layout_feature_get_lookup_indexes (info->hb_face,
  					       HB_OT_TAG_GSUB,
-@@ -587,14 +1004,12 @@
+@@ -588,14 +1006,12 @@
    for (i = 0; i < ruleset->rules->len; i++)
      {
        PangoOTRule *rule = &g_array_index (ruleset->rules, PangoOTRule, i);
@@ -1151,13 +1147,13 @@ exit
        lookup_count = G_N_ELEMENTS (lookup_indexes);
        hb_ot_layout_feature_get_lookup_indexes (info->hb_face,
  					       HB_OT_TAG_GPOS,
-@@ -637,3 +1052,4 @@
+@@ -638,3 +1054,4 @@
  
    hb_font_destroy (hb_font);
  }
 +#endif
---- pango-1.26.2.orig/pango/pango-ot-private.h
-+++ pango-1.26.2/pango/pango-ot-private.h
+--- pango-1.28.4.orig/pango/pango-ot-private.h
++++ pango-1.28.4/pango/pango-ot-private.h
 @@ -25,8 +25,12 @@
  #include <glib-object.h>
  
@@ -1217,8 +1213,8 @@ exit
  
  G_END_DECLS
  
---- pango-1.26.2.orig/pango/pango-ot-ruleset.c
-+++ pango-1.26.2/pango/pango-ot-ruleset.c
+--- pango-1.28.4.orig/pango/pango-ot-ruleset.c
++++ pango-1.28.4/pango/pango-ot-ruleset.c
 @@ -485,9 +485,36 @@
    g_return_if_fail (PANGO_IS_OT_RULESET (ruleset));
    g_return_if_fail (ruleset->info != NULL);

@@ -1,0 +1,152 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build fltk-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install dpid/dpid $DESTDIR/x11/bin
+install dpid/dpidc $DESTDIR/x11/bin
+install src/dillo $DESTDIR/x11/bin
+install -d $DESTDIR/x11/etc/dillo
+install -m 644 dillorc $DESTDIR/x11/etc/dillo
+install -m 644 dpid/dpidrc $DESTDIR/x11/etc/dillo
+install -d $DESTDIR/x11/lib/dillo/dpi/file
+install dpi/file.dpi $DESTDIR/x11/lib/dillo/dpi/file
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/dillo-build.pc << EOF
+Name: dillo
+Version: 3.0.5
+Description: web browser
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/dillo \\
+/x11/bin/dpid \\
+/x11/bin/dpidc \\
+/x11/etc/dillorc \\
+/x11/etc/dpidrc
+/x11/lib/dillo/dpi/file/file.dpi
+EOF
+
+exit
+--- dillo-3.0.5.orig/configure.ac
++++ dillo-3.0.5/configure.ac
+@@ -111,19 +111,18 @@
+ dnl -------------------------
+ dnl
+ dnl For debugging and to be user friendly
+-AC_MSG_CHECKING([FLTK 1.3])
+-AC_PATH_PROG(FLTK_CONFIG,fltk-config)
+-fltk_version="`$FLTK_CONFIG --version 2>/dev/null`"
+-case $fltk_version in
+-  1.3.*) AC_MSG_RESULT(yes)
++PKG_CHECK_MODULES(FLTK,fltk, [
++  LIBFLTK_CXXFLAGS=`$PKG_CONFIG --cflags fltk`
++  LIBFLTK_LIBS=`$PKG_CONFIG --libs fltk`;
++], [
++  AC_PATH_PROG(FLTK_CONFIG,fltk-config)
++  if test "x$FLTK_CONFIG" != x; then
+          LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
+-         LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+-         LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`;;
+-  ?*)    AC_MSG_RESULT(no)
+-         AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version);;
+-  *)     AC_MSG_RESULT(no)
+-         AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
+-esac
++         LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`
++  else
++         AC_MSG_ERROR(FLTK required)
++  fi
++])
+ 
+ dnl -----------------------------------
+ dnl Test for X11 (only on some systems)
+--- dillo-3.0.5.orig/dw/fltkplatform.cc
++++ dillo-3.0.5/dw/fltkplatform.cc
+@@ -24,10 +24,9 @@
+ #include "fltkcore.hh"
+ 
+ #include <FL/fl_draw.H>
++#include <FL/Fl.H>
+ #include <FL/Fl_Box.H>
+-#include <FL/Fl_Tooltip.H>
+ #include <FL/Fl_Menu_Window.H>
+-#include <FL/Fl_Paged_Device.H>
+ 
+ /*
+  * Local data
+--- dillo-3.0.5.orig/dw/fltkui.hh
++++ dillo-3.0.5/dw/fltkui.hh
+@@ -6,8 +6,7 @@
+ #endif
+ 
+ #include <FL/Fl_Button.H>
+-#include <FL/Fl_Menu.H>
+-#include <FL/Fl_Text_Buffer.H>
++#include <FL/Fl_Menu_Item.H>
+ 
+ namespace dw {
+ namespace fltk {
+--- dillo-3.0.5.orig/dw/fltkviewport.cc
++++ dillo-3.0.5/dw/fltkviewport.cc
+@@ -23,7 +23,6 @@
+ 
+ #include <FL/Fl.H>
+ #include <FL/fl_draw.H>
+-#include <FL/names.h>
+ 
+ #include <stdio.h>
+ #include "../lout/msg.h"
+--- dillo-3.0.5.orig/src/tipwin.cc
++++ dillo-3.0.5/src/tipwin.cc
+@@ -22,7 +22,6 @@
+ #include <FL/Fl.H>
+ #include <FL/Fl_Group.H>
+ #include <FL/Fl_Menu_Window.H>
+-#include <FL/Fl_Tooltip.H>
+ #include <FL/Fl_Button.H>
+ 
+ #include "prefs.h"
+--- dillo-3.0.5.orig/src/ui.cc
++++ dillo-3.0.5/src/ui.cc
+@@ -24,7 +24,6 @@
+ #include <FL/Fl.H>
+ #include <FL/Fl_Pixmap.H>
+ #include <FL/Fl_Box.H>
+-#include <FL/names.h>
+ 
+ // Include image data
+ #include "pixmaps.h"
+--- dillo-3.0.5.orig/src/ui.hh
++++ dillo-3.0.5/src/ui.hh
+@@ -9,7 +9,6 @@
+ #include <FL/Fl_Input.H>
+ #include <FL/Fl_Output.H>
+ #include <FL/Fl_Image.H>
+-#include <FL/Fl_Tabs.H>
+ 
+ #include "tipwin.hh"
+ #include "findbar.hh"
+--- dillo-3.0.5.orig/src/uicmd.cc
++++ dillo-3.0.5/src/uicmd.cc
+@@ -27,7 +27,6 @@
+ #include <FL/Fl_Box.H>
+ #include <FL/Fl_Pack.H>
+ #include <FL/Fl_Scroll.H>
+-#include <FL/names.h>
+ 
+ #include "paths.hh"
+ #include "keys.hh"
