@@ -1,0 +1,55 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="mkfontdir-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/share/fonts/type1
+install -m 644 c0419bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0419bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0582bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0582bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0583bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0583bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0611bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0611bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0632bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0632bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0633bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0633bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0648bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0648bt_.pfb $DESTDIR/share/fonts/type1
+install -m 644 c0649bt_.afm $DESTDIR/share/fonts/type1
+install -m 644 c0649bt_.pfb $DESTDIR/share/fonts/type1
+test $DESTDIR || mkfontscale /share/fonts/type1 && mkfontdir /share/fonts/type1
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/font-bitstream-type1-build.pc << EOF
+Name: font-bitstream-type1
+Version: 1.0.1
+Description: Type1 Bitstream Vera font
+Requires: $REQUIRES
+
+exec=\\
+/share/fonts/type1/c0419bt_.afm \\
+/share/fonts/type1/c0419bt_.pfb \\
+/share/fonts/type1/c0582bt_.afm \\
+/share/fonts/type1/c0582bt_.pfb \\
+/share/fonts/type1/c0583bt_.afm \\
+/share/fonts/type1/c0583bt_.pfb \\
+/share/fonts/type1/c0611bt_.afm \\
+/share/fonts/type1/c0611bt_.pfb \\
+/share/fonts/type1/c0632bt_.afm \\
+/share/fonts/type1/c0632bt_.pfb \\
+/share/fonts/type1/c0633bt_.afm \\
+/share/fonts/type1/c0633bt_.pfb \\
+/share/fonts/type1/c0648bt_.afm \\
+/share/fonts/type1/c0648bt_.pfb \\
+/share/fonts/type1/c0649bt_.afm \\
+/share/fonts/type1/c0649bt_.pfb
+EOF
+
+exit

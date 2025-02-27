@@ -1,0 +1,1132 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build jpeg-build libpng-build libxft-build libxmu-build xbitmaps-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I .; autoconf; autoheader -f; automake -a -c
+LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install clients/uil/.libs/uil $DESTDIR/x11/bin
+install clients/xmbind/.libs/xmbind $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/Mrm
+install -m 644 lib/Mrm/MrmDecls.h $DESTDIR/x11/include/Mrm
+install -m 644 lib/Mrm/MrmPublic.h $DESTDIR/x11/include/Mrm
+install -d $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/AccColorT.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ArrowB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ArrowBG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/AtomMgr.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/BaseClassP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/BulletinB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ButtonBox.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/CascadeB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/CascadeBG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ClipWindowP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ColorP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ColorS.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Column.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ComboBox.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Command.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Container.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/CutPaste.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DataF.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DialogS.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Display.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DragC.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DragDrop.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DragIcon.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DragOverS.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DrawingA.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DrawingAP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DrawnB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DrawUtils.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DropDown.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DropSMgr.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/DropTrans.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Ext.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/FileSB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/FontS.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Form.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Frame.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Gadget.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/GrabShell.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Hierarchy.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/IconBox.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/IconButton.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/IconFile.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/IconG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/IconH.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Label.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/LabelG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/LabelP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/List.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/MainW.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Manager.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ManagerP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/MenuShell.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/MessageB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/MultiList.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/MwmUtil.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/NavigatorT.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Notebook.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Outline.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Paned.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/PanedW.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Primitive.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/PrimitiveP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Protocols.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/PushB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/PushBG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/PushBP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/RepType.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/RowColumn.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/SashP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Scale.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Screen.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ScrollBar.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ScrolledW.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ScrollFrameT.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/SelectioB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/SeparatoG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Separator.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/SpinB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/SSpinB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TabBox.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TabList.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TabStack.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TearOffBP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Text.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TextF.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ToggleB.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/ToggleBG.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Transfer.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TransferP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Tree.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/TxtPropCv.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/VaSimpleP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/VendorS.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/VirtKeys.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/Xm.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XmAll.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XmIm.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XmP.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XmStrDefs.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XmStrDefs22.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XmStrDefs23.h $DESTDIR/x11/include/Xm
+install -m 644 lib/Xm/XpmP.h $DESTDIR/x11/include/Xm
+install -d $DESTDIR/x11/lib
+install lib/Mrm/.libs/libMrm.so.4.* $DESTDIR/x11/lib/libMrm.so.4
+ln -sf libMrm.so.4 $DESTDIR/x11/lib/libMrm.so
+install lib/Xm/.libs/libXm.so.4.* $DESTDIR/x11/lib/libXm.so.4
+ln -sf libXm.so.4 $DESTDIR/x11/lib/libXm.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 lib/Mrm/mrm.pc $DESTDIR/x11/lib/pkgconfig
+install -m 644 lib/Xm/xm.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/Xm/airport
+install demos/programs/airport/.libs/airport $DESTDIR/x11/share/Xm/airport
+install -d $DESTDIR/x11/share/Xm/animate
+install -m 644 demos/programs/animate/animate.help $DESTDIR/x11/share/Xm/animate/xmanimate.help
+install -m 644 demos/programs/animate/dog.uid $DESTDIR/x11/share/Xm/animate
+install -m 644 demos/programs/animate/xmanimate.uid $DESTDIR/x11/share/Xm/animate
+install demos/programs/animate/.libs/xmanimate $DESTDIR/x11/share/Xm/animate
+install -d $DESTDIR/x11/share/Xm/autopopups
+install demos/programs/popups/.libs/autopopups $DESTDIR/x11/share/Xm/autopopups
+install -d $DESTDIR/x11/share/Xm/ButtonBox
+install demos/programs/ButtonBox/.libs/bboxdemo $DESTDIR/x11/share/Xm/ButtonBox
+install -d $DESTDIR/x11/share/Xm/Color
+install demos/programs/ColorSel/.libs/colordemo $DESTDIR/x11/share/Xm/Color
+install -d $DESTDIR/x11/share/Xm/Column
+install demos/programs/Column/.libs/column $DESTDIR/x11/share/Xm/Column
+install -d $DESTDIR/x11/share/Xm/combo2
+install demos/programs/Combo2/.libs/combo $DESTDIR/x11/share/Xm/combo2
+install -d $DESTDIR/x11/share/Xm/drag_and_drop
+install demos/programs/drag_and_drop/.libs/DNDDemo $DESTDIR/x11/share/Xm/drag_and_drop
+install demos/programs/drag_and_drop/.libs/simpledrop $DESTDIR/x11/share/Xm/drag_and_drop
+install -d $DESTDIR/x11/share/Xm/draw
+install -m 644 demos/programs/draw/draw.help $DESTDIR/x11/share/Xm/draw
+install demos/programs/draw/.libs/draw $DESTDIR/x11/share/Xm/draw
+install -d $DESTDIR/x11/share/Xm/earth
+install demos/programs/earth/.libs/earth $DESTDIR/x11/share/Xm/earth
+install -d $DESTDIR/x11/share/Xm/Exm/app_in_c
+install demos/programs/Exm/app_in_c/.libs/exm_in_c $DESTDIR/x11/share/Xm/Exm/app_in_c
+install -d $DESTDIR/x11/share/Xm/Exm/simple_app
+install demos/programs/Exm/simple_app/.libs/simpleDemo $DESTDIR/x11/share/Xm/Exm/simple_app
+install -d $DESTDIR/x11/share/Xm/Ext18list
+install demos/programs/Ext18List/.libs/ext18list $DESTDIR/x11/share/Xm/Ext18list
+install -d $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/code.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/dir.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/exec.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/file.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/filemanager.help $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/none.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/obj.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/pix.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/s_dir.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/s_exec.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/s_file.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/s_none.xpm $DESTDIR/x11/share/Xm/filemanager
+install -m 644 demos/programs/filemanager/s_pix.xpm $DESTDIR/x11/share/Xm/filemanager
+install demos/programs/filemanager/.libs/filemanager $DESTDIR/x11/share/Xm/filemanager
+install -d $DESTDIR/x11/share/Xm/fileview
+install demos/programs/fileview/.libs/fileview $DESTDIR/x11/share/Xm/fileview
+install -d $DESTDIR/x11/share/Xm/fontsel
+install demos/programs/FontSel/.libs/fontsel $DESTDIR/x11/share/Xm/fontsel
+install -d $DESTDIR/x11/share/Xm/getsubres
+install -m 644 demos/programs/getsubres/getsubres.help $DESTDIR/x11/share/Xm/getsubres
+install demos/programs/getsubres/.libs/getsubres $DESTDIR/x11/share/Xm/getsubres
+install -d $DESTDIR/x11/share/Xm/helloint
+install demos/programs/hellomotifi18n/.libs/helloint $DESTDIR/x11/share/Xm/helloint
+install -m 644 demos/programs/hellomotifi18n/C/uid/l_strings.uid $DESTDIR/x11/share/Xm/helloint
+install -d $DESTDIR/x11/share/Xm/hellomotif
+install demos/programs/hellomotif/.libs/hellomotif $DESTDIR/x11/share/Xm/hellomotif
+install -m 644 demos/programs/hellomotif/hellomotif.uid $DESTDIR/x11/share/Xm/hellomotif
+install -d $DESTDIR/x11/share/Xm/i18ninput
+install -m 644 demos/programs/i18ninput/i18ninput.help $DESTDIR/x11/share/Xm/i18ninput
+install demos/programs/i18ninput/.libs/i18ninput $DESTDIR/x11/share/Xm/i18ninput
+install -d $DESTDIR/x11/share/Xm/Icon
+install demos/programs/IconB/.libs/iconbuttondemo $DESTDIR/x11/share/Xm/Icon
+install -d $DESTDIR/x11/share/Xm/Outline
+install demos/programs/Outline/.libs/outline $DESTDIR/x11/share/Xm/Outline
+install -d $DESTDIR/x11/share/Xm/Paned2
+install demos/programs/Paned/.libs/paned $DESTDIR/x11/share/Xm/Paned2
+install -d $DESTDIR/x11/share/Xm/panner
+install demos/programs/panner/.libs/panner $DESTDIR/x11/share/Xm/panner
+install -d $DESTDIR/x11/share/Xm/periodic
+install demos/programs/periodic/.libs/periodic $DESTDIR/x11/share/Xm/periodic
+install -m 644 demos/programs/periodic/periodic.uid $DESTDIR/x11/share/Xm/periodic
+install -d $DESTDIR/x11/share/Xm/piano
+install demos/programs/piano/.libs/piano $DESTDIR/x11/share/Xm/piano
+install -d $DESTDIR/x11/share/Xm/sampler2_0
+install demos/programs/sampler2_0/.libs/sampler2_0 $DESTDIR/x11/share/Xm/sampler2_0
+install -m 644 demos/programs/sampler2_0/sampler2_0.help $DESTDIR/x11/share/Xm/sampler2_0
+install -d $DESTDIR/x11/share/Xm/setDate
+install demos/programs/setdate/.libs/setDate $DESTDIR/x11/share/Xm/setDate
+install -d $DESTDIR/x11/share/Xm/Tabstack
+install demos/programs/TabStack/.libs/tabstack $DESTDIR/x11/share/Xm/Tabstack
+install -d $DESTDIR/x11/share/Xm/todo
+install demos/programs/todo/.libs/todo $DESTDIR/x11/share/Xm/todo
+install -m 644 demos/programs/todo/todo.help $DESTDIR/x11/share/Xm/todo
+install -d $DESTDIR/x11/share/Xm/tooltips
+install demos/programs/tooltips/.libs/tooltips $DESTDIR/x11/share/Xm/tooltips
+install -d $DESTDIR/x11/share/Xm/Tree
+install demos/programs/Tree/.libs/tree $DESTDIR/x11/share/Xm/Tree
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/motif-build.pc << EOF
+Name: motif
+Version: 2.3.8
+Description: Motif Widgets library
+Requires: $REQUIRES
+
+devel=\\
+/x11/bin/uil \\
+/x11/include/Mrm/MrmDecls.h \\
+/x11/include/Mrm/MrmPublic.h \\
+/x11/include/Xm/AccColorT.h \\
+/x11/include/Xm/ArrowB.h \\
+/x11/include/Xm/ArrowBG.h \\
+/x11/include/Xm/AtomMgr.h \\
+/x11/include/Xm/BaseClassP.h \\
+/x11/include/Xm/BulletinB.h \\
+/x11/include/Xm/ButtonBox.h \\
+/x11/include/Xm/CascadeB.h \\
+/x11/include/Xm/CascadeBG.h \\
+/x11/include/Xm/ClipWindowP.h \\
+/x11/include/Xm/ColorP.h \\
+/x11/include/Xm/ColorS.h \\
+/x11/include/Xm/Column.h \\
+/x11/include/Xm/ComboBox.h \\
+/x11/include/Xm/Command.h \\
+/x11/include/Xm/Container.h \\
+/x11/include/Xm/CutPaste.h \\
+/x11/include/Xm/DataF.h \\
+/x11/include/Xm/DialogS.h \\
+/x11/include/Xm/Display.h \\
+/x11/include/Xm/DragC.h \\
+/x11/include/Xm/DragDrop.h \\
+/x11/include/Xm/DragIcon.h \\
+/x11/include/Xm/DragOverS.h \\
+/x11/include/Xm/DrawUtils.h \\
+/x11/include/Xm/DrawingA.h \\
+/x11/include/Xm/DrawingAP.h \\
+/x11/include/Xm/DrawnB.h \\
+/x11/include/Xm/DropDown.h \\
+/x11/include/Xm/DropSMgr.h \\
+/x11/include/Xm/DropTrans.h \\
+/x11/include/Xm/Ext.h \\
+/x11/include/Xm/FileSB.h \\
+/x11/include/Xm/FontS.h \\
+/x11/include/Xm/Form.h \\
+/x11/include/Xm/Frame.h \\
+/x11/include/Xm/Gadget.h \\
+/x11/include/Xm/GrabShell.h \\
+/x11/include/Xm/Hierarchy.h \\
+/x11/include/Xm/IconBox.h \\
+/x11/include/Xm/IconButton.h \\
+/x11/include/Xm/IconFile.h \\
+/x11/include/Xm/IconG.h \\
+/x11/include/Xm/IconH.h \\
+/x11/include/Xm/Label.h \\
+/x11/include/Xm/LabelG.h \\
+/x11/include/Xm/LabelP.h \\
+/x11/include/Xm/List.h \\
+/x11/include/Xm/MainW.h \\
+/x11/include/Xm/Manager.h \\
+/x11/include/Xm/ManagerP.h \\
+/x11/include/Xm/MenuShell.h \\
+/x11/include/Xm/MessageB.h \\
+/x11/include/Xm/MultiList.h \\
+/x11/include/Xm/MwmUtil.h \\
+/x11/include/Xm/NavigatorT.h \\
+/x11/include/Xm/Notebook.h \\
+/x11/include/Xm/Outline.h \\
+/x11/include/Xm/Paned.h \\
+/x11/include/Xm/PanedW.h \\
+/x11/include/Xm/Primitive.h \\
+/x11/include/Xm/PrimitiveP.h \\
+/x11/include/Xm/Protocols.h \\
+/x11/include/Xm/PushB.h \\
+/x11/include/Xm/PushBG.h \\
+/x11/include/Xm/PushBP.h \\
+/x11/include/Xm/RepType.h \\
+/x11/include/Xm/RowColumn.h \\
+/x11/include/Xm/SSpinB.h \\
+/x11/include/Xm/SashP.h \\
+/x11/include/Xm/Scale.h \\
+/x11/include/Xm/Screen.h \\
+/x11/include/Xm/ScrollBar.h \\
+/x11/include/Xm/ScrollFrameT.h \\
+/x11/include/Xm/ScrolledW.h \\
+/x11/include/Xm/SelectioB.h \\
+/x11/include/Xm/SeparatoG.h \\
+/x11/include/Xm/Separator.h \\
+/x11/include/Xm/SpinB.h \\
+/x11/include/Xm/TabBox.h \\
+/x11/include/Xm/TabList.h \\
+/x11/include/Xm/TabStack.h \\
+/x11/include/Xm/TearOffBP.h \\
+/x11/include/Xm/Text.h \\
+/x11/include/Xm/TextF.h \\
+/x11/include/Xm/ToggleB.h \\
+/x11/include/Xm/ToggleBG.h \\
+/x11/include/Xm/Transfer.h \\
+/x11/include/Xm/TransferP.h \\
+/x11/include/Xm/Tree.h \\
+/x11/include/Xm/TxtPropCv.h \\
+/x11/include/Xm/VaSimpleP.h \\
+/x11/include/Xm/VendorS.h \\
+/x11/include/Xm/VirtKeys.h \\
+/x11/include/Xm/Xm.h \\
+/x11/include/Xm/XmAll.h \\
+/x11/include/Xm/XmIm.h \\
+/x11/include/Xm/XmP.h \\
+/x11/include/Xm/XmStrDefs.h \\
+/x11/include/Xm/XmStrDefs22.h \\
+/x11/include/Xm/XmStrDefs23.h \\
+/x11/include/Xm/XpmP.h \\
+/x11/lib/libMrm.so \\
+/x11/lib/libXm.so \\
+/x11/lib/pkgconfig/mrm.pc \\
+/x11/lib/pkgconfig/xm.pc
+
+exec=\\
+/x11/bin/xmbind \\
+/x11/lib/libMrm.so.4 \\
+/x11/lib/libXm.so.4 \\
+/x11/share/Xm/airport/airport \\
+/x11/share/Xm/animate/dog.uid \\
+/x11/share/Xm/animate/xmanimate.help \\
+/x11/share/Xm/animate/xmanimate.uid \\
+/x11/share/Xm/autopopups/autopopups \\
+/x11/share/Xm/ButtonBox/bboxdemo \\
+/x11/share/Xm/Color/colordemo \\
+/x11/share/Xm/Column/column \\
+/x11/share/Xm/combo2/combo \\
+/x11/share/Xm/drag_and_drop/DNDDemo \\
+/x11/share/Xm/drag_and_drop/simpledrop \\
+/x11/share/Xm/draw/draw \\
+/x11/share/Xm/draw/draw.help \\
+/x11/share/Xm/earth/earth \\
+/x11/share/Xm/Exm/app_in_c/exm_in_c \\
+/x11/share/Xm/Exm/simple_app/simpleDemo \\
+/x11/share/Xm/Ext18list/ext18list \\
+/x11/share/Xm/filemanager/code.xpm \\
+/x11/share/Xm/filemanager/dir.xpm \\
+/x11/share/Xm/filemanager/exec.xpm \\
+/x11/share/Xm/filemanager/file.xpm \\
+/x11/share/Xm/filemanager/filemanager \\
+/x11/share/Xm/filemanager/filemanager.help \\
+/x11/share/Xm/filemanager/none.xpm \\
+/x11/share/Xm/filemanager/obj.xpm \\
+/x11/share/Xm/filemanager/pix.xpm \\
+/x11/share/Xm/filemanager/s_dir.xpm \\
+/x11/share/Xm/filemanager/s_exec.xpm \\
+/x11/share/Xm/filemanager/s_file.xpm \\
+/x11/share/Xm/filemanager/s_none.xpm \\
+/x11/share/Xm/filemanager/s_pix.xpm \\
+/x11/share/Xm/fileview/fileview \\
+/x11/share/Xm/fontsel/fontsel \\
+/x11/share/Xm/getsubres/getsubres \\
+/x11/share/Xm/getsubres/getsubres.help \\
+/x11/share/Xm/helloint/helloint \\
+/x11/share/Xm/helloint/l_strings.uid \\
+/x11/share/Xm/hellomotif/hellomotif \\
+/x11/share/Xm/hellomotif/hellomotif.uid \\
+/x11/share/Xm/i18ninput/i18ninput \\
+/x11/share/Xm/i18ninput/i18ninput.help \\
+/x11/share/Xm/Icon/iconbuttondemo \\
+/x11/share/Xm/Outline/outline \\
+/x11/share/Xm/Paned2/paned \\
+/x11/share/Xm/panner/panner \\
+/x11/share/Xm/periodic/periodic \\
+/x11/share/Xm/periodic/periodic.uid \\
+/x11/share/Xm/piano/piano \\
+/x11/share/Xm/sampler2_0/sampler2_0 \\
+/x11/share/Xm/sampler2_0/sampler2_0.help \\
+/x11/share/Xm/setDate/setDate \\
+/x11/share/Xm/Tabstack/tabstack \\
+/x11/share/Xm/todo/todo \\
+/x11/share/Xm/todo/todo.help \\
+/x11/share/Xm/tooltips/tooltips \\
+/x11/share/Xm/Tree/tree
+EOF
+
+exit
+--- motif-2.3.8.orig/ac_find_xft.m4
++++ motif-2.3.8/ac_find_xft.m4
+@@ -40,7 +40,7 @@
+ yes)
+ 	case "$ft_config" in
+ 	no)
+-		FREETYPE_CFLAGS=""
++		FREETYPE_CFLAGS="`pkg-config freetype2 --cflags`"
+ 		;;
+ 	*)
+ 		FREETYPE_CFLAGS="`$ft_config --cflags`"
+@@ -59,7 +59,7 @@
+ yes)
+ 	case "$ft_config" in
+ 	no)
+-		freetype_lib=""
++		freetype_lib="`pkg-config freetype2 --libs`"
+ 		;;
+ 	*)
+ 		freetype_lib="`$ft_config --libs`"
+@@ -247,19 +247,7 @@
+ 	;;
+ esac
+ 
+-dnl
+-dnl Should this be conditionally defined ?
+-dnl
+-
+-dnl if test "$FINDXFT_HAVE_XRENDER" = "yes" -a "$FINDXFT_HAVE_FREETYPE" = "yes"
+-dnl then
+- 	AC_DEFINE(USE_XFT, 1, This means we will be using the Xft library)
+-CFLAGS="$CFLAGS `pkg-config xft --cflags`"
+-AC_SUBST(CFLAGS)
+-LIBS="$LIBS `pkg-config xft --libs`"
+-AC_SUBST(LIBS)
+-
+-dnl fi
++AC_DEFINE(USE_XFT, 1, This means we will be using the Xft library)
+ 
+ fi
+ ])
+--- motif-2.3.8.orig/clients/mwm/Makefile.am
++++ motif-2.3.8/clients/mwm/Makefile.am
+@@ -11,7 +11,7 @@
+ bin_PROGRAMS = mwm
+ mwm_LDADD = ./WmWsmLib/libWsm.a ../../lib/Xm/libXm.la 
+ 
+-INCLUDES = -DLARGECURSORS -DR2_COMPAT -DUNMAP_ON_RESTART \
++AM_CPPFLAGS = -DLARGECURSORS -DR2_COMPAT -DUNMAP_ON_RESTART \
+            -DCDE_INSTALLATION_TOP=\"@CDE_INSTALLATION_TOP@\" \
+            -DCDE_CONFIGURATION_TOP=\"@CDE_CONFIGURATION_TOP@\" \
+            -DBITMAPDIR=\"@INCDIR@/bitmaps\" \
+--- motif-2.3.8.orig/clients/mwm/WmWsmLib/Makefile.am
++++ motif-2.3.8/clients/mwm/WmWsmLib/Makefile.am
+@@ -4,7 +4,7 @@
+ 
+ noinst_HEADERS = utm_send.h	wsm_funcs.h	wsm_proto.h
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ libWsm_a_SOURCES = $(SRCS)
+ 
+--- motif-2.3.8.orig/clients/uil/Makefile.am
++++ motif-2.3.8/clients/uil/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ uil_LDADD = ../../lib/Mrm/libMrm.la ../../lib/Xm/libXm.la 
+ 
+-INCLUDES = -DINCDIR=\"@INCDIR@\" \
++AM_CPPFLAGS = -DINCDIR=\"@INCDIR@\" \
+            -DLIBDIR=\"@LIBDIR@\" \
+            -I$(srcdir)/../../include \
+            -I$(srcdir)/../../lib \
+--- motif-2.3.8.orig/clients/xmbind/Makefile.am
++++ motif-2.3.8/clients/xmbind/Makefile.am
+@@ -4,4 +4,4 @@
+ 
+ LDADD = ../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS}
++AM_CPPFLAGS = -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS}
+--- motif-2.3.8.orig/config/util/Makefile.am
++++ motif-2.3.8/config/util/Makefile.am
+@@ -6,7 +6,7 @@
+ 	     mkdirhier.man mkdirhier.sh syminst.sh x11mf.sh \
+ 	     xmkmf.cpp xmkmf.man Makefile.ini
+ 
+-INCLUDES = ${X_CFLAGS}
++AM_CPPFLAGS = ${X_CFLAGS}
+ noinst_PROGRAMS = makestrs
+ 
+ 
+--- motif-2.3.8.orig/configure.ac
++++ motif-2.3.8/configure.ac
+@@ -1,5 +1,5 @@
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT
++AC_INIT(motif, 2.3.8)
+ AC_CONFIG_SRCDIR([lib/Xm/Form.c])
+ AC_PREREQ(2.52)
+ AC_CONFIG_AUX_DIR(.)
+@@ -22,7 +22,7 @@
+ AC_SUBST(AGE)
+ 
+ dnl This is really dumb but it seems to be bug
+-AM_INIT_AUTOMAKE(motif,2.3.8,no-define)
++AM_INIT_AUTOMAKE(foreign)
+ 
+ LIBTOOL_VERSION=$CURRENT:$REVISION:$AGE
+ 
+@@ -389,6 +389,8 @@
+ demos/doc/programGuide/ch17/Makefile \
+ demos/doc/programGuide/ch17/simple_drop/Makefile \
+ demos/doc/programGuide/ch17/simple_drag/Makefile \
++lib/Mrm/mrm.pc \
++lib/Xm/xm.pc \
+ lib/Xm/xmstring.list \
+ ])
+ AC_OUTPUT
+--- motif-2.3.8.orig/demos/doc/programGuide/ch05/Scale/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch05/Scale/Makefile.am
+@@ -6,6 +6,6 @@
+ 
+ tic_mark_SOURCES = tic_mark.c interface.c
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch06/combo_box/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch06/combo_box/Makefile.am
+@@ -7,6 +7,6 @@
+ combo_box_SOURCES = combo_box.c interface.c
+ 
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch06/spin_box/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch06/spin_box/Makefile.am
+@@ -7,6 +7,6 @@
+ spin_box_SOURCES = spin_box.c interface.c
+ 
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch08/Container/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch08/Container/Makefile.am
+@@ -6,6 +6,6 @@
+ 
+ container_SOURCES = container.c  interface.c
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch08/Notebook/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch08/Notebook/Makefile.am
+@@ -6,6 +6,6 @@
+ 
+ notebook_SOURCES = interface.c  notebook.c
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch16/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch16/Makefile.am
+@@ -7,6 +7,6 @@
+ UTMXmText_SOURCES = UTMXmText.c
+ 
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch17/simple_drag/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch17/simple_drag/Makefile.am
+@@ -7,6 +7,6 @@
+ simple_drag_SOURCES = simple_drag.c 
+ 
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/doc/programGuide/ch17/simple_drop/Makefile.am
++++ motif-2.3.8/demos/doc/programGuide/ch17/simple_drop/Makefile.am
+@@ -7,6 +7,6 @@
+ simple_drop_SOURCES = simple_drop.c 
+ 
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(top_srcdir)/demos/lib $(X_CFLAGS)
+ 
+ LDADD = -L$(top_builddir)/demos/lib/Xmd -lXmd $(top_builddir)/lib/Xm/libXm.la
+--- motif-2.3.8.orig/demos/lib/Exm/Makefile.am
++++ motif-2.3.8/demos/lib/Exm/Makefile.am
+@@ -4,7 +4,7 @@
+ 
+ noinst_LIBRARIES = libExm.a libExmMrm.a
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(srcdir)/.. -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(srcdir)/.. -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ CLEANFILES = Grid.E
+    
+--- motif-2.3.8.orig/demos/lib/Exm/wml/Makefile.am
++++ motif-2.3.8/demos/lib/Exm/wml/Makefile.am
+@@ -9,7 +9,7 @@
+ 
+ WMLDIR = $(top_srcdir)/tools/wml
+ 
+-INCLUDES = -I$(top_srcdir)/lib \
++AM_CPPFLAGS = -I$(top_srcdir)/lib \
+         -I$(top_builddir)/lib \
+ 	-I$(top_srcdir)/include \
+ 	-I$(srcdir)/../.. \
+--- motif-2.3.8.orig/demos/lib/Wsm/Makefile.am
++++ motif-2.3.8/demos/lib/Wsm/Makefile.am
+@@ -6,4 +6,4 @@
+ 
+ noinst_HEADERS = wsm_funcs.h wsm_proto.h utm_send.h
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/lib/Xmd/Makefile.am
++++ motif-2.3.8/demos/lib/Xmd/Makefile.am
+@@ -14,7 +14,7 @@
+ 
+ LDADD = libXmd.a ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(top_builddir)/lib -I$(srcdir)/../../../lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(top_builddir)/lib -I$(srcdir)/../../../lib ${X_CFLAGS} 
+ 
+ EXTRA_DIST =
+ 
+--- motif-2.3.8.orig/demos/programs/ButtonBox/Makefile.am
++++ motif-2.3.8/demos/programs/ButtonBox/Makefile.am
+@@ -10,4 +10,4 @@
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/ColorSel/Makefile.am
++++ motif-2.3.8/demos/programs/ColorSel/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(colordemo_SOURCES) $(EXTRA_DIST)
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ TOPDIR = ../../..
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Column/Makefile.am
++++ motif-2.3.8/demos/programs/Column/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(EXTRA_DIST) $(column_SOURCES)
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Combo2/Makefile.am
++++ motif-2.3.8/demos/programs/Combo2/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(EXTRA_DIST) $(combo_SOURCES)
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Exm/app_in_c/Makefile.am
++++ motif-2.3.8/demos/programs/Exm/app_in_c/Makefile.am
+@@ -9,7 +9,7 @@
+ 
+ EXTRA_DIST = exm_in_c.man
+ 
+-INCLUDES = -I$(srcdir)/../../../../lib \
++AM_CPPFLAGS = -I$(srcdir)/../../../../lib \
+            -I$(srcdir)/../../../lib \
+            -I$(top_builddir)/lib \
+             ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Exm/app_in_uil/Makefile.am
++++ motif-2.3.8/demos/programs/Exm/app_in_uil/Makefile.am
+@@ -10,7 +10,7 @@
+ LDADD = -L../../../lib/Exm -lExmMrm -lExm  $(top_builddir)/lib/Mrm/libMrm.la
+ 
+ 
+-INCLUDES = -I$(top_srcdir)/lib -I$(top_srcdir)/lib -I../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/lib -I../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ SUFFIXES = .uil .uid
+ 
+--- motif-2.3.8.orig/demos/programs/Exm/simple_app/Makefile.am
++++ motif-2.3.8/demos/programs/Exm/simple_app/Makefile.am
+@@ -10,7 +10,7 @@
+ 
+ EXTRA_DIST = simpleDemo.man README
+ 
+-INCLUDES = -I$(srcdir)/../../../../lib \
++AM_CPPFLAGS = -I$(srcdir)/../../../../lib \
+            -I$(srcdir)/../../../lib \
+            -I$(top_builddir)/lib \
+            ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Ext18List/Makefile.am
++++ motif-2.3.8/demos/programs/Ext18List/Makefile.am
+@@ -12,4 +12,4 @@
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(TOPDIR)/lib -I.. -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I.. -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/FontSel/Makefile.am
++++ motif-2.3.8/demos/programs/FontSel/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(EXTRA_DIST) $(fontsel_SOURCES)
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ TOPDIR = ../../..
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/IconB/Makefile.am
++++ motif-2.3.8/demos/programs/IconB/Makefile.am
+@@ -10,6 +10,6 @@
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/.. \
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/.. \
+            -I$(srcdir)/$(TOPDIR)/lib \
+            ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Outline/Makefile.am
++++ motif-2.3.8/demos/programs/Outline/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(outline_SOURCES) $(EXTRA_DIST)
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ TOPDIR = ../../..
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Paned/Makefile.am
++++ motif-2.3.8/demos/programs/Paned/Makefile.am
+@@ -10,4 +10,4 @@
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/TabStack/Makefile.am
++++ motif-2.3.8/demos/programs/TabStack/Makefile.am
+@@ -10,4 +10,4 @@
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/Tree/Makefile.am
++++ motif-2.3.8/demos/programs/Tree/Makefile.am
+@@ -10,4 +10,4 @@
+ TOPDIR = ../../..
+ LDADD = $(TOPDIR)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(TOPDIR)/lib -I$(srcdir)/.. -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(TOPDIR)/lib -I$(srcdir)/.. -I$(srcdir)/$(TOPDIR)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/airport/Makefile.am
++++ motif-2.3.8/demos/programs/airport/Makefile.am
+@@ -9,4 +9,4 @@
+ EXTRA_DIST = XmdAirport.ad README
+ data_DATA = $(airport_SOURCES) $(EXTRA_DIST)
+ LDADD = ../../../lib/Xm/libXm.la
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/animate/Makefile.am
++++ motif-2.3.8/demos/programs/animate/Makefile.am
+@@ -19,7 +19,7 @@
+ 
+ LDADD = ../../lib/Xmd/libXmd.a ../../../lib/Mrm/libMrm.la ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib \
++AM_CPPFLAGS = -I$(srcdir)/../../../lib \
+            -I$(srcdir)/../../lib \
+            -I$(top_builddir)/lib \
+            ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/drag_and_drop/Makefile.am
++++ motif-2.3.8/demos/programs/drag_and_drop/Makefile.am
+@@ -12,4 +12,4 @@
+ noinst_HEADERS = DNDDemo.h
+ LDADD = ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/draw/Makefile.am
++++ motif-2.3.8/demos/programs/draw/Makefile.am
+@@ -8,4 +8,4 @@
+ EXTRA_DIST = XmdDraw.ad README draw.help draw.man
+ data_DATA = $(EXTRA_DIST) $(draw_SOURCES)
+ LDADD = ../../lib/Xmd/libXmd.a ../../../lib/Xm/libXm.la
+-INCLUDES = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/earth/Makefile.am
++++ motif-2.3.8/demos/programs/earth/Makefile.am
+@@ -8,4 +8,4 @@
+ EXTRA_DIST = terre.xbm earth.man README
+ data_DATA = $(EXTRA_DIST) $(earth_SOURCES)
+ LDADD = ../../../lib/Xm/libXm.la
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/filemanager/Makefile.am
++++ motif-2.3.8/demos/programs/filemanager/Makefile.am
+@@ -12,6 +12,6 @@
+            s_none.xpm s_pix.xpm
+ data_DATA = $(EXTRA_DIST) $(filemanager_SOURCES)
+ LDADD = ../../lib/Xmd/libXmd.a ../../../lib/Xm/libXm.la
+-INCLUDES = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ 
+--- motif-2.3.8.orig/demos/programs/fileview/Makefile.am
++++ motif-2.3.8/demos/programs/fileview/Makefile.am
+@@ -13,7 +13,7 @@
+ 
+ LDADD = ../../../lib/Xm/libXm.la ../../../lib/Mrm/libMrm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ all: French.uid German.uid English.uid
+ 
+--- motif-2.3.8.orig/demos/programs/getsubres/Makefile.am
++++ motif-2.3.8/demos/programs/getsubres/Makefile.am
+@@ -8,4 +8,4 @@
+ getsubres_SOURCES = getsubres.c
+ data_DATA = $(EXTRA_DIST) $(getsubres_SOURCES)
+ LDADD = ../../lib/Xmd/libXmd.a ../../../lib/Xm/libXm.la
+-INCLUDES = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/hellomotif/Makefile.am
++++ motif-2.3.8/demos/programs/hellomotif/Makefile.am
+@@ -8,7 +8,7 @@
+ hellomotif_SOURCES = hellomotif.c
+ data_DATA = $(EXTRA_DIST) $(hellomotif_SOURCES) hellomotif.uid
+ LDADD = ../../../lib/Xm/libXm.la ../../../lib/Mrm/libMrm.la
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ all: hellomotif.uid
+ 
+--- motif-2.3.8.orig/demos/programs/hellomotifi18n/Makefile.am
++++ motif-2.3.8/demos/programs/hellomotifi18n/Makefile.am
+@@ -11,7 +11,7 @@
+ data_DATA = $(EXTRA_DIST) $(helloint_SOURCES) helloint.uid
+ helloint_DEPENDENCIES = helloint.uid C/uid/l_strings.uid english/uid/l_strings.uid french/uid/l_strings.uid hebrew/uid/l_strings.uid japan/uid/l_strings.uid japanese/uid/l_strings.uid swedish/uid/l_strings.uid
+ 
+-INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ LDADD = $(top_builddir)/lib/Mrm/libMrm.la $(top_builddir)/lib/Xm/libXm.la
+ 
+ SUFFIXES = .uil .uid
+--- motif-2.3.8.orig/demos/programs/i18ninput/Makefile.am
++++ motif-2.3.8/demos/programs/i18ninput/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(EXTRA_DIST) $(i18ninput_SOURCES)
+ LDADD = ../../lib/Xmd/libXmd.a ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/panner/Makefile.am
++++ motif-2.3.8/demos/programs/panner/Makefile.am
+@@ -8,4 +8,4 @@
+ EXTRA_DIST = README panner.man
+ data_DATA = $(EXTRA_DIST) $(panner_SOURCES)
+ LDADD = ../../../lib/Xm/libXm.la
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/periodic/Makefile.am
++++ motif-2.3.8/demos/programs/periodic/Makefile.am
+@@ -9,7 +9,7 @@
+ data_DATA = $(EXTRA_DIST) $(periodic_SOURCES) periodic.uid
+ LDADD = ../../../lib/Xm/libXm.la ../../../lib/Mrm/libMrm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ all: periodic.uid
+ 
+--- motif-2.3.8.orig/demos/programs/piano/Makefile.am
++++ motif-2.3.8/demos/programs/piano/Makefile.am
+@@ -10,4 +10,4 @@
+ data_DATA  = $(EXTRA_DIST) $(piano_SOURCES) 
+ LDADD = ../../../lib/Xm/libXm.la -lm
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/popups/Makefile.am
++++ motif-2.3.8/demos/programs/popups/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(EXTRA_DIST) $(autopopups_SOURCES)
+ LDADD = ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/sampler2_0/Makefile.am
++++ motif-2.3.8/demos/programs/sampler2_0/Makefile.am
+@@ -12,4 +12,4 @@
+ data_DATA = $(sampler2_0_SOURCES) $(EXTRA_DIST)
+ LDADD = ../../lib/Xmd/libXmd.a ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../lib -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/setdate/Makefile.am
++++ motif-2.3.8/demos/programs/setdate/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(EXTRA_DIST) $(setDate_SOURCES)
+ LDADD = ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/todo/Makefile.am
++++ motif-2.3.8/demos/programs/todo/Makefile.am
+@@ -8,5 +8,5 @@
+ todo_SOURCES = todo.c io.c actions.c page.h
+ data_DATA = $(EXTRA_DIST) $(todo_SOURCES)
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ LDADD = -L../../lib/Xmd -lXmd -L../../lib/Exm -lExm ../../../lib/Xm/libXm.la 
+--- motif-2.3.8.orig/demos/programs/tooltips/Makefile.am
++++ motif-2.3.8/demos/programs/tooltips/Makefile.am
+@@ -9,4 +9,4 @@
+ data_DATA = $(tooltips_SOURCES) $(EXTRA_DIST)
+ LDADD = ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/programs/workspace/Makefile.am
++++ motif-2.3.8/demos/programs/workspace/Makefile.am
+@@ -10,5 +10,5 @@
+               command_ui.h wsm_cb.h wsm_create.h wsmData.h wsmDebug.h \
+               wsm.h wsmSend.h wsmStruct.h wsm_ui.h xrmLib.h
+ data_DATA = $(wsm_SOURCES) $(EXTRA_DIST)
+-INCLUDES = -I$(srcdir)/../../../lib -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ LDADD = ../../../lib/Xm/libXm.la -L../../lib/Wsm -lWsm
+--- motif-2.3.8.orig/demos/unsupported/Exm/Makefile.am
++++ motif-2.3.8/demos/unsupported/Exm/Makefile.am
+@@ -7,4 +7,4 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(srcdir)/.. -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(srcdir)/.. -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/unsupported/aicon/Makefile.am
++++ motif-2.3.8/demos/unsupported/aicon/Makefile.am
+@@ -4,6 +4,6 @@
+  
+ LDADD = -L../../lib/Xmd -lXmd ../../../lib/Xm/libXm.la 
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(srcdir)/../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ EXTRA_DIST =
+--- motif-2.3.8.orig/demos/unsupported/dainput/Makefile.am
++++ motif-2.3.8/demos/unsupported/dainput/Makefile.am
+@@ -8,6 +8,6 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ noinst_HEADERS = dainput.h
+--- motif-2.3.8.orig/demos/unsupported/dogs/Makefile.am
++++ motif-2.3.8/demos/unsupported/dogs/Makefile.am
+@@ -17,7 +17,7 @@
+ 
+ LDADD = $(top_builddir)/lib/Mrm/libMrm.la $(top_builddir)/lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ SUFFIXES = .uil .uid
+ 
+--- motif-2.3.8.orig/demos/unsupported/hellomotif/Makefile.am
++++ motif-2.3.8/demos/unsupported/hellomotif/Makefile.am
+@@ -8,4 +8,4 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/unsupported/motifshell/Makefile.am
++++ motif-2.3.8/demos/unsupported/motifshell/Makefile.am
+@@ -8,4 +8,4 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/unsupported/uilsymdump/Makefile.am
++++ motif-2.3.8/demos/unsupported/uilsymdump/Makefile.am
+@@ -2,7 +2,7 @@
+ 
+ noinst_PROGRAMS = uilsymdump
+ 
+-INCLUDES = -I$(srcdir)/../../../clients -I$(srcdir)/../../../lib -I../../../clients -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../clients -I$(srcdir)/../../../lib -I../../../clients -I$(top_builddir)/lib ${X_CFLAGS} 
+ 
+ EXTRA_DIST =
+ 
+--- motif-2.3.8.orig/demos/unsupported/xmapdef/Makefile.am
++++ motif-2.3.8/demos/unsupported/xmapdef/Makefile.am
+@@ -8,4 +8,4 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/unsupported/xmfonts/Makefile.am
++++ motif-2.3.8/demos/unsupported/xmfonts/Makefile.am
+@@ -8,4 +8,4 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/unsupported/xmforc/Makefile.am
++++ motif-2.3.8/demos/unsupported/xmforc/Makefile.am
+@@ -8,4 +8,4 @@
+ 
+ EXTRA_DIST =
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS} 
+--- motif-2.3.8.orig/demos/unsupported/xmform/Makefile.am
++++ motif-2.3.8/demos/unsupported/xmform/Makefile.am
+@@ -8,4 +8,4 @@
+ 
+ LDADD = ../../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS}
++AM_CPPFLAGS = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS}
+--- motif-2.3.8.orig/lib/Mrm/Makefile.am
++++ motif-2.3.8/lib/Mrm/Makefile.am
+@@ -2,7 +2,7 @@
+ CLEANFILES = $(BUILT_SOURCES)
+ EXTRA_DIST = Mrm.msg
+ 
+-INCLUDES = -I$(srcdir)/.. -I.. -I../Xm ${X_CFLAGS}
++AM_CPPFLAGS = -I$(srcdir)/.. -I.. -I../Xm ${X_CFLAGS}
+ 
+ mrmdir = $(includedir)/Mrm
+ 
+@@ -50,4 +50,4 @@
+ endif
+ 
+ splint:
+-	$(SPLINT) $(INCLUDES) $(SPLINT_EXTRAFLAGS) $(top_srcdir)/lib/Mrm/*.c
++	$(SPLINT) $(AM_CPPFLAGS) $(SPLINT_EXTRAFLAGS) $(top_srcdir)/lib/Mrm/*.c
+--- motif-2.3.8.orig/lib/Mrm/mrm.pc.in
++++ motif-2.3.8/lib/Mrm/mrm.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: Mrm
++Description: Motif Resource Manager Library
++Version: @VERSION@
++Requires: xm
++Cflags: -I${includedir}
++Libs: -L${libdir} -lMrm
+--- motif-2.3.8.orig/lib/Xm/Makefile.am
++++ motif-2.3.8/lib/Xm/Makefile.am
+@@ -5,7 +5,7 @@
+ EXTRA_DIST = xmstring.list Xm.msg \
+              XmStrDefs.ct
+ 
+-INCLUDES = -I.. -I$(srcdir)/.. -DXMBINDDIR_FALLBACK=\"@XMBINDDIR_FALLBACK@\" \
++AM_CPPFLAGS = -I.. -I$(srcdir)/.. -DXMBINDDIR_FALLBACK=\"@XMBINDDIR_FALLBACK@\" \
+            -DINCDIR=\"@INCDIR@\" \
+            -DLIBDIR=\"@LIBDIR@\" \
+            ${X_CFLAGS}
+@@ -307,6 +307,6 @@
+ endif
+ 
+ splint: $(STRING_FILES)
+-	$(SPLINT) $(INCLUDES) $(SPLINT_EXTRAFLAGS) $(top_srcdir)/lib/Xm/*.c
++	$(SPLINT) $(AM_CPPFLAGS) $(SPLINT_EXTRAFLAGS) $(top_srcdir)/lib/Xm/*.c
+ 
+ #include $(srcdir)/check_headers.am
+--- motif-2.3.8.orig/lib/Xm/xm.pc.in
++++ motif-2.3.8/lib/Xm/xm.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: Xm
++Description: X Motif Library
++Version: @VERSION@
++Requires: xproto xt xmu
++Cflags: -I${includedir}
++Libs: -L${libdir} -lXm
+--- motif-2.3.8.orig/tools/wml/Makefile.am
++++ motif-2.3.8/tools/wml/Makefile.am
+@@ -32,7 +32,7 @@
+ 
+ wmldbcreate_LDADD = ../../lib/Xm/libXm.la
+ 
+-INCLUDES = -I../../lib -I$(srcdir)/../../lib -I$(srcdir)/../../include ${X_CFLAGS} 
++AM_CPPFLAGS = -I../../lib -I$(srcdir)/../../lib -I$(srcdir)/../../include ${X_CFLAGS} 
+ 
+ noinst_LIBRARIES = libwml.a
+ libwml_a_SOURCES = wmlparse.y wml.c wmloutkey.c wmlouth.c wmloutmm.c wmloutp1.c wmlresolve.c wmlsynbld.c wmlutils.c
+--- motif-2.3.8.orig/tools/wml/wmluiltok.l
++++ motif-2.3.8/tools/wml/wmluiltok.l
+@@ -209,3 +209,9 @@
+ 	 }
+     return (1);
+ }
++
++int main ()
++{
++    while (yylex() != 0);
++    return 0;
++}

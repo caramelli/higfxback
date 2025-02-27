@@ -1,0 +1,125 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build freetype-build libfontenc-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install mkfontscale $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/mkfontscale-build.pc << EOF
+Name: mkfontscale
+Version: 1.0.7
+Description: Utility to create an index of scalable font files
+Requires: $REQUIRES
+
+exec=\\
+/bin/mkfontscale
+EOF
+
+exit
+--- mkfontscale-1.0.7.orig/Makefile.am
++++ mkfontscale-1.0.7/Makefile.am
+@@ -21,7 +21,7 @@
+ 
+ bin_PROGRAMS = mkfontscale
+ 
+-AM_CPPFLAGS = @MKFONTSCALE_CFLAGS@ @X11_CFLAGS@ -D_BSD_SOURCE
++AM_CPPFLAGS = @MKFONTSCALE_CFLAGS@ -D_BSD_SOURCE
+ AM_CFLAGS = $(CWARNFLAGS)
+ mkfontscale_LDADD  = @MKFONTSCALE_LIBS@
+ 
+--- mkfontscale-1.0.7.orig/configure.ac
++++ mkfontscale-1.0.7/configure.ac
+@@ -55,9 +55,6 @@
+ AC_SUBST(MKFONTSCALE_CFLAGS)
+ AC_SUBST(MKFONTSCALE_LIBS)
+ 
+-PKG_CHECK_MODULES(X11, xproto)
+-AC_SUBST(X11_CFLAGS)
+-
+ dnl Allow checking code with lint, sparse, etc.
+ XORG_WITH_LINT
+ 
+--- mkfontscale-1.0.7.orig/list.c
++++ mkfontscale-1.0.7/list.c
+@@ -27,12 +27,6 @@
+ #include <string.h>
+ #include "list.h"
+ 
+-#ifdef NEED_SNPRINTF
+-#undef SCOPE
+-#define SCOPE static
+-#include "snprintf.c"
+-#endif
+-
+ int
+ listMember(char *elt, ListPtr list)
+ {
+--- mkfontscale-1.0.7.orig/mkfontscale.c
++++ mkfontscale-1.0.7/mkfontscale.c
+@@ -32,7 +32,6 @@
+ #include <errno.h>
+ #include <ctype.h>
+ 
+-#include <X11/Xos.h>
+ #include <X11/fonts/fontenc.h>
+ #include <ft2build.h>
+ #include FT_FREETYPE_H
+@@ -48,12 +47,6 @@
+ #include "data.h"
+ #include "ident.h"
+ 
+-#ifdef NEED_SNPRINTF
+-#undef SCOPE
+-#define SCOPE static
+-#include "snprintf.c"
+-#endif
+-
+ #define NPREFIX 1024
+ 
+ #ifndef MAXFONTFILENAMELEN
+@@ -63,6 +56,9 @@
+ #define MAXFONTNAMELEN 1024
+ #endif
+ 
++#define QUOTE(x)	#x
++#define STRINGIFY(x)	QUOTE(x)
++
+ static char *encodings_array[] =
+     { "ascii-0",
+       "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
+@@ -683,10 +679,6 @@
+     FILE *in;
+     int rc, count, i;
+     char file[MAXFONTFILENAMELEN], font[MAXFONTNAMELEN];
+-    char format[100];
+-
+-    snprintf(format, 100, "%%%ds %%%d[^\n]\n", 
+-             MAXFONTFILENAMELEN, MAXFONTNAMELEN);
+ 
+     if(dirname[n - 1] == '/')
+         filename = dsprintf("%sfonts.scale", dirname);
+@@ -711,7 +703,10 @@
+     }
+ 
+     for(i = 0; i < count; i++) {
+-        rc = fscanf(in, format, file, font);
++        rc = fscanf(in,
++		    "%" STRINGIFY(MAXFONTFILENAMELEN) "s "
++		    "%" STRINGIFY(MAXFONTNAMELEN) "[^\n]\n",
++		    file, font);
+         if(rc != 2)
+             break;
+         putHash(entries, font, file, 100);

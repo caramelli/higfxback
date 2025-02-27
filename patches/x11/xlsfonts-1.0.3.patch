@@ -1,0 +1,42 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libx11-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.65; am-1.11)
+aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install xlsfonts $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xlsfonts-build.pc << EOF
+Name: xlsfonts
+Version: 1.0.3
+Description: Utility for listing fonts available on an X server
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/xlsfonts
+EOF
+
+exit
+--- xlsfonts-1.0.3.orig/configure.ac
++++ xlsfonts-1.0.3/configure.ac
+@@ -32,8 +32,6 @@
+ XORG_MACROS_VERSION(1.4)
+ XORG_DEFAULT_OPTIONS
+ 
+-AM_CONFIG_HEADER(config.h)
+-
+ AC_PROG_CC
+ AC_PROG_INSTALL
+ 

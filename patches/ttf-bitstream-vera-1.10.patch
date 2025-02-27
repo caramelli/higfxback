@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="pkg-config-lite-build"
+REQUIRES="mkfontdir-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -17,13 +17,15 @@ install -m 644 VeraMoIt.ttf $DESTDIR/share/fonts/truetype
 install -m 644 VeraMono.ttf $DESTDIR/share/fonts/truetype/VeraMo.ttf
 install -m 644 VeraSe.ttf $DESTDIR/share/fonts/truetype
 install -m 644 VeraSeBd.ttf $DESTDIR/share/fonts/truetype
+test $DESTDIR || mkfontscale /share/fonts/truetype && mkfontdir /share/fonts/truetype
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/ttf-bitstream-vera-build.pc << EOF
 Name: ttf-bitstream-vera
 Version: 1.10
-Description: Bitstream Vera font
+Description: TrueType Bitstream Vera font
+Requires: $REQUIRES
 
 exec=\\
 /share/fonts/truetype/Vera.ttf \\

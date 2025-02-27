@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build libxrandr-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68; am-1.11)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -31,7 +31,15 @@ EOF
 exit
 --- xev-1.2.1.orig/configure.ac
 +++ xev-1.2.1/configure.ac
-@@ -39,7 +39,7 @@
+@@ -25,7 +25,6 @@
+ AC_INIT([xev], [1.2.1],
+         [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], [xev])
+ AC_CONFIG_SRCDIR([Makefile.am])
+-AC_CONFIG_HEADERS([config.h])
+ AC_USE_SYSTEM_EXTENSIONS
+ 
+ # Initialize Automake
+@@ -39,7 +38,7 @@
  XORG_DEFAULT_OPTIONS
  
  # Checks for pkg-config packages
@@ -42,7 +50,17 @@ exit
  	Makefile
 --- xev-1.2.1.orig/xev.c
 +++ xev-1.2.1/xev.c
-@@ -84,7 +84,7 @@
+@@ -32,9 +32,6 @@
+  * Author:  Jim Fulton, MIT X Consortium
+  */
+ 
+-#ifdef HAVE_CONFIG_H
+-# include "config.h"
+-#endif
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ctype.h>
+@@ -84,7 +81,7 @@
      NUM_EVENT_MASKS
  };
  

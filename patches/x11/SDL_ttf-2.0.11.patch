@@ -8,7 +8,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build && GL=1
 
 # configure (ac-2.61; am-1.10; lt-2.2.6)
-libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c --foreign
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
 
 # build
@@ -50,14 +50,25 @@ EOF
 exit
 --- SDL_ttf-2.0.11.orig/configure.in
 +++ SDL_ttf-2.0.11/configure.in
-@@ -1,5 +1,6 @@
+@@ -1,5 +1,7 @@
  dnl Process this file with autoconf to produce a configure script.
- AC_INIT(README)
+-AC_INIT(README)
++AC_INIT(SDL_ttf, 2.0.11)
++AC_CONFIG_SRCDIR(README)
 +AC_CONFIG_MACRO_DIR(acinclude)
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
-@@ -116,9 +117,12 @@
+@@ -42,7 +44,7 @@
+ AC_CANONICAL_HOST
+ 
+ dnl Setup for automake
+-AM_INIT_AUTOMAKE(SDL_ttf, $VERSION)
++AM_INIT_AUTOMAKE(foreign)
+ 
+ dnl Check for tools
+ AC_PROG_LIBTOOL
+@@ -116,9 +118,12 @@
  AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
  no_freetype=""
  if test "$FREETYPE_CONFIG" = "no" ; then
@@ -71,7 +82,7 @@ exit
  else
      CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
      LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
-@@ -156,14 +160,11 @@
+@@ -156,14 +161,11 @@
          ;;
      *)
          MATHLIB="-lm"

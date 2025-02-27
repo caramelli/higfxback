@@ -1,0 +1,42 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxfont-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install bdftopcf $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/bdftopcf-build.pc << EOF
+Name: bdftopcf
+Version: 1.0.2
+Description: Bitmap Distribution Format to Portable Compiled Format converter
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/bdftopcf
+EOF
+
+exit
+--- bdftopcf-1.0.2.orig/configure.ac
++++ bdftopcf-1.0.2/configure.ac
+@@ -25,8 +25,6 @@
+ AM_INIT_AUTOMAKE([dist-bzip2 foreign])
+ AM_MAINTAINER_MODE
+ 
+-AM_CONFIG_HEADER(config.h)
+-
+ # Require xorg-macros: XORG_WITH_LINT, XORG_DEFAULT_OPTIONS
+ m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.1 or later before running autoconf/autogen])])
+ XORG_MACROS_VERSION(1.3)

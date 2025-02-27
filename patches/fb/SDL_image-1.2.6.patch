@@ -9,7 +9,7 @@ pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
 pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
 
 # configure (ac-2.59; am-1.9; lt-1.5.26)
-libtoolize -c -f; mv libtool.m4 acinclude; aclocal -I acinclude; autoconf; automake -a -c --foreign
+libtoolize -c -f; mv libtool.m4 acinclude; aclocal -I acinclude; autoconf; automake -a -c
 PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --prefix=/fb
 
 # build
@@ -236,7 +236,24 @@ exit
  
 --- SDL_image-1.2.6.orig/configure.in
 +++ SDL_image-1.2.6/configure.in
-@@ -184,6 +184,9 @@
+@@ -1,5 +1,6 @@
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT(README)
++AC_INIT(SDL_image, 1.2.6)
++AC_CONFIG_SRCDIR(README)
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 
+@@ -40,7 +41,7 @@
+ AC_CANONICAL_HOST
+ 
+ dnl Setup for automake
+-AM_INIT_AUTOMAKE(SDL_image, $VERSION)
++AM_INIT_AUTOMAKE(foreign)
+ 
+ dnl Check for tools
+ 
+@@ -184,6 +185,9 @@
                  if test x$png_lib = x; then
                      png_lib=[`find_lib "libpng.so.[0-9]*"`]
                  fi
@@ -246,7 +263,7 @@ exit
                  ;;
          esac
      else
-@@ -293,4 +296,5 @@
+@@ -293,4 +297,5 @@
  Makefile
  SDL_image.spec
  SDL_image.qpg

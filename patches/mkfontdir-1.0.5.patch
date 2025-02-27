@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build mkfontscale-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install mkfontdir $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/mkfontdir-build.pc << EOF
+Name: mkfontdir
+Version: 1.0.5
+Description: Utility to create an X font index file
+Requires: $REQUIRES
+
+exec=\\
+/bin/mkfontdir
+EOF
+
+exit

@@ -9,7 +9,7 @@ pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
 pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
 
 # configure (ac-2.63; am-1.11; lt-2.2.6)
-libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c --foreign
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
 
 # build
@@ -205,10 +205,21 @@ exit
  	}
 --- SDL_image-1.2.10.orig/configure.in
 +++ SDL_image-1.2.10/configure.in
-@@ -1,5 +1,6 @@
+@@ -1,5 +1,7 @@
  dnl Process this file with autoconf to produce a configure script.
- AC_INIT(README)
+-AC_INIT(README)
++AC_INIT(SDL_image, 1.2.10)
++AC_CONFIG_SRCDIR(README)
 +AC_CONFIG_MACRO_DIR(acinclude)
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
+@@ -42,7 +44,7 @@
+ AC_CANONICAL_HOST
+ 
+ dnl Setup for automake
+-AM_INIT_AUTOMAKE(SDL_image, $VERSION)
++AM_INIT_AUTOMAKE(foreign)
+ 
+ dnl Check for tools
+ AC_PROG_LIBTOOL
