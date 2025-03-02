@@ -1,0 +1,156 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install pl_mpeg_extract_frames $DESTDIR/bin
+install -d $DESTDIR/include/pl_mpeg
+install -m 644 pl_mpeg.h $DESTDIR/include/pl_mpeg
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/pl_mpeg-build.pc << EOF
+Name: pl_mpeg
+Version: 20250206
+Description: single-file library to decode MPEG1 video and MP2 audio
+Requires: $REQUIRES
+
+devel=\\
+/include/pl_mpeg/pl_mpeg.h
+
+exec=\\
+/bin/pl_mpeg_extract_frames
+EOF
+
+exit
+--- pl_mpeg-20250206.orig/makefile
++++ pl_mpeg-20250206/makefile
+@@ -17,29 +17,47 @@
+ LFLAGS ?= 
+ 
+ TARGET_EXTRACT ?= pl_mpeg_extract_frames
++
++UNAME_S := $(shell uname -s)
++
++# Linux
++ifeq ($(UNAME_S), Linux)
++
++	ifeq ($(shell pkg-config --exists sdl2 && echo 1), 1)
++
++		TARGET_SDL ?= pl_mpeg_player_sdl
++
++		SDL_CFLAGS = $(shell pkg-config sdl2 --cflags)
++		SDL_LFLAGS = $(shell pkg-config sdl2 --libs)
++
++		ifeq ($(shell pkg-config --exists gl && echo 1), 1)
++
++			TARGET_GL ?= pl_mpeg_player_gl
++
++			GL_CFLAGS = $(shell pkg-config gl --cflags)
++			GL_LFLAGS = $(shell pkg-config gl --libs)
++
++		endif
++
++	endif
++
++# macOS, Windows Msys
++else
++
+ TARGET_SDL ?= pl_mpeg_player_sdl
+ TARGET_GL ?= pl_mpeg_player_gl
+ 
+ SDL_CFLAGS = $(shell sdl2-config --cflags)
+ SDL_LFLAGS = $(shell sdl2-config --libs)
+ 
+-
+-# Determine the right opengl libs for this platform
+-UNAME_S := $(shell uname -s)
+-
+-# macOS
+ ifeq ($(UNAME_S), Darwin)
+ 	GL_LFLAGS = -GLU -framework OpenGL
+-
+-# Linux
+-else ifeq ($(UNAME_S), Linux)
+-	GL_LFLAGS = -lOpenGL -lGLEW
+-
+-# Windows Msys
+ else ifeq ($(shell uname -o), Msys)
+ 	GL_LFLAGS = -lopengl32 -lglew32
+ endif
+ 
++endif
++
+ all: $(TARGET_EXTRACT) $(TARGET_SDL) $(TARGET_GL)
+ extract: $(TARGET_EXTRACT)
+ player_sdl: $(TARGET_SDL)
+@@ -52,7 +70,7 @@
+ 	$(CC) $(CFLAGS) $(SDL_CFLAGS) pl_mpeg_player_sdl.c -o $(TARGET_SDL) $(LFLAGS) $(SDL_LFLAGS)
+ 
+ $(TARGET_GL):pl_mpeg_player_gl.c pl_mpeg.h
+-	$(CC) $(CFLAGS) $(SDL_CFLAGS) pl_mpeg_player_gl.c -o $(TARGET_GL) $(LFLAGS) $(GL_LFLAGS) $(SDL_LFLAGS)
++	$(CC) $(CFLAGS) $(SDL_CFLAGS) $(GL_CFLAGS) pl_mpeg_player_gl.c -o $(TARGET_GL) $(LFLAGS) $(GL_LFLAGS) $(SDL_LFLAGS)
+ 
+ .PHONY: clean
+ clean:
+--- pl_mpeg-20250206.orig/pl_mpeg_player_gl.c
++++ pl_mpeg-20250206/pl_mpeg_player_gl.c
+@@ -37,14 +37,10 @@
+ 	#include <SDL2/SDL.h>
+ 	#include <OpenGL/gl.h>
+ 	#include <OpenGL/glext.h>
+-
+-	void glCreateTextures(GLuint ignored, GLsizei n, GLuint *name) {
+-		glGenTextures(1, name);
+-	}
+ #elif defined(__unix__)
+ 	// Linux
+-	#include <SDL2/SDL.h>
+-	#include <GL/glew.h>
++	#include <SDL.h>
++	#include <GL/gl.h>
+ #else
+ 	// WINDOWS
+ 	#include <windows.h>
+@@ -218,11 +214,11 @@
+ 	
+ 	SDL_GL_SetSwapInterval(1);
+ 
+-	#if defined(__APPLE__) && defined(__MACH__)
+-		// OSX
++	#if (defined(__APPLE__) && defined(__MACH__)) || defined(__unix__)
++		// OSX, Linux
+ 		// (nothing to do here)
+ 	#else
+-		// Windows, Linux
++		// Windows
+ 		glewExperimental = GL_TRUE;
+ 		glewInit();
+ 	#endif
+@@ -356,7 +352,7 @@
+ 
+ GLuint app_create_texture(app_t *self, GLuint index, const char *name) {
+ 	GLuint texture;
+-	glCreateTextures(GL_TEXTURE_2D, 1, &texture);
++	glGenTextures(1, &texture);
+ 	
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+ 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+--- pl_mpeg-20250206.orig/pl_mpeg_player_sdl.c
++++ pl_mpeg-20250206/pl_mpeg_player_sdl.c
+@@ -28,7 +28,7 @@
+ #include "pl_mpeg.h"
+ 
+ #define SDL_MAIN_HANDLED
+-#include <SDL2/SDL.h>
++#include <SDL.h>
+ 
+ typedef struct {
+ 	plm_t *plm;

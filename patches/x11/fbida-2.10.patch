@@ -1,42 +1,42 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="fontconfig-build jpeg-build libexif-build libpng-build make-build tiff-build"
+REQUIRES="libexif-build make-build motif-build tiff-build"
 
-pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists curl-build && REQUIRES="$REQUIRES curl-build"
 pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
 
 # configure
 rm -rf jpeg
-sh ./Configure --prefix /fb
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-fbdev --prefix /x11
 
 # build
 make
 
 # install
-install -d $DESTDIR/fb/bin
-install exiftran $DESTDIR/fb/bin
-install fbi $DESTDIR/fb/bin
+install -d $DESTDIR/x11/bin
+install exiftran $DESTDIR/x11/bin
+install ida $DESTDIR/x11/bin
 
 # build.pc
-install -d $DESTDIR/fb/share/pkgconfig
-cat > $DESTDIR/fb/share/pkgconfig/fbida-build.pc << EOF
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/fbida-build.pc << EOF
 Name: fbida
-Version: 2.09
-Description: Linux Framebuffer image viewer
+Version: 2.10
+Description: Motif-based image viewer
 Requires: $REQUIRES
 
 exec=\\
-/fb/bin/exiftran \\
-/fb/bin/fbi
+/x11/bin/exiftran \\
+/x11/bin/ida
 EOF
 
 exit
---- fbida-2.09.orig/Configure
-+++ fbida-2.09/Configure
-@@ -0,0 +1,24 @@
+--- fbida-2.10.orig/Configure
++++ fbida-2.10/Configure
+@@ -0,0 +1,40 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -50,6 +50,12 @@ exit
 +      PREFIX=$2
 +      shift
 +    ;;
++    --disable-fbdev)
++      FBDEV=#
++    ;;
++    --disable-x11)
++      X11=#
++    ;;
 +    *)
 +      echo Unknown option \"$1\".
 +      exit 1
@@ -60,27 +66,39 @@ exit
 +
 +sed -i "/^prefix/s|=.*|= $PREFIX|" mk/Variables.mk
 +
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" GNUmakefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" GNUmakefile
++fi
++
++sed -i "s|^#\?\(HAVE_LINUX_FB_H.*)\)|$FBDEV\1|" GNUmakefile
++
++sed -i "s|^#\?\(HAVE_MOTIF.*)\)|$X11\1|" GNUmakefile
++
 +make config
---- fbida-2.09.orig/GNUmakefile
-+++ fbida-2.09/GNUmakefile
+--- fbida-2.10.orig/GNUmakefile
++++ fbida-2.10/GNUmakefile
 @@ -28,12 +28,6 @@
  
  include $(srcdir)/mk/Autoconf.mk
  
 -ac_jpeg_ver = $(shell \
 -	$(call ac_init,for libjpeg version);\
--	$(call ac_s_cmd,echo -e '\#include <jpeglib.h>\nJPEG_LIB_VERSION' \
--		| cpp | tail -n 1);\
+-	$(call ac_s_cmd,echo JPEG_LIB_VERSION \
+-		| cpp -include jpeglib.h | tail -n 1);\
 -	$(call ac_fini))
 -
  define make-config
  LIB		:= $(LIB)
  RESDIR		:= $(call ac_resdir)
-@@ -52,12 +46,8 @@
+@@ -51,13 +45,9 @@
+ HAVE_LIBSANE	:= $(call ac_lib,sane_init,sane)
  HAVE_LIBCURL	:= $(call ac_lib,curl_easy_init,curl)
  HAVE_LIBLIRC	:= $(call ac_lib,lirc_init,lirc_client)
- HAVE_MOTIF	:= $(call ac_lib,XmStringGenerate,Xm,-L/usr/X11R6/$(LIB) -lXpm -lXt -lXext -lX11)
+-HAVE_MOTIF	:= $(call ac_lib,XmStringGenerate,Xm,-L/usr/X11R6/$(LIB) -lXpm -lXt -lXext -lX11)
 -JPEG_VER        := $(call ac_jpeg_ver)
++HAVE_MOTIF	:= $(call ac_pkg_config,xm)
  endef
  
 -# transposing
@@ -89,7 +107,7 @@ exit
  # transparent http/ftp access using curl depends on fopencookie (glibc)
  ifneq ($(HAVE_GLIBC),yes)
    HAVE_LIBCURL	:= no
-@@ -124,7 +114,6 @@
+@@ -125,7 +115,6 @@
  thumbnail.cgi : LDLIBS += -lexif -lm
  
  exiftran: exiftran.o genthumbnail.o jpegtools.o \
@@ -97,7 +115,7 @@ exit
  	filter.o op.o readers.o rd/read-jpeg.o
  thumbnail.cgi: thumbnail.cgi.o
  
-@@ -136,7 +125,7 @@
+@@ -137,7 +126,7 @@
  OBJS_IDA := \
  	ida.o man.o hex.o x11.o viewer.o dither.o icons.o \
  	parseconfig.o idaconfig.o fileops.o desktop.o \
@@ -106,7 +124,20 @@ exit
  	filebutton.o filelist.o browser.o jpegtools.o \
  	op.o filter.o lut.o color.o \
  	rd/read-xwd.o rd/read-xpm.o 
-@@ -173,7 +162,7 @@
+@@ -145,9 +134,9 @@
+ OBJS_IDA += $(call ac_lib_mkvar,$(ida_libs),OBJS)
+ 
+ # for X11 + Motif
+-ida : CFLAGS	+= -I/usr/X11R6/include
+-ida : LDFLAGS	+= -L/usr/X11R6/$(LIB)
+-ida : LDLIBS	+= -lXm -lXpm -lXt -lXext -lX11
++ida : CFLAGS += $(shell $(PKG_CONFIG) --cflags xm)
++ida : LDLIBS += $(shell $(PKG_CONFIG) --libs   xm)
++ida : LDLIBS += -lXpm -lXext
+ 
+ # jpeg/exif libs
+ ida : LDLIBS	+= -ljpeg -lexif -lm
+@@ -174,7 +163,7 @@
  OBJS_FBI := \
  	fbi.o fbtools.o fb-gui.o desktop.o \
  	parseconfig.o fbiconfig.o \
@@ -115,7 +146,7 @@ exit
  	dither.o filter.o op.o
  
  OBJS_FBI += $(filter-out wr/%,$(call ac_lib_mkvar,$(fbi_libs),OBJS))
-@@ -189,12 +178,8 @@
+@@ -190,12 +179,8 @@
  ########################################################################
  # general rules
  
@@ -130,7 +161,7 @@ exit
  
  install: build
  	$(INSTALL_DIR) $(bindir)
-@@ -215,7 +200,7 @@
+@@ -216,7 +201,7 @@
  endif
  
  clean:
@@ -139,9 +170,9 @@ exit
  
  realclean distclean: clean
  	-rm -f Make.config
---- fbida-2.09.orig/jpegtools.c
-+++ fbida-2.09/jpegtools.c
-@@ -220,7 +220,7 @@
+--- fbida-2.10.orig/jpegtools.c
++++ fbida-2.10/jpegtools.c
+@@ -231,7 +231,7 @@
      cinfo->src->bytes_in_buffer = h->isize;
  }
  
@@ -150,8 +181,8 @@ exit
  {
      fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
      exit(1);
---- fbida-2.09.orig/mk/Autoconf.mk
-+++ fbida-2.09/mk/Autoconf.mk
+--- fbida-2.10.orig/mk/Autoconf.mk
++++ fbida-2.10/mk/Autoconf.mk
 @@ -110,7 +110,7 @@
  #	$(call ac_fini))
  ac_lib64 = $(shell \
@@ -161,8 +192,20 @@ exit
  		echo "lib64" || echo "lib");\
  	$(call ac_fini))
  
---- fbida-2.09.orig/rd/read-jpeg.c
-+++ fbida-2.09/rd/read-jpeg.c
+--- fbida-2.10.orig/mk/Variables.mk
++++ fbida-2.10/mk/Variables.mk
+@@ -42,6 +42,9 @@
+ 		   -Wpointer-arith -Wunused
+ CXXFLAGS	+= -Wall -Wpointer-arith -Wunused
+ 
++# ldflags
++LDFLAGS += -Wl,-rpath,$(prefix)/lib
++
+ # add /usr/local to the search path if something is in there ...
+ ifneq ($(wildcard /usr/local/include/*.h),)
+   CFLAGS  += -I/usr/local/include
+--- fbida-2.10.orig/rd/read-jpeg.c
++++ fbida-2.10/rd/read-jpeg.c
 @@ -39,7 +39,7 @@
      cinfo->src->bytes_in_buffer = h->tsize;
  }
@@ -172,14 +215,3 @@ exit
  {
      fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
      exit(1);
---- fbida-2.09.orig/rd/read-tiff.c
-+++ fbida-2.09/rd/read-tiff.c
-@@ -55,7 +55,7 @@
- 		"nsamples=%d, depth=%d fo=%d pm=%d scanline=%" PRId32 "\n",
- 		h->width,h->height,h->config,h->nsamples,h->depth,
- 		h->fillorder,h->photometric,
--		TIFFScanlineSize(h->tif));
-+		(uint32_t)TIFFScanlineSize(h->tif));
- 
-     if (PHOTOMETRIC_PALETTE   == h->photometric  ||
- 	PHOTOMETRIC_YCBCR     == h->photometric  ||

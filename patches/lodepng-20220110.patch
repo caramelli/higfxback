@@ -1,9 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="pkg-config-lite-build"
+REQUIRES="gcc-g++-build make-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C build
 
 # install
 install -d $DESTDIR/include/lodepng
@@ -16,6 +19,7 @@ cat > $DESTDIR/share/pkgconfig/lodepng-build.pc << EOF
 Name: lodepng
 Version: 20220110
 Description: single-file library to decode / encode PNG image
+Requires: $REQUIRES
 
 devel=\\
 /include/lodepng/lodepng.cpp \\

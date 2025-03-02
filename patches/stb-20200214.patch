@@ -9,8 +9,6 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 make -C tests
 
 # install
-install -d $DESTDIR/bin
-install tests/image_write_test $DESTDIR/bin
 install -d $DESTDIR/include/stb
 install -m 644 stb.h $DESTDIR/include/stb
 install -m 644 stb_image.h $DESTDIR/include/stb
@@ -20,6 +18,9 @@ install -m 644 stb_perlin.h $DESTDIR/include/stb
 install -m 644 stb_rect_pack.h $DESTDIR/include/stb
 install -m 644 stb_textedit.h $DESTDIR/include/stb
 install -m 644 stb_truetype.h $DESTDIR/include/stb
+install -d $DESTDIR/share/stb
+install tests/image_write_test $DESTDIR/share/stb
+install tests/resample_test $DESTDIR/share/stb
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -27,6 +28,7 @@ cat > $DESTDIR/share/pkgconfig/stb-build.pc << EOF
 Name: stb
 Version: 20200214
 Description: single-file media processing and rendering libraries
+Requires: $REQUIRES
 
 devel=\\
 /include/stb/stb.h \\
@@ -39,7 +41,8 @@ devel=\\
 /include/stb/stb_truetype.h
 
 exec=\\
-/bin/image_write_test
+/share/stb/image_write_test
+/share/stb/resample_test
 EOF
 
 exit
@@ -272,3 +275,37 @@ exit
  }
  
  // API initialize
+--- stb-20200214.orig/tests/Makefile
++++ stb-20200214/tests/Makefile
+@@ -7,4 +7,5 @@
+ all:
+ 	$(CC) $(INCLUDES) $(CFLAGS) ../stb_vorbis.c test_c_compilation.c test_c_lexer.c test_dxt.c test_easyfont.c test_image.c test_image_write.c test_perlin.c test_sprintf.c test_truetype.c test_voxel.c -lm
+ 	$(CC) $(INCLUDES) $(CPPFLAGS) -std=c++0x test_cpp_compilation.cpp -lm -lstdc++
+-	$(CC) $(INCLUDES) $(CFLAGS) -DIWT_TEST image_write_test.c -lm -o image_write_test
++	$(CC) $(INCLUDES) -DIWT_TEST image_write_test.c -lm -o image_write_test
++	$(CXX) $(INCLUDES) resample_test.cpp -lm -o resample_test
+--- stb-20200214.orig/tests/image_write_test.c
++++ stb-20200214/tests/image_write_test.c
+@@ -5,6 +5,13 @@
+ #define STB_IMAGE_WRITE_IMPLEMENTATION
+ #include "stb_image_write.h"
+ 
++#ifdef _WIN32
++#include <direct.h>
++#define mkdir(a, b) _mkdir(a)
++#else
++#include <sys/stat.h>
++#endif
++
+ // using an 'F' since it has no rotational symmetries, and 6x5
+ // because it's a small, atypical size likely to trigger edge cases.
+ //
+@@ -25,6 +32,8 @@
+    float img6x5_rgbf[6*5*3];
+    int i;
+ 
++   mkdir("output", 777);
++
+    for (i = 0; i < 6*5; i++) {
+       int on = img6x5_template[i] == '*';
+       img6x5_rgb[i*3 + 0] = on ? 255 : 0;

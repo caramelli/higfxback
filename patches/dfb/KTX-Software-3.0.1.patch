@@ -18,8 +18,7 @@ fi
 # configure
 rm -rf other_include
 rm -rf other_lib
-gyp $GL $VK -Dstaging_dir=/dfb --depth=. --generator-output=build/make/linux
-sed "/^prefix=/s|=.*|=/dfb|" pkgconfig/libktx.pc.in > pkgconfig/libktx.pc
+gyp $GL $VK -Dprefix=/dfb --depth=. --generator-output=build/make/linux
 
 # build
 make -C build/make/linux toktx
@@ -33,7 +32,7 @@ install -d $DESTDIR/dfb/lib
 install build/make/linux/out/*/lib.target/libktx.so.3 $DESTDIR/dfb/lib
 ln -sf libktx.so.3 $DESTDIR/dfb/lib/libktx.so
 install -d $DESTDIR/dfb/lib/pkgconfig
-install -m 644 pkgconfig/libktx.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/libktx.pc $DESTDIR/dfb/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -71,7 +70,7 @@ exit
  
      # Directory containing EGL, GL{,ES}*, KHR, etc. include directories.
      'gl_includes_parent_dir': '../other_include',
-+    'staging_dir%': '<(gl_includes_parent_dir)',
++    'prefix%': '/usr/local',
 +    'ktx_opengl%': '0',
 +    'ktx_vulkan%': '0',
  
@@ -768,9 +767,10 @@ exit
           'include_dirs': [ '<@(include_dirs)' ],
        },
 -      'include_dirs': [ '<@(include_dirs)' ],
-+      'include_dirs': [ '<@(include_dirs)', '<(staging_dir)/include' ],
++      'include_dirs': [ '<@(include_dirs)', '<(prefix)/include' ],
        'mac_bundle': 0,
-       'dependencies': [ 'vulkan_headers' ],
+-      'dependencies': [ 'vulkan_headers' ],
++      'dependencies': [ 'vulkan_headers', 'libktx.pc' ],
        'sources': [
          '<@(sources)',
          '<@(vksource_files)',
@@ -829,6 +829,27 @@ exit
    ], # targets
    'conditions': [
      ['OS == "linux" or OS == "mac" or OS == "win"', {
+@@ -218,6 +195,20 @@
+             }, # buildDoc action
+           ], # actions
+         }, # libktx.doc
++        {
++          'target_name': 'libktx.pc',
++          'type': 'none',
++          'actions': [
++            {
++              'action_name': 'generatePkgconfigFile',
++              'inputs': ['libktx.pc.in'],
++              'outputs': ['libktx.pc'],
++              'action': [
++                'sh', '-c', 'sed \'s|@prefix@|<(prefix)|\' lib/libktx.pc.in > build/libktx.pc'
++              ],
++            }, # generatePkgconfigFile action
++          ], # actions
++        }, # libktx.pc
+       ], # targets
+     }], # 'OS == "linux" or OS == "mac" or OS == "win"'
+   ], # conditions
 --- KTX-Software-3.0.1.orig/lib/swap.c
 +++ KTX-Software-3.0.1/lib/swap.c
 @@ -19,18 +19,16 @@
@@ -1172,7 +1193,7 @@ exit
            'target_name': 'toktx',
            'type': '<(executable)',
            'include_dirs' : [ '../../utils' ],
-+          'ldflags': [ '-Wl,-rpath,<(staging_dir)/lib' ],
++          'ldflags': [ '-Wl,-rpath,<(prefix)/lib' ],
            'mac_bundle': 0,
 -          'dependencies': [ 'libktx.gyp:libktx.gl' ],
 +          'dependencies': [ 'libktx.gyp:libktx' ],

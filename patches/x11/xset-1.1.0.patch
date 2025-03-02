@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build libxmu-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.63; am-1.11)
+aclocal; autoconf; autoheader; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+install xset $DESTDIR/x11/bin
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/xset-build.pc << EOF
+Name: xset
+Version: 1.1.0
+Description: User preference utility for X
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/xset
+EOF
+
+exit
+--- xset-1.1.0.orig/xset.c
++++ xset-1.1.0/xset.c
+@@ -1334,7 +1334,6 @@
+     XKeyboardState values;
+     int acc_num, acc_denom, threshold;
+     int timeout, interval, prefer_blank, allow_exp;
+-    int dummy;
+ 
+ #ifdef XF86MISC
+     XF86MiscKbdSettings kbdinfo;
+@@ -1384,9 +1383,6 @@
+ 
+ 	    if (XGetAtomNames(dpy, iatoms, j, iatomnames)) {
+ 		for (i = 0; i < j; i++) {
+-		    Bool state;
+-		    int ind;
+-
+ 		    if (XkbGetNamedIndicator(dpy, iatoms[i], &inds[i],
+ 					     &istates[i], NULL, NULL)) {
+ 			int namelen = strlen(iatomnames[i]);

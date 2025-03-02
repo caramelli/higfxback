@@ -20,7 +20,7 @@ premake5 --file=testing/premake4.lua --stb_image=/include/stb --testingdatadir=/
 # build
 test $SDL2 && make -C demos
 test $SDL2 && make -C examples
-test $SDL2 && make config=release -C testing
+test $SDL2 && make -C testing
 
 # install
 install -d $DESTDIR/dfb/include
@@ -249,9 +249,11 @@ exit
  	}
 --- PortableGL-0.97.1.orig/demos/premake4.lua
 +++ PortableGL-0.97.1/demos/premake4.lua
-@@ -2,7 +2,28 @@
+@@ -1,8 +1,29 @@
+ -- A solution contains projects, and defines the available configurations
  solution "Demos"
- 	configurations { "Debug", "Release" }
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
  	
 -	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
 +	newoption {
@@ -619,7 +621,8 @@ exit
 @@ -1,13 +1,21 @@
  
  workspace "Polished_Examples"
- 	configurations { "Debug", "Release" }
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
 +
 +	newoption {
 +		trigger     = "prefix",
@@ -682,7 +685,8 @@ exit
 @@ -1,8 +1,29 @@
  -- A solution contains projects, and defines the available configurations
  solution "Testing"
- 	configurations { "Debug", "Release" }
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
 +
 +	newoption {
 +		trigger     = "prefix",

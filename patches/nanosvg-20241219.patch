@@ -1,11 +1,20 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="pkg-config-lite-build"
+REQUIRES="premake-build stb-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+rm -f example/stb_image_write.h
+premake5 --stb_image=/include/stb --without-glfw gmake
+
+# build
+make -C build
+
 # install
+install -d $DESTDIR/bin
+install build/example2 $DESTDIR/bin/nanosvg-dec
 install -d $DESTDIR/include/nanosvg/src
 install -m 644 src/nanosvg.h $DESTDIR/include/nanosvg/src
 ln -sf src/nanosvg.h $DESTDIR/include/nanosvg/nanosvg.h
@@ -18,15 +27,141 @@ cat > $DESTDIR/share/pkgconfig/nanosvg-build.pc << EOF
 Name: nanosvg
 Version: 20241219
 Description: single-file SVG parser
+Requires: $REQUIRES
 
 devel=\\
 /include/nanosvg/nanosvg.h \\
 /include/nanosvg/nanosvgrast.h \\
 /include/nanosvg/src/nanosvg.h \\
 /include/nanosvg/src/nanosvgrast.h
+
+exec=\\
+/bin/nanosvg-dec
 EOF
 
 exit
+--- nanosvg-20241219.orig/example/example2.c
++++ nanosvg-20241219/example/example2.c
+@@ -26,16 +26,20 @@
+ #define NANOSVGRAST_IMPLEMENTATION
+ #include "nanosvgrast.h"
+ 
+-int main()
++int main(int argc, char *argv[])
+ {
+ 	NSVGimage *image = NULL;
+ 	NSVGrasterizer *rast = NULL;
+ 	unsigned char* img = NULL;
+ 	int w, h;
+-	const char* filename = "../example/23.svg";
+ 
+-	printf("parsing %s\n", filename);
+-	image = nsvgParseFromFile(filename, "px", 96.0f);
++	if (argc != 3) {
++		fprintf(stderr, "Usage: nanosvg-dec <input-image> <output-image>\n");
++		return 1;
++	}
++
++	printf("parsing %s\n", argv[1]);
++	image = nsvgParseFromFile(argv[1], "px", 96.0f);
+ 	if (image == NULL) {
+ 		printf("Could not open SVG image.\n");
+ 		goto error;
+@@ -58,8 +62,8 @@
+ 	printf("rasterizing image %d x %d\n", w, h);
+ 	nsvgRasterize(rast, image, 0,0,1, img, w, h, w*4);
+ 
+-	printf("writing svg.png\n");
+- 	stbi_write_png("svg.png", w, h, 4, img, w*4);
++	printf("writing %s\n", argv[2]);
++ 	stbi_write_png(argv[2], w, h, 4, img, w*4);
+ 
+ error:
+ 	nsvgDeleteRasterizer(rast);
+--- nanosvg-20241219.orig/premake4.lua
++++ nanosvg-20241219/premake4.lua
+@@ -3,54 +3,56 @@
+ 
+ solution "nanosvg"
+ 	location ( "build" )
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
+ 	platforms {"native", "x64", "x32"}
++
++	newoption { trigger = "stb_image", value = "PATH", description = "Use the given path for stb image headers" }
++	newoption { trigger = "without-glfw", description = "Do not use GLFW" }
++
++	includedirs { _OPTIONS["stb_image"] }
+   
++	if not _OPTIONS["without-glfw"] then
++
+ 	project "example1"
+ 		kind "ConsoleApp"
+-		language "C++"
+ 		files { "example/example1.c", "example/*.h", "src/*.h" }
+ 		includedirs { "example", "src" }
+ 		targetdir("build")
+ 	 
+-		configuration { "linux" }
+-			 links { "X11","Xrandr", "rt", "GL", "GLU", "pthread", "glfw" }
++		filter { "system:linux" }
++			 links { "GL", "glfw" }
+ 
+-		configuration { "windows" }
+-			 links { "glu32","opengl32", "gdi32", "winmm", "user32" }
++		filter { "system:windows" }
++			 links { "opengl32", "glfw3" }
+ 
+-		configuration { "macosx" }
++		filter { "system:macosx" }
+ 			links { "glfw3" }
+ 			linkoptions { "-framework OpenGL", "-framework Cocoa", "-framework IOKit", "-framework CoreVideo" }
+ 
+-		configuration "Debug"
++		filter "Debug"
+ 			defines { "DEBUG" }
+-			flags { "Symbols", "ExtraWarnings"}
++			symbols "On"
++			warnings "Extra"
+ 
+-		configuration "Release"
++		filter "Release"
+ 			defines { "NDEBUG" }
+-			flags { "Optimize", "ExtraWarnings"}    
++			optimize "On"
++			warnings "Extra"
++
++	end
+ 
+ 	project "example2"
+ 		kind "ConsoleApp"
+-		language "C++"
+ 		files { "example/example2.c", "example/*.h", "src/*.h" }
+ 		includedirs { "example", "src" }
+ 		targetdir("build")
+ 	 
+-		configuration { "linux" }
+-			 links { "X11","Xrandr", "rt", "pthread" }
+-
+-		configuration { "windows" }
+-			 links { "winmm", "user32" }
+-
+-		configuration { "macosx" }
+-			linkoptions { "-framework Cocoa", "-framework IOKit" }
+-
+-		configuration "Debug"
++		filter "Debug"
+ 			defines { "DEBUG" }
+-			flags { "Symbols", "ExtraWarnings"}
++			symbols "On"
++			warnings "Extra"
+ 
+-		configuration "Release"
++		filter "Release"
+ 			defines { "NDEBUG" }
+-			flags { "Optimize", "ExtraWarnings"}    
++			optimize "On"
++			warnings "Extra"
 --- nanosvg-20241219.orig/src/nanosvgrast.h
 +++ nanosvg-20241219/src/nanosvgrast.h
 @@ -46,6 +46,9 @@
