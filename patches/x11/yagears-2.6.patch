@@ -93,11 +93,21 @@ Requires: $REQUIRES
 
 exec=\\
 EOF
-test $GL && echo /x11/bin/yagears2 \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
-test $GL && test $FLTK || test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SDL2 || test $SFML && echo /x11/bin/yagears2-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
-test $GLUT && echo /x11/bin/yagears2-mosaic \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
-test $VK && echo /x11/bin/yagears2-vk \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
-test $VK && test $GLFW || test $SDL2 || test $SFML && echo /x11/bin/yagears2-vk-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
+test $GL && cat >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc << EOF
+/x11/bin/yagears2 \\
+EOF
+test $GL && test $FLTK || test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SDL2 || test $SFML && cat >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc << EOF
+/x11/bin/yagears2-gui \\
+EOF
+test $GLUT && cat >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc << EOF
+/x11/bin/yagears2-mosaic \\
+EOF
+test $VK && cat >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc << EOF
+/x11/bin/yagears2-vk \\
+EOF
+test $VK && test $GLFW || test $SDL2 || test $SFML && cat >> $DESTDIR/x11/share/pkgconfig/yagears2-build.pc << EOF
+/x11/bin/yagears2-vk-gui \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears2-build.pc
 
 exit

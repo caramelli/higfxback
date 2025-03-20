@@ -64,12 +64,12 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" config.mk
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" config.mk
 +
 +if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG ?=/s#=.*#= pkg-config#" config.mk
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" config.mk
 +else
-+  sed -i "/^PKG_CONFIG ?=/s#=.*#= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config#" config.mk
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" config.mk
 +fi
 --- feh-3.10.3.orig/config.mk
 +++ feh-3.10.3/config.mk

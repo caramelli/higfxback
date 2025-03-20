@@ -65,7 +65,7 @@ exit
 +  shift
 +done
 +
-+sed "/^prefix=/s#=.*#=$PREFIX#" api/egl-registry.pc.in > egl-registry.pc
++sed "/^prefix/s|=.*|=$PREFIX|" api/egl-registry.pc.in > egl-registry.pc
 --- EGL-Registry-20200106.orig/api/EGL/eglplatform.h
 +++ EGL-Registry-20200106/api/EGL/eglplatform.h
 @@ -67,7 +67,13 @@
@@ -86,7 +86,7 @@ exit
 --- EGL-Registry-20200106.orig/api/egl-registry.pc.in
 +++ EGL-Registry-20200106/api/egl-registry.pc.in
 @@ -0,0 +1,8 @@
-+prefix=@CMAKE_INSTALL_PREFIX@
++prefix=@prefix@
 +datarootdir=${prefix}/share
 +headersdir=${pc_sysrootdir}${prefix}/include
 +pkgdatadir=${pc_sysrootdir}${datarootdir}/egl/registry

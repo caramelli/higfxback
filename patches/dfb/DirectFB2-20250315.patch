@@ -17,8 +17,6 @@ meson setup --prefix=/dfb build
 meson compile -C build
 
 # install
-install -d $DESTDIR/dfb/bin
-install build/dfb-update-pkgconfig $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include/directfb
 install -m 644 build/include/directfb_build.h $DESTDIR/dfb/include/directfb
 install -m 644 build/include/directfb_keynames.h $DESTDIR/dfb/include/directfb
@@ -176,29 +174,18 @@ install build/wm/default/libdirectfbwm_default.so $DESTDIR/dfb/lib/directfb-2.0-
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/direct.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/directfb.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-inputdriver-linux_input.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-interface-font_dgiff.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-interface-imageprovider_dfiff.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-interface-resourcemanager_default.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-interface-videoprovider_dfvff.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-interface-windows_default.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/directfb-internal.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-system-dummy.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-system-fbdev.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/directfb-wm-default.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/fusion.pc $DESTDIR/dfb/lib/pkgconfig
-$DESTDIR/dfb/bin/dfb-update-pkgconfig
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
 Name: DirectFB2
-Version: 20231218
+Version: 20250315
 Description: Core DirectFB library
 Requires: $REQUIRES
 
 devel=\\
-/dfb/bin/dfb-update-pkgconfig \\
 /dfb/include/directfb/dfiff.h \\
 /dfb/include/directfb/dfvff.h \\
 /dfb/include/directfb/dgiff.h \\
@@ -321,21 +308,7 @@ devel=\\
 /dfb/lib/libfusion.so \\
 /dfb/lib/pkgconfig/direct.pc \\
 /dfb/lib/pkgconfig/directfb.pc \\
-/dfb/lib/pkgconfig/directfb-gfxdriver.pc \\
-/dfb/lib/pkgconfig/directfb-inputdriver.pc \\
-/dfb/lib/pkgconfig/directfb-inputdriver-linux_input.pc \\
-/dfb/lib/pkgconfig/directfb-interface.pc \\
-/dfb/lib/pkgconfig/directfb-interface-font_dgiff.pc \\
-/dfb/lib/pkgconfig/directfb-interface-imageprovider_dfiff.pc \\
-/dfb/lib/pkgconfig/directfb-interface-resourcemanager_default.pc \\
-/dfb/lib/pkgconfig/directfb-interface-videoprovider_dfvff.pc \\
-/dfb/lib/pkgconfig/directfb-interface-windows_default.pc \\
 /dfb/lib/pkgconfig/directfb-internal.pc \\
-/dfb/lib/pkgconfig/directfb-system.pc \\
-/dfb/lib/pkgconfig/directfb-system-dummy.pc \\
-/dfb/lib/pkgconfig/directfb-system-fbdev.pc \\
-/dfb/lib/pkgconfig/directfb-wm.pc \\
-/dfb/lib/pkgconfig/directfb-wm-default.pc \\
 /dfb/lib/pkgconfig/fusion.pc
 
 exec=\\
@@ -349,7 +322,9 @@ exec=\\
 /dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_dfvff.so \\
 /dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows/libidirectfbwindows_default.so \\
 EOF
-test $DRM && echo /dfb/lib/directfb-2.0-0/systems/libdirectfb_drmkms.so \\ >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc
+test $DRM && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
+/dfb/lib/directfb-2.0-0/systems/libdirectfb_drmkms.so \\
+EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
 /dfb/lib/directfb-2.0-0/systems/libdirectfb_dummy.so \\
 /dfb/lib/directfb-2.0-0/systems/libdirectfb_fbdev.so \\
@@ -357,152 +332,3 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
 EOF
 
 exit
---- DirectFB2-20231218.orig/include/directfb_keyboard.h
-+++ DirectFB2-20231218/include/directfb_keyboard.h
-@@ -37,6 +37,8 @@
- 
- #define DFB_KEY_TYPE(symbol)         ((((symbol) & ~0xFFF) == 0xF000) ? (symbol) & 0xFF00 : DIKT_UNICODE)
- 
-+#define DFB_KEY_IS_ASCII(symbol)     ((symbol) < 128)
-+
- #define DFB_FUNCTION_KEY(n)          (DFB_KEY( FUNCTION, n ))
- #define DFB_MODIFIER_KEY(i)          (DFB_KEY( MODIFIER, (1 << i) ))
- #define DFB_CUSTOM_KEY(n)            (DFB_KEY( CUSTOM, n ))
---- DirectFB2-20231218.orig/inputdrivers/linux_input/meson.build
-+++ DirectFB2-20231218/inputdrivers/linux_input/meson.build
-@@ -21,6 +21,7 @@
- 
- library('directfb_linux_input',
-         'linux_input.c',
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'inputdrivers'))
---- DirectFB2-20231218.orig/interfaces/ICoreResourceManager/meson.build
-+++ DirectFB2-20231218/interfaces/ICoreResourceManager/meson.build
-@@ -16,6 +16,7 @@
- 
- library('icoreresourcemanager_default',
-         'icoreresourcemanager_default.c',
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'interfaces/ICoreResourceManager'))
---- DirectFB2-20231218.orig/interfaces/IDirectFBFont/meson.build
-+++ DirectFB2-20231218/interfaces/IDirectFBFont/meson.build
-@@ -16,6 +16,7 @@
- 
- library('idirectfbfont_dgiff',
-         'idirectfbfont_dgiff.c',
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'interfaces/IDirectFBFont'))
---- DirectFB2-20231218.orig/interfaces/IDirectFBImageProvider/meson.build
-+++ DirectFB2-20231218/interfaces/IDirectFBImageProvider/meson.build
-@@ -16,6 +16,7 @@
- 
- library('idirectfbimageprovider_dfiff',
-         'idirectfbimageprovider_dfiff.c',
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'interfaces/IDirectFBImageProvider'))
---- DirectFB2-20231218.orig/interfaces/IDirectFBVideoProvider/meson.build
-+++ DirectFB2-20231218/interfaces/IDirectFBVideoProvider/meson.build
-@@ -16,6 +16,7 @@
- 
- library('idirectfbvideoprovider_dfvff',
-         'idirectfbvideoprovider_dfvff.c',
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'interfaces/IDirectFBVideoProvider'))
---- DirectFB2-20231218.orig/interfaces/IDirectFBWindows/meson.build
-+++ DirectFB2-20231218/interfaces/IDirectFBWindows/meson.build
-@@ -16,6 +16,7 @@
- 
- library('idirectfbwindows_default',
-         'idirectfbwindows_default.c',
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'interfaces/IDirectFBWindows'))
---- DirectFB2-20231218.orig/lib/fusion/meson.build
-+++ DirectFB2-20231218/lib/fusion/meson.build
-@@ -87,6 +87,7 @@
- libfusion = library('fusion-@0@.@1@'.format(directfb_major_version, directfb_minor_version),
-                     fusion_sources, shm_sources,
-                     include_directories: [config_inc, lib_inc],
-+                    build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-                     dependencies: direct_dep,
-                     version: '0.@0@.0'.format(directfb_micro_version),
-                     install: true)
---- DirectFB2-20231218.orig/meson.build
-+++ DirectFB2-20231218/meson.build
-@@ -72,7 +72,6 @@
- lib_inc = include_directories('lib')
- directfb_inc = [include_directories('include', 'src'), lib_inc]
- 
--add_global_arguments('-Wshadow'           , language: 'c')
- add_global_arguments('-Wstrict-prototypes', language: 'c')
- 
- pkgconfig = import('pkgconfig')
---- DirectFB2-20231218.orig/src/core/fluxcomp.py
-+++ DirectFB2-20231218/src/core/fluxcomp.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/env python3
-+#!/bin/env python3
- 
- license = """
- /*
---- DirectFB2-20231218.orig/src/meson.build
-+++ DirectFB2-20231218/src/meson.build
-@@ -182,6 +182,7 @@
- libdirectfb = library('directfb-@0@.@1@'.format(directfb_major_version, directfb_minor_version),
-                       directfb_sources, flux_sources, surface_pool_sources,
-                       include_directories: [config_inc, directfb_inc],
-+                      build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-                       c_args: ['-DBUILDTIME="'  + run_command('date', '-u', '+%Y-%m-%d %H:%M',
-                                                               check: true).stdout().strip()                  + '"',
-                                '-DSYSCONFDIR="' + join_paths(get_option('prefix'), get_option('sysconfdir')) + '"'],
---- DirectFB2-20231218.orig/systems/drmkms/meson.build
-+++ DirectFB2-20231218/systems/drmkms/meson.build
-@@ -32,6 +32,7 @@
- 
- library('directfb_drmkms',
-         drmkms_sources,
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: [directfb_dep, drmkms_dep],
-         install: true,
-         install_dir: join_paths(moduledir, 'systems'))
---- DirectFB2-20231218.orig/systems/dummy/meson.build
-+++ DirectFB2-20231218/systems/dummy/meson.build
-@@ -20,6 +20,7 @@
- 
- library('directfb_dummy',
-          dummy_sources,
-+         build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-          dependencies: directfb_dep,
-          install: true,
-          install_dir: join_paths(moduledir, 'systems'))
---- DirectFB2-20231218.orig/systems/fbdev/meson.build
-+++ DirectFB2-20231218/systems/fbdev/meson.build
-@@ -31,6 +31,7 @@
- 
- library('directfb_fbdev',
-         fbdev_sources,
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'systems'))
---- DirectFB2-20231218.orig/wm/default/meson.build
-+++ DirectFB2-20231218/wm/default/meson.build
-@@ -17,6 +17,7 @@
- library('directfbwm_default',
-         'default.c',
-         include_directories: config_inc,
-+        build_rpath: join_paths(get_option('prefix'), get_option('libdir')),
-         dependencies: directfb_dep,
-         install: true,
-         install_dir: join_paths(moduledir, 'wm'))

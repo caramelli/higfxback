@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 yes "" | ./configure
-sed -e "s/@VERSION@/$(grep NETPBM_MAJOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ').$(grep NETPBM_MINOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ')/" -e "s/@LIBDIR@/\/lib/" -e "s/@INCLUDEDIR@/\/include/" buildtools/pkgconfig_template > netpbm.pc
+sed -e "s/@VERSION@/$(grep NETPBM_MAJOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ').$(grep NETPBM_MINOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ')/" -e "s|@LIBDIR@|/lib|" -e "s|@INCLUDEDIR@|/include|" buildtools/pkgconfig_template > netpbm.pc
 
 # build
 make

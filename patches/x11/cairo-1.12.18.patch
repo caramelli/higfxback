@@ -75,9 +75,13 @@ devel=\\
 /x11/include/cairo-svg.h \\
 /x11/include/cairo-svg.h \\
 EOF
-test $XCB && echo /x11/include/cairo-xcb.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $XLIB && echo /x11/include/cairo-xlib.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $XLIB && echo /x11/include/cairo-xlib-xrender.h \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
+/x11/include/cairo-xcb.h \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
+/x11/include/cairo-xlib.h \\
+/x11/include/cairo-xlib-xrender.h \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
 /x11/lib/libcairo.so \\
 /x11/lib/libcairo-gobject.so \\
@@ -86,9 +90,13 @@ cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
 /x11/lib/pkgconfig/cairo-gobject.pc \\
 /x11/lib/pkgconfig/cairo-png.pc \\
 EOF
-test $XCB && echo /x11/lib/pkgconfig/cairo-xcb.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $XLIB && echo /x11/lib/pkgconfig/cairo-xlib.pc \\ >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
-test $XLIB && echo /x11/lib/pkgconfig/cairo-xlib-xrender.pc >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
+/x11/lib/pkgconfig/cairo-xcb.pc \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
+/x11/lib/pkgconfig/cairo-xlib.pc \\
+/x11/lib/pkgconfig/cairo-xlib-xrender.pc
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/cairo-build.pc << EOF
 
 exec=\\

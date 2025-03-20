@@ -52,7 +52,7 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 --- fbpad-20150219.orig/Makefile
 +++ fbpad-20150219/Makefile
 @@ -1,10 +1,11 @@
@@ -282,6 +282,15 @@ exit
  static void fb_box(int sr, int er, int sc, int ec, fbval_t val)
 --- fbpad-20150219.orig/term.c
 +++ fbpad-20150219/term.c
+@@ -68,7 +68,7 @@
+ /* assumes visible && !lazy */
+ static void _draw_row(int r)
+ {
+-	int cbg, cch;		/* current background and character */
++	int cbg = 0, cch;		/* current background and character */
+ 	int fbg, fsc = -1;	/* filling background and start column */
+ 	int i;
+ 	/* call pad_fill() only once for blank columns with identical backgrounds */
 @@ -222,7 +222,7 @@
  {
  	screen_reset(0, pad_rows() * pad_cols());

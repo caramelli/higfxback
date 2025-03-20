@@ -17,8 +17,6 @@ PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
 meson compile -C build
 
 # install
-install -d $DESTDIR/dfb/bin
-install build/fs-update-pkgconfig $DESTDIR/dfb/bin
 install -d $DESTDIR/dfb/include/fusionsound
 install -m 644 build/include/fusionsound_build.h $DESTDIR/dfb/include/fusionsound
 install -m 644 build/include/fusionsound_strings.h $DESTDIR/dfb/include/fusionsound
@@ -39,31 +37,25 @@ install -m 644 src/misc/sound_conf.h $DESTDIR/dfb/include/fusionsound-internal/m
 install -d $DESTDIR/dfb/lib
 install build/src/libfusionsound-2.0.so.0.*[!p] $DESTDIR/dfb/lib/libfusionsound-2.0.so.0
 ln -sf libfusionsound-2.0.so.0 $DESTDIR/dfb/lib/libfusionsound.so
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_wave.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 install -d $DESTDIR/dfb/lib/directfb-2.0-0/snddrivers
 test $ALSA && install build/snddrivers/alsa/libfusionsound_alsa.so $DESTDIR/dfb/lib/directfb-2.0-0/snddrivers
 install build/snddrivers/dummy/libfusionsound_dummy.so $DESTDIR/dfb/lib/directfb-2.0-0/snddrivers
 install build/snddrivers/oss/libfusionsound_oss.so $DESTDIR/dfb/lib/directfb-2.0-0/snddrivers
-install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
-install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_wave.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/fusionsound.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/fusionsound-interface-musicprovider_wave.pc $DESTDIR/dfb/lib/pkgconfig
 install -m 644 build/meson-private/fusionsound-internal.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/fusionsound-snddriver-alsa.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/fusionsound-snddriver-dummy.pc $DESTDIR/dfb/lib/pkgconfig
-install -m 644 build/meson-private/fusionsound-snddriver-oss.pc $DESTDIR/dfb/lib/pkgconfig
-$DESTDIR/dfb/bin/fs-update-pkgconfig
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/fusionsound2-build.pc << EOF
 Name: FusionSound2
-Version: 20240328
+Version: 20250315
 Description: Audio subsystem using Fusion IPC
 Requires: $REQUIRES
 
 devel=\\
-/dfb/bin/fs-update-pkgconfig \\
 /dfb/include/fusionsound/fusionsound.h \\
 /dfb/include/fusionsound/fusionsound_build.h \\
 /dfb/include/fusionsound/fusionsound_strings.h \\
@@ -78,23 +70,18 @@ devel=\\
 /dfb/include/directfb-internal/misc/sound_conf.h \\
 /dfb/lib/libfusionsound.so \\
 /dfb/lib/pkgconfig/fusionsound.pc \\
-/dfb/lib/pkgconfig/fusionsound-interface-musicprovider_wave.pc \\
-/dfb/lib/pkgconfig/fusionsound-interface.pc \\
-/dfb/lib/pkgconfig/fusionsound-internal.pc \\
-/dfb/lib/pkgconfig/fusionsound-snddriver.pc \\
-/dfb/lib/pkgconfig/fusionsound-snddriver-alsa.pc \\
-/dfb/lib/pkgconfig/fusionsound-snddriver-dummy.pc \\
-/dfb/lib/pkgconfig/fusionsound-snddriver-oss.pc
+/dfb/lib/pkgconfig/fusionsound-internal.pc
 
 exec=\\
 /dfb/lib/libfusionsound-2.0.so.0 \\
 /dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_wave.so \\
 EOF
-test $ALSA && echo /dfb/lib/directfb-2.0-0/snddrivers/libfusionsound_alsa.so \\ >> $DESTDIR/dfb/share/pkgconfig/fusionsound2-build.pc
+test $ALSA && cat >> $DESTDIR/dfb/share/pkgconfig/fusionsound2-build.pc << EOF
+/dfb/lib/directfb-2.0-0/snddrivers/libfusionsound_alsa.so \\
+EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/fusionsound2-build.pc << EOF
 /dfb/lib/directfb-2.0-0/snddrivers/libfusionsound_dummy.so \\
-/dfb/lib/directfb-2.0-0/snddrivers/libfusionsound_oss.so \\
-/dfb/lib/directfb-2.0-0/wm/libdirectfbwm_default.so
+/dfb/lib/directfb-2.0-0/snddrivers/libfusionsound_oss.so
 EOF
 
 exit

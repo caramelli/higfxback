@@ -63,7 +63,9 @@ devel=\\
 /x11/include/X11/XKBlib.h \\
 /x11/include/X11/Xlib.h \\
 EOF
-test $XCB && echo /x11/include/X11/Xlib-xcb.h \\ >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
+/x11/include/X11/Xlib-xcb.h \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
 /x11/include/X11/XlibConf.h \\
 /x11/include/X11/Xlibint.h \\
@@ -73,15 +75,24 @@ cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
 /x11/include/X11/Xutil.h \\
 /x11/lib/libX11.so \\
 EOF
-test $XCB && echo /x11/lib/libX11-xcb.so \\ >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc
-test $XCB && echo /x11/lib/pkgconfig/x11-xcb.pc \\ >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
+/x11/lib/libX11-xcb.so \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
-/x11/lib/pkgconfig/x11.pc
+/x11/lib/pkgconfig/x11.pc \\
+EOF
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
+/x11/lib/pkgconfig/x11-xcb.pc \\
+EOF
+sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/libx11-build.pc
+cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
 
 exec=\\
 /x11/lib/libX11.so.6 \\
 EOF
-test $XCB && echo /x11/lib/libX11-xcb.so.1 \\ >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
+/x11/lib/libX11-xcb.so.1 \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
 /x11/share/X11/XKeysymDB \\
 /x11/share/X11/locale/compose.dir \\

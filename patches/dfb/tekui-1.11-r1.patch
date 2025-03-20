@@ -6,7 +6,7 @@ REQUIRES="directfb2-media-build luafilesystem-build make-build"
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --with-dfb-include /dfb/include/directfb --with-dfb-lib /dfb/lib --prefix /dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig sh ./Configure --prefix /dfb
 
 # build
 make DISPLAY_DRIVER=directfb all
@@ -245,13 +245,10 @@ EOF
 exit
 --- tekui-1.11-r1.orig/Configure
 +++ tekui-1.11-r1/Configure
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,28 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
-+
-+DIRECTFB_DEFS="\`pkg-config --cflags directfb\`"
-+DIRECTFB_LIBS="\`pkg-config --libs directfb\`"
 +
 +while : ; do
 +  case "$1" in
@@ -262,14 +259,6 @@ exit
 +      PREFIX=$2
 +      shift
 +    ;;
-+    --with-dfb-include)
-+      DIRECTFB_DEFS=-I$2
-+      shift
-+    ;;
-+    --with-dfb-lib)
-+      DIRECTFB_LIBS="-L$2 -Wl,-rpath,$2 -ldirectfb"
-+      shift
-+    ;;
 +    *)
 +      echo Unknown option \"$1\".
 +      exit 1
@@ -278,10 +267,13 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" config
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" config
 +
-+sed -i "/^DIRECTFB_DEFS =/s#=.*#= $DIRECTFB_DEFS#" config
-+sed -i "/^DIRECTFB_LIBS =/s#=.*#= $DIRECTFB_LIBS#" config
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" config
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" config
++fi
 --- tekui-1.11-r1.orig/bin/bashing.lua
 +++ tekui-1.11-r1/bin/bashing.lua
 @@ -1,4 +1,4 @@
@@ -691,15 +683,34 @@ exit
  
 --- tekui-1.11-r1.orig/config
 +++ tekui-1.11-r1/config
-@@ -202,7 +202,7 @@
+@@ -120,6 +120,7 @@
+ #------------------------------------------------------------------------------
+ 
+ PREFIX ?= /usr/local
++PKG_CONFIG ?= pkg-config
+ LUAVER ?= 5.1
+ LUA_LIB = $(PREFIX)/lib/lua/$(LUAVER)
+ LUA_SHARE = $(PREFIX)/share/lua/$(LUAVER)
+@@ -201,8 +202,8 @@
+ # DirectFB defines and libraries:
  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  
- DIRECTFB_LIBS = `pkg-config --libs directfb`
+-DIRECTFB_LIBS = `pkg-config --libs directfb`
 -DIRECTFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
-+DIRECTFB_DEFS = `pkg-config --cflags directfb`
++DIRECTFB_LIBS = `$(PKG_CONFIG) --libs directfb`
++DIRECTFB_DEFS = `$(PKG_CONFIG) --cflags directfb`
  
  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  # Windows defines and libraries:
+@@ -231,7 +232,7 @@
+ OPT = -O2 -fno-strict-aliasing
+ INCL = -I. -Iinclude -I$(INCDIR)
+ LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(CPPFLAGS) $(CFLAGS)
+-MODCFLAGS = -shared -L $(LIBDIR) $(LDFLAGS)
++MODCFLAGS = -shared -L $(LIBDIR) $(LDFLAGS) $(CC_LD_RT)$(PREFIX)/lib
+ # For Mac OS X:
+ # MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR) $(LDFLAGS)
+ BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(LDFLAGS)
 --- tekui-1.11-r1.orig/etc/keymap2c.lua
 +++ tekui-1.11-r1/etc/keymap2c.lua
 @@ -1,4 +1,4 @@

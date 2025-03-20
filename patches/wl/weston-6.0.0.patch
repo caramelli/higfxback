@@ -97,7 +97,9 @@ exec=\\
 /wl/bin/weston-confine \\
 /wl/bin/weston-dnd \\
 EOF
-test $PANGO && echo /wl/bin/weston-editor \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $PANGO && cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/bin/weston-editor \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/bin/weston-eventdemo \\
 /wl/bin/weston-flower \\
@@ -110,23 +112,31 @@ cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/bin/weston-screenshooter \\
 /wl/bin/weston-simple-damage \\
 EOF
-test $GL && echo /wl/bin/weston-simple-egl \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $GL && cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/bin/weston-simple-egl \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/bin/weston-simple-shm \\
 /wl/bin/weston-smoke \\
 /wl/bin/weston-stacking \\
 EOF
-test $GL && echo /wl/bin/weston-subsurfaces \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $GL && cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/bin/weston-subsurfaces \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/bin/weston-terminal \\
 /wl/lib/libweston-6.so.0 \\
 /wl/lib/libweston-desktop-6.so.0 \\
 EOF
-test $DRM && echo /wl/lib/libweston-6/drm-backend.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/lib/libweston-6/drm-backend.so \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/lib/libweston-6/fbdev-backend.so \\
 EOF
-test $DRM && echo /wl/lib/libweston-6/gl-renderer.so \\ >> $DESTDIR/wl/share/pkgconfig/weston-build.pc
+test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
+/wl/lib/libweston-6/gl-renderer.so \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 /wl/lib/libweston-6/headless-backend.so \\
 /wl/lib/weston/desktop-shell.so \\

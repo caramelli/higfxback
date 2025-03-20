@@ -43,11 +43,12 @@ EOF
 exit
 --- RHash-1.3.5.orig/Configure
 +++ RHash-1.3.5/Configure
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,36 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +TARGET=\$\(TARGET\)
++LIBRARY=\$\(LIBRARY\)
 +
 +while : ; do
 +  case "$1" in
@@ -60,6 +61,7 @@ exit
 +    ;;
 +    --disable-static)
 +      TARGET=\$\(SHARED_TRG\)
++      LIBRARY=\$\(SONAME\)
 +    ;;
 +    *)
 +      echo Unknown option \"$1\".
@@ -69,11 +71,15 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX  ?=/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^all:/s#:.*#: $TARGET#" Makefile
++sed -i "/^all/s|:.*|: $TARGET|" Makefile
 +
-+sed -i "/^prefix=/s#=.*#=$PREFIX#" dist/librhash.pc
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" librhash/Makefile
++
++sed -i "/^all/s|:.*|: $LIBRARY|" librhash/Makefile
++
++sed -i "/^prefix/s|=.*|=$PREFIX|" dist/librhash.pc
 --- RHash-1.3.5.orig/dist/librhash.pc
 +++ RHash-1.3.5/dist/librhash.pc
 @@ -0,0 +1,11 @@

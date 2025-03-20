@@ -63,9 +63,9 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^prefix=/s#=.*#=$PREFIX#" tinycthread.pc
++sed -i "/^prefix/s|=.*|=$PREFIX|" tinycthread.pc
 --- tinycthread-20160930.orig/Makefile
 +++ tinycthread-20160930/Makefile
 @@ -0,0 +1,21 @@
@@ -89,7 +89,7 @@ exit
 +	install libtinycthread.so.1 $(DESTDIR)$(PREFIX)/lib
 +	ln -sf libtinycthread.so.1 $(DESTDIR)$(PREFIX)/lib/libtinycthread.so
 +	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
-+	sed "/^prefix=/s|=.*|=$(PREFIX)|" tinycthread.pc > $(DESTDIR)$(PREFIX)/lib/pkgconfig/tinycthread.pc
++	sed "/^prefix/s|=.*|=$(PREFIX)|" tinycthread.pc > $(DESTDIR)$(PREFIX)/lib/pkgconfig/tinycthread.pc
 --- tinycthread-20160930.orig/tinycthread.pc
 +++ tinycthread-20160930/tinycthread.pc
 @@ -0,0 +1,9 @@

@@ -12,6 +12,8 @@ sh ./Configure --prefix
 make
 
 # install
+install -d $DESTDIR/bin
+install minimp3 $DESTDIR/bin
 install -d $DESTDIR/include/minimp3
 install -m 644 minimp3.h $DESTDIR/include/minimp3
 install -m 644 minimp3_ex.h $DESTDIR/include/minimp3
@@ -27,6 +29,9 @@ Requires: $REQUIRES
 devel=\\
 /include/minimp3/minimp3.h \\
 /include/minimp3/minimp3_ex.h
+
+exec=\\
+/bin/minimp3
 EOF
 
 exit
@@ -54,24 +59,26 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 --- minimp3-20211130.orig/Makefile
 +++ minimp3-20211130/Makefile
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,19 @@
 +PREFIX ?= /usr/local
 +
 +CFLAGS += -g -O2
 +LDFLAGS += -lm
 +
-+all: minimp3_test
++all: minimp3
 +
-+minimp3_test: minimp3_test.c
++minimp3: minimp3_test.c
 +	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 +
 +clean:
-+	$(RM) minimp3_test
++	$(RM) minimp3
 +
 +install: all
++	install -d $(DESTDIR)$(PREFIX)/bin
++	install minimp3 $(DESTDIR)$(PREFIX)/bin
 +	install -d $(DESTDIR)$(PREFIX)/include/minimp3
 +	install -m 644 minimp3.h $(DESTDIR)$(PREFIX)/include/minimp3
 +	install -m 644 minimp3_ex.h $(DESTDIR)$(PREFIX)/include/minimp3

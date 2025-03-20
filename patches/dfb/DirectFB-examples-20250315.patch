@@ -9,7 +9,7 @@ if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-bui
   GL=1
   GL_HEADER="-Dgl=GLES2/gl2.h"
   GL_CFLAGS="-Dgl-cflags=-I/dfb/include"
-  GL_LDFLAGS="-Dgl-ldflags=/dfb/lib/libGLESv2.so"
+  GL_LDFLAGS="-Dgl-ldflags=-L/dfb/lib -lGLESv2"
   REQUIRES="$REQUIRES egl-opengl-stubs-build"
 elif PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists directfbgl-portablegl-build; then
   GL=1
@@ -18,13 +18,21 @@ elif PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists directfbgl-portabl
   REQUIRES="$REQUIRES directfbgl-portablegl-build"
 fi
 
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists vulkan-loader-build; then
+  VK=1
+  VK_PHYSICAL_DEVICE_TYPE="-Dvk=4"
+  VK_CFLAGS="-Dvk-cflags=-I/dfb/include"
+  VK_LDFLAGS="-Dvk-ldflags=-L/dfb/lib -lvulkan"
+  REQUIRES="$REQUIRES vulkan-loader-build"
+fi
+
 if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
   FUSIONSOUND=1
   REQUIRES="$REQUIRES fusionsound2-build"
 fi
 
 # configure
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $GL_HEADER ${GL_CFLAGS:+"$GL_CFLAGS"} $GL_LDFLAGS --prefix=/dfb build
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $GL_HEADER ${GL_CFLAGS:+"$GL_CFLAGS"} ${GL_LDFLAGS:+"$GL_LDFLAGS"} $VK_PHYSICAL_DEVICE_TYPE ${VK_CFLAGS:+"$VK_CFLAGS"} ${VK_LDFLAGS:+"$VK_LDFLAGS"} --prefix=/dfb build
 
 # build
 meson compile -C build
@@ -36,7 +44,7 @@ install build/src/df_cpuload $DESTDIR/dfb/bin
 install build/src/df_dok $DESTDIR/dfb/bin
 install build/src/df_drivertest $DESTDIR/dfb/bin
 install build/src/df_fire $DESTDIR/dfb/bin
-test $GL && install build/src/df_gears $DESTDIR/dfb/bin
+test $GL && install build/src/df_glgears $DESTDIR/dfb/bin
 install build/src/df_input $DESTDIR/dfb/bin
 install build/src/df_knuckles $DESTDIR/dfb/bin
 install build/src/df_layers $DESTDIR/dfb/bin
@@ -49,6 +57,7 @@ install build/src/df_pss $DESTDIR/dfb/bin
 install build/src/df_spacedream $DESTDIR/dfb/bin
 install build/src/df_texture $DESTDIR/dfb/bin
 install build/src/df_video $DESTDIR/dfb/bin
+test $VK && install build/src/df_vkcolor $DESTDIR/dfb/bin
 install build/src/df_window $DESTDIR/dfb/bin
 test $FUSIONSOUND && install build/src/fs_advanced $DESTDIR/dfb/bin
 test $FUSIONSOUND && install build/src/fs_buffer $DESTDIR/dfb/bin
@@ -102,7 +111,7 @@ install -m 644 data/wood_andi.dfiff $DESTDIR/dfb/share/directfb-examples
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 Name: DirectFB-examples
-Version: 20231218
+Version: 20250315
 Description: A collection of DirectFB demos and test programs
 Requires: $REQUIRES
 
@@ -113,7 +122,9 @@ exec=\\
 /dfb/bin/df_drivertest \\
 /dfb/bin/df_fire \\
 EOF
-test $GL && echo /dfb/bin/df_gears \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+test $GL && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/df_glgears \\
+EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/bin/df_input \\
 /dfb/bin/df_knuckles \\
@@ -127,11 +138,18 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/bin/df_spacedream \\
 /dfb/bin/df_texture \\
 /dfb/bin/df_video \\
+EOF
+test $VK && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/df_vkcolor \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/bin/df_window \\
 EOF
-test $FUSIONSOUND && echo /dfb/bin/fs_advanced \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
-test $FUSIONSOUND && echo /dfb/bin/fs_buffer \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
-test $FUSIONSOUND && echo /dfb/bin/fs_stream \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+test $FUSIONSOUND && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/fs_advanced \\
+/dfb/bin/fs_buffer \\
+/dfb/bin/fs_stream \\
+EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/share/directfb-examples/apple-red.dfiff \\
 /dfb/share/directfb-examples/background.dfiff \\
@@ -172,7 +190,9 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/share/directfb-examples/star4.dfiff \\
 /dfb/share/directfb-examples/swirl.dfiff \\
 EOF
-test $FUSIONSOUND && echo /dfb/share/directfb-examples/test.wav \\ >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc
+test $FUSIONSOUND && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/share/directfb-examples/test.wav \\
+EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 /dfb/share/directfb-examples/texture.dfiff \\
 /dfb/share/directfb-examples/tux.dfiff \\
@@ -181,15 +201,3 @@ cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
 EOF
 
 exit
---- DirectFB-examples-20231218.orig/meson.build
-+++ DirectFB-examples-20231218/meson.build
-@@ -86,7 +86,8 @@
- gl_dep = []
- if get_option('gl') != ''
-   gl_dep = declare_dependency(compile_args: ['-DOPENGL_H="@0@"'.format(get_option('gl')),
--                                            get_option('gl-cflags').strip().split(' ')],
-+                                             get_option('gl-cflags') != '' ?
-+                                             get_option('gl-cflags').strip().split(' ') : []],
-                               link_args: get_option('gl-ldflags') != '' ?
-                                          get_option('gl-ldflags').strip().split(' ') : [])
- 

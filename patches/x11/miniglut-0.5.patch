@@ -6,7 +6,7 @@ REQUIRES="egl-opengl-stubs-build libx11-build make-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-static --prefix /x11
 
 # build
 make
@@ -47,7 +47,7 @@ ln -sf miniglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
 exit
 --- miniglut-0.5.orig/Configure
 +++ miniglut-0.5/Configure
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,33 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -72,16 +72,19 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makefile
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makefile
++
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makefile
++fi
 --- miniglut-0.5.orig/Makefile
 +++ miniglut-0.5/Makefile
-@@ -1,10 +1,19 @@
- PREFIX = /usr/local
+@@ -2,9 +2,20 @@
  
-+NOSTATIC ?= 
-+
  olib = miniglut.o
  otest = test.o
 -alib = libminiglut.a
@@ -89,28 +92,30 @@ exit
 +solib = libglut.so.3
  bin = test
  
++NOSTATIC ?= 
++
 +ifeq "$(NOSTATIC)" ""
 +LIB := $(alib)
 +else
 +LIB := $(solib)
 +endif
 +
++PKG_CONFIG ?= pkg-config
++
  CFLAGS = -pedantic -Wall -g
  
  isx86 ?= $(shell uname -m | sed 's/x86_64/x86/; s/i.86/x86/')
-@@ -19,8 +28,13 @@
+@@ -19,8 +30,11 @@
  	LDFLAGS = -mconsole -lopengl32 -lgdi32 -lwinmm
  else
  	ifeq ($(sys)-$(isx86), Linux-x86)
 -		CFLAGS += -I/usr/X11R6/include
 -		LDFLAGS = -L/usr/X11R6/lib -lX11 -lGL
-+		CFLAGS += -I$(PREFIX)/include
-+		LDFLAGS = -L$(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lGL
++		CFLAGS += `$(PKG_CONFIG) --cflags gl x11`
 +		ifeq "$(NOSTATIC)" "yes"
 +		CFLAGS += -fPIC
-+		else
-+		LDFLAGS += -lX11
 +		endif
++		LDFLAGS = `$(PKG_CONFIG) --libs gl x11` -Wl,-rpath,$(PREFIX)/lib
  	else
  		# for other UNIX or non-x86 where sys_ and trig functions are not
  		# implemented, just use libc
@@ -127,7 +132,7 @@ exit
  	$(AR) rcs $@ $(olib)
  
 +$(solib): $(olib)
-+	$(CC) -shared -shared -Wl,-soname,$@ $^ -o $@ $(LDFLAGS) -lX11
++	$(CC) -shared -shared -Wl,-soname,$@ $^ -o $@ $(LDFLAGS)
 +
 +glut.pc: glut.pc.in
 +	@sed 's,@prefix@,$(PREFIX),' glut.pc.in > $@

@@ -46,10 +46,17 @@ Requires: $REQUIRES
 
 exec=\\
 EOF
-test $XCB && echo /x11/bin/vkcube-xcb \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
-test $XLIB && echo /x11/bin/vkcube-xlib \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
-test $XCB && echo /x11/bin/vkcubepp-xcb \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
-test $XLIB && echo /x11/bin/vkcubepp-xlib \\ >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
+/x11/bin/vkcube-xcb \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
+/x11/bin/vkcube-xlib \\
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
+/x11/bin/vkcubepp-xcb \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
+/x11/bin/vkcubepp-xlib \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
 /x11/bin/vulkaninfo
 EOF

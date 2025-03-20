@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 # configure (ac-2.71; am-1.16; lt-2.4.6)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/fb/lib/pkgconfig ./configure --disable-static --prefix=/fb
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --prefix=/fb
 
 # build
 make

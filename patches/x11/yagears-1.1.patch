@@ -65,8 +65,12 @@ Requires: $REQUIRES
 exec=\\
 /x11/bin/yagears \\
 EOF
-test $FLTK || test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && echo /x11/bin/yagears-gui \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
-test $GLUT && echo /x11/bin/yagears-mosaic \\ >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc
+test $FLTK || test $GLFW || test $GLUT || test $GTK2 || test $SDL || test $SFML && cat >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc << EOF
+/x11/bin/yagears-gui \\
+EOF
+test $GLUT && cat >> $DESTDIR/x11/share/pkgconfig/yagears-build.pc << EOF
+/x11/bin/yagears-mosaic \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/yagears-build.pc
 
 exit

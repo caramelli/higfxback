@@ -64,11 +64,21 @@ Requires: $REQUIRES
 
 exec=\\
 EOF
-test $GL && echo /dfb/bin/yagears2 \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GL && test $GLUT || test $GTK2 || test $SDL || test $SDL2 && echo /dfb/bin/yagears2-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $GLUT && echo /dfb/bin/yagears2-mosaic \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && echo /dfb/bin/yagears2-vk \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
-test $VK && test $SDL2 && echo /dfb/bin/yagears2-vk-gui \\ >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
+test $GL && cat >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+/dfb/bin/yagears2 \\
+EOF
+test $GL && test $GLUT || test $GTK2 || test $SDL || test $SDL2 && cat >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+/dfb/bin/yagears2-gui \\
+EOF
+test $GLUT && cat >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+/dfb/bin/yagears2-mosaic \\
+EOF
+test $VK && cat >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+/dfb/bin/yagears2-vk \\
+EOF
+test $VK && test $SDL2 && cat >> $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc << EOF
+/dfb/bin/yagears2-vk-gui \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/yagears2-build.pc
 
 exit

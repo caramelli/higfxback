@@ -41,16 +41,21 @@ EOF
 exit
 --- libsigsegv-2.6.orig/Makefile.am
 +++ libsigsegv-2.6/Makefile.am
-@@ -23,6 +23,9 @@
+@@ -23,9 +23,12 @@
  
  SUBDIRS = src tests
  
+-EXTRA_DIST = ChangeLog.1 PORTING README.woe32 Makefile.msvc config.h.msvc
 +pkgconfigdir = $(libdir)/pkgconfig
 +pkgconfig_DATA = libsigsegv.pc
-+
- EXTRA_DIST = ChangeLog.1 PORTING README.woe32 Makefile.msvc config.h.msvc
  
- DISTCLEANFILES = termbold termnorm
+-DISTCLEANFILES = termbold termnorm
++EXTRA_DIST = ChangeLog.1 PORTING README.woe32 Makefile.msvc config.h.msvc libsigsegv.pc.in
++
++DISTCLEANFILES = termbold termnorm libsigsegv.pc
+ 
+ 
+ # Lead the user through the installation, in the hope that he will help us
 --- libsigsegv-2.6.orig/configure.ac
 +++ libsigsegv-2.6/configure.ac
 @@ -18,7 +18,7 @@

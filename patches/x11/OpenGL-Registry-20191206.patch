@@ -85,7 +85,7 @@ exit
 +  shift
 +done
 +
-+sed "/^prefix=/s#=.*#=$PREFIX#" xml/opengl-registry.pc.in > opengl-registry.pc
++sed "/^prefix/s|=.*|=$PREFIX|" xml/opengl-registry.pc.in > opengl-registry.pc
 --- OpenGL-Registry-20191206.orig/xml/Makefile
 +++ OpenGL-Registry-20191206/xml/Makefile
 @@ -17,7 +17,7 @@
@@ -192,7 +192,7 @@ exit
 --- OpenGL-Registry-20191206.orig/xml/opengl-registry.pc.in
 +++ OpenGL-Registry-20191206/xml/opengl-registry.pc.in
 @@ -0,0 +1,8 @@
-+prefix=@CMAKE_INSTALL_PREFIX@
++prefix=@prefix@
 +datarootdir=${prefix}/share
 +headersdir=${pc_sysrootdir}${prefix}/include
 +pkgdatadir=${pc_sysrootdir}${datarootdir}/opengl/registry

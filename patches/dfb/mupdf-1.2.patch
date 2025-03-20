@@ -73,17 +73,17 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix ?=/s#=.*#= $PREFIX#" Makefile
++sed -i "/^prefix/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makerules
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makerules
 +
 +if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG ?=/s#=.*#= pkg-config#" Makerules
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makerules
 +else
-+  sed -i "/^PKG_CONFIG ?=/s#=.*#= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config#" Makerules
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makerules
 +fi
 +
-+sed -i "/^prefix=/s#=.*#=$PREFIX#" debian/mupdf.pc
++sed -i "/^prefix/s|=.*|=$PREFIX|" debian/mupdf.pc
 --- mupdf-1.2.orig/Makefile
 +++ mupdf-1.2/Makefile
 @@ -37,7 +37,7 @@

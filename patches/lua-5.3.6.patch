@@ -6,10 +6,10 @@ REQUIRES="make-build readline-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --prefix
+sh ./Configure --disable-static --platform linux --prefix
 
 # build
-make linux
+make
 
 # install
 install -d $DESTDIR/bin
@@ -69,10 +69,12 @@ EOF
 exit
 --- lua-5.3.6.orig/Configure
 +++ lua-5.3.6/Configure
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,41 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
++
++PLAT=none
 +
 +while : ; do
 +  case "$1" in
@@ -81,6 +83,10 @@ exit
 +    ;;
 +    --prefix)
 +      PREFIX=$2
++      shift
++    ;;
++    --platform)
++      PLAT=$2
 +      shift
 +    ;;
 +    --disable-static)
@@ -94,26 +100,27 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix=/s#=.*#=$PREFIX#" lua.pc
++sed -i "/^INSTALL_TOP/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^INSTALL_TOP=/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PLAT/s|=.*|= $PLAT|" Makefile
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makefile
 +
-+sed -i "/^#define LUA_ROOT/s#\".*#\"$PREFIX/\"#" src/luaconf.h
++sed -i "/^PLAT/s|=.*|= $PLAT|" src/Makefile
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" src/Makefile
 +
-+sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" Makefile
-+sed -i "/^NOSTATIC ?=/s#=.*#= $NOSTATIC#" src/Makefile
++sed -i "/^#define LUA_ROOT/s|\".*|\"$PREFIX/\"|" src/luaconf.h
++
++sed -i "/^prefix/s|=.*|=$PREFIX|" lua.pc
 --- lua-5.3.6.orig/Makefile
 +++ lua-5.3.6/Makefile
-@@ -3,6 +3,8 @@
- 
- # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
- 
-+NOSTATIC ?= 
-+
+@@ -6,17 +6,19 @@
  # Your platform. See PLATS for possible values.
  PLAT= none
  
-@@ -11,12 +13,12 @@
++NOSTATIC= 
++
+ # Where to install. The installation starts in the src and doc directories,
+ # so take care if INSTALL_TOP is not an absolute path. See the local target.
  # You may want to make INSTALL_LMOD and INSTALL_CMOD consistent with
  # LUA_ROOT, LUA_LDIR, and LUA_CDIR in luaconf.h.
  INSTALL_TOP= /usr/local
@@ -132,7 +139,13 @@ exit
  
  # How to install. If your install program does not support "-p", then
  # you may have to run ranlib on the installed liblua.a.
-@@ -41,7 +43,11 @@
+@@ -36,12 +38,16 @@
+ # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
+ 
+ # Convenience platforms targets.
+-PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
++PLATS= none
+ 
  # What to install.
  TO_BIN= lua luac
  TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
@@ -180,15 +193,12 @@ exit
 +Cflags: -I${includedir}
 --- lua-5.3.6.orig/src/Makefile
 +++ lua-5.3.6/src/Makefile
-@@ -3,11 +3,17 @@
- 
- # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
- 
-+NOSTATIC ?= 
-+
+@@ -6,8 +6,14 @@
  # Your platform. See PLATS for possible values.
  PLAT= none
  
++NOSTATIC= 
++
  CC= gcc -std=gnu99
  CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
 +CFLAGS += -DLUA_COMPAT_5_1
@@ -198,8 +208,12 @@ exit
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  
-@@ -29,6 +35,7 @@
- PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
+@@ -26,9 +32,10 @@
+ 
+ # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
+ 
+-PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
++PLATS= none
  
  LUA_A=	liblua.a
 +LUA_SO= liblua.so.5

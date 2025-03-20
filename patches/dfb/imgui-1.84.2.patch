@@ -67,12 +67,18 @@ devel=\\
 /dfb/include/imgui/imgui.h \\
 /dfb/include/imgui/imgui_draw.cpp \\
 EOF
-test $GL && echo /dfb/include/imgui/imgui_impl_opengl3.cpp \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
-test $GL && echo /dfb/include/imgui/imgui_impl_opengl3.h \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
-test $VK && echo /dfb/include/imgui/imgui_impl_vulkan.cpp \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
-test $VK && echo /dfb/include/imgui/imgui_impl_vulkan.h \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
-test $SDL2 && echo /dfb/include/imgui/imgui_impl_sdl.cpp \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
-test $SDL2 && echo /dfb/include/imgui/imgui_impl_sdl.h \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
+test $GL && cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
+/dfb/include/imgui/imgui_impl_opengl3.cpp \\
+/dfb/include/imgui/imgui_impl_opengl3.h \\
+EOF
+test $VK && cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
+/dfb/include/imgui/imgui_impl_vulkan.cpp \\
+/dfb/include/imgui/imgui_impl_vulkan.h \\
+EOF
+test $SDL2 && cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
+/dfb/include/imgui/imgui_impl_sdl.cpp \\
+/dfb/include/imgui/imgui_impl_sdl.h \\
+EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
 /dfb/include/imgui/imgui_internal.h \\
 /dfb/include/imgui/imgui_tables.cpp \\
@@ -81,8 +87,12 @@ cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
 
 exec=\\
 EOF
-test $GL && test $SDL2 && echo /dfb/share/imgui/example_sdl_opengl3 \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
-test $VK && test $SDL2 && echo /dfb/share/imgui/example_sdl_vulkan \\ >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
+test $GL && test $SDL2 && cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
+/dfb/share/imgui/example_sdl_opengl3 \\
+EOF
+test $VK && test $SDL2 && cat >> $DESTDIR/dfb/share/pkgconfig/imgui-build.pc << EOF
+/dfb/share/imgui/example_sdl_vulkan \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/imgui-build.pc
 
 exit

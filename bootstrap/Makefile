@@ -14,6 +14,7 @@ GMP = gmp-6.2.1
 LINUX = linux-4.14.336
 MPFR = mpfr-4.1.1
 MPC = mpc-1.3.1
+PKG_CONFIG_LITE=pkg-config-lite-0.28-1
 SYSLINUX = syslinux-3.86
 
 all:
@@ -48,7 +49,7 @@ glibc: cross-gcc linux-headers
 	@echo Build $@
 	@test -d $(GLIBC) || wget -qO- https://ftp.gnu.org/gnu/glibc/$(GLIBC).tar.bz2 | tar -xj
 	@test -d $(GLIBC)/build || mkdir $(GLIBC)/build
-	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
+	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=no libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
 	$(MAKE) -C $(GLIBC)/build
 	$(MAKE) install_root=$(STAGING_DIR) -C $(GLIBC)/build install
 
@@ -88,13 +89,19 @@ gcc:
 	@test -f $(GCC)/build/config.status || ( cd $(GCC)/build; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/build
 
+pkg-config-lite:
+	@echo Build $@
+	@test -d $(PKG_CONFIG_LITE) || wget -qO- https://sourceforge.net/projects/pkgconfiglite/files/0.28-1/$(PKG_CONFIG_LITE).tar.gz | tar -xz
+	@test -f $(PKG_CONFIG_LITE)/config.status || ( cd $(PKG_CONFIG_LITE); ./configure --build=$(MACHTYPE) --host=$(HOST) --prefix= )
+	$(MAKE) -C $(PKG_CONFIG_LITE)
+
 syslinux:
 	@echo Build $@
 	@test -d $(SYSLINUX) || wget -qO- https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/3.xx/$(SYSLINUX).tar.xz | tar -xJ
 	$(MAKE) CC=$(HOST)-gcc -C $(SYSLINUX) installer
 
 .PHONY: rootfs
-rootfs: linux busybox binutils gcc syslinux
+rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@echo Create rootfs tarball
 	@install -d rootfs/bin
 	@install $(BUSYBOX)/busybox rootfs/bin
@@ -122,7 +129,9 @@ rootfs: linux busybox binutils gcc syslinux
 	@ln -sf gcc rootfs/bin/cc
 	@install $(GCC)/build/gcc/cpp rootfs/bin
 	@install $(GCC)/build/gcc/gcov rootfs/bin
+	@install $(PKG_CONFIG_LITE)/pkg-config rootfs/bin
 	@install $(STAGING_DIR)/bin/getconf rootfs/bin
+	@install $(STAGING_DIR)/bin/ldd rootfs/bin
 	@install $(SYSLINUX)/extlinux/extlinux rootfs/bin
 	@install -d rootfs/boot
 	@install $(LINUX)/arch/x86/boot/bzImage rootfs/boot/bzImage
@@ -339,7 +348,8 @@ rootfs: linux busybox binutils gcc syslinux
 	@install -d rootfs/proc
 	@install -d rootfs/root
 	@install -d rootfs/run
-	@install -d rootfs/sys
+	@install -d rootfs/share/aclocal
+	@install -m 644 $(PKG_CONFIG_LITE)/pkg.m4 rootfs/share/aclocal
 	@install -d rootfs/share/busybox
 	@echo '#!/bin/sh' > rootfs/share/busybox/default.script
 	@echo 'case $$1 in' >> rootfs/share/busybox/default.script
@@ -354,6 +364,7 @@ rootfs: linux busybox binutils gcc syslinux
 	@install -d rootfs/share/syslinux
 	@install -m 644 $(SYSLINUX)/core/isolinux.bin rootfs/share/syslinux
 	@install -m 644 $(SYSLINUX)/mbr/mbr.bin rootfs/share/syslinux
+	@install -d rootfs/sys
 	@install -d rootfs/tmp
 	@install -d rootfs/var
 	@ln -sf /run rootfs/var/run

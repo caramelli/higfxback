@@ -36,7 +36,7 @@ EOF
 exit
 --- fceux-2.2.3.orig/Configure
 +++ fceux-2.2.3/Configure
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,51 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -71,33 +71,45 @@ exit
 +  shift
 +done
 +
-+sed -i "s#prefix = \".*#prefix = \"$PREFIX\"#" SConstruct
++sed -i "s|prefix = \".*|prefix = \"$PREFIX\"|" SConstruct
 +
 +if test -z $PKG_CONFIG_PATH; then
-+  sed -i "s#env\['PKG_CONFIG'\] = \".*#env['PKG_CONFIG'] = \"pkg-config\"#" SConstruct
++  sed -i "s|get('PKG_CONFIG_PATH', .*|get('PKG_CONFIG_PATH', None))|" SConstruct
 +else
-+  sed -i "s#env\['PKG_CONFIG'\] = \".*#env['PKG_CONFIG'] = \"PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config\"#" SConstruct
++  sed -i "s|get('PKG_CONFIG_PATH', .*|get('PKG_CONFIG_PATH', '$PKG_CONFIG_PATH'))|" SConstruct
 +fi
 +
-+sed -i "/BoolVariable('GTK'/s#\(.*\)[01]#\1$GTK#" SConstruct
-+sed -i "/BoolVariable('LUA'/s#\(.*\)[01]#\1$LUA#" SConstruct
-+sed -i "/BoolVariable('OPENGL'/s#\(.*\)[01]#\1$OPENGL#" SConstruct
++if test -z $PKG_CONFIG_LIBDIR; then
++  sed -i "s|get('PKG_CONFIG_LIBDIR', .*|get('PKG_CONFIG_LIBDIR', None))|" SConstruct
++else
++  sed -i "s|get('PKG_CONFIG_LIBDIR', .*|get('PKG_CONFIG_LIBDIR', '$PKG_CONFIG_LIBDIR'))|" SConstruct
++fi
++
++sed -i "/BoolVariable('GTK'/s|\(.*\)[01]|\1$GTK|" SConstruct
++sed -i "/BoolVariable('LUA'/s|\(.*\)[01]|\1$LUA|" SConstruct
++sed -i "/BoolVariable('OPENGL'/s|\(.*\)[01]|\1$OPENGL|" SConstruct
 --- fceux-2.2.3.orig/SConstruct
 +++ fceux-2.2.3/SConstruct
-@@ -35,6 +35,12 @@
+@@ -30,11 +30,18 @@
+   BoolVariable('CLANG', 'Compile with llvm-clang instead of gcc', 0),
+   BoolVariable('SDL2', 'Compile using SDL2 instead of SDL 1.2 (experimental/non-functional)', 0)
+ )
++opts.Add('PKG_CONFIG_PATH', 'Colon-separated list of directories to add to the default search paths for .pc files', os.environ.get('PKG_CONFIG_PATH', None))
++opts.Add('PKG_CONFIG_LIBDIR', 'Colon-separated list of directories to use instead of the default search paths for .pc files', os.environ.get('PKG_CONFIG_LIBDIR', None))
+ AddOption('--prefix', dest='prefix', type='string', nargs=1, action='store', metavar='DIR', help='installation prefix')
+ 
  prefix = GetOption('prefix')
  env = Environment(options = opts)
  
-+AddOption('--pkg-config', dest='pkg_config', type='string', nargs=1, action='store', help='path to pkg-config utility')
-+
-+env['PKG_CONFIG'] = GetOption('pkg_config')
-+if env['PKG_CONFIG'] == None:
-+  env['PKG_CONFIG'] = "pkg-config"
++if env.get('PKG_CONFIG_PATH'):
++  env['ENV']['PKG_CONFIG_PATH'] = env['PKG_CONFIG_PATH']
++if env.get('PKG_CONFIG_LIBDIR'):
++  env['ENV']['PKG_CONFIG_LIBDIR'] = env['PKG_CONFIG_LIBDIR']
 +
  if env['RELEASE']:
    env.Append(CPPDEFINES=["PUBLIC_RELEASE"])
    env['DEBUG'] = 0
-@@ -44,32 +50,32 @@
+@@ -44,32 +51,26 @@
    env['LSB_FIRST'] = 0
  
  # Default compiler flags:
@@ -129,63 +141,61 @@ exit
 +if 'LDFLAGS' in os.environ:
    env.Append(LINKFLAGS = os.environ['LDFLAGS'].split())
 -if os.environ.has_key('PKG_CONFIG_PATH'):
-+if 'PKG_CONFIG_PATH' in os.environ:
-   env['ENV']['PKG_CONFIG_PATH'] = os.environ['PKG_CONFIG_PATH']
+-  env['ENV']['PKG_CONFIG_PATH'] = os.environ['PKG_CONFIG_PATH']
 -if not os.environ.has_key('PKG_CONFIG_PATH') and env['PLATFORM'] == 'darwin':
-+if 'PKG_CONFIG_PATH' not in os.environ and env['PLATFORM'] == 'darwin':
-   env['ENV']['PKG_CONFIG_PATH'] = "/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig"
+-  env['ENV']['PKG_CONFIG_PATH'] = "/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig"
 -if os.environ.has_key('PKG_CONFIG_LIBDIR'):
-+if 'PKG_CONFIG_LIBDIR' in os.environ:
-   env['ENV']['PKG_CONFIG_LIBDIR'] = os.environ['PKG_CONFIG_LIBDIR']
+-  env['ENV']['PKG_CONFIG_LIBDIR'] = os.environ['PKG_CONFIG_LIBDIR']
  
 -print "platform: ", env['PLATFORM']
 +print("platform: ", env['PLATFORM'])
  
  # compile with clang
  if env['CLANG']:
-@@ -102,28 +108,31 @@
+@@ -102,29 +103,30 @@
    else:
      assert conf.CheckLibWithHeader('z', 'zlib.h', 'c', 'inflate;', 1), "please install: zlib"
    if env['SDL2']:
 -    if not conf.CheckLib('SDL2'):
 -      print 'Did not find libSDL2 or SDL2.lib, exiting!'
-+    if os.system("%s --exists sdl2" % env['PKG_CONFIG']):
++    if env.Execute('pkg-config --exists sdl2'):
 +      print('Did not find libSDL2 or SDL2.lib, exiting!')
        Exit(1)
      env.Append(CPPDEFINES=["_SDL2"])
 -    env.ParseConfig('pkg-config sdl2 --cflags --libs')
-+    env.ParseConfig('%s --cflags --libs sdl2' % env['PKG_CONFIG'])
++    env.ParseConfig('pkg-config --cflags --libs sdl2')
    else:
 -    if not conf.CheckLib('SDL'):
 -      print 'Did not find libSDL or SDL.lib, exiting!'
-+    if os.system("%s --exists sdl" % env['PKG_CONFIG']):
++    if env.Execute('pkg-config --exists sdl'):
 +      print('Did not find libSDL or SDL.lib, exiting!')
        Exit(1)
 -    env.ParseConfig('sdl-config --cflags --libs')
-+    env.ParseConfig('%s --cflags --libs sdl' % env['PKG_CONFIG'])
++    env.ParseConfig('pkg-config --cflags --libs sdl')
    if env['GTK']:
 -    if not conf.CheckLib('gtk-x11-2.0'):
 -      print 'Could not find libgtk-2.0, exiting!'
-+    if os.system("%s --exists gtk+-2.0" % env['PKG_CONFIG']):
++    if env.Execute('pkg-config --exists gtk+-2.0'):
 +      print('Could not find libgtk-2.0, exiting!')
        Exit(1)
      # Add compiler and linker flags from pkg-config
 -    config_string = 'pkg-config --cflags --libs gtk+-2.0'
-+    config_string = '%s --cflags --libs gtk+-2.0' % env['PKG_CONFIG']
-     env.ParseConfig(config_string)
+-    env.ParseConfig(config_string)
++    env.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
      env.Append(CPPDEFINES=["_GTK2"])
      env.Append(CCFLAGS = ["-D_GTK"])
    if env['GTK3']:
-+    if os.system("%s --exists gtk+-3.0" % env['PKG_CONFIG']):
++    if env.Execute('pkg-config --exists gtk+-3.0'):
 +      print('Could not find libgtk-3.0, exiting!')
 +      Exit(1)
      # Add compiler and linker flags from pkg-config
 -    config_string = 'pkg-config --cflags --libs gtk+-3.0'
-+    config_string = '%s --cflags --libs gtk+-3.0' % env['PKG_CONFIG']
-     env.ParseConfig(config_string)
+-    env.ParseConfig(config_string)
++    env.ParseConfig('pkg-config --cflags --libs gtk+-3.0')
      env.Append(CPPDEFINES=["_GTK3"])
      env.Append(CCFLAGS = ["-D_GTK"])
-@@ -153,7 +162,7 @@
+ 
+@@ -153,7 +155,7 @@
          env.Append(CCFLAGS = ["-I/usr/include/lua"])
          lua_available = True
        if lua_available == False:
@@ -194,13 +204,7 @@ exit
          Exit(1)
      else:
        env.Append(CCFLAGS = ["-Isrc/lua/src"])
-@@ -162,14 +171,14 @@
-   if env['PLATFORM'] != 'darwin':
-     env.Append(LINKFLAGS=['-Wl,--as-needed'])
-   
--  ### Search for gd if we're not in Windows
--  if (env['PLATFORM'] != 'win32' and env['PLATFORM'] != 'cygwin') and (env['CREATE_AVI'] or env['LOGO']):
-+  if env['LOGO']:
+@@ -167,9 +169,10 @@
      gd = conf.CheckLib('gd', autoadd=1)
      if gd == 0:
        env['LOGO'] = 0
@@ -208,12 +212,12 @@ exit
 +      print('Did not find libgd, you won\'t be able to create a logo screen for your avis.')
     
 -  if env['OPENGL'] and conf.CheckLibWithHeader('GL', 'GL/gl.h', 'c', autoadd=1):
-+  if env['OPENGL'] and not os.system("%s --exists gl" % env['PKG_CONFIG']):
-+    env.ParseConfig('%s --cflags --libs gl' % env['PKG_CONFIG'])
++  if env['OPENGL'] and not env.Execute('pkg-config --exists gl'):
++    env.ParseConfig('pkg-config --cflags --libs gl')
      conf.env.Append(CCFLAGS = "-DOPENGL")
    conf.env.Append(CPPDEFINES = ['PSS_STYLE=1'])
    
-@@ -181,8 +190,8 @@
+@@ -181,8 +184,8 @@
  if env['FRAMESKIP']:
    env.Append(CPPDEFINES = ['FRAMESKIP'])
  
@@ -224,7 +228,7 @@ exit
  
  if env['DEBUG']:
    env.Append(CPPDEFINES=["_DEBUG"], CCFLAGS = ['-g', '-O0'])
-@@ -205,6 +214,8 @@
+@@ -205,6 +208,8 @@
  exe_suffix = ''
  if env['PLATFORM'] == 'win32':
    exe_suffix = '.exe'
@@ -233,7 +237,7 @@ exit
  
  fceux_src = 'src/fceux' + exe_suffix
  fceux_dst = 'bin/fceux' + exe_suffix
-@@ -232,10 +243,14 @@
+@@ -232,10 +237,14 @@
  
  desktop_src = 'fceux.desktop'
  
@@ -473,17 +477,6 @@ exit
  		{
  			if(CBM[a]&(1<<x))
  			{
---- fceux-2.2.3.orig/src/drivers/sdl/SConscript
-+++ fceux-2.2.3/src/drivers/sdl/SConscript
-@@ -1,7 +1,7 @@
- # Fix compliation error about 'XKeysymToString' by linking X11 explicitly
- # Thanks Antonio Ospite!
- Import('env')
--config_string = 'pkg-config --cflags --libs x11'
-+config_string = '%s --cflags --libs x11' % env['PKG_CONFIG']
- env.ParseConfig(config_string)
- Export('env')
- 
 --- fceux-2.2.3.orig/src/drivers/sdl/config.h
 +++ fceux-2.2.3/src/drivers/sdl/config.h
 @@ -23,6 +23,7 @@
@@ -496,16 +489,30 @@ exit
  		"BindState",
 --- fceux-2.2.3.orig/src/drivers/sdl/gui.cpp
 +++ fceux-2.2.3/src/drivers/sdl/gui.cpp
-@@ -95,7 +95,7 @@
+@@ -95,9 +95,7 @@
  	//SDL_Surface *screen;
  //	SDL_Event event;
  //	KillVideo();
 -#if SDL_VERSION_ATLEAST(2, 0, 0)
-+#if 1
- 	return 0; // TODO - SDL 2.0
- #else
+-	return 0; // TODO - SDL 2.0
+-#else
++
  	//screen = SDL_SetVideoMode(420, 200, 8, 0);
-@@ -925,9 +925,11 @@
+ 	//SDL_WM_SetCaption("Press a key to bind...", 0);
+ /*
+@@ -116,9 +114,8 @@
+ 				return 0;
+ 		}
+ 	}	
+-	
+-	return 0;*/
+-#endif
++*/
++	return 0;
+ }
+ // This function configures a single button on a gamepad
+ int configGamepadButton(GtkButton* button, gpointer p)
+@@ -925,9 +922,11 @@
  	GtkWidget* hbox1;
  	GtkWidget* scalerLbl;
  	GtkWidget* scalerCombo;
@@ -517,7 +524,7 @@ exit
  	GtkWidget* palHbox;
  	GtkWidget* palLbl;
  	GtkWidget* palCombo;
-@@ -1238,7 +1240,7 @@
+@@ -1238,7 +1237,7 @@
  		mixerFrames[i] = gtk_frame_new(mixerStrings[i]);
  		gtk_container_add(GTK_CONTAINER(mixerFrames[i]), mixers[i]);
  		gtk_box_pack_start(GTK_BOX(mixerHbox), mixerFrames[i], FALSE, TRUE, 5);

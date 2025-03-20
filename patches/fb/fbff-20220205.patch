@@ -6,7 +6,7 @@ REQUIRES="ffmpeg-build make-build"
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /fb
+PKG_CONFIG_PATH=/fb/lib/pkgconfig sh ./Configure --prefix /fb
 
 # build
 make
@@ -30,7 +30,7 @@ EOF
 exit
 --- fbff-20220205.orig/Configure
 +++ fbff-20220205/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,28 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -52,19 +52,27 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
++
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makefile
++fi
 --- fbff-20220205.orig/Makefile
 +++ fbff-20220205/Makefile
-@@ -1,8 +1,8 @@
+@@ -1,8 +1,10 @@
 -FF_PATH = /opt
 +PREFIX = /usr/local
  CC = cc
 -CFLAGS = -I$(FF_PATH)/include -Wall -O2
 -LDFLAGS = -L$(FF_PATH)/lib -lavutil -lavformat -lavcodec -lavutil \
 -		-lswscale -lswresample -lz -lm -lpthread
-+CFLAGS = -I$(PREFIX)/include -Wall -O2
-+LDFLAGS = -L$(PREFIX)/lib -lavutil -lavformat -lavcodec -lavutil \
-+		-lswscale -lswresample -lz -lm -lpthread -Wl,-rpath,$(PREFIX)/lib
++PKG_CONFIG = pkg-config
++CFLAGS = `$(PKG_CONFIG) --cflags libavformat libavcodec libswresample libswscale libavutil)` \
++		-Wall -O2
++LDFLAGS = `$(PKG_CONFIG) --libs libavformat libavcodec libswresample libswscale libavutil)` \
++		-Wl,-rpath,$(PREFIX)/lib -lpthread
  
  all: fbff
  .c.o:

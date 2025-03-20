@@ -5,9 +5,9 @@ REQUIRES="egl-opengl-stubs-build meson-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists xcb-util-keysyms; then
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists xcb-util-keysyms-build; then
   XCB=1
-  REQUIRES="$REQUIRES xcb-util-keysyms"
+  REQUIRES="$REQUIRES xcb-util-keysyms-build"
 fi
 
 if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libx11-build; then
@@ -62,9 +62,15 @@ exec=\\
 /x11/lib/libglut.so.3 \\
 /x11/lib/glut/backends/egl_plugin.so \\
 EOF
-test $XLIB && echo /x11/lib/glut/backends/glx_plugin.so \\ >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc
-test $XCB && echo /x11/lib/glut/platforms/xcb_plugin.so \\ >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc
-test $XLIB && echo /x11/lib/glut/platforms/x11_plugin.so \\ >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc << EOF
+/x11/lib/glut/backends/glx_plugin.so \\
+EOF
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc << EOF
+/x11/lib/glut/platforms/xcb_plugin.so \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc << EOF
+/x11/lib/glut/platforms/x11_plugin.so \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/tinyglut-build.pc << EOF
 /x11/lib/libtinyglut.so.3
 EOF

@@ -245,11 +245,10 @@ EOF
 exit
 --- tekui-1.12-r1.orig/Configure
 +++ tekui-1.12-r1/Configure
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,22 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
-+X11_DIR=/usr/X11R6
 +
 +while : ; do
 +  case "$1" in
@@ -258,7 +257,6 @@ exit
 +    ;;
 +    --prefix)
 +      PREFIX=$2
-+      X11_DIR=$2
 +      shift
 +    ;;
 +    *)
@@ -269,8 +267,7 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" config
-+sed -i "/^X11_DIR =/s#=.*#= $X11_DIR#" config
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" config
 --- tekui-1.12-r1.orig/bin/bashing.lua
 +++ tekui-1.12-r1/bin/bashing.lua
 @@ -1,4 +1,4 @@
@@ -688,7 +685,7 @@ exit
  
 --- tekui-1.12-r1.orig/config
 +++ tekui-1.12-r1/config
-@@ -150,7 +150,7 @@
+@@ -150,32 +150,32 @@
  FREETYPE_INCDIR = $(FREETYPE_DIR)/include
  FREETYPE_LIBDIR = $(FREETYPE_DIR)/lib
  FREETYPE_LIBS = -L$(FREETYPE_LIBDIR) -lfreetype # $(CC_LD_RT)$(FREETYPE_LIBDIR)
@@ -697,8 +694,10 @@ exit
  
  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  # X11 defines and libraries:
-@@ -159,23 +159,23 @@
- X11_DIR = /usr/X11R6
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+-X11_DIR = /usr/X11R6
++X11_DIR = $(PREFIX)
  X11_INCDIR = $(X11_DIR)/include
  X11_LIBDIR = $(X11_DIR)/lib
 -X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext -lXxf86vm
@@ -714,7 +713,7 @@ exit
  XFT_INCDIR = $(XFT_DIR)/include
  XFT_LIBDIR = $(XFT_DIR)/lib
 -XFT_LIBS = -L$(XFT_LIBDIR) -lXft # $(CC_LD_RT)$(XFT_LIBDIR)
-+XFT_LIBS = -L$(XFT_LIBDIR) -lXft $(CC_LD_RT)$(XFT_LIBDIR)
++XFT_LIBS = -L$(XFT_LIBDIR) -lXft
  XFT_DEFS = -I$(XFT_INCDIR) -DENABLE_XFT
  
  FONTCONFIG_DIR = $(PREFIX)
@@ -725,6 +724,15 @@ exit
  FONTCONFIG_DEFS = -I$(FONTCONFIG_INCDIR)
  
  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+@@ -243,7 +243,7 @@
+ OPT = -O2 -fno-strict-aliasing
+ INCL = -I. -Iinclude -I$(INCDIR)
+ LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(CPPFLAGS) $(CFLAGS)
+-MODCFLAGS = -shared -L $(LIBDIR) $(LDFLAGS)
++MODCFLAGS = -shared -L $(LIBDIR) $(LDFLAGS) $(CC_LD_RT)$(PREFIX)/lib
+ # For Mac OS X:
+ # MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR) $(LDFLAGS)
+ BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(LDFLAGS)
 --- tekui-1.12-r1.orig/etc/keymap2c.lua
 +++ tekui-1.12-r1/etc/keymap2c.lua
 @@ -1,4 +1,4 @@

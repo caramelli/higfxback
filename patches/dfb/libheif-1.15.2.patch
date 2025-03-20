@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 # configure (ac-2.71; am-1.16; lt-2.4.6)
 libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig ./configure --disable-static --prefix=/dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
 
 # build
 make

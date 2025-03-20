@@ -133,7 +133,7 @@ install -m 644 libswscale/libswscale.pc $DESTDIR/wl/lib/pkgconfig
 install -d $DESTDIR/wl/share/pkgconfig
 cat > $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
 Name: ffmpeg
-Version: 3.4.13
+Version: 3.4.14
 Description: A collection of libraries and tools to process multimedia content
 Requires: $REQUIRES
 
@@ -216,7 +216,9 @@ devel=\\
 exec=\\
 /wl/bin/ffmpeg \\
 EOF
-test $SDL2 && echo /wl/bin/ffplay \\ >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc
+test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
+/wl/bin/ffplay \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
 /wl/bin/ffprobe \\
 /wl/bin/ffserver \\
@@ -231,8 +233,8 @@ cat >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
 EOF
 
 exit
---- ffmpeg-3.4.13.orig/configure
-+++ ffmpeg-3.4.13/configure
+--- ffmpeg-3.4.14.orig/configure
++++ ffmpeg-3.4.14/configure
 @@ -299,6 +299,7 @@
    --disable-sdl2           disable sdl2 [autodetect]
    --disable-securetransport disable Secure Transport, needed for TLS support
@@ -257,7 +259,7 @@ exit
  xcbgrab_indev_deps="libxcb"
  xv_outdev_deps="X11_extensions_Xvlib_h XvGetPortAttribute"
  xv_outdev_extralibs="-lXv -lX11 -lXext"
-@@ -6216,6 +6219,13 @@
+@@ -6218,6 +6221,13 @@
      add_extralibs $xcb_extralibs $xcb_shm_extralibs $xcb_xfixes_extralibs $xcb_shape_extralibs
  fi
  
@@ -271,8 +273,8 @@ exit
  check_func_headers "windows.h" CreateDIBSection "$gdigrab_indev_extralibs"
  
  # d3d11va requires linking directly to dxgi and d3d11 if not building for
---- ffmpeg-3.4.13.orig/ffbuild/version.sh
-+++ ffmpeg-3.4.13/ffbuild/version.sh
+--- ffmpeg-3.4.14.orig/ffbuild/version.sh
++++ ffmpeg-3.4.14/ffbuild/version.sh
 @@ -46,7 +46,7 @@
  fi
  
@@ -282,8 +284,8 @@ exit
  
  # String used for preprocessor guard
  GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
---- ffmpeg-3.4.13.orig/libavdevice/Makefile
-+++ ffmpeg-3.4.13/libavdevice/Makefile
+--- ffmpeg-3.4.14.orig/libavdevice/Makefile
++++ ffmpeg-3.4.14/libavdevice/Makefile
 @@ -47,6 +47,7 @@
  OBJS-$(CONFIG_V4L2_INDEV)                += v4l2.o v4l2-common.o timefilter.o
  OBJS-$(CONFIG_V4L2_OUTDEV)               += v4l2enc.o v4l2-common.o
@@ -292,8 +294,8 @@ exit
  OBJS-$(CONFIG_XCBGRAB_INDEV)             += xcbgrab.o
  OBJS-$(CONFIG_XV_OUTDEV)                 += xv.o
  
---- ffmpeg-3.4.13.orig/libavdevice/alldevices.c
-+++ ffmpeg-3.4.13/libavdevice/alldevices.c
+--- ffmpeg-3.4.14.orig/libavdevice/alldevices.c
++++ ffmpeg-3.4.14/libavdevice/alldevices.c
 @@ -62,6 +62,7 @@
      REGISTER_INOUTDEV(SNDIO,            sndio);
      REGISTER_INOUTDEV(V4L2,             v4l2);
@@ -302,8 +304,8 @@ exit
      REGISTER_INDEV   (XCBGRAB,          xcbgrab);
      REGISTER_OUTDEV  (XV,               xv);
  
---- ffmpeg-3.4.13.orig/libavdevice/wayland.c
-+++ ffmpeg-3.4.13/libavdevice/wayland.c
+--- ffmpeg-3.4.14.orig/libavdevice/wayland.c
++++ ffmpeg-3.4.14/libavdevice/wayland.c
 @@ -0,0 +1,260 @@
 +/*
 + * Wayland ouput device

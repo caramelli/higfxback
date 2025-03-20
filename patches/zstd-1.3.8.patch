@@ -91,21 +91,21 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix/s#=.*#= $PREFIX#" lib/Makefile
-+sed -i "/^prefix/s#=.*#= $PREFIX#" programs/Makefile
++sed -i "/^prefix/s|=.*|= $PREFIX|" lib/Makefile
++sed -i "/^prefix/s|=.*|= $PREFIX|" programs/Makefile
 +
-+sed -i "/^BUILD_STATIC/s#=.*#=$BUILD_STATIC#" lib/Makefile
++sed -i "/^BUILD_STATIC/s|=.*|= $BUILD_STATIC|" lib/Makefile
 +
-+sed -i "/^HAVE_LZ4/s#echo [0-1] #echo $HAVE_LZMA #" programs/Makefile
-+sed -i "/^HAVE_LZMA/s#echo [0-1] #echo $HAVE_LZMA #" programs/Makefile
-+sed -i "/^HAVE_ZLIB/s#echo [0-1] #echo $HAVE_ZLIB #" programs/Makefile
++sed -i "/^HAVE_LZ4/s|echo [0-1] |echo $HAVE_LZ4 |" programs/Makefile
++sed -i "/^HAVE_LZMA/s|echo [0-1] |echo $HAVE_LZMA |" programs/Makefile
++sed -i "/^HAVE_ZLIB/s|echo [0-1] |echo $HAVE_ZLIB |" programs/Makefile
 --- zstd-1.3.8.orig/lib/Makefile
 +++ zstd-1.3.8/lib/Makefile
 @@ -18,6 +18,8 @@
  LIBVER := $(shell echo $(LIBVER_SCRIPT))
  VERSION?= $(LIBVER)
  
-+BUILD_STATIC:=yes
++BUILD_STATIC := yes
 +
  CPPFLAGS+= -I. -I./common -DXXH_NAMESPACE=ZSTD_
  ifeq ($(OS),Windows_NT)   # MinGW assumed

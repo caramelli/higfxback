@@ -52,14 +52,15 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX ?=/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 --- tinyxxd-1.1.0.orig/Makefile
 +++ tinyxxd-1.1.0/Makefile
 @@ -1,7 +1,7 @@
  .PHONY: clean install uninstall
  
- CFLAGS ?= -std=c11 -O2 -pipe -fPIC -fno-plt -fstack-protector-strong -D_GNU_SOURCE -s -z norelro -Wall -Wextra -Wpedantic -Wfatal-errors
+-CFLAGS ?= -std=c11 -O2 -pipe -fPIC -fno-plt -fstack-protector-strong -D_GNU_SOURCE -s -z norelro -Wall -Wextra -Wpedantic -Wfatal-errors
 -PREFIX ?= /usr
++CFLAGS ?= -O2 -pipe -D_GNU_SOURCE -s -z norelro -Wall -Wextra -Wfatal-errors
 +PREFIX ?= /usr/local
  BINDIR ?= $(PREFIX)/bin
  DESTDIR ?=

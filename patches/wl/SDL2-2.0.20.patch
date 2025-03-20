@@ -207,10 +207,12 @@ devel=\\
 /wl/include/SDL2/SDL_mouse.h \\
 /wl/include/SDL2/SDL_mutex.h \\
 EOF
-test $GL && echo /wl/include/SDL2/SDL_opengl.h \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
-test $GL && echo /wl/include/SDL2/SDL_opengl_glext.h \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
-test $GL && echo /wl/include/SDL2/SDL_opengles.h \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
-test $GL && echo /wl/include/SDL2/SDL_opengles2.h \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
+test $GL && cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
+/wl/include/SDL2/SDL_opengl.h \\
+/wl/include/SDL2/SDL_opengl_glext.h \\
+/wl/include/SDL2/SDL_opengles.h \\
+/wl/include/SDL2/SDL_opengles2.h \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
 /wl/include/SDL2/SDL_pixels.h \\
 /wl/include/SDL2/SDL_platform.h \\
@@ -231,7 +233,9 @@ cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
 /wl/include/SDL2/SDL_version.h \\
 /wl/include/SDL2/SDL_video.h \\
 EOF
-test $VK && echo /wl/include/SDL2/SDL_vulkan.h \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
+test $VK && cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
+/wl/include/SDL2/SDL_vulkan.h \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
 /wl/lib/libSDL2.so \\
 /wl/lib/pkgconfig/sdl2.pc
@@ -270,9 +274,11 @@ exec=\\
 /wl/share/SDL2/test/testgeometry \\
 /wl/share/SDL2/test/testgesture \\
 EOF
-test $GL && echo /wl/share/SDL2/test/testgl2 \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
-test $GL && echo /wl/share/SDL2/test/testgles \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
-test $GL && echo /wl/share/SDL2/test/testgles2 \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
+test $GL && cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
+/wl/share/SDL2/test/testgl2 \\
+/wl/share/SDL2/test/testgles \\
+/wl/share/SDL2/test/testgles2 \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
 /wl/share/SDL2/test/testhaptic \\
 /wl/share/SDL2/test/testhittesting \\
@@ -309,7 +315,9 @@ cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
 /wl/share/SDL2/test/testver \\
 /wl/share/SDL2/test/testviewport \\
 EOF
-test $VK && echo /wl/share/SDL2/test/testvulkan \\ >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc
+test $VK && cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
+/wl/share/SDL2/test/testvulkan \\
+EOF
 cat >> $DESTDIR/wl/share/pkgconfig/sdl2-build.pc << EOF
 /wl/share/SDL2/test/testwm2 \\
 /wl/share/SDL2/test/testyuv \\

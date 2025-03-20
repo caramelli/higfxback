@@ -52,10 +52,18 @@ Requires: $REQUIRES
 
 exec=\\
 EOF
-test $GL && echo /fb/bin/yagears2 \\ >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc
-test $GLUT || test $SDL && echo /fb/bin/yagears2-gui \\ >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc
-test $GLUT && echo /fb/bin/yagears2-mosaic \\ >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc
-test $VK && echo /fb/bin/yagears2-vk \\ >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc
+test $GL && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
+/fb/bin/yagears2 \\
+EOF
+test $GLUT || test $SDL && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
+/fb/bin/yagears2-gui \\
+EOF
+test $GLUT && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
+/fb/bin/yagears2-mosaic \\
+EOF
+test $VK && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
+/fb/bin/yagears2-vk \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/fb/share/pkgconfig/yagears2-build.pc
 
 exit

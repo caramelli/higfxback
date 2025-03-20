@@ -5,8 +5,11 @@ REQUIRES="directfb2-build egl-opengl-stubs-build glu-build make-build makedepend
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig sh ./Configure --config linux-directfb --prefix /dfb
+
 # build
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig make linux-directfb
+make
 
 # install
 install -d $DESTDIR/dfb/include/GL
@@ -42,6 +45,64 @@ EOF
 ln -sf mesaglut-build.pc $DESTDIR/dfb/share/pkgconfig/glut-build.pc
 
 exit
+--- MesaGLUT-20100214.orig/Configure
++++ MesaGLUT-20100214/Configure
+@@ -0,0 +1,55 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --config)
++      CONFIG=$2
++      shift
++    ;;
++    --disable-shared)
++      STATIC=-static
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++if test -f configs/$CONFIG; then
++  if test -L configs/current &&
++     (! cmp configs/$CONFIG configs/current > /dev/null ||
++     [ "`sed -n 's/^INSTALL_DIR = //p' configs/default`" != "$PREFIX" ] ||
++     [ "`sed -n 's/^MKLIB_OPTIONS = //p' configs/default`" != "$STATIC" ]); then
++    echo "Run \`make realclean' before changing configs"
++    exit 1
++  else
++    if ! test -L configs/current; then
++      ln -s $CONFIG configs/current
++    fi
++  fi
++else
++  echo "Specify a configuration from the following list using \`--config':"
++  ls -1 configs | grep -v current | grep -v default
++  exit 1
++fi
++
++sed -i "/^INSTALL_DIR/s|=.*|= $PREFIX|" configs/default
++
++if test -z $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" configs/default
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" configs/default
++fi
++
++sed -i "/^MKLIB_OPTIONS/s|=.*|= $STATIC|" configs/default
 --- MesaGLUT-20100214.orig/Makefile
 +++ MesaGLUT-20100214/Makefile
 @@ -0,0 +1,57 @@
@@ -1234,7 +1295,7 @@ exit
 +fi
 --- MesaGLUT-20100214.orig/configs/default
 +++ MesaGLUT-20100214/configs/default
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,45 @@
 +# Default/template configuration
 +
 +# This is included by other config files which may override some
@@ -1246,8 +1307,7 @@ exit
 +
 +# Compiler and flags
 +CC = cc
-+CFLAGS = 
-+LDFLAGS = 
++PKG_CONFIG = pkg-config
 +
 +# Misc tools and flags
 +MKLIB = $(SHELL) $(TOP)/bin/mklib
@@ -1268,12 +1328,11 @@ exit
 +# globs used to install the lib and all symlinks
 +GLUT_LIB_GLOB = $(GLUT_LIB_NAME)*
 +
-+# Directories to build
++# Library directory
 +LIB_DIR = lib
-+SRC_DIRS = 
 +
 +# Library dependencies
-+GLUT_LIB_DEPS   = $(EXTRA_LIB_PATH) -L$(TOP)/$(LIB_DIR) -l$(GLU_LIB) -l$(GL_LIB)
++GLUT_LIB_DEPS = $(EXTRA_LIB_PATH) -L$(TOP)/$(LIB_DIR) -lGLU -lGL $(EXTRA_LIBS)
 +
 +# Installation directories (for make install)
 +INSTALL_DIR = /usr/local
@@ -1281,46 +1340,48 @@ exit
 +INSTALL_INC_DIR = $(INSTALL_DIR)/include
 +
 +# pkg-config substitutions
-+GLUT_PC_REQ_PRIV = 
 +GLUT_PC_LIB_PRIV = -lm
-+GLUT_PC_CFLAGS = 
 --- MesaGLUT-20100214.orig/configs/linux-directfb
 +++ MesaGLUT-20100214/configs/linux-directfb
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,18 @@
 +# Configuration for DirectFB
 +
 +include $(TOP)/configs/default
 +
 +CONFIG_NAME = linux-directfb
 +
-+DIRECTFB_INCLUDES = $(shell pkg-config --cflags-only-I directfb)
++DIRECTFB_INCLUDES = $(shell $(PKG_CONFIG) --cflags-only-I directfb)
 +
-+CFLAGS = -O2 -g -Wall -fPIC
++CFLAGS = -O2 -g -Wall -fPIC $(shell $(PKG_CONFIG) --cflags gl)
++LDFLAGS = -Wl,-rpath,$(INSTALL_LIB_DIR)
 +
 +# Directories
 +SRC_DIRS = glut/directfb
 +
 +# Library/program dependencies
-+GLUT_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL -lGLU $(shell pkg-config --libs directfb) -lm
++EXTRA_LIB_PATH = $(shell $(PKG_CONFIG) --libs-only-L directfb)
++EXTRA_LIBS = -ldirectfb
 +GLUT_PC_REQ_PRIV = directfb
 --- MesaGLUT-20100214.orig/configs/linux-x11
 +++ MesaGLUT-20100214/configs/linux-x11
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,18 @@
 +# Configuration for X11
 +
 +include $(TOP)/configs/default
 +
 +CONFIG_NAME = linux-x11
 +
-+X11_INCLUDES = $(shell pkg-config --cflags-only-I x11 xmu xi)
++X11_INCLUDES = $(shell $(PKG_CONFIG) --cflags-only-I x11)
 +
-+CFLAGS = -O2 -g -Wall -fPIC
++CFLAGS = -O2 -g -Wall -fPIC $(shell pkg-config --cflags gl)
++LDFLAGS = -Wl,-rpath,$(INSTALL_LIB_DIR)
 +
 +# Directories
 +SRC_DIRS = glut/glx
 +
 +# Library/program dependencies
-+GLUT_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL -lGLU $(shell pkg-config --libs x11 xmu xi) -lm
++EXTRA_LIB_PATH = $(shell $(PKG_CONFIG) --libs-only-L x11)
++EXTRA_LIBS = -lX11 -lXmu -lXi
 +GLUT_PC_REQ_PRIV = x11 xmu xi
 --- MesaGLUT-20100214.orig/include/GL/glut.h
 +++ MesaGLUT-20100214/include/GL/glut.h

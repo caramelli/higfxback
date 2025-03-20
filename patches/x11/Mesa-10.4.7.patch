@@ -50,16 +50,24 @@ exec=\\
 /x11/lib/libglapi.so.0 \\
 /x11/lib/libmesaEGL.so.1 \\
 EOF
-test $DRM && echo /x11/lib/libmesagbm.so.1 \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+test $DRM && cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
+/x11/lib/libmesagbm.so.1 \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
 /x11/lib/libmesaGL.so.1 \\
 /x11/lib/libmesaGLESv1_CM.so.1 \\
 /x11/lib/libmesaGLESv2.so.2 \\
 EOF
-test $DRM && echo /x11/lib/dri/kms_swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
-test $DRM && echo /x11/lib/dri/swrast_dri.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
-echo /x11/lib/egl/egl_gallium.so \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
-test $DRM && echo /x11/lib/pkgconfig/dri.pc \\ >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
+test $DRM && cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
+/x11/lib/dri/kms_swrast_dri.so \\
+/x11/lib/dri/swrast_dri.so \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
+/x11/lib/egl/egl_gallium.so \\
+EOF
+test $DRM && cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
+/x11/lib/pkgconfig/dri.pc \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
 
 exit

@@ -1,0 +1,300 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build freetype-build libpng-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=1
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
+if pkg-config --exists libavif-build; then
+  AVIF=1
+  REQUIRES="$REQUIRES libavif-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists ffmpeg-build; then
+  FFMPEG=1
+  REQUIRES="$REQUIRES ffmpeg-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gdk-pixbuf-build; then
+  GDK_PIXBUF=1
+  REQUIRES="$REQUIRES gdk-pixbuf-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists gst-plugins-base-build; then
+  GSTREAMER=1
+  REQUIRES="$REQUIRES gst-plugins-base-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libheif-build; then
+  HEIF=1
+  REQUIRES="$REQUIRES libheif-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists imlib2-build; then
+  IMLIB2=1
+  REQUIRES="$REQUIRES imlib2-build"
+fi
+
+if pkg-config --exists jasper-build; then
+  JASPER=1
+  REQUIRES="$REQUIRES jasper-build"
+fi
+
+if pkg-config --exists jpeg-build; then
+  JPEG=1
+  REQUIRES="$REQUIRES jpeg-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libjxl-build; then
+  JXL=1
+  REQUIRES="$REQUIRES libjxl-build"
+fi
+
+if pkg-config --exists libmpeg3-build; then
+  LIBMPEG3=1
+  REQUIRES="$REQUIRES libmpeg3-build"
+fi
+
+if pkg-config --exists lodepng-build; then
+  LODEPNG=1
+  REQUIRES="$REQUIRES lodepng-build"
+fi
+
+if test $FUSIONSOUND && pkg-config --exists libmad-build; then
+  MAD=1
+  REQUIRES="$REQUIRES libmad-build"
+fi
+
+if pkg-config --exists libmng-build; then
+  MNG=1
+  REQUIRES="$REQUIRES libmng-build"
+fi
+
+if pkg-config --exists nanosvg-build; then
+  NANOSVG=1
+  REQUIRES="$REQUIRES nanosvg-build"
+fi
+
+if pkg-config --exists openexr-build; then
+  OPENEXR=1
+  REQUIRES="$REQUIRES openexr-build"
+fi
+
+if pkg-config --exists pl_mpeg-build; then
+  PLM=1
+  REQUIRES="$REQUIRES pl_mpeg-build"
+fi
+
+if pkg-config --exists libschrift-build; then
+  SFT=1
+  REQUIRES="$REQUIRES libschrift-build"
+fi
+
+if pkg-config --exists libspng-build; then
+  SPNG=1
+  REQUIRES="$REQUIRES libspng-build"
+fi
+
+if pkg-config --exists stb-build; then
+  STB=1
+  REQUIRES="$REQUIRES stb-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libsvg-cairo-build; then
+  SVG=1
+  REQUIRES="$REQUIRES libsvg-cairo-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists swfdec-build; then
+  SWFDEC=1
+  REQUIRES="$REQUIRES swfdec-build"
+fi
+
+if pkg-config --exists tiff-build; then
+  TIFF=1
+  REQUIRES="$REQUIRES tiff-build"
+fi
+
+if test $FUSIONSOUND && pkg-config --exists tremor-build; then
+  TREMOR=1
+  REQUIRES="$REQUIRES tremor-build"
+fi
+
+if test $FUSIONSOUND && pkg-config --exists libvorbis-build; then
+  VORBIS=1
+  REQUIRES="$REQUIRES libvorbis-build"
+fi
+
+if pkg-config --exists libwebp-build; then
+  WEBP=1
+  REQUIRES="$REQUIRES libwebp-build"
+fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont
+install build/interfaces/IDirectFBFont/libidirectfbfont_ft2.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont
+test $SFT && install build/interfaces/IDirectFBFont/libidirectfbfont_sft.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont
+test $STB && install build/interfaces/IDirectFBFont/libidirectfbfont_stb.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $AVIF && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_avif.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_bmp.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $FFMPEG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_ffmpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $GDK_PIXBUF && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_gdkpixbuf.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_gif.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $HEIF && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_heif.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $IMLIB2 && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_imlib2.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $JASPER && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jasper.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $JPEG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $JXL && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jxl.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $LODEPNG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_lodepng.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $NANOSVG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_nanosvg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $OPENEXR && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_openexr.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_png.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $SPNG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_spng.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $STB && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_stb.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $SVG && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_svg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $TIFF && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_tiff.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+test $WEBP && install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_webp.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_yuv.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $FFMPEG && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_ffmpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $GSTREAMER && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_gstreamer.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $LIBMPEG3 && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_libmpeg3.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $MNG && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_mng.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $PLM && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_plm.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $SWFDEC && install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_swfdec.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_v4l.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+test $FUSIONSOUND && install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $FFMPEG && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_ffmpeg.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $MAD && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $TREMOR && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_tremor.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+test $FUSIONSOUND && test $VORBIS && install build/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+Name: DirectFB2-media
+Version: 20250315
+Description: Additional font/image/music/video providers for DirectFB
+Requires: $REQUIRES
+
+exec=\\
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont/libidirectfbfont_ft2.so \\
+EOF
+test $SFT && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont/libidirectfbfont_sft.so \\
+EOF
+test $STB && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont/libidirectfbfont_stb.so \\
+EOF
+test $AVIF && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_avif.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_bmp.so \\
+EOF
+test $FFMPEG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_ffmpeg.so \\
+EOF
+test $GDK_PIXBUF && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_gdkpixbuf.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_gif.so \\
+EOF
+test $HEIF && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_heif.so \\
+EOF
+test $IMLIB2 && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_imlib2.so \\
+EOF
+test $JASPER && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jasper.so \\
+EOF
+test $JPEG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jpeg.so \\
+EOF
+test $JXL && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_jxl.so \\
+EOF
+test $LODEPNG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_lodepng.so \\
+EOF
+test $NANOSVG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_nanosvg.so \\
+EOF
+test $OPENEXR && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_openexr.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_png.so \\
+EOF
+test $SPNG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_spng.so \\
+EOF
+test $STB && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_stb.so \\
+EOF
+test $SVG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_svg.so \\
+EOF
+test $TIFF && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_tiff.so \\
+EOF
+test $WEBP && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_webp.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_yuv.so \\
+EOF
+test $FFMPEG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_ffmpeg.so \\
+EOF
+test $GSTREAMER && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_gstreamer.so \\
+EOF
+test $LIBMPEG3 && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_libmpeg3.so \\
+EOF
+test $MNG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_mng.so \\
+EOF
+test $PLM && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_plm.so \\
+EOF
+test $SWFDEC && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_swfdec.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_v4l.so \\
+EOF
+test $FUSIONSOUND && test $FFMPEG && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_ffmpeg.so \\
+EOF
+test $FUSIONSOUND && test $MAD && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_mad.so \\
+EOF
+test $FUSIONSOUND && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_playlist.so \\
+EOF
+test $FUSIONSOUND && test $TREMOR && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_tremor.so \\
+EOF
+test $FUSIONSOUND && test $VORBIS && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc << EOF
+/dfb/lib/directfb-2.0-0/interfaces/IFusionSoundMusicProvider/libifusionsoundmusicprovider_vorbis.so \\
+EOF
+sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
+
+exit

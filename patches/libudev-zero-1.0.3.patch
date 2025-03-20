@@ -35,7 +35,7 @@ devel=\\
 /lib/pkgconfig/libudev.pc
 
 exec=\\
-/lib/libudev.so.0 \\
+/lib/libudev.so.0
 EOF
 ln -sf libudev-zero-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
 
@@ -70,9 +70,9 @@ exit
 +  shift
 +done
 +
-+sed -i "/^PREFIX =/s#=.*#= $PREFIX#" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^SOVERSION =/s#=.*#= $SOVERSION#" Makefile
++sed -i "/^SOVERSION/s|=.*|= $SOVERSION|" Makefile
 --- libudev-zero-1.0.3.orig/Makefile
 +++ libudev-zero-1.0.3/Makefile
 @@ -2,13 +2,14 @@

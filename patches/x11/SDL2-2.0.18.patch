@@ -210,10 +210,12 @@ devel=\\
 /x11/include/SDL2/SDL_mouse.h \\
 /x11/include/SDL2/SDL_mutex.h \\
 EOF
-test $GL && echo /x11/include/SDL2/SDL_opengl.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
-test $GL && echo /x11/include/SDL2/SDL_opengl_glext.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
-test $GL && echo /x11/include/SDL2/SDL_opengles.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
-test $GL && echo /x11/include/SDL2/SDL_opengles2.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $GL && cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
+/x11/include/SDL2/SDL_opengl.h \\
+/x11/include/SDL2/SDL_opengl_glext.h \\
+/x11/include/SDL2/SDL_opengles.h \\
+/x11/include/SDL2/SDL_opengles2.h \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/include/SDL2/SDL_pixels.h \\
 /x11/include/SDL2/SDL_platform.h \\
@@ -234,7 +236,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/include/SDL2/SDL_version.h \\
 /x11/include/SDL2/SDL_video.h \\
 EOF
-test $VK && echo /x11/include/SDL2/SDL_vulkan.h \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $VK && cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
+/x11/include/SDL2/SDL_vulkan.h \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/lib/libSDL2.so \\
 /x11/lib/pkgconfig/sdl2.pc
@@ -273,9 +277,11 @@ exec=\\
 /x11/share/SDL2/test/testgeometry \\
 /x11/share/SDL2/test/testgesture \\
 EOF
-test $GL && echo /x11/share/SDL2/test/testgl2 \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
-test $GL && echo /x11/share/SDL2/test/testgles \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
-test $GL && echo /x11/share/SDL2/test/testgles2 \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $GL && cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
+/x11/share/SDL2/test/testgl2 \\
+/x11/share/SDL2/test/testgles \\
+/x11/share/SDL2/test/testgles2 \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/share/SDL2/test/testhaptic \\
 /x11/share/SDL2/test/testhittesting \\
@@ -313,7 +319,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/share/SDL2/test/testver \\
 /x11/share/SDL2/test/testviewport \\
 EOF
-test $VK && echo /x11/share/SDL2/test/testvulkan \\ >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc
+test $VK && cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
+/x11/share/SDL2/test/testvulkan \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 /x11/share/SDL2/test/testwm2 \\
 /x11/share/SDL2/test/testyuv \\

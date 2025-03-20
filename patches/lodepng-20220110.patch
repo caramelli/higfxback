@@ -6,7 +6,7 @@ REQUIRES="gcc-g++-build make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # build
-make -C build
+make
 
 # install
 install -d $DESTDIR/include/lodepng
@@ -27,3 +27,216 @@ devel=\\
 EOF
 
 exit
+--- lodepng-20220110.orig/Makefile
++++ lodepng-20220110/Makefile
+@@ -1,4 +1,4 @@
+-# This makefile only makes the unit test, benchmark and pngdetail and showpng
++# This makefile only makes the unit test, benchmark and pngdetail and examples
+ # utilities. It does not make the PNG codec itself as shared or static library.
+ # That is because:
+ # LodePNG itself has only 1 source file (lodepng.cpp, can be renamed to
+@@ -12,23 +12,90 @@
+ override CFLAGS := -W -Wall -Wextra -ansi -pedantic -O3 -Wno-unused-function $(CFLAGS)
+ override CXXFLAGS := -W -Wall -Wextra -ansi -pedantic -O3 $(CXXFLAGS)
+ 
+-all: unittest benchmark pngdetail showpng
++TARGETS = unittest benchmark pngdetail
++
++TARGETS += examples/example_4bit_palette
++TARGETS += examples/example_bmp2png
++TARGETS += examples/example_decode
++TARGETS += examples/example_encode
++TARGETS += examples/example_encode_type
++TARGETS += examples/example_gzip
++TARGETS += examples/example_optimize_png
++TARGETS += examples/example_png2bmp
++TARGETS += examples/example_png_info
++TARGETS += examples/example_reencode
++
++C_TARGETS += examples/c_example_decode
++C_TARGETS += examples/c_example_encode
++
++ifeq ($(shell pkg-config --exists sdl && echo 1), 1)
++  SDL_CFLAGS = $(shell pkg-config sdl --cflags)
++  SDL_LFLAGS = $(shell pkg-config sdl --libs)
++  SDL_TARGETS = examples/showsdl
++  SDL_C_TARGETS = examples/c_showsdl
++
++  ifeq ($(shell pkg-config --exists gl && echo 1), 1)
++    GL_CFLAGS = $(shell pkg-config gl --cflags)
++    GL_LFLAGS = $(shell pkg-config gl --libs)
++    SDL_OPENGL_TARGETS = examples/showsdl_opengl
++  endif
++endif
++
++all: $(TARGETS) $(C_TARGETS) $(SDL_TARGETS) $(SDL_C_TARGETS) $(SDL_OPENGL_TARGETS)
+ 
+ %.o: %.cpp
+-	@mkdir -p `dirname $@`
+ 	$(CXX) -I ./ $(CXXFLAGS) -c $< -o $@
+ 
+-unittest: lodepng.o lodepng_util.o lodepng_unittest.o
+-	$(CXX) $^ $(CXXFLAGS) -o $@
++examples/example_sdl.o: examples/example_sdl.cpp
++	$(CXX) -I ./ $(CXXFLAGS) $(SDL_CFLAGS) -c $^ -o $@
+ 
+-benchmark: lodepng.o lodepng_benchmark.o
+-	$(CXX) $^ $(CXXFLAGS) -lSDL -o $@
++examples/example_opengl.o: examples/example_opengl.cpp
++	$(CXX) -I ./ $(CXXFLAGS) $(SDL_CFLAGS) $(GL_CFLAGS) -c $^ -o $@
++
++c_lodepng.o: lodepng.cpp
++	$(CC) $(CFLAGS) -x c -c $^ -o $@
++
++c_%.o: %.c
++	$(CC) -I ./ $(CFLAGS) -c $< -o $@
+ 
++examples/c_example_sdl.o: examples/example_sdl.c
++	$(CC) -I ./ $(CFLAGS) $(SDL_CFLAGS) -c $^ -o $@
++
++unittest: lodepng.o lodepng_util.o lodepng_unittest.o
++benchmark: lodepng.o lodepng_benchmark.o
+ pngdetail: lodepng.o lodepng_util.o pngdetail.o
+-	$(CXX) $^ $(CXXFLAGS) -o $@
+ 
+-showpng: lodepng.o examples/example_sdl.o
+-	$(CXX) -I ./ $^ $(CXXFLAGS) -lSDL -o $@
++examples/example_4bit_palette: lodepng.o examples/example_4bit_palette.o
++examples/example_bmp2png: lodepng.o examples/example_bmp2png.o
++examples/example_decode: lodepng.o examples/example_decode.o
++examples/example_encode: lodepng.o examples/example_encode.o
++examples/example_encode_type: lodepng.o examples/example_encode_type.o
++examples/example_gzip: lodepng.o examples/example_gzip.o
++examples/example_optimize_png: lodepng.o examples/example_optimize_png.o
++examples/example_png2bmp: lodepng.o examples/example_png2bmp.o
++examples/example_png_info: lodepng.o examples/example_png_info.o
++examples/example_reencode: lodepng.o examples/example_reencode.o
++examples/showsdl: lodepng.o examples/example_sdl.o
++examples/showsdl_opengl: lodepng.o examples/example_opengl.o
++
++examples/c_example_decode: c_lodepng.o examples/c_example_decode.o
++examples/c_example_encode: c_lodepng.o examples/c_example_encode.o
++examples/c_showsdl: c_lodepng.o examples/c_example_sdl.o
++
++$(TARGETS):
++	$(CXX) $^ $(LDFLAGS) -o $@
++
++$(SDL_TARGETS):
++	$(CXX) $^ $(LDFLAGS) -o $@ $(SDL_LFLAGS)
++
++$(SDL_OPENGL_TARGETS):
++	$(CXX) $^ $(LDFLAGS) -o $@ $(SDL_LFLAGS) $(GL_LFLAGS)
++
++$(C_TARGETS):
++	$(CC) $^ $(LDFLAGS) -o $@
++
++$(SDL_C_TARGETS):
++	$(CC) $^ $(LDFLAGS) -o $@ $(SDL_LFLAGS)
+ 
+ clean:
+-	rm -f unittest benchmark pngdetail showpng lodepng_unittest.o lodepng_benchmark.o lodepng.o lodepng_util.o pngdetail.o examples/example_sdl.o
++	$(RM) $(TARGETS) $(C_TARGETS) $(SDL_TARGETS) $(SDL_C_TARGETS) $(SDL_OPENGL_TARGETS) *.o examples/*.o
+--- lodepng-20220110.orig/examples/example_opengl.cpp
++++ lodepng-20220110/examples/example_opengl.cpp
+@@ -43,7 +43,7 @@
+ #include "lodepng.h"
+ 
+ #include <iostream>
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ #include <GL/gl.h>
+ 
+ int main(int argc, char *argv[]) {
+--- lodepng-20220110.orig/examples/example_reencode.cpp
++++ lodepng-20220110/examples/example_reencode.cpp
+@@ -29,7 +29,7 @@
+ This sample shows how LodePNG can be used for a conforming PNG editor.
+ */
+ 
+-//g++ lodepng.cpp example_reencode.cpp -ansi -pedantic -Wall -Wextra -lSDL -O3 -o reencode
++//g++ lodepng.cpp example_reencode.cpp -ansi -pedantic -Wall -Wextra -O3
+ 
+ #include "lodepng.h"
+ 
+--- lodepng-20220110.orig/examples/example_sdl.c
++++ lodepng-20220110/examples/example_sdl.c
+@@ -25,7 +25,7 @@
+ 
+ /*
+ Compile command for Linux:
+-gcc lodepng.c example_sdl.c -ansi -pedantic -Wall -Wextra -lSDL -O3 -o showpng
++gcc lodepng.c example_sdl.c -ansi -pedantic -Wall -Wextra -lSDL -O3
+ 
+ */
+ 
+@@ -39,7 +39,7 @@
+ 
+ #include "lodepng.h"
+ 
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ 
+ /*shows image with SDL. Returns 1 if user wants to fully quit, 0 if user wants to see next image.*/
+ int show(const char* filename) {
+--- lodepng-20220110.orig/examples/example_sdl.cpp
++++ lodepng-20220110/examples/example_sdl.cpp
+@@ -24,7 +24,7 @@
+ */
+ 
+ //Compile command for Linux:
+-//g++ lodepng.cpp example_sdl.cpp -lSDL -O3 -o showpng
++//g++ lodepng.cpp example_sdl.cpp -lSDL -O3
+ 
+ /*
+ LodePNG SDL example
+@@ -37,7 +37,7 @@
+ #include "lodepng.h"
+ 
+ #include <iostream>
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ 
+ int show(const std::string& caption, const unsigned char* rgba, unsigned w, unsigned h) {
+   //avoid too large window size by downscaling large image
+--- lodepng-20220110.orig/lodepng_benchmark.cpp
++++ lodepng-20220110/lodepng_benchmark.cpp
+@@ -28,17 +28,12 @@
+ 
+ #include "lodepng.h"
+ 
+-#include <cmath>
++#include <cstdlib>
+ #include <string>
+ #include <vector>
+ #include <iostream>
+ #include <sstream>
+ 
+-#include <stdio.h>
+-#include <stdlib.h>
+-
+-#include <SDL/SDL.h> //SDL is used for timing.
+-
+ bool apply_mods = false;
+ 
+ #define NUM_DECODE 5 //decode multiple times to measure better. Must be at least 1.
+@@ -67,7 +62,7 @@
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+ double getTime() {
+-  return SDL_GetTicks() / 1000.0;
++  return (double)(clock()) / CLOCKS_PER_SEC;
+ }
+ 
+ template<typename T, typename U>
+--- lodepng-20220110.orig/lodepng_unittest.cpp
++++ lodepng-20220110/lodepng_unittest.cpp
+@@ -114,9 +114,6 @@
+ 
+ *) check year in copyright message at top of all files as well as at bottom of lodepng.h
+ 
+-*) check examples/sdl.cpp with the png test suite images (the "x" ones are expected to show error)
+-g++ -I ./ lodepng.cpp examples/example_sdl.cpp -Werror -Wall -Wextra -pedantic -ansi -O3 -lSDL -o showpng && ./showpng testdata/PngSuite/''*.png
+-
+ *) strip trailing spaces and ensure consistent newlines
+ 
+ *) test warnings in other compilers

@@ -369,7 +369,9 @@ exec=\\
 /x11/lib/libgstvideo-1.0.so.0 \\
 /x11/lib/gstreamer-1.0/libgstadder.so \\
 EOF
-test $ALSA && echo /x11/lib/gstreamer-1.0/libgstalsa.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc
+test $ALSA && cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstalsa.so \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstapp.so \\
 /x11/lib/gstreamer-1.0/libgstaudioconvert.so \\
@@ -379,7 +381,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstencodebin.so \\
 /x11/lib/gstreamer-1.0/libgstgio.so \\
 EOF
-test $TREMOR && echo /x11/lib/gstreamer-1.0/libgstivorbisdec.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc
+test $TREMOR && cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstivorbisdec.so \\
+EOF
 cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstogg.so \\
 /x11/lib/gstreamer-1.0/libgstpango.so \\
@@ -395,7 +399,9 @@ cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstvorbis.so \\
 /x11/lib/gstreamer-1.0/libgstximagesink.so \\
 EOF
-test $XV && echo /x11/lib/gstreamer-1.0/libgstxvimagesink.so \\ >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc
+test $XV && cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstxvimagesink.so \\
+EOF
 sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/gst-plugins-base-build.pc
 
 exit

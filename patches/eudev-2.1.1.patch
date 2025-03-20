@@ -68,18 +68,22 @@ Requires: $REQUIRES
 devel=\\
 /include/libudev.h \\
 EOF
-test $GLIB && echo /include/gudev-1.0/gudev/gudev.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /include/gudev-1.0/gudev/gudevclient.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /include/gudev-1.0/gudev/gudevdevice.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /include/gudev-1.0/gudev/gudevenumerator.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /include/gudev-1.0/gudev/gudevenums.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /include/gudev-1.0/gudev/gudevenumtypes.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /include/gudev-1.0/gudev/gudevtypes.h \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
-test $GLIB && echo /lib/libgudev-1.0.so \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
+/include/gudev-1.0/gudev/gudev.h \\
+/include/gudev-1.0/gudev/gudevclient.h \\
+/include/gudev-1.0/gudev/gudevdevice.h \\
+/include/gudev-1.0/gudev/gudevenumerator.h \\
+/include/gudev-1.0/gudev/gudevenums.h \\
+/include/gudev-1.0/gudev/gudevenumtypes.h \\
+/include/gudev-1.0/gudev/gudevtypes.h \\
+/lib/libgudev-1.0.so \\
+EOF
 cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
 /lib/libudev.so \\
 EOF
-test $GLIB && echo /lib/pkgconfig/gudev-1.0.pc \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
+/lib/pkgconfig/gudev-1.0.pc \\
+EOF
 cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
 /lib/pkgconfig/libudev.pc \\
 /lib/pkgconfig/udev.pc
@@ -91,7 +95,9 @@ exec=\\
 /etc/udev/udev.conf \\
 /etc/udev/rules.d/udev.rules \\
 EOF
-test $GLIB && echo /lib/libgudev-1.0.so.0 \\ >> $DESTDIR/share/pkgconfig/eudev-build.pc
+test $GLIB && cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
+/lib/libgudev-1.0.so.0 \\
+EOF
 cat >> $DESTDIR/share/pkgconfig/eudev-build.pc << EOF
 /lib/libudev.so.0 \\
 /lib/udev/ata_id \\
