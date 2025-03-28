@@ -5,6 +5,8 @@ REQUIRES="atk-build autotools-wrappers-lt-build gdk-pixbuf-build pango-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires cairo-build | grep -q libxext-build || { echo Cairo with Xlib support required; exit 1; }
+
 # configure (ac-2.69; am-1.15; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11

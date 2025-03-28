@@ -1,0 +1,118 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libgpg-error-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 src/assuan.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libassuan.so.0.* $DESTDIR/lib/libassuan.so.0
+ln -sf libassuan.so.0 $DESTDIR/lib/libassuan.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/libassuan.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/aclocal
+install -m 644 src/libassuan.m4 $DESTDIR/share/aclocal
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libassuan-build.pc << EOF
+Name: libassuan
+Version: 2.5.7
+Description: IPC library used by GnuPG components
+Requires: $REQUIRES
+
+devel=\\
+/include/assuan.h \\
+/lib/libassuan.so \\
+/lib/pkgconfig/libassuan.pc \\
+/share/aclocal/libassuan.m4
+
+exec=\\
+/lib/libassuan.so.0
+EOF
+
+exit
+--- libassuan-2.5.7.orig/m4/gpg-error.m4
++++ libassuan-2.5.7/m4/gpg-error.m4
+@@ -126,16 +126,10 @@
+ 
+   if test -n "$gpgrt_libdir"; then
+     GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
+-    if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
+-      GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+-      AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+-      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
+-    else
+-      gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
++    if ! $GPGRT_CONFIG gpg-error --exists; then
+       unset GPGRT_CONFIG
+     fi
+-  elif test "$GPG_ERROR_CONFIG" != "no"; then
+-    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
++  else
+     unset GPGRT_CONFIG
+   fi
+ ])
+@@ -145,7 +139,7 @@
+ dnl
+ dnl Test for libgpg-error and define GPG_ERROR_CFLAGS, GPG_ERROR_LIBS,
+ dnl GPG_ERROR_MT_CFLAGS, and GPG_ERROR_MT_LIBS.  The _MT_ variants are
+-dnl used for programs requireing real multi thread support.
++dnl used for programs requiring real multi thread support.
+ dnl
+ dnl If a prefix option is not used, the config script is first
+ dnl searched in $SYSROOT/bin and then along $PATH.  If the used
+@@ -156,6 +150,23 @@
+ AC_REQUIRE([AC_CANONICAL_HOST])dnl
+ AC_REQUIRE([_AM_PATH_POSSIBLE_GPG_ERROR_CONFIG])dnl
+ AC_REQUIRE([_AM_PATH_GPGRT_CONFIG])dnl
++  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
++    GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
++    AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
++    gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
++  elif test x"$GPG_ERROR_CONFIG" != x -a "$GPG_ERROR_CONFIG" != "no"; then
++    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
++  else
++    if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
++      AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
++    fi
++    GPG_ERROR_CONFIG="$PKG_CONFIG gpg-error"
++    if `$GPG_ERROR_CONFIG --exists`; then
++      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
++    else
++      GPG_ERROR_CONFIG=no
++    fi
++  fi
+   min_gpg_error_version=ifelse([$1], ,1.33,$1)
+   ok=no
+   if test "$GPG_ERROR_CONFIG" != "no"; then
+--- libassuan-2.5.7.orig/src/libassuan.m4
++++ libassuan-2.5.7/src/libassuan.m4
+@@ -38,6 +38,17 @@
+   if test -z "$use_gpgrt_config"; then
+     AC_PATH_PROG(LIBASSUAN_CONFIG, libassuan-config, no)
+   fi
++  if test "$LIBASSUAN_CONFIG" = "no"; then
++    if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
++      AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
++    fi
++    LIBASSUAN_CONFIG="$PKG_CONFIG libassuan"
++    if `$LIBASSUAN_CONFIG --exists`; then
++      use_gpgrt_config=yes
++    else
++      LIBASSUAN_CONFIG=no
++    fi
++  fi
+ 
+   tmp=ifelse([$1], ,1:0.9.2,$1)
+   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then

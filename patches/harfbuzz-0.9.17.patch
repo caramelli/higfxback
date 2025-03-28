@@ -1,0 +1,128 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build freetype-build gcc-g++-build glib-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.68; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install util/.libs/hb-ot-shape-closure $DESTDIR/bin
+install util/.libs/hb-shape $DESTDIR/bin
+install -d $DESTDIR/include/harfbuzz
+install -m 644 src/hb.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-blob.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-buffer.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-common.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-font.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-ft.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-glib.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-ot.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-ot-layout.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-ot-tag.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-set.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-shape.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-shape-plan.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-unicode.h $DESTDIR/include/harfbuzz
+install -m 644 src/hb-version.h $DESTDIR/include/harfbuzz
+install -d $DESTDIR/lib
+install src/.libs/libharfbuzz.so.0.* $DESTDIR/lib/libharfbuzz.so.0
+ln -sf libharfbuzz.so.0 $DESTDIR/lib/libharfbuzz.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 harfbuzz.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/harfbuzz-build.pc << EOF
+Name: harfbuzz
+Version: 0.9.17
+Description: OpenType text shaping library
+Requires: $REQUIRES
+
+devel=\\
+/include/harfbuzz/hb.h \\
+/include/harfbuzz/hb-blob.h \\
+/include/harfbuzz/hb-buffer.h \\
+/include/harfbuzz/hb-common.h \\
+/include/harfbuzz/hb-font.h \\
+/include/harfbuzz/hb-ft.h \\
+/include/harfbuzz/hb-glib.h \\
+/include/harfbuzz/hb-ot-layout.h \\
+/include/harfbuzz/hb-ot-tag.h \\
+/include/harfbuzz/hb-ot.h \\
+/include/harfbuzz/hb-set.h \\
+/include/harfbuzz/hb-shape-plan.h \\
+/include/harfbuzz/hb-shape.h \\
+/include/harfbuzz/hb-unicode.h \\
+/include/harfbuzz/hb-version.h \\
+/lib/libharfbuzz.so \\
+/lib/pkgconfig/harfbuzz.pc
+
+exec=\\
+/bin/hb-ot-shape-closure \\
+/bin/hb-shape \\
+/lib/libharfbuzz.so.0
+EOF
+
+exit
+--- harfbuzz-0.9.17.orig/configure.ac
++++ harfbuzz-0.9.17/configure.ac
+@@ -52,6 +52,8 @@
+ HB_LIBTOOL_VERSION_INFO=hb_libtool_current:hb_libtool_revision:hb_libtool_age
+ AC_SUBST(HB_LIBTOOL_VERSION_INFO)
+ 
++HB_REQUIRES_PRIVATE=
++
+ dnl GOBJECT_INTROSPECTION_CHECK([0.9.0])
+ dnl GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
+ 
+@@ -139,6 +141,7 @@
+ PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.16, have_glib=true, have_glib=false)
+ if $have_glib; then
+ 	AC_DEFINE(HAVE_GLIB, 1, [Have glib2 library])
++	HB_REQUIRES_PRIVATE="$HB_REQUIRES_PRIVATE glib-2.0"
+ fi
+ AM_CONDITIONAL(HAVE_GLIB, $have_glib)
+ 
+@@ -147,6 +150,7 @@
+ 	AC_DEFINE(HAVE_GOBJECT, 1, [Have gobject2 library])
+ 	GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
+ 	AC_SUBST(GLIB_MKENUMS)
++	HB_REQUIRES_PRIVATE="$HB_REQUIRES_PRIVATE gobject-2.0"
+ fi
+ AM_CONDITIONAL(HAVE_GOBJECT, $have_gobject)
+ 
+@@ -238,6 +242,7 @@
+ 	AC_CHECK_FUNCS(FT_Face_GetCharVariantIndex)
+ 	LIBS="$_save_libs"
+ 	CFLAGS="$_save_cflags"
++	HB_REQUIRES_PRIVATE="$HB_REQUIRES_PRIVATE freetype2"
+ fi
+ AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
+ 
+@@ -318,6 +323,8 @@
+ 
+ dnl ===========================================================================
+ 
++AC_SUBST(HB_REQUIRES_PRIVATE)
++
+ AC_CONFIG_FILES([
+ Makefile
+ harfbuzz.pc
+--- harfbuzz-0.9.17.orig/harfbuzz.pc.in
++++ harfbuzz-0.9.17/harfbuzz.pc.in
+@@ -7,5 +7,7 @@
+ Description: Text shaping library
+ Version: @VERSION@
+ 
++Requires.private: @HB_REQUIRES_PRIVATE@
+ Libs: -L${libdir} -lharfbuzz
++Libs.private: @ICU_LIBS@ @ICU_LE_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@
+ Cflags: -I${includedir}/harfbuzz

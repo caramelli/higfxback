@@ -36,10 +36,10 @@ EOF
 exit
 --- fbida-2.09.orig/Configure
 +++ fbida-2.09/Configure
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,41 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
 +while : ; do
 +  case "$1" in
@@ -47,8 +47,14 @@ exit
 +      break
 +    ;;
 +    --prefix)
-+      PREFIX=$2
++      prefix=$2
 +      shift
++    ;;
++    --disable-fbdev)
++      FBDEV=#
++    ;;
++    --disable-x11)
++      X11=#
 +    ;;
 +    *)
 +      echo Unknown option \"$1\".
@@ -58,7 +64,18 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix/s|=.*|= $PREFIX|" mk/Variables.mk
++sed -i "/^prefix/s|=.*|= $prefix|" mk/Variables.mk
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" GNUmakefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" GNUmakefile
++fi
++
++sed -i "s|^#\?\(HAVE_LINUX_FB_H.*)\)|$FBDEV\1|" GNUmakefile
++
++sed -i "s|^#\?\(HAVE_MOTIF.*)\)|$X11\1|" GNUmakefile
 +
 +make config
 --- fbida-2.09.orig/GNUmakefile
@@ -89,7 +106,15 @@ exit
  # transparent http/ftp access using curl depends on fopencookie (glibc)
  ifneq ($(HAVE_GLIBC),yes)
    HAVE_LIBCURL	:= no
-@@ -124,7 +114,6 @@
+@@ -69,6 +59,7 @@
+   ida fbi : LDFLAGS  += -Wl,--wrap=fopen
+ endif
+ 
++PKG_CONFIG = pkg-config
+ 
+ ########################################################################
+ # conditional stuff
+@@ -124,7 +115,6 @@
  thumbnail.cgi : LDLIBS += -lexif -lm
  
  exiftran: exiftran.o genthumbnail.o jpegtools.o \
@@ -97,7 +122,7 @@ exit
  	filter.o op.o readers.o rd/read-jpeg.o
  thumbnail.cgi: thumbnail.cgi.o
  
-@@ -136,7 +125,7 @@
+@@ -136,7 +126,7 @@
  OBJS_IDA := \
  	ida.o man.o hex.o x11.o viewer.o dither.o icons.o \
  	parseconfig.o idaconfig.o fileops.o desktop.o \
@@ -106,7 +131,7 @@ exit
  	filebutton.o filelist.o browser.o jpegtools.o \
  	op.o filter.o lut.o color.o \
  	rd/read-xwd.o rd/read-xpm.o 
-@@ -173,7 +162,7 @@
+@@ -173,14 +163,14 @@
  OBJS_FBI := \
  	fbi.o fbtools.o fb-gui.o desktop.o \
  	parseconfig.o fbiconfig.o \
@@ -115,7 +140,16 @@ exit
  	dither.o filter.o op.o
  
  OBJS_FBI += $(filter-out wr/%,$(call ac_lib_mkvar,$(fbi_libs),OBJS))
-@@ -189,12 +178,8 @@
+ 
+ # jpeg/exif libs
+-fbi : CFLAGS += $(shell pkg-config --cflags freetype2 fontconfig)
+-fbi : LDLIBS += $(shell pkg-config --libs   freetype2 fontconfig)
++fbi : CFLAGS += $(shell $(PKG_CONFIG) --cflags freetype2 fontconfig)
++fbi : LDLIBS += $(shell $(PKG_CONFIG) --libs   freetype2 fontconfig)
+ fbi : LDLIBS += -ljpeg -lexif -lm
+ 
+ fbi: $(OBJS_FBI) $(OBJS_READER)
+@@ -189,12 +179,8 @@
  ########################################################################
  # general rules
  
@@ -130,7 +164,7 @@ exit
  
  install: build
  	$(INSTALL_DIR) $(bindir)
-@@ -215,7 +200,7 @@
+@@ -215,7 +201,7 @@
  endif
  
  clean:

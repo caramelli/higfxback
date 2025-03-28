@@ -39,7 +39,7 @@ exit
 @@ -0,0 +1,51 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
 +GTK=1
 +LUA=1
@@ -51,7 +51,7 @@ exit
 +      break
 +    ;;
 +    --prefix)
-+      PREFIX=$2
++      prefix=$2
 +      shift
 +    ;;
 +    --disable-gtk)
@@ -71,18 +71,18 @@ exit
 +  shift
 +done
 +
-+sed -i "s|prefix = \".*|prefix = \"$PREFIX\"|" SConstruct
++sed -i "s|prefix = \".*|prefix = \"$prefix\"|" SConstruct
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "s|get('PKG_CONFIG_PATH', .*|get('PKG_CONFIG_PATH', None))|" SConstruct
-+else
++if test $PKG_CONFIG_PATH; then
 +  sed -i "s|get('PKG_CONFIG_PATH', .*|get('PKG_CONFIG_PATH', '$PKG_CONFIG_PATH'))|" SConstruct
++else
++  sed -i "s|get('PKG_CONFIG_PATH', .*|get('PKG_CONFIG_PATH', None))|" SConstruct
 +fi
 +
-+if test -z $PKG_CONFIG_LIBDIR; then
-+  sed -i "s|get('PKG_CONFIG_LIBDIR', .*|get('PKG_CONFIG_LIBDIR', None))|" SConstruct
-+else
++if test $PKG_CONFIG_LIBDIR; then
 +  sed -i "s|get('PKG_CONFIG_LIBDIR', .*|get('PKG_CONFIG_LIBDIR', '$PKG_CONFIG_LIBDIR'))|" SConstruct
++else
++  sed -i "s|get('PKG_CONFIG_LIBDIR', .*|get('PKG_CONFIG_LIBDIR', None))|" SConstruct
 +fi
 +
 +sed -i "/BoolVariable('GTK'/s|\(.*\)[01]|\1$GTK|" SConstruct

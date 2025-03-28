@@ -30,7 +30,7 @@ EOF
 exit
 --- fbff-20220205.orig/Configure
 +++ fbff-20220205/Configure
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -54,10 +54,11 @@ exit
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makefile
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
 +fi
 --- fbff-20220205.orig/Makefile
 +++ fbff-20220205/Makefile
@@ -69,9 +70,9 @@ exit
 -LDFLAGS = -L$(FF_PATH)/lib -lavutil -lavformat -lavcodec -lavutil \
 -		-lswscale -lswresample -lz -lm -lpthread
 +PKG_CONFIG = pkg-config
-+CFLAGS = `$(PKG_CONFIG) --cflags libavformat libavcodec libswresample libswscale libavutil)` \
++CFLAGS = $(shell $(PKG_CONFIG) --cflags libavformat libavcodec libswresample libswscale libavutil) \
 +		-Wall -O2
-+LDFLAGS = `$(PKG_CONFIG) --libs libavformat libavcodec libswresample libswscale libavutil)` \
++LDFLAGS = $(shell $(PKG_CONFIG) --libs libavformat libavcodec libswresample libswscale libavutil) \
 +		-Wl,-rpath,$(PREFIX)/lib -lpthread
  
  all: fbff

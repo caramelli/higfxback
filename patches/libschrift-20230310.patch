@@ -139,7 +139,7 @@ exit
 -	cp -f libschrift.a "$(DESTDIR)$(PREFIX)/lib"
 -	chmod 644 "$(DESTDIR)$(PREFIX)/lib/libschrift.a"
 +	cp -f $(LIB) "$(DESTDIR)$(PREFIX)/lib"
-+	if test -z "$(NOSTATIC)"; then \
++	if test -z $(NOSTATIC); then \
 +		chmod 644 "$(DESTDIR)$(PREFIX)/lib/$(LIB)"; \
 +	else \
 +		chmod 755 "$(DESTDIR)$(PREFIX)/lib/$(LIB)"; \
@@ -172,7 +172,7 @@ exit
  # compiler flags for libschrift
  CPPFLAGS =
  CFLAGS   = -Os -std=c99 -pedantic -Wall -Wextra -Wconversion
-+ifeq "$(NOSTATIC)" "yes"
++ifneq "$(NOSTATIC)" ""
 +CFLAGS += -fPIC
 +endif
  LDFLAGS  = -Os

@@ -30,10 +30,10 @@ EOF
 exit
 --- drm-framebuffer-20231108.orig/Configure
 +++ drm-framebuffer-20231108/Configure
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
 +while : ; do
 +  case "$1" in
@@ -41,7 +41,7 @@ exit
 +      break
 +    ;;
 +    --prefix)
-+      PREFIX=$2
++      prefix=$2
 +      shift
 +    ;;
 +    *)
@@ -52,12 +52,13 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix/s|=.*|= $PREFIX|" Makefile
++sed -i "/^prefix/s|=.*|= $prefix|" Makefile
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makefile
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
 +fi
 --- drm-framebuffer-20231108.orig/Makefile
 +++ drm-framebuffer-20231108/Makefile
@@ -67,8 +68,8 @@ exit
  CC      ?= gcc
 -CFLAGS  ?= -O0 -ggdb -pedantic -Wall -I /usr/include/libdrm
 -LDFLAGS ?= -ldrm
-+CFLAGS  ?= -O0 -ggdb -pedantic -Wall `$(PKG_CONFIG) --cflags libdrm`
-+LDFLAGS ?= `$(PKG_CONFIG) --libs libdrm`
++CFLAGS  ?= -O0 -ggdb -pedantic -Wall $(shell $(PKG_CONFIG) --cflags libdrm)
++LDFLAGS ?= $(shell $(PKG_CONFIG) --libs libdrm)
  
  OBJ = main.o framebuffer.o
  PROGNAME = drm-framebuffer

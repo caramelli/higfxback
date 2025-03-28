@@ -47,7 +47,7 @@ ln -sf mesaglut-build.pc $DESTDIR/dfb/share/pkgconfig/glut-build.pc
 exit
 --- MesaGLUT-20100214.orig/Configure
 +++ MesaGLUT-20100214/Configure
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,54 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -84,9 +84,7 @@ exit
 +    echo "Run \`make realclean' before changing configs"
 +    exit 1
 +  else
-+    if ! test -L configs/current; then
-+      ln -s $CONFIG configs/current
-+    fi
++    test -L configs/current || ln -s $CONFIG configs/current
 +  fi
 +else
 +  echo "Specify a configuration from the following list using \`--config':"
@@ -96,10 +94,11 @@ exit
 +
 +sed -i "/^INSTALL_DIR/s|=.*|= $PREFIX|" configs/default
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" configs/default
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" configs/default
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" configs/default
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" configs/default
 +fi
 +
 +sed -i "/^MKLIB_OPTIONS/s|=.*|= $STATIC|" configs/default

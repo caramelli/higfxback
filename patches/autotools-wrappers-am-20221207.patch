@@ -1948,3 +1948,61 @@ devel=\\
 EOF
 
 exit
+--- autotools-wrappers-am-20221207.orig/automake-1.10.3/aclocal.in
++++ autotools-wrappers-am-20221207/automake-1.10.3/aclocal.in
+@@ -1040,10 +1040,26 @@
+     }
+ }
+ 
++# Add any directory listed in the `ACLOCAL_PATH' environment variable
++# to the list of system include directories.
++sub parse_ACLOCAL_PATH ()
++{
++  return if not defined $ENV{"ACLOCAL_PATH"};
++  # Directories in ACLOCAL_PATH should take precedence over system
++  # directories, so we use unshift.  However, directories that
++  # come first in ACLOCAL_PATH take precedence over directories
++  # coming later, which is why the result of split is reversed.
++  foreach my $dir (reverse split /:/, $ENV{"ACLOCAL_PATH"})
++    {
++      unshift (@system_includes, $dir) if $dir ne '' && -d $dir;
++    }
++}
++
+ ################################################################
+ 
+ parse_WARNINGS;		    # Parse the WARNINGS environment variable.
+ parse_arguments;
++parse_ACLOCAL_PATH;
+ $configure_ac = require_configure_ac;
+ 
+ # We may have to rerun aclocal if some file have been installed, but
+--- autotools-wrappers-am-20221207.orig/automake-1.9.6/aclocal.in
++++ autotools-wrappers-am-20221207/automake-1.9.6/aclocal.in
+@@ -666,9 +666,26 @@
+   return @dirlist;
+ }
+ 
++# Add any directory listed in the `ACLOCAL_PATH' environment variable
++# to the list of system include directories.
++sub parse_ACLOCAL_PATH ()
++{
++  return if not defined $ENV{"ACLOCAL_PATH"};
++  # Directories in ACLOCAL_PATH should take precedence over system
++  # directories, so we use unshift.  However, directories that
++  # come first in ACLOCAL_PATH take precedence over directories
++  # coming later, which is why the result of split is reversed.
++  foreach my $dir (reverse split /:/, $ENV{"ACLOCAL_PATH"})
++    {
++      unshift (@system_includes, $dir) if $dir ne '' && -d $dir;
++    }
++}
++
+ ################################################################
+ 
+ local (@dirlist) = parse_arguments (@ARGV);
++parse_ACLOCAL_PATH;
++@dirlist = (@system_includes, @dirlist);
+ $configure_ac = require_configure_ac;
+ scan_m4_files (@dirlist);
+ scan_configure;

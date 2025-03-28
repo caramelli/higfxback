@@ -1,9 +1,19 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="a52dec-build autotools-wrappers-lt-build gst-plugins-base-build x264-build"
+REQUIRES="autotools-wrappers-lt-build gst-plugins-base-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists a52dec-build; then
+  A52DEC=1
+  REQUIRES="$REQUIRES a52dec-build"
+fi
+
+if pkg-config --exists x264-build; then
+  X264=1
+  REQUIRES="$REQUIRES x264-build"
+fi
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
 libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
@@ -14,8 +24,8 @@ make
 
 # install
 install -d $DESTDIR/wl/lib/gstreamer-1.0
-install ext/a52dec/.libs/libgsta52dec.so $DESTDIR/wl/lib/gstreamer-1.0
-install ext/x264/.libs/libgstx264.so $DESTDIR/wl/lib/gstreamer-1.0
+test $A52DEC && install ext/a52dec/.libs/libgsta52dec.so $DESTDIR/wl/lib/gstreamer-1.0
+test $X264 && install ext/x264/.libs/libgstx264.so $DESTDIR/wl/lib/gstreamer-1.0
 install gst/asfdemux/.libs/libgstasf.so $DESTDIR/wl/lib/gstreamer-1.0
 install gst/dvdlpcmdec/.libs/libgstdvdlpcmdec.so $DESTDIR/wl/lib/gstreamer-1.0
 install gst/dvdsub/.libs/libgstdvdsub.so $DESTDIR/wl/lib/gstreamer-1.0
@@ -31,12 +41,20 @@ Description: Ugly GStreamer plugins
 Requires: $REQUIRES
 
 exec=\\
+EOF
+test $A52DEC && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgsta52dec.so \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstasf.so \\
 /wl/lib/gstreamer-1.0/libgstdvdlpcmdec.so \\
 /wl/lib/gstreamer-1.0/libgstdvdsub.so \\
 /wl/lib/gstreamer-1.0/libgstrealmedia.so \\
+EOF
+test $X264 && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstx264.so \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstxingmux.so
 EOF
 

@@ -1,0 +1,47 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build expat-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/metalink
+install -m 644 lib/includes/metalink/metalink.h $DESTDIR/include/metalink
+install -m 644 lib/includes/metalink/metalink_error.h $DESTDIR/include/metalink
+install -m 644 lib/includes/metalink/metalink_parser.h $DESTDIR/include/metalink
+install -m 644 lib/includes/metalink/metalink_types.h $DESTDIR/include/metalink
+install -d $DESTDIR/lib
+install lib/.libs/libmetalink.so.3.* $DESTDIR/lib/libmetalink.so.3
+ln -sf libmetalink.so.3 $DESTDIR/lib/libmetalink.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 lib/libmetalink.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libmetalink-build.pc << EOF
+Name: libmetalink
+Version: 0.1.3
+Description: Metalink library
+Requires: $REQUIRES
+
+devel=\\
+/include/metalink/metalink.h \\
+/include/metalink/metalink_error.h \\
+/include/metalink/metalink_parser.h \\
+/include/metalink/metalink_types.h \\
+/lib/libmetalink.so \\
+/lib/pkgconfig/libmetalink.pc
+
+exec=\\
+/lib/libmetalink.so.3
+EOF
+
+exit

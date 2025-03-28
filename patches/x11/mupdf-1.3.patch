@@ -1,11 +1,17 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="curl-build freetype-build jbig2dec-build jpeg-build libxext-build make-build openjpeg2-build"
+REQUIRES="freetype-build jbig2dec-build jpeg-build make-build openjpeg2-build"
 
-PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+pkg-config --exists --print-errors $REQUIRES || exit 1
 
 pkg-config --exists openssl-build && REQUIRES="$REQUIRES openssl-build"
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxext-build; then
+  XLIB=1
+  REQUIRES="$REQUIRES libxext-build"
+  pkg-config --exists curl-build && REQUIRES="$REQUIRES curl-build"
+fi
 
 # configure
 rm -rf thirdparty
@@ -17,13 +23,12 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install build/*/mudraw $DESTDIR/x11/bin
-install build/*/mupdf-x11-curl $DESTDIR/x11/bin/mupdf
+test $XLIB && install `ls -1 build/*/mupdf* | tail -n1` $DESTDIR/x11/bin/mupdf
 install build/*/mutool $DESTDIR/x11/bin
 install -d $DESTDIR/x11/include/mupdf
 install -m 644 include/mupdf/fitz.h $DESTDIR/x11/include/mupdf
 ln -sf mupdf/fitz.h $DESTDIR/x11/include/fitz.h
 install -m 644 include/mupdf/memento.h $DESTDIR/x11/include/mupdf
-ln -sf mupdf/memento.h $DESTDIR/x11/include/memento.h
 install -d $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/annotation.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/bitmap.h $DESTDIR/x11/include/mupdf/fitz
@@ -46,12 +51,12 @@ install -m 644 include/mupdf/fitz/link.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/math.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/meta.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/outline.h $DESTDIR/x11/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/output-pcl.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/output-png.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/output-pnm.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/output-pwg.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/output-svg.h $DESTDIR/x11/include/mupdf/fitz
-install -m 644 include/mupdf/fitz/output.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/path.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/pixmap.h $DESTDIR/x11/include/mupdf/fitz
 install -m 644 include/mupdf/fitz/shade.h $DESTDIR/x11/include/mupdf/fitz
@@ -80,7 +85,6 @@ Requires: $REQUIRES
 
 devel=\\
 /x11/include/fitz.h \\
-/x11/include/memento.h \\
 /x11/include/mupdf/fitz.h \\
 /x11/include/mupdf/memento.h \\
 /x11/include/mupdf/fitz/annotation.h \\
@@ -104,12 +108,12 @@ devel=\\
 /x11/include/mupdf/fitz/math.h \\
 /x11/include/mupdf/fitz/meta.h \\
 /x11/include/mupdf/fitz/outline.h \\
+/x11/include/mupdf/fitz/output.h \\
 /x11/include/mupdf/fitz/output-pcl.h \\
 /x11/include/mupdf/fitz/output-png.h \\
 /x11/include/mupdf/fitz/output-pnm.h \\
 /x11/include/mupdf/fitz/output-pwg.h \\
 /x11/include/mupdf/fitz/output-svg.h \\
-/x11/include/mupdf/fitz/output.h \\
 /x11/include/mupdf/fitz/path.h \\
 /x11/include/mupdf/fitz/pixmap.h \\
 /x11/include/mupdf/fitz/shade.h \\
@@ -127,7 +131,11 @@ devel=\\
 
 exec=\\
 /x11/bin/mudraw \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/mupdf-build.pc << EOF
 /x11/bin/mupdf \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/mupdf-build.pc << EOF
 /x11/bin/mutool \\
 /x11/lib/libmupdf.so.1
 EOF
@@ -135,10 +143,10 @@ EOF
 exit
 --- mupdf-1.3.orig/Configure
 +++ mupdf-1.3/Configure
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,36 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
 +while : ; do
 +  case "$1" in
@@ -146,7 +154,7 @@ exit
 +      break
 +    ;;
 +    --prefix)
-+      PREFIX=$2
++      prefix=$2
 +      shift
 +    ;;
 +    --disable-static)
@@ -160,29 +168,41 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix/s|=.*|= $PREFIX|" Makefile
++sed -i "/^prefix/s|=.*|= $prefix|" Makefile
 +
-+sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makerules
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makefile
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makerules
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makerules
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
 +fi
 +
-+sed -i "/^prefix=/s|=.*|=$PREFIX|" platform/debian/mupdf.pc
++sed -i "/^prefix=/s|=.*|=$prefix|" platform/debian/mupdf.pc
 --- mupdf-1.3.orig/Makefile
 +++ mupdf-1.3/Makefile
-@@ -54,7 +54,7 @@
+@@ -9,6 +9,10 @@
+ 
+ # --- Configuration ---
+ 
++NOSTATIC ?= 
++
++PKG_CONFIG ?= pkg-config
++
+ # Do not specify CFLAGS or LIBS on the make invocation line - specify
+ # XCFLAGS or XLIBS instead. Make ignores any lines in the makefile that
+ # set a variable that was set on the command line.
+@@ -54,7 +58,7 @@
  CC_CMD = $(QUIET_CC) $(CC) $(CFLAGS) -o $@ -c $<
  CXX_CMD = $(QUIET_CXX) $(CXX) $(CFLAGS) -o $@ -c $<
  AR_CMD = $(QUIET_AR) $(AR) cr $@ $^
 -LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
-+LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -Wl,-rpath,$(prefix)/lib -o $@ $^
++LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^
  MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
  RM_CMD = $(QUIET_RM) rm -f $@
  
-@@ -106,18 +106,20 @@
+@@ -106,18 +110,20 @@
  
  # --- Library ---
  
@@ -207,7 +227,7 @@ exit
  
  # --- Rules ---
  
-@@ -129,6 +131,9 @@
+@@ -129,14 +135,20 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
@@ -217,7 +237,20 @@ exit
  $(OUT)/%: $(OUT)/%.o
  	$(LINK_CMD)
  
-@@ -217,14 +222,24 @@
+ $(OUT)/%.o : source/%.c | $(ALL_DIR)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
+ 
+ $(OUT)/%.o : source/%.cpp | $(ALL_DIR)
+-	$(CXX_CMD)
++	$(CXX_CMD) $(LIB_CFLAGS)
++
++$(OUT)/tools/%.o : source/tools/%.c | $(ALL_DIR)
++	$(CC_CMD)
+ 
+ $(OUT)/%.o : scripts/%.c | $(OUT)
+ 	$(CC_CMD)
+@@ -217,14 +229,24 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
@@ -244,7 +277,7 @@ exit
  
  ifeq "$(V8_PRESENT)" "yes"
  MUJSTEST_V8 := $(OUT)/mujstest-v8
-@@ -235,15 +250,25 @@
+@@ -235,15 +257,25 @@
  
  ifeq "$(NOX11)" ""
  MUVIEW_X11 := $(OUT)/mupdf-x11
@@ -266,13 +299,13 @@ exit
  $(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o)
  	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS)
 +else
-+$(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o)
++$(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o) $(CURL_LIB)
 +	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) $(MUPDF_LIB)
 +endif
  endif
  endif
  
-@@ -285,7 +310,7 @@
+@@ -285,7 +317,7 @@
  libs: $(INSTALL_LIBS)
  apps: $(INSTALL_APPS)
  
@@ -281,7 +314,7 @@ exit
  	install -d $(DESTDIR)$(incdir)/mupdf
  	install -d $(DESTDIR)$(incdir)/mupdf/fitz
  	install -d $(DESTDIR)$(incdir)/mupdf/pdf
-@@ -295,6 +320,9 @@
+@@ -295,6 +327,9 @@
  
  	install -d $(DESTDIR)$(libdir)
  	install $(INSTALL_LIBS) $(DESTDIR)$(libdir)
@@ -291,7 +324,7 @@ exit
  
  	install -d $(DESTDIR)$(bindir)
  	install $(INSTALL_APPS) $(DESTDIR)$(bindir)
-@@ -313,7 +341,7 @@
+@@ -313,7 +348,7 @@
  tags: $(shell find include source -name '*.[ch]')
  	ctags $^
  
@@ -302,22 +335,19 @@ exit
  	$(MAKE) V8_PRESENT=no
 --- mupdf-1.3.orig/Makerules
 +++ mupdf-1.3/Makerules
-@@ -4,7 +4,14 @@
- OS := $(OS:MINGW%=MINGW)
- OS := $(OS:Windows_NT=MINGW)
+@@ -6,6 +6,11 @@
  
-+NOSTATIC ?= 
-+
-+PKG_CONFIG ?= pkg-config
-+
  CFLAGS += -Wall
-+ifeq "$(NOSTATIC)" "yes"
-+CFLAGS += -fPIC
-+endif
  
++ifneq "$(NOSTATIC)" ""
++LIB_CFLAGS = -fPIC
++LDFLAGS += -Wl,-rpath,$(prefix)/lib
++endif
++
  ifeq "$(build)" "debug"
  CFLAGS += -pipe -g -DDEBUG
-@@ -50,20 +57,30 @@
+ else ifeq "$(build)" "profile"
+@@ -50,20 +55,30 @@
  # Other Unixes use pkg-config for system libraries.
  else
  
@@ -359,9 +389,56 @@ exit
  SYS_ZLIB_LIBS = -lz
 --- mupdf-1.3.orig/Makethird
 +++ mupdf-1.3/Makethird
-@@ -444,5 +444,6 @@
+@@ -84,6 +84,7 @@
+ FT_CFLAGS := -DFT2_BUILD_LIBRARY -DDARWIN_NO_CARBON \
+ 	'-DFT_CONFIG_MODULES_H="slimftmodules.h"' \
+ 	'-DFT_CONFIG_OPTIONS_H="slimftoptions.h"'
++FT_CFLAGS += $(LIB_CFLAGS)
+ 
+ $(FREETYPE_OUT)/%.o: $(FREETYPE_DIR)/src/base/%.c	| $(FREETYPE_OUT)
+ 	$(CC_CMD) $(FT_CFLAGS)
+@@ -141,7 +142,7 @@
+ $(JBIG2DEC_OUT):
+ 	$(MKDIR_CMD)
+ $(JBIG2DEC_OUT)/%.o: $(JBIG2DEC_DIR)/%.c | $(JBIG2DEC_OUT)
+-	$(CC_CMD) -DHAVE_STDINT_H
++	$(CC_CMD) -DHAVE_STDINT_H $(LIB_CFLAGS)
+ 
+ JBIG2DEC_CFLAGS := -I$(JBIG2DEC_DIR)
+ else
+@@ -192,7 +193,7 @@
+ $(JPEG_OUT):
+ 	$(MKDIR_CMD)
+ $(JPEG_OUT)/%.o: $(JPEG_DIR)/%.c | $(JPEG_OUT)
+-	$(CC_CMD) -Dmain=xxxmain
++	$(CC_CMD) -Dmain=xxxmain $(LIB_CFLAGS)
+ 
+ JPEG_CFLAGS := -I$(JPEG_DIR)
+ else
+@@ -236,7 +237,7 @@
+ $(OPENJPEG_OUT):
+ 	$(MKDIR_CMD)
+ $(OPENJPEG_OUT)/%.o: $(OPENJPEG_DIR)/src/lib/openjp2/%.c | $(OPENJPEG_OUT)
+-	$(CC_CMD) -DOPJ_STATIC -DOPJ_HAVE_STDINT_H
++	$(CC_CMD) -DOPJ_STATIC $(LIB_CFLAGS)
+ 
+ OPENJPEG_CFLAGS += -I$(OPENJPEG_DIR)/src/lib/openjp2
+ else
+@@ -266,7 +267,7 @@
+ $(ZLIB_OUT):
+ 	$(MKDIR_CMD)
+ $(ZLIB_OUT)/%.o: $(ZLIB_DIR)/%.c | $(ZLIB_OUT)
+-	$(CC_CMD) -Dverbose=-1
++	$(CC_CMD) $(LIB_CFLAGS)
+ 
+ ZLIB_CFLAGS := -I$(ZLIB_DIR)
+ else
+@@ -442,7 +443,8 @@
+ 	$(CC_CMD) $(CRL_CFLAGS)
+ 
  CURL_CFLAGS := -I$(CURL_DIR)/include
- CURL_LIBS := $(SYS_CURL_DEPS)
+-CURL_LIBS := $(SYS_CURL_DEPS)
++CURL_LIBS := $(CURL_LIB) $(SYS_CURL_DEPS)
  else
 -NOCURL := yes
 +CURL_CFLAGS := $(SYS_CURL_CFLAGS)
@@ -369,21 +446,67 @@ exit
  endif
 --- mupdf-1.3.orig/platform/debian/mupdf.pc
 +++ mupdf-1.3/platform/debian/mupdf.pc
-@@ -1,4 +1,4 @@
+@@ -1,12 +1,10 @@
 -prefix=/usr
 +prefix=/usr/local
  exec_prefix=${prefix}
  libdir=${exec_prefix}/lib
  includedir=${prefix}/include
-@@ -6,7 +6,7 @@
+ 
  Name: mupdf
  Description: Library for rendering PDF documents
- Requires.private: freetype2
+-Requires.private: freetype2
 -Version: 0.5.0
 +Version: 1.3
  Libs: -L${libdir} -lmupdf
- Libs.private: -lopenjpeg -ljbig2dec -ljpeg -lz -lm
+-Libs.private: -lopenjpeg -ljbig2dec -ljpeg -lz -lm
  Cflags: -I${includedir}
+--- mupdf-1.3.orig/scripts/opj_config.h
++++ mupdf-1.3/scripts/opj_config.h
+@@ -19,3 +19,6 @@
+ 
+ 
+ 
++#ifndef _MSC_VER
++#define OPJ_HAVE_STDINT_H
++#endif
+--- mupdf-1.3.orig/source/fitz/filter-fax.c
++++ mupdf-1.3/source/fitz/filter-fax.c
+@@ -152,22 +152,6 @@
+ 	{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-3,3}
+ };
+ 
+-/* Uncompressed decoding table. */
+-static const cfd_node cf_uncompressed_decode[] = {
+-	{64,12},{5,6},{4,5},{4,5},{3,4},{3,4},{3,4},{3,4},{2,3},{2,3},
+-	{2,3},{2,3},{2,3},{2,3},{2,3},{2,3},{1,2},{1,2},{1,2},{1,2},{1,2},
+-	{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},
+-	{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+-	{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+-	{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+-	{-1,0},{-1,0},{8,6},{9,6},{6,5},{6,5},{7,5},{7,5},{4,4},{4,4},
+-	{4,4},{4,4},{5,4},{5,4},{5,4},{5,4},{2,3},{2,3},{2,3},{2,3},{2,3},
+-	{2,3},{2,3},{2,3},{3,3},{3,3},{3,3},{3,3},{3,3},{3,3},{3,3},{3,3},
+-	{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},
+-	{0,2},{0,2},{0,2},{0,2},{0,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},
+-	{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2}
+-};
+-
+ /* bit magic */
+ 
+ static inline int getbit(const unsigned char *buf, int x)
+--- mupdf-1.3.orig/source/fitz/load-jpx.c
++++ mupdf-1.3/source/fitz/load-jpx.c
+@@ -4,9 +4,6 @@
+  * due to the use of __stdcall. We believe it is required on some
+  * linux toolchains too. */
+ #define OPJ_STATIC
+-#ifndef _MSC_VER
+-#define OPJ_HAVE_STDINT_H
+-#endif
+ 
+ #include <openjpeg.h>
+ 
 --- mupdf-1.3.orig/source/pdf/pdf-pkcs7.c
 +++ mupdf-1.3/source/pdf/pdf-pkcs7.c
 @@ -27,7 +27,7 @@

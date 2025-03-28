@@ -16,9 +16,11 @@ make
 install -d $DESTDIR/dfb/bin
 install build/*/mudraw $DESTDIR/dfb/bin
 install build/*/mutool $DESTDIR/dfb/bin
-install -d $DESTDIR/dfb/include
-install -m 644 fitz/fitz.h $DESTDIR/dfb/include
-install -m 644 fitz/memento.h $DESTDIR/dfb/include
+install -d $DESTDIR/dfb/include/mupdf
+install -m 644 fitz/fitz.h $DESTDIR/dfb/include/mupdf
+ln -sf mupdf/fitz.h $DESTDIR/dfb/include/fitz.h
+install -m 644 fitz/memento.h $DESTDIR/dfb/include/mupdf
+ln -sf mupdf/memento.h $DESTDIR/dfb/include/memento.h
 install -d $DESTDIR/dfb/lib
 install build/*/libfitz.so.1 $DESTDIR/dfb/lib
 ln -sf libfitz.so.1 $DESTDIR/dfb/lib/libfitz.so
@@ -36,6 +38,8 @@ Requires: $REQUIRES
 devel=\\
 /dfb/include/fitz.h \\
 /dfb/include/memento.h \\
+/dfb/include/mupdf/fitz.h \\
+/dfb/include/mupdf/memento.h \\
 /dfb/lib/libfitz.so \\
 /dfb/lib/pkgconfig/mupdf.pc
 
@@ -48,10 +52,10 @@ EOF
 exit
 --- mupdf-1.2.orig/Configure
 +++ mupdf-1.2/Configure
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,36 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
 +while : ; do
 +  case "$1" in
@@ -59,7 +63,7 @@ exit
 +      break
 +    ;;
 +    --prefix)
-+      PREFIX=$2
++      prefix=$2
 +      shift
 +    ;;
 +    --disable-static)
@@ -73,29 +77,41 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix/s|=.*|= $PREFIX|" Makefile
++sed -i "/^prefix/s|=.*|= $prefix|" Makefile
 +
-+sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makerules
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makefile
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" Makerules
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" Makerules
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
 +fi
 +
-+sed -i "/^prefix/s|=.*|=$PREFIX|" debian/mupdf.pc
++sed -i "/^prefix/s|=.*|=$prefix|" debian/mupdf.pc
 --- mupdf-1.2.orig/Makefile
 +++ mupdf-1.2/Makefile
-@@ -37,7 +37,7 @@
+@@ -9,6 +9,10 @@
+ 
+ default: all
+ 
++NOSTATIC ?= 
++
++PKG_CONFIG ?= pkg-config
++
+ # Do not specify CFLAGS or LIBS on the make invocation line - specify
+ # XCFLAGS or XLIBS instead. Make ignores any lines in the makefile that
+ # set a variable that was set on the command line.
+@@ -37,7 +41,7 @@
  CC_CMD = $(QUIET_CC) $(CC) $(CFLAGS) -o $@ -c $<
  CXX_CMD = $(QUIET_CXX) $(CXX) $(CFLAGS) -o $@ -c $<
  AR_CMD = $(QUIET_AR) $(AR) cr $@ $^
 -LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
-+LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -Wl,-rpath,$(prefix)/lib -o $@ $^
++LINK_CMD = $(QUIET_LINK) $(CC) $(LDFLAGS) -o $@ $^
  LINK_V8_CMD = $(QUIET_LINK) $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS_V8)
  MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
  
-@@ -55,6 +55,9 @@
+@@ -55,23 +59,26 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
@@ -105,16 +121,31 @@ exit
  $(OUT)/% : $(OUT)/%.o
  	$(LINK_CMD)
  
-@@ -71,7 +74,7 @@
+ $(OUT)/%.o : fitz/%.c $(FITZ_HDR) | $(OUT)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
+ $(OUT)/%.o : draw/%.c $(FITZ_HDR) | $(OUT)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
+ $(OUT)/%.o : pdf/%.c $(MUPDF_HDR) | $(OUT)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
+ $(OUT)/%.o : pdf/%.cpp $(MUPDF_HDR) | $(OUT)
+-	$(CXX_CMD)
++	$(CXX_CMD) $(LIB_CFLAGS)
+ $(OUT)/%.o : xps/%.c $(MUXPS_HDR) | $(OUT)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
  $(OUT)/%.o : cbz/%.c $(MUCBZ_HDR) | $(OUT)
- 	$(CC_CMD)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
  $(OUT)/%.o : apps/%.c fitz/fitz.h pdf/mupdf.h xps/muxps.h cbz/mucbz.h | $(OUT)
 -	$(CC_CMD)
 +	$(CC_CMD) $(X11_CFLAGS)
  $(OUT)/%.o : scripts/%.c | $(OUT)
  	$(CC_CMD)
  
-@@ -79,7 +82,11 @@
+@@ -79,7 +86,11 @@
  
  # --- Fitz, MuPDF, MuXPS and MuCBZ library ---
  
@@ -126,7 +157,7 @@ exit
  FITZ_V8_LIB := $(OUT)/libfitzv8.a
  
  FITZ_SRC := $(notdir $(wildcard fitz/*.c draw/*.c))
-@@ -162,16 +169,31 @@
+@@ -162,16 +173,31 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
@@ -161,7 +192,7 @@ exit
  
  MUVIEW_V8 := $(OUT)/mupdf-v8
  $(MUVIEW_V8) : $(FITZ_V8_LIB) $(THIRD_LIBS)
-@@ -211,8 +233,11 @@
+@@ -211,8 +237,11 @@
  install: $(FITZ_LIB) $(MUVIEW) $(MUDRAW) $(MUTOOL)
  	install -d $(DESTDIR)$(bindir) $(DESTDIR)$(libdir) $(DESTDIR)$(incdir) $(DESTDIR)$(mandir)/man1
  	install $(FITZ_LIB) $(DESTDIR)$(libdir)
@@ -176,33 +207,30 @@ exit
  # --- Clean and Default ---
 --- mupdf-1.2.orig/Makerules
 +++ mupdf-1.2/Makerules
-@@ -3,7 +3,14 @@
- OS ?= $(shell uname)
- OS := $(OS:MINGW%=MINGW)
+@@ -5,6 +5,11 @@
  
-+NOSTATIC ?= 
-+
-+PKG_CONFIG ?= pkg-config
-+
  CFLAGS += -Wall
-+ifeq "$(NOSTATIC)" "yes"
-+CFLAGS += -fPIC
-+endif
  
++ifneq "$(NOSTATIC)" ""
++LIB_CFLAGS = -fPIC
++LDFLAGS += -Wl,-rpath,$(prefix)/lib
++endif
++
  ifeq "$(build)" "debug"
  CFLAGS += -pipe -g -DDEBUG
-@@ -24,19 +31,24 @@
+ else ifeq "$(build)" "profile"
+@@ -24,19 +29,24 @@
  endif
  
  ifeq "$(OS)" "Linux"
 -SYS_FREETYPE_INC := `pkg-config --cflags freetype2`
 -SYS_OPENJPEG_INC := `pkg-config --cflags libopenjpeg`
 -X11_LIBS := -lX11 -lXext
-+SYS_FREETYPE_INC := `$(PKG_CONFIG) --cflags freetype2`
-+SYS_OPENJPEG_INC := `$(PKG_CONFIG) --cflags libopenjpeg`
++SYS_FREETYPE_INC := $(shell $(PKG_CONFIG) --cflags freetype2)
++SYS_OPENJPEG_INC := $(shell $(PKG_CONFIG) --cflags libopenjpeg)
 +ifeq "$(shell $(PKG_CONFIG) --exists x11 xext && echo yes)" "yes"
-+X11_CFLAGS := `$(PKG_CONFIG) --cflags x11 xext)`
-+X11_LIBS := `$(PKG_CONFIG) --libs x11 xext)`
++X11_CFLAGS := $(shell $(PKG_CONFIG) --cflags x11 xext)
++X11_LIBS := $(shell $(PKG_CONFIG) --libs x11 xext)
 +else
 +NOX11=yes
 +endif
@@ -210,32 +238,131 @@ exit
  
  ifeq "$(OS)" "FreeBSD"
 -SYS_FREETYPE_INC := `pkg-config --cflags freetype2`
-+SYS_FREETYPE_INC := `$(PKG_CONFIG) --cflags freetype2`
++SYS_FREETYPE_INC := $(shell $(PKG_CONFIG) --cflags freetype2)
  LDFLAGS += -L/usr/local/lib
  X11_LIBS := -lX11 -lXext
  endif
  
  ifeq "$(OS)" "SunOS"
 -SYS_FREETYPE_INC := `pkg-config --cflags freetype2`
-+SYS_FREETYPE_INC := `$(PKG_CONFIG) --cflags freetype2`
++SYS_FREETYPE_INC := $(shell $(PKG_CONFIG) --cflags freetype2)
  LDFLAGS += -L/usr/local/lib
  X11_LIBS := -lX11 -lXext
  endif
+--- mupdf-1.2.orig/Makethird
++++ mupdf-1.2/Makethird
+@@ -80,6 +80,7 @@
+ FT_CFLAGS := -DFT2_BUILD_LIBRARY -DDARWIN_NO_CARBON \
+ 	'-DFT_CONFIG_MODULES_H="slimftmodules.h"' \
+ 	'-DFT_CONFIG_OPTIONS_H="slimftoptions.h"'
++FT_CFLAGS += $(LIB_CFLAGS)
+ 
+ $(OUT)/ft_%.o: $(FREETYPE_DIR)/src/base/%.c	| $(OUT)
+ 	$(CC_CMD) $(FT_CFLAGS)
+@@ -134,7 +135,7 @@
+ 
+ $(JBIG2DEC_LIB): $(addprefix $(OUT)/, $(JBIG2DEC_SRC:%.c=%.o))
+ $(OUT)/%.o: $(JBIG2DEC_DIR)/%.c | $(OUT)
+-	$(CC_CMD) -DHAVE_STDINT_H
++	$(CC_CMD) -DHAVE_STDINT_H $(LIB_CFLAGS)
+ endif
+ 
+ # --- JPEG library from IJG ---
+@@ -179,7 +180,7 @@
+ 
+ $(JPEG_LIB): $(addprefix $(OUT)/jpeg_, $(JPEG_SRC:%.c=%.o))
+ $(OUT)/jpeg_%.o: $(JPEG_DIR)/%.c | $(OUT)
+-	$(CC_CMD) -Dmain=xxxmain
++	$(CC_CMD) -Dmain=xxxmain $(LIB_CFLAGS)
+ endif
+ 
+ # --- OpenJPEG ---
+@@ -216,7 +217,7 @@
+ 
+ $(OPENJPEG_LIB): $(addprefix $(OUT)/opj_, $(OPENJPEG_SRC:%.c=%.o))
+ $(OUT)/opj_%.o: $(OPENJPEG_DIR)/libopenjpeg/%.c | $(OUT)
+-	$(CC_CMD) -DOPJ_STATIC
++	$(CC_CMD) -DOPJ_STATIC $(LIB_CFLAGS)
+ else
+ CFLAGS += $(SYS_OPENJPEG_INC)
+ endif
+@@ -242,5 +243,5 @@
+ 
+ $(ZLIB_LIB): $(addprefix $(OUT)/zlib_, $(ZLIB_SRC:%.c=%.o))
+ $(OUT)/zlib_%.o: $(ZLIB_DIR)/%.c | $(OUT)
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
+ endif
 --- mupdf-1.2.orig/debian/mupdf.pc
 +++ mupdf-1.2/debian/mupdf.pc
-@@ -1,4 +1,4 @@
+@@ -1,12 +1,10 @@
 -prefix=/usr
 +prefix=/usr/local
  exec_prefix=${prefix}
  libdir=${exec_prefix}/lib
  includedir=${prefix}/include
-@@ -6,7 +6,7 @@
+ 
  Name: mupdf
  Description: Library for rendering PDF documents
- Requires.private: freetype2
+-Requires.private: freetype2
 -Version: 0.5.0
 -Libs: -L${libdir} -lmupdf
+-Libs.private: -lopenjpeg -ljbig2dec -ljpeg -lz -lm
 +Version: 1.2
 +Libs: -L${libdir} -lfitz
- Libs.private: -lopenjpeg -ljbig2dec -ljpeg -lz -lm
  Cflags: -I${includedir}
+--- mupdf-1.2.orig/fitz/base_trans.c
++++ mupdf-1.2/fitz/base_trans.c
+@@ -25,12 +25,11 @@
+ blind_horiz(fz_pixmap *tpix, fz_pixmap *opix, fz_pixmap *npix, int time)
+ {
+ 	unsigned char *t, *o, *n;
+-	int blind_height, size, span, position, y;
++	int blind_height, span, position, y;
+ 
+ 	if (!tpix || !opix || !npix || tpix->w != opix->w || opix->w != npix->w || tpix->h != opix->h || opix->h != npix->h || tpix->n != opix->n || opix->n != npix->n)
+ 		return 0;
+ 	span = tpix->w * tpix->n;
+-	size = tpix->h * span;
+ 	blind_height = (tpix->h+7) / 8;
+ 	position = blind_height * time / 256;
+ 	t = tpix->samples;
+@@ -50,12 +49,11 @@
+ blind_vertical(fz_pixmap *tpix, fz_pixmap *opix, fz_pixmap *npix, int time)
+ {
+ 	unsigned char *t, *o, *n;
+-	int blind_width, size, span, position, y;
++	int blind_width, span, position, y;
+ 
+ 	if (!tpix || !opix || !npix || tpix->w != opix->w || opix->w != npix->w || tpix->h != opix->h || opix->h != npix->h || tpix->n != opix->n || opix->n != npix->n)
+ 		return 0;
+ 	span = tpix->w * tpix->n;
+-	size = tpix->h * span;
+ 	blind_width = (tpix->w+7) / 8;
+ 	position = blind_width * time / 256;
+ 	blind_width *= tpix->n;
+--- mupdf-1.2.orig/fitz/filt_faxd.c
++++ mupdf-1.2/fitz/filt_faxd.c
+@@ -152,22 +152,6 @@
+ 	{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-1,0},{-3,3}
+ };
+ 
+-/* Uncompressed decoding table. */
+-static const cfd_node cf_uncompressed_decode[] = {
+-	{64,12},{5,6},{4,5},{4,5},{3,4},{3,4},{3,4},{3,4},{2,3},{2,3},
+-	{2,3},{2,3},{2,3},{2,3},{2,3},{2,3},{1,2},{1,2},{1,2},{1,2},{1,2},
+-	{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},
+-	{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+-	{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+-	{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},
+-	{-1,0},{-1,0},{8,6},{9,6},{6,5},{6,5},{7,5},{7,5},{4,4},{4,4},
+-	{4,4},{4,4},{5,4},{5,4},{5,4},{5,4},{2,3},{2,3},{2,3},{2,3},{2,3},
+-	{2,3},{2,3},{2,3},{3,3},{3,3},{3,3},{3,3},{3,3},{3,3},{3,3},{3,3},
+-	{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},{0,2},
+-	{0,2},{0,2},{0,2},{0,2},{0,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},
+-	{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2},{1,2}
+-};
+-
+ /* bit magic */
+ 
+ static inline int getbit(const unsigned char *buf, int x)

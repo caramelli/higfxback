@@ -1,0 +1,103 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.7)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --prefix=/
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/.libs/gpg-error $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 src/gpg-error.h $DESTDIR/include
+install -m 644 src/gpgrt.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libgpg-error.so.0.* $DESTDIR/lib/libgpg-error.so.0
+ln -sf libgpg-error.so.0 $DESTDIR/lib/libgpg-error.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/gpg-error.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/aclocal
+install -m 644 src/gpg-error.m4 $DESTDIR/share/aclocal
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libgpg-error-build.pc << EOF
+Name: libgpg-error
+Version: 1.49
+Description: error handling functions used by GnuPG components
+Requires: $REQUIRES
+
+devel=\\
+/include/gpg-error.h \\
+/include/gpgrt.h \\
+/lib/libgpg-error.so \\
+/lib/pkgconfig/gpg-error.pc \\
+/share/aclocal/gpg-error.m4
+
+exec=\\
+/bin/gpg-error \\
+/lib/libgpg-error.so.0
+EOF
+
+exit
+--- libgpg-error-1.49.orig/src/gpg-error.m4
++++ libgpg-error-1.49/src/gpg-error.m4
+@@ -126,16 +126,10 @@
+ 
+   if test -n "$gpgrt_libdir"; then
+     GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
+-    if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
+-      GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+-      AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+-      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
+-    else
+-      gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
++    if ! $GPGRT_CONFIG gpg-error --exists; then
+       unset GPGRT_CONFIG
+     fi
+-  elif test "$GPG_ERROR_CONFIG" != "no"; then
+-    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
++  else
+     unset GPGRT_CONFIG
+   fi
+ ])
+@@ -145,7 +139,7 @@
+ dnl
+ dnl Test for libgpg-error and define GPG_ERROR_CFLAGS, GPG_ERROR_LIBS,
+ dnl GPG_ERROR_MT_CFLAGS, and GPG_ERROR_MT_LIBS.  The _MT_ variants are
+-dnl used for programs requireing real multi thread support.
++dnl used for programs requiring real multi thread support.
+ dnl
+ dnl If a prefix option is not used, the config script is first
+ dnl searched in $SYSROOT/bin and then along $PATH.  If the used
+@@ -156,6 +150,23 @@
+ AC_REQUIRE([AC_CANONICAL_HOST])dnl
+ AC_REQUIRE([_AM_PATH_POSSIBLE_GPG_ERROR_CONFIG])dnl
+ AC_REQUIRE([_AM_PATH_GPGRT_CONFIG])dnl
++  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
++    GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
++    AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
++    gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
++  elif test x"$GPG_ERROR_CONFIG" != x -a "$GPG_ERROR_CONFIG" != "no"; then
++    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
++  else
++    if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
++      AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
++    fi
++    GPG_ERROR_CONFIG="$PKG_CONFIG gpg-error"
++    if `$GPG_ERROR_CONFIG --exists`; then
++      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
++    else
++      GPG_ERROR_CONFIG=no
++    fi
++  fi
+   min_gpg_error_version=ifelse([$1], ,1.33,$1)
+   ok=no
+   if test "$GPG_ERROR_CONFIG" != "no"; then

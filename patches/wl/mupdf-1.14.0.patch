@@ -1,0 +1,774 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="harfbuzz-build jbig2dec-build jpeg-build make-build openjpeg2-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists openssl-build && REQUIRES="$REQUIRES openssl-build"
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glut-build; then
+  GLUT=1
+  REQUIRES="$REQUIRES glut-build"
+fi
+
+# configure
+rm -rf thirdparty
+PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --disable-static --prefix /wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+test $GLUT && install build/*/mupdf* $DESTDIR/wl/bin/mupdf
+install build/*/mutool $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/mupdf
+install -m 644 include/mupdf/fitz.h $DESTDIR/wl/include/mupdf
+ln -sf mupdf/fitz.h $DESTDIR/wl/include/fitz.h
+install -m 644 include/mupdf/memento.h $DESTDIR/wl/include/mupdf
+install -d $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/annotation.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/archive.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/band-writer.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/bidi.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/bitmap.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/buffer.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/color-management.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/colorspace.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/compress.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/compressed-buffer.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/config.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/context.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/crypt.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/device.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/display-list.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/document.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/filter.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/font.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/geometry.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/getopt.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/glyph.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/glyph-cache.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/hash.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/image.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/link.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/outline.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pcl.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pclm.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-png.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pnm.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-ps.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-psd.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-pwg.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-svg.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/output-tga.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/path.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/pixmap.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/pool.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/separation.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/shade.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/store.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/stream.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/string-util.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/structured-text.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/system.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/text.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/track-usage.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/transition.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/tree.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/util.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/version.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/writer.h $DESTDIR/wl/include/mupdf/fitz
+install -m 644 include/mupdf/fitz/xml.h $DESTDIR/wl/include/mupdf/fitz
+install -d $DESTDIR/wl/lib
+install build/*/libmupdf.so.1 $DESTDIR/wl/lib
+ln -sf libmupdf.so.1 $DESTDIR/wl/lib/libmupdf.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 mupdf.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/mupdf-build.pc << EOF
+Name: mupdf
+Version: 1.14.0
+Description: PDF rendering library and document manipulation tools
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/fitz.h \\
+/wl/include/mupdf/fitz.h \\
+/wl/include/mupdf/memento.h \\
+/wl/include/mupdf/fitz/annotation.h \\
+/wl/include/mupdf/fitz/archive.h \\
+/wl/include/mupdf/fitz/band-writer.h \\
+/wl/include/mupdf/fitz/bidi.h \\
+/wl/include/mupdf/fitz/bitmap.h \\
+/wl/include/mupdf/fitz/buffer.h \\
+/wl/include/mupdf/fitz/color-management.h \\
+/wl/include/mupdf/fitz/colorspace.h \\
+/wl/include/mupdf/fitz/compress.h \\
+/wl/include/mupdf/fitz/compressed-buffer.h \\
+/wl/include/mupdf/fitz/config.h \\
+/wl/include/mupdf/fitz/context.h \\
+/wl/include/mupdf/fitz/crypt.h \\
+/wl/include/mupdf/fitz/device.h \\
+/wl/include/mupdf/fitz/display-list.h \\
+/wl/include/mupdf/fitz/document.h \\
+/wl/include/mupdf/fitz/filter.h \\
+/wl/include/mupdf/fitz/font.h \\
+/wl/include/mupdf/fitz/geometry.h \\
+/wl/include/mupdf/fitz/getopt.h \\
+/wl/include/mupdf/fitz/glyph.h \\
+/wl/include/mupdf/fitz/glyph-cache.h \\
+/wl/include/mupdf/fitz/hash.h \\
+/wl/include/mupdf/fitz/image.h \\
+/wl/include/mupdf/fitz/link.h \\
+/wl/include/mupdf/fitz/outline.h \\
+/wl/include/mupdf/fitz/output.h \\
+/wl/include/mupdf/fitz/output-pcl.h \\
+/wl/include/mupdf/fitz/output-pclm.h \\
+/wl/include/mupdf/fitz/output-png.h \\
+/wl/include/mupdf/fitz/output-pnm.h \\
+/wl/include/mupdf/fitz/output-ps.h \\
+/wl/include/mupdf/fitz/output-psd.h \\
+/wl/include/mupdf/fitz/output-pwg.h \\
+/wl/include/mupdf/fitz/output-svg.h \\
+/wl/include/mupdf/fitz/output-tga.h \\
+/wl/include/mupdf/fitz/path.h \\
+/wl/include/mupdf/fitz/pixmap.h \\
+/wl/include/mupdf/fitz/pool.h \\
+/wl/include/mupdf/fitz/separation.h \\
+/wl/include/mupdf/fitz/shade.h \\
+/wl/include/mupdf/fitz/store.h \\
+/wl/include/mupdf/fitz/stream.h \\
+/wl/include/mupdf/fitz/string-util.h \\
+/wl/include/mupdf/fitz/structured-text.h \\
+/wl/include/mupdf/fitz/system.h \\
+/wl/include/mupdf/fitz/text.h \\
+/wl/include/mupdf/fitz/track-usage.h \\
+/wl/include/mupdf/fitz/transition.h \\
+/wl/include/mupdf/fitz/tree.h \\
+/wl/include/mupdf/fitz/util.h \\
+/wl/include/mupdf/fitz/version.h \\
+/wl/include/mupdf/fitz/writer.h \\
+/wl/include/mupdf/fitz/xml.h \\
+/wl/lib/libmupdf.so \\
+/wl/lib/pkgconfig/mupdf.pc
+
+exec=\\
+EOF
+test $GLUT && cat >> $DESTDIR/wl/share/pkgconfig/mupdf-build.pc << EOF
+/wl/bin/mupdf \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/mupdf-build.pc << EOF
+/wl/bin/mutool \\
+/wl/lib/libmupdf.so.1
+EOF
+
+exit
+--- mupdf-1.14.0.orig/Configure
++++ mupdf-1.14.0/Configure
+@@ -0,0 +1,39 @@
++#!/bin/sh
++
++prefix=/usr/local
++shared=no
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      prefix=$2
++      shift
++    ;;
++    --disable-static)
++      shared=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++test -f user.make && rm user.make
++
++test "$prefix" != /usr/local && echo prefix := $prefix > user.make
++
++test $shared != no && echo shared := $shared >> user.make
++
++if test $PKG_CONFIG_PATH; then
++  test $PKG_CONFIG || PKG_CONFIG=pkg-config
++  echo PKG_CONFIG := PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG >> user.make
++else
++  test $PKG_CONFIG && echo PKG_CONFIG := $PKG_CONFIG >> user.make
++fi
++
++sed -i "/^prefix=/s|=.*|=$prefix|" mupdf.pc
+--- mupdf-1.14.0.orig/Makefile
++++ mupdf-1.14.0/Makefile
+@@ -14,6 +14,8 @@
+ 
+ # --- Configuration ---
+ 
++PKG_CONFIG ?= pkg-config
++
+ include Makerules
+ include Makethird
+ 
+@@ -57,7 +59,7 @@
+ ifdef RANLIB
+   RANLIB_CMD = $(QUIET_RANLIB) $(RANLIB) $@
+ endif
+-LINK_CMD = $(QUIET_LINK) $(MKTGTDIR) ; $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
++LINK_CMD = $(QUIET_LINK) $(MKTGTDIR) ; $(CC) $(LDFLAGS) -o $@ $^
+ TAGS_CMD = $(QUIET_TAGS) ctags $^
+ WINDRES_CMD = $(QUIET_WINDRES) $(MKTGTDIR) ; $(WINDRES) $< $@
+ OBJCOPY_CMD = $(QUIET_OBJCOPY) $(MKTGTDIR) ; $(LD) -r -b binary -o $@ $<
+@@ -71,17 +73,20 @@
+ $(OUT)/%.exe: %.c
+ 	$(LINK_CMD)
+ 
++$(OUT)/libmupdf.so.1:
++	$(LINK_CMD) -shared -Wl,-soname,libmupdf.so.1 $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++
+ $(OUT)/source/helpers/mu-threads/%.o : source/helpers/mu-threads/%.c
+-	$(CC_CMD) $(THREADING_CFLAGS)
++	$(CC_CMD) $(LIB_CFLAGS) $(THREADING_CFLAGS)
+ 
+ $(OUT)/source/helpers/pkcs7/%.o : source/helpers/pkcs7/%.c
+-	$(CC_CMD) $(LIBCRYPTO_CFLAGS)
++	$(CC_CMD) $(LIB_CFLAGS) $(LIBCRYPTO_CFLAGS)
+ 
+ $(OUT)/source/tools/%.o : source/tools/%.c
+ 	$(CC_CMD) -Wall $(THIRD_CFLAGS) $(THREADING_CFLAGS)
+ 
+ $(OUT)/generated/%.o : generated/%.c
+-	$(CC_CMD) -O0
++	$(CC_CMD) $(LIB_CFLAGS) -O0
+ 
+ $(OUT)/platform/x11/%.o : platform/x11/%.c
+ 	$(CC_CMD) -Wall $(X11_CFLAGS)
+@@ -94,11 +99,11 @@
+ 
+ ifeq ($(HAVE_OBJCOPY),yes)
+   $(OUT)/source/fitz/noto.o : source/fitz/noto.c
+-	$(CC_CMD) -Wall -Wdeclaration-after-statement -DHAVE_OBJCOPY $(THIRD_CFLAGS)
++	$(CC_CMD) -Wall -Wdeclaration-after-statement -DHAVE_OBJCOPY $(LIB_CFLAGS) $(THIRD_CFLAGS)
+ endif
+ 
+ $(OUT)/source/%.o : source/%.c
+-	$(CC_CMD) -Wall -Wdeclaration-after-statement $(THIRD_CFLAGS)
++	$(CC_CMD) -Wall -Wdeclaration-after-statement $(LIB_CFLAGS) $(THIRD_CFLAGS)
+ 
+ $(OUT)/platform/%.o : platform/%.c
+ 	$(CC_CMD) -Wall
+@@ -190,6 +195,11 @@
+ 
+ # --- Library ---
+ 
++ifeq ($(shared),yes)
++MUPDF_LIB = $(OUT)/libmupdf.so.1
++
++$(MUPDF_LIB) : $(MUPDF_OBJ) $(THIRD_OBJ) $(THREAD_OBJ) $(PKCS7_OBJ)
++else
+ MUPDF_LIB = $(OUT)/libmupdf.a
+ THIRD_LIB = $(OUT)/libmupdf-third.a
+ THREAD_LIB = $(OUT)/libmupdf-threads.a
+@@ -199,6 +209,7 @@
+ $(THIRD_LIB) : $(THIRD_OBJ)
+ $(THREAD_LIB) : $(THREAD_OBJ)
+ $(PKCS7_LIB) : $(PKCS7_OBJ)
++endif
+ 
+ INSTALL_LIBS := $(MUPDF_LIB) $(THIRD_LIB)
+ 
+@@ -213,16 +224,26 @@
+ MUTOOL_SRC += $(sort $(wildcard source/tools/pdf*.c))
+ MUTOOL_OBJ := $(MUTOOL_SRC:%.c=$(OUT)/%.o)
+ MUTOOL_EXE := $(OUT)/mutool
++ifeq ($(shared),yes)
++$(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB)
++	$(LINK_CMD)
++else
+ $(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(THREAD_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++endif
+ INSTALL_APPS += $(MUTOOL_EXE)
+ 
+ ifeq ($(HAVE_GLUT),yes)
+   MUVIEW_GLUT_SRC += $(sort $(wildcard platform/gl/*.c))
+   MUVIEW_GLUT_OBJ := $(MUVIEW_GLUT_SRC:%.c=$(OUT)/%.o)
+   MUVIEW_GLUT_EXE := $(OUT)/mupdf-gl
++ifeq ($(shared),yes)
++  $(MUVIEW_GLUT_EXE) : $(MUVIEW_GLUT_OBJ) $(MUPDF_LIB) $(GLUT_LIB)
++	$(LINK_CMD) $(WIN32_LDFLAGS) $(GLUT_LIBS) -lm
++else
+   $(MUVIEW_GLUT_EXE) : $(MUVIEW_GLUT_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(GLUT_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(WIN32_LDFLAGS) $(GLUT_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(WIN32_LDFLAGS) $(GLUT_LIBS) $(LIBS)
++endif
+   INSTALL_APPS += $(MUVIEW_GLUT_EXE)
+ endif
+ 
+@@ -231,8 +252,13 @@
+   MUVIEW_X11_OBJ += $(OUT)/platform/x11/pdfapp.o
+   MUVIEW_X11_OBJ += $(OUT)/platform/x11/x11_main.o
+   MUVIEW_X11_OBJ += $(OUT)/platform/x11/x11_image.o
++ifeq ($(shared),yes)
++  $(MUVIEW_X11_EXE) : $(MUVIEW_X11_OBJ) $(MUPDF_LIB)
++	$(LINK_CMD) $(X11_LIBS)
++else
+   $(MUVIEW_X11_EXE) : $(MUVIEW_X11_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(LIBCRYPTO_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++endif
+   INSTALL_APPS += $(MUVIEW_X11_EXE)
+ endif
+ 
+@@ -250,20 +276,35 @@
+ 
+ MURASTER_OBJ := $(OUT)/source/tools/muraster.o
+ MURASTER_EXE := $(OUT)/muraster
++ifeq ($(shared),yes)
++$(MURASTER_EXE) : $(MURASTER_OBJ) $(MUPDF_LIB)
++	$(LINK_CMD)
++else
+ $(MURASTER_EXE) : $(MURASTER_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(THREAD_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBS)
++endif
+ EXTRA_APPS += $(MURASTER_EXE)
+ 
+ MJSGEN_OBJ := $(OUT)/source/tools/mjsgen.o
+ MJSGEN_EXE := $(OUT)/mjsgen
++ifeq ($(shared),yes)
++$(MJSGEN_EXE) : $(MJSGEN_OBJ) $(MUPDF_LIB)
++	$(LINK_CMD)
++else
+ $(MJSGEN_EXE) : $(MJSGEN_OBJ) $(MUPDF_LIB) $(THIRD_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(LIBS)
++endif
+ EXTRA_APPS += $(MJSGEN_EXE)
+ 
+ MUJSTEST_OBJ := $(addprefix $(OUT)/platform/x11/, jstest_main.o pdfapp.o)
+ MUJSTEST_EXE := $(OUT)/mujstest
++ifeq ($(shared),yes)
++$(MUJSTEST_EXE) : $(MUJSTEST_OBJ) $(MUPDF_LIB)
++	$(LINK_CMD)
++else
+ $(MUJSTEST_EXE) : $(MUJSTEST_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++endif
+ EXTRA_APPS += $(MUJSTEST_EXE)
+ 
+ ifeq ($(HAVE_X11),yes)
+@@ -273,8 +314,13 @@
+   MUVIEW_X11_CURL_OBJ += $(OUT)/platform/x11/curl/x11_main.o
+   MUVIEW_X11_CURL_OBJ += $(OUT)/platform/x11/curl/x11_image.o
+   MUVIEW_X11_CURL_OBJ += $(OUT)/platform/x11/curl/curl_stream.o
++ifeq ($(shared),yes)
++  $(MUVIEW_X11_CURL_EXE) : $(MUVIEW_X11_CURL_OBJ) $(MUPDF_LIB) $(CURL_LIB)
++	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) $(THREADING_LIBS)
++else
+   $(MUVIEW_X11_CURL_EXE) : $(MUVIEW_X11_CURL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(CURL_LIB)
+-	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(CURL_LIBS) $(LIBCRYPTO_LIBS)
++	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(CURL_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++endif
+   EXTRA_APPS += $(MUVIEW_X11_CURL_EXE)
+ endif
+ endif
+@@ -301,7 +347,7 @@
+ $(OUT)/example: docs/examples/example.c $(MUPDF_LIB) $(THIRD_LIB)
+ 	$(LINK_CMD) $(CFLAGS) $(THIRD_LIBS)
+ $(OUT)/multi-threaded: docs/examples/multi-threaded.c $(MUPDF_LIB) $(THIRD_LIB)
+-	$(LINK_CMD) $(CFLAGS) $(THIRD_LIBS) -lpthread
++	$(LINK_CMD) $(CFLAGS) $(THIRD_LIBS) $(THREADING_LIBS)
+ 
+ # --- Update version string header ---
+ 
+@@ -371,7 +417,7 @@
+ java:
+ 	$(MAKE) -C platform/java
+ 
+-tags: $(shell find include source platform thirdparty -name '*.[ch]' -or -name '*.cc' -or -name '*.hh' -or -name '*.java')
++tags: $(shell find include source platform -name '*.[ch]' -or -name '*.cc' -or -name '*.hh' -or -name '*.java')
+ 	$(TAGS_CMD)
+ 
+ cscope.files: $(shell find include source platform -name '*.[ch]')
+--- mupdf-1.14.0.orig/Makerules
++++ mupdf-1.14.0/Makerules
+@@ -20,6 +20,11 @@
+ SANITIZE_FLAGS += -fsanitize=address
+ SANITIZE_FLAGS += -fsanitize=leak
+ 
++ifeq ($(shared),yes)
++  LIB_CFLAGS += -fPIC
++  LDFLAGS += -Wl,-rpath,$(prefix)/lib
++endif
++
+ ifeq ($(build),debug)
+   CFLAGS += -pipe -g
+   LDFLAGS += -g $(LDREMOVEUNREACH)
+@@ -88,53 +93,53 @@
+ else ifeq ($(OS),Linux)
+   HAVE_OBJCOPY := yes
+ 
+-  ifeq ($(shell pkg-config --exists freetype2 && echo yes),yes)
+-	SYS_FREETYPE_CFLAGS := $(shell pkg-config --cflags freetype2)
+-	SYS_FREETYPE_LIBS := $(shell pkg-config --libs freetype2)
++  ifeq ($(shell $(PKG_CONFIG) --exists freetype2 && echo yes),yes)
++	SYS_FREETYPE_CFLAGS := $(shell $(PKG_CONFIG) --cflags freetype2)
++	SYS_FREETYPE_LIBS := $(shell $(PKG_CONFIG) --libs freetype2)
+   endif
+-  ifeq ($(shell pkg-config --exists harfbuzz && echo yes),yes)
+-	SYS_HARFBUZZ_CFLAGS := $(shell pkg-config --cflags harfbuzz)
+-	SYS_HARFBUZZ_LIBS := $(shell pkg-config --libs harfbuzz)
++  ifeq ($(shell $(PKG_CONFIG) --exists harfbuzz && echo yes),yes)
++	SYS_HARFBUZZ_CFLAGS := $(shell $(PKG_CONFIG) --cflags harfbuzz)
++	SYS_HARFBUZZ_LIBS := $(shell $(PKG_CONFIG) --libs harfbuzz)
+   endif
+-  ifeq ($(shell pkg-config --exists lcms2 && echo yes),yes)
+-	SYS_LCMS2_CFLAGS := $(shell pkg-config --cflags lcms2)
+-	SYS_LCMS2_LIBS := $(shell pkg-config --libs lcms2)
++  ifeq ($(shell $(PKG_CONFIG) --exists lcms2 && echo yes),yes)
++	SYS_LCMS2_CFLAGS := $(shell $(PKG_CONFIG) --cflags lcms2)
++	SYS_LCMS2_LIBS := $(shell $(PKG_CONFIG) --libs lcms2)
+   endif
+-  ifeq ($(shell pkg-config --exists libjpeg && echo yes),yes)
+-	SYS_LIBJPEG_CFLAGS := $(shell pkg-config --cflags libjpeg)
+-	SYS_LIBJPEG_LIBS := $(shell pkg-config --libs libjpeg)
++  ifeq ($(shell $(PKG_CONFIG) --exists libjpeg && echo yes),yes)
++	SYS_LIBJPEG_CFLAGS := $(shell $(PKG_CONFIG) --cflags libjpeg)
++	SYS_LIBJPEG_LIBS := $(shell $(PKG_CONFIG) --libs libjpeg)
+   endif
+-  ifeq ($(shell pkg-config --exists libopenjp2 && echo yes),yes)
+-	SYS_OPENJPEG_CFLAGS := $(shell pkg-config --cflags libopenjp2)
+-	SYS_OPENJPEG_LIBS := $(shell pkg-config --libs libopenjp2)
++  ifeq ($(shell $(PKG_CONFIG) --exists libopenjp2 && echo yes),yes)
++	SYS_OPENJPEG_CFLAGS := $(shell $(PKG_CONFIG) --cflags libopenjp2)
++	SYS_OPENJPEG_LIBS := $(shell $(PKG_CONFIG) --libs libopenjp2)
+   endif
+-  ifeq ($(shell pkg-config --exists zlib && echo yes),yes)
+-	SYS_ZLIB_CFLAGS := $(shell pkg-config --cflags zlib)
+-	SYS_ZLIB_LIBS := $(shell pkg-config --libs zlib)
++  ifeq ($(shell $(PKG_CONFIG) --exists zlib && echo yes),yes)
++	SYS_ZLIB_CFLAGS := $(shell $(PKG_CONFIG) --cflags zlib)
++	SYS_ZLIB_LIBS := $(shell $(PKG_CONFIG) --libs zlib)
+   endif
+ 
+-  HAVE_CURL := $(shell pkg-config --exists libcurl && echo yes)
++  HAVE_CURL := $(shell $(PKG_CONFIG) --exists libcurl && echo yes)
+   ifeq ($(HAVE_CURL),yes)
+-	SYS_CURL_CFLAGS := $(shell pkg-config --cflags libcurl)
+-	SYS_CURL_LIBS := $(shell pkg-config --libs libcurl)
++	SYS_CURL_CFLAGS := $(shell $(PKG_CONFIG) --cflags libcurl)
++	SYS_CURL_LIBS := $(shell $(PKG_CONFIG) --libs libcurl)
+   endif
+ 
+-  HAVE_GLUT := yes
++  HAVE_GLUT := $(shell $(PKG_CONFIG) --exists glut && echo yes)
+   ifeq ($(HAVE_GLUT),yes)
+-	SYS_GLUT_CFLAGS :=
+-	SYS_GLUT_LIBS := -lglut -lGL
++	SYS_GLUT_CFLAGS := $(shell $(PKG_CONFIG) --cflags glut gl)
++	SYS_GLUT_LIBS := $(shell $(PKG_CONFIG) --libs glut gl)
+   endif
+ 
+-  HAVE_X11 := $(shell pkg-config --exists x11 xext && echo yes)
++  HAVE_X11 := $(shell $(PKG_CONFIG) --exists x11 xext && echo yes)
+   ifeq ($(HAVE_X11),yes)
+-	X11_CFLAGS := $(shell pkg-config --cflags x11 xext)
+-	X11_LIBS := $(shell pkg-config --libs x11 xext)
++	X11_CFLAGS := $(shell $(PKG_CONFIG) --cflags x11 xext)
++	X11_LIBS := $(shell $(PKG_CONFIG) --libs x11 xext)
+   endif
+ 
+-  HAVE_LIBCRYPTO := $(shell pkg-config --exists 'libcrypto >= 1.1.0' && echo yes)
++  HAVE_LIBCRYPTO := $(shell $(PKG_CONFIG) --exists 'libcrypto >= 1.1.0' && echo yes)
+   ifeq ($(HAVE_LIBCRYPTO),yes)
+-	LIBCRYPTO_CFLAGS := $(shell pkg-config --cflags libcrypto) -DHAVE_LIBCRYPTO
+-	LIBCRYPTO_LIBS := $(shell pkg-config --libs libcrypto)
++	LIBCRYPTO_CFLAGS := $(shell $(PKG_CONFIG) --cflags libcrypto) -DHAVE_LIBCRYPTO
++	LIBCRYPTO_LIBS := $(shell $(PKG_CONFIG) --libs libcrypto)
+   endif
+ 
+   HAVE_PTHREAD := yes
+--- mupdf-1.14.0.orig/Makethird
++++ mupdf-1.14.0/Makethird
+@@ -1,5 +1,9 @@
+ # GNU Makefile for third party libraries used by MuPDF
+ 
++ifeq "$(wildcard thirdparty/README)" ""
++  USE_SYSTEM_LIBS := yes
++endif
++
+ ifeq ($(USE_SYSTEM_LIBS),yes)
+   USE_SYSTEM_FREETYPE := yes
+   USE_SYSTEM_HARFBUZZ := yes
+@@ -56,7 +60,7 @@
+ 	$(CC_CMD) $(FREETYPE_CFLAGS) \
+ 		-DFT_CONFIG_MODULES_H=\"slimftmodules.h\" \
+ 		-DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" \
+-		-DFT2_BUILD_LIBRARY
++		-DFT2_BUILD_LIBRARY $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -123,7 +127,8 @@
+ 		-Dhb_realloc_impl=fz_hb_realloc \
+ 		-fno-exceptions \
+ 		-fno-rtti \
+-		-fvisibility-inlines-hidden
++		-fvisibility-inlines-hidden \
++		$(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -153,7 +158,7 @@
+ THIRD_CFLAGS += -DHAVE_JPEGXR
+ 
+ $(OUT)/thirdparty/jpegxr/%.o: thirdparty/jpegxr/%.c
+-	$(CC_CMD) -Ithirdparty/jpegxr -Ithirdparty/jpegxr/Software -Wno-tautological-compare
++	$(CC_CMD) -Ithirdparty/jpegxr -Ithirdparty/jpegxr/Software -Wno-tautological-compare $(LIB_CFLAGS)
+ 
+ endif
+ endif
+@@ -199,7 +204,7 @@
+ THIRD_CFLAGS += -Iscripts/libjpeg -Ithirdparty/libjpeg
+ 
+ $(OUT)/thirdparty/libjpeg/%.o: thirdparty/libjpeg/%.c
+-	$(CC_CMD) -Iscripts/libjpeg
++	$(CC_CMD) -Iscripts/libjpeg $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -215,7 +220,7 @@
+ THIRD_CFLAGS += -Ithirdparty/lcms2/include
+ 
+ $(OUT)/thirdparty/lcms2/%.o: thirdparty/lcms2/%.c
+-	$(CC_CMD) -Ithirdparty/lcms2/include
++	$(CC_CMD) -Ithirdparty/lcms2/include $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -226,11 +231,11 @@
+   THIRD_LIBS += $(SYS_MUJS_LIBS)
+ else
+ 
+-THIRD_SRC += thirdparty/mujs/one.c
++THIRD_SRC += $(wildcard thirdparty/mujs/one.c)
+ THIRD_CFLAGS += -Ithirdparty/mujs
+ 
+ $(OUT)/thirdparty/mujs/%.o: thirdparty/mujs/%.c
+-	$(CC_CMD)
++	$(CC_CMD) $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -255,7 +260,7 @@
+ THIRD_CFLAGS += -Ithirdparty/zlib
+ 
+ $(OUT)/thirdparty/zlib/%.o: thirdparty/zlib/%.c
+-	$(CC_CMD) -DHAVE_UNISTD_H -DHAVE_STDARG_H
++	$(CC_CMD) -DHAVE_UNISTD_H -DHAVE_STDARG_H $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -275,7 +280,7 @@
+ THIRD_CFLAGS += $(LURATECH_CFLAGS) -DHAVE_LURATECH=1
+ 
+ $(OUT)/thirdparty/luratech/%.o: thirdparty/luratech/%.c
+-	$(CC_CMD) -DLINUX $(LURATECH_CFLAGS) -Wno-tautological-compare -Wno-absolute-value
++	$(CC_CMD) -DLINUX $(LURATECH_CFLAGS) -Wno-tautological-compare -Wno-absolute-value $(LIB_CFLAGS)
+ 
+ else # HAVE_LURATECH
+ 
+@@ -304,7 +309,7 @@
+ THIRD_CFLAGS += -Ithirdparty/jbig2dec
+ 
+ $(OUT)/thirdparty/jbig2dec/%.o: thirdparty/jbig2dec/%.c
+-	$(CC_CMD) -DHAVE_STDINT_H -DJBIG_EXTERNAL_MEMENTO_H=\"mupdf/memento.h\"
++	$(CC_CMD) -DHAVE_STDINT_H -DJBIG_EXTERNAL_MEMENTO_H=\"mupdf/memento.h\" $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -343,7 +348,7 @@
+ THIRD_CFLAGS += $(OPENJPEG_CFLAGS)
+ 
+ $(OUT)/thirdparty/openjpeg/%.o: thirdparty/openjpeg/%.c
+-	$(CC_CMD) $(OPENJPEG_CFLAGS)
++	$(CC_CMD) $(OPENJPEG_CFLAGS) $(LIB_CFLAGS)
+ 
+ endif
+ 
+@@ -364,6 +369,7 @@
+ LOCAL_GLUT_CFLAGS += -Ithirdparty/freeglut/include
+ LOCAL_GLUT_CFLAGS += -Ithirdparty/freeglut/src
+ LOCAL_GLUT_CFLAGS += -DHAVE_UNISTD_H -DHAVE_STDINT_H -DHAVE_X11_EXTENSIONS_XRANDR_H
++LOCAL_GLUT_CFLAGS += $(shell $(PKG_CONFIG) --cflags gl)
+ 
+ GLUT_LIB := $(OUT)/libfreeglut.a
+ 
+@@ -372,8 +378,8 @@
+ $(OUT)/thirdparty/freeglut/%.o: thirdparty/freeglut/%.c
+ 	$(CC_CMD) $(LOCAL_GLUT_CFLAGS)
+ 
+-GLUT_CFLAGS := -Ithirdparty/freeglut/include
+-GLUT_LIBS := -lGL -lX11 -lXrandr
++GLUT_CFLAGS := -Ithirdparty/freeglut/include $(shell $(PKG_CONFIG) --cflags gl)
++GLUT_LIBS := $(shell $(PKG_CONFIG) --libs gl) -lX11 -lXrandr
+ 
+ endif
+ 
+--- mupdf-1.14.0.orig/include/mupdf/fitz/config.h
++++ mupdf-1.14.0/include/mupdf/fitz/config.h
+@@ -152,7 +152,7 @@
+ #endif /* FZ_ENABLE_JPX */
+ 
+ #ifndef FZ_ENABLE_JS
+-#define FZ_ENABLE_JS 1
++#define FZ_ENABLE_JS 0
+ #endif /* FZ_ENABLE_JS */
+ 
+ /* If Epub and HTML are both disabled, disable SIL fonts */
+@@ -161,4 +161,8 @@
+ #define TOFU_SIL
+ #endif
+ 
++#ifndef NO_ICC
++#define NO_ICC 0
++#endif /* NO_ICC */
++
+ #endif /* FZ_CONFIG_H */
+--- mupdf-1.14.0.orig/mupdf.pc
++++ mupdf-1.14.0/mupdf.pc
+@@ -0,0 +1,10 @@
++prefix=/usr/local
++exec_prefix=${prefix}
++libdir=${exec_prefix}/lib
++includedir=${prefix}/include
++
++Name: mupdf
++Description: Library for rendering PDF documents
++Version: 1.14.0
++Libs: -L${libdir} -lmupdf
++Cflags: -I${includedir}
+--- mupdf-1.14.0.orig/platform/gl/gl-main.c
++++ mupdf-1.14.0/platform/gl/gl-main.c
+@@ -5,7 +5,9 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ 
++#if FZ_ENABLE_JS
+ #include "mujs.h"
++#endif
+ 
+ #ifndef PATH_MAX
+ #define PATH_MAX 2048
+@@ -149,6 +151,7 @@
+ static struct mark future[256];
+ static struct mark marks[10];
+ 
++#if FZ_ENABLE_JS
+ static char *get_history_filename(void)
+ {
+ 	static char history_path[PATH_MAX];
+@@ -202,9 +205,11 @@
+ 
+ 	fz_drop_buffer(ctx, buf);
+ }
++#endif
+ 
+ static void load_history(void)
+ {
++#if FZ_ENABLE_JS
+ 	js_State *J;
+ 	char absname[PATH_MAX];
+ 	int i, n;
+@@ -271,10 +276,12 @@
+ 	}
+ 
+ 	js_freestate(J);
++#endif
+ }
+ 
+ static void save_history(void)
+ {
++#if FZ_ENABLE_JS
+ 	js_State *J;
+ 	char absname[PATH_MAX];
+ 	fz_output *out = NULL;
+@@ -347,6 +354,7 @@
+ 		fz_warn(ctx, "Can't write history file.");
+ 
+ 	js_freestate(J);
++#endif
+ }
+ 
+ static int search_active = 0;
+--- mupdf-1.14.0.orig/platform/gl/gl-ui.c
++++ mupdf-1.14.0/platform/gl/gl-ui.c
+@@ -375,6 +375,9 @@
+ {
+ 	float ui_scale;
+ 
++	ui.window_w = w;
++	ui.window_h = h;
++
+ #ifdef FREEGLUT
+ 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+ #endif
+--- mupdf-1.14.0.orig/source/fitz/load-jpx.c
++++ mupdf-1.14.0/source/fitz/load-jpx.c
+@@ -685,7 +685,6 @@
+ 	int a, n, w, h;
+ 	int x, y, k;
+ 	stream_block sb;
+-	OPJ_UINT32 i;
+ 
+ 	fz_var(img);
+ 
+@@ -720,7 +719,11 @@
+ 	opj_stream_set_read_function(stream, fz_opj_stream_read);
+ 	opj_stream_set_skip_function(stream, fz_opj_stream_skip);
+ 	opj_stream_set_seek_function(stream, fz_opj_stream_seek);
++#ifdef OPJ_VERSION_MAJOR /* OpenJPEG version >= 2.1 */
+ 	opj_stream_set_user_data(stream, &sb, NULL);
++#else
++	opj_stream_set_user_data(stream, &sb);
++#endif
+ 	/* Set the length to avoid an assert */
+ 	opj_stream_set_user_data_length(stream, size);
+ 
+@@ -746,15 +749,13 @@
+ 	if (!jpx)
+ 		fz_throw(ctx, FZ_ERROR_GENERIC, "opj_decode failed");
+ 
+-	/* Count number of alpha and color channels */
+-	n = a = 0;
+-	for (i = 0; i < jpx->numcomps; ++i)
+-	{
+-		if (jpx->comps[i].alpha)
+-			++a;
+-		else
+-			++n;
+-	}
++	n = jpx->numcomps;
++
++	if (jpx->color_space == OPJ_CLRSPC_SRGB && n == 4) { n = 3; a = 1; }
++	else if (jpx->color_space == OPJ_CLRSPC_SYCC && n == 4) { n = 3; a = 1; }
++	else if (n == 2) { n = 1; a = 1; }
++	else if (n > 4) { n = 4; a = 1; }
++	else { a = 0; }
+ 
+ 	for (k = 1; k < n + a; k++)
+ 	{

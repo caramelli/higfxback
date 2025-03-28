@@ -29,7 +29,7 @@ install -d $DESTDIR/lib
 install src/.libs/libharfbuzz-1.so.0.* $DESTDIR/lib/libharfbuzz-1.so.0
 ln -sf libharfbuzz-1.so.0 $DESTDIR/lib/libharfbuzz-1.so
 install -d $DESTDIR/lib/pkgconfig
-install -m 644 src/harfbuzz-1.pc $DESTDIR/lib/pkgconfig
+install -m 644 harfbuzz-1.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -57,6 +57,14 @@ exec=\\
 EOF
 
 exit
+--- harfbuzz-old-20070216.orig/Makefile.am
++++ harfbuzz-old-20070216/Makefile.am
+@@ -1,2 +1,5 @@
+ 
+ SUBDIRS = src tests
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = harfbuzz-1.pc
 --- harfbuzz-old-20070216.orig/configure.ac
 +++ harfbuzz-old-20070216/configure.ac
 @@ -14,12 +14,11 @@
@@ -76,14 +84,29 @@ exit
  AC_SUBST(FREETYPE_LIBS)
  AC_SUBST(FREETYPE_CFLAGS)
  
-@@ -53,6 +52,7 @@
+@@ -52,6 +51,7 @@
+ 
  AC_OUTPUT([
  Makefile
++harfbuzz-1.pc
  src/Makefile
-+src/harfbuzz-1.pc
  tests/Makefile
  tests/linebreaking/Makefile
- tests/shaping/Makefile
+--- harfbuzz-old-20070216.orig/harfbuzz-1.pc.in
++++ harfbuzz-old-20070216/harfbuzz-1.pc.in
+@@ -0,0 +1,12 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: harfbuzz-old
++Description: Text shaping library
++Version: @VERSION@
++
++Requires.private: freetype2
++Libs: -L${libdir} -lharfbuzz-1
++Cflags: -I${includedir}/harfbuzz-1
 --- harfbuzz-old-20070216.orig/src/Makefile.am
 +++ harfbuzz-old-20070216/src/Makefile.am
 @@ -3,7 +3,7 @@
@@ -112,7 +135,7 @@ exit
  
  EXTRA_SOURCES = harfbuzz.c
  
-@@ -54,13 +46,19 @@
+@@ -54,13 +46,16 @@
  libharfbuzz_1_la_LIBADD = \
  	$(FREETYPE_LIBS)
  
@@ -126,9 +149,6 @@ exit
 +libharfbuzzdir = $(includedir)/harfbuzz-1
 +libharfbuzz_HEADERS = $(PUBLICHEADERS)
 +
-+pkgconfigdir = $(libdir)/pkgconfig
-+pkgconfig_DATA = harfbuzz-1.pc
-+
 +noinst_PROGRAMS = harfbuzz-dump
 +
 +harfbuzz_dump_SOURCES = 	\
@@ -139,20 +159,6 @@ exit
  
  EXTRA_DIST = 		\
  	README		\
---- harfbuzz-old-20070216.orig/src/harfbuzz-1.pc.in
-+++ harfbuzz-old-20070216/src/harfbuzz-1.pc.in
-@@ -0,0 +1,11 @@
-+prefix=@prefix@
-+exec_prefix=@exec_prefix@
-+libdir=@libdir@
-+includedir=@includedir@
-+
-+Name: HarfBuzz
-+Description: OpenType text shaping library
-+Version: @VERSION@
-+
-+Libs: -L${libdir} -lharfbuzz-1
-+Cflags: -I${includedir}/harfbuzz-1
 --- harfbuzz-old-20070216.orig/src/harfbuzz-gdef.c
 +++ harfbuzz-old-20070216/src/harfbuzz-gdef.c
 @@ -169,7 +169,7 @@

@@ -83,9 +83,9 @@ exit
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^prefix/s|=.*|=$PREFIX|" astc-encoder.pc
-+
 +sed -i "/^STB_IMAGE/s|=.*|= $STB_IMAGE|" Makefile
++
++sed -i "/^prefix/s|=.*|=$PREFIX|" astc-encoder.pc
 --- astc-encoder-2.0.orig/Source/Makefile
 +++ astc-encoder-2.0/Source/Makefile
 @@ -15,6 +15,10 @@
@@ -233,7 +233,7 @@ exit
 +	install $(LIB) $(DESTDIR)$(PREFIX)/lib
 +	ln -sf $(LIB) $(DESTDIR)$(PREFIX)/lib/$(LIB:%.2=%)
 +	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
-+	sed "/^prefix=/s|=.*|=$(PREFIX)|" astc-encoder.pc > $(DESTDIR)$(PREFIX)/lib/pkgconfig/astc-encoder.pc
++	sed "/^prefix/s|=.*|=$(PREFIX)|" astc-encoder.pc > $(DESTDIR)$(PREFIX)/lib/pkgconfig/astc-encoder.pc
 --- astc-encoder-2.0.orig/Source/astc-encoder.pc
 +++ astc-encoder-2.0/Source/astc-encoder.pc
 @@ -0,0 +1,9 @@

@@ -53,26 +53,39 @@ exit
 +done
 +
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" config
+--- luafilesystem-1.8.0.orig/Makefile
++++ luafilesystem-1.8.0/Makefile
+@@ -12,7 +12,7 @@
+ lib: src/lfs.so
+ 
+ src/lfs.so: $(OBJS)
+-	MACOSX_DEPLOYMENT_TARGET=$(MACOSX_DEPLOYMENT_TARGET); export MACOSX_DEPLOYMENT_TARGET; $(CC) $(LIB_OPTION) -o src/lfs.so $(OBJS)
++	$(CC) $(LIB_OPTION) -o src/lfs.so $(OBJS)
+ 
+ test: lib
+ 	LUA_CPATH=./src/?.so lua tests/test.lua
 --- luafilesystem-1.8.0.orig/config
 +++ luafilesystem-1.8.0/config
-@@ -9,8 +9,8 @@
+@@ -8,21 +8,11 @@
+ # System's libraries directory (where binary libraries are installed)
  LUA_LIBDIR= $(PREFIX)/lib/lua/$(LUA_VERSION)
  
- # Lua includes directory
+-# Lua includes directory
 -LUA_INC += -I$(PREFIX)/include
 -LUA_INC += -I/usr/include/lua$(LUA_VERSION) -I/usr/include/lua/$(LUA_VERSION)
-+PKG_CONFIG= pkg-config
-+LUA_INC= `$(PKG_CONFIG) --cflags lua`
- 
+-
  # OS dependent
  LIB_OPTION= -shared #for Linux
-@@ -21,8 +21,7 @@
+-#LIB_OPTION= -bundle -undefined dynamic_lookup #for MacOS X
+-
+-# Minimum runtime OS version on macOS
+-MACOSX_DEPLOYMENT_TARGET= 10.5
  
  # Compilation directives
- WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -pedantic
+-WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -pedantic
 -INCS= $(LUA_INC)
 -CFLAGS= $(WARN) $(INCS)
-+CFLAGS= $(WARN) $(LUA_INC)
++CFLAGS= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -pedantic
  CC= gcc
  
  # $Id: config,v 1.21 2007/10/27 22:42:32 carregal Exp $

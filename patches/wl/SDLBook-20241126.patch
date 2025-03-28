@@ -1,0 +1,139 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="djvulibre-build make-build mupdf-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --sdl2 --prefix /wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install sdlbook $DESTDIR/wl/bin
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/sdlbook-build.pc << EOF
+Name: SDLBook
+Version: 20241126
+Description: SDL-based document viewer
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/sdlbook
+EOF
+
+exit
+--- SDLBook-20241126.orig/Configure
++++ SDLBook-20241126/Configure
+@@ -0,0 +1,36 @@
++#!/bin/sh
++
++prefix=/usr/local
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      prefix=$2
++      shift
++    ;;
++    --sdl2)
++      SDL2=yes
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++test -f config.mak && rm config.mak
++
++test "$prefix" != /usr/local && echo prefix = $prefix > config.mak
++
++if test $PKG_CONFIG_PATH; then
++  test $PKG_CONFIG || PKG_CONFIG=pkg-config
++  echo PKG_CONFIG := PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG >> config.mak
++else
++  test $PKG_CONFIG && echo PKG_CONFIG := $PKG_CONFIG >> config.mak
++fi
++
++test $SDL2 && echo SDL2 = $SDL2 >> config.mak
+--- SDLBook-20241126.orig/Makefile
++++ SDLBook-20241126/Makefile
+@@ -2,29 +2,30 @@
+ prefix = /usr/local
+ bindir = $(prefix)/bin
+ 
++PKG_CONFIG = pkg-config
++
+ PROG = sdlbook
+ SRCS = sdlbook.c
++OBJS = $(SRCS:.c=.o)
++
++-include config.mak
+ 
+ ifeq ($(SDL2),)
+-SDL_LIBS = -lSDL
+-CPPF_SDL =
++SDL_CFLAGS := $(shell $(PKG_CONFIG) --cflags sdl)
++SDL_LIBS := $(shell $(PKG_CONFIG) --libs sdl)
++CPPF_SDL :=
+ else
+-SDL_LIBS = -lSDL2
+-CPPF_SDL = -DUSE_SDL2
++SDL_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl2)
++SDL_LIBS := $(shell $(PKG_CONFIG) --libs sdl2)
++CPPF_SDL := -DUSE_SDL2
+ endif
+ 
+-LIBS = -ldjvulibre -lmupdf $(SDL_LIBS) -lm
+-
+-CFLAGS_N = 
+-CPPFLAGS_N = $(CPPF_SDL)
+-LDFLAGS_N = 
+-
+-OBJS = $(SRCS:.c=.o)
++CFLAGS := $(shell $(PKG_CONFIG) --cflags ddjvuapi, mupdf) $(SDL_CFLAGS)
++LIBS := $(shell $(PKG_CONFIG) --libs ddjvuapi, mupdf) $(SDL_LIBS)
++LDFLAGS := -Wl,-rpath,$(prefix)/lib
+ 
+ MAKEFILE := $(firstword $(MAKEFILE_LIST))
+ 
+--include config.mak
+-
+ all: $(PROG)
+ 
+ clean:
+@@ -35,18 +36,15 @@
+ 	$(MAKE) -f $(MAKEFILE) clean && $(MAKE) -f $(MAKEFILE) all
+ 
+ install: $(PROG)
+-	install -d $(DESTDIR)/$(bindir)
+-	install -D -m 755 $(PROG) $(DESTDIR)/$(bindir)/
+-
+-src: $(SRCS)
+-	$(CC) $(CPPFLAGS_N) $(CPPFLAGS) $(CFLAGS_N) $(CFLAGS) -o $(PROG) $^ $(LDFLAGS_N) $(LDFLAGS) $(LIBS)
++	install -d $(DESTDIR)$(bindir)
++	install -m 755 $(PROG) $(DESTDIR)$(bindir)
+ 
+ sdlbook.o: ezsdl.h
+ 
+ %.o: %.c
+-	$(CC) $(CPPFLAGS_N) $(CPPFLAGS) $(CFLAGS_N) $(CFLAGS) -c -o $@ $<
++	$(CC) $(CPPF_SDL) $(CFLAGS_N) $(CFLAGS) -c -o $@ $<
+ 
+ $(PROG): $(OBJS)
+-	$(CC) $(CFLAGS_N) $(CFLAGS) $(LDFLAGS_N) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
++	$(CC) $(LDFLAGS_N) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
+ 
+-.PHONY: all clean rebuild install src
++.PHONY: all clean rebuild install

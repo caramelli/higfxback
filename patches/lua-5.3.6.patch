@@ -162,7 +162,7 @@ exit
  	cd src && $(INSTALL_EXEC) $(TO_BIN) $(INSTALL_BIN)
  	cd src && $(INSTALL_DATA) $(TO_INC) $(INSTALL_INC)
 -	cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB)
-+	if test -z "$(NOSTATIC)"; then \
++	if test -z $(NOSTATIC); then \
 +		cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB); \
 +	else \
 +		cd src && $(INSTALL_EXEC) $(TO_LIB) $(INSTALL_LIB); \
@@ -202,7 +202,7 @@ exit
  CC= gcc -std=gnu99
  CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
 +CFLAGS += -DLUA_COMPAT_5_1
-+ifeq "$(NOSTATIC)" "yes"
++ifneq "$(NOSTATIC)" ""
 +CFLAGS += -fPIC
 +endif
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)

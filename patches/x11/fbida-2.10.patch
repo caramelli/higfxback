@@ -36,10 +36,10 @@ EOF
 exit
 --- fbida-2.10.orig/Configure
 +++ fbida-2.10/Configure
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,41 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
 +while : ; do
 +  case "$1" in
@@ -47,7 +47,7 @@ exit
 +      break
 +    ;;
 +    --prefix)
-+      PREFIX=$2
++      prefix=$2
 +      shift
 +    ;;
 +    --disable-fbdev)
@@ -64,12 +64,13 @@ exit
 +  shift
 +done
 +
-+sed -i "/^prefix/s|=.*|= $PREFIX|" mk/Variables.mk
++sed -i "/^prefix/s|=.*|= $prefix|" mk/Variables.mk
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" GNUmakefile
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" GNUmakefile
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" GNUmakefile
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" GNUmakefile
 +fi
 +
 +sed -i "s|^#\?\(HAVE_LINUX_FB_H.*)\)|$FBDEV\1|" GNUmakefile

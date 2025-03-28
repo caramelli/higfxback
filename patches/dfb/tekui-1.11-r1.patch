@@ -245,7 +245,7 @@ EOF
 exit
 --- tekui-1.11-r1.orig/Configure
 +++ tekui-1.11-r1/Configure
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -269,10 +269,11 @@ exit
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" config
 +
-+if test -z $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= pkg-config|" config
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" config
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config|" config
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" config
 +fi
 --- tekui-1.11-r1.orig/bin/bashing.lua
 +++ tekui-1.11-r1/bin/bashing.lua
@@ -697,8 +698,8 @@ exit
  
 -DIRECTFB_LIBS = `pkg-config --libs directfb`
 -DIRECTFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
-+DIRECTFB_LIBS = `$(PKG_CONFIG) --libs directfb`
-+DIRECTFB_DEFS = `$(PKG_CONFIG) --cflags directfb`
++DIRECTFB_LIBS = $(shell $(PKG_CONFIG) --libs directfb)
++DIRECTFB_DEFS = $(shell $(PKG_CONFIG) --cflags directfb)
  
  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  # Windows defines and libraries:

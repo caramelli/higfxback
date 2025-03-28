@@ -1,0 +1,852 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build cairo-build harfbuzz-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install pango-view/.libs/pango-view $DESTDIR/wl/bin/pango1-view
+install -d $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-attributes.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-bidi-type.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-break.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-context.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-coverage.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-engine.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-enum-types.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-features.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-font.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-fontmap.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-fontset.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-glyph-item.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-glyph.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-gravity.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-item.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-language.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-layout.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-matrix.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-renderer.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-script.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-tabs.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-types.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pango-utils.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pangocairo.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pangofc-decoder.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pangofc-font.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pangofc-fontmap.h $DESTDIR/wl/include/pango1-1.0/pango
+install -m 644 pango/pangoft2.h $DESTDIR/wl/include/pango1-1.0/pango
+install -d $DESTDIR/wl/lib
+install pango/.libs/libpango1-1.0.so.0.* $DESTDIR/wl/lib/libpango1-1.0.so.0
+ln -sf libpango1-1.0.so.0 $DESTDIR/wl/lib/libpango1-1.0.so
+install pango/.libs/libpango1cairo-1.0.so.0.* $DESTDIR/wl/lib/libpango1cairo-1.0.so.0
+ln -sf libpango1cairo-1.0.so.0 $DESTDIR/wl/lib/libpango1cairo-1.0.so
+install pango/.libs/libpango1ft2-1.0.so.0.* $DESTDIR/wl/lib/libpango1ft2-1.0.so.0
+ln -sf libpango1ft2-1.0.so.0 $DESTDIR/wl/lib/libpango1ft2-1.0.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 pango.pc $DESTDIR/wl/lib/pkgconfig/pango1.pc
+install -m 644 pangocairo.pc $DESTDIR/wl/lib/pkgconfig/pango1cairo.pc
+install -m 644 pangoft2.pc $DESTDIR/wl/lib/pkgconfig/pango1ft2.pc
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/pango1-build.pc << EOF
+Name: pango
+Version: 1.38.1
+Description: A library for layout and rendering of text
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/pango1-1.0/pango/pango.h \\
+/wl/include/pango1-1.0/pango/pango-attributes.h \\
+/wl/include/pango1-1.0/pango/pango-bidi-type.h \\
+/wl/include/pango1-1.0/pango/pango-break.h \\
+/wl/include/pango1-1.0/pango/pango-context.h \\
+/wl/include/pango1-1.0/pango/pango-coverage.h \\
+/wl/include/pango1-1.0/pango/pango-engine.h \\
+/wl/include/pango1-1.0/pango/pango-enum-types.h \\
+/wl/include/pango1-1.0/pango/pango-features.h \\
+/wl/include/pango1-1.0/pango/pango-font.h \\
+/wl/include/pango1-1.0/pango/pango-fontmap.h \\
+/wl/include/pango1-1.0/pango/pango-fontset.h \\
+/wl/include/pango1-1.0/pango/pango-glyph-item.h \\
+/wl/include/pango1-1.0/pango/pango-glyph.h \\
+/wl/include/pango1-1.0/pango/pango-gravity.h \\
+/wl/include/pango1-1.0/pango/pango-item.h \\
+/wl/include/pango1-1.0/pango/pango-language.h \\
+/wl/include/pango1-1.0/pango/pango-layout.h \\
+/wl/include/pango1-1.0/pango/pango-matrix.h \\
+/wl/include/pango1-1.0/pango/pango-renderer.h \\
+/wl/include/pango1-1.0/pango/pango-script.h \\
+/wl/include/pango1-1.0/pango/pango-tabs.h \\
+/wl/include/pango1-1.0/pango/pango-types.h \\
+/wl/include/pango1-1.0/pango/pango-utils.h \\
+/wl/include/pango1-1.0/pango/pangocairo.h \\
+/wl/include/pango1-1.0/pango/pangofc-decoder.h \\
+/wl/include/pango1-1.0/pango/pangofc-font.h \\
+/wl/include/pango1-1.0/pango/pangofc-fontmap.h \\
+/wl/include/pango1-1.0/pango/pangoft2.h \\
+/wl/lib/libpango1-1.0.so \\
+/wl/lib/libpango1cairo-1.0.so \\
+/wl/lib/libpango1ft2-1.0.so \\
+/wl/lib/pkgconfig/pango1.pc \\
+/wl/lib/pkgconfig/pango1cairo.pc \\
+/wl/lib/pkgconfig/pango1ft2.pc
+
+exec=\\
+/wl/bin/pango1-view \\
+/wl/lib/libpango1-1.0.so.0 \\
+/wl/lib/libpango1cairo-1.0.so.0 \\
+/wl/lib/libpango1ft2-1.0.so.0
+EOF
+
+exit
+--- pango-1.38.1.orig/configure.ac
++++ pango-1.38.1/configure.ac
+@@ -46,6 +46,7 @@
+         [http://bugzilla.gnome.org/enter_bug.cgi?product=pango])
+ 
+ AC_CONFIG_SRCDIR([pango.pc.in])
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ dnl -Wno-portability tells automake to stop complaining about the
+ dnl usage of GNU Make specific features.
+@@ -208,7 +209,7 @@
+ # Checks for HarfBuzz
+ #
+ have_harfbuzz=false
+-PKG_CHECK_MODULES(HARFBUZZ, harfbuzz >= 0.9.30, have_harfbuzz=true, :)
++PKG_CHECK_MODULES(HARFBUZZ, harfbuzz >= 0.9.7, have_harfbuzz=true, :)
+ AM_CONDITIONAL(HAVE_HARFBUZZ, $have_harfbuzz)
+ 
+ #
+--- pango-1.38.1.orig/docs/Makefile.am
++++ pango-1.38.1/docs/Makefile.am
+@@ -66,18 +66,18 @@
+ # HTML docs on Unix. We don't get introspection on Win32
+ # specific types, but that isn't a big deal.
+ 
+-GTKDOC_LIBS = $(top_builddir)/pango/libpango-1.0.la
++GTKDOC_LIBS = $(top_builddir)/pango/libpango1-1.0.la
+ 
+ if HAVE_FREETYPE
+-GTKDOC_LIBS += $(top_builddir)/pango/libpangoft2-1.0.la
++GTKDOC_LIBS += $(top_builddir)/pango/libpango1ft2-1.0.la
+ endif
+ 
+ if HAVE_XFT
+-GTKDOC_LIBS += $(top_builddir)/pango/libpangoxft-1.0.la
++GTKDOC_LIBS += $(top_builddir)/pango/libpango1xft-1.0.la
+ endif
+ 
+ if HAVE_CAIRO
+-GTKDOC_LIBS += $(top_builddir)/pango/libpangocairo-1.0.la
++GTKDOC_LIBS += $(top_builddir)/pango/libpango1cairo-1.0.la
+ endif
+ 
+ GTKDOC_LIBS += $(GLIB_LIBS)
+--- pango-1.38.1.orig/examples/Makefile.am
++++ pango-1.38.1/examples/Makefile.am
+@@ -19,13 +19,13 @@
+ 
+ cairosimple_LDADD =					\
+ 	-lm						\
+-	../pango/libpango-$(PANGO_API_VERSION).la	\
+-	../pango/libpangocairo-$(PANGO_API_VERSION).la	\
++	../pango/libpango1-$(PANGO_API_VERSION).la	\
++	../pango/libpango1cairo-$(PANGO_API_VERSION).la	\
+ 	$(GLIB_LIBS)					\
+ 	$(CAIRO_LIBS)
+ if HAVE_FREETYPE
+ cairosimple_LDADD +=					\
+-	../pango/libpangoft2-$(PANGO_API_VERSION).la
++	../pango/libpango1ft2-$(PANGO_API_VERSION).la
+ endif
+ cairotwisted_LDADD = $(cairosimple_LDADD)
+ cairoshape_LDADD   = $(cairosimple_LDADD)
+--- pango-1.38.1.orig/m4/gtk-doc.m4
++++ pango-1.38.1/m4/gtk-doc.m4
+@@ -0,0 +1,88 @@
++dnl -*- mode: autoconf -*-
++
++# serial 2
++
++dnl Usage:
++dnl   GTK_DOC_CHECK([minimum-gtk-doc-version])
++AC_DEFUN([GTK_DOC_CHECK],
++[
++  AC_REQUIRE([PKG_PROG_PKG_CONFIG])
++  AC_BEFORE([AC_PROG_LIBTOOL],[$0])dnl setup libtool first
++  AC_BEFORE([AM_PROG_LIBTOOL],[$0])dnl setup libtool first
++
++  ifelse([$1],[],[gtk_doc_requires="gtk-doc"],[gtk_doc_requires="gtk-doc >= $1"])
++  AC_MSG_CHECKING([for gtk-doc])
++  PKG_CHECK_EXISTS([$gtk_doc_requires],[have_gtk_doc=yes],[have_gtk_doc=no])
++  AC_MSG_RESULT($have_gtk_doc)
++
++  if test "$have_gtk_doc" = "no"; then
++      AC_MSG_WARN([
++  You will not be able to create source packages with 'make dist'
++  because $gtk_doc_requires is not found.])
++  fi
++
++  dnl check for tools we added during development
++  dnl Use AC_CHECK_PROG to avoid the check target using an absolute path that
++  dnl may not be writable by the user. Currently, automake requires that the
++  dnl test name must end in '.test'.
++  dnl https://bugzilla.gnome.org/show_bug.cgi?id=701638
++  AC_CHECK_PROG([GTKDOC_CHECK],[gtkdoc-check],[gtkdoc-check.test])
++  AC_PATH_PROG([GTKDOC_CHECK_PATH],[gtkdoc-check])
++  AC_PATH_PROGS([GTKDOC_REBASE],[gtkdoc-rebase],[true])
++  AC_PATH_PROG([GTKDOC_MKPDF],[gtkdoc-mkpdf])
++
++  dnl for overriding the documentation installation directory
++  AC_ARG_WITH([html-dir],
++    AS_HELP_STRING([--with-html-dir=PATH], [path to installed docs]),,
++    [with_html_dir='${datadir}/gtk-doc/html'])
++  HTML_DIR="$with_html_dir"
++  AC_SUBST([HTML_DIR])
++
++  dnl enable/disable documentation building
++  AC_ARG_ENABLE([gtk-doc],
++    AS_HELP_STRING([--enable-gtk-doc],
++                   [use gtk-doc to build documentation [[default=no]]]),,
++    [enable_gtk_doc=no])
++
++  AC_MSG_CHECKING([whether to build gtk-doc documentation])
++  AC_MSG_RESULT($enable_gtk_doc)
++
++  if test "x$enable_gtk_doc" = "xyes" && test "$have_gtk_doc" = "no"; then
++    AC_MSG_ERROR([
++  You must have $gtk_doc_requires installed to build documentation for
++  $PACKAGE_NAME. Please install gtk-doc or disable building the
++  documentation by adding '--disable-gtk-doc' to '[$]0'.])
++  fi
++
++  dnl don't check for glib if we build glib
++  if test "x$PACKAGE_NAME" != "xglib"; then
++    dnl don't fail if someone does not have glib
++    PKG_CHECK_MODULES(GTKDOC_DEPS, glib-2.0 >= 2.10.0 gobject-2.0  >= 2.10.0,,[:])
++  fi
++
++  dnl enable/disable output formats
++  AC_ARG_ENABLE([gtk-doc-html],
++    AS_HELP_STRING([--enable-gtk-doc-html],
++                   [build documentation in html format [[default=yes]]]),,
++    [enable_gtk_doc_html=yes])
++    AC_ARG_ENABLE([gtk-doc-pdf],
++      AS_HELP_STRING([--enable-gtk-doc-pdf],
++                     [build documentation in pdf format [[default=no]]]),,
++      [enable_gtk_doc_pdf=no])
++
++  if test -z "$GTKDOC_MKPDF"; then
++    enable_gtk_doc_pdf=no
++  fi
++
++  if test -z "$AM_DEFAULT_VERBOSITY"; then
++    AM_DEFAULT_VERBOSITY=1
++  fi
++  AC_SUBST([AM_DEFAULT_VERBOSITY])
++
++  AM_CONDITIONAL([HAVE_GTK_DOC], [test x$have_gtk_doc = xyes])
++  AM_CONDITIONAL([ENABLE_GTK_DOC], [test x$enable_gtk_doc = xyes])
++  AM_CONDITIONAL([GTK_DOC_BUILD_HTML], [test x$enable_gtk_doc_html = xyes])
++  AM_CONDITIONAL([GTK_DOC_BUILD_PDF], [test x$enable_gtk_doc_pdf = xyes])
++  AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], [test -n "$LIBTOOL"])
++  AM_CONDITIONAL([GTK_DOC_USE_REBASE], [test -n "$GTKDOC_REBASE"])
++])
+--- pango-1.38.1.orig/pango/Makefile.am
++++ pango-1.38.1/pango/Makefile.am
+@@ -33,7 +33,7 @@
+ 
+ BUILT_SOURCES = pango-enum-types.h pango-enum-types.c pango-features.h
+ 
+-pangoincludedir=$(includedir)/pango-1.0/pango
++pangoincludedir=$(includedir)/pango1-1.0/pango
+ 
+ if OS_WIN32
+ else
+@@ -42,26 +42,26 @@
+ 
+ # ------------------- libpango -------------------
+ 
+-lib_LTLIBRARIES = libpango-1.0.la
+-INTROSPECTION_GIRS += Pango-1.0.gir
++lib_LTLIBRARIES = libpango1-1.0.la
++INTROSPECTION_GIRS += Pango1-1.0.gir
+ 
+-libpango_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
+-libpango_1_0_la_LIBADD =		\
++libpango1_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
++libpango1_1_0_la_LIBADD =		\
+ 	$(GLIB_LIBS)			\
+ 	$(LIBTHAI_LIBS)			\
+ 	$(libm)
+ 
+-libpango_1_0_la_LIBADD += mini-fribidi/libmini-fribidi.la
+-libpango_1_0_la_DEPENDENCIES = mini-fribidi/libmini-fribidi.la
++libpango1_1_0_la_LIBADD += mini-fribidi/libmini-fribidi.la
++libpango1_1_0_la_DEPENDENCIES = mini-fribidi/libmini-fribidi.la
+ 
+ if PLATFORM_WIN32
+-libpango_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pango.def -Wl,pango-win32-res.o
+-libpango_1_0_la_DEPENDENCIES += pango-win32-res.o pango.def
++libpango1_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pango.def -Wl,pango-win32-res.o
++libpango1_1_0_la_DEPENDENCIES += pango-win32-res.o pango.def
+ endif
+ pango-win32-res.o: pango.rc
+ 	$(AM_V_GEN) $(WINDRES) $< $@
+ 
+-libpango_1_0_la_SOURCES =			\
++libpango1_1_0_la_SOURCES =			\
+ 	break.c					\
+ 	ellipsize.c				\
+ 	fonts.c					\
+@@ -147,28 +147,28 @@
+ 	$(AM_V_GEN) cd $(top_builddir) && ./config.status pango/pango-features.h
+ 
+ pango_introspection_files = \
+-        $(libpango_1_0_la_SOURCES) \
++        $(libpango1_1_0_la_SOURCES) \
+ 	    $(pango_headers) \
+ 	    pango-enum-types.h
+-Pango-1.0.gir: libpango-1.0.la
++Pango1-1.0.gir: libpango1-1.0.la
+ 
+-Pango_1_0_gir_PACKAGES = gobject-2.0 cairo glib-2.0
++Pango1_1_0_gir_PACKAGES = gobject-2.0 cairo glib-2.0
+ if HAVE_CAIRO_FREETYPE
+-Pango_1_0_gir_PACKAGES += freetype2
++Pango1_1_0_gir_PACKAGES += freetype2
+ endif
+-Pango_1_0_gir_EXPORT_PACKAGES = pango
+-Pango_1_0_gir_INCLUDES = GObject-2.0 cairo-1.0
+-Pango_1_0_gir_LIBS = libpango-1.0.la
+-Pango_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
+-Pango_1_0_gir_FILES = $(filter-out %-private.h pango-color-table.h, $(pango_introspection_files))
+-Pango_1_0_gir_SCANNERFLAGS = --c-include "pango/pango.h"
++Pango1_1_0_gir_EXPORT_PACKAGES = pango1
++Pango1_1_0_gir_INCLUDES = GObject-2.0 cairo-1.0
++Pango1_1_0_gir_LIBS = libpango2-1.0.la
++Pango1_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
++Pango1_1_0_gir_FILES = $(filter-out %-private.h pango-color-table.h, $(pango_introspection_files))
++Pango1_1_0_gir_SCANNERFLAGS = --c-include "pango/pango.h"
+ 
+ # ------------------- libpangoft2 -------------------
+ 
+ if HAVE_FREETYPE
+ pangoinclude_HEADERS += $(pangoft2_headers)
+-lib_LTLIBRARIES += libpangoft2-1.0.la
+-INTROSPECTION_GIRS += PangoFT2-1.0.gir
++lib_LTLIBRARIES += libpango1ft2-1.0.la
++INTROSPECTION_GIRS += Pango1FT2-1.0.gir
+ endif
+ 
+ pangoft2_headers = 		\
+@@ -185,17 +185,17 @@
+ 	pangofc-shape.c		\
+ 	pangoft2.c
+ 
+-libpangoft2_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
+-libpangoft2_1_0_la_LIBADD =			\
+-	libpango-$(PANGO_API_VERSION).la	\
++libpango1ft2_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
++libpango1ft2_1_0_la_LIBADD =			\
++	libpango1-$(PANGO_API_VERSION).la	\
+ 	$(GLIB_LIBS)				\
+ 	$(HARFBUZZ_LIBS)			\
+ 	$(FREETYPE_LIBS)			\
+ 	$(FONTCONFIG_LIBS)			\
+ 	$(libm)
+-libpangoft2_1_0_la_DEPENDENCIES =		\
+-	libpango-$(PANGO_API_VERSION).la
+-libpangoft2_1_0_la_SOURCES =   	\
++libpango1ft2_1_0_la_DEPENDENCIES =		\
++	libpango1-$(PANGO_API_VERSION).la
++libpango1ft2_1_0_la_SOURCES =   	\
+ 	$(pangoft2_public_sources) \
+ 	pangofc-private.h	\
+ 	pangoft2.h		\
+@@ -210,8 +210,8 @@
+ 
+ 
+ if PLATFORM_WIN32
+-libpangoft2_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangoft2.def -Wl,pangoft2-win32-res.o
+-libpangoft2_1_0_la_DEPENDENCIES += pangoft2-win32-res.o pangoft2.def
++libpango1ft2_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangoft2.def -Wl,pangoft2-win32-res.o
++libpango1ft2_1_0_la_DEPENDENCIES += pangoft2-win32-res.o pangoft2.def
+ endif
+ pangoft2-win32-res.o: pangoft2.rc
+ 	$(AM_V_GEN) $(WINDRES) $< $@
+@@ -220,48 +220,48 @@
+         $(pangoft2_headers) \
+         $(pangoft2_public_sources)
+ 
+-PangoFT2-1.0.gir: libpangoft2-1.0.la
+-PangoFT2-1.0.gir: Pango-1.0.gir
++Pango1FT2-1.0.gir: libpango1ft2-1.0.la
++Pango1FT2-1.0.gir: Pango1-1.0.gir
+ 
+-PangoFT2_1_0_gir_PACKAGES = freetype2
+-PangoFT2_1_0_gir_EXPORT_PACKAGES = pangoft2
+-PangoFT2_1_0_gir_INCLUDES = GObject-2.0 cairo-1.0 freetype2-2.0 fontconfig-2.0
+-PangoFT2_1_0_gir_LIBS = $(Pango_1_0_gir_LIBS) libpangoft2-1.0.la
+-PangoFT2_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
+-PangoFT2_1_0_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/Pango-1.0.gir --c-include "pango/pangoft2.h"
+-PangoFT2_1_0_gir_FILES = $(filter-out %-private.h, $(addprefix $(srcdir)/,$(pangoft2_introspection_files)))
++Pango1FT2_1_0_gir_PACKAGES = freetype2
++Pango1FT2_1_0_gir_EXPORT_PACKAGES = pangoft1
++Pango1FT2_1_0_gir_INCLUDES = GObject-2.0 cairo-1.0 freetype2-2.0 fontconfig-2.0
++Pango1FT2_1_0_gir_LIBS = $(Pango1_1_0_gir_LIBS) libpango1ft2-1.0.la
++Pango1FT2_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
++Pango1FT2_1_0_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/Pango1-1.0.gir --c-include "pango/pangoft2.h"
++Pango1FT2_1_0_gir_FILES = $(filter-out %-private.h, $(addprefix $(srcdir)/,$(pangoft2_introspection_files)))
+ 
+ # ------------------- libpangoxft -------------------
+ 
+ if HAVE_XFT
+ pangoinclude_HEADERS += $(pangoxft_headers)
+-lib_LTLIBRARIES += libpangoxft-1.0.la
+-INTROSPECTION_GIRS += PangoXft-1.0.gir
++lib_LTLIBRARIES += libpango1xft-1.0.la
++INTROSPECTION_GIRS += Pango1Xft-1.0.gir
+ endif
+ 
+ pangoxft_headers = pangoxft.h pangoxft-render.h
+ 
+-libpangoxft_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
+-libpangoxft_1_0_la_LIBADD =			\
+-	libpangoft2-$(PANGO_API_VERSION).la	\
+-	libpango-$(PANGO_API_VERSION).la	\
++libpango1xft_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
++libpango1xft_1_0_la_LIBADD =			\
++	libpango1ft2-$(PANGO_API_VERSION).la	\
++	libpango1-$(PANGO_API_VERSION).la	\
+ 	$(GLIB_LIBS)				\
+ 	$(XFT_LIBS)				\
+ 	$(FREETYPE_LIBS)			\
+ 	$(FONTCONFIG_LIBS)			\
+ 	$(libm)
+-libpangoxft_1_0_la_DEPENDENCIES =		\
+-	libpangoft2-$(PANGO_API_VERSION).la	\
+-	libpango-$(PANGO_API_VERSION).la
++libpango1xft_1_0_la_DEPENDENCIES =		\
++	libpango1ft2-$(PANGO_API_VERSION).la	\
++	libpango1-$(PANGO_API_VERSION).la
+ 
+ if PLATFORM_WIN32
+-libpangoxft_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangoxft.def -Wl,pangoxft-win32-res.o
+-libpangoxft_1_0_la_DEPENDENCIES += pangoxft-win32-res.o pangoxft.def
++libpango1xft_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangoxft.def -Wl,pangoxft-win32-res.o
++libpango1xft_1_0_la_DEPENDENCIES += pangoxft-win32-res.o pangoxft.def
+ endif
+ pangoxft-win32-res.o: pangoxft.rc
+ 	$(AM_V_GEN) $(WINDRES) $< $@
+ 
+-libpangoxft_1_0_la_SOURCES =   	\
++libpango1xft_1_0_la_SOURCES =   	\
+ 	pangoxft-font.c		\
+ 	pangoxft-fontmap.c      \
+ 	pangoxft-private.h	\
+@@ -269,38 +269,38 @@
+ 
+ pangoxft_introspection_files = \
+     $(pangoxft_headers) \
+-    $(libpangoxft_1_0_la_SOURCES)
++    $(libpango1xft_1_0_la_SOURCES)
+ 
+-PangoXft-1.0.gir: libpangoxft-1.0.la
+-PangoXft-1.0.gir: Pango-1.0.gir PangoFT2-1.0.gir
++Pango1Xft-1.0.gir: libpango1xft-1.0.la
++Pango1Xft-1.0.gir: Pango1-1.0.gir Pango1FT2-1.0.gir
+ 
+-PangoXft_1_0_gir_PACKAGES = gobject-2.0 freetype2
+-PangoXft_1_0_gir_EXPORT_PACKAGES = pangoxft
+-PangoXft_1_0_gir_INCLUDES = GObject-2.0 xft-2.0 xlib-2.0
+-PangoXft_1_0_gir_LIBS = $(PangoFT2_1_0_gir_LIBS) libpangoxft-1.0.la
+-PangoXft_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
+-PangoXft_1_0_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/Pango-1.0.gir --include-uninstalled=$(builddir)/PangoFT2-1.0.gir --c-include "pango/pangoxft.h"
+-PangoXft_1_0_gir_FILES = $(filter-out %-private.h, $(addprefix $(srcdir)/,$(pangoxft_introspection_files)))
++Pango1Xft_1_0_gir_PACKAGES = gobject-2.0 freetype2
++Pango1Xft_1_0_gir_EXPORT_PACKAGES = pango1xft
++Pango1Xft_1_0_gir_INCLUDES = GObject-2.0 xft-2.0 xlib-2.0
++Pango1Xft_1_0_gir_LIBS = $(Pango1FT2_1_0_gir_LIBS) libpango1xft-1.0.la
++Pango1Xft_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
++Pango1Xft_1_0_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/Pango1-1.0.gir --include-uninstalled=$(builddir)/Pango1FT2-1.0.gir --c-include "pango/pangoxft.h"
++Pango1Xft_1_0_gir_FILES = $(filter-out %-private.h, $(addprefix $(srcdir)/,$(pangoxft_introspection_files)))
+ 
+ # ------------------- libpangocairo -------------------
+ 
+ if HAVE_CAIRO
+ pangoinclude_HEADERS += $(pangocairo_headers)
+-lib_LTLIBRARIES += libpangocairo-1.0.la
+-INTROSPECTION_GIRS += PangoCairo-1.0.gir
++lib_LTLIBRARIES += libpango1cairo-1.0.la
++INTROSPECTION_GIRS += Pango1Cairo-1.0.gir
+ endif
+ 
+ pangocairo_headers = pangocairo.h
+ 
+-libpangocairo_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
+-libpangocairo_1_0_la_LIBADD =			\
+-	libpango-$(PANGO_API_VERSION).la	\
++libpango1cairo_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
++libpango1cairo_1_0_la_LIBADD =			\
++	libpango1-$(PANGO_API_VERSION).la	\
+ 	$(GLIB_LIBS)				\
+ 	$(CAIRO_LIBS)				\
+ 	$(FONTCONFIG_LIBS)			\
+ 	$(libm)
+-libpangocairo_1_0_la_DEPENDENCIES =		\
+-	libpango-$(PANGO_API_VERSION).la
++libpango1cairo_1_0_la_DEPENDENCIES =		\
++	libpango1-$(PANGO_API_VERSION).la
+ pangocairo_core_sources = \
+ 	pangocairo-context.c    \
+ 	pangocairo-font.c	\
+@@ -308,29 +308,29 @@
+ 	pangocairo-render.c	\
+ 	pangocairo-private.h
+ 
+-libpangocairo_1_0_la_SOURCES = $(pangocairo_core_sources)
++libpango1cairo_1_0_la_SOURCES = $(pangocairo_core_sources)
+ 
+ if HAVE_CAIRO_WIN32
+ if PLATFORM_WIN32
+-libpangocairo_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangocairo.def -Wl,pangocairo-win32-res.o
+-libpangocairo_1_0_la_DEPENDENCIES += pangocairo-win32-res.o pangocairo.def
++libpango1cairo_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangocairo.def -Wl,pangocairo-win32-res.o
++libpango1cairo_1_0_la_DEPENDENCIES += pangocairo-win32-res.o pangocairo.def
+ endif
+ pangocairo-win32-res.o: pangocairo.rc
+ 	$(AM_V_GEN) $(WINDRES) $< $@
+ 
+ 
+-libpangocairo_1_0_la_LIBADD += libpangowin32-$(PANGO_API_VERSION).la -lgdi32
+-libpangocairo_1_0_la_DEPENDENCIES += libpangowin32-$(PANGO_API_VERSION).la
++libpango1cairo_1_0_la_LIBADD += libpango1win32-$(PANGO_API_VERSION).la -lgdi32
++libpango1cairo_1_0_la_DEPENDENCIES += libpango1win32-$(PANGO_API_VERSION).la
+ 
+-libpangocairo_1_0_la_SOURCES += pangocairo-win32font.c pangocairo-win32fontmap.c pangocairo-win32.h
++libpango1cairo_1_0_la_SOURCES += pangocairo-win32font.c pangocairo-win32fontmap.c pangocairo-win32.h
+ endif
+ 
+ if HAVE_CAIRO_FREETYPE
+-libpangocairo_1_0_la_LIBADD +=  libpangoft2-$(PANGO_API_VERSION).la $(FREETYPE_LIBS)
+-libpangocairo_1_0_la_DEPENDENCIES += libpangoft2-$(PANGO_API_VERSION).la 
+-PANGOCAIRO_FONT_BACKEND_GI_MODULE = PangoFT2-1.0.gir
++libpango1cairo_1_0_la_LIBADD +=  libpango1ft2-$(PANGO_API_VERSION).la $(FREETYPE_LIBS)
++libpango1cairo_1_0_la_DEPENDENCIES += libpango1ft2-$(PANGO_API_VERSION).la 
++PANGOCAIRO_FONT_BACKEND_GI_MODULE = Pango1FT2-1.0.gir
+ 
+-libpangocairo_1_0_la_SOURCES += \
++libpango1cairo_1_0_la_SOURCES += \
+ 	pangocairo-fcfont.c	\
+ 	pangocairo-fcfontmap.c  \
+ 	pangocairo-fc.h
+@@ -338,7 +338,7 @@
+ 
+ if HAVE_CAIRO_QUARTZ
+ if HAVE_CORE_TEXT
+-libpangocairo_1_0_la_SOURCES += \
++libpango1cairo_1_0_la_SOURCES += \
+ 	pangocoretext.h		\
+ 	pangocoretext.c		\
+ 	pangocoretext-private.h	\
+@@ -350,46 +350,46 @@
+ 	pangocairo-coretextfontmap.c
+ pangoinclude_HEADERS += pangocoretext.h
+ 
+-libpangocairo_1_0_la_LDFLAGS += -framework CoreFoundation -framework ApplicationServices
++libpango1cairo_1_0_la_LDFLAGS += -framework CoreFoundation -framework ApplicationServices
+ # We don't have an CoreText GIR right now, so this is just hypothetical
+ # PANGOCAIRO_FONT_BACKEND_GI_MODULE = PangoCoreText-1.0.gir
+ endif
+ endif
+ 
+ pangocairo_introspection_files = \
+-    $(libpangocairo_1_0_la_SOURCES) \
++    $(libpango1cairo_1_0_la_SOURCES) \
+     $(pangocairo_headers)
+ 
+-PangoCairo-1.0.gir: libpangocairo-1.0.la
+-PangoCairo-1.0.gir: Pango-1.0.gir $(PANGOCAIRO_FONT_BACKEND_GI_MODULE)
++Pango1Cairo-1.0.gir: libpango1cairo-1.0.la
++Pango1Cairo-1.0.gir: Pango1-1.0.gir $(PANGOCAIRO_FONT_BACKEND_GI_MODULE)
+ 
+-PangoCairo_1_0_gir_PACKAGES = gobject-2.0 cairo
+-PangoCairo_1_0_gir_EXPORT_PACKAGES = pangocairo
+-PangoCairo_1_0_gir_INCLUDES = GObject-2.0 cairo-1.0
+-PangoCairo_1_0_gir_LIBS = $(Pango_1_0_gir_LIBS) libpangocairo-1.0.la
+-PangoCairo_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
+-PangoCairo_1_0_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/Pango-1.0.gir --c-include "pango/pangocairo.h"
++Pango1Cairo_1_0_gir_PACKAGES = gobject-2.0 cairo
++Pango1Cairo_1_0_gir_EXPORT_PACKAGES = pango1cairo
++Pango1Cairo_1_0_gir_INCLUDES = GObject-2.0 cairo-1.0
++Pango1Cairo_1_0_gir_LIBS = $(Pango1_1_0_gir_LIBS) libpango1cairo-1.0.la
++Pango1Cairo_1_0_gir_CFLAGS = -I$(top_builddir) -I$(top_srcdir) $(INCLUDES)
++Pango1Cairo_1_0_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/Pango1-1.0.gir --c-include "pango/pangocairo.h"
+ if HAVE_CAIRO_FREETYPE
+-PangoCairo_1_0_gir_SCANNERFLAGS += --include-uninstalled=$(builddir)/$(PANGOCAIRO_FONT_BACKEND_GI_MODULE)
+-PangoCairo_1_0_gir_LIBS += $(PangoFT2_1_0_gir_LIBS)
++Pango1Cairo_1_0_gir_SCANNERFLAGS += --include-uninstalled=$(builddir)/$(PANGOCAIRO_FONT_BACKEND_GI_MODULE)
++Pango1Cairo_1_0_gir_LIBS += $(Pango1FT2_1_0_gir_LIBS)
+ endif
+-PangoCairo_1_0_gir_FILES = $(filter-out %-private.h, $(addprefix $(srcdir)/,$(pangocairo_introspection_files)))
++Pango1Cairo_1_0_gir_FILES = $(filter-out %-private.h, $(addprefix $(srcdir)/,$(pangocairo_introspection_files)))
+ 
+ # ------------------- libpangowin32 -------------------
+ 
+ if HAVE_WIN32
+ pangoinclude_HEADERS += pangowin32.h
+-lib_LTLIBRARIES += libpangowin32-1.0.la
++lib_LTLIBRARIES += libpango1win32-1.0.la
+ endif
+ 
+-libpangowin32_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
+-libpangowin32_1_0_la_LIBADD =			\
++libpango1win32_1_0_la_LDFLAGS = $(LIBRARY_LIBTOOL_OPTIONS)
++libpango1win32_1_0_la_LIBADD =			\
+ 	libpango-$(PANGO_API_VERSION).la	\
+ 	$(GLIB_LIBS)				\
+ 	-lgdi32 -lusp10
+-libpangowin32_1_0_la_DEPENDENCIES =		\
++libpango1win32_1_0_la_DEPENDENCIES =		\
+ 	libpango-$(PANGO_API_VERSION).la
+-libpangowin32_1_0_la_SOURCES =	\
++libpango1win32_1_0_la_SOURCES =	\
+ 	pangowin32.h		\
+ 	pangowin32.c		\
+ 	pangowin32-private.h	\
+@@ -398,8 +398,8 @@
+ 	pangowin32-shape.c
+ 
+ if PLATFORM_WIN32
+-libpangowin32_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangowin32.def -Wl,pangowin32-win32-res.o
+-libpangowin32_1_0_la_DEPENDENCIES += pangowin32-win32-res.o pangowin32.def
++libpango1win32_1_0_la_LDFLAGS += -export-symbols $(srcdir)/pangowin32.def -Wl,pangowin32-win32-res.o
++libpango1win32_1_0_la_DEPENDENCIES += pangowin32-win32-res.o pangowin32.def
+ endif
+ pangowin32-win32-res.o: pangowin32.rc
+ 	$(AM_V_GEN) $(WINDRES) $< $@
+@@ -483,13 +483,13 @@
+ 
+ pango_HEADERS_EXCLUDES = dummy
+ 
+-pangowin32_FILES = $(libpangowin32_1_0_la_SOURCES)
++pangowin32_FILES = $(libpango1win32_1_0_la_SOURCES)
+ pangowin32_EXCLUDES = dummy
+ 
+-pangoft2_FILES = $(libpangoft2_1_0_la_SOURCES)
++pangoft2_FILES = $(libpango1ft2_1_0_la_SOURCES)
+ pangoft2_EXCLUDES = dummy
+ 
+-# Again, can't use $(libpangocairo_1_0_la_SOURCES), due to different platforms this may run on.
++# Again, can't use $(libpango1cairo_1_0_la_SOURCES), due to different platforms this may run on.
+ pangocairo_FILES = $(pangocairo_core_sources)
+ pangocairo_EXCLUDES = dummy
+ 
+--- pango-1.38.1.orig/pango/pangofc-shape.c
++++ pango-1.38.1/pango/pangofc-shape.c
+@@ -342,9 +342,6 @@
+   hb_buffer_set_direction (hb_buffer, hb_direction);
+   hb_buffer_set_script (hb_buffer, hb_glib_script_to_script (analysis->script));
+   hb_buffer_set_language (hb_buffer, hb_language_from_string (pango_language_to_string (analysis->language), -1));
+-#if HB_VERSION_ATLEAST(1,0,3)
+-  hb_buffer_set_cluster_level (hb_buffer, HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
+-#endif
+   hb_buffer_set_flags (hb_buffer,
+ 		       (item_offset == 0 ? HB_BUFFER_FLAG_BOT : 0) |
+ 		       (item_offset + item_length == paragraph_length ? HB_BUFFER_FLAG_EOT : 0));
+--- pango-1.38.1.orig/pango-uninstalled.pc.in
++++ pango-1.38.1/pango-uninstalled.pc.in
+@@ -2,6 +2,6 @@
+ Description: Internationalized text handling, Not Installed
+ Version: @VERSION@
+ Requires: glib-2.0 gobject-2.0
+-Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpango-@PANGO_API_VERSION@.la
++Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpango1-@PANGO_API_VERSION@.la
+ Libs.private: -lm
+ Cflags: -I${pc_top_builddir}/${pcfiledir}/@srcdir@
+--- pango-1.38.1.orig/pango-view/Makefile.am
++++ pango-1.38.1/pango-view/Makefile.am
+@@ -47,13 +47,13 @@
+ 	viewer-main.c					\
+ 	pango-view.c
+ pango_view_LDADD =					\
+-	../pango/libpango-$(PANGO_API_VERSION).la	\
++	../pango/libpango1-$(PANGO_API_VERSION).la	\
+ 	$(GLIB_LIBS)
+ if HAVE_FREETYPE
+ pango_view_SOURCES +=					\
+ 	viewer-pangoft2.c
+ pango_view_LDADD +=					\
+-	../pango/libpangoft2-$(PANGO_API_VERSION).la	\
++	../pango/libpango1ft2-$(PANGO_API_VERSION).la	\
+ 	$(FREETYPE_LIBS)				\
+ 	$(FONTCONFIG_LIBS)
+ endif
+@@ -63,8 +63,8 @@
+ 	viewer-x.h					\
+ 	viewer-x.c
+ pango_view_LDADD +=					\
+-	../pango/libpangoft2-$(PANGO_API_VERSION).la	\
+-	../pango/libpangoxft-$(PANGO_API_VERSION).la	\
++	../pango/libpango1ft2-$(PANGO_API_VERSION).la	\
++	../pango/libpango1xft-$(PANGO_API_VERSION).la	\
+ 	$(XFT_LIBS)
+ endif
+ if HAVE_CAIRO
+@@ -73,7 +73,7 @@
+ 	viewer-cairo.c					\
+ 	viewer-pangocairo.c
+ pango_view_LDADD +=					\
+-	../pango/libpangocairo-$(PANGO_API_VERSION).la	\
++	../pango/libpango1cairo-$(PANGO_API_VERSION).la	\
+ 	$(CAIRO_LIBS)
+ endif
+ 
+--- pango-1.38.1.orig/pango.pc.in
++++ pango-1.38.1/pango.pc.in
+@@ -7,6 +7,6 @@
+ Description: Internationalized text handling
+ Version: @VERSION@
+ Requires: glib-2.0 gobject-2.0
+-Libs: -L${libdir} -lpango-@PANGO_API_VERSION@
++Libs: -L${libdir} -lpango1-@PANGO_API_VERSION@
+ Libs.private: -lm
+-Cflags: -I${includedir}/pango-1.0
++Cflags: -I${includedir}/pango1-1.0
+--- pango-1.38.1.orig/pangocairo-uninstalled.pc.in
++++ pango-1.38.1/pangocairo-uninstalled.pc.in
+@@ -1,7 +1,7 @@
+ Name: Pango Cairo Uninstalled
+ Description: Cairo rendering support for Pango, Not Installed
+ Version: @VERSION@
+-Requires: pango cairo
++Requires: pango1 cairo
+ Require.private: @PKGCONFIG_CAIRO_REQUIRES@
+-Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpangocairo-@PANGO_API_VERSION@.la
++Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpango1cairo-@PANGO_API_VERSION@.la
+ Cflags: -I${pc_top_builddir}/${pcfiledir}/@srcdir@
+--- pango-1.38.1.orig/pangocairo.pc.in
++++ pango-1.38.1/pangocairo.pc.in
+@@ -6,7 +6,7 @@
+ Name: Pango Cairo
+ Description: Cairo rendering support for Pango
+ Version: @VERSION@
+-Requires: pango cairo
++Requires: pango1 cairo
+ Requires.private: @PKGCONFIG_CAIRO_REQUIRES@
+-Libs: -L${libdir} -lpangocairo-@PANGO_API_VERSION@
+-Cflags: -I${includedir}/pango-1.0
++Libs: -L${libdir} -lpango1cairo-@PANGO_API_VERSION@
++Cflags: -I${includedir}/pango1-1.0
+--- pango-1.38.1.orig/pangoft2-uninstalled.pc.in
++++ pango-1.38.1/pangoft2-uninstalled.pc.in
+@@ -1,8 +1,8 @@
+ Name: Pango FT2 Uninstalled
+ Description: Freetype 2.0 font support for Pango, Not Installed
+ Version: @VERSION@
+-Requires: pango freetype2 fontconfig
++Requires: pango1 freetype2 fontconfig
+ Requires.private: harfbuzz
+-Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpangoft2-@PANGO_API_VERSION@.la
++Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpango1ft2-@PANGO_API_VERSION@.la
+ Cflags: -I${pc_top_builddir}/${pcfiledir}/@srcdir@
+ 
+--- pango-1.38.1.orig/pangoft2.pc.in
++++ pango-1.38.1/pangoft2.pc.in
+@@ -6,7 +6,7 @@
+ Name: Pango FT2 and Pango Fc
+ Description: Freetype 2.0 and fontconfig font support for Pango
+ Version: @VERSION@
+-Requires: pango freetype2 fontconfig
++Requires: pango1 freetype2 fontconfig
+ Requires.private: harfbuzz
+-Libs: -L${libdir} -lpangoft2-@PANGO_API_VERSION@
+-Cflags: -I${includedir}/pango-1.0
++Libs: -L${libdir} -lpango1ft2-@PANGO_API_VERSION@
++Cflags: -I${includedir}/pango1-1.0
+--- pango-1.38.1.orig/pangowin32-uninstalled.pc.in
++++ pango-1.38.1/pangowin32-uninstalled.pc.in
+@@ -1,7 +1,7 @@
+ Name: Pango Win32 Uninstalled
+ Description: Win32 GDI font support for Pango, Not Installed
+ Version: @VERSION@
+-Requires: pango
+-Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpangowin32.la
++Requires: pango1
++Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpango1win32.la
+ Libs.private: -lgdi32 -lusp10
+ Cflags: -I${pc_top_builddir}/${pcfiledir}/@srcdir@
+--- pango-1.38.1.orig/pangowin32.pc.in
++++ pango-1.38.1/pangowin32.pc.in
+@@ -6,7 +6,7 @@
+ Name: Pango Win32
+ Description: Win32 GDI font support for Pango
+ Version: @VERSION@
+-Requires: pango
+-Libs: -L${libdir} -lpangowin32-@PANGO_API_VERSION@
++Requires: pango1
++Libs: -L${libdir} -lpango1win32-@PANGO_API_VERSION@
+ Libs.private: -lgdi32 -lusp10
+-Cflags: -I${includedir}/pango-1.0
++Cflags: -I${includedir}/pango1-1.0
+--- pango-1.38.1.orig/pangoxft-uninstalled.pc.in
++++ pango-1.38.1/pangoxft-uninstalled.pc.in
+@@ -1,6 +1,6 @@
+ Name: Pango Xft Uninstalled
+ Description: Xft font support for Pango, Not Installed
+ Version: @VERSION@
+-Requires: pango pangoft2 xft
+-Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpangoxft-@PANGO_API_VERSION@.la
++Requires: pango1 pango1ft2 xft
++Libs: ${pc_top_builddir}/${pcfiledir}/pango/libpango1xft-@PANGO_API_VERSION@.la
+ Cflags: -I${pc_top_builddir}/${pcfiledir}/@srcdir@
+--- pango-1.38.1.orig/pangoxft.pc.in
++++ pango-1.38.1/pangoxft.pc.in
+@@ -6,6 +6,6 @@
+ Name: Pango Xft
+ Description: Xft font support for Pango
+ Version: @VERSION@
+-Requires: pango pangoft2 xft
+-Libs: -L${libdir} -lpangoxft-@PANGO_API_VERSION@
+-Cflags: -I${includedir}/pango-1.0
++Requires: pango1 pango1ft2 xft
++Libs: -L${libdir} -lpango1xft-@PANGO_API_VERSION@
++Cflags: -I${includedir}/pango1-1.0
+--- pango-1.38.1.orig/tests/Makefile.am
++++ pango-1.38.1/tests/Makefile.am
+@@ -59,9 +59,9 @@
+ check_PROGRAMS += test-ot-tags
+ endif
+ 
+-TEST_PANGO_LIBS = ../pango/libpango-$(PANGO_API_VERSION).la
+-TEST_PANGOFT2_LIBS = $(TEST_PANGO_LIBS) ../pango/libpangoft2-$(PANGO_API_VERSION).la
+-TEST_PANGOCAIRO_LIBS = $(TEST_PANGO_LIBS) ../pango/libpangocairo-$(PANGO_API_VERSION).la
++TEST_PANGO_LIBS = ../pango/libpango1-$(PANGO_API_VERSION).la
++TEST_PANGOFT2_LIBS = $(TEST_PANGO_LIBS) ../pango/libpango1ft2-$(PANGO_API_VERSION).la
++TEST_PANGOCAIRO_LIBS = $(TEST_PANGO_LIBS) ../pango/libpango1cairo-$(PANGO_API_VERSION).la
+ 
+ test_layout_SOURCES = \
+ 	test-layout.c \
+--- pango-1.38.1.orig/tools/Makefile.am
++++ pango-1.38.1/tools/Makefile.am
+@@ -15,6 +15,6 @@
+ 	rgb.txt
+ 
+ gen_script_for_lang_SOURCES = gen-script-for-lang.c
+-gen_script_for_lang_LDADD = ../pango/libpango-$(PANGO_API_VERSION).la $(FONTCONFIG_LIBS) $(GLIB_LIBS)
++gen_script_for_lang_LDADD = ../pango/libpango1-$(PANGO_API_VERSION).la $(FONTCONFIG_LIBS) $(GLIB_LIBS)
+ 
+ -include $(top_srcdir)/git.mk
