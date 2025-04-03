@@ -1,0 +1,122 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="gcc-g++-build make-build sdl2_gfx-build sdl2_image-build sdl2_mixer-build sdl2_ttf-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2_mixer-build | grep -q libvorbis-build || { echo SDL2_mixer with Vorbis support required; exit 1; }
+
+# configure
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --prefix /wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install tennix $DESTDIR/wl/bin
+install -d $DESTDIR/wl/share/tennix
+install -m 644 tennix.tnx $DESTDIR/wl/share/tennix
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/tennix-build.pc << EOF
+Name: tennix
+Version: 1.3.2
+Description: Tennis game
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/tennix \\
+/wl/share/tennix/tennix.tnx
+EOF
+
+exit
+--- tennix-1.3.2.orig/configure
++++ tennix-1.3.2/configure
+@@ -24,6 +24,10 @@
+     LDFLAGS=""
+ fi
+ 
++if [ -z "$PKG_CONFIG" ]; then
++    PKG_CONFIG="pkg-config"
++fi
++
+ if [ -z "$SDL_CONFIG" ]; then
+     SDL_CONFIG="sdl2-config"
+ fi
+@@ -76,22 +80,18 @@
+ 
+ check_cc() {
+     echo "int main() { return 0; }" | $CC $CFLAGS -x c -c -o configtest.o - 2>/dev/null
+-    rm -f configtest.o
+ }
+ 
+ check_cxx() {
+     echo "class A { public: A() {} }; int main() { A a; }" | $CXX $CFLAGS -x c++ -c -o configtest.o -
+-    rm -f configtest.o
+ }
+ 
+ check_linker_cc() {
+     echo "int main() { return 0; }" | $CC $CFLAGS $LDFLAGS -l$1 -x c -o configtest.o - 2>/dev/null
+-    rm -f configtest.o
+ }
+ 
+ check_header_cc() {
+     echo "#include <$1>" | $CC $CFLAGS -c -x c -o configtest.o -c - 2>/dev/null
+-    rm -f configtest.o
+ }
+ 
+ message_wrapper() {
+@@ -108,6 +108,12 @@
+ }
+ 
+ check_sdl_lib() {
++    if "$PKG_CONFIG" --exists sdl2; then
++        CFLAGS="$("$PKG_CONFIG" --cflags sdl2) $CFLAGS"
++        LDFLAGS="$("$PKG_CONFIG" --libs sdl2) $LDFLAGS"
++        return 0
++    fi
++
+     if ! which "$SDL_CONFIG" >/dev/null 2>&1; then
+         return 1
+     fi
+@@ -141,13 +147,9 @@
+     message_wrapper "Testing working C++ compiler ($CXX)" check_cxx || fail "C++ compiler ($CXX) not working"
+ }
+ 
+-check_sdl2() {
+-    message_wrapper "Checking for SDL2" check_sdl_lib
+-    cond_definition $? HAVE_SDL
+-}
+-
+ require_sdl2() {
+-    check_sdl2 || fail "SDL2 not found"
++    message_wrapper "Checking for SDL2" check_sdl_lib || fail "SDL2 not found"
++    cond_definition $? HAVE_SDL
+ }
+ 
+ check_voice_files() {
+--- tennix-1.3.2.orig/src/graphics.cc
++++ tennix-1.3.2/src/graphics.cc
+@@ -33,8 +33,6 @@
+ #include "archive.h"
+ #include "sound.h"
+ 
+-#include "SDL2_rotozoom.h"
+-
+ static Image* images;
+ 
+ static Font* fonts;
+--- tennix-1.3.2.orig/src/graphics.h
++++ tennix-1.3.2/src/graphics.h
+@@ -29,7 +29,7 @@
+ 
+ #include "SDL_image.h"
+ #include "SDL_ttf.h"
+-#include "SDL2_rotozoom.h"
++#include "SDL_rotozoom.h"
+ 
+ #define RECT_UPDATE_CACHE 150
+ 

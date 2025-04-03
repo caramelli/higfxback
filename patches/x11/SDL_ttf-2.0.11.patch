@@ -21,8 +21,8 @@ install .libs/showfont $DESTDIR/x11/bin
 install -d $DESTDIR/x11/include/SDL
 install -m 644 SDL_ttf.h $DESTDIR/x11/include/SDL
 install -d $DESTDIR/x11/lib
-install .libs/libSDL_ttf-2.0.so.0.* $DESTDIR/x11/lib/libSDL_ttf-2.0.so.0
-ln -sf libSDL_ttf-2.0.so.0 $DESTDIR/x11/lib/libSDL_ttf.so
+install .libs/libSDL_ttf-1.2.so.0.* $DESTDIR/x11/lib/libSDL_ttf-1.2.so.0
+ln -sf libSDL_ttf-1.2.so.0 $DESTDIR/x11/lib/libSDL_ttf.so
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 SDL_ttf.pc $DESTDIR/x11/lib/pkgconfig
 
@@ -46,7 +46,7 @@ test $GL && cat >> $DESTDIR/x11/share/pkgconfig/sdl_ttf-build.pc << EOF
 EOF
 cat >> $DESTDIR/x11/share/pkgconfig/sdl_ttf-build.pc << EOF
 /x11/bin/showfont \\
-/x11/lib/libSDL_ttf-2.0.so.0
+/x11/lib/libSDL_ttf-1.2.so.0
 EOF
 
 exit
@@ -61,6 +61,17 @@ exit
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
+@@ -11,8 +13,8 @@
+ # if backwards compatibility has been broken,
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+-MAJOR_VERSION=2
+-MINOR_VERSION=0
++MAJOR_VERSION=1
++MINOR_VERSION=2
+ MICRO_VERSION=11
+ INTERFACE_AGE=1
+ BINARY_AGE=11
 @@ -42,7 +44,7 @@
  AC_CANONICAL_HOST
  

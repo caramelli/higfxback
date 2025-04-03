@@ -50,7 +50,7 @@ test $DESTDIR || /dfb/bin/gdk-pixbuf-query-loaders > /dfb/lib/gdk-pixbuf-2.0/2.1
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/libjxl-build.pc << EOF
 Name: libjxl
-Version: 0.8.2
+Version: 0.8.4
 Description: JPEG XL library
 Requires: $REQUIRES
 
@@ -80,8 +80,8 @@ exec=\\
 EOF
 
 exit
---- libjxl-0.8.2.orig/CMakeLists.txt
-+++ libjxl-0.8.2/CMakeLists.txt
+--- libjxl-0.8.4.orig/CMakeLists.txt
++++ libjxl-0.8.4/CMakeLists.txt
 @@ -178,11 +178,6 @@
      message(FATAL_ERROR
        "Minimum Clang version required is Clang 5, please update.")
@@ -94,8 +94,8 @@ exit
  endif()
  
  message(STATUS
---- libjxl-0.8.2.orig/cmake/FindSJPEG.cmake
-+++ libjxl-0.8.2/cmake/FindSJPEG.cmake
+--- libjxl-0.8.4.orig/cmake/FindJPEG.cmake
++++ libjxl-0.8.4/cmake/FindJPEG.cmake
 @@ -0,0 +1,27 @@
 +# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 +#
@@ -104,28 +104,88 @@ exit
 +
 +find_package(PkgConfig QUIET)
 +if (PkgConfig_FOUND)
-+  pkg_check_modules(PC_SJPEG QUIET sjpeg)
++  pkg_check_modules(PC_JPEG QUIET libjpeg)
 +endif ()
 +
-+find_path(SJPEG_INCLUDE_DIR
-+  NAMES sjpeg.h
-+  HINTS ${PC_SJPEG_INCLUDEDIR}
++find_path(JPEG_INCLUDE_DIRS
++  NAMES jpeglib.h
++  HINTS ${PC_JPEG_INCLUDE_DIRS}
 +)
 +
-+find_library(SJPEG_LIBRARY
++find_library(JPEG_LIBRARIES
++  NAMES jpeg
++  HINTS ${PC_JPEG_LIBRARY_DIRS}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(JPEG
++  FOUND_VAR JPEG_FOUND
++  REQUIRED_VARS JPEG_LIBRARIES JPEG_INCLUDE_DIRS
++)
++
++mark_as_advanced(JPEG_INCLUDE_DIRS JPEG_LIBRARIES)
+--- libjxl-0.8.4.orig/cmake/FindPNG.cmake
++++ libjxl-0.8.4/cmake/FindPNG.cmake
+@@ -0,0 +1,27 @@
++# Copyright (c) the JPEG XL Project Authors. All rights reserved.
++#
++# Use of this source code is governed by a BSD-style
++# license that can be found in the LICENSE file.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_PNG QUIET libpng)
++endif ()
++
++find_path(PNG_INCLUDE_DIRS
++  NAMES png.h
++  HINTS ${PC_PNG_INCLUDE_DIRS}
++)
++
++find_library(PNG_LIBRARIES
++  NAMES png
++  HINTS ${PC_PNG_LIBRARY_DIRS}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(PNG
++  FOUND_VAR PNG_FOUND
++  REQUIRED_VARS PNG_LIBRARIES PNG_INCLUDE_DIRS
++)
++
++mark_as_advanced(PNG_INCLUDE_DIRS PNG_LIBRARIES)
+--- libjxl-0.8.4.orig/cmake/FindSJPEG.cmake
++++ libjxl-0.8.4/cmake/FindSJPEG.cmake
+@@ -0,0 +1,27 @@
++# Copyright (c) the JPEG XL Project Authors. All rights reserved.
++#
++# Use of this source code is governed by a BSD-style
++# license that can be found in the LICENSE file.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_SJPEG QUIET libsjpeg)
++endif ()
++
++find_path(SJPEG_INCLUDE_DIRS
++  NAMES sjpeg.h
++  HINTS ${PC_SJPEG_INCLUDE_DIRS}
++)
++
++find_library(SJPEG_LIBRARIES
 +  NAMES sjpeg
-+  HINTS ${PC_SJPEG_LIBDIR}
++  HINTS ${PC_SJPEG_LIBRARY_DIRS}
 +)
 +
 +include(FindPackageHandleStandardArgs)
 +find_package_handle_standard_args(SJPEG
 +  FOUND_VAR SJPEG_FOUND
-+  REQUIRED_VARS SJPEG_LIBRARY SJPEG_INCLUDE_DIR
++  REQUIRED_VARS SJPEG_LIBRARIES SJPEG_INCLUDE_DIRS
 +)
 +
-+mark_as_advanced(SJPEG_INCLUDE_DIR SJPEG_LIBRARY)
---- libjxl-0.8.2.orig/lib/CMakeLists.txt
-+++ libjxl-0.8.2/lib/CMakeLists.txt
++mark_as_advanced(SJPEG_INCLUDE_DIRS SJPEG_LIBRARIES)
+--- libjxl-0.8.4.orig/lib/CMakeLists.txt
++++ libjxl-0.8.4/lib/CMakeLists.txt
 @@ -15,13 +15,7 @@
  # It is important to update this value when making incompatible API/ABI changes
  # so that programs that depend on libjxl can update their dependencies. Semantic
@@ -140,7 +200,7 @@ exit
  
  
  # List of warning and feature flags for our library and tests.
-@@ -42,7 +36,6 @@
+@@ -42,13 +36,11 @@
    -Wc++11-compat
    -Warray-bounds
    -Wformat-security
@@ -148,37 +208,14 @@ exit
    -Wno-register  # Needed by public headers in lcms
    -Wno-unused-function
    -Wno-unused-parameter
---- libjxl-0.8.2.orig/lib/jpegli/decode.cc
-+++ libjxl-0.8.2/lib/jpegli/decode.cc
-@@ -244,11 +244,11 @@
-   if (cinfo->input_scan_number == 0) {
-     JPEGLI_ERROR("No SOS marker found.");
-   }
--  return cinfo->master->is_multiscan_;
-+  return cinfo->master->is_multiscan_ ? TRUE : FALSE;
- }
+   -Wnon-virtual-dtor
+   -Woverloaded-virtual
+-  -Wvla
+ )
  
- boolean jpegli_input_complete(j_decompress_ptr cinfo) {
--  return cinfo->master->found_eoi_;
-+  return cinfo->master->found_eoi_ ? TRUE : FALSE;
- }
- 
- boolean jpegli_start_decompress(j_decompress_ptr cinfo) {
---- libjxl-0.8.2.orig/lib/jpegli/decode_marker.cc
-+++ libjxl-0.8.2/lib/jpegli/decode_marker.cc
-@@ -62,8 +62,8 @@
-     JPEGLI_ERROR("Duplicate SOF marker.");
-   }
-   m->found_sof_ = true;
--  cinfo->progressive_mode = (data[1] == 0xc2);
--  cinfo->arith_code = 0;
-+  cinfo->progressive_mode = (data[1] == 0xc2) ? TRUE : FALSE;
-+  cinfo->arith_code = FALSE;
-   size_t pos = 4;
-   JPEG_VERIFY_LEN(6);
-   cinfo->data_precision = ReadUint8(data, &pos);
---- libjxl-0.8.2.orig/lib/jxl/ac_context.h
-+++ libjxl-0.8.2/lib/jxl/ac_context.h
+ # Warning flags supported by clang.
+--- libjxl-0.8.4.orig/lib/jxl/ac_context.h
++++ libjxl-0.8.4/lib/jxl/ac_context.h
 @@ -108,7 +108,7 @@
    }
    // Non-zero context is based on number of non-zeros and block context.
@@ -197,8 +234,8 @@ exit
      return num_ctxs * (kNonZeroBuckets + kZeroDensityContextCount);
    }
  
---- libjxl-0.8.2.orig/lib/jxl/dct_block-inl.h
-+++ libjxl-0.8.2/lib/jxl/dct_block-inl.h
+--- libjxl-0.8.4.orig/lib/jxl/dct_block-inl.h
++++ libjxl-0.8.4/lib/jxl/dct_block-inl.h
 @@ -57,8 +57,7 @@
      return *Address(row, i);
    }
@@ -218,8 +255,8 @@ exit
      return data_ + row * stride_ + i;
    }
  
---- libjxl-0.8.2.orig/lib/jxl/enc_color_management.cc
-+++ libjxl-0.8.2/lib/jxl/enc_color_management.cc
+--- libjxl-0.8.4.orig/lib/jxl/enc_color_management.cc
++++ libjxl-0.8.4/lib/jxl/enc_color_management.cc
 @@ -37,7 +37,6 @@
  #include "lib/jxl/enc_jxl_skcms.h"
  #else  // JPEGXL_ENABLE_SKCMS
@@ -228,27 +265,8 @@ exit
  #endif  // JPEGXL_ENABLE_SKCMS
  
  #define JXL_CMS_VERBOSE 0
---- libjxl-0.8.2.orig/lib/jxl/enc_xyb.cc
-+++ libjxl-0.8.2/lib/jxl/enc_xyb.cc
-@@ -31,6 +31,8 @@
- #include "lib/jxl/transfer_functions-inl.h"
- 
- HWY_BEFORE_NAMESPACE();
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wvla"
- namespace jxl {
- namespace HWY_NAMESPACE {
- 
-@@ -430,6 +432,7 @@
- // NOLINTNEXTLINE(google-readability-namespace-comments)
- }  // namespace HWY_NAMESPACE
- }  // namespace jxl
-+#pragma GCC diagnostic pop
- HWY_AFTER_NAMESPACE();
- 
- #if HWY_ONCE
---- libjxl-0.8.2.orig/lib/jxl/gauss_blur.cc
-+++ libjxl-0.8.2/lib/jxl/gauss_blur.cc
+--- libjxl-0.8.4.orig/lib/jxl/gauss_blur.cc
++++ libjxl-0.8.4/lib/jxl/gauss_blur.cc
 @@ -257,7 +257,7 @@
                     size_t& ctr, float* ring_buffer, const Output output,
                     float* JXL_RESTRICT out_pos) {
@@ -267,8 +285,8 @@ exit
    // More cache-friendly to process an entirely cache line at a time
    constexpr size_t kLanes = kVectors * kVN;
  #if HWY_TARGET == HWY_SCALAR
---- libjxl-0.8.2.orig/lib/jxl.cmake
-+++ libjxl-0.8.2/lib/jxl.cmake
+--- libjxl-0.8.4.orig/lib/jxl.cmake
++++ libjxl-0.8.4/lib/jxl.cmake
 @@ -459,9 +459,16 @@
      $<TARGET_PROPERTY:skcms,INCLUDE_DIRECTORIES>
    )
@@ -277,7 +295,7 @@ exit
 -    $<TARGET_PROPERTY:lcms2,INCLUDE_DIRECTORIES>
 -  )
 +  get_target_property(target_type lcms2 TYPE)
-+  if(target_type STREQUAL "INTERFACE_LIBRARY")
++  if (target_type STREQUAL "INTERFACE_LIBRARY")
 +    target_include_directories(jxl_enc-obj PRIVATE
 +      $<TARGET_PROPERTY:lcms2,INTERFACE_INCLUDE_DIRECTORIES>
 +    )
@@ -289,8 +307,8 @@ exit
  endif ()
  
  # Generate version.h
---- libjxl-0.8.2.orig/plugins/gdk-pixbuf/CMakeLists.txt
-+++ libjxl-0.8.2/plugins/gdk-pixbuf/CMakeLists.txt
+--- libjxl-0.8.4.orig/plugins/gdk-pixbuf/CMakeLists.txt
++++ libjxl-0.8.4/plugins/gdk-pixbuf/CMakeLists.txt
 @@ -4,7 +4,7 @@
  # license that can be found in the LICENSE file.
  
@@ -300,14 +318,140 @@ exit
  
  if (NOT Gdk-Pixbuf_FOUND)
    message(WARNING "GDK Pixbuf development libraries not found, \
---- libjxl-0.8.2.orig/third_party/CMakeLists.txt
-+++ libjxl-0.8.2/third_party/CMakeLists.txt
-@@ -110,7 +110,7 @@
+@@ -23,7 +23,7 @@
+ 
+ # Note: This only needs the decoder library, but we don't install the decoder
+ # shared library.
+-target_link_libraries(pixbufloader-jxl jxl jxl_threads skcms-interface PkgConfig::Gdk-Pixbuf)
++target_link_libraries(pixbufloader-jxl jxl jxl_threads lcms2 PkgConfig::Gdk-Pixbuf)
+ 
+ execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} gdk-pixbuf-2.0 --variable gdk_pixbuf_moduledir --define-variable=prefix=${CMAKE_INSTALL_PREFIX} OUTPUT_VARIABLE GDK_PIXBUF_MODULEDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+ install(TARGETS pixbufloader-jxl DESTINATION "${GDK_PIXBUF_MODULEDIR}")
+--- libjxl-0.8.4.orig/plugins/gdk-pixbuf/pixbufloader-jxl.c
++++ libjxl-0.8.4/plugins/gdk-pixbuf/pixbufloader-jxl.c
+@@ -7,7 +7,7 @@
+ #include "jxl/decode.h"
+ #include "jxl/resizable_parallel_runner.h"
+ #include "jxl/types.h"
+-#include "skcms.h"
++#include "lcms2.h"
+ 
+ #define GDK_PIXBUF_ENABLE_BACKEND
+ #include <gdk-pixbuf/gdk-pixbuf.h>
+@@ -60,7 +60,9 @@
+ 
+   // ICC profile, to which `icc` might refer to.
+   gpointer icc_buff;
+-  skcms_ICCProfile icc;
++  cmsContext context;
++  cmsHPROFILE profile, srgb;
++  cmsHTRANSFORM transform;
+ };
+ 
+ #define GDK_TYPE_PIXBUF_JXL_ANIMATION (gdk_pixbuf_jxl_animation_get_type())
+@@ -144,6 +146,10 @@
+   }
+   JxlResizableParallelRunnerDestroy(decoder_state->parallel_runner);
+   JxlDecoderDestroy(decoder_state->decoder);
++  cmsDeleteTransform(decoder_state->transform);
++  cmsCloseProfile(decoder_state->srgb);
++  cmsCloseProfile(decoder_state->profile);
++  cmsDeleteContext(decoder_state->context);
+   g_free(decoder_state->icc_buff);
+ }
+ 
+@@ -222,7 +228,7 @@
+     if (total_duration_ms == 0) total_duration_ms = 1;
+     uint64_t loop_offset = current_time_ms % total_duration_ms;
+     jxl_iter->current_frame = 0;
+-    while (true) {
++    while (TRUE) {
+       uint64_t duration =
+           g_array_index(jxl_iter->animation->frames, GdkPixbufJxlAnimationFrame,
+                         jxl_iter->current_frame)
+@@ -332,7 +338,6 @@
+ static void draw_pixels(void *context, size_t x, size_t y, size_t num_pixels,
+                         const void *pixels) {
+   GdkPixbufJxlAnimation *decoder_state = context;
+-  gboolean has_alpha = decoder_state->pixel_format.num_channels == 4;
+ 
+   GdkPixbuf *output =
+       g_array_index(decoder_state->frames, GdkPixbufJxlAnimationFrame,
+@@ -343,14 +348,7 @@
+                 decoder_state->pixel_format.num_channels * x +
+                 gdk_pixbuf_get_rowstride(output) * y;
+ 
+-  skcms_Transform(
+-      pixels,
+-      has_alpha ? skcms_PixelFormat_RGBA_ffff : skcms_PixelFormat_RGB_fff,
+-      decoder_state->alpha_premultiplied ? skcms_AlphaFormat_PremulAsEncoded
+-                                         : skcms_AlphaFormat_Unpremul,
+-      &decoder_state->icc, dst,
+-      has_alpha ? skcms_PixelFormat_RGBA_8888 : skcms_PixelFormat_RGB_888,
+-      skcms_AlphaFormat_Unpremul, skcms_sRGB_profile(), num_pixels);
++  cmsDoTransform(decoder_state->transform, pixels, dst, num_pixels);
+ }
+ 
+ static gboolean load_increment(gpointer context, const guchar *buf, guint size,
+@@ -445,12 +443,37 @@
+                       "JxlDecoderGetColorAsICCProfile failed");
+           return FALSE;
+         }
+-        if (!skcms_Parse(decoder_state->icc_buff, icc_size,
+-                         &decoder_state->icc)) {
++        decoder_state->context = cmsCreateContext(NULL, NULL);
++        if (!decoder_state->context) {
++          g_set_error(error, GDK_PIXBUF_ERROR, GDK_PIXBUF_ERROR_FAILED,
++                      "Failed to create LCMS2 context");
++          return FALSE;
++        }
++        decoder_state->profile = cmsOpenProfileFromMemTHR(
++            decoder_state->context, decoder_state->icc_buff, icc_size);
++        if (!decoder_state->profile) {
+           g_set_error(error, GDK_PIXBUF_ERROR, GDK_PIXBUF_ERROR_FAILED,
+                       "Invalid ICC profile from JXL image decoder");
+           return FALSE;
+         }
++        decoder_state->srgb = cmsCreate_sRGBProfileTHR(decoder_state->context);
++        if (!decoder_state->srgb) {
++          g_set_error(error, GDK_PIXBUF_ERROR, GDK_PIXBUF_ERROR_FAILED,
++                      "Failed to create sRGB profile");
++          return FALSE;
++        }
++        decoder_state->transform = cmsCreateTransformTHR(
++            decoder_state->context, decoder_state->profile,
++            decoder_state->has_alpha ? TYPE_RGBA_FLT : TYPE_RGB_FLT,
++            decoder_state->srgb,
++            decoder_state->has_alpha ? TYPE_RGBA_8 : TYPE_RGB_8,
++            INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_COPY_ALPHA);
++        if (!decoder_state->transform) {
++          g_set_error(error, GDK_PIXBUF_ERROR, GDK_PIXBUF_ERROR_FAILED,
++                      "Failed to create LCMS2 color transform");
++          return FALSE;
++        }
++
+         break;
+       }
+ 
+--- libjxl-0.8.4.orig/third_party/CMakeLists.txt
++++ libjxl-0.8.4/third_party/CMakeLists.txt
+@@ -100,7 +100,7 @@
+ endif()
+ 
+ # *cms
+-if (JPEGXL_ENABLE_SKCMS OR JPEGXL_ENABLE_PLUGINS)
++if (JPEGXL_ENABLE_SKCMS)
+   if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/skcms/skcms.h" )
+     message(FATAL_ERROR "Please run ${PROJECT_SOURCE_DIR}/deps.sh to fetch the "
+             "build dependencies.")
+@@ -109,8 +109,8 @@
+   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/skcms/LICENSE"
                   ${PROJECT_BINARY_DIR}/LICENSE.skcms COPYONLY)
  endif ()
- if (JPEGXL_ENABLE_VIEWERS OR NOT JPEGXL_ENABLE_SKCMS)
+-if (JPEGXL_ENABLE_VIEWERS OR NOT JPEGXL_ENABLE_SKCMS)
 -  if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lcms/.git" OR JPEGXL_FORCE_SYSTEM_LCMS2 )
-+  if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lcms" OR JPEGXL_FORCE_SYSTEM_LCMS2 )
++if (JPEGXL_ENABLE_VIEWERS OR NOT JPEGXL_ENABLE_SKCMS OR JPEGXL_ENABLE_PLUGINS)
++  if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lcms/include/lcms2.h" OR JPEGXL_FORCE_SYSTEM_LCMS2 )
      find_package(LCMS2 2.13)
      if ( NOT LCMS2_FOUND )
        message(FATAL_ERROR "Please install lcms2 or run git submodule update --init")
@@ -321,7 +465,7 @@ exit
 +    if (NOT SJPEG_FOUND)
 +      message(FATAL_ERROR "Please run ${PROJECT_SOURCE_DIR}/deps.sh to fetch the "
 +              "build dependencies.")
-+    endif ()
++    endif()
 +  else()
 +    include(sjpeg.cmake)
 +    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sjpeg/COPYING"

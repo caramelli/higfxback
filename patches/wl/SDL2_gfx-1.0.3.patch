@@ -1,0 +1,59 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl2-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.11; lt-2.4)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/include/SDL2
+install -m 644 SDL2_rotozoom.h $DESTDIR/wl/include/SDL2/SDL_rotozoom.h
+install -d $DESTDIR/wl/lib
+install .libs/libSDL2_gfx-2.0.so.0.* $DESTDIR/wl/lib/libSDL2_gfx-2.0.so.0
+ln -sf libSDL2_gfx-2.0.so.0 $DESTDIR/wl/lib/libSDL2_gfx.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 SDL2_gfx.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/sdl2_gfx-build.pc << EOF
+Name: SDL2_gfx
+Version: 1.0.3
+Description: Graphics drawing primitives library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/SDL2/SDL_rotozoom.h \\
+/wl/lib/libSDL2_gfx.so \\
+/wl/lib/pkgconfig/SDL2_gfx.pc
+
+exec=\\
+/wl/lib/libSDL2_gfx-2.0.so.0
+EOF
+
+exit
+--- SDL2_gfx-1.0.3.orig/configure.in
++++ SDL2_gfx-1.0.3/configure.in
+@@ -1,5 +1,6 @@
+ dnl Process this file with autoconf to produce a configure script.
+ AC_INIT(README)
++AC_CONFIG_MACRO_DIR(acinclude)
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 
+@@ -11,7 +12,7 @@
+ # if backwards compatibility has been broken,
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+-MAJOR_VERSION=1
++MAJOR_VERSION=2
+ MINOR_VERSION=0
+ MICRO_VERSION=2
+ INTERFACE_AGE=2

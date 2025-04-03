@@ -1,0 +1,86 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build freetype-build sdl2-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build && GL=1
+
+# configure (ac-2.69; am-1.16; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+test $GL && install .libs/glfont $DESTDIR/wl/bin
+install .libs/showfont $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/SDL2
+install -m 644 SDL_ttf.h $DESTDIR/wl/include/SDL2
+install -d $DESTDIR/wl/lib
+install .libs/libSDL2_ttf-2.0.so.0.* $DESTDIR/wl/lib/libSDL2_ttf-2.0.so.0
+ln -sf libSDL2_ttf-2.0.so.0 $DESTDIR/wl/lib/libSDL2_ttf.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 SDL2_ttf.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/sdl2_ttf-build.pc << EOF
+Name: SDL2_ttf
+Version: 2.0.14
+Description: TrueType font library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/SDL/SDL2_ttf.h \\
+/wl/lib/libSDL2_ttf.so \\
+/wl/lib/pkgconfig/SDL2_ttf.pc
+
+exec=\\
+EOF
+test $GL && cat >> $DESTDIR/wl/share/pkgconfig/sdl2_ttf-build.pc << EOF
+/wl/bin/glfont \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/sdl2_ttf-build.pc << EOF
+/wl/bin/showfont \\
+/wl/lib/libSDL2_ttf-2.0.so.0
+EOF
+
+exit
+--- SDL2_ttf-2.0.14.orig/configure.in
++++ SDL2_ttf-2.0.14/configure.in
+@@ -1,5 +1,7 @@
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT(README.txt)
++AC_INIT(SDL_ttf, 2.0.14)
++AC_CONFIG_SRCDIR(README.txt)
++AC_CONFIG_MACRO_DIR(acinclude)
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 
+@@ -42,7 +44,7 @@
+ AC_CANONICAL_HOST
+ 
+ dnl Setup for automake
+-AM_INIT_AUTOMAKE(SDL2_ttf, $VERSION)
++AM_INIT_AUTOMAKE(foreign)
+ 
+ dnl Check for tools
+ AC_PROG_LIBTOOL
+@@ -112,9 +114,12 @@
+ AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
+ no_freetype=""
+ if test "$FREETYPE_CONFIG" = "no" ; then
++    PKG_CHECK_MODULES([FT2], [freetype2], [
++    CFLAGS="$CFLAGS $FT2_CFLAGS"
++    LIBS="$LIBS $FT2_LIBS"],
+     AC_MSG_ERROR([
+ *** Unable to find FreeType2 library (http://www.freetype.org/)
+-])
++]))
+ else
+     CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
+     LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"

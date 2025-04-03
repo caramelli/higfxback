@@ -44,16 +44,16 @@ exit
  
                  guint pixbuf_length;
                  stride = gdk_pixbuf_get_rowstride (data->pixbuf);
-+                #if GDK_PIXBUF_MAJOR == 2 && GDK_PIXBUF_MINOR < 26
++                #if GDK_PIXBUF_MAJOR == 2 && GDK_PIXBUF_MINOR >= 25
+                 guchar *pixbuf_data = gdk_pixbuf_get_pixels_with_length (data->pixbuf,
+                                                                          &pixbuf_length);
++                #else
 +                guchar *pixbuf_data = gdk_pixbuf_get_pixels (data->pixbuf);
 +                pixbuf_length = (gdk_pixbuf_get_height (data->pixbuf) - 1) *
 +                                gdk_pixbuf_get_rowstride (data->pixbuf) +
 +                                gdk_pixbuf_get_width (data->pixbuf) *
 +                                ((gdk_pixbuf_get_n_channels (data->pixbuf) *
 +                                  gdk_pixbuf_get_bits_per_sample (data->pixbuf) + 7) / 8);
-+                #else
-                 guchar *pixbuf_data = gdk_pixbuf_get_pixels_with_length (data->pixbuf,
-                                                                          &pixbuf_length);
 +                #endif
  
                  /* Initialise the picture to transparent black. */

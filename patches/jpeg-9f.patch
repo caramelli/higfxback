@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-lt-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.71; am-1.16; lt-2.4.6)
+# configure (ac-2.72; am-1.16; lt-2.4.7)
 libtoolize -c -f; aclocal; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
@@ -35,7 +35,7 @@ install -m 644 libjpeg.pc $DESTDIR/lib/pkgconfig
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/jpeg-build.pc << EOF
 Name: jpeg
-Version: 9e
+Version: 9f
 Description: Joint Photographic Experts Group (JPEG) library
 Requires: $REQUIRES
 
@@ -58,8 +58,8 @@ exec=\\
 EOF
 
 exit
---- jpeg-9e.orig/Makefile.am
-+++ jpeg-9e/Makefile.am
+--- jpeg-9f.orig/Makefile.am
++++ jpeg-9f/Makefile.am
 @@ -13,7 +13,7 @@
          jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c \
          jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c \
@@ -69,7 +69,7 @@ exit
  
  # System dependent sources
  SYSDEPSOURCES = jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
-@@ -88,7 +88,7 @@
+@@ -89,7 +89,7 @@
  djpeg_SOURCES    = djpeg.c wrppm.c wrgif.c wrtarga.c wrrle.c wrbmp.c \
          rdcolmap.c cdjpeg.c
  djpeg_LDADD      = libjpeg.la
@@ -78,15 +78,38 @@ exit
  jpegtran_LDADD   = libjpeg.la
  rdjpgcom_SOURCES = rdjpgcom.c
  wrjpgcom_SOURCES = wrjpgcom.c
---- jpeg-9e.orig/configure.ac
-+++ jpeg-9e/configure.ac
-@@ -7,6 +7,9 @@
- 
- AC_INIT([libjpeg], [9.5.0])
+--- jpeg-9f.orig/configure.ac
++++ jpeg-9f/configure.ac
+@@ -10,6 +10,9 @@
+ # Directory where autotools helper scripts lives.
+ AC_CONFIG_AUX_DIR([.])
  
 +# Directory for additional local autotools macros.
 +AC_CONFIG_MACRO_DIR([m4])
 +
- # Directory where autotools helper scripts lives.
- AC_CONFIG_AUX_DIR([.])
+ # Generate configuration headers.
+ AC_CONFIG_HEADERS([jconfig.h:jconfig.cfg])
  
+--- jpeg-9f.orig/jmorecfg.h
++++ jpeg-9f/jmorecfg.h
+@@ -304,19 +304,14 @@
+  */
+ 
+ #ifndef HAVE_BOOLEAN
+-#if defined FALSE || defined TRUE || defined QGLOBAL_H
+-/* Qt3 defines FALSE and TRUE as "const" variables in qglobal.h */
+ typedef int boolean;
++#endif
+ #ifndef FALSE			/* in case these macros already exist */
+ #define FALSE	0		/* values of boolean */
+ #endif
+ #ifndef TRUE
+ #define TRUE	1
+ #endif
+-#else
+-typedef enum { FALSE = 0, TRUE = 1 } boolean;
+-#endif
+-#endif
+ 
+ 
+ /*

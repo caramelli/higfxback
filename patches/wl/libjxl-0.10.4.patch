@@ -1,0 +1,470 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="brotli-build cmake3-build gcc-g++-build gdk-pixbuf-build highway-build lcms2-build openexr-build sjpeg-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+rm -rf third_party/brotli
+rm -rf third_party/highway
+rm -rf third_party/lcms
+rm -rf third_party/libpng
+rm -rf third_party/sjpeg
+rm -rf third_party/zlib
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DBUILD_TESTING=OFF -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_CXX_FLAGS="-DFJXL_ENABLE_AVX2=0 -DHWY_COMPILE_ONLY_EMU128" -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_PLUGINS=ON -DJPEGXL_ENABLE_SKCMS=OFF -DCMAKE_INSTALL_PREFIX=/wl -DCMAKE_INSTALL_RPATH=/wl/lib -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/wl/bin
+install build/tools/cjpegli $DESTDIR/wl/bin
+install build/tools/cjxl $DESTDIR/wl/bin
+install build/tools/djpegli $DESTDIR/wl/bin
+install build/tools/djxl $DESTDIR/wl/bin
+install build/tools/jxlinfo $DESTDIR/wl/bin
+install -d $DESTDIR/wl/include/jxl
+install -m 644 build/lib/include/jxl/jxl_export.h $DESTDIR/wl/include/jxl
+install -m 644 build/lib/include/jxl/version.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/cms_interface.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/codestream_header.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/color_encoding.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/decode.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/memory_manager.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/parallel_runner.h $DESTDIR/wl/include/jxl
+install -m 644 lib/include/jxl/types.h $DESTDIR/wl/include/jxl
+install -d $DESTDIR/wl/lib
+install build/lib/libjxl.so.0.* $DESTDIR/wl/lib/libjxl.so.0
+ln -sf libjxl.so.0 $DESTDIR/wl/lib/libjxl.so
+install build/lib/libjxl_cms.so.0.* $DESTDIR/wl/lib/libjxl_cms.so.0
+ln -sf libjxl_cms.so.0 $DESTDIR/wl/lib/libjxl_cms.so
+install build/lib/libjxl_extras_codec.so.0.* $DESTDIR/wl/lib/libjxl_extras_codec.so.0
+ln -sf libjxl_extras_codec.so.0 $DESTDIR/wl/lib/libjxl_extras_codec.so
+install build/lib/libjxl_threads.so.0.* $DESTDIR/wl/lib/libjxl_threads.so.0
+ln -sf libjxl_threads.so.0 $DESTDIR/wl/lib/libjxl_threads.so
+install -d $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install build/plugins/gdk-pixbuf/libpixbufloader-jxl.so $DESTDIR/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/lib/libjxl.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/lib/libjxl_cms.pc $DESTDIR/wl/lib/pkgconfig
+install -m 644 build/lib/libjxl_threads.pc $DESTDIR/wl/lib/pkgconfig
+test $DESTDIR || /wl/bin/gdk-pixbuf-query-loaders > /wl/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/libjxl-build.pc << EOF
+Name: libjxl
+Version: 0.10.4
+Description: JPEG XL library
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/jxl/cms_interface.h \\
+/wl/include/jxl/codestream_header.h \\
+/wl/include/jxl/color_encoding.h \\
+/wl/include/jxl/decode.h \\
+/wl/include/jxl/jxl_export.h \\
+/wl/include/jxl/memory_manager.h \\
+/wl/include/jxl/parallel_runner.h \\
+/wl/include/jxl/types.h \\
+/wl/include/jxl/version.h \\
+/wl/lib/libjxl.so \\
+/wl/lib/libjxl_cms.so \\
+/wl/lib/libjxl_extras_codec.so \\
+/wl/lib/libjxl_threads.so \\
+/wl/lib/pkgconfig/libjxl.pc \\
+/wl/lib/pkgconfig/libjxl_cms.pc \\
+/wl/lib/pkgconfig/libjxl_threads.pc
+
+exec=\\
+/wl/bin/cjpegli \\
+/wl/bin/cjxl \\
+/wl/bin/djpegli \\
+/wl/bin/djxl \\
+/wl/bin/jxlinfo \\
+/wl/lib/libjxl.so.0 \\
+/wl/lib/libjxl_cms.so.0 \\
+/wl/lib/libjxl_extras_codec.so.0 \\
+/wl/lib/libjxl_threads.so.0 \\
+/wl/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-jxl.so
+EOF
+
+exit
+--- libjxl-0.10.4.orig/CMakeLists.txt
++++ libjxl-0.10.4/CMakeLists.txt
+@@ -81,13 +81,6 @@
+   set(BUNDLE_LIBPNG_DEFAULT NO)
+ endif()
+ 
+-
+-if(EXISTS "${PROJECT_SOURCE_DIR}/third_party/libjpeg-turbo/jconfig.h.in")
+-  set(ENABLE_JPEGLI_DEFAULT YES)
+-else()
+-  set(ENABLE_JPEGLI_DEFAULT NO)
+-endif()
+-
+ # Standard cmake naming for building shared libraries.
+ get_property(SHARED_LIBS_SUPPORTED GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
+ option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones" ${SHARED_LIBS_SUPPORTED})
+@@ -98,7 +91,7 @@
+     "Build JPEGXL developer tools.")
+ set(JPEGXL_ENABLE_TOOLS true CACHE BOOL
+     "Build JPEGXL user tools: cjxl and djxl.")
+-set(JPEGXL_ENABLE_JPEGLI ${ENABLE_JPEGLI_DEFAULT} CACHE BOOL
++set(JPEGXL_ENABLE_JPEGLI true CACHE BOOL
+     "Build jpegli library.")
+ set(JPEGXL_ENABLE_JPEGLI_LIBJPEG true CACHE BOOL
+     "Build libjpeg.so shared library based on jpegli.")
+--- libjxl-0.10.4.orig/cmake/FindJPEG.cmake
++++ libjxl-0.10.4/cmake/FindJPEG.cmake
+@@ -0,0 +1,27 @@
++# Copyright (c) the JPEG XL Project Authors. All rights reserved.
++#
++# Use of this source code is governed by a BSD-style
++# license that can be found in the LICENSE file.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_JPEG QUIET libjpeg)
++endif ()
++
++find_path(JPEG_INCLUDE_DIRS
++  NAMES jpeglib.h
++  HINTS ${PC_JPEG_INCLUDE_DIRS}
++)
++
++find_library(JPEG_LIBRARIES
++  NAMES jpeg
++  HINTS ${PC_JPEG_LIBRARY_DIRS}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(JPEG
++  FOUND_VAR JPEG_FOUND
++  REQUIRED_VARS JPEG_LIBRARIES JPEG_INCLUDE_DIRS
++)
++
++mark_as_advanced(JPEG_INCLUDE_DIRS JPEG_LIBRARIES)
+--- libjxl-0.10.4.orig/cmake/FindPNG.cmake
++++ libjxl-0.10.4/cmake/FindPNG.cmake
+@@ -0,0 +1,27 @@
++# Copyright (c) the JPEG XL Project Authors. All rights reserved.
++#
++# Use of this source code is governed by a BSD-style
++# license that can be found in the LICENSE file.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_PNG QUIET libpng)
++endif ()
++
++find_path(PNG_INCLUDE_DIRS
++  NAMES png.h
++  HINTS ${PC_PNG_INCLUDE_DIRS}
++)
++
++find_library(PNG_LIBRARIES
++  NAMES png
++  HINTS ${PC_PNG_LIBRARY_DIRS}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(PNG
++  FOUND_VAR PNG_FOUND
++  REQUIRED_VARS PNG_LIBRARIES PNG_INCLUDE_DIRS
++)
++
++mark_as_advanced(PNG_INCLUDE_DIRS PNG_LIBRARIES)
+--- libjxl-0.10.4.orig/cmake/FindSJPEG.cmake
++++ libjxl-0.10.4/cmake/FindSJPEG.cmake
+@@ -0,0 +1,27 @@
++# Copyright (c) the JPEG XL Project Authors. All rights reserved.
++#
++# Use of this source code is governed by a BSD-style
++# license that can be found in the LICENSE file.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_SJPEG QUIET libsjpeg)
++endif ()
++
++find_path(SJPEG_INCLUDE_DIRS
++  NAMES sjpeg.h
++  HINTS ${PC_SJPEG_INCLUDE_DIRS}
++)
++
++find_library(SJPEG_LIBRARIES
++  NAMES sjpeg
++  HINTS ${PC_SJPEG_LIBRARY_DIRS}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(SJPEG
++  FOUND_VAR SJPEG_FOUND
++  REQUIRED_VARS SJPEG_LIBRARIES SJPEG_INCLUDE_DIRS
++)
++
++mark_as_advanced(SJPEG_INCLUDE_DIRS SJPEG_LIBRARIES)
+--- libjxl-0.10.4.orig/lib/CMakeLists.txt
++++ libjxl-0.10.4/lib/CMakeLists.txt
+@@ -15,13 +15,7 @@
+ # It is important to update this value when making incompatible API/ABI changes
+ # so that programs that depend on libjxl can update their dependencies. Semantic
+ # versioning allows 0.y.z to have incompatible changes in minor versions.
+-set(JPEGXL_SO_MINOR_VERSION 10)
+-if (JPEGXL_MAJOR_VERSION EQUAL 0)
+-  set(JPEGXL_LIBRARY_SOVERSION
+-      "${JPEGXL_MAJOR_VERSION}.${JPEGXL_SO_MINOR_VERSION}")
+-else()
+-  set(JPEGXL_LIBRARY_SOVERSION "${JPEGXL_MAJOR_VERSION}")
+-endif()
++set(JPEGXL_LIBRARY_SOVERSION "${JPEGXL_MAJOR_VERSION}")
+ 
+ 
+ # List of warning and feature flags for our library and tests.
+@@ -42,13 +36,11 @@
+     -Wc++11-compat
+     -Warray-bounds
+     -Wformat-security
+-    -Wimplicit-fallthrough
+     -Wno-register  # Needed by public headers in lcms
+     -Wno-unused-function
+     -Wno-unused-parameter
+     -Wnon-virtual-dtor
+     -Woverloaded-virtual
+-    -Wvla
+   )
+ 
+   # Warning flags supported by clang.
+--- libjxl-0.10.4.orig/lib/extras/metrics.cc
++++ libjxl-0.10.4/lib/extras/metrics.cc
+@@ -42,7 +42,11 @@
+     using T = float;
+ #endif
+     const HWY_FULL(T) d;
+-    constexpr size_t N = MaxLanes(d);
++#if HWY_CAP_FLOAT64
++    constexpr size_t N = MaxLanes(HWY_FULL(double)());
++#else
++    constexpr size_t N = MaxLanes(HWY_FULL(float)());
++#endif
+     // Manually aligned storage to avoid asan crash on clang-7 due to
+     // unaligned spill.
+     HWY_ALIGN T sum_totals0[N] = {0};
+--- libjxl-0.10.4.orig/lib/jpegli/color_transform.cc
++++ libjxl-0.10.4/lib/jpegli/color_transform.cc
+@@ -135,19 +135,25 @@
+       return num_components == 1;
+     case JCS_RGB:
+     case JCS_YCbCr:
++#ifdef JCS_EXTENSIONS
+     case JCS_EXT_RGB:
+     case JCS_EXT_BGR:
++#endif
+       return num_components == 3;
+     case JCS_CMYK:
+     case JCS_YCCK:
++#ifdef JCS_EXTENSIONS
+     case JCS_EXT_RGBX:
+     case JCS_EXT_BGRX:
+     case JCS_EXT_XBGR:
+     case JCS_EXT_XRGB:
++#endif
++#if JCS_ALPHA_EXTENSIONS
+     case JCS_EXT_RGBA:
+     case JCS_EXT_BGRA:
+     case JCS_EXT_ABGR:
+     case JCS_EXT_ARGB:
++#endif
+       return num_components == 4;
+     default:
+       // Unrecognized colorspaces can have any number of channels, since no
+--- libjxl-0.10.4.orig/lib/jpegli.cmake
++++ libjxl-0.10.4/lib/jpegli.cmake
+@@ -12,6 +12,7 @@
+ )
+ 
+ # JPEGLIB setup
++if(EXISTS "${PROJECT_SOURCE_DIR}/third_party/libjpeg-turbo/jconfig.h.in")
+ set(BITS_IN_JSAMPLE 8)
+ set(MEM_SRCDST_SUPPORTED 1)
+ 
+@@ -29,6 +30,7 @@
+   ../third_party/libjpeg-turbo/jpeglib.h include/jpegli/jpeglib.h COPYONLY)
+ configure_file(
+   ../third_party/libjpeg-turbo/jmorecfg.h include/jpegli/jmorecfg.h COPYONLY)
++endif()
+ 
+ add_library(jpegli-static STATIC EXCLUDE_FROM_ALL "${JPEGXL_INTERNAL_JPEGLI_SOURCES}")
+ target_compile_options(jpegli-static PRIVATE "${JPEGXL_INTERNAL_FLAGS}")
+--- libjxl-0.10.4.orig/lib/jxl/ac_context.h
++++ libjxl-0.10.4/lib/jxl/ac_context.h
+@@ -108,7 +108,7 @@
+   }
+   // Non-zero context is based on number of non-zeros and block context.
+   // For better clustering, contexts with same number of non-zeros are grouped.
+-  constexpr uint32_t ZeroDensityContextsOffset(uint32_t block_ctx) const {
++  inline uint32_t ZeroDensityContextsOffset(uint32_t block_ctx) const {
+     return num_ctxs * kNonZeroBuckets + kZeroDensityContextCount * block_ctx;
+   }
+ 
+@@ -120,7 +120,7 @@
+   //   kZeroDensityContextCount|   computed from block context,
+   //                               number of non-zeros left and
+   //                               index in scan order
+-  constexpr uint32_t NumACContexts() const {
++  inline uint32_t NumACContexts() const {
+     return num_ctxs * (kNonZeroBuckets + kZeroDensityContextCount);
+   }
+ 
+--- libjxl-0.10.4.orig/lib/jxl/cms/jxl_cms.cc
++++ libjxl-0.10.4/lib/jxl/cms/jxl_cms.cc
+@@ -36,7 +36,6 @@
+ #include "skcms.h"
+ #else  // JPEGXL_ENABLE_SKCMS
+ #include "lcms2.h"
+-#include "lcms2_plugin.h"
+ #endif  // JPEGXL_ENABLE_SKCMS
+ 
+ #define JXL_CMS_VERBOSE 0
+--- libjxl-0.10.4.orig/lib/jxl/dct_block-inl.h
++++ libjxl-0.10.4/lib/jxl/dct_block-inl.h
+@@ -57,8 +57,7 @@
+     return *Address(row, i);
+   }
+ 
+-  constexpr HWY_INLINE const float* Address(const size_t row,
+-                                            const size_t i) const {
++  HWY_INLINE const float* Address(const size_t row, const size_t i) const {
+     return data_ + row * stride_ + i;
+   }
+ 
+@@ -88,7 +87,7 @@
+     *Address(row, i) = v;
+   }
+ 
+-  constexpr HWY_INLINE float* Address(const size_t row, const size_t i) const {
++  HWY_INLINE float* Address(const size_t row, const size_t i) const {
+     return data_ + row * stride_ + i;
+   }
+ 
+--- libjxl-0.10.4.orig/plugins/gdk-pixbuf/CMakeLists.txt
++++ libjxl-0.10.4/plugins/gdk-pixbuf/CMakeLists.txt
+@@ -4,7 +4,7 @@
+ # license that can be found in the LICENSE file.
+ 
+ find_package(PkgConfig)
+-pkg_check_modules(Gdk-Pixbuf IMPORTED_TARGET gdk-pixbuf-2.0>=2.36)
++pkg_check_modules(Gdk-Pixbuf IMPORTED_TARGET gdk-pixbuf-2.0)
+ 
+ include(GNUInstallDirs)
+ 
+--- libjxl-0.10.4.orig/plugins/gdk-pixbuf/pixbufloader-jxl.c
++++ libjxl-0.10.4/plugins/gdk-pixbuf/pixbufloader-jxl.c
+@@ -331,7 +331,8 @@
+                                GError **error) {
+   GdkPixbufJxlAnimation *decoder_state = context;
+   if (decoder_state->done == TRUE) {
+-    g_warning_once("Trailing data found at end of JXL file");
++    g_set_error(error, GDK_PIXBUF_ERROR, GDK_PIXBUF_ERROR_FAILED,
++                "Trailing data found at end of JXL file");
+     return TRUE;
+   }
+ 
+@@ -534,6 +535,7 @@
+   return TRUE;
+ }
+ 
++#if GDK_PIXBUF_MAJOR == 2 && GDK_PIXBUF_MINOR >= 36
+ static gboolean jxl_is_save_option_supported(const gchar *option_key) {
+   if (g_strcmp0(option_key, "quality") == 0) {
+     return TRUE;
+@@ -541,6 +543,7 @@
+ 
+   return FALSE;
+ }
++#endif
+ 
+ static gboolean jxl_image_saver(FILE *f, GdkPixbuf *pixbuf, gchar **keys,
+                                 gchar **values, GError **error) {
+@@ -569,7 +572,7 @@
+     gchar **viter = values;
+ 
+     while (*kiter) {
+-      if (strcmp(*kiter, "quality") == 0) {
++      if (g_strcmp0(*kiter, "quality") == 0) {
+         char *endptr = NULL;
+         quality = strtol(*viter, &endptr, 10);
+ 
+@@ -756,7 +759,9 @@
+   module->begin_load = begin_load;
+   module->stop_load = stop_load;
+   module->load_increment = load_increment;
++  #if GDK_PIXBUF_MAJOR == 2 && GDK_PIXBUF_MINOR >= 36
+   module->is_save_option_supported = jxl_is_save_option_supported;
++  #endif
+   module->save = jxl_image_saver;
+ }
+ 
+--- libjxl-0.10.4.orig/third_party/CMakeLists.txt
++++ libjxl-0.10.4/third_party/CMakeLists.txt
+@@ -105,7 +105,7 @@
+                  ${PROJECT_BINARY_DIR}/LICENSE.skcms COPYONLY)
+ endif ()
+ if (JPEGXL_ENABLE_VIEWERS OR NOT JPEGXL_ENABLE_SKCMS OR JPEGXL_ENABLE_PLUGINS)
+-  if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lcms/.git" OR JPEGXL_FORCE_SYSTEM_LCMS2 )
++  if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lcms/include/lcms2.h" OR JPEGXL_FORCE_SYSTEM_LCMS2 )
+     find_package(LCMS2 2.12)
+     if ( NOT LCMS2_FOUND )
+       message(FATAL_ERROR "Please install lcms2 or run git submodule update --init")
+@@ -166,10 +166,14 @@
+ # sjpeg
+ if (JPEGXL_ENABLE_SJPEG)
+   if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sjpeg/CMakeLists.txt")
+-    message(FATAL_ERROR "Please run ${PROJECT_SOURCE_DIR}/deps.sh to fetch the "
+-            "build dependencies.")
++    find_package(SJPEG)
++    if (NOT SJPEG_FOUND)
++      message(FATAL_ERROR "Please run ${PROJECT_SOURCE_DIR}/deps.sh to fetch the "
++              "build dependencies.")
++    endif()
++  else()
++    include(sjpeg.cmake)
++    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sjpeg/COPYING"
++                   ${PROJECT_BINARY_DIR}/LICENSE.sjpeg COPYONLY)
+   endif()
+-  include(sjpeg.cmake)
+-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sjpeg/COPYING"
+-                 ${PROJECT_BINARY_DIR}/LICENSE.sjpeg COPYONLY)
+ endif ()
+--- libjxl-0.10.4.orig/tools/gauss_blur.cc
++++ libjxl-0.10.4/tools/gauss_blur.cc
+@@ -258,7 +258,7 @@
+                    size_t& ctr, float* ring_buffer, const Output output,
+                    float* JXL_RESTRICT out_pos) {
+   const HWY_FULL(float) d;
+-  constexpr size_t kVN = MaxLanes(d);
++  constexpr size_t kVN = MaxLanes(HWY_FULL(float)());
+   // More cache-friendly to process an entirely cache line at a time
+   constexpr size_t kLanes = kVectors * kVN;
+ 
+@@ -302,7 +302,7 @@
+   using D = HWY_FULL(float);
+   using V = Vec<D>;
+   const D d;
+-  constexpr size_t kVN = MaxLanes(d);
++  constexpr size_t kVN = MaxLanes(HWY_FULL(float)());
+   // More cache-friendly to process an entirely cache line at a time
+   constexpr size_t kLanes = kVectors * kVN;
+ #if HWY_TARGET == HWY_SCALAR
+@@ -377,7 +377,7 @@
+                           ThreadPool* /* pool */) {
+   const HWY_FULL(float) df;
+   constexpr size_t kCacheLineLanes = 64 / sizeof(float);
+-  constexpr size_t kVN = MaxLanes(df);
++  constexpr size_t kVN = MaxLanes(HWY_FULL(float)());
+   constexpr size_t kCacheLineVectors =
+       (kVN < kCacheLineLanes) ? (kCacheLineLanes / kVN) : 4;
+   constexpr size_t kFastPace = kCacheLineVectors * kVN;

@@ -3,7 +3,7 @@
 # requires
 REQUIRES="djvulibre-build make-build mupdf-build"
 
-pkg-config --exists --print-errors $REQUIRES || exit 1
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --sdl2 --prefix /wl
@@ -137,3 +137,14 @@ exit
  
 -.PHONY: all clean rebuild install src
 +.PHONY: all clean rebuild install
+--- SDLBook-20241126.orig/sdlbook.c
++++ SDLBook-20241126/sdlbook.c
+@@ -615,7 +615,7 @@
+ 			default:
+ 				if(flags == INPUT_LOOP_RET)
+ 					goto out;
+-				else if(flags == INPUT_LOOP_NUMERIC && isdigit(event.which) && (p - result < 20)) {
++				else if(flags == INPUT_LOOP_NUMERIC && isdigit((unsigned char)event.which) && (p - result < 20)) {
+ 					*(p++) = event.which;
+ 					*p = 0;
+ 				}

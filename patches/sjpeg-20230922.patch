@@ -16,14 +16,16 @@ cmake --build build
 install -d $DESTDIR/bin
 install build/sjpeg $DESTDIR/bin
 install -d $DESTDIR/include
+install -m 644 src/bit_writer.h $DESTDIR/include
 install -m 644 src/sjpeg.h $DESTDIR/include
+install -m 644 src/sjpegi.h $DESTDIR/include
 install -d $DESTDIR/lib
 install build/libsjpeg.so.0.* $DESTDIR/lib/libsjpeg.so.0
 ln -sf libsjpeg.so.0 $DESTDIR/lib/libsjpeg.so
 install build/libsjpeg-utils.so.0.* $DESTDIR/lib/libsjpeg-utils.so.0
 ln -sf libsjpeg-utils.so.0 $DESTDIR/lib/libsjpeg-utils.so
 install -d $DESTDIR/lib/pkgconfig
-install -m 644 build/sjpeg.pc $DESTDIR/lib/pkgconfig
+install -m 644 build/libsjpeg.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -34,10 +36,12 @@ Description: Simple JPEG encoder
 Requires: $REQUIRES
 
 devel=\\
+/include/bit_writer.h \\
 /include/sjpeg.h \\
+/include/sjpegi.h \\
 /lib/libsjpeg.so \\
 /lib/libsjpeg-utils.so \\
-/lib/pkgconfig/sjpeg.pc
+/lib/pkgconfig/libsjpeg.pc
 
 exec=\\
 /bin/sjpeg \\
@@ -48,7 +52,15 @@ EOF
 exit
 --- sjpeg-20230922.orig/CMakeLists.txt
 +++ sjpeg-20230922/CMakeLists.txt
-@@ -82,13 +82,9 @@
+@@ -13,6 +13,7 @@
+ # limitations under the License.
+ 
+ cmake_minimum_required(VERSION 2.8.12)
++list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+ 
+ # Prefer GLVND libraries by default.
+ if(POLICY CMP0072)
+@@ -82,13 +83,9 @@
    target_link_libraries(sjpeg ${SJPEG_DEP_LIBRARIES})
  endif()
  
@@ -63,7 +75,7 @@ exit
  
  # Find the standard image libraries.
  set(SJPEG_DEP_IMG_LIBRARIES)
-@@ -162,7 +158,8 @@
+@@ -162,7 +159,8 @@
    target_link_libraries(sjpeg-utils ${SJPEG_DEP_IMG_LIBRARIES}
                          ${SJPEG_DEP_GL_LIBRARIES})
  endif()
@@ -73,7 +85,7 @@ exit
  
  # Build the executables if asked for.
  if(SJPEG_BUILD_EXAMPLES)
-@@ -196,6 +193,9 @@
+@@ -196,6 +194,9 @@
    target_link_libraries(vjpeg ${SJPEG_DEP_GL_LIBRARIES} sjpeg sjpeg-utils)
  
    install(TARGETS sjpeg-bin vjpeg RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -83,34 +95,97 @@ exit
  endif()
  
  # Install the different headers and libraries.
-@@ -229,6 +229,18 @@
+@@ -229,6 +230,23 @@
    DESTINATION ${ConfigPackageLocation}
  )
  
 +# Create the pkg-config file.
++set(prefix ${CMAKE_INSTALL_PREFIX})
++set(exec_prefix \${prefix})
++set(libdir \${exec_prefix}/${CMAKE_INSTALL_LIBDIR})
++set(includedir \${exec_prefix}/${CMAKE_INSTALL_INCLUDEDIR})
++set(PACKAGE_VERSION ${PROJECT_VERSION})
 +configure_file(
-+  ${CMAKE_CURRENT_SOURCE_DIR}/pkgconfig/sjpeg.pc.in
-+  ${CMAKE_CURRENT_BINARY_DIR}/sjpeg.pc
++  ${CMAKE_CURRENT_SOURCE_DIR}/src/libsjpeg.pc.in
++  ${CMAKE_CURRENT_BINARY_DIR}/libsjpeg.pc
 +  @ONLY
 +)
 +
 +# Install the pkg-config file.
-+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sjpeg.pc
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libsjpeg.pc
 +  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 +)
 +
  
  ################################################################################
  # Man page.
---- sjpeg-20230922.orig/pkgconfig/sjpeg.pc.in
-+++ sjpeg-20230922/pkgconfig/sjpeg.pc.in
-@@ -0,0 +1,9 @@
-+prefix=@CMAKE_INSTALL_PREFIX@
-+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
-+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+--- sjpeg-20230922.orig/cmake/FindJPEG.cmake
++++ sjpeg-20230922/cmake/FindJPEG.cmake
+@@ -0,0 +1,32 @@
++# Copyright 2021 Google LLC.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
 +
-+Name: sjpeg
-+Description: Simple JPEG encoder
-+Version: @PROJECT_VERSION@
-+Libs: -L${libdir} -lsjpeg
-+Cflags: -I${includedir}
++# Find JPEG library.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_JPEG QUIET libjpeg)
++endif()
++
++find_path(JPEG_INCLUDE_DIRS NAMES jpeglib.h HINTS ${PC_JPEG_INCLUDE_DIRS})
++
++find_library(JPEG_LIBRARIES NAMES jpeg HINTS ${PC_JPEG_LIBRARY_DIRS})
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(JPEG
++  FOUND_VAR JPEG_FOUND
++  REQUIRED_VARS JPEG_LIBRARIES JPEG_INCLUDE_DIRS
++)
++
++mark_as_advanced(JPEG_INCLUDE_DIRS JPEG_LIBRARIES)
+--- sjpeg-20230922.orig/cmake/FindPNG.cmake
++++ sjpeg-20230922/cmake/FindPNG.cmake
+@@ -0,0 +1,32 @@
++# Copyright 2021 Google LLC.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++# Find PNG library.
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_PNG QUIET libpng)
++endif()
++
++find_path(PNG_INCLUDE_DIRS NAMES png.h HINTS ${PC_PNG_INCLUDE_DIRS})
++
++find_library(PNG_LIBRARIES NAMES png HINTS ${PC_PNG_LIBRARY_DIRS})
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(PNG
++  FOUND_VAR PNG_FOUND
++  REQUIRED_VARS PNG_LIBRARIES PNG_INCLUDE_DIRS
++)
++
++mark_as_advanced(PNG_INCLUDE_DIRS PNG_LIBRARIES)

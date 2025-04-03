@@ -52,3 +52,104 @@ exec=\\
 EOF
 
 exit
+--- openjpeg-2.0.1.orig/cmake/FindPNG.cmake
++++ openjpeg-2.0.1/cmake/FindPNG.cmake
+@@ -0,0 +1,24 @@
++# - Find PNG library
++# Find the native PNG includes and library
++# Once done this will define
++#
++#  PNG_INCLUDE_DIRS   - Where to find png.h, etc.
++#  PNG_LIBRARIES      - Libraries to link against to use PNG.
++#  PNG_FOUND          - If false, do not try to use PNG.
++
++#=============================================================================
++#=============================================================================
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_PNG QUIET libpng)
++endif()
++
++find_path(PNG_INCLUDE_DIRS NAMES png.h HINTS ${PC_PNG_INCLUDE_DIRS})
++
++find_library(PNG_LIBRARIES NAMES png HINTS ${PC_PNG_LIBRARY_DIRS})
++
++include(FindPackageHandleStandardArgs)
++FIND_PACKAGE_HANDLE_STANDARD_ARGS(PNG DEFAULT_MSG PNG_LIBRARIES PNG_INCLUDE_DIRS)
++
++mark_as_advanced(PNG_INCLUDE_DIRS PNG_LIBRARIES)
+--- openjpeg-2.0.1.orig/cmake/FindTIFF.cmake
++++ openjpeg-2.0.1/cmake/FindTIFF.cmake
+@@ -0,0 +1,24 @@
++# - Find TIFF library
++# Find the native TIFF includes and library
++# Once done this will define
++#
++#  TIFF_INCLUDE_DIRS   - Where to find tiff.h, etc.
++#  TIFF_LIBRARIES      - Libraries to link against to use TIFF.
++#  TIFF_FOUND          - If false, do not try to use TIFF.
++
++#=============================================================================
++#=============================================================================
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_TIFF QUIET libtiff)
++endif()
++
++find_path(TIFF_INCLUDE_DIRS NAMES tiff.h HINTS ${PC_TIFF_INCLUDE_DIRS})
++
++find_library(TIFF_LIBRARIES NAMES tiff HINTS ${PC_TIFF_LIBRARY_DIRS})
++
++include(FindPackageHandleStandardArgs)
++FIND_PACKAGE_HANDLE_STANDARD_ARGS(TIFF DEFAULT_MSG TIFF_LIBRARIES TIFF_INCLUDE_DIRS)
++
++mark_as_advanced(TIFF_INCLUDE_DIRS TIFF_LIBRARIES)
+--- openjpeg-2.0.1.orig/cmake/FindZLIB.cmake
++++ openjpeg-2.0.1/cmake/FindZLIB.cmake
+@@ -0,0 +1,24 @@
++# - Find ZLIB library
++# Find the native ZLIB includes and library
++# Once done this will define
++#
++#  ZLIB_INCLUDE_DIRS   - Where to find zlib.h, etc.
++#  ZLIB_LIBRARIES      - Libraries to link against to use ZLIB.
++#  ZLIB_FOUND          - If false, do not try to use ZLIB.
++
++#=============================================================================
++#=============================================================================
++
++find_package(PkgConfig QUIET)
++if (PkgConfig_FOUND)
++  pkg_check_modules(PC_ZLIB QUIET zlib)
++endif()
++
++find_path(ZLIB_INCLUDE_DIRS NAMES zlib.h HINTS ${PC_ZLIB_INCLUDE_DIRS})
++
++find_library(ZLIB_LIBRARIES NAMES z HINTS ${PC_ZLIB_LIBRARY_DIRS})
++
++include(FindPackageHandleStandardArgs)
++FIND_PACKAGE_HANDLE_STANDARD_ARGS(ZLIB DEFAULT_MSG ZLIB_LIBRARIES ZLIB_INCLUDE_DIRS)
++
++mark_as_advanced(ZLIB_INCLUDE_DIRS ZLIB_LIBRARIES)
+--- openjpeg-2.0.1.orig/thirdparty/CMakeLists.txt
++++ openjpeg-2.0.1/thirdparty/CMakeLists.txt
+@@ -41,7 +41,7 @@
+       SET(OPJ_HAVE_PNG_H 1 PARENT_SCOPE)
+       SET(OPJ_HAVE_LIBPNG 1 PARENT_SCOPE)
+       SET(PNG_LIBNAME ${PNG_LIBRARIES} PARENT_SCOPE)
+-      SET(PNG_INCLUDE_DIRNAME ${PNG_PNG_INCLUDE_DIR} PARENT_SCOPE)
++      SET(PNG_INCLUDE_DIRNAME ${PNG_PNG_INCLUDE_DIRS} PARENT_SCOPE)
+     ELSE(PNG_FOUND) # not found
+       SET(OPJ_HAVE_PNG_H 0 PARENT_SCOPE)
+       SET(OPJ_HAVE_LIBPNG 0 PARENT_SCOPE)
+@@ -71,7 +71,7 @@
+     SET(OPJ_HAVE_TIFF_H 1 PARENT_SCOPE)
+     SET(OPJ_HAVE_LIBTIFF 1 PARENT_SCOPE)
+     SET(TIFF_LIBNAME ${TIFF_LIBRARIES} PARENT_SCOPE)
+-    SET(TIFF_INCLUDE_DIRNAME ${TIFF_INCLUDE_DIR} PARENT_SCOPE)
++    SET(TIFF_INCLUDE_DIRNAME ${TIFF_INCLUDE_DIRS} PARENT_SCOPE)
+   ELSE (TIFF_FOUND) # not found
+     SET(OPJ_HAVE_TIFF_H 0 PARENT_SCOPE)
+     SET(OPJ_HAVE_LIBTIFF 0 PARENT_SCOPE)
