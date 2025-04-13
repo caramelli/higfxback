@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="mkfontdir-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/share/fonts/truetype
+install -m 644 fonts/Amiri-Bold.ttf $DESTDIR/share/fonts/truetype
+install -m 644 fonts/Amiri-BoldItalic.ttf $DESTDIR/share/fonts/truetype
+install -m 644 fonts/Amiri-Italic.ttf $DESTDIR/share/fonts/truetype
+install -m 644 fonts/Amiri-Regular.ttf $DESTDIR/share/fonts/truetype
+test $DESTDIR || mkfontscale /share/fonts/truetype && mkfontdir /share/fonts/truetype
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/amiri-build.pc << EOF
+Name: amiri
+Version: 1.001
+Description: TrueType Amiri font
+Requires: $REQUIRES
+
+exec=\\
+/share/fonts/truetype/Amiri-Bold.ttf \\
+/share/fonts/truetype/Amiri-BoldItalic.ttf \\
+/share/fonts/truetype/Amiri-Italic.ttf \\
+/share/fonts/truetype/Amiri-Regular.ttf
+EOF
+
+exit

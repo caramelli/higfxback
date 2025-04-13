@@ -1,0 +1,25 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="mkfontdir-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# install
+install -d $DESTDIR/share/fonts/truetype
+install -m 644 fireflysung.ttf $DESTDIR/share/fonts/truetype
+test $DESTDIR || mkfontscale /share/fonts/truetype && mkfontdir /share/fonts/truetype
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/fireflysung-build.pc << EOF
+Name: fireflysung
+Version: 1.3.0
+Description: TrueType Firefly Sung font
+Requires: $REQUIRES
+
+exec=\\
+/share/fonts/truetype/fireflysung.ttf
+EOF
+
+exit

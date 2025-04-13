@@ -5,6 +5,11 @@ REQUIRES="autotools-wrappers-lt-build freetype-build gcc-g++-build glib-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if pkg-config --exists icu4c-build; then
+  ICU=1
+  REQUIRES="$REQUIRES icu4c-build"
+fi
+
 # configure (ac-2.68; am-1.11; lt-2.4.2)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
 ./configure --prefix=
@@ -24,6 +29,7 @@ install -m 644 src/hb-common.h $DESTDIR/include/harfbuzz
 install -m 644 src/hb-font.h $DESTDIR/include/harfbuzz
 install -m 644 src/hb-ft.h $DESTDIR/include/harfbuzz
 install -m 644 src/hb-glib.h $DESTDIR/include/harfbuzz
+test $ICU && install -m 644 src/hb-icu.h $DESTDIR/include/harfbuzz
 install -m 644 src/hb-ot.h $DESTDIR/include/harfbuzz
 install -m 644 src/hb-ot-layout.h $DESTDIR/include/harfbuzz
 install -m 644 src/hb-ot-tag.h $DESTDIR/include/harfbuzz
@@ -54,6 +60,11 @@ devel=\\
 /include/harfbuzz/hb-font.h \\
 /include/harfbuzz/hb-ft.h \\
 /include/harfbuzz/hb-glib.h \\
+EOF
+test $ICU && cat >> $DESTDIR/share/pkgconfig/harfbuzz-build.pc << EOF
+/include/harfbuzz/hb-icu.h \\
+EOF
+cat >> $DESTDIR/share/pkgconfig/harfbuzz-build.pc << EOF
 /include/harfbuzz/hb-ot-layout.h \\
 /include/harfbuzz/hb-ot-tag.h \\
 /include/harfbuzz/hb-ot.h \\
@@ -83,7 +94,7 @@ exit
  dnl GOBJECT_INTROSPECTION_CHECK([0.9.0])
  dnl GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
  
-@@ -139,6 +141,7 @@
+@@ -139,29 +141,21 @@
  PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.16, have_glib=true, have_glib=false)
  if $have_glib; then
  	AC_DEFINE(HAVE_GLIB, 1, [Have glib2 library])
@@ -91,15 +102,31 @@ exit
  fi
  AM_CONDITIONAL(HAVE_GLIB, $have_glib)
  
-@@ -147,6 +150,7 @@
- 	AC_DEFINE(HAVE_GOBJECT, 1, [Have gobject2 library])
+ PKG_CHECK_MODULES(GOBJECT, gobject-2.0 glib-2.0 >= 2.16, have_gobject=true, have_gobject=false)
+ if $have_gobject; then
+-	AC_DEFINE(HAVE_GOBJECT, 1, [Have gobject2 library])
  	GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
  	AC_SUBST(GLIB_MKENUMS)
 +	HB_REQUIRES_PRIVATE="$HB_REQUIRES_PRIVATE gobject-2.0"
  fi
  AM_CONDITIONAL(HAVE_GOBJECT, $have_gobject)
  
-@@ -238,6 +242,7 @@
+ dnl ==========================================================================
+ 
+-PKG_CHECK_MODULES(CAIRO, cairo >= 1.8.0, have_cairo=true, have_cairo=false)
+-if $have_cairo; then
+-	AC_DEFINE(HAVE_CAIRO, 1, [Have cairo graphics library])
+-fi
+-AM_CONDITIONAL(HAVE_CAIRO, $have_cairo)
+-
+ PKG_CHECK_MODULES(CAIRO_FT, cairo-ft, have_cairo_ft=true, have_cairo_ft=false)
+-if $have_cairo_ft; then
+-	AC_DEFINE(HAVE_CAIRO_FT, 1, [Have cairo-ft support in cairo graphics library])
+-fi
+ AM_CONDITIONAL(HAVE_CAIRO_FT, $have_cairo_ft)
+ 
+ dnl ==========================================================================
+@@ -238,6 +232,7 @@
  	AC_CHECK_FUNCS(FT_Face_GetCharVariantIndex)
  	LIBS="$_save_libs"
  	CFLAGS="$_save_cflags"
@@ -107,7 +134,7 @@ exit
  fi
  AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
  
-@@ -318,6 +323,8 @@
+@@ -318,6 +313,8 @@
  
  dnl ===========================================================================
  

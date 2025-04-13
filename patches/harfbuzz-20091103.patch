@@ -1,0 +1,195 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build freetype-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.64; am-1.11; lt-2.2.6)
+libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/.libs/main $DESTDIR/bin/harfbuzz-ng
+install -d $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-blob.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-buffer.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-common.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-font.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-glib.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-ot.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-ot-layout.h $DESTDIR/include/harfbuzz-ng
+install -m 644 src/hb-unicode.h $DESTDIR/include/harfbuzz-ng
+install -d $DESTDIR/include/harfbuzz-ng/opentype
+ln -sf ../hb-glib.h $DESTDIR/include/harfbuzz-ng/opentype/hb-glib.h
+ln -sf ../hb-ot.h $DESTDIR/include/harfbuzz-ng/opentype/hb-ot.h
+install -d $DESTDIR/lib
+install src/.libs/libharfbuzz-ng.so.0.* $DESTDIR/lib/libharfbuzz-ng.so.0
+ln -sf libharfbuzz-ng.so.0 $DESTDIR/lib/libharfbuzz-ng.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 harfbuzz-ng.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/harfbuzz-ng-build.pc << EOF
+Name: harfbuzz-ng
+Version: 20091103
+Description: OpenType text shaping library
+Requires: $REQUIRES
+
+devel=\\
+/include/harfbuzz-ng/hb.h \\
+/include/harfbuzz-ng/hb-blob.h \\
+/include/harfbuzz-ng/hb-buffer.h \\
+/include/harfbuzz-ng/hb-common.h \\
+/include/harfbuzz-ng/hb-font.h \\
+/include/harfbuzz-ng/hb-glib.h \\
+/include/harfbuzz-ng/hb-ot.h \\
+/include/harfbuzz-ng/hb-ot-layout.h \\
+/include/harfbuzz-ng/hb-unicode.h \\
+/include/harfbuzz-ng/opentype/hb-glib.h \\
+/include/harfbuzz-ng/opentype/hb-ot.h \\
+/lib/libharfbuzz-ng.so \\
+/lib/pkgconfig/harfbuzz-ng.pc
+
+exec=\\
+/bin/harfbuzz-ng \\
+/lib/libharfbuzz-ng.so.0
+EOF
+
+exit
+--- harfbuzz-20091103.orig/Makefile.am
++++ harfbuzz-20091103/Makefile.am
+@@ -1,7 +1,7 @@
+ SUBDIRS = src
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_DATA = harfbuzz.pc
++pkgconfig_DATA = harfbuzz-ng.pc
+ 
+ MAINTAINERCLEANFILES = \
+ 	$(srcdir)/INSTALL \
+--- harfbuzz-20091103.orig/configure.ac
++++ harfbuzz-20091103/configure.ac
+@@ -2,6 +2,7 @@
+ AC_INIT(harfbuzz, 0.1, [http://bugs.freedesktop.org/enter_bug.cgi?product=harfbuzz])
+ AC_CONFIG_SRCDIR([harfbuzz.pc.in])
+ AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([1.9.6 gnu dist-bzip2 no-dist-gzip -Wall no-define])
+ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+ 
+@@ -11,6 +12,8 @@
+ AC_PROG_CC
+ AC_PROG_CXX
+ 
++HB_REQUIRES_PRIVATE=
++
+ AC_CHECK_FUNCS(mprotect sysconf getpagesize)
+ AC_CHECK_HEADERS(unistd.h sys/mman.h)
+ 
+@@ -23,20 +26,17 @@
+ 
+ PKG_CHECK_MODULES(GLIB, glib-2.0, have_glib=true, have_glib=false)
+ if $have_glib; then
+-	AC_DEFINE(HAVE_GLIB, 1, [Have FreeType 2 library])
++	AC_DEFINE(HAVE_GLIB, 1, [Have glib2 library])
++	HB_REQUIRES_PRIVATE="$HB_REQUIRES_PRIVATE glib-2.0"
+ fi
+ AM_CONDITIONAL(HAVE_GLIB, $have_glib)
+ 
+-PKG_CHECK_MODULES(FREETYPE, freetype2, have_freetype=true, have_freetype=false)
+-if $have_freetype; then
+-	AC_DEFINE(HAVE_FREETYPE, 1, [Have FreeType 2 library])
+-fi
+-AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
+-
+ dnl ==========================================================================
+ 
++AC_SUBST(HB_REQUIRES_PRIVATE)
++
+ AC_CONFIG_FILES([
+-harfbuzz.pc
++harfbuzz-ng.pc:harfbuzz.pc.in
+ Makefile
+ src/Makefile
+ ])
+--- harfbuzz-20091103.orig/harfbuzz.pc.in
++++ harfbuzz-20091103/harfbuzz.pc.in
+@@ -7,5 +7,6 @@
+ Description: Text shaping library
+ Version: @VERSION@
+ 
+-Libs: -L${libdir} -lharfbuzz
+-Cflags: -I${includedir}/harfbuzz
++Requires.private: @HB_REQUIRES_PRIVATE@
++Libs: -L${libdir} -lharfbuzz-ng
++Cflags: -I${includedir}/harfbuzz-ng
+--- harfbuzz-20091103.orig/src/Makefile.am
++++ harfbuzz-20091103/src/Makefile.am
+@@ -5,7 +5,7 @@
+ # The following warning options are useful for debugging: -Wpadded -Wcast-align
+ #AM_CXXFLAGS =
+ 
+-lib_LTLIBRARIES = libharfbuzz.la
++lib_LTLIBRARIES = libharfbuzz-ng.la
+ 
+ HBSOURCES =  \
+ 	hb-blob.c \
+@@ -56,16 +56,18 @@
+ 
+ CXXLINK = $(LINK)
+ 
+-libharfbuzz_la_SOURCES = $(HBSOURCES) $(HBHEADERS)
+-libharfbuzz_la_CPPFLAGS = $(GLIB_CFLAGS)
+-libharfbuzz_la_LIBADD = $(GLIB_LIBS)
++libharfbuzz_ng_la_SOURCES = $(HBSOURCES) $(HBHEADERS)
++libharfbuzz_ng_la_CPPFLAGS = $(GLIB_CFLAGS)
++libharfbuzz_ng_la_LIBADD = $(GLIB_LIBS)
++
++pkgincludedir = $(includedir)/harfbuzz-ng
+ pkginclude_HEADERS = $(HBHEADERS)
+ 
+ noinst_PROGRAMS = main
+ 
+ main_SOURCES = main.cc
+ main_CPPFLAGS = $(GLIB_CFLAGS)
+-main_LDADD = libharfbuzz.la $(GLIB_LIBS)
++main_LDADD = libharfbuzz-ng.la $(GLIB_LIBS)
+ 
+ TESTS = \
+ 	check-libstdc++.sh \
+--- harfbuzz-20091103.orig/src/hb-ot-layout.cc
++++ harfbuzz-20091103/src/hb-ot-layout.cc
+@@ -279,7 +279,6 @@
+ 
+ void
+ hb_ot_layout_build_glyph_classes (hb_face_t      *face,
+-				  uint16_t        num_total_glyphs,
+ 				  hb_codepoint_t *glyphs,
+ 				  unsigned char  *klasses,
+ 				  uint16_t        count)
+@@ -293,7 +292,7 @@
+     return;
+ 
+   if (layout->new_gdef.len == 0) {
+-    layout->new_gdef.klasses = (unsigned char *) calloc (num_total_glyphs, sizeof (unsigned char));
++    layout->new_gdef.klasses = (unsigned char *) calloc (count, sizeof (unsigned char));
+     layout->new_gdef.len = count;
+   }
+ 
+--- harfbuzz-20091103.orig/src/hb-ot-layout.h
++++ harfbuzz-20091103/src/hb-ot-layout.h
+@@ -66,7 +66,6 @@
+ 
+ void
+ hb_ot_layout_build_glyph_classes (hb_face_t      *face,
+-				  uint16_t        num_total_glyphs,
+ 				  hb_codepoint_t *glyphs,
+ 				  unsigned char  *klasses,
+ 				  uint16_t        count);

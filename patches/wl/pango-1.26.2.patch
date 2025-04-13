@@ -1,14 +1,23 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build cairo-build harfbuzz-old-build"
+REQUIRES="autotools-wrappers-lt-build cairo-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists harfbuzz-old-build; then
+  HARFBUZZ=old
+  REQUIRES="$REQUIRES harfbuzz-old-build"
+else
+  pkg-config --exists --print-errors harfbuzz-ng-build || exit 1
+  HARFBUZZ=ng
+  REQUIRES="$REQUIRES harfbuzz-ng-build"
+fi
 
 # configure (ac-2.63; am-1.11; lt-2.2.6)
 libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
 rm -rf pango/opentype
-PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --with-system-harfbuzz=old --prefix=/wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --with-system-harfbuzz=$HARFBUZZ --prefix=/wl
 
 # build
 make
@@ -152,9 +161,9 @@ exit
 +    OPENTYPE_SUBDIR=opentype
 +  else
 +    if test "x$with_system_harfbuzz" = "xyes" -o "x$with_system_harfbuzz" = "xng"; then
-+      PKG_CHECK_MODULES(OPENTYPE, harfbuzz = 0.1)
++      PKG_CHECK_MODULES(OPENTYPE, harfbuzz-ng)
 +    else
-+      PKG_CHECK_MODULES(OPENTYPE, harfbuzz-1)
++      PKG_CHECK_MODULES(OPENTYPE, harfbuzz-old)
 +      OPENTYPE_CFLAGS="$OPENTYPE_CFLAGS -DHARFBUZZ_OLD"
 +    fi
 +  fi

@@ -15,21 +15,21 @@ make
 # install
 install -d $DESTDIR/bin
 install src/.libs/harfbuzz-dump $DESTDIR/bin
-install -d $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz.h $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz-buffer.h $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz-gdef.h $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz-global.h $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz-gpos.h $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz-gsub.h $DESTDIR/include/harfbuzz-1
-install -m 644 src/harfbuzz-open.h $DESTDIR/include/harfbuzz-1
-install -d $DESTDIR/include/harfbuzz-1/opentype
-ln -sf ../harfbuzz.h $DESTDIR/include/harfbuzz-1/opentype/harfbuzz.h
+install -d $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz.h $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz-buffer.h $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz-gdef.h $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz-global.h $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz-gpos.h $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz-gsub.h $DESTDIR/include/harfbuzz-old
+install -m 644 src/harfbuzz-open.h $DESTDIR/include/harfbuzz-old
+install -d $DESTDIR/include/harfbuzz-old/opentype
+ln -sf ../harfbuzz.h $DESTDIR/include/harfbuzz-old/opentype/harfbuzz.h
 install -d $DESTDIR/lib
-install src/.libs/libharfbuzz-1.so.0.* $DESTDIR/lib/libharfbuzz-1.so.0
-ln -sf libharfbuzz-1.so.0 $DESTDIR/lib/libharfbuzz-1.so
+install src/.libs/libharfbuzz-old.so.0.* $DESTDIR/lib/libharfbuzz-old.so.0
+ln -sf libharfbuzz-old.so.0 $DESTDIR/lib/libharfbuzz-old.so
 install -d $DESTDIR/lib/pkgconfig
-install -m 644 harfbuzz-1.pc $DESTDIR/lib/pkgconfig
+install -m 644 harfbuzz-old.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -40,20 +40,20 @@ Description: OpenType text shaping library
 Requires: $REQUIRES
 
 devel=\\
-/include/harfbuzz-1/harfbuzz.h \\
-/include/harfbuzz-1/harfbuzz-buffer.h \\
-/include/harfbuzz-1/harfbuzz-gdef.h \\
-/include/harfbuzz-1/harfbuzz-global.h \\
-/include/harfbuzz-1/harfbuzz-gpos.h \\
-/include/harfbuzz-1/harfbuzz-gsub.h \\
-/include/harfbuzz-1/harfbuzz-open.h \\
-/include/harfbuzz-1/opentype/harfbuzz.h \\
-/lib/libharfbuzz-1.so \\
-/lib/pkgconfig/harfbuzz-1.pc
+/include/harfbuzz-old/harfbuzz.h \\
+/include/harfbuzz-old/harfbuzz-buffer.h \\
+/include/harfbuzz-old/harfbuzz-gdef.h \\
+/include/harfbuzz-old/harfbuzz-global.h \\
+/include/harfbuzz-old/harfbuzz-gpos.h \\
+/include/harfbuzz-old/harfbuzz-gsub.h \\
+/include/harfbuzz-old/harfbuzz-open.h \\
+/include/harfbuzz-old/opentype/harfbuzz.h \\
+/lib/libharfbuzz-old.so \\
+/lib/pkgconfig/harfbuzz-old.pc
 
 exec=\\
 /bin/harfbuzz-dump \\
-/lib/libharfbuzz-1.so.0
+/lib/libharfbuzz-old.so.0
 EOF
 
 exit
@@ -64,7 +64,7 @@ exit
  SUBDIRS = src tests
 +
 +pkgconfigdir = $(libdir)/pkgconfig
-+pkgconfig_DATA = harfbuzz-1.pc
++pkgconfig_DATA = harfbuzz-old.pc
 --- harfbuzz-old-20070216.orig/configure.ac
 +++ harfbuzz-old-20070216/configure.ac
 @@ -14,12 +14,11 @@
@@ -88,12 +88,12 @@ exit
  
  AC_OUTPUT([
  Makefile
-+harfbuzz-1.pc
++harfbuzz-old.pc
  src/Makefile
  tests/Makefile
  tests/linebreaking/Makefile
---- harfbuzz-old-20070216.orig/harfbuzz-1.pc.in
-+++ harfbuzz-old-20070216/harfbuzz-1.pc.in
+--- harfbuzz-old-20070216.orig/harfbuzz-old.pc.in
++++ harfbuzz-old-20070216/harfbuzz-old.pc.in
 @@ -0,0 +1,12 @@
 +prefix=@prefix@
 +exec_prefix=@exec_prefix@
@@ -105,8 +105,8 @@ exit
 +Version: @VERSION@
 +
 +Requires.private: freetype2
-+Libs: -L${libdir} -lharfbuzz-1
-+Cflags: -I${includedir}/harfbuzz-1
++Libs: -L${libdir} -lharfbuzz-old
++Cflags: -I${includedir}/harfbuzz-old
 --- harfbuzz-old-20070216.orig/src/Makefile.am
 +++ harfbuzz-old-20070216/src/Makefile.am
 @@ -3,7 +3,7 @@
@@ -114,7 +114,7 @@ exit
  	$(FREETYPE_CFLAGS)
  
 -noinst_LTLIBRARIES = libharfbuzz-1.la
-+lib_LTLIBRARIES = libharfbuzz-1.la
++lib_LTLIBRARIES = libharfbuzz-old.la
  
  MAINSOURCES =  \
  	harfbuzz-global.c \
@@ -135,8 +135,18 @@ exit
  
  EXTRA_SOURCES = harfbuzz.c
  
-@@ -54,13 +46,16 @@
- libharfbuzz_1_la_LIBADD = \
+@@ -46,21 +38,24 @@
+ 	harfbuzz-open-private.h \
+ 	harfbuzz-shaper-private.h
+ 
+-libharfbuzz_1_la_SOURCES = \
++libharfbuzz_old_la_SOURCES = \
+ 	$(MAINSOURCES) \
+ 	$(PUBLICHEADERS) \
+ 	$(PRIVATEHEADERS)
+ 
+-libharfbuzz_1_la_LIBADD = \
++libharfbuzz_old_la_LIBADD = \
  	$(FREETYPE_LIBS)
  
 -#noinst_PROGRAMS = harfbuzz-dump
@@ -146,7 +156,7 @@ exit
 -#
 -#harfbuzz_dump_LDADD = 		\
 -#	libharfbuzz-1.la
-+libharfbuzzdir = $(includedir)/harfbuzz-1
++libharfbuzzdir = $(includedir)/harfbuzz-old
 +libharfbuzz_HEADERS = $(PUBLICHEADERS)
 +
 +noinst_PROGRAMS = harfbuzz-dump
@@ -155,7 +165,7 @@ exit
 +	harfbuzz-dump-main.c
 +
 +harfbuzz_dump_LDADD = 		\
-+	libharfbuzz-1.la
++	libharfbuzz-old.la
  
  EXTRA_DIST = 		\
  	README		\
@@ -214,3 +224,25 @@ exit
 -#include "harfbuzz-shaper.h"
  
  #endif /* HARFBUZZ_OPEN_H */
+--- harfbuzz-old-20070216.orig/tests/linebreaking/Makefile.am
++++ harfbuzz-old-20070216/tests/linebreaking/Makefile.am
+@@ -2,7 +2,7 @@
+ check_PROGRAMS = linebreaking
+ 
+ linebreaking_SOURCES = main.cpp harfbuzz-qt.cpp
+-linebreaking_LDADD = $(QT_GUI_LIBS) $(QT_QTEST_LIBS) ../../src/libharfbuzz-1.la
++linebreaking_LDADD = $(QT_GUI_LIBS) $(QT_QTEST_LIBS) ../../src/libharfbuzz-old.la
+ 
+ main.o: main.moc
+ 
+--- harfbuzz-old-20070216.orig/tests/shaping/Makefile.am
++++ harfbuzz-old-20070216/tests/shaping/Makefile.am
+@@ -2,7 +2,7 @@
+ check_PROGRAMS = shaping
+ 
+ shaping_SOURCES = main.cpp ../linebreaking/harfbuzz-qt.cpp
+-shaping_LDADD = $(QT_GUI_LIBS) $(QT_QTEST_LIBS) ../../src/libharfbuzz-1.la
++shaping_LDADD = $(QT_GUI_LIBS) $(QT_QTEST_LIBS) ../../src/libharfbuzz-old.la
+ 
+ main.o: main.moc
+ 

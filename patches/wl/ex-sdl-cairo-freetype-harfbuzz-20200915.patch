@@ -1,0 +1,181 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="amiri-build cairo-build fireflysung-build harfbuzz-build make-build sdl2-build ttf-bitstream-vera-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --print-requires harfbuzz-build | grep -q icu4c-build; then
+  UNICODE_BACKEND=ICU
+else
+  UNICODE_BACKEND=GLIB
+fi
+
+# configure
+rm -rf fonts
+PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --arabic-font /share/fonts/truetype/Amiri-Regular.ttf --chinese-font /share/fonts/truetype/fireflysung.ttf --english-font /share/fonts/truetype/VeraSe.ttf --with-unicode-backend $UNICODE_BACKEND --prefix /wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install ex-sdl-cairo-freetype-harfbuzz $DESTDIR/wl/bin
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/ex-sdl-cairo-freetype-harfbuzz-build.pc << EOF
+Name: ex-sdl-cairo-freetype-harfbuzz
+Version: 20200915
+Description: Text rendering example using SDL, Cairo, FreeType and HarfBuzz
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/ex-sdl-cairo-freetype-harfbuzz
+EOF
+
+exit
+--- ex-sdl-cairo-freetype-harfbuzz-20200915.orig/Configure
++++ ex-sdl-cairo-freetype-harfbuzz-20200915/Configure
+@@ -0,0 +1,57 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++ARABIC_FONT=fonts/amiri-0.104/amiri-regular.ttf
++CHINESE_FONT=fonts/fireflysung-1.3.0/fireflysung.ttf
++ENGLISH_FONT=fonts/DejaVuSerif.ttf
++
++UNICODE_BACKEND=ICU
++
++while : ; do
++  case "$1" in
++    "")
++      break
++    ;;
++    --prefix)
++      PREFIX=$2
++      shift
++    ;;
++    --arabic-font)
++      ARABIC_FONT=$2
++      shift
++    ;;
++    --chinese-font)
++      CHINESE_FONT=$2
++      shift
++    ;;
++    --english-font)
++      ENGLISH_FONT=$2
++      shift
++    ;;
++    --with-unicode-backend)
++      UNICODE_BACKEND=$2
++      shift
++    ;;
++    *)
++      echo Unknown option \"$1\".
++      exit 1
++    ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" Makefile
++fi
++
++sed -i "/^ARABIC_FONT/s|=.*|=$ARABIC_FONT|" Makefile
++sed -i "/^CHINESE_FONT/s|=.*|=$CHINESE_FONT|" Makefile
++sed -i "/^ENGLISH_FONT/s|=.*|=$ENGLISH_FONT|" Makefile
++
++sed -i "/^UNICODE_BACKEND/s|=.*|=$UNICODE_BACKEND|" Makefile
+--- ex-sdl-cairo-freetype-harfbuzz-20200915.orig/Makefile
++++ ex-sdl-cairo-freetype-harfbuzz-20200915/Makefile
+@@ -1,11 +1,19 @@
+ CC=gcc
+-CFLAGS=--std=c99 -g -O2 -Wall --pedantic `pkg-config --cflags freetype2` `sdl2-config --cflags`
+-LIBS=-lcairo -lharfbuzz -lharfbuzz-icu `pkg-config --libs freetype2` `sdl2-config --libs`
++PREFIX=/usr/local
++PKG_CONFIG=pkg-config
++ARABIC_FONT=fonts/amiri-0.104/amiri-regular.ttf
++CHINESE_FONT=fonts/fireflysung-1.3.0/fireflysung.ttf
++ENGLISH_FONT=fonts/DejaVuSerif.ttf
++UNICODE_BACKEND=ICU
++CPPFLAGS=-DARABIC_FONT=\"$(ARABIC_FONT)\" -DCHINESE_FONT=\"$(CHINESE_FONT)\" -DENGLISH_FONT=\"$(ENGLISH_FONT)\" -D$(UNICODE_BACKEND)_UNICODE_FUNCS
++CFLAGS=--std=c99 -g -O2 -Wall --pedantic `$(PKG_CONFIG) --cflags cairo freetype2 harfbuzz sdl2`
++LDFLAGS=-Wl,-rpath,$(PREFIX)/lib
++LIBS=`$(PKG_CONFIG) --libs cairo freetype2 harfbuzz sdl2`
+ 
+ all: ex-sdl-cairo-freetype-harfbuzz
+ 
+ ex-sdl-cairo-freetype-harfbuzz: ex-sdl-cairo-freetype-harfbuzz.c
+-	$(CC) $< $(CFLAGS) -o $@ $(LDFLAGS) $(LIBS)
++	$(CC) $< $(CPPFLAGS) $(CFLAGS) -o $@ $(LDFLAGS) $(LIBS)
+ 
+ clean:
+ 	rm -f ex-sdl-cairo-freetype-harfbuzz
+--- ex-sdl-cairo-freetype-harfbuzz-20200915.orig/ex-sdl-cairo-freetype-harfbuzz.c
++++ ex-sdl-cairo-freetype-harfbuzz-20200915/ex-sdl-cairo-freetype-harfbuzz.c
+@@ -3,20 +3,20 @@
+ #include <assert.h>
+ 
+ #include <SDL.h>
+-#include <SDL_image.h>
+ 
+ #include <ft2build.h>
+ #include FT_FREETYPE_H
+-#include <freetype/ftadvanc.h>
+-#include <freetype/ftsnames.h>
+-#include <freetype/tttables.h>
+ 
+-#include <harfbuzz/hb.h>
+ #include <harfbuzz/hb-ft.h>
+-#include <harfbuzz/hb-icu.h> /* Alternatively you can use hb-glib.h */
++#if defined(GLIB_UNICODE_FUNCS) 
++#include <harfbuzz/hb-glib.h>
++#elif defined(ICU_UNICODE_FUNCS) 
++#include <harfbuzz/hb-icu.h>
++#else
++#error "Invalid Unicode functions"
++#endif
+ 
+-#include <cairo/cairo.h>
+-#include <cairo/cairo-ft.h>
++#include <cairo-ft.h>
+ 
+ #define NUM_EXAMPLES 3
+ #define FONT_SIZE 40
+@@ -59,11 +59,11 @@
+ 
+     /* Load our fonts */
+     FT_Face ft_face[NUM_EXAMPLES];
+-    assert(!FT_New_Face(ft_library, "fonts/DejaVuSerif.ttf", 0, &ft_face[ENGLISH]));
++    assert(!FT_New_Face(ft_library, ENGLISH_FONT, 0, &ft_face[ENGLISH]));
+     assert(!FT_Set_Char_Size(ft_face[ENGLISH],FONT_SIZE*64, FONT_SIZE*64,0,0));
+-    assert(!FT_New_Face(ft_library, "fonts/amiri-0.104/amiri-regular.ttf", 0, &ft_face[ARABIC]));
++    assert(!FT_New_Face(ft_library, ARABIC_FONT, 0, &ft_face[ARABIC]));
+     assert(!FT_Set_Char_Size(ft_face[ARABIC],FONT_SIZE*64, FONT_SIZE*64,0,0 ));
+-    assert(!FT_New_Face(ft_library, "fonts/fireflysung-1.3.0/fireflysung.ttf", 0, &ft_face[CHINESE]));
++    assert(!FT_New_Face(ft_library, CHINESE_FONT, 0, &ft_face[CHINESE]));
+     assert(!FT_Set_Char_Size(ft_face[CHINESE],FONT_SIZE*64, FONT_SIZE*64,0,0 ));
+ 
+     /* Get our cairo font structs */
+@@ -146,8 +146,11 @@
+             /* Create a buffer for harfbuzz to use */
+             hb_buffer_t *buf = hb_buffer_create();
+ 
+-            //alternatively you can use hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
++#if defined(GLIB_UNICODE_FUNCS) 
++            hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
++#elif defined(ICU_UNICODE_FUNCS) 
+             hb_buffer_set_unicode_funcs(buf, hb_icu_get_unicode_funcs());
++#endif
+             hb_buffer_set_direction(buf, text_directions[i]); /* or LTR */
+             hb_buffer_set_script(buf, scripts[i]); /* see hb-unicode.h */
+             hb_buffer_set_language(buf, hb_language_from_string(languages[i], -1));
