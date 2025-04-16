@@ -14,8 +14,10 @@ GMP = gmp-6.2.1
 LINUX = linux-4.14.336
 MPFR = mpfr-4.1.1
 MPC = mpc-1.3.1
-PKG_CONFIG_LITE=pkg-config-lite-0.28-1
+PKG_CONFIG_LITE = pkg-config-lite-0.28-1
 SYSLINUX = syslinux-3.86
+
+################################################################################
 
 all:
 	@echo "make toolchain rootfs initrd iso"
@@ -27,6 +29,9 @@ cross-binutils:
 	@test -f $(BINUTILS)/cross/config.status || ( cd $(BINUTILS)/cross; ../configure --build=$(MACHTYPE) --target=$(HOST) --with-sysroot=$(STAGING_DIR) --prefix= )
 	$(MAKE) -C $(BINUTILS)/cross
 	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(BINUTILS)/cross install
+	@rm -rf $(STAGING_DIR)/$(HOST)/lib
+	@rm -rf $(STAGING_DIR)/share/info; rm -rf $(STAGING_DIR)/share/locale; rm -rf $(STAGING_DIR)/share/man
+	@echo $(BINUTILS) > $(STAGING_DIR)/share/binutils-VERSION
 
 cross-gcc: cross-binutils
 	@echo Build $@
@@ -39,10 +44,12 @@ cross-gcc: cross-binutils
 	$(MAKE) -C $(GCC)/cross all-gcc all-target-libgcc
 	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(GCC)/cross install-gcc install-target-libgcc
 	cat $(GCC)/gcc/limitx.h $(GCC)/gcc/glimits.h $(GCC)/gcc/limity.h > $(STAGING_DIR)/lib/gcc/$(HOST)/`echo $(GCC) | cut -d- -f2`/include-fixed/limits.h
+	@rm -rf $(STAGING_DIR)/share/info; rm -rf $(STAGING_DIR)/share/locale; rm -rf $(STAGING_DIR)/share/man
+	@echo $(GCC) > $(STAGING_DIR)/share/gcc-VERSION
 
 linux-headers:
 	@echo Build $@
-	@test -d $(LINUX) || wget -qO- https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz | tar -xJ
+	@test -d $(LINUX) || ( wget -qO- https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz | tar -xJ && patch -d $(LINUX) -p1 < $(LINUX).patch )
 	$(MAKE) INSTALL_HDR_PATH=$(STAGING_DIR) -C $(LINUX) headers_install
 
 glibc: cross-gcc linux-headers
@@ -52,17 +59,17 @@ glibc: cross-gcc linux-headers
 	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=no libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
 	$(MAKE) -C $(GLIBC)/build
 	$(MAKE) install_root=$(STAGING_DIR) -C $(GLIBC)/build install
+	@rm -rf $(STAGING_DIR)/share/locale
 
 toolchain: glibc
 	@echo Create cross-toolchain
-	@rm -rf $(STAGING_DIR)/share/info
-	@rm -rf $(STAGING_DIR)/share/locale
-	@rm -rf $(STAGING_DIR)/share/man
+
+################################################################################
 
 linux:
 	@echo Build $@
 	@test -d $(LINUX) || ( wget -qO- https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz | tar -xJ && patch -d $(LINUX) -p1 < $(LINUX).patch )
-	test -f $(LINUX)/.config || ( cp $(LINUX)-fragment-x86_64.config $(LINUX)/arch/x86/configs/fragment-x86_64.config && $(MAKE) -C $(LINUX) x86_64_defconfig fragment-x86_64.config )
+	@test -f $(LINUX)/.config || ( cp $(LINUX)-fragment-x86_64.config $(LINUX)/arch/x86/configs/fragment-x86_64.config && $(MAKE) -C $(LINUX) x86_64_defconfig fragment-x86_64.config )
 	$(MAKE) CROSS_COMPILE=$(HOST)- -C $(LINUX)
 
 busybox:
@@ -100,7 +107,8 @@ syslinux:
 	@test -d $(SYSLINUX) || wget -qO- https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/3.xx/$(SYSLINUX).tar.xz | tar -xJ
 	$(MAKE) CC=$(HOST)-gcc -C $(SYSLINUX) installer
 
-.PHONY: rootfs
+################################################################################
+
 rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@echo Create rootfs tarball
 	@install -d rootfs/bin
@@ -342,8 +350,6 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install -m 644 $(GCC)/build/gcc/include/xmmintrin.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
 	@install -d rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include-fixed
 	@install -m 644 $(GCC)/build/gcc/include-fixed/limits.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include-fixed
-	@install -d rootfs/lib64
-	@ln -sf ../lib/ld-linux-x86-64.so.2 rootfs/lib64/ld-linux-x86-64.so.2
 	@install -d rootfs/mnt/share
 	@install -d rootfs/proc
 	@install -d rootfs/root
@@ -367,11 +373,10 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install -d rootfs/sys
 	@install -d rootfs/tmp
 	@install -d rootfs/var
-	@ln -sf /run rootfs/var/run
+	@rm -f rootfs/var/run; ln -s /run rootfs/var/run
 	@find rootfs -type f -exec file {} \; | grep -v crt | grep ELF | cut -d: -f1 | xargs $(HOST)-strip
 	@tar -C rootfs -czf rootfs.tgz .
 
-.PHONY: initrd
 initrd: busybox syslinux
 	@echo Create ext2fs initrd
 	@install -d initrd/bin
@@ -394,8 +399,6 @@ initrd: busybox syslinux
 	@install -d initrd/lib
 	@install $(STAGING_DIR)/lib/ld-*.so initrd/lib/ld-linux-x86-64.so.2
 	@install $(STAGING_DIR)/lib/libc-*.so initrd/lib/libc.so.6
-	@install -d initrd/lib64
-	@ln -sf ../lib/ld-linux-x86-64.so.2 initrd/lib64/ld-linux-x86-64.so.2
 	@install -d initrd/mnt/cdrom
 	@install -d initrd/mnt/disk
 	@install -d initrd/proc

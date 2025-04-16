@@ -1,0 +1,60 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="fontconfig-build json-c-build meson-build wayland-protocols-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists giflib-build && REQUIRES="$REQUIRES giflib-build"
+pkg-config --exists jpeg-build && REQUIRES="$REQUIRES jpeg-build"
+pkg-config --exists libexif-build && REQUIRES="$REQUIRES libexif-build"
+pkg-config --exists libpng-build && REQUIRES="$REQUIRES libpng-build"
+pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
+pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists libheif-build && REQUIRES="$REQUIRES libheif-build"
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists libjxl-build && REQUIRES="$REQUIRES libjxl-build"
+
+# configure
+PKG_CONFIG_PATH=/wl/lib/pkgconfig meson setup --prefix=/wl build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/wl/bin
+install build/swayimg $DESTDIR/wl/bin
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/swayimg-build.pc << EOF
+Name: swayimg
+Version: 1.12
+Description: Wayland image viewer
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/swayimg
+EOF
+
+exit
+--- swayimg-1.12.orig/src/font.c
++++ swayimg-1.12/src/font.c
+@@ -144,7 +144,7 @@
+     const FT_Bitmap* bitmap = &glyph->bitmap;
+     const size_t fheight = font_height(ctx);
+ 
+-    for (size_t y = 0; y < bitmap->rows; ++y) {
++    for (int y = 0; y < bitmap->rows; ++y) {
+         argb_t* wnd_line;
+         const uint8_t* glyph_line;
+         const size_t wnd_y = pos->y + y + fheight - glyph->bitmap_top;
+@@ -155,7 +155,7 @@
+         wnd_line = &wnd_buf[wnd_y * wnd_size->width];
+         glyph_line = &bitmap->buffer[y * bitmap->width];
+ 
+-        for (size_t x = 0; x < bitmap->width; ++x) {
++        for (int x = 0; x < bitmap->width; ++x) {
+             const uint8_t alpha = glyph_line[x];
+             const size_t wnd_x = pos->x + glyph->bitmap_left + x;
+             if (wnd_x < wnd_size->width && alpha) {

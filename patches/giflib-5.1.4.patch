@@ -1,0 +1,92 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.2)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install util/.libs/gif2rgb $DESTDIR/bin
+install util/.libs/gifbuild $DESTDIR/bin
+install util/.libs/gifclrmp $DESTDIR/bin
+install util/.libs/gifecho $DESTDIR/bin
+install util/.libs/giffix $DESTDIR/bin
+install util/.libs/gifinto $DESTDIR/bin
+install util/.libs/giftext $DESTDIR/bin
+install util/.libs/giftool $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 lib/gif_lib.h $DESTDIR/include
+install -d $DESTDIR/lib
+install lib/.libs/libgif.so.7.* $DESTDIR/lib/libgif.so.7
+ln -sf libgif.so.7 $DESTDIR/lib/libgif.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 giflib.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/giflib-build.pc << EOF
+Name: giflib
+Version: 5.1.4
+Description: Graphics Interchange Format (GIF) library
+Requires: $REQUIRES
+
+devel=\\
+/include/gif_lib.h \\
+/lib/libgif.so \\
+/lib/pkgconfig/giflib.pc
+
+exec=\\
+/bin/gif2rgb \\
+/bin/gifbuild \\
+/bin/gifclrmp \\
+/bin/gifecho \\
+/bin/giffix \\
+/bin/gifinto \\
+/bin/giftext \\
+/bin/giftool \\
+/lib/libgif.so.7
+EOF
+
+exit
+--- giflib-5.1.4.orig/configure.ac
++++ giflib-5.1.4/configure.ac
+@@ -6,10 +6,6 @@
+ dnl Make builds less verbose.  Shuts off Makefile portability checks.
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+-dnl Note: config.h is not used in the current build
+-dnl We leave this in place only to suppress an error message at autogen time
+-AM_CONFIG_HEADER(config.h)
+-
+ dnl Checks for programs.
+ AM_PROG_AR
+ AC_PROG_LIBTOOL
+@@ -47,6 +43,7 @@
+ util/Makefile
+ lib/Makefile
+ Makefile
++giflib.pc
+ doc/Makefile
+ pic/Makefile
+ ])
+--- giflib-5.1.4.orig/giflib.pc.in
++++ giflib-5.1.4/giflib.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: giflib
++Description: Reads and writes GIF files
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lgif
++Cflags: -I${includedir}
