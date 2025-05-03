@@ -1,0 +1,52 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build gawk-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists elfutils-build && REQUIRES="$REQUIRES elfutils-build"
+
+# configure (ac-2.69; am-1.16)
+aclocal -I m4; autoconf; autoheader; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/strace $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/strace-build.pc << EOF
+Name: strace
+Version: 5.19
+Description: System calls and signals tracer
+Requires: $REQUIRES
+
+exec=\\
+/bin/strace
+EOF
+
+exit
+--- strace-5.19.orig/src/Makefile.am
++++ strace-5.19/src/Makefile.am
+@@ -1081,7 +1081,6 @@
+ ioctlsort_INCLUDES = $(DEFAULT_INCLUDES) $(INCLUDES)
+ ioctlsort_CPPFLAGS = $(AM_CPPFLAGS_FOR_BUILD) $(CPPFLAGS_FOR_BUILD)
+ ioctlsort_CFLAGS = $(AM_CFLAGS_FOR_BUILD) $(CFLAGS_FOR_BUILD)
+-ioctlsort_LDFLAGS = $(AM_LDFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD)
+ 
+ ioctls_inc_h = $(wildcard $(srcdir)/$(OS)/$(ARCH)/ioctls_inc*.h)
+ ioctlent_h = $(patsubst $(srcdir)/$(OS)/$(ARCH)/ioctls_inc%,ioctlent%,$(ioctls_inc_h))
+@@ -1108,7 +1107,7 @@
+ 	sed -n 's/^DEFINE HOST/#define /p' $< > $@
+ 
+ ioctlsort%$(BUILD_EXEEXT): ioctlsort%.o
+-	$(ioctlsort_CC) $(ioctlsort_CFLAGS) $(ioctlsort_LDFLAGS) $< -o $@
++	$(ioctlsort_CC) $(ioctlsort_CFLAGS) $(AM_LDFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) $< -o $@
+ 
+ ioctlsort%.o: ioctls_all%.h \
+ 	      ioctl_iocdef.h $(srcdir)/ioctls_zfs.h $(srcdir)/ioctlsort.c

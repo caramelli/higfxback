@@ -22,10 +22,10 @@ devel=\\
 EOF
 
 exit
---- make-3.82.orig/config.h.linux-gnu
-+++ make-3.82/config.h.linux-gnu
-@@ -0,0 +1,171 @@
-+/* config.h -- hand-massaged for GNU/Linux system
+--- make-3.82.orig/config.h.linux
++++ make-3.82/config.h.linux
+@@ -0,0 +1,160 @@
++/* config.h.linux -- hand-massaged for Linux system
 +Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
 +1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
 +2010 Free Software Foundation, Inc.
@@ -67,10 +67,6 @@ exit
 +   don't. */
 +#define HAVE_DECL_BSD_SIGNAL 1
 +
-+/* Define to 1 if you have the declaration of `sys_siglist', and to 0 if you
-+   don't. */
-+#define HAVE_DECL_SYS_SIGLIST 1
-+
 +/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'. */
 +#define HAVE_DIRENT_H 1
 +
@@ -107,20 +103,11 @@ exit
 +/* Define to 1 if you have the `mkstemp' function. */
 +#define HAVE_MKSTEMP 1
 +
-+/* Define to 1 if you have the `mktemp' function. */
-+#define HAVE_MKTEMP 1
-+
 +/* Define to 1 if you have the `realpath' function. */
 +#define HAVE_REALPATH 1
 +
 +/* Define to 1 if <signal.h> defines the SA_RESTART constant. */
 +#define HAVE_SA_RESTART 1
-+
-+/* Define to 1 if you have the `setegid' function. */
-+#define HAVE_SETEGID 1
-+
-+/* Define to 1 if you have the `seteuid' function. */
-+#define HAVE_SETEUID 1
 +
 +/* Define to 1 if you have the `setrlimit' function. */
 +#define HAVE_SETRLIMIT 1
@@ -149,11 +136,14 @@ exit
 +/* Define to 1 if you have the `strsignal' function. */
 +#define HAVE_STRSIGNAL 1
 +
-+/* Define to 1 if you have the <sys/param.h> header file. */
-+#define HAVE_SYS_PARAM_H 1
-+
 +/* Define to 1 if you have the <sys/resource.h> header file. */
 +#define HAVE_SYS_RESOURCE_H 1
++
++/* Define to 1 if you have the <sys/timeb.h> header file. */
++#define HAVE_SYS_TIMEB_H 1
++
++/* Define to 1 if you have the <sys/wait.h> header file. */
++#define HAVE_SYS_WAIT_H 1
 +
 +/* Define to 1 if you have the <unistd.h> header file. */
 +#define HAVE_UNISTD_H 1
@@ -165,7 +155,7 @@ exit
 +#define HAVE_WAITPID 1
 +
 +/* Build host information. */
-+#define MAKE_HOST "linux-gnu"
++#define MAKE_HOST "linux"
 +
 +/* Define to 1 to enable job server support in GNU make. */
 +#define MAKE_JOBSERVER 1
@@ -175,12 +165,6 @@ exit
 +
 +/* Name of package */
 +#define PACKAGE "make"
-+
-+/* Define to the character that separates directories in PATH. */
-+#define PATH_SEPARATOR_CHAR ':'
-+
-+/* Define as the return type of signal handlers (`int' or `void'). */
-+#define RETSIGTYPE void
 +
 +/* Define to the name of the SCCS 'get' command. */
 +#define SCCS_GET "get"
@@ -196,9 +180,14 @@ exit
 +
 +/* Version number of package */
 +#define VERSION "3.82"
++
++/* Enable GNU extensions on systems that have them.  */
++#ifndef _GNU_SOURCE
++# define _GNU_SOURCE 1
++#endif
 --- make-3.82.orig/configure.sh
 +++ make-3.82/configure.sh
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,86 @@
 +#!/bin/sh
 +# Shell script to configure GNU Make without relying on `autotools'.
 +
@@ -219,8 +208,6 @@ exit
 +#
 +# You should have received a copy of the GNU General Public License along with
 +# this program.  If not, see <http://www.gnu.org/licenses/>.
-+
-+srcdir=.
 +
 +CC=${CC-gcc}
 +CFLAGS=${CFLAGS:-"-g -O2"}
@@ -246,10 +233,6 @@ exit
 +    "")
 +      break
 +    ;;
-+    --srcdir)
-+      srcdir=$2
-+      shift
-+    ;;
 +    --prefix)
 +      prefix=$2
 +      shift
@@ -265,6 +248,8 @@ exit
 +  esac
 +  shift
 +done
++
++srcdir=`dirname $0`
 +
 +sed < $srcdir/build.sh.in "
 +s|@configure_input@|build.sh.  Generated from build.sh.in by configure.sh.|
@@ -288,4 +273,4 @@ exit
 +" > build.sh
 +chmod +x build.sh
 +
-+cp $srcdir/config.h.linux-gnu config.h
++cp $srcdir/config.h.linux config.h

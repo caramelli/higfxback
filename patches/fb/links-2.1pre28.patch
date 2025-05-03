@@ -1,0 +1,122 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build gpm-build jpeg-build libpng-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists libmd-build && REQUIRES="$REQUIRES libmd-build"
+pkg-config --exists openssl-build && REQUIRES="$REQUIRES openssl-build"
+pkg-config --exists pcre-build && REQUIRES="$REQUIRES pcre-build"
+pkg-config --exists tiff-build && REQUIRES="$REQUIRES tiff-build"
+
+# configure (ac-2.13; am-1.4)
+aclocal; autoconf; autoheader; rm -f stamp-h.in; automake -a -c
+./configure  --enable-graphics --enable-javascript --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install links $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/links-build.pc << EOF
+Name: links
+Version: 2.1pre28
+Description: Lynx-like text and graphical web browser
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/links
+EOF
+
+exit
+--- links-2.1pre28.orig/connect.c
++++ links-2.1pre28/connect.c
+@@ -120,7 +120,7 @@
+ {
+ 	struct conn_info *b = c->buffer;
+ 
+-	if (c->no_tsl) c->ssl->options |= SSL_OP_NO_TLSv1;
++	if (c->no_tsl) SSL_set_options(c->ssl, SSL_OP_NO_TLSv1);
+ 	switch (SSL_get_error(c->ssl, SSL_connect(c->ssl))) {
+ 		case SSL_ERROR_NONE:
+ 			c->buffer = NULL;
+@@ -169,7 +169,7 @@
+ 		if(c->ssl) {
+ 			c->ssl = getSSL();
+ 			SSL_set_fd(c->ssl,s);
+-			if (c->no_tsl) c->ssl->options |= SSL_OP_NO_TLSv1;
++			if (c->no_tsl) SSL_set_options(c->ssl, SSL_OP_NO_TLSv1);
+ 			switch (SSL_get_error(c->ssl, SSL_connect(c->ssl))) {
+ 				case SSL_ERROR_WANT_READ:
+ 					setcstate(c, S_SSL_NEG);
+@@ -217,7 +217,7 @@
+ 		if(c->ssl) {
+ 			c->ssl = getSSL();
+ 			SSL_set_fd(c->ssl, *b->sock);
+-			if (c->no_tsl) c->ssl->options |= SSL_OP_NO_TLSv1;
++			if (c->no_tsl) SSL_set_options(c->ssl, SSL_OP_NO_TLSv1);
+ 			switch (SSL_get_error(c->ssl, SSL_connect(c->ssl))) {
+ 				case SSL_ERROR_WANT_READ:
+ 					setcstate(c, S_SSL_NEG);
+--- links-2.1pre28.orig/https.c
++++ links-2.1pre28/https.c
+@@ -30,15 +30,7 @@
+ SSL *getSSL(void)
+ {
+ 	if (!context) {
+-		char f_randfile[PATH_MAX];
+-
+-		const char *f = RAND_file_name(f_randfile, sizeof(f_randfile));
+-		if (f && RAND_egd(f)<0) {
+-			/* Not an EGD, so read and write to it */
+-			if (RAND_load_file(f_randfile, -1))
+-				RAND_write_file(f_randfile);
+-		}
+-		SSLeay_add_ssl_algorithms();
++		RAND_poll();
+ 		context = SSL_CTX_new(SSLv23_client_method());
+ 		SSL_CTX_set_options(context, SSL_OP_ALL);
+ 		SSL_CTX_set_default_verify_paths(context);
+--- links-2.1pre28.orig/png.c
++++ links-2.1pre28/png.c
+@@ -48,7 +48,7 @@
+ /* Error for from-web PNG images. */
+ void img_my_png_error(png_structp png_ptr, png_const_charp error_string)
+ {
+-	longjmp(png_ptr->jmpbuf,1);
++	png_longjmp(png_ptr,1);
+ }
+ 
+ void png_info_callback(png_structp png_ptr, png_infop info_ptr)
+@@ -203,7 +203,7 @@
+ #ifdef DEBUG
+ 	if (!info_ptr) internal ("png_create_info_struct failed\n");
+ #endif /* #ifdef DEBUG */
+-	if (setjmp(png_ptr->jmpbuf)){
++	if (setjmp(png_jmpbuf(png_ptr))){
+ error:
+ 		png_destroy_read_struct(&png_ptr, &info_ptr,
+ 			(png_infopp)NULL);
+@@ -213,7 +213,7 @@
+ 	png_set_progressive_read_fn(png_ptr, NULL,
+ 				    png_info_callback, png_row_callback,
+ 				    png_end_callback);
+-   	if (setjmp(png_ptr->jmpbuf)) goto error;
++   	if (setjmp(png_jmpbuf(png_ptr))) goto error;
+ 	decoder=mem_alloc(sizeof(*decoder));
+ 	decoder->png_ptr=png_ptr;
+ 	decoder->info_ptr=info_ptr;
+@@ -232,7 +232,7 @@
+ 	png_ptr=((struct png_decoder *)(cimg->decoder))->png_ptr;
+ 	info_ptr=((struct png_decoder *)(cimg->decoder))->info_ptr;
+ 	end_callback_hit=0;
+-	if (setjmp(png_ptr->jmpbuf)){
++	if (setjmp(png_jmpbuf(png_ptr))){
+ 		img_end(cimg);
+ 		return;
+ 	}

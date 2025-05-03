@@ -6,9 +6,13 @@ REQUIRES="m4-build perl-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-cd autoconf-2.52-20101002; ./configure --program-suffix=-autoconf-2.52.20101002 --prefix=; cd -
-cd autoconf-2.52-20121002; ./configure --program-suffix=-autoconf-2.52.20121002 --prefix=; cd -
-cd autoconf-2.52-20150926; ./configure --program-suffix=-autoconf-2.52.20150926 --prefix=; cd -
+cd autoconf-2.13; ./configure --program-suffix=-2.13 --prefix=; cd -
+cd autoconf-2.52-20101002; ./configure --program-suffix=-2.52.20101002 --prefix=; cd -
+cd autoconf-2.52-20121002; ./configure --program-suffix=-2.52.20121002 --prefix=; cd -
+cd autoconf-2.52-20141204; ./configure --program-suffix=-2.52.20141204 --prefix=; cd -
+cd autoconf-2.52-20150926; ./configure --program-suffix=-2.52.20150926 --prefix=; cd -
+cd autoconf-2.52-20170501; ./configure --program-suffix=-2.52.20170501 --prefix=; cd -
+cd autoconf-2.52-20200111; ./configure --program-suffix=-2.52.20200111 --prefix=; cd -
 cd autoconf-2.59; ./configure --program-suffix=-2.59 --prefix=; cd -
 cd autoconf-2.60; ./configure --program-suffix=-2.60 --prefix=; cd -
 cd autoconf-2.61; ./configure --program-suffix=-2.61 --prefix=; cd -
@@ -25,9 +29,13 @@ cd autoconf-2.71; ./configure --program-suffix=-2.71 --prefix=; cd -
 cd autoconf-2.72; ./configure --program-suffix=-2.72 --prefix=; cd -
 
 # build
+make acdatadir=/share/autoconf-2.13 -C autoconf-2.13
 make pkgdatadir=/share/autoconf-2.52.20101002 -C autoconf-2.52-20101002
 make pkgdatadir=/share/autoconf-2.52.20121002 -C autoconf-2.52-20121002
+make pkgdatadir=/share/autoconf-2.52.20141204 -C autoconf-2.52-20141204
 make pkgdatadir=/share/autoconf-2.52.20150926 -C autoconf-2.52-20150926
+make pkgdatadir=/share/autoconf-2.52.20170501 -C autoconf-2.52-20170501
+make pkgdatadir=/share/autoconf-2.52.20200111 -C autoconf-2.52-20200111
 make pkgdatadir=/share/autoconf-2.59 -C autoconf-2.59
 MAKEFLAGS=-j1 make pkgdatadir=/share/autoconf-2.60 -C autoconf-2.60
 MAKEFLAGS=-j1 make pkgdatadir=/share/autoconf-2.61 -C autoconf-2.61
@@ -50,6 +58,13 @@ ln -sf ac-wrapper.sh $DESTDIR/bin/autoconf
 ln -sf ac-wrapper.sh $DESTDIR/bin/autoheader
 ln -sf ac-wrapper.sh $DESTDIR/bin/autom4te
 
+install autoconf-2.13/autoconf $DESTDIR/bin/autoconf-2.13
+install autoconf-2.13/autoheader $DESTDIR/bin/autoheader-2.13
+install -d $DESTDIR/share/autoconf-2.13
+install -m 644 autoconf-2.13/acconfig.h $DESTDIR/share/autoconf-2.13
+install -m 644 autoconf-2.13/autoconf.m4f $DESTDIR/share/autoconf-2.13
+install -m 644 autoconf-2.13/autoheader.m4f $DESTDIR/share/autoconf-2.13
+
 install autoconf-2.52-20101002/autoconf $DESTDIR/bin/autoconf-2.52.20101002
 install autoconf-2.52-20101002/autoheader $DESTDIR/bin/autoheader-2.52.20101002
 install -d $DESTDIR/share/autoconf-2.52.20101002
@@ -60,10 +75,25 @@ install autoconf-2.52-20121002/autoheader $DESTDIR/bin/autoheader-2.52.20121002
 install -d $DESTDIR/share/autoconf-2.52.20121002
 install -m 644 autoconf-2.52-20121002/autoconf.m4f $DESTDIR/share/autoconf-2.52.20121002
 
+install autoconf-2.52-20141204/autoconf $DESTDIR/bin/autoconf-2.52.20141204
+install autoconf-2.52-20141204/autoheader $DESTDIR/bin/autoheader-2.52.20141204
+install -d $DESTDIR/share/autoconf-2.52.20141204
+install -m 644 autoconf-2.52-20141204/autoconf.m4f $DESTDIR/share/autoconf-2.52.20141204
+
 install autoconf-2.52-20150926/autoconf $DESTDIR/bin/autoconf-2.52.20150926
 install autoconf-2.52-20150926/autoheader $DESTDIR/bin/autoheader-2.52.20150926
 install -d $DESTDIR/share/autoconf-2.52.20150926
 install -m 644 autoconf-2.52-20150926/autoconf.m4f $DESTDIR/share/autoconf-2.52.20150926
+
+install autoconf-2.52-20170501/autoconf $DESTDIR/bin/autoconf-2.52.20170501
+install autoconf-2.52-20170501/autoheader $DESTDIR/bin/autoheader-2.52.20170501
+install -d $DESTDIR/share/autoconf-2.52.20170501
+install -m 644 autoconf-2.52-20170501/autoconf.m4f $DESTDIR/share/autoconf-2.52.20170501
+
+install autoconf-2.52-20200111/autoconf $DESTDIR/bin/autoconf-2.52.20200111
+install autoconf-2.52-20200111/autoheader $DESTDIR/bin/autoheader-2.52.20200111
+install -d $DESTDIR/share/autoconf-2.52.20200111
+install -m 644 autoconf-2.52-20200111/autoconf.m4f $DESTDIR/share/autoconf-2.52.20200111
 
 install autoconf-2.59/bin/autoconf $DESTDIR/bin/autoconf-2.59
 install autoconf-2.59/bin/autoheader $DESTDIR/bin/autoheader-2.59
@@ -375,7 +405,6 @@ install -m 644 autoconf-2.72/lib/m4sugar/foreach.m4 $DESTDIR/share/autoconf-2.72
 install -m 644 autoconf-2.72/lib/m4sugar/m4sh.m4 $DESTDIR/share/autoconf-2.72/m4sugar
 install -m 644 autoconf-2.72/lib/m4sugar/m4sugar.m4 $DESTDIR/share/autoconf-2.72/m4sugar
 
-
 # build.pc
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/autotools-wrappers-ac-build.pc << EOF
@@ -387,9 +416,13 @@ Requires: $REQUIRES
 devel=\\
 /bin/ac-wrapper.sh \\
 /bin/autoconf \\
+/bin/autoconf-2.13 \\
 /bin/autoconf-2.52.20101002 \\
 /bin/autoconf-2.52.20121002 \\
+/bin/autoconf-2.52.20141204 \\
 /bin/autoconf-2.52.20150926 \\
+/bin/autoconf-2.52.20170501 \\
+/bin/autoconf-2.52.20200111 \\
 /bin/autoconf-2.59 \\
 /bin/autoconf-2.60 \\
 /bin/autoconf-2.61 \\
@@ -405,9 +438,13 @@ devel=\\
 /bin/autoconf-2.71 \\
 /bin/autoconf-2.72 \\
 /bin/autoheader \\
+/bin/autoheader-2.13 \\
 /bin/autoheader-2.52.20101002 \\
 /bin/autoheader-2.52.20121002 \\
+/bin/autoheader-2.52.20141204 \\
 /bin/autoheader-2.52.20150926 \\
+/bin/autoheader-2.52.20170501 \\
+/bin/autoheader-2.52.20200111 \\
 /bin/autoheader-2.59 \\
 /bin/autoheader-2.60 \\
 /bin/autoheader-2.61 \\
@@ -437,9 +474,15 @@ devel=\\
 /bin/autom4te-2.70 \\
 /bin/autom4te-2.71 \\
 /bin/autom4te-2.72 \\
+/share/autoconf-2.13/acconfig.h \\
+/share/autoconf-2.13/autoconf.m4f \\
+/share/autoconf-2.13/autoheader.m4f \\
 /share/autoconf-2.52.20101002/autoconf.m4f \\
 /share/autoconf-2.52.20121002/autoconf.m4f \\
+/share/autoconf-2.52.20141204/autoconf.m4f \\
 /share/autoconf-2.52.20150926/autoconf.m4f \\
+/share/autoconf-2.52.20170501/autoconf.m4f \\
+/share/autoconf-2.52.20200111/autoconf.m4f \\
 /share/autoconf-2.59/autom4te.cfg \\
 /share/autoconf-2.59/autoconf/autoconf.m4f \\
 /share/autoconf-2.59/Autom4te/C4che.pm \\
@@ -640,3 +683,16 @@ devel=\\
 EOF
 
 exit
+--- autotools-wrappers-ac-20231224.orig/ac-wrapper.sh
++++ autotools-wrappers-ac-20231224/ac-wrapper.sh
+@@ -213,6 +213,10 @@
+ #
+ export WANT_AUTOCONF="${binary_ver}"
+ 
++if test -f configure && ! test -x configure; then
++	chmod +x configure
++fi
++
+ #
+ # Now try to run the binary
+ #

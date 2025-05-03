@@ -1,0 +1,31 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.52.20141204)
+autoconf
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install bcpp $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/bcpp-build.pc << EOF
+Name: bcpp
+Version: 20150811
+Description: C/C++ source code beautifier
+Requires: $REQUIRES
+
+devel=\\
+/bin/bcpp
+EOF
+
+exit

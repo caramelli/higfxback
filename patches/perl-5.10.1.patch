@@ -154,6 +154,8 @@ install -m 644 lib/auto/POSIX/load_imports.al $DESTDIR/lib/perl5/`sed -n "s/^arc
 install lib/auto/POSIX/POSIX.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX
 install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/re
 install lib/auto/re/re.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/re
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Time/HiRes
+install lib/auto/Time/HiRes/HiRes.so $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Time/HiRes
 install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress
 install -m 644 lib/Compress/Zlib.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress
 install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw
@@ -198,6 +200,8 @@ install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Sca
 install -m 644 lib/Scalar/Util.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar
 install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util
 install -m 644 lib/Scalar/Util/PP.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util
+install -d $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Time
+install -m 644 lib/Time/HiRes.pm $DESTDIR/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Time
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -311,6 +315,7 @@ exec=\\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX/load_imports.al \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/POSIX/POSIX.so \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/re/re.so \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/auto/Time/HiRes/HiRes.so \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Zlib.pm \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw/Bzip2.pm \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Compress/Raw/Zlib.pm \\
@@ -338,7 +343,8 @@ exec=\\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List/Util.pm \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/List/Util/PP.pm \\
 /lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util.pm \\
-/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util/PP.pm
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Scalar/Util/PP.pm \\
+/lib/perl5/`sed -n "s/^archname='\(.*\)'/\1/p" config.sh`/Time/HiRes.pm
 EOF
 
 exit
@@ -441,3 +447,58 @@ exit
  	    open(CPPO,"$cpp < errno.c |")
  		or die "Cannot exec $cpp";
  	}
+--- perl-5.10.1.orig/ext/Time-HiRes/HiRes.pm
++++ perl-5.10.1/ext/Time-HiRes/HiRes.pm
+@@ -20,7 +20,7 @@
+ 		 d_usleep d_ualarm d_gettimeofday d_getitimer d_setitimer
+ 		 d_nanosleep d_clock_gettime d_clock_getres
+ 		 d_clock d_clock_nanosleep
+-		 stat
++		 stat utime
+ 		);
+ 
+ $VERSION = '1.9719';
+--- perl-5.10.1.orig/ext/Time-HiRes/HiRes.xs
++++ perl-5.10.1/ext/Time-HiRes/HiRes.xs
+@@ -1255,3 +1255,21 @@
+ 	  XSRETURN(13);
+ 	}
+ 	XSRETURN(0);
++
++I32
++utime(atime, mtime, filename)
++	double atime
++	double mtime
++	char *filename
++    PREINIT:
++	struct timespec ts[2];
++    CODE:
++	ts[0].tv_sec = atime;
++	ts[0].tv_nsec = (atime - ts[0].tv_sec) * 1e9;
++	ts[1].tv_sec = mtime;
++	ts[1].tv_nsec = (mtime - ts[1].tv_sec) * 1e9;
++	if (!utimensat(AT_FDCWD, filename, ts, 0))
++		XSRETURN_UNDEF;
++	RETVAL = 1;
++    OUTPUT:
++	RETVAL
+--- perl-5.10.1.orig/lib/File/Copy.pm
++++ perl-5.10.1/lib/File/Copy.pm
+@@ -12,6 +12,7 @@
+ use warnings;
+ use File::Spec;
+ use Config;
++BEGIN { eval q{ use Time::HiRes qw(stat utime) } };
+ # During perl build, we need File::Copy but Fcntl might not be built yet
+ # *** not needed for 2.14, only 2.15
+ # *** my $Fcntl_loaded = eval q{ use Fcntl qw [O_CREAT O_WRONLY O_TRUNC]; 1 };
+@@ -285,7 +286,8 @@
+         eval {
+             local $SIG{__DIE__};
+             copy($from,$to) or die;
+-            my($atime, $mtime) = (stat($from))[8,9];
++            my @stat = stat($from);
++            my($atime, $mtime) = @stat[8,9];
+             utime($atime, $mtime, $to);
+             unlink($from)   or die;
+         };

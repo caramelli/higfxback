@@ -1,0 +1,36 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="bash-build meson-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+meson setup -Dlddtree_implementation=sh --prefix=/ build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/bin
+install lddtree.sh $DESTDIR/bin/lddtree
+install symtree.sh $DESTDIR/bin/symtree
+install build/dumpelf $DESTDIR/bin
+install build/scanelf $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/pax-utils-build.pc << EOF
+Name: pax-utils
+Version: 1.3.7
+Description: ELF file utilities to check security properties associated with PaX protections
+Requires: $REQUIRES
+
+exec=\\
+/bin/dumpelf \\
+/bin/lddtree \\
+/bin/scanelf \\
+/bin/symtree \\
+EOF
+
+exit

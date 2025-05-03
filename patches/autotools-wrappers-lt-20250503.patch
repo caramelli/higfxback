@@ -1,16 +1,16 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-am-build"
+REQUIRES="autotools-wrappers-am-build mawk-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.61; am-1.10)
-cd libtool-1.5.26
+cd libtool-1.5.24
 find . -name acinclude.m4 | xargs rm -f
 aclocal -I .; autoconf; automake -a -c
 cd libltdl; aclocal -I ..; autoconf; autoheader -f; automake -a -c; cd -
-./configure --program-suffix=-1.5.26 --prefix= --with-aclocal-path=/share/libtool-1.5.26 --with-pkgdata-path=/share/libtool-1.5.26
+./configure --program-suffix=-1.5.24 --prefix= --with-aclocal-path=/share/libtool-1.5.24 --with-pkgdata-path=/share/libtool-1.5.24
 cd ..
 # configure (ac-2.61; am-1.10)
 cd libtool-2.2.4
@@ -74,7 +74,7 @@ cd libltdl; autoheader; cd -
 cd ..
 
 # build
-make -C libtool-1.5.26
+make -C libtool-1.5.24
 make aclocaldir=/share/libtool-2.2.4/aclocal pkgdatadir=/share/libtool-2.2.4 -C libtool-2.2.4
 make aclocaldir=/share/libtool-2.2.6/aclocal pkgdatadir=/share/libtool-2.2.6 -C libtool-2.2.6
 make aclocaldir=/share/libtool-2.2.6b/aclocal pkgdatadir=/share/libtool-2.2.6b -C libtool-2.2.6b
@@ -92,31 +92,31 @@ install lt-wrapper.sh $DESTDIR/bin
 ln -sf lt-wrapper.sh $DESTDIR/bin/libtoolize
 
 install -d $DESTDIR/bin
-install libtool-1.5.26/libtoolize $DESTDIR/bin/libtoolize-1.5.26
-install -d $DESTDIR/share/libtool-1.5.26
-install libtool-1.5.26/config.guess $DESTDIR/share/libtool-1.5.26
-install libtool-1.5.26/config.sub $DESTDIR/share/libtool-1.5.26
-install libtool-1.5.26/install-sh $DESTDIR/share/libtool-1.5.26
-install -m 644 libtool-1.5.26/libtool.m4 $DESTDIR/share/libtool-1.5.26
-install -m 644 libtool-1.5.26/ltdl.m4 $DESTDIR/share/libtool-1.5.26
-install -m 644 libtool-1.5.26/ltmain.sh $DESTDIR/share/libtool-1.5.26
-install -d $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/acinclude.m4 $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/aclocal.m4 $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/config-h.in $DESTDIR/share/libtool-1.5.26/libltdl
-install libtool-1.5.26/libltdl/config.guess $DESTDIR/share/libtool-1.5.26/libltdl
-install libtool-1.5.26/libltdl/config.sub $DESTDIR/share/libtool-1.5.26/libltdl
-install libtool-1.5.26/libltdl/configure $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/configure.ac $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/COPYING.LIB $DESTDIR/share/libtool-1.5.26/libltdl
-install libtool-1.5.26/libltdl/install-sh $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/ltdl.c $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/ltdl.h $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/ltmain.sh $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/Makefile.am $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/Makefile.in $DESTDIR/share/libtool-1.5.26/libltdl
-install libtool-1.5.26/libltdl/missing $DESTDIR/share/libtool-1.5.26/libltdl
-install -m 644 libtool-1.5.26/libltdl/README $DESTDIR/share/libtool-1.5.26/libltdl
+install libtool-1.5.24/libtoolize $DESTDIR/bin/libtoolize-1.5.24
+install -d $DESTDIR/share/libtool-1.5.24
+install libtool-1.5.24/config.guess $DESTDIR/share/libtool-1.5.24
+install libtool-1.5.24/config.sub $DESTDIR/share/libtool-1.5.24
+install libtool-1.5.24/install-sh $DESTDIR/share/libtool-1.5.24
+install -m 644 libtool-1.5.24/libtool.m4 $DESTDIR/share/libtool-1.5.24
+install -m 644 libtool-1.5.24/ltdl.m4 $DESTDIR/share/libtool-1.5.24
+install -m 644 libtool-1.5.24/ltmain.sh $DESTDIR/share/libtool-1.5.24
+install -d $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/acinclude.m4 $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/aclocal.m4 $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/config-h.in $DESTDIR/share/libtool-1.5.24/libltdl
+install libtool-1.5.24/libltdl/config.guess $DESTDIR/share/libtool-1.5.24/libltdl
+install libtool-1.5.24/libltdl/config.sub $DESTDIR/share/libtool-1.5.24/libltdl
+install libtool-1.5.24/libltdl/configure $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/configure.ac $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/COPYING.LIB $DESTDIR/share/libtool-1.5.24/libltdl
+install libtool-1.5.24/libltdl/install-sh $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/ltdl.c $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/ltdl.h $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/ltmain.sh $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/Makefile.am $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/Makefile.in $DESTDIR/share/libtool-1.5.24/libltdl
+install libtool-1.5.24/libltdl/missing $DESTDIR/share/libtool-1.5.24/libltdl
+install -m 644 libtool-1.5.24/libltdl/README $DESTDIR/share/libtool-1.5.24/libltdl
 
 install -d $DESTDIR/bin
 install libtool-2.2.4/libtoolize $DESTDIR/bin/libtoolize-2.2.4
@@ -455,7 +455,7 @@ install -m 644 libtool-2.4.2/libltdl/loaders/preopen.c $DESTDIR/share/libtool-2.
 install -m 644 libtool-2.4.2/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2.4.2/libltdl/loaders
 
 install -d $DESTDIR/bin
-install libtool-2.4.4/libtoolize $DESTDIR/bin/libtoolize-2.4.4
+./libtool-2.4.4/build-aux/inline-source libtool-2.4.4/libtoolize > $DESTDIR/bin/libtoolize-2.4.4 && chmod +x $DESTDIR/bin/libtoolize-2.4.4
 install -d $DESTDIR/share/libtool-2.4.4/aclocal
 install -m 644 libtool-2.4.4/m4/libtool.m4 $DESTDIR/share/libtool-2.4.4/aclocal
 install -m 644 libtool-2.4.4/m4/ltargz.m4 $DESTDIR/share/libtool-2.4.4/aclocal
@@ -510,7 +510,7 @@ install -m 644 libtool-2.4.4/libltdl/loaders/preopen.c $DESTDIR/share/libtool-2.
 install -m 644 libtool-2.4.4/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2.4.4/loaders
 
 install -d $DESTDIR/bin
-install libtool-2.4.5/libtoolize $DESTDIR/bin/libtoolize-2.4.5
+./libtool-2.4.5/build-aux/inline-source libtool-2.4.5/libtoolize > $DESTDIR/bin/libtoolize-2.4.5 && chmod +x $DESTDIR/bin/libtoolize-2.4.5
 install -d $DESTDIR/share/libtool-2.4.5/aclocal
 install -m 644 libtool-2.4.5/m4/libtool.m4 $DESTDIR/share/libtool-2.4.5/aclocal
 install -m 644 libtool-2.4.5/m4/ltargz.m4 $DESTDIR/share/libtool-2.4.5/aclocal
@@ -565,7 +565,7 @@ install -m 644 libtool-2.4.5/libltdl/loaders/preopen.c $DESTDIR/share/libtool-2.
 install -m 644 libtool-2.4.5/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2.4.5/loaders
 
 install -d $DESTDIR/bin
-install libtool-2.4.6/libtoolize $DESTDIR/bin/libtoolize-2.4.6
+./libtool-2.4.6/build-aux/inline-source libtool-2.4.6/libtoolize > $DESTDIR/bin/libtoolize-2.4.6 && chmod +x $DESTDIR/bin/libtoolize-2.4.6
 install -d $DESTDIR/share/libtool-2.4.6/aclocal
 install -m 644 libtool-2.4.6/m4/libtool.m4 $DESTDIR/share/libtool-2.4.6/aclocal
 install -m 644 libtool-2.4.6/m4/ltargz.m4 $DESTDIR/share/libtool-2.4.6/aclocal
@@ -620,7 +620,7 @@ install -m 644 libtool-2.4.6/libltdl/loaders/preopen.c $DESTDIR/share/libtool-2.
 install -m 644 libtool-2.4.6/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2.4.6/loaders
 
 install -d $DESTDIR/bin
-install libtool-2.4.7/libtoolize $DESTDIR/bin/libtoolize-2.4.7
+./libtool-2.4.7/build-aux/inline-source libtool-2.4.7/libtoolize > $DESTDIR/bin/libtoolize-2.4.7 && chmod +x $DESTDIR/bin/libtoolize-2.4.7
 install -d $DESTDIR/share/libtool-2.4.7/aclocal
 install -m 644 libtool-2.4.7/m4/libtool.m4 $DESTDIR/share/libtool-2.4.7/aclocal
 install -m 644 libtool-2.4.7/m4/ltargz.m4 $DESTDIR/share/libtool-2.4.7/aclocal
@@ -678,13 +678,13 @@ install -m 644 libtool-2.4.7/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/autotools-wrappers-lt-build.pc << EOF
 Name: autotools-wrappers-lt
-Version: 20240525
+Version: 20250503
 Description: GNU Libtool wrapper
 Requires: $REQUIRES
 
 devel=\\
 /bin/libtoolize \\
-/bin/libtoolize-1.5.26 \\
+/bin/libtoolize-1.5.24 \\
 /bin/libtoolize-2.2.4 \\
 /bin/libtoolize-2.2.6 \\
 /bin/libtoolize-2.2.6b \\
@@ -696,28 +696,28 @@ devel=\\
 /bin/libtoolize-2.4.6 \\
 /bin/libtoolize-2.4.7 \\
 /bin/lt-wrapper.sh \\
-/share/libtool-1.5.26/config.guess \\
-/share/libtool-1.5.26/config.sub \\
-/share/libtool-1.5.26/install-sh \\
-/share/libtool-1.5.26/libtool.m4 \\
-/share/libtool-1.5.26/ltdl.m4 \\
-/share/libtool-1.5.26/ltmain.sh \\
-/share/libtool-1.5.26/libltdl/acinclude.m4 \\
-/share/libtool-1.5.26/libltdl/aclocal.m4 \\
-/share/libtool-1.5.26/libltdl/config-h.in \\
-/share/libtool-1.5.26/libltdl/config.guess \\
-/share/libtool-1.5.26/libltdl/config.sub \\
-/share/libtool-1.5.26/libltdl/configure \\
-/share/libtool-1.5.26/libltdl/configure.ac \\
-/share/libtool-1.5.26/libltdl/COPYING.LIB \\
-/share/libtool-1.5.26/libltdl/install-sh \\
-/share/libtool-1.5.26/libltdl/ltdl.c \\
-/share/libtool-1.5.26/libltdl/ltdl.h \\
-/share/libtool-1.5.26/libltdl/ltmain.sh \\
-/share/libtool-1.5.26/libltdl/Makefile.am \\
-/share/libtool-1.5.26/libltdl/Makefile.in \\
-/share/libtool-1.5.26/libltdl/missing \\
-/share/libtool-1.5.26/libltdl/README \\
+/share/libtool-1.5.24/config.guess \\
+/share/libtool-1.5.24/config.sub \\
+/share/libtool-1.5.24/install-sh \\
+/share/libtool-1.5.24/libtool.m4 \\
+/share/libtool-1.5.24/ltdl.m4 \\
+/share/libtool-1.5.24/ltmain.sh \\
+/share/libtool-1.5.24/libltdl/acinclude.m4 \\
+/share/libtool-1.5.24/libltdl/aclocal.m4 \\
+/share/libtool-1.5.24/libltdl/config-h.in \\
+/share/libtool-1.5.24/libltdl/config.guess \\
+/share/libtool-1.5.24/libltdl/config.sub \\
+/share/libtool-1.5.24/libltdl/configure \\
+/share/libtool-1.5.24/libltdl/configure.ac \\
+/share/libtool-1.5.24/libltdl/COPYING.LIB \\
+/share/libtool-1.5.24/libltdl/install-sh \\
+/share/libtool-1.5.24/libltdl/ltdl.c \\
+/share/libtool-1.5.24/libltdl/ltdl.h \\
+/share/libtool-1.5.24/libltdl/ltmain.sh \\
+/share/libtool-1.5.24/libltdl/Makefile.am \\
+/share/libtool-1.5.24/libltdl/Makefile.in \\
+/share/libtool-1.5.24/libltdl/missing \\
+/share/libtool-1.5.24/libltdl/README \\
 /share/libtool-2.2.4/aclocal/argz.m4 \\
 /share/libtool-2.2.4/aclocal/libtool.m4 \\
 /share/libtool-2.2.4/aclocal/ltdl.m4 \\
@@ -1201,8 +1201,8 @@ devel=\\
 EOF
 
 exit
---- autotools-wrappers-lt-20240525.orig/libtool-1.5.26/configure.ac
-+++ autotools-wrappers-lt-20240525/libtool-1.5.26/configure.ac
+--- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/configure.ac
++++ autotools-wrappers-lt-20250503/libtool-1.5.24/configure.ac
 @@ -58,10 +58,12 @@
  ## ------------------------------- ##
  ## Libtool specific configuration. ##
@@ -1218,9 +1218,9 @@ exit
  AC_SUBST([aclocaldir])
  
  AC_ARG_ENABLE(ltdl-install,
---- autotools-wrappers-lt-20240525.orig/libtool-1.5.26/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-1.5.26/libtool.m4
-@@ -99,6 +99,8 @@
+--- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-1.5.24/libtool.m4
+@@ -100,6 +100,8 @@
  AC_LIBTOOL_SYS_GLOBAL_SYMBOL_PIPE
  AC_LIBTOOL_OBJDIR
  
@@ -1229,7 +1229,7 @@ exit
  AC_REQUIRE([_LT_AC_SYS_COMPILER])dnl
  _LT_AC_PROG_ECHO_BACKSLASH
  
-@@ -561,7 +563,7 @@
+@@ -489,7 +491,7 @@
    # Find out which ABI we are using.
    echo 'int i;' > conftest.$ac_ext
    if AC_TRY_EVAL(ac_compile); then
@@ -1238,7 +1238,7 @@ exit
      *ELF-32*)
        HPUX_IA64_MODE="32"
        ;;
-@@ -577,7 +579,7 @@
+@@ -505,7 +507,7 @@
    echo '[#]line __oline__ "configure"' > conftest.$ac_ext
    if AC_TRY_EVAL(ac_compile); then
     if test "$lt_cv_prog_gnu_ld" = yes; then
@@ -1247,7 +1247,7 @@ exit
      *32-bit*)
        LD="${LD-ld} -melf32bsmip"
        ;;
-@@ -589,7 +591,7 @@
+@@ -517,7 +519,7 @@
        ;;
      esac
     else
@@ -1256,7 +1256,7 @@ exit
      *32-bit*)
        LD="${LD-ld} -32"
        ;;
-@@ -610,7 +612,7 @@
+@@ -538,7 +540,7 @@
    # Find out which ABI we are using.
    echo 'int i;' > conftest.$ac_ext
    if AC_TRY_EVAL(ac_compile); then
@@ -1265,7 +1265,7 @@ exit
      *32-bit*)
        case $host in
          x86_64-*kfreebsd*-gnu)
-@@ -671,7 +673,7 @@
+@@ -599,7 +601,7 @@
    # Find out which ABI we are using.
    echo 'int i;' > conftest.$ac_ext
    if AC_TRY_EVAL(ac_compile); then
@@ -1274,7 +1274,7 @@ exit
      *64-bit*)
        case $lt_cv_prog_gnu_ld in
        yes*) LD="${LD-ld} -m elf64_sparc" ;;
-@@ -2405,7 +2407,7 @@
+@@ -2322,7 +2324,7 @@
  
  bsdi[[45]]*)
    lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
@@ -1283,7 +1283,7 @@ exit
    lt_cv_file_magic_test_file=/shlib/libc.so
    ;;
  
-@@ -2439,7 +2441,7 @@
+@@ -2356,7 +2358,7 @@
        # Not sure whether the presence of OpenBSD here was a mistake.
        # Let's accept both of them until this is cleared up.
        lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
@@ -1292,7 +1292,7 @@ exit
        lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
        ;;
      esac
-@@ -2453,7 +2455,7 @@
+@@ -2370,7 +2372,7 @@
    ;;
  
  hpux10.20* | hpux11*)
@@ -1301,7 +1301,7 @@ exit
    case $host_cpu in
    ia64*)
      lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
-@@ -2500,7 +2502,7 @@
+@@ -2417,7 +2419,7 @@
  
  newos6*)
    lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
@@ -1310,7 +1310,7 @@ exit
    lt_cv_file_magic_test_file=/usr/lib/libnls.so
    ;;
  
-@@ -6566,6 +6568,10 @@
+@@ -6495,6 +6497,10 @@
  [AC_CHECK_TOOL(RC, windres, no)
  ])
  
@@ -1321,8 +1321,8 @@ exit
  
  # Cheap backport of AS_EXECUTABLE_P and required macros
  # from Autoconf 2.59; we should not use $as_executable_p directly.
---- autotools-wrappers-lt-20240525.orig/libtool-1.5.26/libtoolize.in
-+++ autotools-wrappers-lt-20240525/libtool-1.5.26/libtoolize.in
+--- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/libtoolize.in
++++ autotools-wrappers-lt-20250503/libtool-1.5.24/libtoolize.in
 @@ -364,6 +364,18 @@
    fi
  done
@@ -1342,8 +1342,8 @@ exit
  exit $status
  
  # Local Variables:
---- autotools-wrappers-lt-20240525.orig/libtool-2.2.10/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.2.10/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.2.10/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.2.10/libltdl/m4/libtool.m4
 @@ -169,6 +169,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1447,8 +1447,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20240525.orig/libtool-2.2.4/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.2.4/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.2.4/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.2.4/libltdl/m4/libtool.m4
 @@ -161,6 +161,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1552,8 +1552,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20240525.orig/libtool-2.2.6/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.2.6/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.2.6/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.2.6/libltdl/m4/libtool.m4
 @@ -161,6 +161,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1657,8 +1657,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20240525.orig/libtool-2.2.6b/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.2.6b/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.2.6b/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.2.6b/libltdl/m4/libtool.m4
 @@ -161,6 +161,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1770,8 +1770,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20240525.orig/libtool-2.4/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.4/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.4/libltdl/m4/libtool.m4
 @@ -170,6 +170,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -1876,8 +1876,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.2/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.4.2/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.2/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.4.2/libltdl/m4/libtool.m4
 @@ -172,6 +172,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -1982,8 +1982,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.4/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.4.4/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.4/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.4.4/m4/libtool.m4
 @@ -164,6 +164,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2123,8 +2123,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.5/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.4.5/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.5/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.4.5/m4/libtool.m4
 @@ -181,6 +181,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2264,8 +2264,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.6/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.4.6/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.6/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.4.6/m4/libtool.m4
 @@ -181,6 +181,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2405,8 +2405,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.7/Makefile.am
-+++ autotools-wrappers-lt-20240525/libtool-2.4.7/Makefile.am
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.7/Makefile.am
++++ autotools-wrappers-lt-20250503/libtool-2.4.7/Makefile.am
 @@ -289,6 +289,8 @@
  	$(AM_V_GEN)$(configure_edit) '$(libtoolize_in)' > '$@'
  	$(AM_V_at)chmod a+x '$@'
@@ -2425,8 +2425,8 @@ exit
  	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
  $(libtoolize_1): $(libtoolize_in)
  	$(AM_V_GEN)$(update_mans) libtoolize
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.7/configure.ac
-+++ autotools-wrappers-lt-20240525/libtool-2.4.7/configure.ac
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.7/configure.ac
++++ autotools-wrappers-lt-20250503/libtool-2.4.7/configure.ac
 @@ -85,6 +85,7 @@
  ## Shell tools. ##
  ## ------------ ##
@@ -2435,8 +2435,8 @@ exit
  AC_PROG_GNU_M4
  
  
---- autotools-wrappers-lt-20240525.orig/libtool-2.4.7/m4/libtool.m4
-+++ autotools-wrappers-lt-20240525/libtool-2.4.7/m4/libtool.m4
+--- autotools-wrappers-lt-20250503.orig/libtool-2.4.7/m4/libtool.m4
++++ autotools-wrappers-lt-20250503/libtool-2.4.7/m4/libtool.m4
 @@ -8218,7 +8218,7 @@
  m4_defun([_LT_DECL_FILECMD],
  [AC_CHECK_TOOL([FILECMD], [file], [:])

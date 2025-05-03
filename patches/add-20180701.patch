@@ -1,0 +1,34 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.52.20170501)
+autoconf
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install add $DESTDIR/bin
+install -d $DESTDIR/share
+install -m 644 add.hlp $DESTDIR/share
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/add-build.pc << EOF
+Name: add
+Version: 20180701
+Description: fixed-point calculator
+Requires: $REQUIRES
+
+exec=\\
+/bin/add \\
+/share/add.hlp
+EOF
+
+exit

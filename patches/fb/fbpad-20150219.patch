@@ -68,6 +68,18 @@ exit
  fbpad: fbpad.o term.o pad.o draw.o font.o isdw.o scrsnap.o
  	$(CC) -o $@ $^ $(LDFLAGS)
  clean:
+--- fbpad-20150219.orig/README
++++ fbpad-20150219/README
+@@ -15,8 +15,7 @@
+ m-x 		switch to tag 'x' (TAGS)
+ m-j		switch to current tag's alternative terminal
+ m-k		like m-j
+-m-p		show tag summary
+-m-o		jump to the previous tag
++m-p		jump to the previous tag
+ m-tab		show the next terminal
+ m-s		create a text screenshot (SCRSHOT)
+ m-y		redraw the terminal
 --- fbpad-20150219.orig/config.h
 +++ fbpad-20150219/config.h
 @@ -2,7 +2,7 @@
@@ -75,11 +87,11 @@ exit
  
  /* list of tags */
 -#define TAGS		"xnlhtr01uiva-"
-+#define TAGS		"xnlhtr"
++#define TAGS		"xnuhtr"
  #define TAGS_SAVED	""
  
  /* programs mapped to m-c, m-m, m-e */
-@@ -14,13 +14,13 @@
+@@ -14,26 +14,26 @@
  typedef unsigned int fbval_t;
  
  /* tinyfont files for regular, italic, and bold fonts */
@@ -98,7 +110,13 @@ exit
  
  /* where to write the screen shot */
  #define SCRSHOT		"/tmp/scr"
-@@ -33,7 +33,7 @@
+ 
+ /* lock command password; NULL disables locking */
+-#define PASS		NULL
++#define PASS		"fbpad"
+ 
+ /* optimized version of fb_val() */
+ #define FB_VAL(r, g, b)	fb_val((r), (g), (b))
  
  /* black */
  #define COLOR0		0x000000
@@ -207,14 +225,40 @@ exit
  	pad_put(' ', r, c++, FGCOLOR, BGCOLOR);
  	for (i = 0; i < NTAGS; i++) {
  		int nt = 0;
-@@ -189,6 +196,7 @@
+@@ -171,16 +178,14 @@
+ 		case 'k':
+ 			showterm(altterm(cterm()));
+ 			return;
+-		case 'o':
+-			showtag(ltag);
+-			return;
+ 		case 'p':
+-			listtags();
++			showtag(ltag);
+ 			return;
+ 		case '\t':
+ 			if (nextterm() != cterm())
+ 				showterm(nextterm());
+ 			return;
++		case 'q':
+ 		case CTRLKEY('q'):
+ 			exitit = 1;
+ 			return;
+@@ -189,11 +194,14 @@
  			return;
  		case 'y':
  			term_redraw(1);
 +			listtags();
  			return;
++		case 'l':
  		case CTRLKEY('l'):
  			locked = 1;
+ 			passlen = 0;
+ 			return;
++		case 'o':
+ 		case CTRLKEY('o'):
+ 			taglock = 1 - taglock;
+ 			return;
 @@ -206,6 +214,8 @@
  		default:
  			if (strchr(tags, c)) {

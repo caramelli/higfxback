@@ -30,7 +30,7 @@ EOF
 exit
 --- m4-1.4.18.orig/configure.sh
 +++ m4-1.4.18/configure.sh
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,196 @@
 +#!/bin/sh
 +# Shell script to configure GNU M4 without relying on `autotools'.
 +
@@ -52,12 +52,9 @@ exit
 +# You should have received a copy of the GNU General Public License
 +# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
-+VERSION=1.4.18
-+
-+srcdir=.
-+
 +CC=${CC-gcc}
-+CFLAGS=$CFLAGS
++CFLAGS=${CFLAGS--g -O2}
++SED=${SED-sed}
 +
 +prefix=/usr/local
 +exec_prefix='${prefix}'
@@ -66,10 +63,6 @@ exit
 +  case "$1" in
 +    "")
 +      break
-+    ;;
-+    --srcdir)
-+      srcdir=$2
-+      shift
 +    ;;
 +    --prefix)
 +      prefix=$2
@@ -90,47 +83,63 @@ exit
 +bindir=`eval echo ${exec_prefix}`/bin
 +libdir=`eval echo ${exec_prefix}`/lib
 +
-+echo '/* lib/configmake.h.  Generated from configure.sh.  */' > configmake.h
-+echo "#define PREFIX \"$prefix\"" >> configmake.h
-+echo "#define BINDIR \"$bindir\"" >> configmake.h
-+echo "#define LIBDIR \"$libdir\"" >> configmake.h
++srcdir=`dirname $0`
 +
-+echo '/* lib/config.h.  Generated from configure.sh.  */' > config.h
-+echo '#define GNULIB_CLOSE_STREAM 1' >> config.h
-+echo '#define GNULIB_FILENAMECAT 1' >> config.h
-+echo '#define GNULIB_FOPEN_SAFER 1' >> config.h
-+echo '#define HAVE_ALLOCA 1' >> config.h
-+echo '#define HAVE_DECL_FERROR_UNLOCKED 1' >> config.h
-+echo '#define HAVE_DECL_FPUTS_UNLOCKED 1' >> config.h
-+echo '#define HAVE_DECL_FREAD_UNLOCKED 1' >> config.h
-+echo '#define HAVE_DECL_FWRITE_UNLOCKED 1' >> config.h
-+echo '#define HAVE_DECL_PROGRAM_INVOCATION_NAME 1' >> config.h
-+echo '#define HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME 1' >> config.h
-+echo '#define HAVE_DECL_SIGALTSTACK 1' >> config.h
-+echo '#define HAVE_DECL___FPENDING 1' >> config.h
-+echo '#define HAVE_LONG_LONG_INT 1' >> config.h
-+echo '#define HAVE_MEMPCPY 1' >> config.h
-+echo '#define HAVE_MINMAX_IN_SYS_PARAM_H 1' >> config.h
-+echo '#define HAVE_PIPE 1' >> config.h
-+echo '#define HAVE_SIGALTSTACK 1' >> config.h
-+echo '#define HAVE_STACK_OVERFLOW_HANDLING 1' >> config.h
-+echo '#define HAVE_STACK_T 1' >> config.h
-+echo '#define HAVE_STDIO_EXT_H 1' >> config.h
-+echo '#define HAVE_WORKING_O_NOFOLLOW 1' >> config.h
-+echo '#define PACKAGE "m4"' >> config.h
-+echo '#define PACKAGE_BUGREPORT "bug-m4@gnu.org"' >> config.h
-+echo '#define PACKAGE_NAME "GNU M4"' >> config.h
-+echo "#define PACKAGE_STRING \"GNU M4 $VERSION\"" >> config.h
-+echo '#define PACKAGE_URL "http://www.gnu.org/software/m4/"' >> config.h
-+echo '#define RENAME_OPEN_FILE_WORKS 1' >> config.h
-+echo '#define SIGNAL_SAFE_LIST 1' >> config.h
-+echo '#define SYSCMD_SHELL "/bin/sh"' >> config.h
-+echo '#define USE_UNLOCKED_IO 1' >> config.h
-+echo "#define VERSION \"$VERSION\"" >> config.h
-+echo '#define O_BINARY 0' >> config.h
-+echo '#define _GL_INLINE extern inline __attribute__ ((__gnu_inline__))' >> config.h
-+echo '#define _GL_EXTERN_INLINE extern' >> config.h
-+cat >> config.h << EOF
++VERSION=`cat $srcdir/.version`
++
++test -d lib || mkdir lib
++
++cat > lib/configmake.h << EOF
++/* lib/configmake.h.  Generated from configure.sh.  */
++
++#define PREFIX "$prefix"
++#define BINDIR "$bindir"
++#define LIBDIR "$libdir"
++EOF
++
++cat > lib/config.h << EOF
++/* lib/config.h.  Generated from configure.sh.  */
++
++#define _FORTIFY_SOURCE 2
++#define GNULIB_CLOSE_STREAM 1
++#define GNULIB_DIRNAME 1
++#define GNULIB_FD_SAFER_FLAG 1
++#define GNULIB_FILENAMECAT 1
++#define GNULIB_FOPEN_SAFER 1
++#define GNULIB_PIPE2_SAFER 1
++#define HAVE_ALLOCA 1
++#define HAVE_DECL_FERROR_UNLOCKED 1
++#define HAVE_DECL_FPUTS_UNLOCKED 1
++#define HAVE_DECL_GETC_UNLOCKED 1
++#define HAVE_DECL_PROGRAM_INVOCATION_NAME 1
++#define HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME 1
++#define HAVE_DECL_SIGALTSTACK 1
++#define HAVE_LANGINFO_CODESET 1
++#define HAVE_LONG_LONG_INT 1
++#define HAVE_MEMPCPY 1
++#define HAVE_MINMAX_IN_SYS_PARAM_H 1
++#define HAVE_PIPE 1
++#define HAVE_SIGALTSTACK 1
++#define HAVE_STACK_OVERFLOW_HANDLING 1
++#define HAVE_STACK_T 1
++#define HAVE_STDIO_EXT_H 1
++#define HAVE_WORKING_O_NOFOLLOW 1
++#define PACKAGE "m4"
++#define PACKAGE_BUGREPORT "bug-m4@gnu.org"
++#define PACKAGE_NAME "GNU M4"
++#define PACKAGE_STRING "GNU M4 $VERSION"
++#define PACKAGE_URL "http://www.gnu.org/software/m4/"
++#define RENAME_OPEN_FILE_WORKS 1
++#define SIGNAL_SAFE_LIST 1
++#define SYSCMD_SHELL "/bin/sh"
++#define USE_UNLOCKED_IO 1
++#define VERSION "$VERSION"
++#define _GL_INLINE extern inline __attribute__ ((__gnu_inline__))
++#ifdef __GNUC_STDC_INLINE__
++# define _GL_EXTERN_INLINE extern inline
++#else
++# define _GL_EXTERN_INLINE extern
++#endif
 +#define _GL_INLINE_HEADER_BEGIN \\
 +    _Pragma ("GCC diagnostic push") \\
 +    _Pragma ("GCC diagnostic ignored \"-Wmissing-prototypes\"") \\
@@ -138,24 +147,22 @@ exit
 +    _Pragma ("GCC diagnostic ignored \"-Wsuggest-attribute=const\"")
 +#define _GL_INLINE_HEADER_END \\
 +    _Pragma ("GCC diagnostic pop")
++#define restrict __restrict
++#define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
 +EOF
-+echo '#define restrict __restrict' >> config.h
-+echo '#define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))' >> config.h
 +
 +cat > Makefile << EOF
 +# Makefile.  Generated from configure.sh.
 +
 +VERSION = $VERSION
 +
-+srcdir = $srcdir
 +CC = $CC
 +CFLAGS = $CFLAGS
++SED = $SED
 +
-+bindir = $bindir
++srcdir = $srcdir
 +
-+SED = sed
-+
-+CFLAGS += -I. -I\$(srcdir)/lib -D_GNU_SOURCE -O2 -Wall
++CFLAGS += -I\$(srcdir)/lib -D_GNU_SOURCE
 +
 +OBJECTS = \\
 +	\$(srcdir)/lib/basename-lgpl.o \\
@@ -215,8 +222,41 @@ exit
 +all: a.out
 +
 +install: all
-+	install -D a.out \$(DESTDIR)\$(bindir)/m4
++	install -D a.out \$(DESTDIR)$bindir/m4
 +
 +clean:
 +	\$(RM) a.out \$(OBJECTS)
 +EOF
+--- m4-1.4.18.orig/lib/binary-io.h
++++ m4-1.4.18/lib/binary-io.h
+@@ -20,6 +20,9 @@
+ /* For systems that distinguish between text and binary I/O.
+    O_BINARY is guaranteed by the gnulib <fcntl.h>. */
+ #include <fcntl.h>
++#ifndef O_BINARY
++# define O_BINARY 0
++#endif
+ 
+ /* The MSVC7 <stdio.h> doesn't like to be included after '#define fileno ...',
+    so we include it here first.  */
+--- m4-1.4.18.orig/lib/unlocked-io.h
++++ m4-1.4.18/lib/unlocked-io.h
+@@ -86,14 +86,18 @@
+ #  undef fread
+ #  define fread(w,x,y,z) fread_unlocked (w,x,y,z)
+ # else
++#  ifndef fread_unlocked
+ #  define fread_unlocked(w,x,y,z) fread (w,x,y,z)
++#  endif
+ # endif
+ 
+ # if HAVE_DECL_FWRITE_UNLOCKED
+ #  undef fwrite
+ #  define fwrite(w,x,y,z) fwrite_unlocked (w,x,y,z)
+ # else
++#  ifndef fwrite_unlocked
+ #  define fwrite_unlocked(w,x,y,z) fwrite (w,x,y,z)
++#  endif
+ # endif
+ 
+ # if HAVE_DECL_GETC_UNLOCKED

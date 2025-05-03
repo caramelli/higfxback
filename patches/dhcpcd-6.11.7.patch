@@ -21,16 +21,14 @@ install -d $DESTDIR/lib/dhcpcd
 install dhcpcd-run-hooks $DESTDIR/lib/dhcpcd
 install -d $DESTDIR/lib/dhcpcd/dhcpcd-hooks
 install -m 644 dhcpcd-hooks/02-dump $DESTDIR/lib/dhcpcd/dhcpcd-hooks
-install -m 644 dhcpcd-hooks/10-mtu $DESTDIR/lib/dhcpcd/dhcpcd-hooks
 install -m 644 dhcpcd-hooks/20-resolv.conf $DESTDIR/lib/dhcpcd/dhcpcd-hooks
-install -m 644 dhcpcd-hooks/29-lookup-hostname $DESTDIR/lib/dhcpcd/dhcpcd-hooks
 install -m 644 dhcpcd-hooks/30-hostname $DESTDIR/lib/dhcpcd/dhcpcd-hooks
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/dhcpcd-build.pc << EOF
 Name: dhcpcd
-Version: 5.6.8
+Version: 6.11.7
 Description: DHCP client
 Requires: $REQUIRES
 
@@ -40,9 +38,7 @@ exec=\\
 /etc/dhcpcd.conf \\
 /lib/dhcpcd/dhcpcd-run-hooks \\
 /lib/dhcpcd/dhcpcd-hooks/02-dump \\
-/lib/dhcpcd/dhcpcd-hooks/10-mtu \\
 /lib/dhcpcd/dhcpcd-hooks/20-resolv.conf \\
-/lib/dhcpcd/dhcpcd-hooks/29-lookup-hostname \\
 /lib/dhcpcd/dhcpcd-hooks/30-hostname
 EOF
 

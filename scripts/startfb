@@ -1,6 +1,6 @@
 #!/bin/sh
 
-killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
+killall -9 dfbterm fbpad kmscon weston Xorg 2>/dev/null
 
 REQUIRES="fbpad-build fbset-build ft2tf-build ttf-bitstream-vera-build"
 
@@ -8,12 +8,12 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 clear
 
-if [ ! -f /fb/share/fbpad/regular.tf ]; then
-  mkdir -p /fb/share/fbpad
-  ft2tf /share/fonts/truetype/VeraMo.ttf:5.5 > /fb/share/fbpad/regular.tf
-fi
-
 export PATH=/bin:/fb/bin
+
+if [ ! -f /fb/share/fbpad/regular.tf ]; then
+	mkdir -p /fb/share/fbpad
+	ft2tf /share/fonts/truetype/VeraMo.ttf:5.5 > /fb/share/fbpad/regular.tf
+fi
 
 IFS=x read WIDTH HEIGHT << EOF
 `fbset | grep ^mode | grep -oE [0-9]+x[0-9]+`

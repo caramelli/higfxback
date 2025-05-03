@@ -1,6 +1,6 @@
 #!/bin/sh
 
-killall -9 dfbterm fbpad kmscon weston Xorg 2> /dev/null
+killall -9 dfbterm fbpad kmscon weston Xorg 2>/dev/null
 
 REQUIRES="ttf-bitstream-vera-build twm-build xdpyinfo-build xf86-input-evdev-build xf86-video-fbdev-build xkbcomp-build xterm-build"
 
@@ -13,30 +13,30 @@ install -d /x11/var/log
 test $DDX && rm -f /x11/etc/X11/xorg.conf
 
 if [ ! -f /x11/etc/X11/xorg.conf ]; then
-  DDX=${DDX-fbdev}
-  KEYBOARD=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=120013/{ print handler; exit }' | grep -o event[0-9]*`
-  POINTER=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=(7|17|1f)/{ print handler; exit }' | grep -o event[0-9]*`
-  install -d /x11/etc/X11
-  cat > /x11/etc/X11/xorg.conf << EOF
-Section "Device"
-  Identifier "card"
-  Driver     "$DDX"
-  BusID      "0"
-EndSection
+	DDX=${DDX-fbdev}
+	KEYBOARD=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=120013/{ print handler; exit }' | grep -o event[0-9]*`
+	POINTER=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=(7|17|1f)/{ print handler; exit }' | grep -o event[0-9]*`
+	install -d /x11/etc/X11
+	cat > /x11/etc/X11/xorg.conf <<- EOF
+		Section "Device"
+		  Identifier "card"
+		  Driver     "$DDX"
+		  BusID      "0"
+		EndSection
 
-Section "InputDevice"
-  Identifier "keyboard"
-  Driver     "evdev"
-  Option     "Device" "$KEYBOARD"
-  Option     "XkbLayout" "fr"
-EndSection
+		Section "InputDevice"
+		  Identifier "keyboard"
+		  Driver     "evdev"
+		  Option     "Device" "$KEYBOARD"
+		  Option     "XkbLayout" "fr"
+		EndSection
 
-Section "InputDevice"
-  Identifier "pointer"
-  Driver     "evdev"
-  Option     "Device" "$POINTER"
-EndSection
-EOF
+		Section "InputDevice"
+		  Identifier "pointer"
+		  Driver     "evdev"
+		  Option     "Device" "$POINTER"
+		EndSection
+	EOF
 fi
 
 export PATH=/bin:/x11/bin

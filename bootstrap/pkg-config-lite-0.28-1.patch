@@ -1,0 +1,129 @@
+--- pkg-config-lite-0.28-1.orig/pkg.m4
++++ pkg-config-lite-0.28-1/pkg.m4
+@@ -25,18 +25,22 @@
+ # PKG_PROG_PKG_CONFIG([MIN-VERSION])
+ # ----------------------------------
+ AC_DEFUN([PKG_PROG_PKG_CONFIG],
+-[m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+-m4_pattern_allow([^PKG_CONFIG(_(PATH|LIBDIR|SYSROOT_DIR|ALLOW_SYSTEM_(CFLAGS|LIBS)))?$])
+-m4_pattern_allow([^PKG_CONFIG_(DISABLE_UNINSTALLED|TOP_BUILD_DIR|DEBUG_SPEW)$])
+-AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])
+-AC_ARG_VAR([PKG_CONFIG_PATH], [directories to add to pkg-config's search path])
+-AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's built-in search path])
++[ifdef(m4_pattern_forbid, m4_pattern_forbid([^_?PKG_[A-Z_]+$]))
++ifdef(m4_pattern_allow, m4_pattern_allow([^PKG_CONFIG(_(PATH|LIBDIR|SYSROOT_DIR|ALLOW_SYSTEM_(CFLAGS|LIBS)))?$]))
++ifdef(m4_pattern_allow, m4_pattern_allow([^PKG_CONFIG_(DISABLE_UNINSTALLED|TOP_BUILD_DIR|DEBUG_SPEW)$]))
++ifdef([AC_ARG_VAR], [AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])])
++ifdef([AC_ARG_VAR], [AC_ARG_VAR([PKG_CONFIG_PATH], [directories to add to pkg-config's search path])])
++ifdef([AC_ARG_VAR], [AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's built-in search path])])
+ 
+ if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+-	AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
++	ifdef([AC_PATH_TOOL],
++	      [AC_PATH_TOOL([PKG_CONFIG], [pkg-config])],
++	      [AC_PATH_PROG([PKG_CONFIG], [pkg-config])])
+ fi
+ if test -n "$PKG_CONFIG"; then
+-	_pkg_min_version=m4_default([$1], [0.9.0])
++	ifdef(m4_default,
++	      _pkg_min_version=m4_default([$1], [0.9.0]),
++	      _pkg_min_version=ifelse([$1], [], [0.9.0], [$1]))
+ 	AC_MSG_CHECKING([pkg-config is at least version $_pkg_min_version])
+ 	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+ 		AC_MSG_RESULT([yes])
+@@ -60,15 +64,17 @@
+ AC_DEFUN([PKG_CHECK_EXISTS],
+ [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+ if test -n "$PKG_CONFIG" && \
+-    AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
+-  m4_default([$2], [:])
+-m4_ifvaln([$3], [else
+-  $3])dnl
++    ifdef([AC_RUN_LOG],
++          AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]),
++          $PKG_CONFIG --exists --print-errors "$1"); then
++  ifelse([$2], [], [:], [$2])
++ifelse([$3], [], [], [else
++  $3])
+ fi])
+ 
+ # _PKG_CONFIG([VARIABLE], [COMMAND], [MODULES])
+ # ---------------------------------------------
+-m4_define([_PKG_CONFIG],
++define([_PKG_CONFIG],
+ [if test -n "$$1"; then
+     pkg_cv_[]$1="$$1"
+  elif test -n "$PKG_CONFIG"; then
+@@ -105,8 +111,8 @@
+ # --------------------------------------------------------------
+ AC_DEFUN([PKG_CHECK_MODULES],
+ [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+-AC_ARG_VAR([$1][_CFLAGS], [C compiler flags for $1, overriding pkg-config])dnl
+-AC_ARG_VAR([$1][_LIBS], [linker flags for $1, overriding pkg-config])dnl
++ifdef([AC_ARG_VAR], [AC_ARG_VAR([$1][_CFLAGS], [C compiler flags for $1, overriding pkg-config])dnl])
++ifdef([AC_ARG_VAR], [AC_ARG_VAR([$1][_LIBS], [linker flags for $1, overriding pkg-config])dnl])
+ 
+ pkg_failed=no
+ AC_MSG_CHECKING([for $1])
+@@ -114,7 +120,7 @@
+ _PKG_CONFIG([$1][_CFLAGS], [cflags], [$2])
+ _PKG_CONFIG([$1][_LIBS], [libs], [$2])
+ 
+-m4_define([_PKG_TEXT], [Alternatively, you may set the environment variables $1[]_CFLAGS
++define([_PKG_TEXT], [Alternatively, you may set the environment variables $1[]_CFLAGS
+ and $1[]_LIBS to avoid the need to call pkg-config.
+ See the pkg-config man page for more details.])
+ 
+@@ -129,7 +135,7 @@
+ 	# Put the nasty error message in config.log where it belongs
+ 	echo "$$1[]_PKG_ERRORS" >&AS_MESSAGE_LOG_FD
+ 
+-	m4_default([$4], [AC_MSG_ERROR(
++	ifelse([$4],[], [AC_MSG_ERROR(
+ [Package requirements ($2) were not met:
+ 
+ $$1_PKG_ERRORS
+@@ -137,19 +143,29 @@
+ Consider adjusting the PKG_CONFIG_PATH environment variable if you
+ installed software in a non-standard prefix.
+ 
+-_PKG_TEXT])[]dnl
+-        ])
++_PKG_TEXT])dnl
++        ], [$4])
+ elif test $pkg_failed = untried; then
+      	AC_MSG_RESULT([no])
+-	m4_default([$4], [AC_MSG_FAILURE(
++	ifelse([$4], [], [
++	ifdef([AC_MSG_FAILURE],
++		[AC_MSG_FAILURE(
+ [The pkg-config script could not be found or is too old.  Make sure it
+ is in your PATH or set the PKG_CONFIG environment variable to the full
+ path to pkg-config.
+ 
+ _PKG_TEXT
+ 
+-To get pkg-config, see <http://pkg-config.freedesktop.org/>.])[]dnl
+-        ])
++To get pkg-config, see <http://pkg-config.freedesktop.org/>.])dnl],
++		[AC_MSG_ERROR(
++[The pkg-config script could not be found or is too old.  Make sure it
++is in your PATH or set the PKG_CONFIG environment variable to the full
++path to pkg-config.
++
++_PKG_TEXT
++
++To get pkg-config, see <http://pkg-config.freedesktop.org/>.])])
++        ], [$4])
+ else
+ 	$1[]_CFLAGS=$pkg_cv_[]$1[]_CFLAGS
+ 	$1[]_LIBS=$pkg_cv_[]$1[]_LIBS
+@@ -205,7 +221,7 @@
+ # Retrieves the value of the pkg-config variable for the given module.
+ AC_DEFUN([PKG_CHECK_VAR],
+ [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+-AC_ARG_VAR([$1], [value of $3 for $2, overriding pkg-config])dnl
++ifdef([AC_ARG_VAR], [AC_ARG_VAR([$1], [value of $3 for $2, overriding pkg-config])dnl])
+ 
+ _PKG_CONFIG([$1], [variable="][$3]["], [$2])
+ AS_VAR_COPY([$1], [pkg_cv_][$1])
