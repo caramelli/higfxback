@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libxmu-build libxpm-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11; lt-1.5.24)
-libtoolize -c -f; aclocal -I .; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I .; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
 
 # build
@@ -89,3 +89,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- libXaw-1.0.7.orig/configure.ac
++++ libXaw-1.0.7/configure.ac
+@@ -9,6 +9,8 @@
+ 
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ 
++AM_MAINTAINER_MODE
++
+ AM_CONFIG_HEADER(config.h)
+ 
+ # Require xorg-macros: XORG_WITH_LINT, XORG_DEFAULT_OPTIONS
+
+# source
+https://x.org/releases/individual/lib/libXaw-1.0.7.tar.gz

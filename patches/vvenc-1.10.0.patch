@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -46,6 +46,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- vvenc-1.10.0.orig/source/Lib/vvenc/CMakeLists.txt
 +++ vvenc-1.10.0/source/Lib/vvenc/CMakeLists.txt
 @@ -153,5 +153,5 @@
@@ -55,3 +57,6 @@ exit
 -                                   SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 +                                   SOVERSION ${PROJECT_VERSION_MAJOR}
                                     FOLDER lib )
+
+# source
+https://github.com/fraunhoferhhi/vvenc/archive/v1.10.0/vvenc-1.10.0.tar.gz

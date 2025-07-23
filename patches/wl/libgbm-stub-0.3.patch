@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /wl
+sh ./Configure --prefix=/wl
 
 # build
 make
@@ -17,6 +17,7 @@ install -m 644 gbm.h $DESTDIR/wl/include
 install -d $DESTDIR/wl/lib
 install libgbm.so.1 $DESTDIR/wl/lib/libstubgbm.so.1
 ln -sf libstubgbm.so.1 $DESTDIR/wl/lib/libgbm.so
+ln -sf libstubgbm.so.1 $DESTDIR/wl/lib/libgbm.so.1
 install -d $DESTDIR/wl/lib/pkgconfig
 install -m 644 gbm.pc $DESTDIR/wl/lib/pkgconfig
 
@@ -34,30 +35,24 @@ devel=\\
 /wl/lib/pkgconfig/gbm.pc
 
 exec=\\
+/wl/lib/libgbm.so.1 \\
 /wl/lib/libstubgbm.so.1
 EOF
 
 exit
+
+# patch
 --- libgbm-stub-0.3.orig/Configure
 +++ libgbm-stub-0.3/Configure
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,15 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -65,3 +60,6 @@ exit
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
 +sed -i "/^prefix/s|=.*|=$PREFIX|" gbm.pc
+
+# source
+https://github.com/caramelli/libgbm-stub/archive/v0.3/libgbm-stub-0.3.tar.gz

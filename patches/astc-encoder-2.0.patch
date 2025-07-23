@@ -1,14 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build make-build stb-build"
+REQUIRES="libstdc++-build make-build stb-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -f Source/stb_image.h
 rm -f Source/stb_image_write.h
-cd Source; sh ./Configure --stb_image /include/stb --prefix; cd -
+cd Source; sh ./Configure --stb-dir=/include/stb --prefix=; cd -
 
 # build
 make -C Source
@@ -51,39 +51,29 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- astc-encoder-2.0.orig/Source/Configure
 +++ astc-encoder-2.0/Source/Configure
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,20 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+STB_IMAGE=.
++STB_DIR=.
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --stb_image)
-+      STB_IMAGE=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --stb-dir=*) STB_DIR=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^STB_IMAGE/s|=.*|= $STB_IMAGE|" Makefile
++sed -i "/^STB_DIR/s|=.*|= $STB_DIR|" Makefile
 +
 +sed -i "/^prefix/s|=.*|=$PREFIX|" astc-encoder.pc
 --- astc-encoder-2.0.orig/Source/Makefile
@@ -94,7 +84,7 @@ exit
  
 +PREFIX ?= /usr/local
 +
-+STB_IMAGE ?= .
++STB_DIR ?= .
 +
  # Configure the application to build
  #
@@ -174,13 +164,13 @@ exit
  # handling of corrupt files, relying on asserts to handle bad file input.
  # Compiling with NDEBUG is a potential security risk.
 -stb_image-$(BINARY).o: stb_image.h
-+stb_image-$(VEC).o: $(STB_IMAGE)/stb_image.h
++stb_image-$(VEC).o: $(STB_DIR)/stb_image.h
  	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS_EXTERNAL) -DSTB_IMAGE_IMPLEMENTATION \
  		-DSTBI_NO_PSD -DSTBI_NO_GIF -DSTBI_NO_PIC -DSTBI_NO_PNM -UNDEBUG
  	@echo "[C++] $<"
  
 -stb_image_write-$(BINARY).o: stb_image_write.h
-+stb_image_write-$(VEC).o: $(STB_IMAGE)/stb_image_write.h
++stb_image_write-$(VEC).o: $(STB_DIR)/stb_image_write.h
  	@$(CXX) -c -x c++ -o $@ $< $(CXXFLAGS_EXTERNAL) -DSTB_IMAGE_WRITE_IMPLEMENTATION \
  		-UNDEBUG
  	@echo "[C++] $<"
@@ -193,7 +183,7 @@ exit
 -$(OBJECTS): %-$(BINARY).o: %.cpp $(HEADERS)
 -	@$(CXX) -c -o $@ $(abspath $<) $(CXXFLAGS)
 +$(CLI_OBJECTS): %-$(VEC).o: %.cpp $(CLI_HEADERS)
-+	@$(CXX) -c -o $@ $< $(CXXFLAGS) -I$(STB_IMAGE)
++	@$(CXX) -c -o $@ $< $(CXXFLAGS) -I$(STB_DIR)
 +	@echo "[C++] $<"
 +
 +$(LIB): $(OBJECTS)
@@ -302,3 +292,6 @@ exit
  	{"-h",       ASTCENC_OP_HELP,       ASTCENC_PRF_HDR},
  	{"-help",    ASTCENC_OP_HELP,       ASTCENC_PRF_HDR},
  	{"-v",       ASTCENC_OP_VERSION,    ASTCENC_PRF_HDR},
+
+# source
+https://github.com/ARM-software/astc-encoder/archive/2.0/astc-encoder-2.0.tar.gz

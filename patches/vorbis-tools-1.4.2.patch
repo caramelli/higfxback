@@ -11,7 +11,7 @@ pkg-config --exists libkate-build && REQUIRES="$REQUIRES libkate-build"
 pkg-config --exists speex-build && REQUIRES="$REQUIRES speex-build"
 
 # configure (ac-2.69; am-1.15)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -44,6 +44,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- vorbis-tools-1.4.2.orig/configure.ac
 +++ vorbis-tools-1.4.2/configure.ac
 @@ -31,8 +31,6 @@
@@ -55,3 +57,5 @@ exit
  ALL_LINGUAS="be cs da en_GB eo es fr hr hu nl pl ro ru sk sv uk vi"
  AM_GNU_GETTEXT
  
+# source
+http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.2.tar.gz

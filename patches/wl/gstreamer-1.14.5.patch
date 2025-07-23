@@ -8,7 +8,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 pkg-config --exists elfutils-build && REQUIRES="$REQUIRES elfutils-build"
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoheader; autoconf; automake -a -c
 ./configure --libexecdir=/wl/lib --prefix=/wl
 
 # build
@@ -323,6 +323,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gstreamer-1.14.5.orig/configure.ac
++++ gstreamer-1.14.5/configure.ac
+@@ -23,7 +23,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ dnl sets host_* variables
+ AC_CANONICAL_HOST
 --- gstreamer-1.14.5.orig/libs/gst/net/net.h
 +++ gstreamer-1.14.5/libs/gst/net/net.h
 @@ -24,7 +24,6 @@
@@ -333,3 +346,6 @@ exit
  #include <gst/net/gstnetaddressmeta.h>
  #include <gst/net/gstnetcontrolmessagemeta.h>
  #include <gst/net/gstnetclientclock.h>
+
+# source
+https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.14.5.tar.xz

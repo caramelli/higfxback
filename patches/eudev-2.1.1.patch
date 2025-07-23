@@ -13,7 +13,7 @@ else
 fi
 
 # configure (ac-2.69; am-1.13; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure $GUDEV --disable-keymap --disable-static --with-noarch-pkgconfigdir=/lib/pkgconfig --sbindir=/bin --prefix=
 
 # build
@@ -111,9 +111,19 @@ ln -sf eudev-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
 ln -sf eudev-build.pc $DESTDIR/share/pkgconfig/udevd-build.pc
 
 exit
+
+# patch
 --- eudev-2.1.1.orig/configure.ac
 +++ eudev-2.1.1/configure.ac
-@@ -164,7 +164,7 @@
+@@ -12,6 +12,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ AM_INIT_AUTOMAKE([foreign 1.13])
++AM_MAINTAINER_MODE
+ AM_SILENT_RULES([yes])
+ 
+ LT_PREREQ(2.2)
+@@ -164,7 +165,7 @@
  
  # pkgconfigdir paths
  AC_SUBST([pkgconfiglibdir], [${libdir}/pkgconfig])
@@ -122,6 +132,15 @@ exit
  
  # gudev paths
  AC_SUBST([libgudev_includedir],[${includedir}/gudev-1.0/gudev])
+@@ -398,7 +399,7 @@
+         udevrulesdir:            ${udevrulesdir}
+ 
+         pkgconfiglibdir:         ${libdir}/pkgconfig
+-        sharepkgconfigdir        ${datadir}/pkgconfig
++        noarch_pkgconfigdir      ${noarch_pkgconfigdir}
+ 
+         libgudev_includedir      ${includedir}/gudev-1.0/gudev
+ 
 --- eudev-2.1.1.orig/src/libudev/Makefile.am
 +++ eudev-2.1.1/src/libudev/Makefile.am
 @@ -1,6 +1,6 @@
@@ -300,3 +319,6 @@ exit
                  case 'V':
                          rc = adm_version(udev, argc, argv);
                          goto out;
+
+# source
+https://dev.gentoo.org/~blueness/eudev/eudev-2.1.1.tar.gz

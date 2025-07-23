@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build cairo-build harfbuzz-build"
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --prefix=/wl
 
 # build
@@ -110,6 +110,29 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- pango-1.38.1.orig/acinclude.m4
++++ pango-1.38.1/acinclude.m4
+@@ -55,18 +55,6 @@
+ ])
+ 
+ 
+-dnl REMOVE THIS WHEN introspection.m4 is widely available
+-dnl
+-dnl -*- mode: autoconf -*-
+-dnl Copyright 2009 Johan Dahlin
+-dnl
+-dnl This file is free software; the author(s) gives unlimited
+-dnl permission to copy and/or distribute it, with or without
+-dnl modifications, as long as this notice is preserved.
+-dnl
+-
+-# serial 1
+-
+ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+ [
+     AC_BEFORE([AC_PROG_LIBTOOL],[$0])dnl setup libtool first
 --- pango-1.38.1.orig/configure.ac
 +++ pango-1.38.1/configure.ac
 @@ -46,6 +46,7 @@
@@ -120,7 +143,15 @@ exit
  
  dnl -Wno-portability tells automake to stop complaining about the
  dnl usage of GNU Make specific features.
-@@ -208,7 +209,7 @@
+@@ -53,6 +54,7 @@
+ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+ AC_CONFIG_HEADERS([config.h])
+ 
++AM_MAINTAINER_MODE
+ 
+ PANGO_VERSION_MAJOR=pango_version_major()
+ PANGO_VERSION_MINOR=pango_version_minor()
+@@ -208,7 +210,7 @@
  # Checks for HarfBuzz
  #
  have_harfbuzz=false
@@ -131,6 +162,15 @@ exit
  #
 --- pango-1.38.1.orig/docs/Makefile.am
 +++ pango-1.38.1/docs/Makefile.am
+@@ -51,7 +51,7 @@
+ 
+ # CFLAGS and LDFLAGS for compiling scan program. Only needed
+ # if $(DOC_MODULE).types is non-empty.
+-INCLUDES =               	\
++AM_CPPFLAGS =               	\
+ 	-DPANGO_ENABLE_BACKEND	\
+ 	-DPANGO_ENABLE_ENGINE	\
+ 	-I$(top_srcdir)		\
 @@ -66,18 +66,18 @@
  # HTML docs on Unix. We don't get introspection on Win32
  # specific types, but that isn't a big deal.
@@ -156,6 +196,15 @@ exit
  GTKDOC_LIBS += $(GLIB_LIBS)
 --- pango-1.38.1.orig/examples/Makefile.am
 +++ pango-1.38.1/examples/Makefile.am
+@@ -3,7 +3,7 @@
+ EXTRA_DIST =			\
+ 	pangowin32tobmp.c
+ 
+-INCLUDES =				\
++AM_CPPFLAGS =				\
+ 	-I$(top_srcdir)			\
+ 	$(PANGO_DEBUG_FLAGS)		\
+ 	$(GLIB_CFLAGS)			\
 @@ -19,13 +19,13 @@
  
  cairosimple_LDADD =					\
@@ -266,6 +315,15 @@ exit
 +])
 --- pango-1.38.1.orig/pango/Makefile.am
 +++ pango-1.38.1/pango/Makefile.am
+@@ -13,7 +13,7 @@
+ 
+ SUBDIRS = mini-fribidi
+ 
+-INCLUDES =						\
++AM_CPPFLAGS =						\
+ 	-DG_LOG_DOMAIN=\"Pango\"			\
+ 	-DPANGO_ENABLE_BACKEND				\
+ 	-DPANGO_ENABLE_ENGINE				\
 @@ -33,7 +33,7 @@
  
  BUILT_SOURCES = pango-enum-types.h pango-enum-types.c pango-features.h
@@ -655,6 +713,16 @@ exit
  pangocairo_FILES = $(pangocairo_core_sources)
  pangocairo_EXCLUDES = dummy
  
+--- pango-1.38.1.orig/pango/mini-fribidi/Makefile.am
++++ pango-1.38.1/pango/mini-fribidi/Makefile.am
+@@ -1,6 +1,6 @@
+ ## Process this file with automake to produce Makefile.in
+ 
+-INCLUDES = 					\
++AM_CPPFLAGS = 					\
+ 	-DSYSCONFDIR=\"$(sysconfdir)\" 		\
+ 	-DLIBDIR=\"$(libdir)\" 			\
+ 	$(PANGO_DEBUG_FLAGS)			\
 --- pango-1.38.1.orig/pango/pangofc-shape.c
 +++ pango-1.38.1/pango/pangofc-shape.c
 @@ -342,9 +342,6 @@
@@ -679,6 +747,15 @@ exit
  Cflags: -I${pc_top_builddir}/${pcfiledir}/@srcdir@
 --- pango-1.38.1.orig/pango-view/Makefile.am
 +++ pango-1.38.1/pango-view/Makefile.am
+@@ -27,7 +27,7 @@
+ EXTRA_DIST =			\
+ 	$(TEST_TEXTS)
+ 
+-INCLUDES =				\
++AM_CPPFLAGS =				\
+ 	-I$(top_srcdir)			\
+ 	$(PANGO_DEBUG_FLAGS)		\
+ 	$(GLIB_CFLAGS)			\
 @@ -47,13 +47,13 @@
  	viewer-main.c					\
  	pango-view.c
@@ -842,6 +919,14 @@ exit
  	test-layout.c \
 --- pango-1.38.1.orig/tools/Makefile.am
 +++ pango-1.38.1/tools/Makefile.am
+@@ -1,6 +1,6 @@
+ ## Process this file with automake to create Makefile.in.
+ 
+-INCLUDES =					\
++AM_CPPFLAGS =					\
+ 	-I$(top_srcdir)				\
+ 	$(GLIB_CFLAGS)				\
+ 	$(FONTCONFIG_CFLAGS)			\
 @@ -15,6 +15,6 @@
  	rgb.txt
  
@@ -850,3 +935,6 @@ exit
 +gen_script_for_lang_LDADD = ../pango/libpango1-$(PANGO_API_VERSION).la $(FONTCONFIG_LIBS) $(GLIB_LIBS)
  
  -include $(top_srcdir)/git.mk
+
+# source
+https://download.gnome.org/sources/pango/1.38/pango-1.38.1.tar.xz

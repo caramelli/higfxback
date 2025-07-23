@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build bigreqsproto-build damageproto-build input
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11; lt-2.2.6b)
-libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-composite --disable-dri --disable-glx --disable-screensaver --disable-xinerama --disable-xnest --disable-xres --with-default-font-path=/share/fonts/opentype,/share/fonts/truetype,/share/fonts/type1,/x11/share/fonts/75dpi,/x11/share/fonts/100dpi --with-xkb-path=/share/X11/xkb --prefix=/x11
 
 # build
@@ -255,6 +255,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- xorg-server-1.7.7.orig/Xext/xace.c
 +++ xorg-server-1.7.7/Xext/xace.c
 @@ -87,7 +87,18 @@
@@ -754,3 +756,5 @@ exit
  extern _X_EXPORT void
  GlyphUninit (ScreenPtr pScreen);
  
+# source
+https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.7.7.tar.gz

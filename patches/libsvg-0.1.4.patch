@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build expat-build jpeg-build libpng-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.59; am-1.9; lt-1.5.24)
-libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I .; autoheader; autoconf; automake -a -c
 ./configure --disable-static --with-expat --prefix=
 
 # build
@@ -39,6 +39,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libsvg-0.1.4.orig/configure.in
 +++ libsvg-0.1.4/configure.in
 @@ -49,7 +49,7 @@
@@ -150,3 +152,6 @@ exit
 -    va_end (args);
 -}
 -
+
+# source
+https://cairographics.org/snapshots/libsvg-0.1.4.tar.gz

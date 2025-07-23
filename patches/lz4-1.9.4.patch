@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --prefix
+sh ./Configure --disable-static --prefix=
 
 # build
 make -C programs lz4-wlib
@@ -47,31 +47,22 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- lz4-1.9.4.orig/Configure
 +++ lz4-1.9.4/Configure
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,19 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
 +BUILD_STATIC=yes
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      BUILD_STATIC=no
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-static) BUILD_STATIC=no;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -129,3 +120,6 @@ exit
  
  lz4c: lz4
  	$(LN_SF) lz4$(EXT) lz4c$(EXT)
+
+# source
+https://github.com/lz4/lz4/archive/v1.9.4/lz4-1.9.4.tar.gz

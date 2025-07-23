@@ -12,7 +12,7 @@ pkg-config --exists libexif-build && REQUIRES="$REQUIRES libexif-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists libxinerama-build && REQUIRES="$REQUIRES libxinerama-build"
 
 # configure
-PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --prefix=/x11
 
 # build
 make
@@ -40,26 +40,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- feh-3.10.3.orig/Configure
 +++ feh-3.10.3/Configure
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,20 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -76,7 +69,7 @@ exit
 +++ feh-3.10.3/config.mk
 @@ -1,15 +1,17 @@
  PACKAGE ?= feh
- VERSION ?= ${shell git describe --dirty}
+ VERSION ?= 3.10.3
  
 +PKG_CONFIG ?= pkg-config
 +
@@ -113,3 +106,6 @@ exit
  ifeq (${curl},1)
  	CFLAGS += -DHAVE_LIBCURL
  	LDLIBS += -lcurl
+
+# source
+https://feh.finalrewind.org/feh-3.10.3.tar.bz2

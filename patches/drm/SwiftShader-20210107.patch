@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="astc-encoder-build cmake3-build gcc-g++-build libdrm-build llvm-build marl-build spirv-tools-build vulkan-headers-build"
+REQUIRES="astc-encoder-build cmake3-build libdrm-build libstdc++-build llvm-build marl-build spirv-tools-build vulkan-headers-build"
 
 PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf include
 rm -rf third_party/astc-encoder
-rm -rf third_party/llvm-10.0
+rm -rf third_party/llvm*
 rm -rf third_party/marl
 rm -rf third_party/SPIRV-Headers
 rm -rf third_party/SPIRV-Tools
@@ -38,6 +38,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SwiftShader-20210107.orig/CMakeLists.txt
 +++ SwiftShader-20210107/CMakeLists.txt
 @@ -624,6 +624,10 @@
@@ -51,7 +53,7 @@ exit
  ###########################################################
  # libbacktrace and boost
  ###########################################################
-@@ -635,8 +639,10 @@
+@@ -635,24 +639,30 @@
  ###########################################################
  # LLVM
  ###########################################################
@@ -64,7 +66,19 @@ exit
  
  ###########################################################
  # Subzero
-@@ -650,9 +656,11 @@
+ ###########################################################
+-add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
+-add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
+-set_target_properties(llvm-subzero PROPERTIES FOLDER "third_party")
+-set_target_properties(subzero PROPERTIES FOLDER "third_party")
++if(EXISTS ${THIRD_PARTY_DIR}/llvm-subzero AND EXISTS ${THIRD_PARTY_DIR}/subzero)
++    add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
++    add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
++    set_target_properties(llvm-subzero PROPERTIES FOLDER "third_party")
++    set_target_properties(subzero PROPERTIES FOLDER "third_party")
++endif()
+ 
+ ###########################################################
  # marl
  ###########################################################
  if(BUILD_MARL)
@@ -79,7 +93,7 @@ exit
  endif()
  
  if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
-@@ -671,8 +679,10 @@
+@@ -671,8 +681,10 @@
  # astc-encoder
  ###########################################################
  if(SWIFTSHADER_ENABLE_ASTC)
@@ -92,7 +106,7 @@ exit
  endif()
  
  ###########################################################
-@@ -769,7 +779,7 @@
+@@ -769,7 +781,7 @@
  endif(SWIFTSHADER_BUILD_GLES_CM)
  
  if(SWIFTSHADER_BUILD_VULKAN)
@@ -211,7 +225,7 @@ exit
      "vk_swiftshader_icd.json.tmpl"
 --- SwiftShader-20210107.orig/src/Vulkan/VkStringify.cpp
 +++ SwiftShader-20210107/src/Vulkan/VkStringify.cpp
-@@ -16,8 +16,8 @@
+@@ -16,11 +16,13 @@
  
  #include "System/Debug.hpp"
  
@@ -219,9 +233,14 @@ exit
 -#include <vulkan/vk_google_filtering_precision.h>
 +#include "vk_ext_provoking_vertex.h"
 +#include "vk_google_filtering_precision.h"
++#ifndef NDEBUG
  #define VULKAN_HPP_NO_EXCEPTIONS
  #define VULKAN_HPP_NAMESPACE vkhpp
  #include <vulkan/vulkan.hpp>
++#endif
+ 
+ namespace vk {
+ 
 --- SwiftShader-20210107.orig/src/Vulkan/VulkanPlatform.hpp
 +++ SwiftShader-20210107/src/Vulkan/VulkanPlatform.hpp
 @@ -49,19 +49,13 @@
@@ -349,3 +368,6 @@ exit
 +    const void*                           pNext;
 +    VkSamplerFilteringPrecisionModeGOOGLE samplerFilteringPrecisionMode;
 +} VkSamplerFilteringPrecisionGOOGLE;
+
+# source
+https://swiftshader.googlesource.com/SwiftShader/+archive/937395c1ed5d20af5a5fd999d7e2deddf1b78fe3.tar.gz

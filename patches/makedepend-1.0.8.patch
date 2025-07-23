@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build util-macros-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16)
-aclocal; autoconf; autoheader -f; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -29,6 +29,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- makedepend-1.0.8.orig/Makefile.am
 +++ makedepend-1.0.8/Makefile.am
 @@ -12,7 +12,6 @@
@@ -41,7 +43,15 @@ exit
  EXTRA_DIST = autogen.sh makedepend.man README.md
 --- makedepend-1.0.8.orig/configure.ac
 +++ makedepend-1.0.8/configure.ac
-@@ -26,8 +26,5 @@
+@@ -10,6 +10,7 @@
+ 
+ # Initialize Automake
+ AM_INIT_AUTOMAKE([foreign dist-xz])
++AM_MAINTAINER_MODE
+ 
+ # Require X.Org macros 1.8 or later for MAN_SUBSTS set by XORG_MANPAGE_SECTIONS
+ m4_ifndef([XORG_MACROS_VERSION],
+@@ -26,8 +27,5 @@
  dnl Use 64-bit file operations on 32-bit systems that support them
  AC_SYS_LARGEFILE
  
@@ -101,3 +111,6 @@ exit
  
  #ifdef __sun
  # include <sys/utsname.h>
+
+# source
+https://x.org/releases/individual/util/makedepend-1.0.8.tar.gz

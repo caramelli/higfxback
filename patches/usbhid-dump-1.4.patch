@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libusb-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -29,6 +29,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- usbhid-dump-1.4.orig/configure.ac
 +++ usbhid-dump-1.4/configure.ac
 @@ -43,6 +43,7 @@
@@ -52,3 +54,6 @@ exit
  
      /* Open device list */
      LIBUSB_GUARD(uhd_dev_list_open(ctx, bus_num, dev_addr,
+
+# source
+https://github.com/DIGImend/usbhid-dump/releases/download/1.4/usbhid-dump-1.4.tar.gz

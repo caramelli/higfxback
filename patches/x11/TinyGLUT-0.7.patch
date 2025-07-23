@@ -77,6 +77,19 @@ EOF
 ln -sf tinyglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
 
 exit
+
+# patch
+--- TinyGLUT-0.7.orig/meson.build
++++ TinyGLUT-0.7/meson.build
+@@ -191,6 +191,8 @@
+   else
+     add_global_arguments('-DFIU_ENABLE', language: 'c')
+   endif
++else
++  libfiu_dep = disabler()
+ endif
+ 
+ #######################
 --- TinyGLUT-0.7.orig/x11.c
 +++ TinyGLUT-0.7/x11.c
 @@ -63,6 +63,8 @@
@@ -88,3 +101,6 @@ exit
    XMapWindow(display, window);
  
    XMoveWindow(display, window, posx, posy);
+
+# source
+https://github.com/caramelli/TinyGLUT/archive/v0.7/TinyGLUT-0.7.tar.gz

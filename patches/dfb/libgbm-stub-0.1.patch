@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /dfb
+sh ./Configure --prefix=/dfb
 
 # build
 make
@@ -17,6 +17,7 @@ install -m 644 gbm.h $DESTDIR/dfb/include
 install -d $DESTDIR/dfb/lib
 install libgbm.so.1 $DESTDIR/dfb/lib/libstubgbm.so.1
 ln -sf libstubgbm.so.1 $DESTDIR/dfb/lib/libgbm.so
+ln -sf libstubgbm.so.1 $DESTDIR/dfb/lib/libgbm.so.1
 install -d $DESTDIR/dfb/lib/pkgconfig
 install -m 644 gbm.pc $DESTDIR/dfb/lib/pkgconfig
 
@@ -34,30 +35,24 @@ devel=\\
 /dfb/lib/pkgconfig/gbm.pc
 
 exec=\\
+/dfb/lib/libgbm.so.1 \\
 /dfb/lib/libstubgbm.so.1
 EOF
 
 exit
+
+# patch
 --- libgbm-stub-0.1.orig/Configure
 +++ libgbm-stub-0.1/Configure
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,15 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -75,3 +70,6 @@ exit
  void gbm_bo_get_device() {}
  void gbm_bo_get_handle() {}
  void gbm_bo_get_fd() {}
+
+# source
+https://github.com/caramelli/libgbm-stub/archive/v0.1/libgbm-stub-0.1.tar.gz

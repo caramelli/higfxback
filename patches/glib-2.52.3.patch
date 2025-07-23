@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libffi-build pcre-build python3-build util
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --with-python=/bin/python3 --prefix=
 
 # build
@@ -635,17 +635,21 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- glib-2.52.3.orig/configure.ac
 +++ glib-2.52.3/configure.ac
-@@ -63,7 +63,7 @@
+@@ -63,8 +63,8 @@
  # Save this value here, since automake will set cflags later
  cflags_set=${CFLAGS:+set}
  
 -AM_INIT_AUTOMAKE([1.11 -Wno-portability no-define no-dist-gzip dist-xz tar-ustar])
+-AM_MAINTAINER_MODE([enable])
 +AM_INIT_AUTOMAKE([1.11 -Wno-portability no-define no-dist-gzip dist-xz tar-ustar subdir-objects])
- AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
  
  # Support silent build rules. Disable
+ # by either passing --disable-silent-rules to configure or passing V=1
 @@ -463,13 +463,6 @@
  AC_SUBST([CONFIG_STATUS_DEPENDENCIES],['$(top_srcdir)/po/LINGUAS'])
  GLIB_GNU_GETTEXT
@@ -738,3 +742,6 @@ exit
 -MSVC_TOOLSET = 141
  
  include $(top_srcdir)/win32/Makefile-newvs.am
+
+# source
+https://download.gnome.org/sources/glib/2.52/glib-2.52.3.tar.xz

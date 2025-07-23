@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build freetype-build gcc-g++-build glib-build"
+REQUIRES="autotools-wrappers-lt-build freetype-build glib-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -11,7 +11,7 @@ if pkg-config --exists icu4c-build; then
 fi
 
 # configure (ac-2.68; am-1.11; lt-2.4.2)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -83,9 +83,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- harfbuzz-0.9.17.orig/configure.ac
 +++ harfbuzz-0.9.17/configure.ac
-@@ -52,6 +52,8 @@
+@@ -11,6 +11,7 @@
+ 
+ AM_INIT_AUTOMAKE([1.11.1 gnits dist-bzip2 no-dist-gzip -Wall no-define color-tests])
+ AM_SILENT_RULES([yes])
++AM_MAINTAINER_MODE
+ 
+ # Initialize libtool
+ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+@@ -52,6 +53,8 @@
  HB_LIBTOOL_VERSION_INFO=hb_libtool_current:hb_libtool_revision:hb_libtool_age
  AC_SUBST(HB_LIBTOOL_VERSION_INFO)
  
@@ -94,7 +104,7 @@ exit
  dnl GOBJECT_INTROSPECTION_CHECK([0.9.0])
  dnl GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
  
-@@ -139,29 +141,21 @@
+@@ -139,29 +142,21 @@
  PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.16, have_glib=true, have_glib=false)
  if $have_glib; then
  	AC_DEFINE(HAVE_GLIB, 1, [Have glib2 library])
@@ -126,7 +136,7 @@ exit
  AM_CONDITIONAL(HAVE_CAIRO_FT, $have_cairo_ft)
  
  dnl ==========================================================================
-@@ -238,6 +232,7 @@
+@@ -238,6 +233,7 @@
  	AC_CHECK_FUNCS(FT_Face_GetCharVariantIndex)
  	LIBS="$_save_libs"
  	CFLAGS="$_save_cflags"
@@ -134,7 +144,7 @@ exit
  fi
  AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
  
-@@ -318,6 +313,8 @@
+@@ -318,6 +314,8 @@
  
  dnl ===========================================================================
  
@@ -145,11 +155,13 @@ exit
  harfbuzz.pc
 --- harfbuzz-0.9.17.orig/harfbuzz.pc.in
 +++ harfbuzz-0.9.17/harfbuzz.pc.in
-@@ -7,5 +7,7 @@
- Description: Text shaping library
+@@ -8,4 +8,6 @@
  Version: @VERSION@
  
-+Requires.private: @HB_REQUIRES_PRIVATE@
  Libs: -L${libdir} -lharfbuzz
 +Libs.private: @ICU_LIBS@ @ICU_LE_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@
++Requires.private: @HB_REQUIRES_PRIVATE@
  Cflags: -I${includedir}/harfbuzz
+
+# source
+https://freedesktop.org/software/harfbuzz/release/harfbuzz-0.9.17.tar.bz2

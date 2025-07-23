@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -57,3 +57,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- libmd-1.0.4.orig/configure.ac
++++ libmd-1.0.4/configure.ac
+@@ -8,6 +8,8 @@
+ 
+ AM_INIT_AUTOMAKE([1.8 -Wall foreign nostdinc no-dist-gzip dist-xz])
+ 
++AM_MAINTAINER_MODE
++
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
+                             [AC_SUBST([AM_DEFAULT_VERBOSITY], [1])])
+ 
+# source
+https://archive.hadrons.org/software/libmd/libmd-1.0.4.tar.xz

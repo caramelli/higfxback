@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /fb
+sh ./Configure --prefix=/fb
 
 # build
 make
@@ -28,28 +28,24 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fbcat-0.5.2.orig/Configure
 +++ fbcat-0.5.2/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
+
+# source
+https://github.com/jwilk/fbcat/archive/0.5.2/fbcat-0.5.2.tar.gz

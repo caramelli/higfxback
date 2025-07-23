@@ -14,7 +14,7 @@ fi
 
 # configure
 rm -rf thirdparty
-PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --disable-static --prefix /wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --disable-static --prefix=/wl
 
 # build
 make
@@ -166,45 +166,37 @@ cat >> $DESTDIR/wl/share/pkgconfig/mupdf-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- mupdf-1.14.0.orig/Configure
 +++ mupdf-1.14.0/Configure
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,29 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
++
 +shared=no
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      shared=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --disable-static) shared=yes;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+test -f user.make && rm user.make
++rm -f user.make
 +
-+test "$prefix" != /usr/local && echo prefix := $prefix > user.make
++test $prefix != /usr/local && echo prefix := $prefix > user.make
 +
 +test $shared != no && echo shared := $shared >> user.make
 +
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
-+  test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +  echo PKG_CONFIG := PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG >> user.make
 +else
-+  test $PKG_CONFIG && echo PKG_CONFIG := $PKG_CONFIG >> user.make
++  test $PKG_CONFIG != pkg-config && echo PKG_CONFIG := $PKG_CONFIG >> user.make
 +fi
 +
 +sed -i "/^prefix=/s|=.*|=$prefix|" mupdf.pc
@@ -228,7 +220,7 @@ exit
  TAGS_CMD = $(QUIET_TAGS) ctags $^
  WINDRES_CMD = $(QUIET_WINDRES) $(MKTGTDIR) ; $(WINDRES) $< $@
  OBJCOPY_CMD = $(QUIET_OBJCOPY) $(MKTGTDIR) ; $(LD) -r -b binary -o $@ $<
-@@ -71,17 +73,20 @@
+@@ -71,6 +73,9 @@
  $(OUT)/%.exe: %.c
  	$(LINK_CMD)
  
@@ -236,36 +228,8 @@ exit
 +	$(LINK_CMD) -shared -Wl,-soname,libmupdf.so.1 $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
 +
  $(OUT)/source/helpers/mu-threads/%.o : source/helpers/mu-threads/%.c
--	$(CC_CMD) $(THREADING_CFLAGS)
-+	$(CC_CMD) $(LIB_CFLAGS) $(THREADING_CFLAGS)
+ 	$(CC_CMD) $(THREADING_CFLAGS)
  
- $(OUT)/source/helpers/pkcs7/%.o : source/helpers/pkcs7/%.c
--	$(CC_CMD) $(LIBCRYPTO_CFLAGS)
-+	$(CC_CMD) $(LIB_CFLAGS) $(LIBCRYPTO_CFLAGS)
- 
- $(OUT)/source/tools/%.o : source/tools/%.c
- 	$(CC_CMD) -Wall $(THIRD_CFLAGS) $(THREADING_CFLAGS)
- 
- $(OUT)/generated/%.o : generated/%.c
--	$(CC_CMD) -O0
-+	$(CC_CMD) $(LIB_CFLAGS) -O0
- 
- $(OUT)/platform/x11/%.o : platform/x11/%.c
- 	$(CC_CMD) -Wall $(X11_CFLAGS)
-@@ -94,11 +99,11 @@
- 
- ifeq ($(HAVE_OBJCOPY),yes)
-   $(OUT)/source/fitz/noto.o : source/fitz/noto.c
--	$(CC_CMD) -Wall -Wdeclaration-after-statement -DHAVE_OBJCOPY $(THIRD_CFLAGS)
-+	$(CC_CMD) -Wall -Wdeclaration-after-statement -DHAVE_OBJCOPY $(LIB_CFLAGS) $(THIRD_CFLAGS)
- endif
- 
- $(OUT)/source/%.o : source/%.c
--	$(CC_CMD) -Wall -Wdeclaration-after-statement $(THIRD_CFLAGS)
-+	$(CC_CMD) -Wall -Wdeclaration-after-statement $(LIB_CFLAGS) $(THIRD_CFLAGS)
- 
- $(OUT)/platform/%.o : platform/%.c
- 	$(CC_CMD) -Wall
 @@ -190,6 +195,11 @@
  
  # --- Library ---
@@ -286,105 +250,105 @@ exit
  
  INSTALL_LIBS := $(MUPDF_LIB) $(THIRD_LIB)
  
-@@ -213,16 +224,26 @@
+@@ -213,16 +224,24 @@
  MUTOOL_SRC += $(sort $(wildcard source/tools/pdf*.c))
  MUTOOL_OBJ := $(MUTOOL_SRC:%.c=$(OUT)/%.o)
  MUTOOL_EXE := $(OUT)/mutool
-+ifeq ($(shared),yes)
-+$(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB)
-+	$(LINK_CMD)
-+else
- $(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(THREAD_LIB)
+-$(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(THREAD_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++$(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB)
++ifneq ($(shared),yes)
++$(MUTOOL_EXE) : $(THIRD_LIB) $(PKCS7_LIB) $(THREAD_LIB) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
 +endif
++$(MUTOOL_EXE) :
++	$(LINK_CMD)
  INSTALL_APPS += $(MUTOOL_EXE)
  
  ifeq ($(HAVE_GLUT),yes)
    MUVIEW_GLUT_SRC += $(sort $(wildcard platform/gl/*.c))
    MUVIEW_GLUT_OBJ := $(MUVIEW_GLUT_SRC:%.c=$(OUT)/%.o)
    MUVIEW_GLUT_EXE := $(OUT)/mupdf-gl
-+ifeq ($(shared),yes)
-+  $(MUVIEW_GLUT_EXE) : $(MUVIEW_GLUT_OBJ) $(MUPDF_LIB) $(GLUT_LIB)
-+	$(LINK_CMD) $(WIN32_LDFLAGS) $(GLUT_LIBS) -lm
-+else
-   $(MUVIEW_GLUT_EXE) : $(MUVIEW_GLUT_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(GLUT_LIB)
+-  $(MUVIEW_GLUT_EXE) : $(MUVIEW_GLUT_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(GLUT_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(WIN32_LDFLAGS) $(GLUT_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(WIN32_LDFLAGS) $(GLUT_LIBS) $(LIBS)
++  $(MUVIEW_GLUT_EXE) : $(MUVIEW_GLUT_OBJ) $(MUPDF_LIB) $(GLUT_LIB)
++ifneq ($(shared),yes)
++  $(MUVIEW_GLUT_EXE) : $(THIRD_LIB) $(PKCS7_LIB) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
 +endif
++  $(MUVIEW_GLUT_EXE) :
++		$(LINK_CMD) $(WIN32_LDFLAGS) $(GLUT_LIBS)
    INSTALL_APPS += $(MUVIEW_GLUT_EXE)
  endif
  
-@@ -231,8 +252,13 @@
+@@ -231,8 +250,12 @@
    MUVIEW_X11_OBJ += $(OUT)/platform/x11/pdfapp.o
    MUVIEW_X11_OBJ += $(OUT)/platform/x11/x11_main.o
    MUVIEW_X11_OBJ += $(OUT)/platform/x11/x11_image.o
-+ifeq ($(shared),yes)
-+  $(MUVIEW_X11_EXE) : $(MUVIEW_X11_OBJ) $(MUPDF_LIB)
-+	$(LINK_CMD) $(X11_LIBS)
-+else
-   $(MUVIEW_X11_EXE) : $(MUVIEW_X11_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB)
+-  $(MUVIEW_X11_EXE) : $(MUVIEW_X11_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(LIBCRYPTO_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++  $(MUVIEW_X11_EXE) : $(MUVIEW_X11_OBJ) $(MUPDF_LIB)
++ifneq ($(shared),yes)
++  $(MUVIEW_X11_EXE) : $(THIRD_LIB) $(PKCS7_LIB) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
 +endif
++  $(MUVIEW_X11_EXE) :
++		$(LINK_CMD) $(X11_LIBS)
    INSTALL_APPS += $(MUVIEW_X11_EXE)
  endif
  
-@@ -250,20 +276,35 @@
+@@ -250,20 +273,32 @@
  
  MURASTER_OBJ := $(OUT)/source/tools/muraster.o
  MURASTER_EXE := $(OUT)/muraster
-+ifeq ($(shared),yes)
-+$(MURASTER_EXE) : $(MURASTER_OBJ) $(MUPDF_LIB)
-+	$(LINK_CMD)
-+else
- $(MURASTER_EXE) : $(MURASTER_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(THREAD_LIB)
+-$(MURASTER_EXE) : $(MURASTER_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(THREAD_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBS)
++$(MURASTER_EXE) : $(MURASTER_OBJ) $(MUPDF_LIB)
++ifneq ($(shared),yes)
++$(MURASTER_EXE) : $(THIRD_LIB) $(THREAD_LIB) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBS)
 +endif
++$(MURASTER_EXE) :
++	$(LINK_CMD)
  EXTRA_APPS += $(MURASTER_EXE)
  
  MJSGEN_OBJ := $(OUT)/source/tools/mjsgen.o
  MJSGEN_EXE := $(OUT)/mjsgen
-+ifeq ($(shared),yes)
-+$(MJSGEN_EXE) : $(MJSGEN_OBJ) $(MUPDF_LIB)
-+	$(LINK_CMD)
-+else
- $(MJSGEN_EXE) : $(MJSGEN_OBJ) $(MUPDF_LIB) $(THIRD_LIB)
+-$(MJSGEN_EXE) : $(MJSGEN_OBJ) $(MUPDF_LIB) $(THIRD_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(LIBS)
++$(MJSGEN_EXE) : $(MJSGEN_OBJ) $(MUPDF_LIB)
++ifneq ($(shared),yes)
++$(MJSGEN_EXE) : $(THIRD_LIB) $(THIRD_LIBS) $(LIBS)
 +endif
++$(MJSGEN_EXE) :
++	$(LINK_CMD)
  EXTRA_APPS += $(MJSGEN_EXE)
  
  MUJSTEST_OBJ := $(addprefix $(OUT)/platform/x11/, jstest_main.o pdfapp.o)
  MUJSTEST_EXE := $(OUT)/mujstest
-+ifeq ($(shared),yes)
-+$(MUJSTEST_EXE) : $(MUJSTEST_OBJ) $(MUPDF_LIB)
-+	$(LINK_CMD)
-+else
- $(MUJSTEST_EXE) : $(MUJSTEST_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB)
+-$(MUJSTEST_EXE) : $(MUJSTEST_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++$(MUJSTEST_EXE) : $(MUJSTEST_OBJ) $(MUPDF_LIB)
++ifneq ($(shared),yes)
++$(MUJSTEST_EXE) : $(THIRD_LIB) $(PKCS7_LIB) $(THIRD_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
 +endif
++$(MUJSTEST_EXE) :
++	$(LINK_CMD)
  EXTRA_APPS += $(MUJSTEST_EXE)
  
  ifeq ($(HAVE_X11),yes)
-@@ -273,8 +314,13 @@
+@@ -273,8 +308,12 @@
    MUVIEW_X11_CURL_OBJ += $(OUT)/platform/x11/curl/x11_main.o
    MUVIEW_X11_CURL_OBJ += $(OUT)/platform/x11/curl/x11_image.o
    MUVIEW_X11_CURL_OBJ += $(OUT)/platform/x11/curl/curl_stream.o
-+ifeq ($(shared),yes)
-+  $(MUVIEW_X11_CURL_EXE) : $(MUVIEW_X11_CURL_OBJ) $(MUPDF_LIB) $(CURL_LIB)
-+	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) $(THREADING_LIBS)
-+else
-   $(MUVIEW_X11_CURL_EXE) : $(MUVIEW_X11_CURL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(CURL_LIB)
+-  $(MUVIEW_X11_CURL_EXE) : $(MUVIEW_X11_CURL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(PKCS7_LIB) $(CURL_LIB)
 -	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(CURL_LIBS) $(LIBCRYPTO_LIBS)
-+	$(LINK_CMD) $(THIRD_LIBS) $(X11_LIBS) $(CURL_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
++  $(MUVIEW_X11_CURL_EXE) : $(MUVIEW_X11_CURL_OBJ) $(MUPDF_LIB) $(CURL_LIB)
++ifneq ($(shared),yes)
++  $(MUVIEW_X11_CURL_EXE) : $(THIRD_LIB) $(PKCS7_LIB) $(THIRD_LIBS) $(THREADING_LIBS) $(LIBCRYPTO_LIBS) $(LIBS)
 +endif
++  $(MUVIEW_X11_CURL_EXE) :
++		$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS)
    EXTRA_APPS += $(MUVIEW_X11_CURL_EXE)
  endif
  endif
-@@ -301,7 +347,7 @@
+@@ -301,7 +340,7 @@
  $(OUT)/example: docs/examples/example.c $(MUPDF_LIB) $(THIRD_LIB)
  	$(LINK_CMD) $(CFLAGS) $(THIRD_LIBS)
  $(OUT)/multi-threaded: docs/examples/multi-threaded.c $(MUPDF_LIB) $(THIRD_LIB)
@@ -393,7 +357,15 @@ exit
  
  # --- Update version string header ---
  
-@@ -371,7 +417,7 @@
+@@ -346,6 +385,7 @@
+ 
+ 	install -d $(DESTDIR)$(libdir)
+ 	install $(INSTALL_LIBS) $(DESTDIR)$(libdir)
++	if test -n "$(shared)"; then ln -sf libmupdf.so.1 $(DESTDIR)$(libdir)/libmupdf.so; fi
+ 
+ 	install -d $(DESTDIR)$(bindir)
+ 	install $(INSTALL_APPS) $(DESTDIR)$(bindir)
+@@ -371,7 +411,7 @@
  java:
  	$(MAKE) -C platform/java
  
@@ -409,7 +381,7 @@ exit
  SANITIZE_FLAGS += -fsanitize=leak
  
 +ifeq ($(shared),yes)
-+  LIB_CFLAGS += -fPIC
++  CFLAGS += -fPIC
 +  LDFLAGS += -Wl,-rpath,$(prefix)/lib
 +endif
 +
@@ -512,53 +484,7 @@ exit
  ifeq ($(USE_SYSTEM_LIBS),yes)
    USE_SYSTEM_FREETYPE := yes
    USE_SYSTEM_HARFBUZZ := yes
-@@ -56,7 +60,7 @@
- 	$(CC_CMD) $(FREETYPE_CFLAGS) \
- 		-DFT_CONFIG_MODULES_H=\"slimftmodules.h\" \
- 		-DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" \
--		-DFT2_BUILD_LIBRARY
-+		-DFT2_BUILD_LIBRARY $(LIB_CFLAGS)
- 
- endif
- 
-@@ -123,7 +127,8 @@
- 		-Dhb_realloc_impl=fz_hb_realloc \
- 		-fno-exceptions \
- 		-fno-rtti \
--		-fvisibility-inlines-hidden
-+		-fvisibility-inlines-hidden \
-+		$(LIB_CFLAGS)
- 
- endif
- 
-@@ -153,7 +158,7 @@
- THIRD_CFLAGS += -DHAVE_JPEGXR
- 
- $(OUT)/thirdparty/jpegxr/%.o: thirdparty/jpegxr/%.c
--	$(CC_CMD) -Ithirdparty/jpegxr -Ithirdparty/jpegxr/Software -Wno-tautological-compare
-+	$(CC_CMD) -Ithirdparty/jpegxr -Ithirdparty/jpegxr/Software -Wno-tautological-compare $(LIB_CFLAGS)
- 
- endif
- endif
-@@ -199,7 +204,7 @@
- THIRD_CFLAGS += -Iscripts/libjpeg -Ithirdparty/libjpeg
- 
- $(OUT)/thirdparty/libjpeg/%.o: thirdparty/libjpeg/%.c
--	$(CC_CMD) -Iscripts/libjpeg
-+	$(CC_CMD) -Iscripts/libjpeg $(LIB_CFLAGS)
- 
- endif
- 
-@@ -215,7 +220,7 @@
- THIRD_CFLAGS += -Ithirdparty/lcms2/include
- 
- $(OUT)/thirdparty/lcms2/%.o: thirdparty/lcms2/%.c
--	$(CC_CMD) -Ithirdparty/lcms2/include
-+	$(CC_CMD) -Ithirdparty/lcms2/include $(LIB_CFLAGS)
- 
- endif
- 
-@@ -226,11 +231,11 @@
+@@ -226,7 +230,7 @@
    THIRD_LIBS += $(SYS_MUJS_LIBS)
  else
  
@@ -567,48 +493,7 @@ exit
  THIRD_CFLAGS += -Ithirdparty/mujs
  
  $(OUT)/thirdparty/mujs/%.o: thirdparty/mujs/%.c
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
- 
- endif
- 
-@@ -255,7 +260,7 @@
- THIRD_CFLAGS += -Ithirdparty/zlib
- 
- $(OUT)/thirdparty/zlib/%.o: thirdparty/zlib/%.c
--	$(CC_CMD) -DHAVE_UNISTD_H -DHAVE_STDARG_H
-+	$(CC_CMD) -DHAVE_UNISTD_H -DHAVE_STDARG_H $(LIB_CFLAGS)
- 
- endif
- 
-@@ -275,7 +280,7 @@
- THIRD_CFLAGS += $(LURATECH_CFLAGS) -DHAVE_LURATECH=1
- 
- $(OUT)/thirdparty/luratech/%.o: thirdparty/luratech/%.c
--	$(CC_CMD) -DLINUX $(LURATECH_CFLAGS) -Wno-tautological-compare -Wno-absolute-value
-+	$(CC_CMD) -DLINUX $(LURATECH_CFLAGS) -Wno-tautological-compare -Wno-absolute-value $(LIB_CFLAGS)
- 
- else # HAVE_LURATECH
- 
-@@ -304,7 +309,7 @@
- THIRD_CFLAGS += -Ithirdparty/jbig2dec
- 
- $(OUT)/thirdparty/jbig2dec/%.o: thirdparty/jbig2dec/%.c
--	$(CC_CMD) -DHAVE_STDINT_H -DJBIG_EXTERNAL_MEMENTO_H=\"mupdf/memento.h\"
-+	$(CC_CMD) -DHAVE_STDINT_H -DJBIG_EXTERNAL_MEMENTO_H=\"mupdf/memento.h\" $(LIB_CFLAGS)
- 
- endif
- 
-@@ -343,7 +348,7 @@
- THIRD_CFLAGS += $(OPENJPEG_CFLAGS)
- 
- $(OUT)/thirdparty/openjpeg/%.o: thirdparty/openjpeg/%.c
--	$(CC_CMD) $(OPENJPEG_CFLAGS)
-+	$(CC_CMD) $(OPENJPEG_CFLAGS) $(LIB_CFLAGS)
- 
- endif
- 
-@@ -364,6 +369,7 @@
+@@ -364,6 +368,7 @@
  LOCAL_GLUT_CFLAGS += -Ithirdparty/freeglut/include
  LOCAL_GLUT_CFLAGS += -Ithirdparty/freeglut/src
  LOCAL_GLUT_CFLAGS += -DHAVE_UNISTD_H -DHAVE_STDINT_H -DHAVE_X11_EXTENSIONS_XRANDR_H
@@ -616,7 +501,7 @@ exit
  
  GLUT_LIB := $(OUT)/libfreeglut.a
  
-@@ -372,8 +378,8 @@
+@@ -372,8 +377,8 @@
  $(OUT)/thirdparty/freeglut/%.o: thirdparty/freeglut/%.c
  	$(CC_CMD) $(LOCAL_GLUT_CFLAGS)
  
@@ -627,6 +512,15 @@ exit
  
  endif
  
+@@ -381,7 +386,7 @@
+ 
+ ifeq ($(USE_SYSTEM_CURL),yes)
+   CURL_CFLAGS := $(SYS_CURL_CFLAGS)
+-  CURL_LIBS := $(SYS_CURL_LIBS)
++  CURL_LIBS := $(SYS_CURL_LIBS) -lpthread
+ else
+ 
+ CURL_SRC += $(sort $(wildcard thirdparty/curl/lib/*.c))
 --- mupdf-1.14.0.orig/include/mupdf/fitz/config.h
 +++ mupdf-1.14.0/include/mupdf/fitz/config.h
 @@ -152,7 +152,7 @@
@@ -649,10 +543,9 @@ exit
  #endif /* FZ_CONFIG_H */
 --- mupdf-1.14.0.orig/mupdf.pc
 +++ mupdf-1.14.0/mupdf.pc
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,9 @@
 +prefix=/usr/local
-+exec_prefix=${prefix}
-+libdir=${exec_prefix}/lib
++libdir=${prefix}/lib
 +includedir=${prefix}/include
 +
 +Name: mupdf
@@ -660,6 +553,32 @@ exit
 +Version: 1.14.0
 +Libs: -L${libdir} -lmupdf
 +Cflags: -I${includedir}
+--- mupdf-1.14.0.orig/platform/gl/gl-font.c
++++ mupdf-1.14.0/platform/gl/gl-font.c
+@@ -225,6 +225,12 @@
+ 	return &g_table[pos].glyph;
+ }
+ 
++static inline float fast_floorf(float x)
++{
++	float f = (int) x;
++	return f - (f > x);
++}
++
+ static float ui_draw_glyph(fz_font *font, float size, int gid, float x, float y)
+ {
+ 	struct glyph *glyph;
+@@ -238,8 +244,8 @@
+ 	t0 = (float) glyph->t / g_cache_h;
+ 	s1 = (float) (glyph->s + glyph->w) / g_cache_w;
+ 	t1 = (float) (glyph->t + glyph->h) / g_cache_h;
+-	xc = floorf(x) + glyph->lsb;
+-	yc = floorf(y) - glyph->top + glyph->h;
++	xc = fast_floorf(x) + glyph->lsb;
++	yc = fast_floorf(y) - glyph->top + glyph->h;
+ 
+ 	glTexCoord2f(s0, t0); glVertex2f(xc, yc - glyph->h);
+ 	glTexCoord2f(s1, t0); glVertex2f(xc + glyph->w, yc - glyph->h);
 --- mupdf-1.14.0.orig/platform/gl/gl-main.c
 +++ mupdf-1.14.0/platform/gl/gl-main.c
 @@ -5,7 +5,9 @@
@@ -770,3 +689,6 @@ exit
  
  	for (k = 1; k < n + a; k++)
  	{
+
+# source
+https://mupdf.com/downloads/archive/mupdf-1.14.0-source.tar.gz

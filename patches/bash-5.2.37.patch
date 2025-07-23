@@ -1,0 +1,197 @@
+# This file is part of HiGFXback
+
+REQUIRES="autotools-wrappers-ac-build readline-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71)
+autoconf
+rm -rf lib/readline
+./configure --with-installed-readline --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install bash $DESTDIR/bin
+ln -sf bash $DESTDIR/bin/ash
+ln -sf bash $DESTDIR/bin/sh
+
+# pkg-build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/bash-build.pc << EOF
+Name: bash
+Version: 5.2.37
+Description: Bourne again shell
+Requires: $REQUIRES
+
+exec=\\
+/bin/ash \\
+/bin/bash \\
+/bin/sh
+EOF
+
+exit
+
+# patch
+--- bash-5.2.37.orig/Makefile.in
++++ bash-5.2.37/Makefile.in
+@@ -1357,40 +1357,40 @@
+ 
+ # library dependencies
+ 
+-bashhist.o: $(RL_LIBSRC)/rltypedefs.h
+-bashline.o: $(RL_LIBSRC)/rlconf.h
+-bashline.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/rlstdc.h
+-bashline.o: $(RL_LIBSRC)/chardefs.h $(RL_LIBSRC)/readline.h
+-bashline.o: $(RL_LIBSRC)/rltypedefs.h ${RL_LIBSRC}/rlmbutil.h
+-bracecomp.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
+-bracecomp.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
+-bracecomp.o: $(RL_LIBSRC)/rltypedefs.h
+-y.tab.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
+-y.tab.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
+-y.tab.o: $(RL_LIBSRC)/rltypedefs.h
+-subst.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
+-subst.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
+-shell.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
+-shell.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
+-shell.o: $(RL_LIBSRC)/rltypedefs.h
+-variables.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
+-variables.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
+-variables.o: $(RL_LIBSRC)/rltypedefs.h
+-jobs.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
+-jobs.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
+-jobs.o: $(RL_LIBSRC)/rltypedefs.h
+-pcomplete.o: $(RL_LIBSRC)/rlconf.h
+-pcomplete.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/rlstdc.h
+-pcomplete.o: $(RL_LIBSRC)/chardefs.h $(RL_LIBSRC)/readline.h
+-pcomplete.o: $(RL_LIBSRC)/rltypedefs.h ${RL_LIBSRC}/rlmbutil.h
++@RL_DEPS@bashhist.o: $(RL_LIBSRC)/rltypedefs.h
++@RL_DEPS@bashline.o: $(RL_LIBSRC)/rlconf.h
++@RL_DEPS@bashline.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@bashline.o: $(RL_LIBSRC)/chardefs.h $(RL_LIBSRC)/readline.h
++@RL_DEPS@bashline.o: $(RL_LIBSRC)/rltypedefs.h ${RL_LIBSRC}/rlmbutil.h
++@RL_DEPS@bracecomp.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
++@RL_DEPS@bracecomp.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@bracecomp.o: $(RL_LIBSRC)/rltypedefs.h
++@RL_DEPS@y.tab.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
++@RL_DEPS@y.tab.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@y.tab.o: $(RL_LIBSRC)/rltypedefs.h
++@RL_DEPS@subst.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
++@RL_DEPS@subst.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@shell.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
++@RL_DEPS@shell.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@shell.o: $(RL_LIBSRC)/rltypedefs.h
++@RL_DEPS@variables.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
++@RL_DEPS@variables.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@variables.o: $(RL_LIBSRC)/rltypedefs.h
++@RL_DEPS@jobs.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/chardefs.h
++@RL_DEPS@jobs.o: $(RL_LIBSRC)/readline.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@jobs.o: $(RL_LIBSRC)/rltypedefs.h
++@RL_DEPS@pcomplete.o: $(RL_LIBSRC)/rlconf.h
++@RL_DEPS@pcomplete.o: $(RL_LIBSRC)/keymaps.h $(RL_LIBSRC)/rlstdc.h
++@RL_DEPS@pcomplete.o: $(RL_LIBSRC)/chardefs.h $(RL_LIBSRC)/readline.h
++@RL_DEPS@pcomplete.o: $(RL_LIBSRC)/rltypedefs.h ${RL_LIBSRC}/rlmbutil.h
+ 
+-shell.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+-variables.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+-subst.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+-bashline.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+-bashhist.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+-y.tab.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+-pcomplete.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@shell.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@variables.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@subst.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@bashline.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@bashhist.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@y.tab.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
++@HIST_DEPS@pcomplete.o: $(HIST_LIBSRC)/history.h $(HIST_LIBSRC)/rlstdc.h
+ 
+ bashline.o: $(TILDE_LIBSRC)/tilde.h
+ bracecomp.o: $(TILDE_LIBSRC)/tilde.h
+--- bash-5.2.37.orig/configure.ac
++++ bash-5.2.37/configure.ac
+@@ -589,6 +589,7 @@
+ if test $opt_readline = yes; then
+ 	AC_DEFINE(READLINE)
+ 	if test "$opt_with_installed_readline" != "no" ; then
++		RL_DEPS="#"
+ 		case "$opt_with_installed_readline" in
+ 		yes)	RL_INCLUDE= ;;
+ 		*)	case "$RL_INCLUDEDIR" in
+@@ -605,6 +606,7 @@
+ 		cygwin*)	TILDE_LIB= ;;
+ 		esac
+ 	else
++		RL_DEPS=
+ 		RL_LIBDIR='$(dot)/$(LIBSUBDIR)/readline'
+ 		READLINE_DEP='$(READLINE_LIBRARY)'
+ 		# section for OS versions that ship an older/broken version of
+@@ -617,6 +619,7 @@
+ 		esac
+ 	fi
+ else
++	RL_DEPS="#"
+ 	RL_LIBDIR='$(dot)/$(LIBSUBDIR)/readline'
+ 	READLINE_LIB= READLINE_DEP=
+ fi
+@@ -628,6 +631,7 @@
+ 		AC_DEFINE(BANG_HISTORY)
+ 	fi
+  	if test "$opt_with_installed_readline" != "no"; then
++		HIST_DEPS="#"
+ 		HIST_LIBDIR=$RL_LIBDIR
+ 		HISTORY_DEP=
+ 		HISTORY_LIB=-lhistory
+@@ -640,6 +644,7 @@
+ 			;;
+ 		esac
+ 	else
++		HIST_DEPS=
+ 		HIST_LIBDIR='$(dot)/$(LIBSUBDIR)/readline'
+ 		HISTORY_DEP='$(HISTORY_LIBRARY)'
+ 		# section for OS versions that ship an older version of
+@@ -652,16 +657,19 @@
+ 		esac
+ 	fi
+ else
++	HIST_DEPS="#"
+ 	HIST_LIBDIR='$(dot)/$(LIBSUBDIR)/readline'
+ 	HISTORY_LIB= HISTORY_DEP=
+ fi
+ AC_SUBST(READLINE_LIB)
+ AC_SUBST(READLINE_DEP)
++AC_SUBST(RL_DEPS)
+ AC_SUBST(RL_LIBDIR)
+ AC_SUBST(RL_INCLUDEDIR)
+ AC_SUBST(RL_INCLUDE)
+ AC_SUBST(HISTORY_LIB)
+ AC_SUBST(HISTORY_DEP)
++AC_SUBST(HIST_DEPS)
+ AC_SUBST(HIST_LIBDIR)
+ AC_SUBST(TILDE_LIB)
+ 
+@@ -1310,7 +1318,7 @@
+ #AC_SUBST(ALLOCA_SOURCE)
+ #AC_SUBST(ALLOCA_OBJECT)
+ 
+-AC_CONFIG_FILES([Makefile builtins/Makefile lib/readline/Makefile \
++AC_CONFIG_FILES([Makefile builtins/Makefile \
+ 		 lib/glob/Makefile lib/intl/Makefile \
+ 		 lib/malloc/Makefile lib/sh/Makefile lib/termcap/Makefile \
+ 		 lib/tilde/Makefile doc/Makefile support/Makefile \
+@@ -1319,6 +1327,9 @@
+ 		 examples/loadables/Makefile.sample \
+ 		 examples/loadables/perl/Makefile \
+ 		 support/bash.pc support/bashbug.sh])
++if test "$opt_with_installed_readline" != "yes"; then
++	AC_CONFIG_FILES([lib/readline/Makefile])
++fi
+ 
+ dnl Makefile uses this timestamp file to record whether config.h is up to date.
+ AC_CONFIG_COMMANDS([stamp-h], [echo timestamp > stamp-h])
+
+# source
+https://ftp.gnu.org/gnu/bash/bash-5.2.37.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -91,3 +91,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- orc-0.4.29.orig/configure.ac
++++ orc-0.4.29/configure.ac
+@@ -36,7 +36,7 @@
+ 
+ AC_CONFIG_SRCDIR([orc/orc.h])
+ 
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE()
+ 
+ ACLOCAL_AMFLAGS="-I m4 $ACLOCAL_AMFLAGS"
+ AC_SUBST(ACLOCAL_AMFLAGS)
+
+# source
+https://gstreamer.freedesktop.org/src/orc/orc-0.4.29.tar.xz

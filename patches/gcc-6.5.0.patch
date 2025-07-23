@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-ac-build gcc-g++-bootstrap-build"
+REQUIRES="autotools-wrappers-ac-build g++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -296,6 +296,7 @@ install -m 644 host-`./config.guess`/gcc/include/mm3dnow.h $DESTDIR/lib/gcc/`./c
 install -m 644 host-`./config.guess`/gcc/include/mm_malloc.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/mmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/mwaitxintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/nmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/pkuintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/pmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/popcntintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
@@ -326,7 +327,7 @@ install -m 644 host-`./config.guess`/gcc/include-fixed/limits.h $DESTDIR/lib/gcc
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
-cat > $DESTDIR/share/pkgconfig/gcc-g++-build.pc << EOF
+cat > $DESTDIR/share/pkgconfig/libstdc++-build.pc << EOF
 Name: gcc
 Version: 6.5.0
 Description: GNU Compiler Collection
@@ -604,6 +605,7 @@ devel=\\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mm_malloc.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mmintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mwaitxintrin.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/nmmintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/pkuintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/pmmintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/popcntintrin.h \\
@@ -637,6 +639,21 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gcc-6.5.0.orig/gcc/config/i386/linux64.h
++++ gcc-6.5.0/gcc/config/i386/linux64.h
+@@ -28,8 +28,8 @@
+ #define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
+ 
+ #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
+-#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
+-#define GLIBC_DYNAMIC_LINKERX32 "/libx32/ld-linux-x32.so.2"
++#define GLIBC_DYNAMIC_LINKER64 "/lib/ld-linux-x86-64.so.2"
++#define GLIBC_DYNAMIC_LINKERX32 "/lib/ld-linux-x32.so.2"
+ 
+ #undef MUSL_DYNAMIC_LINKER32
+ #define MUSL_DYNAMIC_LINKER32 "/lib/ld-musl-i386.so.1"
 --- gcc-6.5.0.orig/gcc/config/i386/t-linux64
 +++ gcc-6.5.0/gcc/config/i386/t-linux64
 @@ -33,6 +33,6 @@
@@ -647,3 +664,6 @@ exit
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-linux-gnu)
  MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:i386-linux-gnu)
  MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-linux-gnux32)
+
+# source
+https://gcc.gnu.org/pub/gcc/releases/gcc-6.5.0/gcc-6.5.0.tar.xz

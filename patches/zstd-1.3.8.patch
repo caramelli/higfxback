@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --without-lz4 --without-lzma --without-zlib --prefix
+sh ./Configure --disable-static --without-lz4 --without-lzma --without-zlib --prefix=
 
 # build
 make -C programs zstd-wlib
@@ -20,6 +20,7 @@ install programs/zstdgrep $DESTDIR/bin
 install programs/zstdless $DESTDIR/bin
 install -d $DESTDIR/include
 install -m 644 lib/zstd.h $DESTDIR/include
+install -m 644 lib/common/zstd_errors.h $DESTDIR/include
 install -d $DESTDIR/lib
 install lib/libzstd.so.1.* $DESTDIR/lib/libzstd.so.1
 ln -sf libzstd.so.1 $DESTDIR/lib/libzstd.so
@@ -36,6 +37,7 @@ Requires: $REQUIRES
 
 devel=\\
 /include/zstd.h \\
+/include/zstd_errors.h \\
 /lib/libzstd.so \\
 /lib/pkgconfig/libzstd.pc
 
@@ -49,44 +51,29 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- zstd-1.3.8.orig/Configure
 +++ zstd-1.3.8/Configure
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,30 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
-+
-+BUILD_STATIC=yes
 +
 +HAVE_LZ4=1
 +HAVE_LZMA=1
 +HAVE_ZLIB=1
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      BUILD_STATIC=no
-+    ;;
-+    --without-lz4)
-+      HAVE_LZ4=0
-+    ;;
-+    --without-lzma)
-+      HAVE_LZMA=0
-+    ;;
-+    --without-zlib)
-+      HAVE_ZLIB=0
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++BUILD_STATIC=yes
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --without-lz4) HAVE_LZ4=0;;
++    --without-lzma) HAVE_LZMA=0;;
++    --without-zlib) HAVE_ZLIB=0;;
++    --disable-static) BUILD_STATIC=no;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -94,11 +81,11 @@ exit
 +sed -i "/^prefix/s|=.*|= $prefix|" lib/Makefile
 +sed -i "/^prefix/s|=.*|= $prefix|" programs/Makefile
 +
-+sed -i "/^BUILD_STATIC/s|=.*|= $BUILD_STATIC|" lib/Makefile
-+
 +sed -i "/^HAVE_LZ4/s|echo [0-1] |echo $HAVE_LZ4 |" programs/Makefile
 +sed -i "/^HAVE_LZMA/s|echo [0-1] |echo $HAVE_LZMA |" programs/Makefile
 +sed -i "/^HAVE_ZLIB/s|echo [0-1] |echo $HAVE_ZLIB |" programs/Makefile
++
++sed -i "/^BUILD_STATIC/s|=.*|= $BUILD_STATIC|" lib/Makefile
 --- zstd-1.3.8.orig/lib/Makefile
 +++ zstd-1.3.8/lib/Makefile
 @@ -18,6 +18,8 @@
@@ -218,3 +205,6 @@ exit
  	@echo Cleaning completed
  
  MD2ROFF = ronn
+
+# source
+https://github.com/facebook/zstd/archive/v1.3.8/zstd-1.3.8.tar.gz

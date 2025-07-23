@@ -33,7 +33,7 @@ if pkg-config --exists x265-build; then
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-decklink --disable-fbdev --prefix=/x11
 
 # build
@@ -241,9 +241,28 @@ cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- gst-plugins-bad-1.10.5.orig/configure.ac
 +++ gst-plugins-bad-1.10.5/configure.ac
-@@ -2801,7 +2801,7 @@
+@@ -23,7 +23,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ dnl sets host_* variables
+ AC_CANONICAL_HOST
+@@ -117,6 +117,7 @@
+ AC_PROG_CXX
+ dnl determine if c++ is available on this system
+ AC_CHECK_PROG(HAVE_CXX, $CXX, yes, no)
++AM_CONDITIONAL(HAVE_CXX, test "$HAVE_CXX" = "yes")
+ 
+ AC_PROG_OBJC
+ 
+@@ -2801,7 +2802,7 @@
    if test x"$HAVE_OPENJPEG" = x"yes"; then
      dnl minor API changes in v2.1
      AG_GST_PKG_CHECK_MODULES(OPENJPEG_2_1, libopenjp2 >= 2.1)
@@ -404,3 +423,28 @@ exit
    }
  
    return result;
+--- gst-plugins-bad-1.10.5.orig/tests/examples/gl/Makefile.am
++++ gst-plugins-bad-1.10.5/tests/examples/gl/Makefile.am
+@@ -7,7 +7,9 @@
+ SUBDIRS += cocoa
+ else
+ 
++if HAVE_CXX
+ SUBDIRS += generic qt
++endif
+ 
+ if HAVE_CLUTTER
+ SUBDIRS += clutter
+@@ -18,8 +20,10 @@
+ endif
+ 
+ if HAVE_GTK3
++if HAVE_CXX
+ SUBDIRS += gtk
+ endif
++endif
+ 
+ endif
+ 
+# source
+https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.10.5.tar.xz

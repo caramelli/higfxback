@@ -6,7 +6,7 @@ REQUIRES="egl-registry-build make-build"
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /fb
+sh ./Configure --prefix=/fb
 
 # build
 make -C xml
@@ -35,7 +35,7 @@ install -m 644 xml/gl.xml $DESTDIR/fb/share/opengl/registry
 # build.pc
 install -d $DESTDIR/fb/share/pkgconfig
 cat > $DESTDIR/fb/share/pkgconfig/opengl-registry-build.pc << EOF
-Name: opengl-registry
+Name: OpenGL-Registry
 Version: 20170130
 Description: OpenGL API Registry
 Requires: $REQUIRES
@@ -57,31 +57,24 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- OpenGL-Registry-20170130.orig/Configure
 +++ OpenGL-Registry-20170130/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+sed "/^prefix/s|=.*|=$PREFIX|" xml/opengl-registry.pc.in > opengl-registry.pc
++sed "/^prefix/s|=.*|=$prefix|" xml/opengl-registry.pc.in > opengl-registry.pc
 --- OpenGL-Registry-20170130.orig/api/GL/glfbdev.h
 +++ OpenGL-Registry-20170130/api/GL/glfbdev.h
 @@ -0,0 +1,78 @@
@@ -243,3 +236,6 @@ exit
 +Name: OpenGL Registry
 +Description: OpenGL API registry file
 +Version: 20170130
+
+# source
+https://github.com/KhronosGroup/OpenGL-Registry/archive/c57d16fd85e119b65d8661d9ad850f01ed434e6a/OpenGL-Registry-20170130.tar.gz

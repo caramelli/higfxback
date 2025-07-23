@@ -6,7 +6,7 @@ REQUIRES="make-build opengl-registry-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /x11
+sh ./Configure --prefix=/x11
 
 # build
 make
@@ -15,12 +15,16 @@ make
 install -d $DESTDIR/x11/lib
 install libEGL.so.1 $DESTDIR/x11/lib/libstubEGL.so.1
 ln -sf libstubEGL.so.1 $DESTDIR/x11/lib/libEGL.so
+ln -sf libstubEGL.so.1 $DESTDIR/x11/lib/libEGL.so.1
 install libGL.so.1 $DESTDIR/x11/lib/libstubGL.so.1
 ln -sf libstubGL.so.1 $DESTDIR/x11/lib/libGL.so
+ln -sf libstubGL.so.1 $DESTDIR/x11/lib/libGL.so.1
 install libGLESv1_CM.so.1 $DESTDIR/x11/lib/libstubGLESv1_CM.so.1
 ln -sf libstubGLESv1_CM.so.1 $DESTDIR/x11/lib/libGLESv1_CM.so
+ln -sf libstubGLESv1_CM.so.1 $DESTDIR/x11/lib/libGLESv1_CM.so.1
 install libGLESv2.so.2 $DESTDIR/x11/lib/libstubGLESv2.so.2
 ln -sf libstubGLESv2.so.2 $DESTDIR/x11/lib/libGLESv2.so
+ln -sf libstubGLESv2.so.2 $DESTDIR/x11/lib/libGLESv2.so.2
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 egl.pc $DESTDIR/x11/lib/pkgconfig
 install -m 644 gl.pc $DESTDIR/x11/lib/pkgconfig
@@ -46,6 +50,10 @@ devel=\\
 /x11/lib/pkgconfig/glesv2.pc
 
 exec=\\
+/x11/lib/libEGL.so.1 \\
+/x11/lib/libGL.so.1 \\
+/x11/lib/libGLESv1_CM.so.1 \\
+/x11/lib/libGLESv2.so.2
 /x11/lib/libstubEGL.so.1 \\
 /x11/lib/libstubGL.so.1 \\
 /x11/lib/libstubGLESv1_CM.so.1 \\
@@ -53,26 +61,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- EGL-OpenGL-Stubs-0.6.orig/Configure
 +++ EGL-OpenGL-Stubs-0.6/Configure
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,18 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -83,3 +84,6 @@ exit
 +sed -i "/^prefix/s|=.*|=$PREFIX|" gl.pc
 +sed -i "/^prefix/s|=.*|=$PREFIX|" glesv1_cm.pc
 +sed -i "/^prefix/s|=.*|=$PREFIX|" glesv2.pc
+
+# source
+https://github.com/caramelli/EGL-OpenGL-Stubs/archive/v0.6/EGL-OpenGL-Stubs-0.6.tar.gz

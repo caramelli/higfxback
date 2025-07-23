@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-cpp --disable-static --enable-unicode-properties --prefix=
 
 # build
@@ -39,3 +39,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- pcre-8.41.orig/configure.ac
++++ pcre-8.41/configure.ac
+@@ -30,6 +30,8 @@
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ AC_CONFIG_HEADERS(config.h)
+ 
++AM_MAINTAINER_MODE
++
+ # This is a new thing required to stop a warning from automake 1.12
+ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+ 
+# source
+http://downloads.sourceforge.net/pcre/pcre-8.41.tar.gz

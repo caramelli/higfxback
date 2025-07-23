@@ -20,7 +20,10 @@ SYSLINUX := syslinux-3.86
 ################################################################################
 
 all:
-	@echo "make toolchain rootfs initrd iso"
+	@echo "make toolchain"
+	@echo "make initrd"
+	@echo "make rootfs"
+	@echo "make iso"
 
 cross-binutils:
 	@echo Build $@
@@ -36,9 +39,9 @@ cross-binutils:
 cross-gcc: cross-binutils
 	@echo Build $@
 	@test -d $(GCC) || ( wget -qO- https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 | tar xj && patch -d $(GCC) -p1 < $(GCC).patch )
-	@test -d $(GCC)/gmp || ( wget -qO- https://ftp.gnu.org/gnu/gmp/$(GMP).tar.xz | tar xJ && mv $(GMP) $(GCC)/gmp )
+	@test -d $(GCC)/gmp || ( wget -qO- https://gmplib.org/download/gmp/$(GMP).tar.bz2 | tar xj && mv $(GMP) $(GCC)/gmp )
 	@test -d $(GCC)/mpc || ( wget -qO- https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz | tar xz && mv $(MPC) $(GCC)/mpc )
-	@test -d $(GCC)/mpfr || ( wget -qO- https://ftp.gnu.org/gnu/mpfr/$(MPFR).tar.xz | tar xJ && mv $(MPFR) $(GCC)/mpfr )
+	@test -d $(GCC)/mpfr || ( wget -qO- https://mpfr.org/mpfr-4.1.1/$(MPFR).tar.bz2 | tar xj && mv $(MPFR) $(GCC)/mpfr )
 	@test -d $(GCC)/cross || mkdir $(GCC)/cross
 	@test -f $(GCC)/cross/config.status || ( cd $(GCC)/cross; ../configure --build=$(MACHTYPE) --target=$(HOST) --enable-languages=c --with-newlib --disable-decimal-float --disable-lto --disable-plugin --disable-threads --disable-shared --with-sysroot=$(STAGING_DIR) --prefix= --libexecdir=/lib --with-local-prefix=/ )
 	$(MAKE) -C $(GCC)/cross all-gcc all-target-libgcc
@@ -54,7 +57,7 @@ linux-headers:
 
 glibc: cross-gcc linux-headers
 	@echo Build $@
-	@test -d $(GLIBC) || wget -qO- https://ftp.gnu.org/gnu/glibc/$(GLIBC).tar.bz2 | tar xj
+	@test -d $(GLIBC) || ( wget -qO- https://ftp.gnu.org/gnu/glibc/$(GLIBC).tar.bz2 | tar xj && patch -d $(GLIBC) -p1 < $(GLIBC).patch )
 	@test -d $(GLIBC)/build || mkdir $(GLIBC)/build
 	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=no libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
 	$(MAKE) -C $(GLIBC)/build
@@ -90,9 +93,9 @@ binutils:
 gcc:
 	@echo Build $@
 	@test -d $(GCC) || ( wget -qO- https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 | tar xj && patch -d $(GCC) -p1 < $(GCC).patch )
-	@test -d $(GCC)/gmp || ( wget -qO- https://ftp.gnu.org/gnu/gmp/$(GMP).tar.xz | tar xJ && mv $(GMP) $(GCC)/gmp )
+	@test -d $(GCC)/gmp || ( wget -qO- https://gmplib.org/download/gmp/$(GMP).tar.bz2 | tar xj && mv $(GMP) $(GCC)/gmp )
 	@test -d $(GCC)/mpc || ( wget -qO- https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz | tar xz && mv $(MPC) $(GCC)/mpc )
-	@test -d $(GCC)/mpfr || ( wget -qO- https://ftp.gnu.org/gnu/mpfr/$(MPFR).tar.xz | tar xJ && mv $(MPFR) $(GCC)/mpfr )
+	@test -d $(GCC)/mpfr || ( wget -qO- https://mpfr.org/mpfr-4.1.1/$(MPFR).tar.bz2 | tar xj && mv $(MPFR) $(GCC)/mpfr )
 	@test -d $(GCC)/build || mkdir $(GCC)/build
 	@test -f $(GCC)/build/config.status || ( cd $(GCC)/build; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/build
@@ -142,6 +145,7 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install $(STAGING_DIR)/bin/getconf rootfs/bin
 	@install $(STAGING_DIR)/bin/ldd rootfs/bin
 	@install $(SYSLINUX)/extlinux/extlinux rootfs/bin
+	@install pkg-get rootfs/bin
 	@install -d rootfs/boot
 	@install $(LINUX)/arch/x86/boot/bzImage rootfs/boot
 	@install -d rootfs/dev
@@ -192,6 +196,7 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install -m 644 $(STAGING_DIR)/include/err.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/errno.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/error.h rootfs/include
+	@install -m 644 $(STAGING_DIR)/include/execinfo.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/fcntl.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/features.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/fenv.h rootfs/include
@@ -202,6 +207,7 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install -m 644 $(STAGING_DIR)/include/gconv.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/getopt.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/glob.h rootfs/include
+	@install -m 644 $(STAGING_DIR)/include/gnu-versions.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/grp.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/iconv.h rootfs/include
 	@install -m 644 $(STAGING_DIR)/include/ifaddrs.h rootfs/include
@@ -324,6 +330,7 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install -d rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
 	@install -m 644 $(GCC)/build/gcc/include/emmintrin.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
 	@install -m 644 $(GCC)/build/gcc/include/float.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
+	@install -m 644 $(GCC)/build/gcc/include/immintrin.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
 	@install -m 644 $(GCC)/build/gcc/include/mm_malloc.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
 	@install -m 644 $(GCC)/build/gcc/include/mmintrin.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
 	@install -m 644 $(GCC)/build/gcc/include/stdarg.h rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
@@ -347,7 +354,6 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@echo '  deconfig)' >> rootfs/share/busybox/default.script
 	@echo '    ifconfig $$interface 0.0.0.0 ;;' >> rootfs/share/busybox/default.script
 	@echo '  renew|bound)' >> rootfs/share/busybox/default.script
-	@echo '    ifconfig $$interface $$ip netmask $$subnet ;;' >> rootfs/share/busybox/default.script
 	@echo '    ifconfig $$interface $$ip netmask $$subnet' >> rootfs/share/busybox/default.script
 	@echo '    route add default gw $$router' >> rootfs/share/busybox/default.script
 	@echo '    > /etc/resolv.conf' >> rootfs/share/busybox/default.script

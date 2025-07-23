@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build make-build stb-build"
+REQUIRES="libstdc++-build make-build stb-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -122,6 +122,8 @@ EOF
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/imgui-build.pc
 
 exit
+
+# patch
 --- imgui-1.89.9.orig/backends/imgui_impl_sdl2.cpp
 +++ imgui-1.89.9/backends/imgui_impl_sdl2.cpp
 @@ -84,7 +84,9 @@
@@ -346,3 +348,6 @@ exit
  
  // stb_textedit internally allows for a single undo record to do addition and deletion, but somehow, calling
  // the stb_textedit_paste() function creates two separate records, so we perform it manually. (FIXME: Report to nothings/stb?)
+
+# source
+https://github.com/ocornut/imgui/archive/v1.89.9/imgui-1.89.9.tar.gz

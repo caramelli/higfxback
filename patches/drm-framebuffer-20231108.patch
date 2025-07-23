@@ -6,7 +6,7 @@ REQUIRES="libdrm-build make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make
@@ -28,26 +28,19 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- drm-framebuffer-20231108.orig/Configure
 +++ drm-framebuffer-20231108/Configure
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,20 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -68,7 +61,7 @@ exit
  CC      ?= gcc
 -CFLAGS  ?= -O0 -ggdb -pedantic -Wall -I /usr/include/libdrm
 -LDFLAGS ?= -ldrm
-+CFLAGS  ?= -O0 -ggdb -pedantic -Wall $(shell $(PKG_CONFIG) --cflags libdrm)
++CFLAGS  ?= -O0 -ggdb -pedantic -Wall -std=c99 -D_GNU_SOURCE $(shell $(PKG_CONFIG) --cflags libdrm)
 +LDFLAGS ?= $(shell $(PKG_CONFIG) --libs libdrm)
  
  OBJ = main.o framebuffer.o
@@ -81,3 +74,6 @@ exit
  
  all: $(OBJ)
  	$(CC) $(CFLAGS) -o $(PROGNAME) $(OBJ) $(LDFLAGS)
+
+# source
+https://github.com/embear-engineering/drm-framebuffer/archive/80e862bd13bc0f96848af1c1b24b4b0e1fe5b23c/drm-framebuffer-20231108.tar.gz

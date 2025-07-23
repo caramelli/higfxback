@@ -6,7 +6,7 @@ REQUIRES="make-build readline-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --platform linux --prefix
+sh ./Configure --disable-static --platform=linux --prefix=
 
 # build
 make
@@ -67,45 +67,33 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- lua-5.3.6.orig/Configure
 +++ lua-5.3.6/Configure
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,27 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
 +PLAT=none
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --platform)
-+      PLAT=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      NOSTATIC=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --platform=*) PLAT=${1#*=};;
++    --disable-static) NOSTATIC=yes;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+sed -i "/^INSTALL_TOP/s|=.*|= $PREFIX|" Makefile
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
-+sed -i "/^PLAT/s|=.*|= $PLAT|" Makefile
++sed -i "/^PLAT=/s|=.*|= $PLAT|" Makefile
 +sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makefile
 +
-+sed -i "/^PLAT/s|=.*|= $PLAT|" src/Makefile
++sed -i "/^PLAT=/s|=.*|= $PLAT|" src/Makefile
 +sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" src/Makefile
 +
 +sed -i "/^#define LUA_ROOT/s|\".*|\"$PREFIX/\"|" src/luaconf.h
@@ -113,7 +101,7 @@ exit
 +sed -i "/^prefix/s|=.*|=$PREFIX|" lua.pc
 --- lua-5.3.6.orig/Makefile
 +++ lua-5.3.6/Makefile
-@@ -6,17 +6,19 @@
+@@ -6,15 +6,18 @@
  # Your platform. See PLATS for possible values.
  PLAT= none
  
@@ -123,29 +111,18 @@ exit
  # so take care if INSTALL_TOP is not an absolute path. See the local target.
  # You may want to make INSTALL_LMOD and INSTALL_CMOD consistent with
  # LUA_ROOT, LUA_LDIR, and LUA_CDIR in luaconf.h.
- INSTALL_TOP= /usr/local
--INSTALL_BIN= $(INSTALL_TOP)/bin
--INSTALL_INC= $(INSTALL_TOP)/include
--INSTALL_LIB= $(INSTALL_TOP)/lib
+-INSTALL_TOP= /usr/local
++PREFIX= /usr/local
++INSTALL_TOP= $(DESTDIR)$(PREFIX)
+ INSTALL_BIN= $(INSTALL_TOP)/bin
+ INSTALL_INC= $(INSTALL_TOP)/include
+ INSTALL_LIB= $(INSTALL_TOP)/lib
 -INSTALL_MAN= $(INSTALL_TOP)/man/man1
--INSTALL_LMOD= $(INSTALL_TOP)/share/lua/$V
--INSTALL_CMOD= $(INSTALL_TOP)/lib/lua/$V
-+INSTALL_BIN= $(DESTDIR)$(INSTALL_TOP)/bin
-+INSTALL_INC= $(DESTDIR)$(INSTALL_TOP)/include
-+INSTALL_LIB= $(DESTDIR)$(INSTALL_TOP)/lib
-+INSTALL_MAN= $(DESTDIR)$(INSTALL_TOP)/share/man/man1
-+INSTALL_LMOD= $(DESTDIR)$(INSTALL_TOP)/share/lua/$V
-+INSTALL_CMOD= $(DESTDIR)$(INSTALL_TOP)/lib/lua/$V
++INSTALL_MAN= $(INSTALL_TOP)/share/man/man1
+ INSTALL_LMOD= $(INSTALL_TOP)/share/lua/$V
+ INSTALL_CMOD= $(INSTALL_TOP)/lib/lua/$V
  
- # How to install. If your install program does not support "-p", then
- # you may have to run ranlib on the installed liblua.a.
-@@ -36,12 +38,16 @@
- # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
- 
- # Convenience platforms targets.
--PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
-+PLATS= none
- 
+@@ -41,7 +44,11 @@
  # What to install.
  TO_BIN= lua luac
  TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
@@ -157,7 +134,7 @@ exit
  TO_MAN= lua.1 luac.1
  
  # Lua version and release.
-@@ -61,13 +67,18 @@
+@@ -61,13 +68,18 @@
  	cd src && $(MKDIR) $(INSTALL_BIN) $(INSTALL_INC) $(INSTALL_LIB) $(INSTALL_MAN) $(INSTALL_LMOD) $(INSTALL_CMOD)
  	cd src && $(INSTALL_EXEC) $(TO_BIN) $(INSTALL_BIN)
  	cd src && $(INSTALL_DATA) $(TO_INC) $(INSTALL_INC)
@@ -208,12 +185,8 @@ exit
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  
-@@ -26,9 +32,10 @@
- 
- # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
- 
--PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
-+PLATS= none
+@@ -29,6 +35,7 @@
+ PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
  
  LUA_A=	liblua.a
 +LUA_SO= liblua.so.5
@@ -280,3 +253,6 @@ exit
  
  #define LUAI_DDEC	LUAI_FUNC
  #define LUAI_DDEF	/* empty */
+
+# source
+https://lua.org/ftp/lua-5.3.6.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build gst-plugins-bad-build gst-plugins-good-bui
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I common/m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I common/m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
 # build
@@ -78,6 +78,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gst-rtsp-server-1.8.3.orig/configure.ac
++++ gst-rtsp-server-1.8.3/configure.ac
+@@ -23,7 +23,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ dnl sets host_* variables
+ AC_CANONICAL_HOST
 --- gst-rtsp-server-1.8.3.orig/examples/test-netclock-client.c
 +++ gst-rtsp-server-1.8.3/examples/test-netclock-client.c
 @@ -21,7 +21,7 @@
@@ -110,3 +123,6 @@ exit
  #include <gst/sdp/gstsdpmessage.h>
  #include <gst/sdp/gstmikey.h>
  #include <gst/rtp/rtp.h>
+
+# source
+https://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-1.8.3.tar.xz

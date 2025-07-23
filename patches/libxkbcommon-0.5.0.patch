@@ -1,12 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build bison-build util-macros-build"
+REQUIRES="autotools-wrappers-lt-build bison-build xkeyboard-config-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --disable-x11 --prefix=
 
 # build
@@ -47,9 +47,20 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libxkbcommon-0.5.0.orig/configure.ac
 +++ libxkbcommon-0.5.0/configure.ac
-@@ -42,8 +42,8 @@
+@@ -32,7 +32,7 @@
+ 
+ # Initialize Automake
+ AM_INIT_AUTOMAKE([foreign dist-xz no-dist-gzip subdir-objects color-tests parallel-tests check-news])
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ # Get _GNU_SOURCE and friends
+ AC_USE_SYSTEM_EXTENSIONS
+@@ -42,10 +42,9 @@
  
  # Add xorg-macros stuff
  m4_ifndef([XORG_MACROS_VERSION],
@@ -58,9 +69,11 @@ exit
 +          [m4_fatal([must install xorg-macros 1.13 or later before running autoconf/autogen])])
 +XORG_MACROS_VERSION(1.13)
  XORG_DEFAULT_OPTIONS
- XORG_MEMORY_CHECK_FLAGS
+-XORG_MEMORY_CHECK_FLAGS
  XORG_ENABLE_DOCS
-@@ -88,9 +88,9 @@
+ XORG_WITH_DOXYGEN
+ 
+@@ -88,9 +87,9 @@
  AC_CHECK_HEADER([linux/input.h])
  AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
  
@@ -73,3 +86,6 @@ exit
  
  # OpenBSD does not have DT_NEEDED entries for libc by design
  # so when these flags are passed to ld via libtool the checks will fail
+
+# source
+https://xkbcommon.org/download/libxkbcommon-0.5.0.tar.xz

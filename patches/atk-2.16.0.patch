@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build glib-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -105,3 +105,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- atk-2.16.0.orig/configure.ac
++++ atk-2.16.0/configure.ac
+@@ -49,6 +49,8 @@
+ 
+ AM_INIT_AUTOMAKE([1.10 -Wno-portability])
+ 
++AM_MAINTAINER_MODE
++
+ # Support silent build rules, requires at least automake-1.11. Disable
+ # by either passing --disable-silent-rules to configure or passing V=1
+ # to make
+
+# source
+https://download.gnome.org/sources/atk/2.16/atk-2.16.0.tar.xz

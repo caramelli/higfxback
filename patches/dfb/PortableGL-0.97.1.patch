@@ -13,9 +13,9 @@ fi
 # configure
 rm -f glcommon/stb_*
 rm -rf demos/imgui
-premake5 --file=demos/premake4.lua --demosdatadir=/dfb/share/PortableGL/media --stb_image=/include/stb --prefix=/dfb gmake
+premake5 --file=demos/premake4.lua --stb-dir=/include/stb --demosdatadir=/dfb/share/PortableGL/media --prefix=/dfb gmake
 premake5 --file=examples/premake5.lua --prefix=/dfb gmake
-premake5 --file=testing/premake4.lua --stb_image=/include/stb --testingdatadir=/dfb/share/PortableGL/media --prefix=/dfb gmake
+premake5 --file=testing/premake4.lua --stb-dir=/include/stb --testingdatadir=/dfb/share/PortableGL/media --prefix=/dfb gmake
 
 # build
 test $SDL2 && make -C demos
@@ -135,6 +135,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- PortableGL-0.97.1.orig/demos/cubemap.cpp
 +++ PortableGL-0.97.1/demos/cubemap.cpp
 @@ -92,12 +92,12 @@
@@ -258,6 +260,13 @@ exit
  	
 -	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
 +	newoption {
++		trigger     = "stb-dir",
++		value       = "PATH",
++		description = "Directory for stb image headers",
++		default     = "../stb"
++	}
++	
++	newoption {
 +		trigger     = "demosdatadir",
 +		value       = "PATH",
 +		description = "Use the given path for demos data files",
@@ -271,14 +280,7 @@ exit
 +		default     = "/usr/local"
 +	}
 +
-+	newoption {
-+		trigger     = "stb_image",
-+		value       = "PATH",
-+		description = "Use the given path for stb image headers",
-+		default     = "../stb"
-+	}
-+	
-+	includedirs { "../", _OPTIONS["stb_image"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
++	includedirs { "../", _OPTIONS["stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
  
  	-- stuff up here common to all projects
  	kind "ConsoleApp"
@@ -665,7 +667,107 @@ exit
  	for (int i=0; i<t.size(); ++i) {
 --- PortableGL-0.97.1.orig/portablegl.h
 +++ PortableGL-0.97.1/portablegl.h
-@@ -7953,7 +7953,6 @@
+@@ -1276,15 +1276,6 @@
+ 	return make_vec4(clamp(x.x, minVal, maxVal), clamp(x.y, minVal, maxVal), clamp(x.z, minVal, maxVal), clamp(x.w, minVal, maxVal));
+ }
+ 
+-static float distance_vec2(vec2 a, vec2 b)
+-{
+-	return length_vec2(sub_vec2s(a, b));
+-}
+-static float distance_vec3(vec3 a, vec3 b)
+-{
+-	return length_vec3(sub_vec3s(a, b));
+-}
+-
+ static inline vec3 reflect_vec3(vec3 i, vec3 n)
+ {
+ 	return sub_vec3s(i, scale_vec3(n, 2 * dot_vec3s(i, n)));
+@@ -7467,7 +7458,6 @@
+ static glContext* c;
+ 
+ static Color blend_pixel(vec4 src, vec4 dst);
+-static void draw_pixel_vec2(vec4 cf, vec2 pos, float z);
+ static void draw_pixel(vec4 cf, int x, int y, float z);
+ static void run_pipeline(GLenum mode, GLuint first, GLsizei count, GLsizei instance, GLuint base_instance, GLboolean use_elements);
+ 
+@@ -7481,7 +7471,6 @@
+ static void draw_line_clip(glVertex* v1, glVertex* v2);
+ static void draw_line_shader(vec4 v1, vec4 v2, float* v1_out, float* v2_out, unsigned int provoke);
+ static void draw_thick_line_shader(vec4 v1, vec4 v2, float* v1_out, float* v2_out, unsigned int provoke);
+-static void draw_line_smooth_shader(vec4 v1, vec4 v2, float* v1_out, float* v2_out, unsigned int provoke);
+ 
+ /* this clip epsilon is needed to avoid some rounding errors after
+    several clipping stages */
+@@ -7496,7 +7485,7 @@
+ 	return
+ 		(((pt.z < -w) |
+ 		 ((pt.z >  w) << 1)) &
+-		 (!c->depth_clamp |
++		 ((!c->depth_clamp) |
+ 		  !c->depth_clamp << 1)) |
+ 
+ 		((pt.x < -w) << 2) |
+@@ -7545,12 +7534,13 @@
+ 
+ static void do_vertex(glVertex_Attrib* v, int* enabled, unsigned int num_enabled, unsigned int i, unsigned int vert)
+ {
++	int j;
+ 	GLuint buf;
+ 	u8* buf_pos;
+ 	vec4 tmpvec4;
+ 
+ 	// copy/prep vertex attributes from buffers into appropriate positions for vertex shader to access
+-	for (int j=0; j<num_enabled; ++j) {
++	for (j=0; j<num_enabled; ++j) {
+ 		buf = v[enabled[j]].buf;
+ 
+ 		buf_pos = (u8*)c->buffers.a[buf].data + v[enabled[j]].offset + v[enabled[j]].stride*i;
+@@ -7653,17 +7643,19 @@
+ 	float p_size = c->point_size;
+ 	float origin = (c->point_spr_origin == GL_UPPER_LEFT) ? -1.0f : 1.0f;
+ 
++	float i, j;
++
+ 	// Can easily clip whole point when point size <= 1 ...
+ 	if (p_size <= 1) {
+ 		if (x < 0 || y < 0 || x >= c->back_buffer.w || y >= c->back_buffer.h)
+ 			return;
+ 	}
+ 
+-	for (float i = y-p_size/2; i<y+p_size/2; ++i) {
++	for (i = y-p_size/2; i<y+p_size/2; ++i) {
+ 		if (i < 0 || i >= c->back_buffer.h)
+ 			continue;
+ 
+-		for (float j = x-p_size/2; j<x+p_size/2; ++j) {
++		for (j = x-p_size/2; j<x+p_size/2; ++j) {
+ 
+ 			if (j < 0 || j >= c->back_buffer.w)
+ 				continue;
+@@ -7783,7 +7775,9 @@
+ 	float inv_wa = 1.0/wa;
+ 	float inv_wb = 1.0/wb;
+ 
+-	for (int i=0; i<c->vs_output.size; ++i) {
++	int i;
++
++	for (i=0; i<c->vs_output.size; ++i) {
+ 		if (c->vs_output.interpolation[i] == SMOOTH) {
+ 			c->fs_input[i] = (v1_out[i]*inv_wa + t*(v2_out[i]*inv_wb - v1_out[i]*inv_wa)) / (inv_wa + t*(inv_wb - inv_wa));
+ 
+@@ -7824,7 +7818,9 @@
+ 
+ static void interpolate_clipped_line(glVertex* v1, glVertex* v2, float* v1_out, float* v2_out, float tmin, float tmax)
+ {
+-	for (int i=0; i<c->vs_output.size; ++i) {
++	int i;
++
++	for (i=0; i<c->vs_output.size; ++i) {
+ 		v1_out[i] = v1->vs_out[i] + (v2->vs_out[i] - v1->vs_out[i])*tmin;
+ 		v2_out[i] = v1->vs_out[i] + (v2->vs_out[i] - v1->vs_out[i])*tmax;
+ 
+@@ -7953,7 +7949,6 @@
  
  	frag_func fragment_shader = c->programs.a[c->cur_program].fragment_shader;
  	void* uniform = c->programs.a[c->cur_program].uniform;
@@ -673,7 +775,7 @@ exit
  
  	float i_x1, i_y1, i_x2, i_y2;
  	i_x1 = floor(p1.x) + 0.5;
-@@ -8074,7 +8073,6 @@
+@@ -8074,7 +8069,6 @@
  
  	frag_func fragment_shader = c->programs.a[c->cur_program].fragment_shader;
  	void* uniform = c->programs.a[c->cur_program].uniform;
@@ -681,6 +783,914 @@ exit
  
  	float i_x1, i_y1, i_x2, i_y2;
  	i_x1 = floor(x1) + 0.5;
+@@ -8358,246 +8352,6 @@
+ 	}
+ }
+ 
+-// WARNING: this function is subject to serious change or removal and is currently unused (GL_LINE_SMOOTH unsupported)
+-// TODO do it right, handle depth test correctly since we moved it into draw_pixel
+-static void draw_line_smooth_shader(vec4 v1, vec4 v2, float* v1_out, float* v2_out, unsigned int provoke)
+-{
+-	float tmp;
+-	float* tmp_ptr;
+-
+-	frag_func fragment_shader = c->programs.a[c->cur_program].fragment_shader;
+-	void* uniform = c->programs.a[c->cur_program].uniform;
+-	int fragdepth_or_discard = c->programs.a[c->cur_program].fragdepth_or_discard;
+-
+-	vec3 hp1 = vec4_to_vec3h(v1);
+-	vec3 hp2 = vec4_to_vec3h(v2);
+-	float x1 = hp1.x, x2 = hp2.x, y1 = hp1.y, y2 = hp2.y;
+-	float z1 = hp1.z, z2 = hp2.z;
+-
+-	float w1 = v1.w;
+-	float w2 = v2.w;
+-
+-	int x, j;
+-
+-	int steep = fabsf(y2 - y1) > fabsf(x2 - x1);
+-
+-	if (steep) {
+-		tmp = x1;
+-		x1 = y1;
+-		y1 = tmp;
+-		tmp = x2;
+-		x2 = y2;
+-		y2 = tmp;
+-	}
+-	if (x1 > x2) {
+-		tmp = x1;
+-		x1 = x2;
+-		x2 = tmp;
+-		tmp = y1;
+-		y1 = y2;
+-		y2 = tmp;
+-
+-		tmp = z1;
+-		z1 = z2;
+-		z2 = tmp;
+-
+-		tmp = w1;
+-		w1 = w2;
+-		w2 = tmp;
+-
+-		tmp_ptr = v1_out;
+-		v1_out = v2_out;
+-		v2_out = tmp_ptr;
+-	}
+-
+-	float dx = x2 - x1;
+-	float dy = y2 - y1;
+-	float gradient = dy / dx;
+-
+-	float xend = x1 + 0.5f;
+-	float yend = y1 + gradient * (xend - x1);
+-
+-	float xgap = 1.0 - modff(x1 + 0.5, &tmp);
+-	float xpxl1 = xend;
+-	float ypxl1;
+-	modff(yend, &ypxl1);
+-
+-
+-	//choose to compare against just one pixel for depth test instead of both
+-	z1 = MAP(z1, -1.0f, 1.0f, c->depth_range_near, c->depth_range_far);
+-	if (steep) {
+-		if (!c->depth_test || (!fragdepth_or_discard &&
+-			depthtest(z1, ((float*)c->zbuf.lastrow)[-(int)xpxl1*c->zbuf.w + (int)ypxl1]))) {
+-
+-			if (!c->fragdepth_or_discard && c->depth_test) { //hate this double check but depth buf is only update if enabled
+-				((float*)c->zbuf.lastrow)[-(int)xpxl1*c->zbuf.w + (int)ypxl1] = z1;
+-				((float*)c->zbuf.lastrow)[-(int)xpxl1*c->zbuf.w + (int)(ypxl1+1)] = z1;
+-			}
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, ypxl1, xpxl1, z1, 1/w1);
+-			setup_fs_input(0, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = (1.0 - modff(yend, &tmp)) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, ypxl1, xpxl1, c->builtins.gl_FragDepth);
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, ypxl1+1, xpxl1, z1, 1/w1);
+-			setup_fs_input(0, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = modff(yend, &tmp) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, ypxl1+1, xpxl1, c->builtins.gl_FragDepth);
+-		}
+-	} else {
+-		if (!c->depth_test || (!fragdepth_or_discard &&
+-			depthtest(z1, ((float*)c->zbuf.lastrow)[-(int)ypxl1*c->zbuf.w + (int)xpxl1]))) {
+-
+-			if (!c->fragdepth_or_discard && c->depth_test) { //hate this double check but depth buf is only update if enabled
+-				((float*)c->zbuf.lastrow)[-(int)ypxl1*c->zbuf.w + (int)xpxl1] = z1;
+-				((float*)c->zbuf.lastrow)[-(int)(ypxl1+1)*c->zbuf.w + (int)xpxl1] = z1;
+-			}
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, xpxl1, ypxl1, z1, 1/w1);
+-			setup_fs_input(0, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = (1.0 - modff(yend, &tmp)) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, xpxl1, ypxl1, c->builtins.gl_FragDepth);
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, xpxl1, ypxl1+1, z1, 1/w1);
+-			setup_fs_input(0, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = modff(yend, &tmp) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, xpxl1, ypxl1+1, c->builtins.gl_FragDepth);
+-		}
+-	}
+-
+-
+-	float intery = yend + gradient; //first y-intersection for main loop
+-
+-
+-	xend = x2 + 0.5f;
+-	yend = y2 + gradient * (xend - x2);
+-
+-	xgap = modff(x2 + 0.5, &tmp);
+-	float xpxl2 = xend;
+-	float ypxl2;
+-	modff(yend, &ypxl2);
+-
+-	z2 = MAP(z2, -1.0f, 1.0f, c->depth_range_near, c->depth_range_far);
+-	if (steep) {
+-		if (!c->depth_test || (!fragdepth_or_discard &&
+-			depthtest(z2, ((float*)c->zbuf.lastrow)[-(int)xpxl2*c->zbuf.w + (int)ypxl2]))) {
+-
+-			if (!c->fragdepth_or_discard && c->depth_test) {
+-				((float*)c->zbuf.lastrow)[-(int)xpxl2*c->zbuf.w + (int)ypxl2] = z2;
+-				((float*)c->zbuf.lastrow)[-(int)xpxl2*c->zbuf.w + (int)(ypxl2+1)] = z2;
+-			}
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, ypxl2, xpxl2, z2, 1/w2);
+-			setup_fs_input(1, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = (1.0 - modff(yend, &tmp)) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, ypxl2, xpxl2, c->builtins.gl_FragDepth);
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, ypxl2+1, xpxl2, z2, 1/w2);
+-			setup_fs_input(1, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = modff(yend, &tmp) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, ypxl2+1, xpxl2, c->builtins.gl_FragDepth);
+-		}
+-
+-	} else {
+-		if (!c->depth_test || (!fragdepth_or_discard &&
+-			depthtest(z2, ((float*)c->zbuf.lastrow)[-(int)ypxl2*c->zbuf.w + (int)xpxl2]))) {
+-
+-			if (!c->fragdepth_or_discard && c->depth_test) {
+-				((float*)c->zbuf.lastrow)[-(int)ypxl2*c->zbuf.w + (int)xpxl2] = z2;
+-				((float*)c->zbuf.lastrow)[-(int)(ypxl2+1)*c->zbuf.w + (int)xpxl2] = z2;
+-			}
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, xpxl2, ypxl2, z2, 1/w2);
+-			setup_fs_input(1, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = (1.0 - modff(yend, &tmp)) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, xpxl2, ypxl2, c->builtins.gl_FragDepth);
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, xpxl2, ypxl2+1, z2, 1/w2);
+-			setup_fs_input(1, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = modff(yend, &tmp) * xgap;
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, xpxl2, ypxl2+1, c->builtins.gl_FragDepth);
+-		}
+-	}
+-
+-	//use the fast, inaccurate calculation of t since this algorithm is already
+-	//slower than the normal line drawing, pg 111 glspec if I ever want to fix it
+-	float range = ceil(x2-x1);
+-	float t, z, w;
+-	for (j=1, x = xpxl1 + 1; x < xpxl2; ++x, ++j, intery += gradient) {
+-		t = j/range;
+-
+-		z = (1 - t) * z1 + t * z2;
+-		w = (1 - t) * w1 + t * w2;
+-
+-		if (steep) {
+-			if (!c->fragdepth_or_discard && c->depth_test) {
+-				if (!depthtest(z, ((float*)c->zbuf.lastrow)[-(int)x*c->zbuf.w + (int)intery])) {
+-					continue;
+-				} else {
+-					((float*)c->zbuf.lastrow)[-(int)x*c->zbuf.w + (int)intery] = z;
+-					((float*)c->zbuf.lastrow)[-(int)x*c->zbuf.w + (int)(intery+1)] = z;
+-				}
+-			}
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, intery, x, z, 1/w);
+-			setup_fs_input(t, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = 1.0 - modff(intery, &tmp);
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, intery, x, c->builtins.gl_FragDepth);
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, intery+1, x, z, 1/w);
+-			setup_fs_input(t, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = modff(intery, &tmp);
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, intery+1, x, c->builtins.gl_FragDepth);
+-
+-		} else {
+-			if (!c->fragdepth_or_discard && c->depth_test) {
+-				if (!depthtest(z, ((float*)c->zbuf.lastrow)[-(int)intery*c->zbuf.w + (int)x])) {
+-					continue;
+-				} else {
+-					((float*)c->zbuf.lastrow)[-(int)intery*c->zbuf.w + (int)x] = z;
+-					((float*)c->zbuf.lastrow)[-(int)(intery+1)*c->zbuf.w + (int)x] = z;
+-				}
+-			}
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, x, intery, z, 1/w);
+-			setup_fs_input(t, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = 1.0 - modff(intery, &tmp);
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, x, intery, c->builtins.gl_FragDepth);
+-
+-			SET_VEC4(c->builtins.gl_FragCoord, x, intery+1, z, 1/w);
+-			setup_fs_input(t, v1_out, v2_out, w1, w2, provoke);
+-			fragment_shader(c->fs_input, &c->builtins, uniform);
+-			//fragcolor.w = modff(intery, &tmp);
+-			if (!c->builtins.discard)
+-				draw_pixel(c->builtins.gl_FragColor, x, intery+1, c->builtins.gl_FragDepth);
+-
+-		}
+-	}
+-}
+-
+-
+ static void draw_triangle(glVertex* v0, glVertex* v1, glVertex* v2, unsigned int provoke)
+ {
+ 	int c_or, c_and;
+@@ -8690,7 +8444,9 @@
+ 
+ static inline void update_clip_pt(glVertex *q, glVertex *v0, glVertex *v1, float t)
+ {
+-	for (int i=0; i<c->vs_output.size; ++i) {
++	int i;
++
++	for (i=0; i<c->vs_output.size; ++i) {
+ 		//why is this correct for both SMOOTH and NOPERSPECTIVE?
+ 		q->vs_out[i] = v0->vs_out[i] + (v1->vs_out[i] - v0->vs_out[i]) * t;
+ 
+@@ -8810,11 +8566,12 @@
+ static void draw_triangle_point(glVertex* v0, glVertex* v1,  glVertex* v2, unsigned int provoke)
+ {
+ 	//TODO provoke?
++	int i, j;
+ 	float fs_input[GL_MAX_VERTEX_OUTPUT_COMPONENTS];
+ 	vec3 point;
+ 	glVertex* vert[3] = { v0, v1, v2 };
+ 
+-	for (int i=0; i<3; ++i) {
++	for (i=0; i<3; ++i) {
+ 		if (!vert[i]->edge_flag) //TODO doesn't work
+ 			continue;
+ 
+@@ -8825,7 +8582,7 @@
+ 		if (c->depth_clamp)
+ 			point.z = clampf_01(point.z);
+ 
+-		for (int j=0; j<c->vs_output.size; ++j) {
++		for (j=0; j<c->vs_output.size; ++j) {
+ 			if (c->vs_output.interpolation[j] != FLAT) {
+ 				fs_input[j] = vert[i]->vs_out[j]; //would be correct from clipping
+ 			} else {
+@@ -8866,6 +8623,8 @@
+ 	float max_depth_slope = 0;
+ 	float poly_offset = 0;
+ 
++	int i;
++
+ 	if (c->poly_offset) {
+ 		float dzxy[6];
+ 		dzxy[0] = fabsf((hp1.z - hp0.z)/(hp1.x - hp0.x));
+@@ -8876,7 +8635,7 @@
+ 		dzxy[5] = fabsf((hp0.z - hp2.z)/(hp0.y - hp2.y));
+ 
+ 		max_depth_slope = dzxy[0];
+-		for (int i=1; i<6; ++i) {
++		for (i=1; i<6; ++i) {
+ 			if (dzxy[i] > max_depth_slope)
+ 				max_depth_slope = dzxy[i];
+ 		}
+@@ -8934,7 +8693,7 @@
+ 	float perspective[GL_MAX_VERTEX_OUTPUT_COMPONENTS*3];
+ 	float* vs_output = &c->vs_output.output_buf.a[0];
+ 
+-	for (int i=0; i<c->vs_output.size; ++i) {
++	for (i=0; i<c->vs_output.size; ++i) {
+ 		perspective[i] = v0->vs_out[i]/p0.w;
+ 		perspective[GL_MAX_VERTEX_OUTPUT_COMPONENTS + i] = v1->vs_out[i]/p1.w;
+ 		perspective[2*GL_MAX_VERTEX_OUTPUT_COMPONENTS + i] = v2->vs_out[i]/p2.w;
+@@ -8943,15 +8702,18 @@
+ 	float inv_w1 = 1/p1.w;
+ 	float inv_w2 = 1/p2.w;
+ 
++	int ix, iy;
+ 	float x, y;
+ 
+ 	Shader_Builtins builtins;
+ 
++	#ifdef _OPENMP
+ 	#pragma omp parallel for private(x, y, alpha, beta, gamma, z, tmp, tmp2, builtins, fs_input)
+-	for (int iy = y_min; iy<iy_max; ++iy) {
++	#endif
++	for (iy = y_min; iy<iy_max; ++iy) {
+ 		y = iy + 0.5f;
+ 
+-		for (int ix = x_min; ix<ix_max; ++ix) {
++		for (ix = x_min; ix<ix_max; ++ix) {
+ 			x = ix + 0.5f; //center of min pixel
+ 
+ 			//see page 117 of glspec for alternative method
+@@ -8976,7 +8738,7 @@
+ 
+ 					// TODO have a macro that turns on pre-fragment shader depthtest/scissor test?
+ 
+-					for (int i=0; i<c->vs_output.size; ++i) {
++					for (i=0; i<c->vs_output.size; ++i) {
+ 						if (c->vs_output.interpolation[i] == SMOOTH) {
+ 							tmp = alpha*perspective[i] + beta*perspective[GL_MAX_VERTEX_OUTPUT_COMPONENTS + i] + gamma*perspective[2*GL_MAX_VERTEX_OUTPUT_COMPONENTS + i];
+ 
+@@ -9211,25 +8973,6 @@
+ 
+ }
+ 
+-static void draw_pixel_vec2(vec4 cf, vec2 pos, float z)
+-{
+-/*
+- * spec pg 110:
+-Point rasterization produces a fragment for each framebuffer pixel whose center
+-lies inside a square centered at the point’s (x w , y w ), with side length equal to the
+-current point size.
+-
+-for a 1 pixel size point there are only 3 edge cases where more than 1 pixel center (0.5, 0.5)
+-would fall on the very edge of a 1 pixel square.  I think just drawing the upper or upper
+-corner pixel in these cases is fine and makes sense since width and height are actually 0.01 less
+-than full, see make_viewport_matrix
+-TODO point size > 1
+-*/
+-
+-	draw_pixel(cf, pos.x, pos.y, z);
+-}
+-
+-
+ static void draw_pixel(vec4 cf, int x, int y, float z)
+ {
+ 	if (c->scissor_test) {
+@@ -9329,9 +9072,10 @@
+ int is_valid(GLenum target, GLenum error, int n, ...)
+ {
+ 	va_list argptr;
++	int i;
+ 
+ 	va_start(argptr, n);
+-	for (int i=0; i<n; ++i) {
++	for (i=0; i<n; ++i) {
+ 		if (target == va_arg(argptr, GLenum)) {
+ 			return 1;
+ 		}
+@@ -9370,8 +9114,10 @@
+ 
+ void init_glVertex_Array(glVertex_Array* v)
+ {
++	int i;
++
+ 	v->deleted = GL_FALSE;
+-	for (int i=0; i<GL_MAX_VERTEX_ATTRIBS; ++i)
++	for (i=0; i<GL_MAX_VERTEX_ATTRIBS; ++i)
+ 		init_glVertex_Attrib(&v->vertex_attribs[i]);
+ }
+ 
+@@ -9597,14 +9343,14 @@
+ 
+ 	for (i=0; i<context->buffers.size; ++i) {
+ 		if (!context->buffers.a[i].user_owned) {
+-			printf("freeing buffer %d\n", i);
++			//printf("freeing buffer %d\n", i);
+ 			free(context->buffers.a[i].data);
+ 		}
+ 	}
+ 
+ 	for (i=0; i<context->textures.size; ++i) {
+ 		if (!context->textures.a[i].user_owned) {
+-			printf("freeing texture %d\n", i);
++			//printf("freeing texture %d\n", i);
+ 			free(context->textures.a[i].data);
+ 		}
+ 	}
+@@ -9682,6 +9428,8 @@
+ 
+ void glGenVertexArrays(GLsizei n, GLuint* arrays)
+ {
++	int i;
++
+ 	glVertex_Array tmp;
+ 	init_glVertex_Array(&tmp);
+ 
+@@ -9689,7 +9437,7 @@
+ 
+ 	//fill up empty slots first
+ 	--n;
+-	for (int i=1; i<c->vertex_arrays.size && n>=0; ++i) {
++	for (i=1; i<c->vertex_arrays.size && n>=0; ++i) {
+ 		if (c->vertex_arrays.a[i].deleted) {
+ 			c->vertex_arrays.a[i] = tmp;
+ 			arrays[n--] = i;
+@@ -9704,7 +9452,9 @@
+ 
+ void glDeleteVertexArrays(GLsizei n, const GLuint* arrays)
+ {
+-	for (int i=0; i<n; ++i) {
++	int i;
++
++	for (i=0; i<n; ++i) {
+ 		if (!arrays[i] || arrays[i] >= c->vertex_arrays.size)
+ 			continue;
+ 
+@@ -9721,8 +9471,9 @@
+ void glGenBuffers(GLsizei n, GLuint* buffers)
+ {
+ 	//fill up empty slots first
++	int i;
+ 	int j = 0;
+-	for (int i=1; i<c->buffers.size && j<n; ++i) {
++	for (i=1; i<c->buffers.size && j<n; ++i) {
+ 		if (c->buffers.a[i].deleted) {
+ 			c->buffers.a[i].deleted = GL_FALSE;
+ 			buffers[j++] = i;
+@@ -9732,7 +9483,7 @@
+ 	if (j != n) {
+ 		int s = c->buffers.size;
+ 		cvec_extend_glBuffer(&c->buffers, n-j);
+-		for (int i=s; j<n; i++) {
++		for (i=s; j<n; i++) {
+ 			c->buffers.a[i].data = NULL;
+ 			c->buffers.a[i].deleted = GL_FALSE;
+ 			buffers[j++] = i;
+@@ -9742,8 +9493,9 @@
+ 
+ void glDeleteBuffers(GLsizei n, const GLuint* buffers)
+ {
++	int i;
+ 	GLenum type;
+-	for (int i=0; i<n; ++i) {
++	for (i=0; i<n; ++i) {
+ 		if (!buffers[i] || buffers[i] >= c->buffers.size)
+ 			continue;
+ 
+@@ -9763,8 +9515,9 @@
+ 
+ void glGenTextures(GLsizei n, GLuint* textures)
+ {
++	int i;
+ 	int j = 0;
+-	for (int i=0; i<c->textures.size && j<n; ++i) {
++	for (i=0; i<c->textures.size && j<n; ++i) {
+ 		if (c->textures.a[i].deleted) {
+ 			c->textures.a[i].deleted = GL_FALSE;
+ 			c->textures.a[i].type = GL_TEXTURE_UNBOUND;
+@@ -9774,7 +9527,7 @@
+ 	if (j != n) {
+ 		int s = c->textures.size;
+ 		cvec_extend_glTexture(&c->textures, n-j);
+-		for (int i=s; j<n; i++) {
++		for (i=s; j<n; i++) {
+ 			c->textures.a[i].deleted = GL_FALSE;
+ 			c->textures.a[i].type = GL_TEXTURE_UNBOUND;
+ 			textures[j++] = i;
+@@ -9810,8 +9563,10 @@
+ 	}
+ 
+ 	target -= GL_TEXTURE_UNBOUND + 1;
++
++	int i;
+ 	int j = 0;
+-	for (int i=0; i<c->textures.size && j<n; ++i) {
++	for (i=0; i<c->textures.size && j<n; ++i) {
+ 		if (c->textures.a[i].deleted) {
+ 			INIT_TEX(c->textures.a[i], target);
+ 			textures[j++] = i;
+@@ -9820,7 +9575,7 @@
+ 	if (j != n) {
+ 		int s = c->textures.size;
+ 		cvec_extend_glTexture(&c->textures, n-j);
+-		for (int i=s; j<n; i++) {
++		for (i=s; j<n; i++) {
+ 			INIT_TEX(c->textures.a[i], target);
+ 			c->textures.a[i].deleted = GL_FALSE;
+ 			c->textures.a[i].type = GL_TEXTURE_UNBOUND;
+@@ -9831,8 +9586,9 @@
+ 
+ void glDeleteTextures(GLsizei n, GLuint* textures)
+ {
++	int i;
+ 	GLenum type;
+-	for (int i=0; i<n; ++i) {
++	for (i=0; i<n; ++i) {
+ 		if (!textures[i] || textures[i] >= c->textures.size)
+ 			continue;
+ 
+@@ -10233,6 +9989,7 @@
+ 	}
+ 
+ 	int cur_tex;
++	int i;
+ 
+ 	// TODO If I ever support type other than GL_UNSIGNED_BYTE (also using for both internalformat and format)
+ 	int byte_width = width * components;
+@@ -10260,7 +10017,7 @@
+ 			if (!padding_needed) {
+ 				memcpy(c->textures.a[cur_tex].data, data, height*byte_width);
+ 			} else {
+-				for (int i=0; i<height; ++i) {
++				for (i=0; i<height; ++i) {
+ 					memcpy(&c->textures.a[cur_tex].data[i*byte_width], &((u8*)data)[i*padded_row_len], byte_width);
+ 				}
+ 			}
+@@ -10312,7 +10069,7 @@
+ 			if (!padding_needed) {
+ 				memcpy(&texdata[target*p], data, height*byte_width);
+ 			} else {
+-				for (int i=0; i<height; ++i) {
++				for (i=0; i<height; ++i) {
+ 					memcpy(&texdata[target*p + i*byte_width], &((u8*)data)[i*padded_row_len], byte_width);
+ 				}
+ 			}
+@@ -10377,13 +10134,15 @@
+ 		return;
+ 	}
+ 
++	int i;
++
+ 	u32* texdata = (u32*) c->textures.a[cur_tex].data;
+ 
+ 	if (data) {
+ 		if (!padding_needed) {
+ 			memcpy(texdata, data, width*height*depth*sizeof(u32));
+ 		} else {
+-			for (int i=0; i<height*depth; ++i) {
++			for (i=0; i<height*depth; ++i) {
+ 				memcpy(&texdata[i*byte_width], &((u8*)data)[i*padded_row_len], byte_width);
+ 			}
+ 		}
+@@ -10462,6 +10221,8 @@
+ 	}
+ 
+ 	int cur_tex;
++	int i;
++
+ 	u32* d = (u32*) data;
+ 
+ 	if (target == GL_TEXTURE_2D) {
+@@ -10476,7 +10237,7 @@
+ 
+ 		int w = c->textures.a[cur_tex].w;
+ 
+-		for (int i=0; i<height; ++i) {
++		for (i=0; i<height; ++i) {
+ 			memcpy(&texdata[(yoffset+i)*w + xoffset], &d[i*width], width*sizeof(u32));
+ 		}
+ 
+@@ -10490,7 +10251,7 @@
+ 
+ 		int p = w*w;
+ 
+-		for (int i=0; i<height; ++i)
++		for (i=0; i<height; ++i)
+ 			memcpy(&texdata[p*target + (yoffset+i)*w + xoffset], &d[i*width], width*sizeof(u32));
+ 	} //end CUBE_MAP
+ }
+@@ -10530,14 +10291,15 @@
+ 		return;
+ 	}
+ 
++	int i, j;
+ 	int w = c->textures.a[cur_tex].w;
+ 	int h = c->textures.a[cur_tex].h;
+ 	int p = w*h;
+ 	u32* d = (u32*) data;
+ 	u32* texdata = (u32*) c->textures.a[cur_tex].data;
+ 
+-	for (int j=0; j<depth; ++j) {
+-		for (int i=0; i<height; ++i) {
++	for (j=0; j<depth; ++j) {
++		for (i=0; i<height; ++i) {
+ 			memcpy(&texdata[(zoffset+j)*p + (yoffset+i)*w + xoffset], &d[j*width*height + i*width], width*sizeof(u32));
+ 		}
+ 	}
+@@ -10643,7 +10405,8 @@
+ 		return;
+ 	}
+ 
+-	for (GLsizei i=0; i<drawcount; i++) {
++	GLsizei i;
++	for (i=0; i<drawcount; i++) {
+ 		if (!count[i]) continue;
+ 		run_pipeline(mode, first[i], count[i], 0, 0, GL_FALSE);
+ 	}
+@@ -10699,7 +10462,8 @@
+ 	// TODO I assume this belongs here since I have it in DrawElements
+ 	c->buffers.a[c->vertex_arrays.a[c->cur_vertex_array].element_buffer].type = type;
+ 
+-	for (GLsizei i=0; i<drawcount; i++) {
++	GLsizei i;
++	for (i=0; i<drawcount; i++) {
+ 		if (!count[i]) continue;
+ 		run_pipeline(mode, indices[i], count[i], 0, 0, GL_TRUE);
+ 	}
+@@ -10721,7 +10485,8 @@
+ 	if (!count || !instancecount)
+ 		return;
+ 
+-	for (unsigned int instance = 0; instance < instancecount; ++instance) {
++	unsigned int instance;
++	for (instance = 0; instance < instancecount; ++instance) {
+ 		run_pipeline(mode, first, count, instance, 0, GL_FALSE);
+ 	}
+ }
+@@ -10742,7 +10507,8 @@
+ 	if (!count || !instancecount)
+ 		return;
+ 
+-	for (unsigned int instance = 0; instance < instancecount; ++instance) {
++	unsigned int instance;
++	for (instance = 0; instance < instancecount; ++instance) {
+ 		run_pipeline(mode, first, count, instance, baseinstance, GL_FALSE);
+ 	}
+ }
+@@ -10772,7 +10538,8 @@
+ 
+ 	c->buffers.a[c->vertex_arrays.a[c->cur_vertex_array].element_buffer].type = type;
+ 
+-	for (unsigned int instance = 0; instance < instancecount; ++instance) {
++	unsigned int instance;
++	for (instance = 0; instance < instancecount; ++instance) {
+ 		run_pipeline(mode, offset, count, instance, 0, GL_TRUE);
+ 	}
+ }
+@@ -10801,7 +10568,8 @@
+ 
+ 	c->buffers.a[c->vertex_arrays.a[c->cur_vertex_array].element_buffer].type = type;
+ 
+-	for (unsigned int instance = 0; instance < instancecount; ++instance) {
++	unsigned int instance;
++	for (instance = 0; instance < instancecount; ++instance) {
+ 		run_pipeline(mode, offset, count, instance, baseinstance, GL_TRUE);
+ 	}
+ }
+@@ -10863,6 +10631,9 @@
+ 
+ void glClear(GLbitfield mask)
+ {
++	int i;
++	int x, y;
++
+ 	if (!(mask & (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT))) {
+ 		if (!c->error)
+ 			c->error = GL_INVALID_VALUE;
+@@ -10879,12 +10650,12 @@
+ 	Color col = c->clear_color;
+ 	if (mask & GL_COLOR_BUFFER_BIT) {
+ 		if (!c->scissor_test) {
+-			for (int i=0; i<c->back_buffer.w*c->back_buffer.h; ++i) {
++			for (i=0; i<c->back_buffer.w*c->back_buffer.h; ++i) {
+ 				((u32*)c->back_buffer.buf)[i] = (u32)col.a << c->Ashift | (u32)col.r << c->Rshift | (u32)col.g << c->Gshift | (u32)col.b << c->Bshift;
+ 			}
+ 		} else {
+-			for (int y=c->scissor_ly; y<c->scissor_uy; ++y) {
+-				for (int x=c->scissor_lx; x<c->scissor_ux; ++x) {
++			for (y=c->scissor_ly; y<c->scissor_uy; ++y) {
++				for (x=c->scissor_lx; x<c->scissor_ux; ++x) {
+ 					((u32*)c->back_buffer.lastrow)[-y*c->back_buffer.w + x] = (u32)col.a << c->Ashift | (u32)col.r << c->Rshift | (u32)col.g << c->Gshift | (u32)col.b << c->Bshift;
+ 				}
+ 			}
+@@ -10894,12 +10665,12 @@
+ 	if (mask & GL_DEPTH_BUFFER_BIT) {
+ 		if (!c->scissor_test) {
+ 			//TODO try a big memcpy or other way to clear it
+-			for (int i=0; i < c->zbuf.w * c->zbuf.h; ++i) {
++			for (i=0; i < c->zbuf.w * c->zbuf.h; ++i) {
+ 				((float*)c->zbuf.buf)[i] = c->clear_depth;
+ 			}
+ 		} else {
+-			for (int y=c->scissor_ly; y<c->scissor_uy; ++y) {
+-				for (int x=c->scissor_lx; x<c->scissor_ux; ++x) {
++			for (y=c->scissor_ly; y<c->scissor_uy; ++y) {
++				for (x=c->scissor_lx; x<c->scissor_ux; ++x) {
+ 					((float*)c->zbuf.lastrow)[-y*c->zbuf.w + x] = c->clear_depth;
+ 				}
+ 			}
+@@ -10909,12 +10680,12 @@
+ 	if (mask & GL_STENCIL_BUFFER_BIT) {
+ 		if (!c->scissor_test) {
+ 			//TODO try a big memcpy or other way to clear it
+-			for (int i=0; i < c->stencil_buf.w * c->stencil_buf.h; ++i) {
++			for (i=0; i < c->stencil_buf.w * c->stencil_buf.h; ++i) {
+ 				c->stencil_buf.buf[i] = c->clear_stencil;
+ 			}
+ 		} else {
+-			for (int y=c->scissor_ly; y<c->scissor_uy; ++y) {
+-				for (int x=c->scissor_lx; x<c->scissor_ux; ++x) {
++			for (y=c->scissor_ly; y<c->scissor_uy; ++y) {
++				for (x=c->scissor_lx; x<c->scissor_ux; ++x) {
+ 					c->stencil_buf.lastrow[-y*c->stencil_buf.w + x] = c->clear_stencil;
+ 				}
+ 			}
+@@ -11233,6 +11004,8 @@
+ // Shader functions
+ GLuint pglCreateProgram(vert_func vertex_shader, frag_func fragment_shader, GLsizei n, GLenum* interpolation, GLboolean fragdepth_or_discard)
+ {
++	int i;
++
+ 	if (!vertex_shader || !fragment_shader) {
+ 		//TODO set error? doesn't in spec but I'll think about it
+ 		return 0;
+@@ -11245,11 +11018,11 @@
+ 	}
+ 
+ 	glProgram tmp = {vertex_shader, fragment_shader, NULL, n, {0}, fragdepth_or_discard, GL_FALSE };
+-	for (int i=0; i<n; ++i) {
++	for (i=0; i<n; ++i) {
+ 		tmp.interpolation[i] = interpolation[i];
+ 	}
+ 
+-	for (int i=1; i<c->programs.size; ++i) {
++	for (i=1; i<c->programs.size; ++i) {
+ 		if (c->programs.a[i].deleted && i != c->cur_program) {
+ 			c->programs.a[i] = tmp;
+ 			return i;
+@@ -11431,9 +11204,9 @@
+ 	//
+ 	// Also, how best to check when the enums aren't contiguous?  empty switch?
+ 	// manually checking all enums?
+-	if ((sfail < GL_INVERT || sfail > GL_DECR_WRAP) && sfail != GL_ZERO ||
+-	    (dpfail < GL_INVERT || dpfail > GL_DECR_WRAP) && sfail != GL_ZERO ||
+-	    (dppass < GL_INVERT || dppass > GL_DECR_WRAP) && sfail != GL_ZERO) {
++	if (((sfail < GL_INVERT || sfail > GL_DECR_WRAP) && sfail != GL_ZERO) ||
++	    ((dpfail < GL_INVERT || dpfail > GL_DECR_WRAP) && sfail != GL_ZERO) ||
++	    ((dppass < GL_INVERT || dppass > GL_DECR_WRAP) && sfail != GL_ZERO)) {
+ 		if (!c->error)
+ 			c->error = GL_INVALID_ENUM;
+ 
+@@ -11463,9 +11236,9 @@
+ 		return;
+ 	}
+ 
+-	if ((sfail < GL_INVERT || sfail > GL_DECR_WRAP) && sfail != GL_ZERO ||
+-	    (dpfail < GL_INVERT || dpfail > GL_DECR_WRAP) && sfail != GL_ZERO ||
+-	    (dppass < GL_INVERT || dppass > GL_DECR_WRAP) && sfail != GL_ZERO) {
++	if (((sfail < GL_INVERT || sfail > GL_DECR_WRAP) && sfail != GL_ZERO) ||
++	    ((dpfail < GL_INVERT || dpfail > GL_DECR_WRAP) && sfail != GL_ZERO) ||
++	    ((dppass < GL_INVERT || dppass > GL_DECR_WRAP) && sfail != GL_ZERO)) {
+ 		if (!c->error)
+ 			c->error = GL_INVALID_ENUM;
+ 
+@@ -11689,7 +11462,7 @@
+ 
+ static int wrap(int i, int size, GLenum mode)
+ {
+-	int tmp, tmp2;
++	int tmp;
+ 	switch (mode)
+ 	{
+ 	case GL_REPEAT:
+@@ -11713,7 +11486,6 @@
+ 	case GL_MIRRORED_REPEAT:
+ 		if (i < 0) i = -i;
+ 		tmp = i / size;
+-		tmp2 = i / (2*size);  // TODO what was this for?
+ 		if (tmp % 2)
+ 			return (size-1) - (i - tmp * size);
+ 		else
+@@ -12219,12 +11991,16 @@
+ //pglDrawPoint(x, y)
+ void pglDrawFrame()
+ {
++	int x, y;
++
+ 	frag_func frag_shader = c->programs.a[c->cur_program].fragment_shader;
+ 
+ 	Shader_Builtins builtins;
++	#ifdef _OPENMP
+ 	#pragma omp parallel for private(builtins)
+-	for (int y=0; y<c->back_buffer.h; ++y) {
+-		for (int x=0; x<c->back_buffer.w; ++x) {
++	#endif
++	for (y=0; y<c->back_buffer.h; ++y) {
++		for (x=0; x<c->back_buffer.w; ++x) {
+ 
+ 			//ignore z and w components
+ 			builtins.gl_FragCoord.x = x + 0.5f;
+@@ -12334,6 +12110,7 @@
+ 
+ 	//TODO
+ 	//assume for now always RGBA coming in and that's what I'm storing it as
++	(void)components;
+ }
+ 
+ void pglTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* data)
+@@ -12446,6 +12223,7 @@
+ 		c->textures.a[cur_tex].user_owned = GL_TRUE;
+ 		*/
+ 
++		(void)components;
+ 	} //end CUBE_MAP
+ }
+ 
+@@ -12505,6 +12283,7 @@
+ 
+ 	//TODO
+ 	//assume for now always RGBA coming in and that's what I'm storing it as
++	(void)components;
+ }
+ 
+ 
+@@ -12571,6 +12350,7 @@
+ 	normalize_vec2(&ab);
+ 
+ 	int x, y;
++	float j;
+ 
+ 	float x_min = MAX(0, MIN(x1, x2));
+ 	float x_max = MIN(c->back_buffer.w-1, MAX(x1, x2));
+@@ -12581,7 +12361,7 @@
+ 	if (m <= -1) {           //(-infinite, -1]
+ 		x = x1;
+ 		for (y=y_max; y>=y_min; --y) {
+-			for (float j=x-width/2; j<x+width/2; j++) {
++			for (j=x-width/2; j<x+width/2; j++) {
+ 				put_pixel(the_color, j, y);
+ 			}
+ 			if (line_func(&line, x+0.5f, y-1) < 0)
+@@ -12590,7 +12370,7 @@
+ 	} else if (m <= 0) {     //(-1, 0]
+ 		y = y1;
+ 		for (x=x_min; x<=x_max; ++x) {
+-			for (float j=y-width/2; j<y+width/2; j++) {
++			for (j=y-width/2; j<y+width/2; j++) {
+ 				put_pixel(the_color, x, j);
+ 			}
+ 			if (line_func(&line, x+1, y-0.5f) > 0)
+@@ -12599,7 +12379,7 @@
+ 	} else if (m <= 1) {     //(0, 1]
+ 		y = y1;
+ 		for (x=x_min; x<=x_max; ++x) {
+-			for (float j=y-width/2; j<y+width/2; j++) {
++			for (j=y-width/2; j<y+width/2; j++) {
+ 				put_pixel(the_color, x, j);
+ 			}
+ 
+@@ -12611,7 +12391,7 @@
+ 	} else {                 //(1, +infinite)
+ 		x = x1;
+ 		for (y=y_min; y<=y_max; ++y) {
+-			for (float j=x-width/2; j<x+width/2; j++) {
++			for (j=x-width/2; j<x+width/2; j++) {
+ 				put_pixel(the_color, j, y);
+ 			}
+ 			if (line_func(&line, x+0.5f, y+1) > 0)
+@@ -12742,6 +12522,7 @@
+ 	//4 cases based on slope
+ 	if (m <= -1) {           //(-infinite, -1]
+ 		x = x1;
++		y = y_max;
+ 		put_pixel(the_color, x, y_max);
+ 		if (line_func(&line, x+0.5f, y-1) < 0) {
+ 			x++;
+@@ -12753,6 +12534,7 @@
+ 				x++;
+ 		}
+ 	} else if (m <= 0) {     //(-1, 0]
++		x = x_min;
+ 		y = y1;
+ 		put_pixel(the_color, x_min, y);
+ 		if (line_func(&line, x+1, y-0.5f) > 0) {
+@@ -12765,6 +12547,7 @@
+ 				y--;
+ 		}
+ 	} else if (m <= 1) {     //(0, 1]
++		x = x_min;
+ 		y = y1;
+ 		put_pixel(the_color, x_min, y);
+ 		if (line_func(&line, x+1, y+0.5f) < 0) {
+@@ -12779,6 +12562,7 @@
+ 
+ 	} else {                 //(1, +infinite)
+ 		x = x1;
++		y = y_min;
+ 		put_pixel(the_color, x, y_min);
+ 		if (line_func(&line, x+0.5f, y+1) > 0) {
+ 			x++;
 --- PortableGL-0.97.1.orig/testing/premake4.lua
 +++ PortableGL-0.97.1/testing/premake4.lua
 @@ -1,8 +1,29 @@
@@ -690,28 +1700,28 @@ exit
 +	configurations { "Release", "Debug" }
 +
 +	newoption {
-+		trigger     = "prefix",
++		trigger     = "stb-dir",
 +		value       = "PATH",
-+		description = "Installation prefix; default is '/usr/local'",
-+		default     = "/usr/local"
-+	}
-+
-+	newoption {
-+		trigger     = "stb_image",
-+		value       = "PATH",
-+		description = "Use the given path for stb image headers",
++		description = "Directory for stb image headers",
 +		default     = "../stb"
 +	}
-+	
+ 	
+-	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
 +	newoption {
 +		trigger     = "testingdatadir",
 +		value       = "PATH",
 +		description = "Use the given path for demos data files",
 +		default     = "../media"
 +	}
- 	
--	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
-+	includedirs { "../", _OPTIONS["stb_image"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
++
++	newoption {
++		trigger     = "prefix",
++		value       = "PATH",
++		description = "Installation prefix; default is '/usr/local'",
++		default     = "/usr/local"
++	}
++
++	includedirs { "../", _OPTIONS["stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
  
  	-- stuff up here common to all projects
  	kind "ConsoleApp"
@@ -772,3 +1782,6 @@ exit
  			puts("failed to load texture");
  			return;
  		}
+
+# source
+https://github.com/rswinkle/PortableGL/archive/0.97.1/PortableGL-0.97.1.tar.gz

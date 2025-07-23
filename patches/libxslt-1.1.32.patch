@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libxml2-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -85,6 +85,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libxslt-1.1.32.orig/configure.ac
 +++ libxslt-1.1.32/configure.ac
 @@ -8,6 +8,7 @@
@@ -95,3 +97,15 @@ exit
  AC_CANONICAL_HOST
  AC_USE_SYSTEM_EXTENSIONS
  
+@@ -87,7 +88,7 @@
+ 
+ AM_INIT_AUTOMAKE([foreign])
+ 
+-# AM_MAINTAINER_MODE
++AM_MAINTAINER_MODE
+ 
+ # Support silent build rules, requires at least automake-1.11. Disable
+ # by either passing --disable-silent-rules to configure or passing V=1
+
+# source
+https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.32.tar.xz

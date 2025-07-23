@@ -1,0 +1,75 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build libogg-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
+./configure --disable-cpplibs --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/flac/.libs/flac $DESTDIR/bin
+install src/metaflac/.libs/metaflac $DESTDIR/bin
+install -d $DESTDIR/include/FLAC
+install -m 644 include/FLAC/all.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/callback.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/export.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/format.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/metadata.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/ordinals.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/stream_decoder.h $DESTDIR/include/FLAC
+install -m 644 include/FLAC/stream_encoder.h $DESTDIR/include/FLAC
+install -d $DESTDIR/lib
+install src/libFLAC/.libs/libFLAC.so.12.* $DESTDIR/lib/libFLAC.so.12
+ln -sf libFLAC.so.12 $DESTDIR/lib/libFLAC.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 src/libFLAC/flac.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/flac-build.pc << EOF
+Name: flac
+Version: 1.4.3
+Description: Free Lossless Audio Codec library
+Requires: $REQUIRES
+
+devel=\\
+/include/FLAC/all.h \\
+/include/FLAC/callback.h \\
+/include/FLAC/export.h \\
+/include/FLAC/format.h \\
+/include/FLAC/metadata.h \\
+/include/FLAC/ordinals.h \\
+/include/FLAC/stream_decoder.h \\
+/include/FLAC/stream_encoder.h \\
+/lib/libFLAC.so \\
+/lib/pkgconfig/flac.pc
+
+exec=\\
+/bin/flac \\
+/bin/metaflac \\
+/lib/libFLAC.so.12
+EOF
+
+exit
+
+# patch
+--- flac-1.4.3.orig/configure.ac
++++ flac-1.4.3/configure.ac
+@@ -25,6 +25,7 @@
+ AC_CONFIG_SRCDIR([src/flac/main.c])
+ AC_CONFIG_MACRO_DIR([m4])
+ AM_INIT_AUTOMAKE([foreign 1.10 -Wall tar-pax no-dist-gzip dist-xz subdir-objects])
++AM_MAINTAINER_MODE
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+ AX_CHECK_ENABLE_DEBUG
+
+# source
+http://downloads.xiph.org/releases/flac/flac-1.4.3.tar.xz

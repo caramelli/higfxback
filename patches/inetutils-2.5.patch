@@ -1,0 +1,92 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build iana-etc-build readline-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16)
+aclocal -I am -I m4; autoheader; autoconf; automake -a -c
+./configure --libexecdir=/bin --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install ftp/ftp $DESTDIR/bin
+install ftpd/ftpd $DESTDIR/bin
+install ifconfig/ifconfig $DESTDIR/bin
+install ping/ping $DESTDIR/bin
+install ping/ping6 $DESTDIR/bin
+install src/dnsdomainname $DESTDIR/bin
+install src/hostname $DESTDIR/bin
+install src/inetd $DESTDIR/bin
+install src/logger $DESTDIR/bin
+install src/rcp $DESTDIR/bin
+install src/rexec $DESTDIR/bin
+install src/rexecd $DESTDIR/bin
+install src/rlogin $DESTDIR/bin
+install src/rlogind $DESTDIR/bin
+install src/rsh $DESTDIR/bin
+install src/rshd $DESTDIR/bin
+install src/syslogd $DESTDIR/bin
+install src/tftp $DESTDIR/bin
+install src/tftpd $DESTDIR/bin
+install src/traceroute $DESTDIR/bin
+install src/uucpd $DESTDIR/bin
+install telnet/telnet $DESTDIR/bin
+install telnetd/telnetd $DESTDIR/bin
+install whois/whois $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/inetutils-build.pc << EOF
+Name: inetutils
+Version: 2.5
+Description: Networking utilities
+Requires: $REQUIRES
+
+exec=\\
+/bin/dnsdomainname \\
+/bin/ftp \\
+/bin/ftpd \\
+/bin/hostname \\
+/bin/ifconfig \\
+/bin/inetd \\
+/bin/logger \\
+/bin/ping \\
+/bin/ping6 \\
+/bin/rcp \\
+/bin/rexec \\
+/bin/rexecd \\
+/bin/rlogin \\
+/bin/rlogind \\
+/bin/rsh \\
+/bin/rshd \\
+/bin/syslogd \\
+/bin/telnet \\
+/bin/telnetd \\
+/bin/tftp \\
+/bin/tftpd \\
+/bin/traceroute \\
+/bin/uucpd \\
+/bin/whois
+EOF
+
+exit
+
+# patch
+--- inetutils-2.5.orig/configure.ac
++++ inetutils-2.5/configure.ac
+@@ -28,6 +28,7 @@
+ AC_CANONICAL_HOST
+ 
+ AM_INIT_AUTOMAKE([1.11.1 dist-xz -Wall -Werror])
++AM_MAINTAINER_MODE
+ 
+ # For now, we always use libexecdir; later we may want to vary where
+ # the daemons go.
+
+# source
+https://ftp.gnu.org/gnu/inetutils/inetutils-2.5.tar.gz

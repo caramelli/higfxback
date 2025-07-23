@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build libxext-build libxrender-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -29,6 +29,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- xdpyinfo-1.1.0.orig/configure.ac
 +++ xdpyinfo-1.1.0/configure.ac
 @@ -38,7 +38,7 @@
@@ -138,3 +140,6 @@ exit
  #ifdef XINPUT
      {INAME, print_xinput_info, False},
  #endif
+
+# source
+https://x.org/releases/individual/app/xdpyinfo-1.1.0.tar.gz

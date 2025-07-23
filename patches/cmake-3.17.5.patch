@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="curl-build gcc-g++-build jsoncpp-build libarchive-build libuv-build make-build ncurses-build ninja-build rhash-build"
+REQUIRES="curl-build jsoncpp-build libarchive-build libstdc++-build libuv-build make-build ncurses-build ninja-build rhash-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -348,6 +348,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- cmake-3.17.5.orig/Modules/GNUInstallDirs.cmake
 +++ cmake-3.17.5/Modules/GNUInstallDirs.cmake
 @@ -226,8 +226,10 @@
@@ -447,3 +449,6 @@ exit
  echo '
  rebuild_cache:
  	cd "${cmake_binary_dir}" && "${cmake_source_dir}/bootstrap"
+
+# source
+https://cmake.org/files/v3.17/cmake-3.17.5.tar.gz

@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.11; lt-2.4.2)
 rm -f parse.c parse.h
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -30,14 +30,19 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- flex-2.5.39.orig/configure.ac
 +++ flex-2.5.39/configure.ac
-@@ -30,7 +30,7 @@
+@@ -30,7 +30,8 @@
  AC_SUBST(SHARED_VERSION_INFO)
  
  AC_CONFIG_SRCDIR([scan.l])
 -AM_INIT_AUTOMAKE([gnu check-news std-options dist-bzip2 dist-xz 1.10])
 +AM_INIT_AUTOMAKE([-Wno-portability check-news std-options dist-bzip2 dist-xz 1.10])
++AM_MAINTAINER_MODE
  AC_CONFIG_HEADER([config.h:conf.in])
  AC_CONFIG_LIBOBJ_DIR([lib])
  
+# source
+http://downloads.sourceforge.net/flex/flex-2.5.39.tar.gz

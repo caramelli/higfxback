@@ -332,6 +332,8 @@ cat >> $DESTDIR/x11/share/pkgconfig/sdl2-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- SDL2-2.0.18.orig/configure.ac
 +++ SDL2-2.0.18/configure.ac
 @@ -77,7 +77,7 @@
@@ -343,24 +345,6 @@ exit
          ;;
  esac
  
-@@ -172,7 +172,7 @@
-         host_lib_path="/usr/$base_libdir /usr/local/$base_libdir"
-     fi
-     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
--        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -1`]
-+        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -n -1`]
-         if test x$lib != x; then
-             echo $lib
-             return
-@@ -180,7 +180,7 @@
-     done
-     # Try again, this time allowing more than one version digit after the .so
-     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
--        lib=[`ls -- $path/$1 2>/dev/null | sed -e 's,.*/,,' | sort | tail -1`]
-+        lib=[`ls -- $path/$1 2>/dev/null | sed -e 's,.*/,,' | sort | tail -n -1`]
-         if test x$lib != x; then
-             echo $lib
-             return
 @@ -894,8 +894,8 @@
          LIBS="$alsa_save_LIBS"
          if test x$have_alsa = xyes; then
@@ -945,3 +929,6 @@ exit
      }
      original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24, 0);
      if (!original) {
+
+# source
+https://libsdl.org/release/SDL2-2.0.18.tar.gz

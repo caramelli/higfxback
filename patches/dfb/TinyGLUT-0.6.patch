@@ -55,6 +55,8 @@ EOF
 ln -sf tinyglut-build.pc $DESTDIR/dfb/share/pkgconfig/glut-build.pc
 
 exit
+
+# patch
 --- TinyGLUT-0.6.orig/CMakeLists.txt
 +++ TinyGLUT-0.6/CMakeLists.txt
 @@ -82,7 +82,7 @@
@@ -66,3 +68,17 @@ exit
    message(FATAL_ERROR "No platforms found")
  endif()
  
+--- TinyGLUT-0.6.orig/meson.build
++++ TinyGLUT-0.6/meson.build
+@@ -177,6 +177,8 @@
+   else
+     add_global_arguments('-DFIU_ENABLE', language: 'c')
+   endif
++else
++  libfiu_dep = disabler()
+ endif
+ 
+ #######################
+
+# source
+https://github.com/caramelli/TinyGLUT/archive/v0.6/TinyGLUT-0.6.tar.gz

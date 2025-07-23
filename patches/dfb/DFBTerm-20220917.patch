@@ -36,3 +36,28 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- DFBTerm-20220917.orig/src/glib.c
++++ DFBTerm-20220917/src/glib.c
+@@ -60,7 +60,7 @@
+ g_realloc( void          *mem,
+            unsigned long  size )
+ {
+-     return g_realloc( mem, size );
++     return realloc( mem, size );
+ }
+ 
+ GSList *
+@@ -142,7 +142,7 @@
+      GString *string = malloc( sizeof(GString) );
+      int      len    = strlen( str );
+ 
+-     string->str = malloc( len );
++     string->str = malloc( len + 1 );
+      string->len = len;
+ 
+      strcpy( string->str, str );
+
+# source
+https://github.com/directfb2/DFBTerm/archive/c6e3d58e7b3a1a789bde9afd172d143a5610a313/DFBTerm-20220917.tar.gz

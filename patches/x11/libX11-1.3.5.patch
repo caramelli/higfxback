@@ -13,7 +13,7 @@ else
 fi
 
 # configure (ac-2.65; am-1.11; lt-2.2.6b)
-libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static $XLIB_XCB --prefix=/x11
 
 # build
@@ -102,6 +102,8 @@ cat >> $DESTDIR/x11/share/pkgconfig/libx11-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- libX11-1.3.5.orig/configure.ac
 +++ libX11-1.3.5/configure.ac
 @@ -87,7 +87,7 @@
@@ -113,3 +115,5 @@ exit
  
  PKG_PROG_PKG_CONFIG()
  
+# source
+https://x.org/releases/individual/lib/libX11-1.3.5.tar.gz

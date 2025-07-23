@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make
@@ -39,26 +39,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- tinycthread-20160930.orig/Configure
 +++ tinycthread-20160930/Configure
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,15 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -68,19 +61,25 @@ exit
 +sed -i "/^prefix/s|=.*|=$PREFIX|" tinycthread.pc
 --- tinycthread-20160930.orig/Makefile
 +++ tinycthread-20160930/Makefile
-@@ -0,0 +1,21 @@
+@@ -0,0 +1,27 @@
++#-----------------------------------------------------------------------------------------
++# Makefile for GCC & gmake (Linux, Windows/MinGW, OpenSolaris, etc).
++#-----------------------------------------------------------------------------------------
++
 +PREFIX ?= /usr/local
 +
-+CFLAGS += -g -O2 -fPIC
-+LDFLAGS += -lpthread
++CC = gcc
++CFLAGS = -Wall -g -O2 -fPIC
++LFLAGS = -shared
++LIBS = -lpthread
 +
 +all: libtinycthread.so.1
 +
-+libtinycthread.so.1: source/tinycthread.c
-+	$(CC) -Wall -shared -Wl,-soname,$@ $^ -o $@ $(CFLAGS) $(LDFLAGS)
-+
 +clean:
 +	$(RM) libtinycthread.so.1
++
++libtinycthread.so.1: source/tinycthread.c
++	$(CC) $(LFLAGS) -o $@ -Wl,-soname,$@ $(CFLAGS) $^ $(LIBS)
 +
 +install: all
 +	install -d $(DESTDIR)$(PREFIX)/include
@@ -102,3 +101,6 @@ exit
 +Version: 1.2
 +Libs: -L${libdir} -ltinycthread
 +Cflags: -I${includedir}
+
+# source
+https://github.com/tinycthread/tinycthread/archive/6957fc8383d6c7db25b60b8c849b29caab1caaee/tinycthread-20160930.tar.gz

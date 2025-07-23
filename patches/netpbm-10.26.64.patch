@@ -1,13 +1,23 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="jpeg-build libpng-build make-build perl-build tiff-build"
+REQUIRES="jpeg-build libpng-build make-build tiff-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 yes "" | ./configure
 sed -e "s/@VERSION@/$(grep NETPBM_MAJOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ').$(grep NETPBM_MINOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ')/" -e "s|@LIBDIR@|/lib|" -e "s|@INCLUDEDIR@|/include|" buildtools/pkgconfig_template > netpbm.pc
+cat > pm_config.h << EOF
+#ifndef PM_CONFIG_H
+#define PM_CONFIG_H
+#include <inttypes.h>
+EOF
+cat pm_config.in.h >> pm_config.h
+./buildtools/endiangen >> pm_config.h
+cat >> pm_config.h << EOF
+#endif
+EOF
 
 # build
 make
@@ -643,6 +653,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- netpbm-10.26.64.orig/Makefile.common
 +++ netpbm-10.26.64/Makefile.common
 @@ -377,21 +377,21 @@
@@ -2070,3 +2082,6 @@ exit
  
  use strict;
  use English;
+
+# source
+http://downloads.sourceforge.net/netpbm/netpbm-10.26.64.tgz

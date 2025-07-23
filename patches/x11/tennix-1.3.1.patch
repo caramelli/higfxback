@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build make-build sdl_image-build sdl_mixer-build sdl_ttf-build"
+REQUIRES="libstdc++-build make-build sdl_image-build sdl_mixer-build sdl_ttf-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -33,6 +33,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- tennix-1.3.1.orig/configure
 +++ tennix-1.3.1/configure
 @@ -72,22 +72,18 @@
@@ -97,3 +99,6 @@ exit
  # Check for compatible OS and working compiler
  check_os
  check_compiler
+
+# source
+https://repo.or.cz/tennix.git/snapshot/tennix-1.3.1.tar.gz

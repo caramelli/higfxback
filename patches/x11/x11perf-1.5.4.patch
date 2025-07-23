@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build libxft-build libxmu-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68; am-1.11)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -29,6 +29,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- x11perf-1.5.4.orig/x11perf.c
 +++ x11perf-1.5.4/x11perf.c
 @@ -150,6 +150,8 @@
@@ -154,3 +156,6 @@ exit
  
      /* Figure out how long to call HardwareSync, so we can adjust for that
         in our total elapsed time */
+
+# source
+https://x.org/releases/individual/app/x11perf-1.5.4.tar.gz

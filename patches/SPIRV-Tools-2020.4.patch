@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build spirv-headers-build"
+REQUIRES="cmake3-build libstdc++-build spirv-headers-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -66,6 +66,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SPIRV-Tools-2020.4.orig/CMakeLists.txt
 +++ SPIRV-Tools-2020.4/CMakeLists.txt
 @@ -188,7 +188,7 @@
@@ -368,3 +370,6 @@ exit
        ${CMAKE_CURRENT_SOURCE_DIR}/../spirv_test_framework.py
        $<TARGET_FILE:spirv-opt> $<TARGET_FILE:spirv-as> $<TARGET_FILE:spirv-dis>
        --test-dir ${CMAKE_CURRENT_SOURCE_DIR})
+
+# source
+https://github.com/KhronosGroup/SPIRV-Tools/archive/v2020.4/SPIRV-Tools-2020.4.tar.gz

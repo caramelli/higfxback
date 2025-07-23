@@ -1,0 +1,62 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build fontconfig-build libxrender-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.68; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/X11/Xft
+install -m 644 include/X11/Xft/Xft.h $DESTDIR/x11/include/X11/Xft
+install -m 644 include/X11/Xft/XftCompat.h $DESTDIR/x11/include/X11/Xft
+install -d $DESTDIR/x11/lib
+install src/.libs/libXft.so.2.* $DESTDIR/x11/lib/libXft.so.2
+ln -sf libXft.so.2 $DESTDIR/x11/lib/libXft.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 xft.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libxft-build.pc << EOF
+Name: libXft
+Version: 2.3.2
+Description: X FreeType library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/X11/Xft/Xft.h \\
+/x11/include/X11/Xft/XftCompat.h \\
+/x11/lib/libXft.so \\
+/x11/lib/pkgconfig/xft.pc
+
+exec=\\
+/x11/lib/libXft.so.2
+EOF
+
+exit
+
+# patch
+--- libXft-2.3.2.orig/configure.ac
++++ libXft-2.3.2/configure.ac
+@@ -31,9 +31,11 @@
+         [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], [libXft])
+ AC_CONFIG_SRCDIR([Makefile.am])
+ AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
+ 
+ # Initialize Automake
+ AM_INIT_AUTOMAKE([foreign dist-bzip2])
++AM_MAINTAINER_MODE
+ 
+ # Initialize libtool
+ AC_PROG_LIBTOOL
+
+# source
+https://x.org/releases/individual/lib/libXft-2.3.2.tar.gz

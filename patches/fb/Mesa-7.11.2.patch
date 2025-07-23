@@ -1,13 +1,13 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-ac-build bison-build gcc-g++-build makedepend-build opengl-registry-build"
+REQUIRES="autotools-wrappers-ac-build bison-build libstdc++-build makedepend-build opengl-registry-build"
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68)
 cat m4/* acinclude.m4 > aclocal.m4; autoconf
-./configure --disable-gallium-llvm --disable-glu --disable-glw --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-shared-glapi --with-driver=fbdev --with-egl-platforms=fbdev --with-gallium-drivers=swrast --prefix=/fb
+LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-gallium-llvm --disable-glu --disable-glw --enable-gallium-egl --enable-gles1 --enable-gles2 --enable-shared-glapi --with-driver=fbdev --with-egl-platforms=fbdev --with-gallium-drivers=swrast --prefix=/fb
 
 # build
 make
@@ -41,6 +41,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- Mesa-7.11.2.orig/bin/mklib
 +++ Mesa-7.11.2/bin/mklib
 @@ -333,7 +333,7 @@
@@ -723,3 +725,6 @@ exit
 +}
 +
  #endif /* USE_GLFBDEV_DRIVER */
+
+# source
+https://archive.mesa3d.org/older-versions/7.x/7.11.2/MesaLib-7.11.2.tar.gz

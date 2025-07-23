@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build fontconfig-build glib-build libpng-build p
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-interpreter --disable-static --prefix=/wl
 
 # build
@@ -72,6 +72,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- cairo-1.14.12.orig/build/Makefile.am.changelog
 +++ cairo-1.14.12/build/Makefile.am.changelog
 @@ -5,6 +5,8 @@
@@ -100,12 +102,13 @@ exit
  AC_CHECK_HEADERS([sys/stat.h io.h])
 --- cairo-1.14.12.orig/configure.ac
 +++ cairo-1.14.12/configure.ac
-@@ -13,7 +13,7 @@
+@@ -13,7 +13,8 @@
  
  AC_CHECK_HEADERS([unistd.h sys/ioctl.h])
  
 -AM_INIT_AUTOMAKE([1.11 foreign -Wall no-define no-dist-gzip dist-xz])
 +AM_INIT_AUTOMAKE([1.11 foreign -Wall no-define no-dist-gzip dist-xz subdir-objects])
++AM_MAINTAINER_MODE
  AM_SILENT_RULES([yes])
  m4_ifdef([AM_PROG_AR], [AM_PROG_AR]) dnl Workaround for Automake 1.12
  
@@ -120,3 +123,6 @@ exit
  SUBDIRS=pdiff .
  
  # Then we have a collection of tests that are only run if certain
+
+# source
+https://cairographics.org/releases/cairo-1.14.12.tar.xz

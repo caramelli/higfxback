@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="bison-build elfutils-build findutils-build gcc-g++-build make-build ncurses-build openssl-build"
+REQUIRES="bison-build elfutils-build findutils-build libstdc++-build make-build ncurses-build openssl-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -28,6 +28,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- linux-5.15.orig/arch/x86/configs/fragment-x86_64.config
 +++ linux-5.15/arch/x86/configs/fragment-x86_64.config
 @@ -0,0 +1,10 @@
@@ -51,3 +53,5 @@ exit
  	fb_set_var(info, &var);
  	ops->var = info->var;
  
+# source
+https://kernel.org/pub/linux/kernel/v5.x/linux-5.15.tar.xz

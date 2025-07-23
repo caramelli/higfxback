@@ -20,7 +20,7 @@ else
 fi
 
 # configure (ac-2.68; am-1.11; lt-2.4)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure $GUDEV $HWDB --disable-introspection --disable-keymap --disable-udev_acl --libexecdir=/lib/udev --sbindir=/bin --prefix=
 
 # build
@@ -140,6 +140,8 @@ ln -sf udev-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
 ln -sf udev-build.pc $DESTDIR/share/pkgconfig/udevd-build.pc
 
 exit
+
+# patch
 --- udev-172.orig/Makefile.am
 +++ udev-172/Makefile.am
 @@ -124,8 +124,7 @@
@@ -234,6 +236,12 @@ exit
  #ifdef __cplusplus
  } /* extern "C" */
  #endif
+--- udev-172.orig/udev/mdevd
++++ udev-172/udev/mdevd
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++exec udevd -d
 --- udev-172.orig/udev/udevadm.c
 +++ udev-172/udev/udevadm.c
 @@ -63,7 +63,7 @@
@@ -272,3 +280,6 @@ exit
  		case 'V':
  			rc = version(udev, argc, argv);
  			goto out;
+
+# source
+https://launchpad.net/udev/main/172/+download/udev-172.tar.bz2

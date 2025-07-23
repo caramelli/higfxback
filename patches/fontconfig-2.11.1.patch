@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build expat-build freetype-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.13; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --with-xmldir=/etc/fonts --with-templatedir=/etc/fonts/conf.avail --with-default-fonts=/share/fonts --prefix=
 
 # build
@@ -67,6 +67,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fontconfig-2.11.1.orig/Makefile.am
 +++ fontconfig-2.11.1/Makefile.am
 @@ -21,6 +21,8 @@
@@ -78,3 +80,16 @@ exit
  SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
  	fc-cache fc-cat fc-list fc-match fc-pattern fc-query fc-scan \
  	fc-validate conf.d test
+--- fontconfig-2.11.1.orig/configure.ac
++++ fontconfig-2.11.1/configure.ac
+@@ -39,6 +39,8 @@
+ 
+ dnl ==========================================================================
+ 
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_HEADERS(config.h)
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+# source
+https://freedesktop.org/software/fontconfig/release/fontconfig-2.11.1.tar.gz

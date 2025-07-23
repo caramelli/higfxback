@@ -182,6 +182,111 @@ cat >> $DESTDIR/fb/share/pkgconfig/sdl-build.pc << EOF
 EOF
 
 exit
+
+# patch
+--- SDL-1.2.13.orig/acinclude.m4
++++ SDL-1.2.13/acinclude.m4
+@@ -417,6 +417,8 @@
+ AC_LIBTOOL_SYS_GLOBAL_SYMBOL_PIPE
+ AC_LIBTOOL_OBJDIR
+ 
++AC_REQUIRE([LT_AC_PROG_FILE])dnl
++
+ AC_REQUIRE([_LT_AC_SYS_COMPILER])dnl
+ _LT_AC_PROG_ECHO_BACKSLASH
+ 
+@@ -796,7 +798,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILE conftest.$ac_objext` in
+     *ELF-32*)
+       HPUX_IA64_MODE="32"
+       ;;
+@@ -812,7 +814,7 @@
+   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+    if test "$lt_cv_prog_gnu_ld" = yes; then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILE conftest.$ac_objext` in
+     *32-bit*)
+       LD="${LD-ld} -melf32bsmip"
+       ;;
+@@ -824,7 +826,7 @@
+       ;;
+     esac
+    else
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILE conftest.$ac_objext` in
+     *32-bit*)
+       LD="${LD-ld} -32"
+       ;;
+@@ -844,7 +846,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILE conftest.o` in
+     *32-bit*)
+       case $host in
+         x86_64-*linux*)
+@@ -899,7 +901,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILE conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2608,7 +2610,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILE -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -2638,7 +2640,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILE
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -2652,7 +2654,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILE
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -2699,7 +2701,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILE
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -6660,6 +6662,10 @@
+ [AC_CHECK_TOOL(RC, windres, no)
+ ])
+ 
++AC_DEFUN([LT_AC_PROG_FILE],
++[AC_CHECK_TOOL(FILE, file, :)
++])
++
+ ############################################################
+ # NOTE: This macro has been submitted for inclusion into   #
+ #  GNU Autoconf as AC_PROG_SED.  When it is available in   #
 --- SDL-1.2.13.orig/configure.in
 +++ SDL-1.2.13/configure.in
 @@ -40,7 +40,7 @@
@@ -929,3 +1034,6 @@ exit
  	if ( icon != NULL ) {
  		SDL_WM_SetIcon(icon, icon_mask);
  	}
+
+# source
+https://libsdl.org/release/SDL-1.2.13.tar.gz

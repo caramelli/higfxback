@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build ed-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14)
-aclocal; autoconf; autoheader -f; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -29,6 +29,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- bc-1.07.1.orig/configure.ac
++++ bc-1.07.1/configure.ac
+@@ -22,6 +22,7 @@
+ AC_CONFIG_SRCDIR(doc/bc.1)
+ AM_INIT_AUTOMAKE([dist-bzip2])
+ AC_CONFIG_HEADERS(config.h)
++AM_MAINTAINER_MODE
+ 
+ AC_DEFINE([DC_VERSION], "dc_version",
+ 	  [Define the dc version number.])
 --- bc-1.07.1.orig/doc/Makefile.am
 +++ bc-1.07.1/doc/Makefile.am
 @@ -6,6 +6,3 @@
@@ -38,3 +50,6 @@ exit
 -
 -bc.dvi bc.pdf bc.html $(srcdir)/bc.info \
 -dc.dvi dc.pdf dc.html $(srcdir)/dc.info :  texi-ver.incl
+
+# source
+https://ftp.gnu.org/gnu/bc/bc-1.07.1.tar.gz

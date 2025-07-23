@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -46,6 +46,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- SPIRV-Headers-20200721.orig/CMakeLists.txt
 +++ SPIRV-Headers-20200721/CMakeLists.txt
 @@ -63,6 +63,8 @@
@@ -80,3 +82,6 @@ exit
 +                           ${CMAKE_CURRENT_BINARY_DIR}/buildSpvHeaders -H spirv.core.grammar.json)
 +
  install(TARGETS buildSpvHeaders RUNTIME DESTINATION bin)
+
+# source
+https://github.com/KhronosGroup/SPIRV-Headers/archive/979924c8bc839e4cb1b69d03d48398551f369ce7/SPIRV-Headers-20200721.tar.gz

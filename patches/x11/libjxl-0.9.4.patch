@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="brotli-build cmake3-build gcc-g++-build gdk-pixbuf-build highway-build lcms2-build openexr-build sjpeg-build"
+REQUIRES="brotli-build cmake3-build gdk-pixbuf-build highway-build lcms2-build libstdc++-build openexr-build sjpeg-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -92,6 +92,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libjxl-0.9.4.orig/CMakeLists.txt
 +++ libjxl-0.9.4/CMakeLists.txt
 @@ -81,13 +81,6 @@
@@ -480,3 +482,6 @@ exit
 -  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sjpeg/COPYING"
 -                 ${PROJECT_BINARY_DIR}/LICENSE.sjpeg COPYONLY)
  endif ()
+
+# source
+https://github.com/libjxl/libjxl/archive/v0.9.4/libjxl-0.9.4.tar.gz

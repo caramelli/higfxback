@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build util-macros-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11; lt-2.2.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -39,6 +39,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libfontenc-1.0.5.orig/configure.ac
 +++ libfontenc-1.0.5/configure.ac
 @@ -24,6 +24,7 @@
@@ -82,3 +84,6 @@ exit
  libfontenc_la_LDFLAGS = -version-number 1:0:0 -no-undefined
  
  libfontencincludedir = $(includedir)/X11/fonts
+
+# source
+https://x.org/releases/individual/lib/libfontenc-1.0.5.tar.gz

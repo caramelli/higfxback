@@ -1,0 +1,111 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.12; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include
+install -m 644 include/mtdev.h $DESTDIR/include
+install -m 644 include/mtdev-plumbing.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libmtdev.so.1.* $DESTDIR/lib/libmtdev.so.1
+ln -sf libmtdev.so.1 $DESTDIR/lib/libmtdev.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 mtdev.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/mtdev-build.pc << EOF
+Name: mtdev
+Version: 1.1.3
+Description: multitouch protocol translation library
+Requires: $REQUIRES
+
+devel=\\
+/include/mtdev.h \\
+/include/mtdev-plumbing.h \\
+/lib/libmtdev.so \\
+/lib/pkgconfig/mtdev.pc
+
+exec=\\
+/lib/libmtdev.so.1
+EOF
+
+exit
+
+# patch
+--- mtdev-1.1.3.orig/Makefile.am
++++ mtdev-1.1.3/Makefile.am
+@@ -3,8 +3,6 @@
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = mtdev.pc
+ 
+-INCLUDES = $(top_srcdir)/include/
+-
+ .PHONY: ChangeLog INSTALL
+ INSTALL:
+ 	$(INSTALL_CMD)
+--- mtdev-1.1.3.orig/configure.ac
++++ mtdev-1.1.3/configure.ac
+@@ -5,7 +5,7 @@
+         [],
+         [mtdev])
+ AC_CONFIG_SRCDIR([Makefile.am])
+-AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
+ AC_CONFIG_AUX_DIR([config-aux])
+ 
+ # Initialize Automake
+--- mtdev-1.1.3.orig/src/Makefile.am
++++ mtdev-1.1.3/src/Makefile.am
+@@ -18,7 +18,7 @@
+ 
+ AM_CFLAGS = $(CWARNFLAGS) #-DMTDEV_NO_LEGACY_ABI
+ 
+-INCLUDES = -I$(top_srcdir)/include/
++AM_CPPFLAGS = -I$(top_srcdir)/include/
+ 
+ libmtdevincludedir = $(includedir)
+ libmtdevinclude_HEADERS = \
+--- mtdev-1.1.3.orig/src/match_four.c
++++ mtdev-1.1.3/src/match_four.c
+@@ -1,5 +1,6 @@
+ #include "match.h"
+ #include <limits.h>
++#include <stdlib.h>
+ 
+ typedef unsigned char u8;
+ typedef unsigned int u32;
+--- mtdev-1.1.3.orig/test/Makefile.am
++++ mtdev-1.1.3/test/Makefile.am
+@@ -1,7 +1,7 @@
+ noinst_PROGRAMS = mtdev-mapgen mtdev-matching mtdev-kernel
+ bin_PROGRAMS = mtdev-test
+ 
+-INCLUDES=-I$(top_srcdir)/include/
++AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/include/
+ 
+ mtdev_mapgen_SOURCES = mtdev-mapgen.c
+ 
+--- mtdev-1.1.3.orig/test/mtdev-kernel.c
++++ mtdev-1.1.3/test/mtdev-kernel.c
+@@ -28,6 +28,7 @@
+ 
+ #include <../src/common.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <time.h>
+ 
+ /*
+
+# source
+https://bitmath.se/org/code/mtdev/mtdev-1.1.3.tar.gz

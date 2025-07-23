@@ -14,7 +14,7 @@ else
 fi
 
 # configure (ac-2.69; am-1.13; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -49,3 +49,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- libevdev-0.5.orig/configure.ac
++++ libevdev-0.5/configure.ac
+@@ -32,6 +32,7 @@
+ AC_USE_SYSTEM_EXTENSIONS
+ 
+ AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
++AM_MAINTAINER_MODE
+ 
+ # Before making a release, the LIBEVDEV_LT_VERSION string should be
+ # modified.
+
+# source
+https://freedesktop.org/software/libevdev/libevdev-0.5.tar.xz

@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build libx11-build llvm-build mako-build meson-build vulkan-headers-build"
+REQUIRES="libstdc++-build libx11-build llvm-build mako-build meson-build vulkan-headers-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -37,6 +37,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- mesa-21.1.8.orig/include/drm-uapi/nouveau_drm.h
 +++ mesa-21.1.8/include/drm-uapi/nouveau_drm.h
 @@ -0,0 +1,246 @@
@@ -288,7 +290,17 @@ exit
 +#endif /* __NOUVEAU_DRM_H__ */
 --- mesa-21.1.8.orig/meson.build
 +++ mesa-21.1.8/meson.build
-@@ -510,7 +510,7 @@
+@@ -22,7 +22,8 @@
+   'mesa',
+   ['c', 'cpp'],
+   version : run_command(
+-    [find_program('python', 'python3'), 'bin/meson_get_version.py']
++    [find_program('python', 'python3'), 'bin/meson_get_version.py'],
++    check : true
+   ).stdout(),
+   license : 'MIT',
+   meson_version : '>= 0.52',
+@@ -510,7 +511,7 @@
  endif
  
  # GNU/Hurd includes egl_dri2, without drm.
@@ -297,7 +309,7 @@ exit
    host_machine.system() == 'gnu')
  _dri3 = get_option('dri3')
  if _dri3 == 'true'
-@@ -526,9 +526,6 @@
+@@ -526,9 +527,6 @@
    with_dri3 = _dri3 == 'enabled'
  endif
  
@@ -307,7 +319,7 @@ exit
  if with_dri
    if with_glx == 'disabled' and not with_egl and not with_gbm
      error('building dri drivers require at least one windowing system')
-@@ -857,7 +854,7 @@
+@@ -857,7 +855,7 @@
    endif
    if with_glx == 'xlib' or with_glx == 'gallium-xlib'
      pre_args += '-DUSE_XSHM'
@@ -316,7 +328,16 @@ exit
      pre_args += '-DGLX_INDIRECT_RENDERING'
      if with_glx_direct
        pre_args += '-DGLX_DIRECT_RENDERING'
-@@ -1526,6 +1523,8 @@
+@@ -912,7 +910,7 @@
+ from distutils.version import StrictVersion
+ import mako
+ assert StrictVersion(mako.__version__) > StrictVersion("0.8.0")
+-  ''')
++  ''', check: false)
+ if has_mako.returncode() != 0
+   error('Python (3.x) mako module >= 0.8.0 required to build mesa.')
+ endif
+@@ -1526,6 +1524,8 @@
    if with_dri_platform == 'drm' and with_dri
      with_gallium_drisw_kms = true
    endif
@@ -325,7 +346,7 @@ exit
  endif
  
  llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine']
-@@ -1897,12 +1896,11 @@
+@@ -1897,12 +1897,11 @@
          with_gallium_omx != 'disabled'))
      dep_xcb = dependency('xcb')
      dep_x11_xcb = dependency('x11-xcb')
@@ -1488,3 +1509,5 @@ exit
  
     wsi_swapchain_finish(&chain->base);
  
+# source
+https://archive.mesa3d.org/older-versions/21.x/mesa-21.1.8.tar.xz

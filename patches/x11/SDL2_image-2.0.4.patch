@@ -46,6 +46,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SDL2_image-2.0.4.orig/configure.in
 +++ SDL2_image-2.0.4/configure.in
 @@ -1,5 +1,7 @@
@@ -66,12 +68,6 @@ exit
  
  dnl Check for tools
  AC_PROG_LIBTOOL
-@@ -107,7 +109,7 @@
-         host_lib_path="/usr/$base_libdir /usr/local/$base_libdir"
-     fi
-     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
--        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -1`]
-+        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -n -1`]
-         if test x$lib != x; then
-             echo $lib
-             return
+
+# source
+https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.tar.gz

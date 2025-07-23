@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build glib-build jpeg-build libpng-build tiff-bu
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.66; am-1.11; lt-2.2.10)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=/fb
 
 # build
@@ -91,6 +91,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gdk-pixbuf-2.22.1.orig/configure.ac
++++ gdk-pixbuf-2.22.1/configure.ac
+@@ -40,7 +40,7 @@
+ cflags_set=${CFLAGS+set}
+ 
+ AM_INIT_AUTOMAKE([1.10 foreign no-define -Wno-portability dist-bzip2])
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ # Support silent build rules, requires at least automake-1.11. Enable
+ # by either passing --enable-silent-rules to configure or passing V=0
 --- gdk-pixbuf-2.22.1.orig/gdk-pixbuf/io-png.c
 +++ gdk-pixbuf-2.22.1/gdk-pixbuf/io-png.c
 @@ -183,7 +183,7 @@
@@ -147,3 +160,6 @@ exit
  	       success = FALSE;
  	       goto cleanup;
         }
+
+# source
+https://download.gnome.org/sources/gdk-pixbuf/2.22/gdk-pixbuf-2.22.1.tar.gz

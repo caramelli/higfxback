@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build freetype-build libfontenc-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -29,6 +29,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- mkfontscale-1.0.7.orig/Makefile.am
 +++ mkfontscale-1.0.7/Makefile.am
 @@ -21,7 +21,7 @@
@@ -123,3 +125,6 @@ exit
          if(rc != 2)
              break;
          putHash(entries, font, file, 100);
+
+# source
+https://x.org/releases/individual/app/mkfontscale-1.0.7.tar.gz

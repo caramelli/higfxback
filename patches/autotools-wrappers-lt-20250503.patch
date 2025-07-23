@@ -9,66 +9,66 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 cd libtool-1.5.24
 find . -name acinclude.m4 | xargs rm -f
 aclocal -I .; autoconf; automake -a -c
-cd libltdl; aclocal -I ..; autoconf; autoheader -f; automake -a -c; cd -
+cd libltdl; aclocal -I ..; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-1.5.24 --prefix= --with-aclocal-path=/share/libtool-1.5.24 --with-pkgdata-path=/share/libtool-1.5.24
 cd ..
 # configure (ac-2.61; am-1.10)
 cd libtool-2.2.4
-aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
-cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.2.4 --prefix=
 cd ..
 # configure (ac-2.62; am-1.10)
 cd libtool-2.2.6
-aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
-cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.2.6 --prefix=
 cd ..
 # configure (ac-2.64; am-1.11)
 cd libtool-2.2.6b
-aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
-cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.2.6b --prefix=
 cd ..
 # configure (ac-2.65; am-1.11)
 cd libtool-2.2.10
-aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
-cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.2.10 --prefix=
 cd ..
 # configure (ac-2.67; am-1.11)
 cd libtool-2.4
-aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
-cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.4 --prefix=
 cd ..
 # configure (ac-2.68; am-1.11)
 cd libtool-2.4.2
-aclocal -I libltdl/m4; autoconf; autoheader -f; automake -a -c
-cd libltdl; aclocal -I m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.4.2 --prefix=
 cd ..
 # configure (ac-2.69; am-1.14)
 cd libtool-2.4.4
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 cd libltdl; autoheader; cd -
 ./configure --program-suffix=-2.4.4 --prefix=
 cd ..
 # configure (ac-2.69; am-1.15)
 cd libtool-2.4.5
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 cd libltdl; autoheader; cd -
 ./configure --program-suffix=-2.4.5 --prefix=
 cd ..
 # configure (ac-2.69; am-1.15)
 cd libtool-2.4.6
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 cd libltdl; autoheader; cd -
 ./configure --program-suffix=-2.4.6 --prefix=
 cd ..
 # configure (ac-2.69; am-1.16)
 cd libtool-2.4.7
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 cd libltdl; autoheader; cd -
 ./configure --program-suffix=-2.4.7 --prefix=
 cd ..
@@ -1201,6 +1201,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/configure.ac
 +++ autotools-wrappers-lt-20250503/libtool-1.5.24/configure.ac
 @@ -58,10 +58,12 @@
@@ -1220,6 +1222,15 @@ exit
  AC_ARG_ENABLE(ltdl-install,
 --- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/libtool.m4
 +++ autotools-wrappers-lt-20250503/libtool-1.5.24/libtool.m4
+@@ -7,7 +7,7 @@
+ ## unlimited permission to copy and/or distribute it, with or without
+ ## modifications, as long as this notice is preserved.
+ 
+-# serial 51 AC_PROG_LIBTOOL
++# serial 52 AC_PROG_LIBTOOL
+ 
+ 
+ # AC_PROVIDE_IFELSE(MACRO-NAME, IF-PROVIDED, IF-NOT-PROVIDED)
 @@ -100,6 +100,8 @@
  AC_LIBTOOL_SYS_GLOBAL_SYMBOL_PIPE
  AC_LIBTOOL_OBJDIR
@@ -1310,6 +1321,24 @@ exit
    lt_cv_file_magic_test_file=/usr/lib/libnls.so
    ;;
  
+@@ -5454,7 +5456,7 @@
+ #
+ if test -n "$_LT_AC_TAGVAR(lt_prog_compiler_pic, $1)"; then
+   AC_LIBTOOL_COMPILER_OPTION([if $compiler PIC flag $_LT_AC_TAGVAR(lt_prog_compiler_pic, $1) works],
+-    _LT_AC_TAGVAR(lt_prog_compiler_pic_works, $1),
++    _LT_AC_TAGVAR(lt_cv_prog_compiler_pic_works, $1),
+     [$_LT_AC_TAGVAR(lt_prog_compiler_pic, $1)ifelse([$1],[],[ -DPIC],[ifelse([$1],[CXX],[ -DPIC],[])])], [],
+     [case $_LT_AC_TAGVAR(lt_prog_compiler_pic, $1) in
+      "" | " "*) ;;
+@@ -5478,7 +5480,7 @@
+ #
+ wl=$_LT_AC_TAGVAR(lt_prog_compiler_wl, $1) eval lt_tmp_static_flag=\"$_LT_AC_TAGVAR(lt_prog_compiler_static, $1)\"
+ AC_LIBTOOL_LINKER_OPTION([if $compiler static flag $lt_tmp_static_flag works],
+-  _LT_AC_TAGVAR(lt_prog_compiler_static_works, $1),
++  _LT_AC_TAGVAR(lt_cv_prog_compiler_static_works, $1),
+   $lt_tmp_static_flag,
+   [],
+   [_LT_AC_TAGVAR(lt_prog_compiler_static, $1)=])
 @@ -6495,6 +6497,10 @@
  [AC_CHECK_TOOL(RC, windres, no)
  ])
@@ -2446,3 +2475,17 @@ exit
  
  # _LT_DECL_SED
  # ------------
+
+# source
+https://ftp.gnu.org/gnu/libtool/libtool-1.5.24.tar.gz
+https://ftp.gnu.org/gnu/libtool/libtool-2.2.4.tar.gz
+https://ftp.gnu.org/gnu/libtool/libtool-2.2.6a.tar.gz
+https://ftp.gnu.org/gnu/libtool/libtool-2.2.6b.tar.gz
+https://ftp.gnu.org/gnu/libtool/libtool-2.2.10.tar.gz
+https://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.xz
+https://ftp.gnu.org/gnu/libtool/libtool-2.4.2.tar.xz
+https://ftp.gnu.org/gnu/libtool/libtool-2.4.4.tar.xz
+https://ftp.gnu.org/gnu/libtool/libtool-2.4.5.tar.xz
+https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz
+https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz
+https://github.com/caramelli/autotools-wrappers-lt/archive/20250503/autotools-wrappers-lt-20250503.tar.gz

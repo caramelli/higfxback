@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build scons-build sdl-build"
+REQUIRES="libstdc++-build scons-build sdl-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -10,7 +10,7 @@ pkg-config --exists elfutils-build && REQUIRES="$REQUIRES elfutils-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists gtk2-build && REQUIRES="$REQUIRES gtk2-build" || GTK=--disable-gtk
 
 # configure
-PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure $GTK --disable-lua --disable-opengl --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure $GTK --disable-lua --disable-opengl --prefix=/x11
 
 # build
 scons3
@@ -34,9 +34,11 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fceux-2.2.3.orig/Configure
 +++ fceux-2.2.3/Configure
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,38 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
@@ -45,33 +47,24 @@ exit
 +LUA=1
 +OPENGL=1
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-gtk)
-+      GTK=0
-+    ;;
-+    --disable-lua)
-+      LUA=0
-+    ;;
-+    --disable-opengl)
-+      OPENGL=0
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-gtk) GTK=0;;
++    --disable-lua) LUA=0;;
++    --disable-opengl) OPENGL=0;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "s|prefix = \".*|prefix = \"$prefix\"|" SConstruct
++
++sed -i "/BoolVariable('GTK'/s|\(.*\)[01]|\1$GTK|" SConstruct
++
++sed -i "/BoolVariable('LUA'/s|\(.*\)[01]|\1$LUA|" SConstruct
++
++sed -i "/BoolVariable('OPENGL'/s|\(.*\)[01]|\1$OPENGL|" SConstruct
 +
 +if test $PKG_CONFIG_PATH; then
 +  sed -i "s|get('PKG_CONFIG_PATH', .*|get('PKG_CONFIG_PATH', '$PKG_CONFIG_PATH'))|" SConstruct
@@ -84,10 +77,6 @@ exit
 +else
 +  sed -i "s|get('PKG_CONFIG_LIBDIR', .*|get('PKG_CONFIG_LIBDIR', None))|" SConstruct
 +fi
-+
-+sed -i "/BoolVariable('GTK'/s|\(.*\)[01]|\1$GTK|" SConstruct
-+sed -i "/BoolVariable('LUA'/s|\(.*\)[01]|\1$LUA|" SConstruct
-+sed -i "/BoolVariable('OPENGL'/s|\(.*\)[01]|\1$OPENGL|" SConstruct
 --- fceux-2.2.3.orig/SConstruct
 +++ fceux-2.2.3/SConstruct
 @@ -30,11 +30,18 @@
@@ -864,3 +853,6 @@ exit
  #define LD_ABX(op)  LD_ABI(_X,op)
  #define LD_ABY(op)  LD_ABI(_Y,op)
  #define LD_IX(op)  {unsigned int A; uint8 x; GetIX(A); x=RdMem(A); op; break;}
+
+# source
+http://downloads.sourceforge.net/fceultra/fceux-2.2.3.src.tar.gz

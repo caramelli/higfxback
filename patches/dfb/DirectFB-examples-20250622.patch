@@ -1,0 +1,206 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  GL_HEADER="-Dgl=GLES2/gl2.h"
+  GL_CFLAGS="-Dgl-cflags=-I/dfb/include"
+  GL_LDFLAGS="-Dgl-ldflags=-L/dfb/lib -lGLESv2"
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+elif PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists directfbgl-portablegl-build; then
+  GL=1
+  GL_HEADER="-Dgl=/dfb/lib/directfb-2.0-0/interfaces/IDirectFBGL/idirectfbgl_portablegl.h"
+  GL_CFLAGS="-Dgl-cflags=-I/dfb/include -I/dfb/include/directfb-internal"
+  REQUIRES="$REQUIRES directfbgl-portablegl-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists vulkan-loader-build; then
+  VK=1
+  VK_PHYSICAL_DEVICE_TYPE="-Dvk=4"
+  VK_CFLAGS="-Dvk-cflags=-I/dfb/include"
+  VK_LDFLAGS="-Dvk-ldflags=-L/dfb/lib -lvulkan"
+  REQUIRES="$REQUIRES vulkan-loader-build"
+fi
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists fusionsound2-build; then
+  FUSIONSOUND=1
+  REQUIRES="$REQUIRES fusionsound2-build"
+fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $GL_HEADER ${GL_CFLAGS:+"$GL_CFLAGS"} ${GL_LDFLAGS:+"$GL_LDFLAGS"} $VK_PHYSICAL_DEVICE_TYPE ${VK_CFLAGS:+"$VK_CFLAGS"} ${VK_LDFLAGS:+"$VK_LDFLAGS"} --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/src/df_andi $DESTDIR/dfb/bin
+install build/src/df_cpuload $DESTDIR/dfb/bin
+install build/src/df_dok $DESTDIR/dfb/bin
+install build/src/df_drivertest $DESTDIR/dfb/bin
+install build/src/df_fire $DESTDIR/dfb/bin
+test $GL && install build/src/df_glgears $DESTDIR/dfb/bin
+install build/src/df_input $DESTDIR/dfb/bin
+install build/src/df_knuckles $DESTDIR/dfb/bin
+install build/src/df_layers $DESTDIR/dfb/bin
+install build/src/df_matrix $DESTDIR/dfb/bin
+install build/src/df_neo $DESTDIR/dfb/bin
+install build/src/df_palette $DESTDIR/dfb/bin
+install build/src/df_particle $DESTDIR/dfb/bin
+install build/src/df_porter $DESTDIR/dfb/bin
+install build/src/df_pss $DESTDIR/dfb/bin
+install build/src/df_spacedream $DESTDIR/dfb/bin
+install build/src/df_texture $DESTDIR/dfb/bin
+install build/src/df_video $DESTDIR/dfb/bin
+test $VK && install build/src/df_vkcolor $DESTDIR/dfb/bin
+install build/src/df_window $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_advanced $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_buffer $DESTDIR/dfb/bin
+test $FUSIONSOUND && install build/src/fs_stream $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/apple-red.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/background.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/bbb.dfvff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/biglogo.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/card.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/colorkeyed.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/cursor_red.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/cursor_yellow.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/decker.dgiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/decker_argb.dgiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/destination_mask.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/dfblogo.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/fish.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnome-applets.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnome-calendar.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnome-foot.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnome-gimp.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnome-gmush.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnome-gsame.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/gnu-keys.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/grid.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/intro.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/joystick.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/keys.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/laden_bike.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/mask.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/melted.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/meter.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/mouse.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/panel.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/rose.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/sacred_heart.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/smokey_light.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/star1.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/star2.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/star3.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/star4.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/swirl.dfiff $DESTDIR/dfb/share/directfb-examples
+test $FUSIONSOUND && install -m 644 data/test.wav $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/texture.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/tux.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/tux_alpha.dfiff $DESTDIR/dfb/share/directfb-examples
+install -m 644 data/wood_andi.dfiff $DESTDIR/dfb/share/directfb-examples
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+Name: DirectFB-examples
+Version: 20250622
+Description: A collection of DirectFB demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/df_andi \\
+/dfb/bin/df_cpuload \\
+/dfb/bin/df_dok \\
+/dfb/bin/df_drivertest \\
+/dfb/bin/df_fire \\
+EOF
+test $GL && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/df_glgears \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/df_input \\
+/dfb/bin/df_knuckles \\
+/dfb/bin/df_layers \\
+/dfb/bin/df_matrix \\
+/dfb/bin/df_neo \\
+/dfb/bin/df_palette \\
+/dfb/bin/df_particle \\
+/dfb/bin/df_porter \\
+/dfb/bin/df_pss \\
+/dfb/bin/df_spacedream \\
+/dfb/bin/df_texture \\
+/dfb/bin/df_video \\
+EOF
+test $VK && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/df_vkcolor \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/df_window \\
+EOF
+test $FUSIONSOUND && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/bin/fs_advanced \\
+/dfb/bin/fs_buffer \\
+/dfb/bin/fs_stream \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/share/directfb-examples/apple-red.dfiff \\
+/dfb/share/directfb-examples/background.dfiff \\
+/dfb/share/directfb-examples/bbb.dfvff \\
+/dfb/share/directfb-examples/biglogo.dfiff \\
+/dfb/share/directfb-examples/card.dfiff \\
+/dfb/share/directfb-examples/colorkeyed.dfiff \\
+/dfb/share/directfb-examples/cursor_red.dfiff \\
+/dfb/share/directfb-examples/cursor_yellow.dfiff \\
+/dfb/share/directfb-examples/decker.dgiff \\
+/dfb/share/directfb-examples/decker_argb.dgiff \\
+/dfb/share/directfb-examples/destination_mask.dfiff \\
+/dfb/share/directfb-examples/dfblogo.dfiff \\
+/dfb/share/directfb-examples/fish.dfiff \\
+/dfb/share/directfb-examples/gnome-applets.dfiff \\
+/dfb/share/directfb-examples/gnome-calendar.dfiff \\
+/dfb/share/directfb-examples/gnome-foot.dfiff \\
+/dfb/share/directfb-examples/gnome-gimp.dfiff \\
+/dfb/share/directfb-examples/gnome-gmush.dfiff \\
+/dfb/share/directfb-examples/gnome-gsame.dfiff \\
+/dfb/share/directfb-examples/gnu-keys.dfiff \\
+/dfb/share/directfb-examples/grid.dfiff \\
+/dfb/share/directfb-examples/intro.dfiff \\
+/dfb/share/directfb-examples/joystick.dfiff \\
+/dfb/share/directfb-examples/keys.dfiff \\
+/dfb/share/directfb-examples/laden_bike.dfiff \\
+/dfb/share/directfb-examples/mask.dfiff \\
+/dfb/share/directfb-examples/melted.dfiff \\
+/dfb/share/directfb-examples/meter.dfiff \\
+/dfb/share/directfb-examples/mouse.dfiff \\
+/dfb/share/directfb-examples/panel.dfiff \\
+/dfb/share/directfb-examples/rose.dfiff \\
+/dfb/share/directfb-examples/sacred_heart.dfiff \\
+/dfb/share/directfb-examples/smokey_light.dfiff \\
+/dfb/share/directfb-examples/star1.dfiff \\
+/dfb/share/directfb-examples/star2.dfiff \\
+/dfb/share/directfb-examples/star3.dfiff \\
+/dfb/share/directfb-examples/star4.dfiff \\
+/dfb/share/directfb-examples/swirl.dfiff \\
+EOF
+test $FUSIONSOUND && cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/share/directfb-examples/test.wav \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb-examples-build.pc << EOF
+/dfb/share/directfb-examples/texture.dfiff \\
+/dfb/share/directfb-examples/tux.dfiff \\
+/dfb/share/directfb-examples/tux_alpha.dfiff \\
+/dfb/share/directfb-examples/wood_andi.dfiff
+EOF
+
+exit
+
+# source
+https://github.com/directfb2/DirectFB-examples/archive/eecf1019b29933a45578e62aea5f08a884d30fbc/DirectFB-examples-20250622.tar.gz

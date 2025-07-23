@@ -9,6 +9,8 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 make -C tests
 
 # install
+install -d $DESTDIR/bin
+install tests/image_write_test $DESTDIR/bin/stb_image_write_test
 install -d $DESTDIR/include/stb
 install -m 644 stb.h $DESTDIR/include/stb
 install -m 644 stb_image.h $DESTDIR/include/stb
@@ -19,8 +21,6 @@ install -m 644 stb_rect_pack.h $DESTDIR/include/stb
 install -m 644 stb_textedit.h $DESTDIR/include/stb
 install -m 644 stb_truetype.h $DESTDIR/include/stb
 install -d $DESTDIR/share/stb
-install tests/image_write_test $DESTDIR/share/stb
-install tests/resample_test $DESTDIR/share/stb
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -41,11 +41,12 @@ devel=\\
 /include/stb/stb_truetype.h
 
 exec=\\
-/share/stb/image_write_test
-/share/stb/resample_test
+/bin/stb_image_write_test
 EOF
 
 exit
+
+# patch
 --- stb-20200214.orig/stb_image.h
 +++ stb-20200214/stb_image.h
 @@ -6777,6 +6777,65 @@
@@ -277,13 +278,17 @@ exit
  // API initialize
 --- stb-20200214.orig/tests/Makefile
 +++ stb-20200214/tests/Makefile
-@@ -7,4 +7,5 @@
+@@ -1,10 +1,8 @@
+ INCLUDES = -I..
+ CFLAGS = -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -DSTB_DIVIDE_TEST
+-CPPFLAGS = -Wno-write-strings -DSTB_DIVIDE_TEST
+ 
+ #CFLAGS += -O -fsanitize=address
+ 
  all:
  	$(CC) $(INCLUDES) $(CFLAGS) ../stb_vorbis.c test_c_compilation.c test_c_lexer.c test_dxt.c test_easyfont.c test_image.c test_image_write.c test_perlin.c test_sprintf.c test_truetype.c test_voxel.c -lm
- 	$(CC) $(INCLUDES) $(CPPFLAGS) -std=c++0x test_cpp_compilation.cpp -lm -lstdc++
--	$(CC) $(INCLUDES) $(CFLAGS) -DIWT_TEST image_write_test.c -lm -o image_write_test
-+	$(CC) $(INCLUDES) -DIWT_TEST image_write_test.c -lm -o image_write_test
-+	$(CXX) $(INCLUDES) resample_test.cpp -lm -o resample_test
+-	$(CC) $(INCLUDES) $(CPPFLAGS) -std=c++0x test_cpp_compilation.cpp -lm -lstdc++
+ 	$(CC) $(INCLUDES) $(CFLAGS) -DIWT_TEST image_write_test.c -lm -o image_write_test
 --- stb-20200214.orig/tests/image_write_test.c
 +++ stb-20200214/tests/image_write_test.c
 @@ -5,6 +5,13 @@
@@ -309,3 +314,6 @@ exit
     for (i = 0; i < 6*5; i++) {
        int on = img6x5_template[i] == '*';
        img6x5_rgb[i*3 + 0] = on ? 255 : 0;
+
+# source
+https://github.com/nothings/stb/archive/1d35dc8609adecc3bc91ac22cc7331b66e81380c/stb-20200214.tar.gz

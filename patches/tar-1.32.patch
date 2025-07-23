@@ -1,12 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-am-build"
+REQUIRES="autotools-wrappers-am-build xz-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 FORCE_UNSAFE_CONFIGURE=1 ./configure --libexecdir=/lib/tar --prefix=
 
 # build
@@ -32,3 +32,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- tar-1.32.orig/configure.ac
++++ tar-1.32/configure.ac
+@@ -23,6 +23,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ AC_PREREQ([2.63])
+ AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-xz std-options silent-rules])
++AM_MAINTAINER_MODE
+ 
+ # Enable silent rules by default:
+ AM_SILENT_RULES([yes])
+
+# source
+https://ftp.gnu.org/gnu/tar/tar-1.32.tar.gz

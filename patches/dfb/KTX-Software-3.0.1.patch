@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build gyp-build"
+REQUIRES="gyp-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -53,6 +53,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- KTX-Software-3.0.1.orig/TODO.md
 +++ KTX-Software-3.0.1/TODO.md
 @@ -8,7 +8,7 @@
@@ -850,6 +852,18 @@ exit
        ], # targets
      }], # 'OS == "linux" or OS == "mac" or OS == "win"'
    ], # conditions
+--- KTX-Software-3.0.1.orig/lib/libktx.pc.in
++++ KTX-Software-3.0.1/lib/libktx.pc.in
+@@ -0,0 +1,9 @@
++prefix=@prefix@
++includedir=${prefix}/include
++libdir=${prefix}/lib
++
++Name: libktx
++Description: Khronos Texture library
++Version: 3.0.1
++Libs: -L${libdir} -lktx
++Cflags: -I${includedir}
 --- KTX-Software-3.0.1.orig/lib/swap.c
 +++ KTX-Software-3.0.1/lib/swap.c
 @@ -19,18 +19,16 @@
@@ -1073,18 +1087,6 @@ exit
  #include "ktx.h"
  #include "ktxint.h"
  #include "stream.h"
---- KTX-Software-3.0.1.orig/pkgconfig/libktx.pc.in
-+++ KTX-Software-3.0.1/pkgconfig/libktx.pc.in
-@@ -0,0 +1,9 @@
-+prefix=@prefix@
-+includedir=${prefix}/include
-+libdir=${prefix}/lib
-+
-+Name: libktx
-+Description: Khronos Texture library
-+Version: 3.0.1
-+Libs: -L${libdir} -lktx
-+Cflags: -I${includedir}
 --- KTX-Software-3.0.1.orig/tests/loadtests/glloadtests/glloadtests.gypi
 +++ KTX-Software-3.0.1/tests/loadtests/glloadtests/glloadtests.gypi
 @@ -81,7 +81,7 @@
@@ -1200,3 +1202,6 @@ exit
            'sources': [
              '../../utils/argparser.cpp',
              '../../utils/argparser.h',
+
+# source
+https://github.com/KhronosGroup/KTX-Software/archive/v3.0.1/KTX-Software-3.0.1.tar.gz

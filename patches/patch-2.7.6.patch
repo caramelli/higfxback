@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15)
-aclocal; autoconf; autoheader -f; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -29,6 +29,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- patch-2.7.6.orig/configure.ac
++++ patch-2.7.6/configure.ac
+@@ -36,6 +36,8 @@
+ AM_INIT_AUTOMAKE([1.11.2 -Wall gnu dist-bzip2 dist-xz color-tests parallel-tests])
+ AM_SILENT_RULES([yes])
+ 
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_HEADERS([config.h:config.hin])
+ 
+ AC_PROG_CC
 --- patch-2.7.6.orig/src/pch.c
 +++ patch-2.7.6/src/pch.c
 @@ -241,8 +241,6 @@
@@ -40,3 +53,6 @@ exit
  	return false;
      }
      if (skip_rest_of_patch)
+
+# source
+https://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.gz

@@ -1,0 +1,454 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="curl-build libzip-build lua-build make-build util-linux-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -rf contrib/curl
+rm -rf contrib/libzip
+rm -rf contrib/lua
+rm -rf contrib/mbedtls
+rm -rf contrib/zlib
+
+# build
+make -f Bootstrap.mak linux
+
+# install
+install -d $DESTDIR/bin
+install bin/release/premake5 $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/premake-build.pc << EOF
+Name: premake
+Version: 5.0.0.beta2
+Description: Premake build system
+Requires: $REQUIRES
+
+devel=\\
+/bin/premake5
+EOF
+
+exit
+
+# patch
+--- premake-5.0.0.beta2.orig/Bootstrap.mak
++++ premake-5.0.0.beta2/Bootstrap.mak
+@@ -1,10 +1,11 @@
+ MSDEV       = vs2012
+ CONFIG      = release
+ PLATFORM    = x86
+-LUA_DIR     = contrib/lua/src
++LUA_DIR    := $(shell test -d contrib/lua/src && echo contrib/lua/src)
+ LUASHIM_DIR = contrib/luashim
+ 
+ SRC		= src/host/*.c			\
++		$(if $(LUA_DIR),		\
+ 		$(LUA_DIR)/lapi.c		\
+ 		$(LUA_DIR)/lbaselib.c	\
+ 		$(LUA_DIR)/lbitlib.c	\
+@@ -36,7 +37,7 @@
+ 		$(LUA_DIR)/lundump.c	\
+ 		$(LUA_DIR)/lutf8lib.c	\
+ 		$(LUA_DIR)/lvm.c		\
+-		$(LUA_DIR)/lzio.c		\
++		$(LUA_DIR)/lzio.c)
+ 
+ HOST_PLATFORM= none
+ 
+@@ -107,7 +108,7 @@
+ 
+ linux: linux-clean
+ 	mkdir -p build/bootstrap
+-	$(CC) -o build/bootstrap/premake_bootstrap -DPREMAKE_NO_BUILTIN_SCRIPTS -DLUA_USE_POSIX -DLUA_USE_DLOPEN -I"$(LUA_DIR)" -I"$(LUASHIM_DIR)" $(SRC) -lm -ldl -lrt -luuid
++	$(CC) -o build/bootstrap/premake_bootstrap -DPREMAKE_NO_BUILTIN_SCRIPTS -DLUA_USE_POSIX -DLUA_USE_DLOPEN $(if $(LUA_DIR), -I"$(LUA_DIR)") -I"$(LUASHIM_DIR)" $(SRC) -lm -ldl -lrt -luuid $(if $(LUA_DIR),, -llua)
+ 	./build/bootstrap/premake_bootstrap embed
+ 	./build/bootstrap/premake_bootstrap --to=build/bootstrap gmake2
+ 	$(MAKE) -C build/bootstrap -j`getconf _NPROCESSORS_ONLN` config=$(CONFIG)
+--- premake-5.0.0.beta2.orig/contrib/luashim/lauxlib.c
++++ premake-5.0.0.beta2/contrib/luashim/lauxlib.c
+@@ -0,0 +1 @@
++/* Auxiliary functions for building Lua libraries */
+--- premake-5.0.0.beta2.orig/premake5.lua
++++ premake-5.0.0.beta2/premake5.lua
+@@ -194,18 +194,27 @@
+ 		targetname  "premake5"
+ 		language    "C"
+ 		kind        "ConsoleApp"
+-		includedirs { "contrib/lua/src", "contrib/luashim" }
+-		links       { "lua-lib" }
++		if os.isdir("contrib/lua/src") then
++			includedirs { "contrib/lua/src" }
++			links       { "lua-lib" }
++		else
++			links       { "lua" }
++		end
++		includedirs { "contrib/luashim" }
+ 
+ 		-- optional 3rd party libraries
+-		if not _OPTIONS["no-zlib"] then
++		if not _OPTIONS["no-zlib"] and os.isdir("contrib/zlib") then
+ 			includedirs { "contrib/zlib", "contrib/libzip" }
+ 			links { "zip-lib", "zlib-lib" }
++		else
++			links { "zip", "z" }
+ 		end
+ 
+-		if not _OPTIONS["no-curl"] then
++		if not _OPTIONS["no-curl"] and os.isdir("contrib/curl") then
+ 			includedirs { "contrib/curl/include" }
+ 			links { "curl-lib" }
++		else
++			links { "curl" }
+ 		end
+ 
+ 		files
+@@ -245,7 +254,7 @@
+ 			links       { "dl", "rt" }
+ 
+ 		filter { "system:not windows", "system:not macosx" }
+-			if not _OPTIONS["no-curl"] then
++			if not _OPTIONS["no-curl"] and os.isdir("contrib/curl") then
+ 				links   { "mbedtls-lib" }
+ 			end
+ 
+@@ -273,15 +282,17 @@
+ 
+ 	-- optional 3rd party libraries
+ 	group "contrib"
+-		include "contrib/lua"
++		if os.isdir("contrib/lua/src") then
++			include "contrib/lua"
++		end
+ 		include "contrib/luashim"
+ 
+-		if not _OPTIONS["no-zlib"] then
++		if not _OPTIONS["no-zlib"] and os.isdir("contrib/zlib") then
+ 			include "contrib/zlib"
+ 			include "contrib/libzip"
+ 		end
+ 
+-		if not _OPTIONS["no-curl"] then
++		if not _OPTIONS["no-curl"] and os.isdir("contrib/curl") then
+ 			include "contrib/mbedtls"
+ 			include "contrib/curl"
+ 		end
+--- premake-5.0.0.beta2.orig/src/host/curl_utils.h
++++ premake-5.0.0.beta2/src/host/curl_utils.h
+@@ -11,9 +11,7 @@
+ #include "buffered_io.h"
+ #include "lua.h"
+ 
+-#define _MPRINTF_REPLACE /* use curl functions only */
+ #include <curl/curl.h>
+-#include <curl/mprintf.h>
+ 
+ typedef struct
+ {
+--- premake-5.0.0.beta2.orig/src/host/debug_prompt.c
++++ premake-5.0.0.beta2/src/host/debug_prompt.c
+@@ -7,8 +7,156 @@
+ #include "premake.h"
+ 
+ /* Build on the REPL built into Lua already */
+-#define main lua_main
+-#include "lua.c"
++#include <signal.h>
++#include <string.h>
++
++#define LUA_PROMPT		"> "
++#define LUA_PROMPT2		">> "
++
++#define LUA_MAXINPUT		512
++
++#define lua_readline(L,b,p) \
++        ((void)L, fputs(p, stdout), fflush(stdout),  /* show prompt */ \
++        fgets(b, LUA_MAXINPUT, stdin) != NULL)  /* get line */
++#define lua_saveline(L,line)	{ (void)L; (void)line; }
++#define lua_freeline(L,b)	{ (void)L; (void)b; }
++
++static lua_State *globalL = NULL;
++
++static void lstop (lua_State *L, lua_Debug *ar) {
++  (void)ar;  /* unused arg. */
++  lua_sethook(L, NULL, 0, 0);  /* reset hook */
++  luaL_error(L, "interrupted!");
++}
++
++static void laction (int i) {
++  signal(i, SIG_DFL); /* if another SIGINT happens, terminate process */
++  lua_sethook(globalL, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, 1);
++}
++
++static void l_message (const char *msg) {
++  lua_writestringerror("%s\n", msg);
++}
++
++static int report (lua_State *L, int status) {
++  if (status != LUA_OK) {
++    const char *msg = lua_tostring(L, -1);
++    l_message(msg);
++    lua_pop(L, 1);  /* remove message */
++  }
++  return status;
++}
++
++static int msghandler (lua_State *L) {
++  const char *msg = lua_tostring(L, 1);
++  if (msg == NULL) {  /* is error object not a string? */
++    if (luaL_callmeta(L, 1, "__tostring") &&  /* does it have a metamethod */
++        lua_type(L, -1) == LUA_TSTRING)  /* that produces a string? */
++      return 1;  /* that is the message */
++    else
++      msg = lua_pushfstring(L, "(error object is a %s value)",
++                               luaL_typename(L, 1));
++  }
++  luaL_traceback(L, L, msg, 1);  /* append a standard traceback */
++  return 1;  /* return the traceback */
++}
++
++static int docall (lua_State *L, int narg, int nres) {
++  int status;
++  int base = lua_gettop(L) - narg;  /* function index */
++  lua_pushcfunction(L, msghandler);  /* push message handler */
++  lua_insert(L, base);  /* put it under function and args */
++  globalL = L;  /* to be available to 'laction' */
++  signal(SIGINT, laction);  /* set C-signal handler */
++  status = lua_pcall(L, narg, nres, base);
++  signal(SIGINT, SIG_DFL); /* reset C-signal handler */
++  lua_remove(L, base);  /* remove message handler from the stack */
++  return status;
++}
++
++static const char *get_prompt (lua_State *L, int firstline) {
++  const char *p;
++  lua_getglobal(L, firstline ? "_PROMPT" : "_PROMPT2");
++  p = lua_tostring(L, -1);
++  if (p == NULL) p = (firstline ? LUA_PROMPT : LUA_PROMPT2);
++  return p;
++}
++
++#define EOFMARK		"<eof>"
++#define marklen		(sizeof(EOFMARK)/sizeof(char) - 1)
++
++static int incomplete (lua_State *L, int status) {
++  if (status == LUA_ERRSYNTAX) {
++    size_t lmsg;
++    const char *msg = lua_tolstring(L, -1, &lmsg);
++    if (lmsg >= marklen && strcmp(msg + lmsg - marklen, EOFMARK) == 0) {
++      lua_pop(L, 1);
++      return 1;
++    }
++  }
++  return 0;  /* else... */
++}
++
++static int pushline (lua_State *L, int firstline) {
++  char buffer[LUA_MAXINPUT];
++  char *b = buffer;
++  size_t l;
++  const char *prmt = get_prompt(L, firstline);
++  int readstatus = lua_readline(L, b, prmt);
++  if (readstatus == 0)
++    return 0;  /* no input (prompt will be popped by caller) */
++  lua_pop(L, 1);  /* remove prompt */
++  l = strlen(b);
++  if (l > 0 && b[l-1] == '\n')  /* line ends with newline? */
++    b[--l] = '\0';  /* remove it */
++  if (firstline && b[0] == '=')  /* for compatibility with 5.2, ... */
++    lua_pushfstring(L, "return %s", b + 1);  /* change '=' to 'return' */
++  else
++    lua_pushlstring(L, b, l);
++  lua_freeline(L, b);
++  return 1;
++}
++
++static int addreturn (lua_State *L) {
++  const char *line = lua_tostring(L, -1);  /* original line */
++  const char *retline = lua_pushfstring(L, "return %s;", line);
++  int status = luaL_loadbuffer(L, retline, strlen(retline), "=stdin");
++  if (status == LUA_OK) {
++    lua_remove(L, -2);  /* remove modified line */
++    if (line[0] != '\0')  /* non empty? */
++      lua_saveline(L, line);  /* keep history */
++  }
++  else
++    lua_pop(L, 2);  /* pop result from 'luaL_loadbuffer' and modified line */
++  return status;
++}
++
++static int multiline (lua_State *L) {
++  for (;;) {  /* repeat until gets a complete statement */
++    size_t len;
++    const char *line = lua_tolstring(L, 1, &len);  /* get what it has */
++    int status = luaL_loadbuffer(L, line, len, "=stdin");  /* try it */
++    if (!incomplete(L, status) || !pushline(L, 0)) {
++      lua_saveline(L, line);  /* keep history */
++      return status;  /* cannot or should not try to add continuation line */
++    }
++    lua_pushliteral(L, "\n");  /* add newline... */
++    lua_insert(L, -2);  /* ...between the two lines */
++    lua_concat(L, 3);  /* join them */
++  }
++}
++
++static int loadline (lua_State *L) {
++  int status;
++  lua_settop(L, 0);
++  if (!pushline(L, 1))
++    return -1;  /* no input */
++  if ((status = addreturn(L)) != LUA_OK)  /* 'return ...' did not work? */
++    status = multiline(L);  /* try as command, maybe with continuation lines */
++  lua_remove(L, 1);  /* remove line from the stack */
++  lua_assert(lua_gettop(L) == 1);
++  return status;
++}
+ 
+ 
+ /* Based on dotty() in lua.c */
+@@ -16,9 +164,6 @@
+ {
+ 	int status;
+ 
+-	const char* oldProgName = progname;
+-	progname = NULL;
+-
+ 	while ((status = loadline(L)) != -1) {
+ 		if (status == 0) {
+ 			status = docall(L, 0, 0);
+@@ -30,7 +175,7 @@
+ 			lua_getglobal(L, "print");
+ 			lua_insert(L, 1);
+ 			if (lua_pcall(L, lua_gettop(L) - 1, 0, 0) != 0) {
+-				l_message(progname, lua_pushfstring(L,
++				l_message(lua_pushfstring(L,
+ 					"error calling " LUA_QL("print") " (%s)",
+ 					lua_tostring(L, -1))
+ 				);
+@@ -41,7 +186,6 @@
+ 	lua_settop(L, 0);  /* clear stack */
+ 	fputs("\n", stdout);
+ 	fflush(stdout);
+-	progname = oldProgName;
+ 	return 0;
+ }
+ 
+--- premake-5.0.0.beta2.orig/src/host/lua_auxlib.c
++++ premake-5.0.0.beta2/src/host/lua_auxlib.c
+@@ -18,6 +18,101 @@
+ #include "lauxlib.c"
+ #undef luaL_loadfilex
+ 
++#ifndef LUA_LIB
++#include <errno.h>
++#include <string.h>
++
++typedef struct LoadF {
++  int n;  /* number of pre-read characters */
++  FILE *f;  /* file being read */
++  char buff[BUFSIZ];  /* area for reading file */
++} LoadF;
++
++static const char *getF (lua_State *L, void *ud, size_t *size) {
++  LoadF *lf = (LoadF *)ud;
++  (void)L;  /* not used */
++  if (lf->n > 0) {  /* are there pre-read characters to be read? */
++    *size = lf->n;  /* return them (chars already in buffer) */
++    lf->n = 0;  /* no more pre-read characters */
++  }
++  else {  /* read a block from file */
++    /* 'fread' can return > 0 *and* set the EOF flag. If next call to
++       'getF' called 'fread', it might still wait for user input.
++       The next check avoids this problem. */
++    if (feof(lf->f)) return NULL;
++    *size = fread(lf->buff, 1, sizeof(lf->buff), lf->f);  /* read block */
++  }
++  return lf->buff;
++}
++
++static int errfile (lua_State *L, const char *what, int fnameindex) {
++  const char *serr = strerror(errno);
++  const char *filename = lua_tostring(L, fnameindex) + 1;
++  lua_pushfstring(L, "cannot %s %s: %s", what, filename, serr);
++  lua_remove(L, fnameindex);
++  return LUA_ERRFILE;
++}
++
++static int skipBOM (LoadF *lf) {
++  const char *p = "\xEF\xBB\xBF";  /* UTF-8 BOM mark */
++  int c;
++  lf->n = 0;
++  do {
++    c = getc(lf->f);
++    if (c == EOF || c != *(const unsigned char *)p++) return c;
++    lf->buff[lf->n++] = c;  /* to be read by the parser */
++  } while (*p != '\0');
++  lf->n = 0;  /* prefix matched; discard it */
++  return getc(lf->f);  /* return next character */
++}
++
++static int skipcomment (LoadF *lf, int *cp) {
++  int c = *cp = skipBOM(lf);
++  if (c == '#') {  /* first line is a comment (Unix exec. file)? */
++    do {  /* skip first line */
++      c = getc(lf->f);
++    } while (c != EOF && c != '\n');
++    *cp = getc(lf->f);  /* skip end-of-line, if present */
++    return 1;  /* there was a comment */
++  }
++  else return 0;  /* no comment */
++}
++
++int original_luaL_loadfilex (lua_State *L, const char *filename,
++                                           const char *mode) {
++  LoadF lf;
++  int status, readstatus;
++  int c;
++  int fnameindex = lua_gettop(L) + 1;  /* index of filename on the stack */
++  if (filename == NULL) {
++    lua_pushliteral(L, "=stdin");
++    lf.f = stdin;
++  }
++  else {
++    lua_pushfstring(L, "@%s", filename);
++    lf.f = fopen(filename, "r");
++    if (lf.f == NULL) return errfile(L, "open", fnameindex);
++  }
++  if (skipcomment(&lf, &c))  /* read initial portion */
++    lf.buff[lf.n++] = '\n';  /* add line to correct line numbers */
++  if (c == LUA_SIGNATURE[0] && filename) {  /* binary file? */
++    lf.f = freopen(filename, "rb", lf.f);  /* reopen in binary mode */
++    if (lf.f == NULL) return errfile(L, "reopen", fnameindex);
++    skipcomment(&lf, &c);  /* re-read initial portion */
++  }
++  if (c != EOF)
++    lf.buff[lf.n++] = c;  /* 'c' is the first character of the stream */
++  status = lua_load(L, getF, &lf, lua_tostring(L, -1), mode);
++  readstatus = ferror(lf.f);
++  if (filename) fclose(lf.f);  /* close file (even in case of errors) */
++  if (readstatus) {
++    lua_settop(L, fnameindex);  /* ignore results from 'lua_load' */
++    return errfile(L, "read", fnameindex);
++  }
++  lua_remove(L, fnameindex);
++  return status;
++}
++#endif
+ 
+ 
+ /**
+--- premake-5.0.0.beta2.orig/src/host/os_compile.c
++++ premake-5.0.0.beta2/src/host/os_compile.c
+@@ -5,7 +5,6 @@
+  */
+ 
+ #include "premake.h"
+-#include "lundump.h"
+ #include "lstate.h"
+ 
+ extern int original_luaL_loadfilex(lua_State* L, const char* filename, const char* mode);
+
+# source
+https://github.com/premake/premake-core/archive/v5.0.0-beta2/premake-5.0.0-beta2.tar.gz

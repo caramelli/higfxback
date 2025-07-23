@@ -26,7 +26,7 @@ if pkg-config --exists x264-build; then
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
 # build
@@ -79,3 +79,19 @@ cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-ugly-build.pc << EOF
 EOF
 
 exit
+
+# patch
+--- gst-plugins-ugly-1.8.3.orig/configure.ac
++++ gst-plugins-ugly-1.8.3/configure.ac
+@@ -25,7 +25,7 @@
+ AC_CONFIG_HEADERS(config.h)
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ dnl sets host_* variables
+ AC_CANONICAL_HOST
+
+# source
+https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.8.3.tar.xz

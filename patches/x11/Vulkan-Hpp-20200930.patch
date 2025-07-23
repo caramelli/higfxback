@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build tinyxml2-build vulkan-headers-build"
+REQUIRES="cmake3-build libstdc++-build tinyxml2-build vulkan-headers-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -31,6 +31,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- Vulkan-Hpp-20200930.orig/CMakeLists.txt
 +++ Vulkan-Hpp-20200930/CMakeLists.txt
 @@ -60,14 +60,20 @@
@@ -100,3 +102,6 @@ exit
  
  option (VULKAN_HPP_RUN_GENERATOR "Run the HPP generator" OFF)
  if (VULKAN_HPP_RUN_GENERATOR)
+
+# source
+https://github.com/KhronosGroup/Vulkan-Hpp/archive/28a18d49cb15535a5a05928d570b5542065afa3d/Vulkan-Hpp-20200930.tar.gz

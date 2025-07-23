@@ -6,7 +6,7 @@ REQUIRES="alsa-lib-build autotools-wrappers-am-build ncurses-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16)
-aclocal -I m4; autoconf; autoheader; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-alsaconf --sbindir=/bin --prefix=
 
 # build
@@ -57,6 +57,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- alsa-utils-1.2.4.orig/alsactl/Makefile.am
 +++ alsa-utils-1.2.4/alsactl/Makefile.am
 @@ -1,3 +1,5 @@
@@ -92,3 +94,5 @@ exit
  bin_PROGRAMS = \
  	alsatplg
  
+# source
+https://alsa-project.org/files/pub/utils/alsa-utils-1.2.4.tar.bz2

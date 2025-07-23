@@ -6,7 +6,7 @@ REQUIRES="python3-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /dfb
+sh ./Configure --prefix=/dfb
 
 # build
 python3 registry/genvk.py -registry registry/vk.xml -o include/vulkan vulkan_beta.h
@@ -50,6 +50,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- Vulkan-Headers-1.2.151.orig/CMakeLists.txt
 +++ Vulkan-Headers-1.2.151/CMakeLists.txt
 @@ -20,8 +20,7 @@
@@ -76,29 +78,20 @@ exit
      configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
 --- Vulkan-Headers-1.2.151.orig/Configure
 +++ Vulkan-Headers-1.2.151/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+sed "/^prefix/s|=.*|=$PREFIX|" registry/vulkan-registry.pc.in > vulkan-registry.pc
++sed "/^prefix/s|=.*|=$prefix|" registry/vulkan-registry.pc.in > vulkan-registry.pc
 --- Vulkan-Headers-1.2.151.orig/registry/docgenerator.py
 +++ Vulkan-Headers-1.2.151/registry/docgenerator.py
 @@ -0,0 +1,450 @@
@@ -4337,3 +4330,6 @@ exit
 +Name: Vulkan Registry
 +Description: Vulkan API registry file
 +Version: 1.2.151
+
+# source
+https://github.com/KhronosGroup/Vulkan-Headers/archive/v1.2.151/Vulkan-Headers-1.2.151.tar.gz

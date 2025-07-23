@@ -1,12 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="make-build python3-build"
+REQUIRES="bash-build make-build python3-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make
@@ -53,26 +53,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libfiu-1.1.orig/Configure
 +++ libfiu-1.1/Configure
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,17 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -343,3 +336,6 @@ exit
  # Lists processes that can be controlled with fiu-ctrl.
  
  # default remote control over named pipes prefix; we use the same one as
+
+# source
+https://blitiri.com.ar/p/libfiu/files/1.1/libfiu-1.1.tar.gz

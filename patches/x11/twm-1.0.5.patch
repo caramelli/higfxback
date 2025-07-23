@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build libxmu-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.68; am-1.11)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -32,6 +32,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- twm-1.0.5.orig/src/system.twmrc
 +++ twm-1.0.5/src/system.twmrc
 @@ -8,6 +8,7 @@
@@ -42,3 +44,6 @@ exit
  NoGrabServer
  RestartPreviousState
  DecorateTransients
+
+# source
+https://x.org/releases/individual/app/twm-1.0.5.tar.gz

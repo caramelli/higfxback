@@ -1,12 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build python2-build python3-build xz-build"
+REQUIRES="autotools-wrappers-lt-build python2-build python3-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+pkg-config --exists xz-build && REQUIRES="$REQUIRES xz-build"
+
 # configure (ac-2.69; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -139,8 +141,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libxml2-2.9.14.orig/configure.ac
 +++ libxml2-2.9.14/configure.ac
+@@ -8,7 +8,7 @@
+ AC_INIT([libxml2],[MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
+ AC_CONFIG_SRCDIR([entities.c])
+ AC_CONFIG_HEADERS([config.h])
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ AC_CONFIG_MACRO_DIR([m4])
+ AC_CANONICAL_HOST
+ 
 @@ -1705,4 +1705,7 @@
  AC_CONFIG_FILES([xml2-config], [chmod +x xml2-config])
  AC_OUTPUT
@@ -173,3 +186,6 @@ exit
 +  cat $srcdir/libxml.py libxml2class.py > python3/libxml2.py
 +  $CC -fPIC -shared -Wl,--no-undefined -I$srcdir -I$top_srcdir/include $srcdir/libxml.c $srcdir/types.c libxml2-py.c -o python3/libxml2mod.so `pkg-config --cflags --libs python3` -L$top_builddir/.libs -lxml2
 +fi
+
+# source
+https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.14.tar.xz

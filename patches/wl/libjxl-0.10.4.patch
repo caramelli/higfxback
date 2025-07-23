@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="brotli-build cmake3-build gcc-g++-build gdk-pixbuf-build highway-build lcms2-build openexr-build sjpeg-build"
+REQUIRES="brotli-build cmake3-build gdk-pixbuf-build highway-build lcms2-build libstdc++-build openexr-build sjpeg-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -92,6 +92,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libjxl-0.10.4.orig/CMakeLists.txt
 +++ libjxl-0.10.4/CMakeLists.txt
 @@ -81,13 +81,6 @@
@@ -468,3 +470,6 @@ exit
    constexpr size_t kCacheLineVectors =
        (kVN < kCacheLineLanes) ? (kCacheLineLanes / kVN) : 4;
    constexpr size_t kFastPace = kCacheLineVectors * kVN;
+
+# source
+https://github.com/libjxl/libjxl/archive/v0.10.4/libjxl-0.10.4.tar.gz

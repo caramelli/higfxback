@@ -15,7 +15,7 @@ fi
 
 # configure
 rm -rf thirdparty
-PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-static --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-static --prefix=/x11
 
 # build
 make
@@ -23,7 +23,7 @@ make
 # install
 install -d $DESTDIR/x11/bin
 install build/*/mudraw $DESTDIR/x11/bin
-test $XLIB && install `ls -1 build/*/mupdf* | tail -n1` $DESTDIR/x11/bin/mupdf
+test $XLIB && install `ls -1 build/*/mupdf* | tail -1` $DESTDIR/x11/bin/mupdf
 install build/*/mutool $DESTDIR/x11/bin
 install -d $DESTDIR/x11/include/mupdf
 install -m 644 include/mupdf/fitz.h $DESTDIR/x11/include/mupdf
@@ -139,29 +139,20 @@ cat >> $DESTDIR/x11/share/pkgconfig/mupdf-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- mupdf-1.3.orig/Configure
 +++ mupdf-1.3/Configure
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,25 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      NOSTATIC=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --disable-static) NOSTATIC=no;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -225,7 +216,7 @@ exit
  
  # --- Rules ---
  
-@@ -129,14 +135,20 @@
+@@ -129,6 +135,9 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
@@ -235,75 +226,50 @@ exit
  $(OUT)/%: $(OUT)/%.o
  	$(LINK_CMD)
  
- $(OUT)/%.o : source/%.c | $(ALL_DIR)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
- 
- $(OUT)/%.o : source/%.cpp | $(ALL_DIR)
--	$(CXX_CMD)
-+	$(CXX_CMD) $(LIB_CFLAGS)
-+
-+$(OUT)/tools/%.o : source/tools/%.c | $(ALL_DIR)
-+	$(CC_CMD)
- 
- $(OUT)/%.o : scripts/%.c | $(OUT)
- 	$(CC_CMD)
-@@ -217,14 +229,24 @@
+@@ -217,12 +226,18 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
 -$(MUDRAW) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS)
++$(MUDRAW) : $(MUPDF_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUDRAW) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS)
++$(MUDRAW) : $(THIRD_LIBS) $(LIBS)
++endif
  $(MUDRAW) : $(addprefix $(OUT)/tools/, mudraw.o)
  	$(LINK_CMD)
-+else
-+$(MUDRAW) : $(addprefix $(OUT)/tools/, mudraw.o)
-+	$(LINK_CMD) $(MUPDF_LIB)
-+endif
  
  MUTOOL := $(addprefix $(OUT)/, mutool)
 -$(MUTOOL) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS)
++$(MUTOOL) : $(MUPDF_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUTOOL) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS)
++$(MUTOOL) : $(THIRD_LIBS) $(LIBS)
++endif
  $(MUTOOL) : $(addprefix $(OUT)/tools/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
  	$(LINK_CMD)
-+else
-+$(MUTOOL) : $(addprefix $(OUT)/tools/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
-+	$(LINK_CMD) $(MUPDF_LIB)
-+endif
  
- ifeq "$(V8_PRESENT)" "yes"
- MUJSTEST_V8 := $(OUT)/mujstest-v8
-@@ -235,15 +257,25 @@
+@@ -235,13 +250,19 @@
  
  ifeq "$(NOX11)" ""
  MUVIEW_X11 := $(OUT)/mupdf-x11
 -$(MUVIEW_X11) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS)
++$(MUVIEW_X11) : $(MUPDF_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUVIEW_X11) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS)
++$(MUVIEW_X11) : $(THIRD_LIBS) $(LIBS)
++endif
  $(MUVIEW_X11) : $(addprefix $(OUT)/platform/x11/, x11_main.o x11_image.o pdfapp.o)
  	$(LINK_CMD) $(X11_LIBS)
-+else
-+$(MUVIEW_X11) : $(addprefix $(OUT)/platform/x11/, x11_main.o x11_image.o pdfapp.o)
-+	$(LINK_CMD) $(X11_LIBS) $(MUPDF_LIB)
-+endif
  
  ifeq "$(NOCURL)" ""
  MUVIEW_X11_CURL := $(OUT)/mupdf-x11-curl
 -$(MUVIEW_X11_CURL) : $(MUPDF_LIB) $(MUPDF_JS_NONE_LIB) $(THIRD_LIBS) $(CURL_LIB)
++$(MUVIEW_X11_CURL) : $(MUPDF_LIB) $(CURL_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUVIEW_X11_CURL) : $(MUPDF_LIB) $(THIRD_LIBS) $(LIBS) $(CURL_LIB)
++$(MUVIEW_X11_CURL) : $(THIRD_LIBS) $(LIBS)
++endif
  $(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o)
  	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS)
-+else
-+$(MUVIEW_X11_CURL) : $(addprefix $(OUT)/platform/x11/curl/, x11_main.o x11_image.o pdfapp.o curl_stream.o) $(CURL_LIB)
-+	$(LINK_CMD) $(X11_LIBS) $(CURL_LIBS) $(MUPDF_LIB)
-+endif
  endif
- endif
- 
-@@ -285,7 +317,7 @@
+@@ -285,7 +306,7 @@
  libs: $(INSTALL_LIBS)
  apps: $(INSTALL_APPS)
  
@@ -312,17 +278,15 @@ exit
  	install -d $(DESTDIR)$(incdir)/mupdf
  	install -d $(DESTDIR)$(incdir)/mupdf/fitz
  	install -d $(DESTDIR)$(incdir)/mupdf/pdf
-@@ -295,6 +327,9 @@
+@@ -295,6 +316,7 @@
  
  	install -d $(DESTDIR)$(libdir)
  	install $(INSTALL_LIBS) $(DESTDIR)$(libdir)
-+	if test -n "$(NOSTATIC)"; then \
-+		ln -sf libmupdf.so.1 $(DESTDIR)$(libdir)/libmupdf.so; \
-+	fi
++	if test -n "$(NOSTATIC)"; then ln -sf libmupdf.so.1 $(DESTDIR)$(libdir)/libmupdf.so; fi
  
  	install -d $(DESTDIR)$(bindir)
  	install $(INSTALL_APPS) $(DESTDIR)$(bindir)
-@@ -313,7 +348,7 @@
+@@ -313,7 +335,7 @@
  tags: $(shell find include source -name '*.[ch]')
  	ctags $^
  
@@ -338,14 +302,23 @@ exit
  CFLAGS += -Wall
  
 +ifneq "$(NOSTATIC)" ""
-+LIB_CFLAGS = -fPIC
++CFLAGS += -fPIC
 +LDFLAGS += -Wl,-rpath,$(prefix)/lib
 +endif
 +
  ifeq "$(build)" "debug"
  CFLAGS += -pipe -g -DDEBUG
  else ifeq "$(build)" "profile"
-@@ -50,20 +55,30 @@
+@@ -33,8 +38,6 @@
+ SYS_OPENSSL_CFLAGS = -DHAVE_OPENSSL
+ SYS_OPENSSL_LIBS = -lcrypto
+ 
+-SYS_CURL_DEPS = -lpthread
+-
+ SYS_X11_CFLAGS = -I/usr/X11R6/include
+ SYS_X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext
+ 
+@@ -50,20 +53,29 @@
  # Other Unixes use pkg-config for system libraries.
  else
  
@@ -357,10 +330,10 @@ exit
 +SYS_OPENSSL_LIBS = $(shell $(PKG_CONFIG) --libs libcrypto)
  endif
  
+-SYS_CURL_DEPS = -lpthread -lrt
 +ifeq "$(shell $(PKG_CONFIG) --exists libcurl && echo yes)" "yes"
 +SYS_CURL_CFLAGS = $(shell $(PKG_CONFIG) --cflags libcurl)
 +SYS_CURL_LIBS = $(shell $(PKG_CONFIG) --libs libcurl)
- SYS_CURL_DEPS = -lpthread -lrt
 +else
 +NOCURL := yes
 +endif
@@ -387,68 +360,43 @@ exit
  SYS_ZLIB_LIBS = -lz
 --- mupdf-1.3.orig/Makethird
 +++ mupdf-1.3/Makethird
-@@ -84,6 +84,7 @@
- FT_CFLAGS := -DFT2_BUILD_LIBRARY -DDARWIN_NO_CARBON \
- 	'-DFT_CONFIG_MODULES_H="slimftmodules.h"' \
- 	'-DFT_CONFIG_OPTIONS_H="slimftoptions.h"'
-+FT_CFLAGS += $(LIB_CFLAGS)
- 
- $(FREETYPE_OUT)/%.o: $(FREETYPE_DIR)/src/base/%.c	| $(FREETYPE_OUT)
- 	$(CC_CMD) $(FT_CFLAGS)
-@@ -141,7 +142,7 @@
- $(JBIG2DEC_OUT):
- 	$(MKDIR_CMD)
- $(JBIG2DEC_OUT)/%.o: $(JBIG2DEC_DIR)/%.c | $(JBIG2DEC_OUT)
--	$(CC_CMD) -DHAVE_STDINT_H
-+	$(CC_CMD) -DHAVE_STDINT_H $(LIB_CFLAGS)
- 
- JBIG2DEC_CFLAGS := -I$(JBIG2DEC_DIR)
- else
-@@ -192,7 +193,7 @@
- $(JPEG_OUT):
- 	$(MKDIR_CMD)
- $(JPEG_OUT)/%.o: $(JPEG_DIR)/%.c | $(JPEG_OUT)
--	$(CC_CMD) -Dmain=xxxmain
-+	$(CC_CMD) -Dmain=xxxmain $(LIB_CFLAGS)
- 
- JPEG_CFLAGS := -I$(JPEG_DIR)
- else
-@@ -236,7 +237,7 @@
+@@ -236,7 +236,7 @@
  $(OPENJPEG_OUT):
  	$(MKDIR_CMD)
  $(OPENJPEG_OUT)/%.o: $(OPENJPEG_DIR)/src/lib/openjp2/%.c | $(OPENJPEG_OUT)
 -	$(CC_CMD) -DOPJ_STATIC -DOPJ_HAVE_STDINT_H
-+	$(CC_CMD) -DOPJ_STATIC $(LIB_CFLAGS)
++	$(CC_CMD) -DOPJ_STATIC
  
  OPENJPEG_CFLAGS += -I$(OPENJPEG_DIR)/src/lib/openjp2
  else
-@@ -266,7 +267,7 @@
+@@ -266,7 +266,7 @@
  $(ZLIB_OUT):
  	$(MKDIR_CMD)
  $(ZLIB_OUT)/%.o: $(ZLIB_DIR)/%.c | $(ZLIB_OUT)
 -	$(CC_CMD) -Dverbose=-1
-+	$(CC_CMD) $(LIB_CFLAGS)
++	$(CC_CMD)
  
  ZLIB_CFLAGS := -I$(ZLIB_DIR)
  else
-@@ -442,7 +443,8 @@
+@@ -442,7 +442,8 @@
  	$(CC_CMD) $(CRL_CFLAGS)
  
  CURL_CFLAGS := -I$(CURL_DIR)/include
 -CURL_LIBS := $(SYS_CURL_DEPS)
-+CURL_LIBS := $(CURL_LIB) $(SYS_CURL_DEPS)
++CURL_LIBS := -lpthread
  else
 -NOCURL := yes
 +CURL_CFLAGS := $(SYS_CURL_CFLAGS)
-+CURL_LIBS := $(SYS_CURL_LIBS) $(SYS_CURL_DEPS)
++CURL_LIBS := $(SYS_CURL_LIBS) -lpthread
  endif
 --- mupdf-1.3.orig/platform/debian/mupdf.pc
 +++ mupdf-1.3/platform/debian/mupdf.pc
-@@ -1,12 +1,10 @@
+@@ -1,12 +1,9 @@
 -prefix=/usr
+-exec_prefix=${prefix}
+-libdir=${exec_prefix}/lib
 +prefix=/usr/local
- exec_prefix=${prefix}
- libdir=${exec_prefix}/lib
++libdir=${prefix}/lib
  includedir=${prefix}/include
  
  Name: mupdf
@@ -681,3 +629,6 @@ exit
  	BIO_set_segments(bsegs, byte_range, byte_range_len);
  
  	/* Find the certificates in the pk7 file */
+
+# source
+https://mupdf.com/downloads/archive/mupdf-1.3-source.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --enable-shared --prefix=
 
 # build
@@ -46,6 +46,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- a52dec-0.8.0.orig/acinclude.m4
 +++ a52dec-0.8.0/acinclude.m4
 @@ -6,7 +6,7 @@
@@ -159,3 +161,6 @@ exit
  }
  
  static void print_fps (int final)
+
+# source
+https://distfiles.adelielinux.org/source/a52dec/a52dec-0.8.0.tar.gz

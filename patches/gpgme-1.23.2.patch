@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libassuan-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-gpg-test --disable-languages --prefix=
 
 # build
@@ -45,6 +45,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- gpgme-1.23.2.orig/m4/gpg-error.m4
 +++ gpgme-1.23.2/m4/gpg-error.m4
 @@ -126,16 +126,10 @@
@@ -156,3 +158,6 @@ exit
  
    if test "$GPGME_CONFIG" != "no" ; then
      if test -z "$use_gpgrt_config"; then
+
+# source
+https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.23.2.tar.bz2

@@ -6,7 +6,7 @@ REQUIRES="bison-build make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make
@@ -28,26 +28,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fbset-2.1.orig/Configure
 +++ fbset-2.1/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -63,7 +56,12 @@ exit
  RM =		rm -f
  
  All:		fbset
-@@ -24,18 +25,9 @@
+@@ -20,22 +21,14 @@
+ lex.yy.c:	modes.l
+ 		$(FLEX) modes.l
+ 
++modes.tab.h \
+ modes.tab.c:	modes.y
  		$(BISON) modes.y
  
  install:	fbset
@@ -85,3 +83,6 @@ exit
  
  clean:
  		$(RM) *.o fbset lex.yy.c modes.tab.c modes.tab.h
+
+# source
+http://g33rt.be/migrated/Linux/fbdev/fbset-2.1.tar.gz

@@ -233,6 +233,8 @@ cat >> $DESTDIR/wl/share/pkgconfig/ffmpeg-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- ffmpeg-3.4.14.orig/configure
 +++ ffmpeg-3.4.14/configure
 @@ -299,6 +299,7 @@
@@ -273,17 +275,6 @@ exit
  check_func_headers "windows.h" CreateDIBSection "$gdigrab_indev_extralibs"
  
  # d3d11va requires linking directly to dxgi and d3d11 if not building for
---- ffmpeg-3.4.14.orig/ffbuild/version.sh
-+++ ffmpeg-3.4.14/ffbuild/version.sh
-@@ -46,7 +46,7 @@
- fi
- 
- NEW_REVISION="#define FFMPEG_VERSION \"$version\""
--OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -1)
-+OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -n -1)
- 
- # String used for preprocessor guard
- GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
 --- ffmpeg-3.4.14.orig/libavdevice/Makefile
 +++ ffmpeg-3.4.14/libavdevice/Makefile
 @@ -47,6 +47,7 @@
@@ -567,3 +558,6 @@ exit
 +    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
 +    .priv_class     = &wayland_class,
 +};
+
+# source
+https://www.ffmpeg.org/releases/ffmpeg-3.4.14.tar.gz

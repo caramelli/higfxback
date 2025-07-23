@@ -29,7 +29,7 @@ ln -sf freeglut.pc $DESTDIR/wl/lib/pkgconfig/glut.pc
 
 # build.pc
 install -d $DESTDIR/wl/share/pkgconfig
-cat > $DESTDIR/wl/share/pkgconfig/glut-build.pc << EOF
+cat > $DESTDIR/wl/share/pkgconfig/freeglut-build.pc << EOF
 Name: freeglut
 Version: 3.6.0
 Description: OpenGL Utility Toolkit
@@ -51,6 +51,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- freeglut-3.6.0.orig/CMakeLists.txt
 +++ freeglut-3.6.0/CMakeLists.txt
 @@ -349,7 +349,7 @@
@@ -325,3 +327,6 @@ exit
  }
  
  void fgPlatformCopyColormap(int win)
+
+# source
+https://github.com/freeglut/freeglut/archive/v3.6.0/freeglut-3.6.0.tar.gz

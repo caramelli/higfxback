@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -35,3 +35,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- diffutils-3.8.orig/configure.ac
++++ diffutils-3.8/configure.ac
+@@ -30,6 +30,8 @@
+                        color-tests parallel-tests])
+ AM_SILENT_RULES([yes]) # make --enable-silent-rules the default.
+ 
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_HEADERS([lib/config.h:lib/config.hin])
+ 
+ AC_PROG_AWK
+
+# source
+https://ftp.gnu.org/gnu/diffutils/diffutils-3.8.tar.xz

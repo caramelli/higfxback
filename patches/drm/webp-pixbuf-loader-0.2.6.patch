@@ -29,9 +29,58 @@ exec=\\
 EOF
 
 exit
---- webp-pixbuf-loader-0.2.6.orig/io-webp.c
-+++ webp-pixbuf-loader-0.2.6/io-webp.c
-@@ -307,8 +307,13 @@
+
+# patch
+diff -Naur webp-pixbuf-loader-0.2.6.orig/io-webp-anim-iter.c webp-pixbuf-loader-0.2.6/io-webp-anim-iter.c
+--- webp-pixbuf-loader-0.2.6.orig/io-webp-anim-iter.c	2023-09-23 13:17:06.000000000 +0000
++++ webp-pixbuf-loader-0.2.6/io-webp-anim-iter.c	2025-07-04 20:28:56.541210390 +0000
+@@ -124,7 +124,9 @@
+ 
+   delta = delta % priv->loop_length;
+ 
+-  for (guint f = 0; f < priv->frames->len; f++)
++  guint f;
++
++  for (f = 0; f < priv->frames->len; f++)
+     {
+       Frame *frame = &g_array_index (priv->frames, Frame, f);
+       if (delta <= frame->length)
+@@ -161,7 +163,7 @@
+ gdk_webp_animation_iter_init (GdkWebpAnimationIter *self)
+ {
+   GdkWebpAnimationIterPrivate *priv = gdk_webp_animation_iter_get_instance_private (self);
+-  *priv = (GdkWebpAnimationIterPrivate){ 0 };
++  *priv = (GdkWebpAnimationIterPrivate){ { 0 } };
+ 
+   priv->frames = g_array_new (FALSE, FALSE, sizeof (Frame));
+   g_array_set_clear_func (priv->frames, (GDestroyNotify) clear_frame);
+@@ -229,10 +231,11 @@
+       GdkPixbuf *pb = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, (gint) ainfo.canvas_width,
+                                       (gint) ainfo.canvas_height);
+ 
++      int     i;
+       guchar *pb_pixels   = gdk_pixbuf_get_pixels (pb);
+       gsize   pb_stride   = (gsize) gdk_pixbuf_get_rowstride (pb);
+       gsize   data_stride = (gsize) ainfo.canvas_width * 4;
+-      for (int i = 0; i < ainfo.canvas_height; i++)
++      for (i = 0; i < ainfo.canvas_height; i++)
+         {
+           guchar *data_row = tmp_data + (i * data_stride);
+           guchar *pb_row   = pb_pixels + (i * pb_stride);
+diff -Naur webp-pixbuf-loader-0.2.6.orig/io-webp.c webp-pixbuf-loader-0.2.6/io-webp.c
+--- webp-pixbuf-loader-0.2.6.orig/io-webp.c	2023-09-23 13:17:06.000000000 +0000
++++ webp-pixbuf-loader-0.2.6/io-webp.c	2025-07-04 20:14:50.636210390 +0000
+@@ -233,7 +233,8 @@
+ is_save_option_supported (const gchar *option_key)
+ {
+   char *options[4] = { "quality", "preset", "icc-profile", NULL };
+-  for (char **o = options; *o; o++)
++  char **o;
++  for (o = options; *o; o++)
+     {
+       if (g_strcmp0 (*o, option_key) == 0)
+         return TRUE;
+@@ -307,8 +308,13 @@
          {
            if (g_strcmp0 (*kiter, "quality") == 0)
              {
@@ -45,3 +94,39 @@ exit
                  return FALSE;
                config.quality = (float) quality;
              }
+@@ -329,8 +335,9 @@
+                                             WEBP_PRESET_TEXT,
+                                             0 };
+               gboolean   preset_set     = FALSE;
++              gchar    **key;
+ 
+-              for (gchar **key = PRESET_KEYS; *key; key++)
++              for (key = PRESET_KEYS; *key; key++)
+                 {
+                   if (g_strcmp0 (*viter, *key) != 0)
+                     continue;
+diff -Naur webp-pixbuf-loader-0.2.6.orig/tests/t_null_error.c webp-pixbuf-loader-0.2.6/tests/t_null_error.c
+--- webp-pixbuf-loader-0.2.6.orig/tests/t_null_error.c	2023-09-23 13:17:06.000000000 +0000
++++ webp-pixbuf-loader-0.2.6/tests/t_null_error.c	2025-07-04 20:41:22.436210390 +0000
+@@ -47,4 +47,5 @@
+   test_pixbufv (pixbuf, keys, values);
+ 
+   g_object_unref (pixbuf);
++  return 0;
+ }
+\ No newline at end of file
+diff -Naur webp-pixbuf-loader-0.2.6.orig/tests/t_scaled.c webp-pixbuf-loader-0.2.6/tests/t_scaled.c
+--- webp-pixbuf-loader-0.2.6.orig/tests/t_scaled.c	2023-09-23 13:17:06.000000000 +0000
++++ webp-pixbuf-loader-0.2.6/tests/t_scaled.c	2025-07-04 20:56:30.111210390 +0000
+@@ -20,6 +20,6 @@
+   g_assert_cmpint (gdk_pixbuf_get_height (pixbuf), ==, 40);
+ 
+   g_object_unref (pixbuf);
+-
+   g_clear_pointer (&env, g_strfreev);
++  return 0;
+ }
+\ No newline at end of file
+
+# source
+https://github.com/aruiz/webp-pixbuf-loader/archive/0.2.6/webp-pixbuf-loader-0.2.6.tar.gz

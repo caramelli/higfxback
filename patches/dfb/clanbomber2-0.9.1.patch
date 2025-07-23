@@ -1,12 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-am-build directfb2-media-build fusionsound2-build"
+REQUIRES="autotools-wrappers-am-build directfb2-media-build fusionsound2-build libstdc++-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.61; am-1.9)
-aclocal; autoconf; autoheader -f; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --prefix=/dfb
 
 # build
@@ -205,6 +205,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- clanbomber2-0.9.1.orig/clanbomber/ClanBomber.cpp
 +++ clanbomber2-0.9.1/clanbomber/ClanBomber.cpp
 @@ -173,7 +173,8 @@
@@ -478,3 +480,17 @@ exit
  		}
  		return str;
  	}
+--- clanbomber2-0.9.1.orig/configure.in
++++ clanbomber2-0.9.1/configure.in
+@@ -5,6 +5,8 @@
+ 
+ AM_INIT_AUTOMAKE(clanbomber2,0.9.1)
+ 
++AM_MAINTAINER_MODE
++
+ #CXXFLAGS="-O6 -g3"
+ 
+ AC_PROG_CXX
+
+# source
+http://downloads.sourceforge.net/clanbomber/clanbomber2-0.9.1.tar.gz

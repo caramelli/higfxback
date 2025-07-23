@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="gcc-g++-build meson-build"
+REQUIRES="libstdc++-build meson-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -52,6 +52,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- jsoncpp-1.8.4.orig/meson.build
 +++ jsoncpp-1.8.4/meson.build
 @@ -24,7 +24,6 @@
@@ -71,3 +73,6 @@ exit
  
  jsoncpp_test = executable(
    'jsoncpp_test',
+
+# source
+https://github.com/open-source-parsers/jsoncpp/archive/1.8.4/jsoncpp-1.8.4.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="directfb2-build egl-opengl-stubs-build glu-build make-build makedepend
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig sh ./Configure --config linux-directfb --prefix /dfb
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig sh ./Configure --config=linux-directfb --prefix=/dfb
 
 # build
 make
@@ -45,54 +45,38 @@ EOF
 ln -sf mesaglut-build.pc $DESTDIR/dfb/share/pkgconfig/glut-build.pc
 
 exit
+
+# patch
 --- MesaGLUT-20100214.orig/Configure
 +++ MesaGLUT-20100214/Configure
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,34 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++INSTALL_DIR=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --config)
-+      CONFIG=$2
-+      shift
-+    ;;
-+    --disable-shared)
-+      STATIC=-static
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) INSTALL_DIR=${1#*=};;
++    --config=*) CONFIG=${1#*=};;
++    --disable-shared) STATIC=-static;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
++rm -f configs/current
++
 +if test -f configs/$CONFIG; then
-+  if test -L configs/current &&
-+     (! cmp configs/$CONFIG configs/current > /dev/null ||
-+     [ "`sed -n 's/^INSTALL_DIR = //p' configs/default`" != "$PREFIX" ] ||
-+     [ "`sed -n 's/^MKLIB_OPTIONS = //p' configs/default`" != "$STATIC" ]); then
-+    echo "Run \`make realclean' before changing configs"
-+    exit 1
-+  else
-+    test -L configs/current || ln -s $CONFIG configs/current
-+  fi
++  ln -s $CONFIG configs/current
 +else
 +  echo "Specify a configuration from the following list using \`--config':"
 +  ls -1 configs | grep -v current | grep -v default
 +  exit 1
 +fi
 +
-+sed -i "/^INSTALL_DIR/s|=.*|= $PREFIX|" configs/default
++sed -i "/^INSTALL_DIR/s|=.*|= $INSTALL_DIR|" configs/default
++
++sed -i "/^MKLIB_OPTIONS/s|=.*|= $STATIC|" configs/default
 +
 +test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
@@ -100,11 +84,9 @@ exit
 +else
 +  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" configs/default
 +fi
-+
-+sed -i "/^MKLIB_OPTIONS/s|=.*|= $STATIC|" configs/default
 --- MesaGLUT-20100214.orig/Makefile
 +++ MesaGLUT-20100214/Makefile
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,59 @@
 +# Top-level Mesa makefile
 +
 +TOP = .
@@ -112,8 +94,6 @@ exit
 +SUBDIRS = src
 +
 +
-+# The git command below generates an empty string when we're not
-+# building in a GIT tree (i.e., building from a release tarball).
 +default: $(TOP)/configs/current
 +	@for dir in $(SUBDIRS) ; do \
 +		if [ -d $$dir ] ; then \
@@ -123,6 +103,7 @@ exit
 +
 +all: default
 +
++
 +clean:
 +	-@for dir in $(SUBDIRS) ; do \
 +		if [ -d $$dir ] ; then \
@@ -130,9 +111,11 @@ exit
 +		fi \
 +	done
 +
++
 +realclean: clean
 +	-rm -rf lib*
 +	-rm -f $(TOP)/configs/current
++
 +
 +install:
 +	@for dir in $(SUBDIRS) ; do \
@@ -140,6 +123,7 @@ exit
 +			(cd $$dir && $(MAKE) install) || exit 1 ; \
 +		fi \
 +	done
++
 +
 +$(TOP)/configs/current:
 +	@echo
@@ -151,8 +135,8 @@ exit
 +	@echo "(ignore the following error message)"
 +	@exit 1
 +
-+linux-directfb \
-+linux-x11 :
++
++linux-directfb:
 +	@ if test -L configs/current; then \
 +		if ! cmp configs/$@ configs/current > /dev/null; then \
 +			echo "Please run 'make realclean' before changing configs" ; \
@@ -1361,27 +1345,6 @@ exit
 +EXTRA_LIB_PATH = $(shell $(PKG_CONFIG) --libs-only-L directfb)
 +EXTRA_LIBS = -ldirectfb
 +GLUT_PC_REQ_PRIV = directfb
---- MesaGLUT-20100214.orig/configs/linux-x11
-+++ MesaGLUT-20100214/configs/linux-x11
-@@ -0,0 +1,18 @@
-+# Configuration for X11
-+
-+include $(TOP)/configs/default
-+
-+CONFIG_NAME = linux-x11
-+
-+X11_INCLUDES = $(shell $(PKG_CONFIG) --cflags-only-I x11)
-+
-+CFLAGS = -O2 -g -Wall -fPIC $(shell pkg-config --cflags gl)
-+LDFLAGS = -Wl,-rpath,$(INSTALL_LIB_DIR)
-+
-+# Directories
-+SRC_DIRS = glut/glx
-+
-+# Library/program dependencies
-+EXTRA_LIB_PATH = $(shell $(PKG_CONFIG) --libs-only-L x11)
-+EXTRA_LIBS = -lX11 -lXmu -lXi
-+GLUT_PC_REQ_PRIV = x11 xmu xi
 --- MesaGLUT-20100214.orig/include/GL/glut.h
 +++ MesaGLUT-20100214/include/GL/glut.h
 @@ -15,7 +15,6 @@
@@ -1618,16 +1581,15 @@ exit
            }
 --- MesaGLUT-20100214.orig/src/glut/directfb/glut.pc.in
 +++ MesaGLUT-20100214/src/glut/directfb/glut.pc.in
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,12 @@
 +prefix=@INSTALL_DIR@
-+exec_prefix=${prefix}
 +libdir=@INSTALL_LIB_DIR@
 +includedir=@INSTALL_INC_DIR@
 +
 +Name: MesaGLUT
 +Description: Mesa OpenGL Utility Toolkit library
-+Requires: gl glu
-+Requires.private: @GLUT_PC_REQ_PRIV@
++Requires: gl
++Requires.private: glu @GLUT_PC_REQ_PRIV@
 +Version: @VERSION@
 +Libs: -L${libdir} -l@GLUT_LIB@
 +Libs.private: @GLUT_PC_LIB_PRIV@
@@ -1789,222 +1751,6 @@ exit
  void GLUTAPIENTRY 
  glutSetWindowTitle( const char *title )
  {
---- MesaGLUT-20100214.orig/src/glut/glx/Makefile
-+++ MesaGLUT-20100214/src/glut/glx/Makefile
-@@ -81,13 +81,13 @@
- ##### RULES #####
- 
- .c.o:
--	$(CC) -c -I$(TOP)/include $(X11_INCLUDES) $(CFLAGS) $(GLUT_CFLAGS) $<
-+	$(CC) -c -I$(TOP)/include $(X11_INCLUDES) $(CFLAGS) $(DEFINES) $<
- 
- 
- 
- ##### TARGETS #####
- 
--default: $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME)
-+default: $(TOP)/$(LIB_DIR)/$(GLUT_LIB_NAME) glut.pc
- 
- 
- # Make the library
-@@ -135,6 +135,6 @@
- 	@ rm -f depend
- 	@ touch depend
- 	@ $(MKDEP) $(MKDEP_OPTIONS) -I$(TOP)/include $(SOURCES) \
--		> /dev/null 
-+		> /dev/null 2>/dev/null
- 
--include depend
-+-include depend
---- MesaGLUT-20100214.orig/src/glut/glx/glut.pc.in
-+++ MesaGLUT-20100214/src/glut/glx/glut.pc.in
-@@ -3,7 +3,7 @@
- libdir=@INSTALL_LIB_DIR@
- includedir=@INSTALL_INC_DIR@
- 
--Name: glut
-+Name: MesaGLUT
- Description: Mesa OpenGL Utility Toolkit library
- Requires: gl glu
- Requires.private: @GLUT_PC_REQ_PRIV@
---- MesaGLUT-20100214.orig/src/glut/glx/glut_event.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_event.c
-@@ -103,6 +103,8 @@
- unsigned int __glutModifierMask = (unsigned int) ~0;
- int __glutWindowDamaged = 0;
- 
-+int __glutLoop;
-+
- void GLUTAPIENTRY
- glutIdleFunc(GLUTidleCB idleFunc)
- {
-@@ -1373,7 +1375,8 @@
-   if (!__glutWindowListSize)
-     __glutFatalUsage(
-       "main loop entered with no windows created.");
--  for (;;) {
-+  __glutLoop = 1;
-+  while (__glutLoop) {
-     __glutProcessWindowWorkLists();
-     if (__glutIdleFunc || __glutWindowWorkList) {
-       idleWait();
-@@ -1386,4 +1389,10 @@
-     }
-   }
- }
-+
-+void GLUTAPIENTRY
-+glutLeaveMainLoop(void)
-+{
-+  __glutLoop = 0;
-+}
- /* ENDCENTRY */
---- MesaGLUT-20100214.orig/src/glut/glx/glut_glxext.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_glxext.c
-@@ -177,6 +177,7 @@
- 
- 
- 
-+#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_fbconfig)
- GLXContext
- __glut_glXCreateContextWithConfigSGIX(Display *dpy, GLXFBConfigSGIX config,
-                                       int render_type, GLXContext share_list,
-@@ -249,6 +250,7 @@
-   return 0;
- #endif
- }
-+#endif
- 
- 
- 
---- MesaGLUT-20100214.orig/src/glut/glx/glut_init.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_init.c
-@@ -346,6 +346,12 @@
-   __glutPPMFile = getenv("GLUT_PPM_FILE");
- }
- 
-+void GLUTAPIENTRY
-+glutExit()
-+{
-+  XCloseDisplay(__glutDisplay);
-+}
-+
- #ifdef _WIN32
- void GLUTAPIENTRY 
- __glutInitWithExit(int *argcp, char **argv, void (__cdecl *exitfunc)(int))
-@@ -390,4 +396,9 @@
-   __glutDisplayMode = mask;
- }
- 
-+void GLUTAPIENTRY
-+glutInitContextProfile(int profile)
-+{
-+}
-+
- /* ENDCENTRY */
---- MesaGLUT-20100214.orig/src/glut/glx/glut_menu.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_menu.c
-@@ -26,7 +26,7 @@
- #include "glutint.h"
- #include "layerutil.h"
- 
--void (CDECL *__glutMenuStatusFunc) (int, int, int);
-+void (GLUTAPIENTRYV *__glutMenuStatusFunc) (int, int, int);
- GLUTmenuItem *__glutItemSelected;
- GLUTmenu **__glutMenuList = NULL;
- 
---- MesaGLUT-20100214.orig/src/glut/glx/glut_shapes.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_shapes.c
-@@ -47,6 +47,8 @@
- #include <math.h>
- #include "glutint.h"
- 
-+#include <GL/glu.h>
-+
- /* Some <math.h> files do not define M_PI... */
- #ifndef M_PI
- #define M_PI 3.14159265358979323846
---- MesaGLUT-20100214.orig/src/glut/glx/glut_util.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_util.c
-@@ -12,6 +12,8 @@
- 
- #include "glutint.h"
- 
-+#include <GL/glu.h>
-+
- /* strdup is actually not a standard ANSI C or POSIX routine
-    so implement a private one for GLUT.  OpenVMS does not have a
-    strdup; Linux's standard libc doesn't declare strdup by default
---- MesaGLUT-20100214.orig/src/glut/glx/glut_win.c
-+++ MesaGLUT-20100214/src/glut/glx/glut_win.c
-@@ -193,6 +193,18 @@
-   }
-   __glutSetWindow(window);
- }
-+
-+void *GLUTAPIENTRY
-+glutGetWindowData(void)
-+{
-+  return __glutCurrentWindow->data;
-+}
-+
-+void GLUTAPIENTRY
-+glutSetWindowData(void *data)
-+{
-+  __glutCurrentWindow->data = data;
-+}
- /* ENDCENTRY */
- 
- static int
-@@ -737,7 +749,7 @@
-   textprop.value = (unsigned char *) title;
-   textprop.encoding = XA_STRING;
-   textprop.format = 8;
--  textprop.nitems = strlen(title);
-+  textprop.nitems = title ? strlen(title) : 0;
- #if defined(_WIN32)
-   SetWindowText(win, title);
-   if (__glutIconic) {
-@@ -879,6 +891,7 @@
-       GLUT_COLORMAP_WORK);
-   }
- #endif
-+  __glutSetWindow(__glutWindowList[__glutWindowListSize - 1]);
-   __glutDestroyWindow(window, window);
-   XFlush(__glutDisplay);
- }
---- MesaGLUT-20100214.orig/src/glut/glx/glutint.h
-+++ MesaGLUT-20100214/src/glut/glx/glutint.h
-@@ -412,6 +412,7 @@
-   GLUTjoystickFCB fjoystick;  /* joystick */
- #endif
- #endif
-+  void *data;
- };
- 
- struct _GLUToverlay {
-@@ -749,6 +750,7 @@
- #if !defined(_WIN32)
- /* private routines from glut_glxext.c */
- extern int __glutIsSupportedByGLX(char *);
-+#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_video_resize)
- extern int __glut_glXBindChannelToWindowSGIX(Display *dpy, int screen,
-                                              int channel, Window window);
- extern int __glut_glXChannelRectSGIX(Display *dpy, int screen, int channel,
-@@ -761,6 +763,8 @@
-                                             int *dw, int *dh);
- extern int __glut_glXChannelRectSyncSGIX(Display *dpy, int screen, int channel,
-                                          GLenum synctype);
-+#endif
-+#if defined(GLX_VERSION_1_1) && defined(GLX_SGIX_fbconfig)
- extern GLXContext __glut_glXCreateContextWithConfigSGIX(Display *dpy,
-                                                         GLXFBConfigSGIX config,
-                                                         int render_type,
-@@ -773,6 +777,7 @@
- extern GLXFBConfigSGIX __glut_glXGetFBConfigFromVisualSGIX(Display *dpy,
-                                                            XVisualInfo *vis);
- #endif
-+#endif
- 
- /* private routines from glut_input.c */
- extern void  __glutUpdateInputDeviceMask(GLUTwindow * window);
+
+# source
+https://gitlab.freedesktop.org/mesa/glut/-/archive/105435fb95b39eb2226deed1e963bc8456179a0f/MesaGLUT-20100214.tar.gz

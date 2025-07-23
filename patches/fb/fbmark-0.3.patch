@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /fb
+sh ./Configure --prefix=/fb
 
 # build
 make
@@ -32,28 +32,24 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fbmark-0.3.orig/Configure
 +++ fbmark-0.3/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
+
+# source
+https://github.com/caramelli/fbmark/archive/v0.3/fbmark-0.3.tar.gz

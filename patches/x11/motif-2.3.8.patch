@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build jpeg-build libpng-build libxft-build libxm
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I .; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I .; autoheader; autoconf; automake -a -c
 LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --x-includes=/x11/include --x-libraries=/x11/lib --prefix=/x11
 
 # build
@@ -402,6 +402,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- motif-2.3.8.orig/ac_find_xft.m4
 +++ motif-2.3.8/ac_find_xft.m4
 @@ -40,7 +40,7 @@
@@ -504,6 +506,15 @@ exit
  AC_CONFIG_SRCDIR([lib/Xm/Form.c])
  AC_PREREQ(2.52)
  AC_CONFIG_AUX_DIR(.)
+@@ -10,7 +10,7 @@
+   AC_PREFIX_DEFAULT(/usr/X11R6),
+   AC_PREFIX_DEFAULT(/usr))
+ 
+-dnl AM_MAINTAINER_MODE
++AM_MAINTAINER_MODE
+ AC_CANONICAL_TARGET
+ 
+ dnl The version of the Motif libraries
 @@ -22,7 +22,7 @@
  AC_SUBST(AGE)
  
@@ -1109,7 +1120,19 @@ exit
 +Libs: -L${libdir} -lXm
 --- motif-2.3.8.orig/tools/wml/Makefile.am
 +++ motif-2.3.8/tools/wml/Makefile.am
-@@ -32,7 +32,7 @@
+@@ -22,6 +22,11 @@
+ 
+ noinst_HEADERS = wml.h wmlparse.h $(WMLTARGETS)
+ 
++BUILT_SOURCES = wmluiltok.c
++
++wmluiltok.c: wmluiltok.l
++	$(AM_V_GEN) $(SHELL) $(top_srcdir)/ylwrap $< lex.yy.c $@ -- $(LEX)
++
+ noinst_PROGRAMS = wml wmluiltok wmldbcreate
+ wmluiltok_SOURCES = wmluiltok.l
+ wmluiltok_LDADD = @LEXLIB@
+@@ -32,7 +37,7 @@
  
  wmldbcreate_LDADD = ../../lib/Xm/libXm.la
  
@@ -1130,3 +1153,6 @@ exit
 +    while (yylex() != 0);
 +    return 0;
 +}
+
+# source
+http://downloads.sourceforge.net/motif/motif-2.3.8.tar.gz

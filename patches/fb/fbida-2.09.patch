@@ -10,7 +10,7 @@ pkg-config --exists libwebp-build && REQUIRES="$REQUIRES libwebp-build"
 
 # configure
 rm -rf jpeg
-sh ./Configure --prefix /fb
+sh ./Configure --prefix=/fb
 
 # build
 make
@@ -34,37 +34,30 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fbida-2.09.orig/Configure
 +++ fbida-2.09/Configure
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,28 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-fbdev)
-+      FBDEV=#
-+    ;;
-+    --disable-x11)
-+      X11=#
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-x11) X11='#';;
++    --disable-fbdev) FBDEV='#';;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "/^prefix/s|=.*|= $prefix|" mk/Variables.mk
++
++sed -i "s|^#\?\(HAVE_MOTIF.*)\)|$X11\1|" GNUmakefile
++
++sed -i "s|^#\?\(HAVE_LINUX_FB_H.*)\)|$FBDEV\1|" GNUmakefile
 +
 +test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
@@ -72,10 +65,6 @@ exit
 +else
 +  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" GNUmakefile
 +fi
-+
-+sed -i "s|^#\?\(HAVE_LINUX_FB_H.*)\)|$FBDEV\1|" GNUmakefile
-+
-+sed -i "s|^#\?\(HAVE_MOTIF.*)\)|$X11\1|" GNUmakefile
 +
 +make config
 --- fbida-2.09.orig/GNUmakefile
@@ -217,3 +206,6 @@ exit
  
      if (PHOTOMETRIC_PALETTE   == h->photometric  ||
  	PHOTOMETRIC_YCBCR     == h->photometric  ||
+
+# source
+https://github.com/kraxel/fbida/archive/2.09/fbida-2.09.tar.gz

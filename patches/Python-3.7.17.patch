@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-ac-build expat-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69)
-cat m4/* > aclocal.m4; autoconf; autoheader
+cat m4/* > aclocal.m4; autoheader; autoconf
 ./configure --enable-shared --with-system-expat --without-ensurepip --prefix=/
 
 # build
@@ -96,7 +96,7 @@ ln -sf libpython3.7.so.1 $DESTDIR/lib/libpython3.7.so
 install -d $DESTDIR/lib/pkgconfig
 install -m 644 Misc/python.pc $DESTDIR/lib/pkgconfig/python3.pc
 install -d $DESTDIR/lib/python3
-install -m 644 `cat pybuilddir.txt`/_sysconfigdata__linux_`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.py $DESTDIR/lib/python3.7
+install -m 644 `cat pybuilddir.txt`/_sysconfigdata__linux_`cat Makefile | grep ^MULTIARCH= | awk -F'\t' '{print $2}'`.py $DESTDIR/lib/python3
 install -m 644 Lib/__future__.py $DESTDIR/lib/python3
 install -m 644 Lib/_collections_abc.py $DESTDIR/lib/python3
 install -m 644 Lib/_compat_pickle.py $DESTDIR/lib/python3
@@ -669,6 +669,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- Python-3.7.17.orig/configure.ac
 +++ Python-3.7.17/configure.ac
 @@ -119,7 +119,7 @@
@@ -975,3 +977,6 @@ exit
 +
 +AS_VAR_IF([$1], [""], [$5], [$4])dnl
 +])dnl PKG_CHECK_VAR
+
+# source
+https://python.org/ftp/python/3.7.17/Python-3.7.17.tar.xz

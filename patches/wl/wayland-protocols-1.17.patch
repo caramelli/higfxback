@@ -9,9 +9,6 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 aclocal; autoconf; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig ./configure --with-noarch-pkgconfigdir=/wl/lib/pkgconfig --prefix=/wl
 
-# build
-make
-
 # install
 install -d $DESTDIR/wl/lib/pkgconfig
 install -m 644 wayland-protocols.pc $DESTDIR/wl/lib/pkgconfig
@@ -79,6 +76,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- wayland-protocols-1.17.orig/configure.ac
 +++ wayland-protocols-1.17/configure.ac
 @@ -11,8 +11,6 @@
@@ -124,3 +123,6 @@ exit
      <event name="configure">
        <description summary="suggest a surface change">
  	This configure event asks the client to resize its toplevel surface or
+
+# source
+https://wayland.freedesktop.org/releases/wayland-protocols-1.17.tar.xz

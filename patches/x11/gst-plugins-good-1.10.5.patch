@@ -16,7 +16,7 @@ if pkg-config --exists speex-build; then
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -157,6 +157,19 @@ cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-good-build.pc << EOF
 EOF
 
 exit
+
+# patch
+--- gst-plugins-good-1.10.5.orig/configure.ac
++++ gst-plugins-good-1.10.5/configure.ac
+@@ -25,7 +25,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ dnl sets host_* variables
+ AC_CANONICAL_HOST
 --- gst-plugins-good-1.10.5.orig/gst/matroska/matroska-demux.c
 +++ gst-plugins-good-1.10.5/gst/matroska/matroska-demux.c
 @@ -55,9 +55,7 @@
@@ -184,3 +197,6 @@ exit
  #include <gst/rtp/rtp.h>
  
  #include "gst/gst-i18n-plugin.h"
+
+# source
+https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.10.5.tar.xz

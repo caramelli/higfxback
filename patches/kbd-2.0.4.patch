@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.11; lt-2.4.2)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-vlock --enable-libkeymap --prefix=
 
 # build
@@ -134,6 +134,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- kbd-2.0.4.orig/configure.ac
++++ kbd-2.0.4/configure.ac
+@@ -8,6 +8,8 @@
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE([1.9 -Wall -Wno-portability color-tests dist-xz])
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_SRCDIR([src/loadkeys.c])
+ AC_CONFIG_HEADERS(config.h)
+ PKG_PROG_PKG_CONFIG
 --- kbd-2.0.4.orig/m4/codeset.m4
 +++ kbd-2.0.4/m4/codeset.m4
 @@ -0,0 +1,23 @@
@@ -195,3 +208,6 @@ exit
 +      [Define if your <locale.h> file defines LC_MESSAGES.])
 +  fi
 +])
+
+# source
+https://kernel.org/pub/linux/utils/kbd/kbd-2.0.4.tar.gz

@@ -35,6 +35,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fbida-20201215.orig/fbcon.c
 +++ fbida-20201215/fbcon.c
 @@ -241,7 +241,7 @@
@@ -135,6 +137,18 @@ exit
      exit(1);
 --- fbida-20201215.orig/meson.build
 +++ fbida-20201215/meson.build
+@@ -7,9 +7,9 @@
+ 
+ # init configuration
+ config       = configuration_data()
+-version      = run_command('cat', 'VERSION')
++version      = run_command('cat', 'VERSION', check: true)
+ config.set_quoted('VERSION', version.stdout().strip())
+-x11resrun    = run_command('scripts/x11resdir.sh', get_option('prefix'))
++x11resrun    = run_command('scripts/x11resdir.sh', get_option('prefix'), check: false)
+ x11resdir    = x11resrun.stdout().strip()
+ 
+ # pkg-config deps
 @@ -68,12 +68,6 @@
      config.set('HAVE_SYSTEMD', true)
  endif
@@ -220,9 +234,6 @@ exit
  {
      fprintf(stderr,"jpeg: panic: no more thumbnail input data\n");
      exit(1);
---- fbida-20201215.orig/scripts/jpeg-version.sh
-+++ fbida-20201215/scripts/jpeg-version.sh
-@@ -1,2 +1,2 @@
- #!/bin/sh
--echo JPEG_LIB_VERSION | cpp $CFLAGS -include jpeglib.h | tail -1
-+echo JPEG_LIB_VERSION | cpp $CFLAGS -include jpeglib.h | tail -n -1
+
+# source
+https://github.com/kraxel/fbida/archive/55e830c642a3d9e25a49c055e5abbfa922cf3742/fbida-20201215.tar.gz

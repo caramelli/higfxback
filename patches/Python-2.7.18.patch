@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-ac-build expat-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69)
-cat m4/* > aclocal.m4; autoconf; autoheader
+cat m4/* > aclocal.m4; autoheader; autoconf
 ./configure --enable-shared --with-system-expat --prefix=/
 
 # build
@@ -154,6 +154,10 @@ install -m 644 Lib/UserString.py $DESTDIR/lib/python2
 install -m 644 Lib/warnings.py $DESTDIR/lib/python2
 install -m 644 Lib/weakref.py $DESTDIR/lib/python2
 install -m 644 Lib/zipfile.py $DESTDIR/lib/python2
+install -d $DESTDIR/lib/python2/distutils
+install -m 644 Lib/distutils/__init__.py $DESTDIR/lib/python2/distutils
+install -m 644 Lib/distutils/errors.py $DESTDIR/lib/python2/distutils
+install -m 644 Lib/distutils/sysconfig.py $DESTDIR/lib/python2/distutils
 install -d $DESTDIR/lib/python2/encodings
 install -m 644 Lib/encodings/__init__.py $DESTDIR/lib/python2/encodings
 install -m 644 Lib/encodings/aliases.py $DESTDIR/lib/python2/encodings
@@ -361,6 +365,9 @@ exec=\\
 /lib/python2/warnings.py \\
 /lib/python2/weakref.py \\
 /lib/python2/zipfile.py \\
+/lib/python2/distutils/__init__.py \\
+/lib/python2/distutils/errors.py \\
+/lib/python2/distutils/sysconfig.py \\
 /lib/python2/encodings/__init__.py \\
 /lib/python2/encodings/aliases.py \\
 /lib/python2/encodings/ascii.py \\
@@ -413,6 +420,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- Python-2.7.18.orig/configure.ac
 +++ Python-2.7.18/configure.ac
 @@ -79,7 +79,7 @@
@@ -702,3 +711,6 @@ exit
 +
 +AS_VAR_IF([$1], [""], [$5], [$4])dnl
 +])dnl PKG_CHECK_VAR
+
+# source
+https://python.org/ftp/python/2.7.18/Python-2.7.18.tar.xz

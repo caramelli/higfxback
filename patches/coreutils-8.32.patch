@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 FORCE_UNSAFE_CONFIGURE=1 ./configure --enable-install-program=arch --enable-no-install-program=kill,groups,uptime --libexecdir=/lib --prefix=
 
 # build
@@ -234,3 +234,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- coreutils-8.32.orig/configure.ac
++++ coreutils-8.32/configure.ac
+@@ -38,6 +38,8 @@
+ AM_INIT_AUTOMAKE([1.11.2 dist-xz color-tests parallel-tests subdir-objects])
+ AM_SILENT_RULES([yes]) # make --enable-silent-rules the default.
+ 
++AM_MAINTAINER_MODE
++
+ dnl POSIXCHECK is worthwhile for maintainers, but adds several seconds
+ dnl (more than 10% execution time) to ./configure, with no benefit for
+ dnl most users.  Using it to look for bugs requires:
+
+# source
+https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.gz

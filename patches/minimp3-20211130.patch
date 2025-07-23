@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make
@@ -35,26 +35,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- minimp3-20211130.orig/Configure
 +++ minimp3-20211130/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -82,3 +75,6 @@ exit
 +	install -d $(DESTDIR)$(PREFIX)/include/minimp3
 +	install -m 644 minimp3.h $(DESTDIR)$(PREFIX)/include/minimp3
 +	install -m 644 minimp3_ex.h $(DESTDIR)$(PREFIX)/include/minimp3
+
+# source
+https://github.com/lieff/minimp3/archive/afb604c06bc8beb145fecd42c0ceb5bda8795144/minimp3-20211130.tar.gz

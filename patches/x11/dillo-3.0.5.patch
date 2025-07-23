@@ -1,12 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build fltk-build"
+REQUIRES="autotools-wrappers-lt-build fltk-build libstdc++-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.11)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -41,9 +41,21 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- dillo-3.0.5.orig/configure.ac
 +++ dillo-3.0.5/configure.ac
-@@ -111,19 +111,18 @@
+@@ -6,6 +6,9 @@
+ AC_CANONICAL_TARGET
+ 
+ AM_INIT_AUTOMAKE
++
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_SRCDIR([src/dillo.cc])
+ AC_CONFIG_HEADERS([config.h])
+ 
+@@ -111,19 +114,18 @@
  dnl -------------------------
  dnl
  dnl For debugging and to be user friendly
@@ -150,3 +162,6 @@ exit
  
  #include "paths.hh"
  #include "keys.hh"
+
+# source
+https://github.com/dillo-browser/dillo/releases/download/v3.0.5/dillo-3.0.5.tar.bz2

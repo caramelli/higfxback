@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libevdev-build libudev-build mtdev-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-libwacom --prefix=
 
 # build
@@ -44,3 +44,159 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- libinput-1.4.3.orig/configure.ac
++++ libinput-1.4.3/configure.ac
+@@ -25,6 +25,7 @@
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+ AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
++AM_MAINTAINER_MODE
+ 
+ # Before making a release, the LIBINPUT_LT_VERSION string should be
+ # modified.
+--- libinput-1.4.3.orig/test/litest.c
++++ libinput-1.4.3/test/litest.c
+@@ -525,7 +525,7 @@
+ static void
+ litest_add_tcase_for_device(struct suite *suite,
+ 			    const char *funcname,
+-			    void *func,
++			    const void *func,
+ 			    const struct litest_test_device *dev,
+ 			    const struct range *range)
+ {
+@@ -572,7 +572,7 @@
+ 
+ static void
+ litest_add_tcase_no_device(struct suite *suite,
+-			   void *func,
++			   const void *func,
+ 			   const struct range *range)
+ {
+ 	struct test *t;
+@@ -629,7 +629,7 @@
+ static void
+ litest_add_tcase(const char *suite_name,
+ 		 const char *funcname,
+-		 void *func,
++		 const void *func,
+ 		 enum litest_device_feature required,
+ 		 enum litest_device_feature excluded,
+ 		 const struct range *range)
+@@ -693,7 +693,7 @@
+ }
+ 
+ void
+-_litest_add_no_device(const char *name, const char *funcname, void *func)
++_litest_add_no_device(const char *name, const char *funcname, const void *func)
+ {
+ 	_litest_add(name, funcname, func, LITEST_DISABLE_DEVICE, LITEST_DISABLE_DEVICE);
+ }
+@@ -701,7 +701,7 @@
+ void
+ _litest_add_ranged_no_device(const char *name,
+ 			     const char *funcname,
+-			     void *func,
++			     const void *func,
+ 			     const struct range *range)
+ {
+ 	_litest_add_ranged(name,
+@@ -715,7 +715,7 @@
+ void
+ _litest_add(const char *name,
+ 	    const char *funcname,
+-	    void *func,
++	    const void *func,
+ 	    enum litest_device_feature required,
+ 	    enum litest_device_feature excluded)
+ {
+@@ -730,7 +730,7 @@
+ void
+ _litest_add_ranged(const char *name,
+ 		   const char *funcname,
+-		   void *func,
++		   const void *func,
+ 		   enum litest_device_feature required,
+ 		   enum litest_device_feature excluded,
+ 		   const struct range *range)
+@@ -741,7 +741,7 @@
+ void
+ _litest_add_for_device(const char *name,
+ 		       const char *funcname,
+-		       void *func,
++		       const void *func,
+ 		       enum litest_device_type type)
+ {
+ 	_litest_add_ranged_for_device(name, funcname, func, type, NULL);
+@@ -750,7 +750,7 @@
+ void
+ _litest_add_ranged_for_device(const char *name,
+ 			      const char *funcname,
+-			      void *func,
++			      const void *func,
+ 			      enum litest_device_type type,
+ 			      const struct range *range)
+ {
+--- libinput-1.4.3.orig/test/litest.h
++++ libinput-1.4.3/test/litest.h
+@@ -304,35 +304,35 @@
+ void
+ _litest_add(const char *name,
+ 	    const char *funcname,
+-	    void *func,
++	    const void *func,
+ 	    enum litest_device_feature required_feature,
+ 	    enum litest_device_feature excluded_feature);
+ void
+ _litest_add_ranged(const char *name,
+ 		   const char *funcname,
+-		   void *func,
++		   const void *func,
+ 		   enum litest_device_feature required,
+ 		   enum litest_device_feature excluded,
+ 		   const struct range *range);
+ void
+ _litest_add_for_device(const char *name,
+ 		       const char *funcname,
+-		       void *func,
++		       const void *func,
+ 		       enum litest_device_type type);
+ void
+ _litest_add_ranged_for_device(const char *name,
+ 			      const char *funcname,
+-			      void *func,
++			      const void *func,
+ 			      enum litest_device_type type,
+ 			      const struct range *range);
+ void
+ _litest_add_no_device(const char *name,
+ 		      const char *funcname,
+-		      void *func);
++		      const void *func);
+ void
+ _litest_add_ranged_no_device(const char *name,
+ 			     const char *funcname,
+-			     void *func,
++			     const void *func,
+ 			     const struct range *range);
+ 
+ extern void
+@@ -834,6 +834,13 @@
+ 	litest_assert_int_eq(status, expected);
+ }
+ 
++#undef ck_assert_double_eq
++#undef ck_assert_double_ne
++#undef ck_assert_double_lt
++#undef ck_assert_double_le
++#undef ck_assert_double_gt
++#undef ck_assert_double_ge
++
+ #define CK_DOUBLE_EQ_EPSILON 1E-3
+ #define ck_assert_double_eq(X,Y)  \
+ 	do { \
+
+# source
+https://freedesktop.org/software/libinput/libinput-1.4.3.tar.xz

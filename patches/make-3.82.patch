@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # configure
-sh ./configure.sh --prefix
+sh ./configure.sh --prefix=
 
 # build
 ./build.sh
@@ -22,6 +22,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- make-3.82.orig/config.h.linux
 +++ make-3.82/config.h.linux
 @@ -0,0 +1,160 @@
@@ -187,7 +189,7 @@ exit
 +#endif
 --- make-3.82.orig/configure.sh
 +++ make-3.82/configure.sh
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,74 @@
 +#!/bin/sh
 +# Shell script to configure GNU Make without relying on `autotools'.
 +
@@ -228,23 +230,11 @@ exit
 +
 +DEFS=-DHAVE_CONFIG_H
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --exec-prefix)
-+      exec_prefix=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --exec-prefix=*) exec_prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -274,3 +264,6 @@ exit
 +chmod +x build.sh
 +
 +cp $srcdir/config.h.linux config.h
+
+# source
+https://ftp.gnu.org/gnu/make/make-3.82.tar.gz

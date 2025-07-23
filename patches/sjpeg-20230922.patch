@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build jpeg-build libpng-build"
+REQUIRES="cmake3-build jpeg-build libpng-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -50,6 +50,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- sjpeg-20230922.orig/CMakeLists.txt
 +++ sjpeg-20230922/CMakeLists.txt
 @@ -13,6 +13,7 @@
@@ -189,3 +191,6 @@ exit
 +)
 +
 +mark_as_advanced(PNG_INCLUDE_DIRS PNG_LIBRARIES)
+
+# source
+https://github.com/webmproject/sjpeg/archive/9990bdceb22612a62f1492462ef7423f48154072/sjpeg-20230922.tar.gz

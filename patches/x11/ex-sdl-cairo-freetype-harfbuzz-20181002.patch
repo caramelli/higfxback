@@ -13,7 +13,7 @@ fi
 
 # configure
 rm -rf fonts
-PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --arabic-font /share/fonts/truetype/Amiri-Regular.ttf --chinese-font /share/fonts/truetype/fireflysung.ttf --english-font /share/fonts/truetype/VeraSe.ttf --with-unicode-backend $UNICODE_BACKEND --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --arabic-font=/share/fonts/truetype/Amiri-Regular.ttf --chinese-font=/share/fonts/truetype/fireflysung.ttf --english-font=/share/fonts/truetype/VeraSe.ttf --with-unicode-backend=$UNICODE_BACKEND --prefix=/x11
 
 # build
 make
@@ -35,9 +35,11 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- ex-sdl-cairo-freetype-harfbuzz-20181002.orig/Configure
 +++ ex-sdl-cairo-freetype-harfbuzz-20181002/Configure
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,36 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -48,35 +50,14 @@ exit
 +
 +UNICODE_BACKEND=ICU
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --arabic-font)
-+      ARABIC_FONT=$2
-+      shift
-+    ;;
-+    --chinese-font)
-+      CHINESE_FONT=$2
-+      shift
-+    ;;
-+    --english-font)
-+      ENGLISH_FONT=$2
-+      shift
-+    ;;
-+    --with-unicode-backend)
-+      UNICODE_BACKEND=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --arabic-font=*) ARABIC_FONT=${1#*=};;
++    --chinese-font=*) CHINESE_FONT=${1#*=};;
++    --english-font=*) ENGLISH_FONT=${1#*=};;
++    --with-unicode-backend=*) UNICODE_BACKEND=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -183,3 +164,6 @@ exit
              hb_buffer_set_direction(buf, text_directions[i]); /* or LTR */
              hb_buffer_set_script(buf, scripts[i]); /* see hb-unicode.h */
              hb_buffer_set_language(buf, hb_language_from_string(languages[i], strlen(languages[i])));
+
+# source
+https://github.com/anoek/ex-sdl-cairo-freetype-harfbuzz/archive/4a303356d3bb6368bf90457c78ebf238e77e96fc/ex-sdl-cairo-freetype-harfbuzz-20181002.tar.gz

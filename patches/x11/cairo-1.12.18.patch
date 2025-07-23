@@ -18,7 +18,7 @@ fi
 test $XLIB || test $XCB || { echo Xlib or XCB packages required; exit 1; }
 
 # configure (ac-2.68; am-1.11; lt-2.4.2)
-libtoolize -c -f; aclocal -I build; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I build; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-interpreter --disable-static --prefix=/x11
 
 # build
@@ -107,6 +107,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- cairo-1.12.18.orig/configure.ac
++++ cairo-1.12.18/configure.ac
+@@ -14,6 +14,7 @@
+ AC_CHECK_HEADERS([unistd.h sys/ioctl.h])
+ 
+ AM_INIT_AUTOMAKE([1.11 foreign -Wall no-define no-dist-gzip dist-xz])
++AM_MAINTAINER_MODE
+ AM_SILENT_RULES([yes])
+ m4_ifdef([AM_PROG_AR], [AM_PROG_AR]) dnl Workaround for Automake 1.12
+ 
 --- cairo-1.12.18.orig/src/cairo-xcb-connection.c
 +++ cairo-1.12.18/src/cairo-xcb-connection.c
 @@ -38,7 +38,6 @@
@@ -125,3 +137,6 @@ exit
      xcb_prefetch_extension_data (xcb_connection, &xcb_render_id);
  #if CAIRO_HAS_XCB_SHM_FUNCTIONS
      xcb_prefetch_extension_data (xcb_connection, &xcb_shm_id);
+
+# source
+https://cairographics.org/releases/cairo-1.12.18.tar.xz

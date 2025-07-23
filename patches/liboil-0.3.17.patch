@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.64; am-1.11; lt-2.2.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -55,6 +55,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- liboil-0.3.17.orig/configure.ac
 +++ liboil-0.3.17/configure.ac
 @@ -24,6 +24,7 @@
@@ -114,3 +116,6 @@ exit
 +  sys_symbol_underscore=$lt_cv_sys_symbol_underscore
 +  AC_SUBST([sys_symbol_underscore])
 +])
+
+# source
+https://liboil.freedesktop.org/download/liboil-0.3.17.tar.gz

@@ -19,15 +19,18 @@ fi
 test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
 
 if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists glut-build; then
-  GLUT=1
+  pkg-config --exists libstdc++-build && GUI=1
+  MOSAIC=1
   REQUIRES="$REQUIRES glut-build"
 fi
 
-if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists sdl-build; then
+if test $GL && PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists libstdc++-build sdl-build; then
   PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build || { echo SDL with OpenGL support required; exit 1; }
-  SDL=1
+  GUI=1
   REQUIRES="$REQUIRES sdl-build"
 fi
+
+test $GUI && REQUIRES="$REQUIRES libstdc++-build"
 
 # configure
 PKG_CONFIG_PATH=/fb/lib/pkgconfig meson setup $EGL_OPENGL --prefix=/fb build
@@ -38,8 +41,8 @@ meson compile -C build
 # install
 install -d $DESTDIR/fb/bin
 test $GL && install build/yagears2 $DESTDIR/fb/bin
-test $GLUT || test $SDL && install build/yagears2-gui $DESTDIR/fb/bin
-test $GLUT && install build/yagears2-mosaic $DESTDIR/fb/bin
+test $GUI && install build/yagears2-gui $DESTDIR/fb/bin
+test $MOSAIC && install build/yagears2-mosaic $DESTDIR/fb/bin
 test $VK && install build/yagears2-vk $DESTDIR/fb/bin
 
 # build.pc
@@ -55,10 +58,10 @@ EOF
 test $GL && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
 /fb/bin/yagears2 \\
 EOF
-test $GLUT || test $SDL && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
+test $GUI && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
 /fb/bin/yagears2-gui \\
 EOF
-test $GLUT && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
+test $MOSAIC && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
 /fb/bin/yagears2-mosaic \\
 EOF
 test $VK && cat >> $DESTDIR/fb/share/pkgconfig/yagears2-build.pc << EOF
@@ -67,710 +70,24 @@ EOF
 sed -i '$ s/ \\//' $DESTDIR/fb/share/pkgconfig/yagears2-build.pc
 
 exit
+
+# patch
 --- yagears-2.4.orig/CMakeLists.txt
 +++ yagears-2.4/CMakeLists.txt
-@@ -60,12 +60,12 @@
-   pkg_check_modules(GL gl)
-   if(GL_FOUND)
-     if(ENABLE_GLESV1_CM)
--      list(APPEND GL_CFLAGS -DGLESV1_CM_H=<GL/gl.h> -DGLESV1_CM_LIB="libGL.so" -DGL_GLEXT_PROTOTYPES)
-+      list(APPEND GL_CFLAGS -DGLESV1_CM_H=<GL/gl.h> -DGLESV1_CM_LIB="libGL.so.1" -DGL_GLEXT_PROTOTYPES)
-     endif()
-     if(ENABLE_GLESV2)
-       find_program(XXD xxd)
-       if(XXD)
--        list(APPEND GL_CFLAGS -DGLESV2_H=<GL/gl.h> -DGLESV2_LIB="libGL.so" -DGL_GLEXT_PROTOTYPES)
-+        list(APPEND GL_CFLAGS -DGLESV2_H=<GL/gl.h> -DGLESV2_LIB="libGL.so.1" -DGL_GLEXT_PROTOTYPES)
-       else()
-         set(ENABLE_GLESV2 OFF)
-       endif()
-@@ -82,7 +82,7 @@
-   if(ENABLE_GLESV1_CM)
-     pkg_check_modules(GLESV1_CM glesv1_cm)
-     if(GLESV1_CM_FOUND)
--      list(APPEND GLESV1_CM_CFLAGS -DGLESV1_CM_H=<GLES/gl.h> -DGLESV1_CM_LIB="libGLESv1_CM.so")
-+      list(APPEND GLESV1_CM_CFLAGS -DGLESV1_CM_H=<GLES/gl.h> -DGLESV1_CM_LIB="libGLESv1_CM.so.1")
-       set(GLESV1_CM_LDFLAGS -ldl)
-     else()
-       set(ENABLE_GLESV1_CM OFF)
-@@ -93,7 +93,7 @@
-     pkg_check_modules(GLESV2 glesv2)
-     find_program(XXD xxd)
-     if(GLESV2_FOUND AND XXD)
--      list(APPEND GLESV2_CFLAGS -DGLESV2_H=<GLES2/gl2.h> -DGLESV2_LIB="libGLESv2.so")
-+      list(APPEND GLESV2_CFLAGS -DGLESV2_H=<GLES2/gl2.h> -DGLESV2_LIB="libGLESv2.so.2")
-       set(GLESV2_LDFLAGS -ldl)
-     else()
-       set(ENABLE_GLESV2 OFF)
-@@ -102,7 +102,7 @@
- endif()
+@@ -8,6 +8,12 @@
+ include(GNUInstallDirs)
+ find_package(PkgConfig)
  
- if(NOT ENABLE_GL AND NOT ENABLE_GLESV1_CM AND NOT ENABLE_GLESV2)
--  message(FATAL_ERROR "No OpenGL Engines found")
-+  message(WARNING "No OpenGL Engines found")
- endif()
- 
- # OpenGL Backends
-@@ -251,7 +251,7 @@
- set(EGL_RPI ${ENABLE_EGL_RPI})
- 
- if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI)
--  message(FATAL_ERROR "No OpenGL Backends found")
-+  message(WARNING "No OpenGL Backends found")
- endif()
- 
- # Vulkan WSIs
-@@ -576,9 +576,17 @@
- 
- # Build rules
- 
--set(GL ${ENABLE_GL})
--set(GLESV1_CM ${ENABLE_GLESV1_CM})
--set(GLESV2 ${ENABLE_GLESV2})
-+set(PNG ${ENABLE_PNG})
-+set(TIFF ${ENABLE_TIFF})
-+
-+if(ENABLE_GL OR ENABLE_GLESV1_CM OR ENABLE_GLESV2)
-+  set(GL ${ENABLE_GL})
-+  set(GLESV1_CM ${ENABLE_GLESV1_CM})
-+  set(GLESV2 ${ENABLE_GLESV2})
-+  set(OPENGL ON)
++if(CMAKE_CXX_COMPILER)
++  set(HAVE_CXX TRUE)
 +else()
-+  set(OPENGL OFF)
-+endif()
- 
- if(ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB)
-   set(VK ON)
-@@ -588,7 +596,7 @@
- 
- set(MOSAIC ${ENABLE_GLUT})
- 
--if(ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX)
-+if((ENABLE_GL OR ENABLE_GLESV1_CM OR ENABLE_GLESV2) AND (ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX))
-   set(GUI ON)
- else()
-   set(GUI OFF)
-@@ -600,9 +608,15 @@
-   set(VK_GUI OFF)
- endif()
- 
--set(PNG ${ENABLE_PNG})
--set(TIFF ${ENABLE_TIFF})
-+if(PNG)
-+set(PNG_SOURCE png_image.c)
-+endif()
- 
-+if(TIFF)
-+set(TIFF_SOURCE tiff_image.c)
++  set(HAVE_CXX FALSE)
 +endif()
 +
-+if(OPENGL)
- if(GL)
- set(GL_SOURCE gl_gears.c)
- endif()
-@@ -620,14 +634,6 @@
- set(GLESV2_SOURCE glesv2_gears.c)
- endif()
+ set(CMAKE_C_FLAGS "-Wall -D_GNU_SOURCE")
+ set(CMAKE_EXE_LINKER_FLAGS "-lm")
  
--if(PNG)
--set(PNG_SOURCE png_image.c)
--endif()
--
--if(TIFF)
--set(TIFF_SOURCE tiff_image.c)
--endif()
--
- add_library(yagears gears_engine.c ${GL_SOURCE} ${GLESV1_CM_SOURCE} ${GLESV2_SOURCE} ${VERT_XXD_FILE} ${FRAG_XXD_FILE} image_loader.c ${PNG_SOURCE} ${TIFF_SOURCE})
- target_compile_options(yagears PRIVATE ${GL_CFLAGS} ${GLESV1_CM_CFLAGS} ${GLESV2_CFLAGS} ${PNG_CFLAGS} ${TIFF_CFLAGS})
- target_link_libraries(yagears ${GL_LDFLAGS} ${GLESV1_CM_LDFLAGS} ${GLESV2_LDFLAGS} ${PNG_LDFLAGS} ${TIFF_LDFLAGS})
-@@ -636,6 +642,7 @@
- target_compile_options(yagears2 PRIVATE ${EGL_CFLAGS} ${X11_CFLAGS} ${DIRECTFB_CFLAGS} ${WAYLAND_EGL_CFLAGS} ${XCB_CFLAGS} ${DRM_CFLAGS} ${RPI_CFLAGS})
- target_link_libraries(yagears2 -Wl,--whole-archive yagears -Wl,--no-whole-archive ${EGL_LDFLAGS} ${X11_LDFLAGS} ${DIRECTFB_LDFLAGS} ${WAYLAND_EGL_LDFLAGS} ${XCB_LDFLAGS} ${DRM_LDFLAGS} ${RPI_LDFLAGS})
- install(TARGETS yagears2 DESTINATION ${CMAKE_INSTALL_BINDIR})
-+endif()
- 
- if(VK)
- add_custom_command(OUTPUT vert.spv COMMAND ${GLSLANG_VALIDATOR} ${CMAKE_SOURCE_DIR}/vulkan_gears.vert -V -x DEPENDS ${CMAKE_SOURCE_DIR}/vulkan_gears.vert)
---- yagears-2.4.orig/Makefile.am
-+++ yagears-2.4/Makefile.am
-@@ -1,5 +1,15 @@
-+bin_PROGRAMS =
- BUILT_SOURCES =
- 
-+if PNG
-+PNG_SOURCE = png_image.c
-+endif
-+
-+if TIFF
-+TIFF_SOURCE = tiff_image.c
-+endif
-+
-+if OPENGL
- if GL
- GL_SOURCE = gl_gears.c
- endif
-@@ -19,24 +29,17 @@
- GLESV2_SOURCE = glesv2_gears.c
- endif
- 
--if PNG
--PNG_SOURCE = png_image.c
--endif
--
--if TIFF
--TIFF_SOURCE = tiff_image.c
--endif
--
- noinst_LTLIBRARIES    = libyagears.la
- libyagears_la_SOURCES = gears_engine.c $(GL_SOURCE) $(GLESV1_CM_SOURCE) $(GLESV2_SOURCE) image_loader.c $(PNG_SOURCE) $(TIFF_SOURCE)
- libyagears_la_CFLAGS  = @GL_CFLAGS@ @GLESV1_CM_CFLAGS@ @GLESV2_CFLAGS@ @PNG_CFLAGS@ @TIFF_CFLAGS@
- libyagears_la_LIBADD  = @GL_LIBS@ @GLESV1_CM_LIBS@ @GLESV2_LIBS@ @PNG_LIBS@ @TIFF_LIBS@
- 
--bin_PROGRAMS     = yagears2
-+bin_PROGRAMS    += yagears2
- yagears2_SOURCES = main.c
- yagears2_CFLAGS  = @EGL_CFLAGS@ @X11_CFLAGS@ @DIRECTFB_CFLAGS@ @WAYLAND_EGL_CFLAGS@ @XCB_CFLAGS@ @DRM_CFLAGS@ @RPI_CFLAGS@
- yagears2_LDFLAGS = -Wl,--whole-archive,.libs/libyagears.a,--no-whole-archive
- yagears2_LDADD   = libyagears.la @EGL_LIBS@ @X11_LIBS@ @DIRECTFB_LIBS@ @WAYLAND_EGL_LIBS@ @XCB_LIBS@ @DRM_LIBS@ @RPI_LIBS@
-+endif
- 
- if VK
- vert.spv: vulkan_gears.vert
---- yagears-2.4.orig/configure.ac
-+++ yagears-2.4/configure.ac
-@@ -1,6 +1,7 @@
- AC_INIT(yagears, 2.4)
- 
- AC_CONFIG_HEADERS(config.h)
-+AC_CONFIG_MACRO_DIR([m4])
- 
- AM_INIT_AUTOMAKE
- LT_INIT
-@@ -125,12 +126,12 @@
-   PKG_CHECK_MODULES(GL, gl, , enable_gl=no)
-   if test x$enable_gl = xyes; then
-     if test x$enable_glesv1_cm = xyes; then
--      GL_CFLAGS="$GL_CFLAGS -DGLESV1_CM_H=\<GL/gl.h\> -DGLESV1_CM_LIB=\\\"libGL.so\\\" -DGL_GLEXT_PROTOTYPES"
-+      GL_CFLAGS="$GL_CFLAGS -DGLESV1_CM_H=\<GL/gl.h\> -DGLESV1_CM_LIB=\\\"libGL.so.1\\\" -DGL_GLEXT_PROTOTYPES"
-     fi
-     if test x$enable_glesv2 = xyes; then
-       AC_PATH_TOOL(XXD, xxd)
-       if test -n "$XXD"; then
--        GL_CFLAGS="$GL_CFLAGS -DGLESV2_H=\<GL/gl.h\> -DGLESV2_LIB=\\\"libGL.so\\\" -DGL_GLEXT_PROTOTYPES"
-+        GL_CFLAGS="$GL_CFLAGS -DGLESV2_H=\<GL/gl.h\> -DGLESV2_LIB=\\\"libGL.so.1\\\" -DGL_GLEXT_PROTOTYPES"
-       else
-         enable_glesv2=no
-       fi
-@@ -145,7 +146,7 @@
-   if test x$enable_glesv1_cm = xyes; then
-     PKG_CHECK_MODULES(GLESV1_CM, glesv1_cm, , enable_glesv1_cm=no)
-     if test x$enable_glesv1_cm = xyes; then
--      GLESV1_CM_CFLAGS="$GLESV1_CM_CFLAGS -DGLESV1_CM_H=\<GLES/gl.h\> -DGLESV1_CM_LIB=\\\"libGLESv1_CM.so\\\""
-+      GLESV1_CM_CFLAGS="$GLESV1_CM_CFLAGS -DGLESV1_CM_H=\<GLES/gl.h\> -DGLESV1_CM_LIB=\\\"libGLESv1_CM.so.1\\\""
-       GLESV1_CM_LIBS=-ldl
-     fi
-   fi
-@@ -155,7 +156,7 @@
-     if test x$enable_glesv2 = xyes; then
-       AC_PATH_TOOL(XXD, xxd)
-       if test -n "$XXD"; then
--        GLESV2_CFLAGS="$GLESV2_CFLAGS -DGLESV2_H=\<GLES2/gl2.h\> -DGLESV2_LIB=\\\"libGLESv2.so\\\""
-+        GLESV2_CFLAGS="$GLESV2_CFLAGS -DGLESV2_H=\<GLES2/gl2.h\> -DGLESV2_LIB=\\\"libGLESv2.so.2\\\""
-         GLESV2_LIBS=-ldl
-       else
-         enable_glesv2=no
-@@ -165,7 +166,7 @@
- fi
- 
- if test x$enable_gl = xno -a x$enable_glesv1_cm = xno -a x$enable_glesv2 = xno; then
--  AC_MSG_ERROR(No OpenGL Engines found)
-+  AC_MSG_WARN(No OpenGL Engines found)
- fi
- 
- # OpenGL Backends
-@@ -302,7 +303,7 @@
- fi
- 
- if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
--  AC_MSG_ERROR(No OpenGL Backends found)
-+  AC_MSG_WARN(No OpenGL Backends found)
- fi
- 
- # Vulkan WSIs
-@@ -575,19 +576,20 @@
- 
- # Build rules
- 
-+AM_CONDITIONAL(PNG, test x$enable_png = xyes)
-+AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
-+
- AM_CONDITIONAL(GL, test x$enable_gl = xyes)
- AM_CONDITIONAL(GLESV1_CM, test x$enable_glesv1_cm = xyes)
- AM_CONDITIONAL(GLESV2, test x$enable_glesv2 = xyes)
-+AM_CONDITIONAL(OPENGL, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes)
- 
- AM_CONDITIONAL(VK, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes)
- 
- AM_CONDITIONAL(MOSAIC, test x$enable_glut = xyes)
- 
--AM_CONDITIONAL(GUI, test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
-+AM_CONDITIONAL(GUI, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes && test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
- 
- AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes)
- 
--AM_CONDITIONAL(PNG, test x$enable_png = xyes)
--AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
--
- AC_OUTPUT(Makefile)
---- yagears-2.4.orig/gui.cc
-+++ yagears-2.4/gui.cc
-@@ -38,7 +38,11 @@
- #endif
- #if defined(GLUT)
- #include <GL/glut.h>
-+#ifndef GLUT_ES_PROFILE
-+#define GLUT_ES_PROFILE 4
-+#endif
- extern "C" {
-+void glutInitContextProfile(int);
- void glutLeaveMainLoop();
- void glutExit();
- }
-@@ -1178,6 +1182,7 @@
-     glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
-     glutInitWindowSize(win_width, win_height);
-     glutInitWindowPosition(win_posx, win_posy);
-+    glutInitContextProfile(gears_engine_version(gears_engine) ? GLUT_ES_PROFILE : 0);
-     glut_win = glutCreateWindow("yagears");
-     glutDisplayFunc(glutDisplay);
-     glutIdleFunc(glutIdle);
---- yagears-2.4.orig/main.c
-+++ yagears-2.4/main.c
-@@ -39,6 +39,10 @@
- #include <directfbgl.h>
- #endif
- #if defined(GL_FBDEV)
-+#include <dirent.h>
-+#include <fcntl.h>
-+#include <linux/input.h>
-+#include <sys/mman.h>
- #include <GL/glfbdev.h>
- #endif
- 
-@@ -49,6 +53,7 @@
- #include <directfb.h>
- #endif
- #if defined(EGL_FBDEV)
-+#include <dirent.h>
- #include <fcntl.h>
- #include <linux/fb.h>
- #include <linux/input.h>
-@@ -819,6 +824,9 @@
-   struct fb_fix_screeninfo fb_finfo;
-   struct fb_var_screeninfo fb_vinfo;
-   int fb_keyboard = -1;
-+  DIR *fb_input_dir = NULL;
-+  struct dirent *fb_input_dev = NULL;
-+  unsigned char fb_key_bits[(KEY_CNT - 1) / 8 + 1];
-   struct input_event fb_event;
-   #endif
-   #if defined(GL_FBDEV)
-@@ -1283,11 +1291,13 @@
-   }
-   #endif
- 
--  egl_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
--  if (egl_extension_name && egl_extensions && strstr(egl_extensions, egl_extension_name)) {
--    eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
--    eglCreatePlatformWindowSurfaceEXT = (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC)eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
--  }
-+  if (!strcmp(backend, "egl-x11") || !strcmp(backend, "egl-directfb") || !strcmp(backend, "egl-fbdev") || !strcmp(backend, "egl-wayland") || !strcmp(backend, "egl-xcb")) {
-+    egl_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-+    if (!getenv("NO_EGL_EXT_PLATFORM") && egl_extensions && strstr(egl_extensions, egl_extension_name)) {
-+      eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
-+      eglCreatePlatformWindowSurfaceEXT = (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC)eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
-+    }
-+   }
-   #endif
-   #endif
- 
-@@ -1558,17 +1568,39 @@
- 
-     if (getenv("KEYBOARD")) {
-       fb_keyboard = open(getenv("KEYBOARD"), O_RDONLY | O_NONBLOCK);
--      if (fb_keyboard == -1) {
--        printf("open %s failed: %s\n", getenv("KEYBOARD"), strerror(errno));
--        goto out;
--      }
-     }
-     else {
--      fb_keyboard = open("/dev/input/event0", O_RDONLY | O_NONBLOCK);
--      if (fb_keyboard == -1) {
--        printf("open /dev/input/event0 failed: %s\n", strerror(errno));
-+      fb_input_dir = opendir("/dev/input");
-+      if (!fb_input_dir) {
-+        printf("opendir /dev/input failed: %s\n", strerror(errno));
-         goto out;
-       }
-+
-+      c = alloca(64);
-+
-+      while ((fb_input_dev = readdir(fb_input_dir))) {
-+        if (fb_input_dev->d_type == DT_CHR) {
-+          sprintf(c, "/dev/input/%s", fb_input_dev->d_name);
-+          fb_keyboard = open(c, O_RDONLY | O_NONBLOCK);
-+          if (fb_keyboard == -1)
-+            continue;
-+
-+          err = ioctl(fb_keyboard, EVIOCGBIT(EV_KEY, sizeof(fb_key_bits)), fb_key_bits);
-+          if (err == -1)
-+            continue;
-+
-+          if (fb_key_bits[KEY_ENTER / 8] & (1 << (KEY_ENTER % 8)))
-+            break;
-+
-+          close(fb_keyboard);
-+          fb_keyboard = -1;
-+        }
-+      }
-+    }
-+
-+    if (fb_keyboard == -1) {
-+      printf("open keyboard event device failed\n");
-+      goto out;
-     }
-   }
-   #endif
-@@ -2301,6 +2333,10 @@
-       close(fb_keyboard);
-     }
- 
-+    if (fb_input_dir) {
-+      closedir(fb_input_dir);
-+    }
-+
-     if (fb_win) {
-       free(fb_win);
-     }
---- yagears-2.4.orig/meson.build
-+++ yagears-2.4/meson.build
-@@ -54,12 +54,12 @@
-   gl_dep = dependency('gl', required: false)
-   if gl_dep.found()
-     if enable_glesv1_cm
--      gl_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GL/gl.h>', '-DGLESV1_CM_LIB="libGL.so"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
-+      gl_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GL/gl.h>', '-DGLESV1_CM_LIB="libGL.so.1"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
-     endif
-     if enable_glesv2
-       xxd = find_program('xxd', required: false)
-       if xxd.found()
--        gl_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GL/gl.h>', '-DGLESV2_LIB="libGL.so"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
-+        gl_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GL/gl.h>', '-DGLESV2_LIB="libGL.so.1"', '-DGL_GLEXT_PROTOTYPES'], dependencies: gl_dep)
-       else
-         enable_glesv2 = false
-       endif
-@@ -78,8 +78,8 @@
-   if enable_glesv1_cm
-     glesv1_cm_dep = dependency('glesv1_cm', required: false)
-     if glesv1_cm_dep.found()
--      glesv1_cm_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv1_cm').stdout().strip().split(' '))
--      glesv1_cm_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GLES/gl.h>', '-DGLESV1_CM_LIB="libGLESv1_CM.so"'], link_args: '-ldl', dependencies: glesv1_cm_dep)
-+      glesv1_cm_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv1_cm', check: true).stdout().strip().split(' '))
-+      glesv1_cm_dep = declare_dependency(compile_args: ['-DGLESV1_CM_H=<GLES/gl.h>', '-DGLESV1_CM_LIB="libGLESv1_CM.so.1"'], link_args: '-ldl', dependencies: glesv1_cm_dep)
-     else
-       enable_glesv1_cm = false
-     endif
-@@ -89,8 +89,8 @@
-     glesv2_dep = dependency('glesv2', required: false)
-     xxd = find_program('xxd', required: false)
-     if glesv2_dep.found() and xxd.found()
--      glesv2_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv2').stdout().strip().split(' '))
--      glesv2_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GLES2/gl2.h>', '-DGLESV2_LIB="libGLESv2.so"'], link_args: '-ldl', dependencies: glesv2_dep)
-+      glesv2_dep = declare_dependency(compile_args: run_command('pkg-config', '--cflags', 'glesv2', check: true).stdout().strip().split(' '))
-+      glesv2_dep = declare_dependency(compile_args: ['-DGLESV2_H=<GLES2/gl2.h>', '-DGLESV2_LIB="libGLESv2.so.2"'], link_args: '-ldl', dependencies: glesv2_dep)
-     else
-       enable_glesv2 = false
-     endif
-@@ -98,7 +98,7 @@
- endif
- 
- if not enable_gl and not enable_glesv1_cm and not enable_glesv2
--  error('No OpenGL Engines found')
-+  warning('No OpenGL Engines found')
- endif
- 
- # OpenGL Backends
-@@ -107,7 +107,7 @@
- directfb_dep = []
- if enable_gl
-   if enable_gl_x11
--    libdir = run_command('pkg-config', '--variable=libdir', 'gl').stdout().strip()
-+    libdir = run_command('pkg-config', '--variable=libdir', 'gl', check: true).stdout().strip()
-     if cc.has_function('glXCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
-       x11_dep = dependency('x11', required: false)
-       if not x11_dep.found()
-@@ -120,8 +120,8 @@
- 
-   if enable_gl_directfb
-     message('Checking for DirectFBGL module')
--    moduledir = run_command('pkg-config', '--variable=moduledir', 'directfb-internal').stdout().strip()
--    if run_command('test', '-d', moduledir + '/interfaces/IDirectFBGL').returncode() == 0
-+    moduledir = run_command('pkg-config', '--variable=moduledir', 'directfb-internal', check: false).stdout().strip()
-+    if import('fs').is_dir(moduledir + '/interfaces/IDirectFBGL')
-       message('DirectFBGL found')
-       directfb_dep = dependency('directfb', required: false)
-       if not directfb_dep.found()
-@@ -134,7 +134,7 @@
-   endif
- 
-   if enable_gl_fbdev
--    libdir = run_command('pkg-config', '--variable=libdir', 'gl').stdout().strip()
-+    libdir = run_command('pkg-config', '--variable=libdir', 'gl', check: true).stdout().strip()
-     if not cc.has_function('glFBDevCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
-       enable_gl_fbdev = false
-     endif
-@@ -202,7 +202,7 @@
-           config_h.set('HAVE_WL_SHELL_SURFACE_SET_POSITION', false, description: 'Have function wl_shell_surface_set_position')
-         endif
- 
--        wayland_egl_dep = [wayland_dep, cc.find_library('wayland-egl', dirs: run_command('pkg-config', '--variable=libdir', 'wayland-client').stdout().strip())]
-+        wayland_egl_dep = [wayland_dep, cc.find_library('wayland-egl', dirs: run_command('pkg-config', '--variable=libdir', 'wayland-client', check: true).stdout().strip())]
-       endif
-     endif
- 
-@@ -221,8 +221,8 @@
-         endif
-       endforeach
-       if enable_egl_drm
--        dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri').stdout().strip()
--        modversion = run_command('pkg-config', '--modversion', 'dri')
-+        dridriverdir = run_command('pkg-config', '--variable=dridriverdir', 'dri', check: true).stdout().strip()
-+        modversion = run_command('pkg-config', '--modversion', 'dri', check: true)
-         drimajorversion = modversion.stdout().split('.')[0]
-         driminorversion = modversion.stdout().split('.')[1]
-         drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
-@@ -254,7 +254,7 @@
- config_h.set('EGL_RPI', enable_egl_rpi, description: 'Support for EGL with Raspberry Pi Dispmanx platform')
- 
- if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi
--  error('No OpenGL Backends found')
-+  warning('No OpenGL Backends found')
- endif
- 
- # Vulkan WSIs
-@@ -264,7 +264,7 @@
-   vulkan_dep = dependency('vulkan', required: false)
-   glslang_validator = find_program('glslangValidator', required: false)
-   if vulkan_dep.found() and glslang_validator.found()
--    libdir = run_command('pkg-config', '--variable=libdir', 'vulkan').stdout().strip()
-+    libdir = run_command('pkg-config', '--variable=libdir', 'vulkan', check: true).stdout().strip()
- 
-     if enable_vk_x11
-       if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
-@@ -376,7 +376,7 @@
- if enable_fltk
-   fltk_config = find_program('fltk-config', required: false)
-   if fltk_config.found()
--    fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags').stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags').stdout().strip().split(' '))
-+    fltk_dep = declare_dependency(compile_args: run_command(fltk_config, '--cflags', check: true).stdout().strip().split(' '), link_args: run_command(fltk_config, '--use-gl', '--ldflags', check: true).stdout().strip().split(' '))
-   else
-     enable_fltk = false
-   endif
-@@ -493,7 +493,7 @@
- if enable_wx
-   wx_config = find_program('wx-config', required: false)
-   if wx_config.found()
--    wx_dep = declare_dependency(compile_args: run_command(wx_config, '--cflags').stdout().strip().split(' '), link_args: run_command(wx_config, '--libs', 'core,gl').stdout().strip().split(' '))
-+    wx_dep = declare_dependency(compile_args: run_command(wx_config, '--cflags', check: true).stdout().strip().split(' '), link_args: run_command(wx_config, '--libs', 'core,gl', check: true).stdout().strip().split(' '))
-   else
-     enable_wx = false
-   endif
-@@ -575,9 +575,17 @@
- 
- # Build rules
- 
--GL = enable_gl
--GLESV1_CM = enable_glesv1_cm
--GLESV2 = enable_glesv2
-+PNG = enable_png
-+TIFF = enable_tiff
-+
-+if enable_gl or enable_glesv1_cm or enable_glesv2
-+  GL = enable_gl
-+  GLESV1_CM = enable_glesv1_cm
-+  GLESV2 = enable_glesv2
-+  OPENGL = true
-+else
-+  OPENGL = false
-+endif
- 
- if enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb
-   VK = true
-@@ -587,7 +595,7 @@
- 
- MOSAIC = enable_glut
- 
--if enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx
-+if (enable_gl or enable_glesv1_cm or enable_glesv2) and (enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx)
-   GUI = true
- else
-   GUI = false
-@@ -599,9 +607,17 @@
-   VK_GUI = false
- endif
- 
--PNG = enable_png
--TIFF = enable_tiff
-+png_source = []
-+if PNG
-+png_source = 'png_image.c'
-+endif
- 
-+tiff_source = []
-+if TIFF
-+tiff_source = 'tiff_image.c'
-+endif
-+
-+if OPENGL
- gl_source = []
- if GL
- gl_source = 'gl_gears.c'
-@@ -622,16 +638,6 @@
- glesv2_source = 'glesv2_gears.c'
- endif
- 
--png_source = []
--if PNG
--png_source = 'png_image.c'
--endif
--
--tiff_source = []
--if TIFF
--tiff_source = 'tiff_image.c'
--endif
--
- libyagears = static_library('yagears',
-                             'gears_engine.c', gl_source, glesv1_cm_source, glesv2_source, vert_xxd_file, frag_xxd_file, 'image_loader.c', png_source, tiff_source,
-                             dependencies: [gl_dep, glesv1_cm_dep, glesv2_dep, png_dep, tiff_dep])
-@@ -641,6 +647,7 @@
-            dependencies: [egl_dep, x11_dep, directfb_dep, wayland_egl_dep, xcb_dep, drm_dep, rpi_dep],
-            link_whole: libyagears,
-            install: true)
-+endif
- 
- if VK
- vert_spv_file = custom_target('vert_spv', command: [glslang_validator, '@INPUT@', '-V', '-x'], input: 'vulkan_gears.vert', output: 'vert.spv')
-@@ -670,7 +677,7 @@
- 
- if VK_GUI
- executable('yagears2-vk-gui',
--           'vk-gui.cc', 'vulkan_gears.c', 'image_loader.c', png_source, tiff_source,
-+           'vk-gui.cc', 'vulkan_gears.c', vert_spv_file, frag_spv_file, 'image_loader.c', png_source, tiff_source,
-            dependencies: [vulkan_dep, png_dep, tiff_dep, glfw_dep, sdl_dep],
-            install: true)
- endif
---- yagears-2.4.orig/mosaic.c
-+++ yagears-2.4/mosaic.c
-@@ -24,6 +24,10 @@
- #include "config.h"
- 
- #include <GL/glut.h>
-+#ifndef GLUT_ES_PROFILE
-+#define GLUT_ES_PROFILE 4
-+#endif
-+void glutInitContextProfile(int);
- void glutSetWindowData(void *data);
- void *glutGetWindowData();
- void glutLeaveMainLoop();
-@@ -196,6 +200,7 @@
-     for (j = 0; j < COLS; j++) {
-       gears_engine[i * COLS + j] = gears_engine_new(gears_engine_name(opt));
-       glutInitWindowPosition(win_posx, win_posy);
-+      glutInitContextProfile(gears_engine_version(gears_engine[i * COLS + j]) ? GLUT_ES_PROFILE : 0);
-       glut_win[i * COLS + j] = glutCreateWindow(NULL);
-       glutSetWindowData((void *)(long)(i * COLS + j));
-       glutDisplayFunc(glutDisplay);
---- yagears-2.4.orig/vk.c
-+++ yagears-2.4/vk.c
-@@ -41,6 +41,7 @@
- #define VK_USE_PLATFORM_DIRECTFB_EXT
- #endif
- #if defined(VK_FBDEV)
-+#include <dirent.h>
- #include <fcntl.h>
- #include <linux/fb.h>
- #include <linux/input.h>
-@@ -496,6 +497,9 @@
-   struct fb_fix_screeninfo fb_finfo;
-   struct fb_var_screeninfo fb_vinfo;
-   int fb_keyboard = -1;
-+  DIR *fb_input_dir = NULL;
-+  struct dirent *fb_input_dev = NULL;
-+  unsigned char fb_key_bits[(KEY_CNT - 1) / 8 + 1];
-   struct input_event fb_event;
-   VkFBDevSurfaceCreateInfoEXT fb_surface_create_info;
-   #endif
-@@ -835,17 +839,39 @@
- 
-     if (getenv("KEYBOARD")) {
-       fb_keyboard = open(getenv("KEYBOARD"), O_RDONLY | O_NONBLOCK);
--      if (fb_keyboard == -1) {
--        printf("open %s failed: %s\n", getenv("KEYBOARD"), strerror(errno));
--        goto out;
--      }
-     }
-     else {
--      fb_keyboard = open("/dev/input/event0", O_RDONLY | O_NONBLOCK);
--      if (fb_keyboard == -1) {
--        printf("open /dev/input/event0 failed: %s\n", strerror(errno));
-+      fb_input_dir = opendir("/dev/input");
-+      if (!fb_input_dir) {
-+        printf("opendir /dev/input failed: %s\n", strerror(errno));
-         goto out;
-       }
-+
-+      c = alloca(64);
-+
-+      while ((fb_input_dev = readdir(fb_input_dir))) {
-+        if (fb_input_dev->d_type == DT_CHR) {
-+          sprintf(c, "/dev/input/%s", fb_input_dev->d_name);
-+          fb_keyboard = open(c, O_RDONLY | O_NONBLOCK);
-+          if (fb_keyboard == -1)
-+            continue;
-+
-+          err = ioctl(fb_keyboard, EVIOCGBIT(EV_KEY, sizeof(fb_key_bits)), fb_key_bits);
-+          if (err == -1)
-+            continue;
-+
-+          if (fb_key_bits[KEY_ENTER / 8] & (1 << (KEY_ENTER % 8)))
-+            break;
-+
-+          close(fb_keyboard);
-+          fb_keyboard = -1;
-+        }
-+      }
-+    }
-+
-+    if (fb_keyboard == -1) {
-+      printf("open keyboard event device failed\n");
-+      goto out;
-     }
-   }
-   #endif
-@@ -1236,6 +1262,10 @@
-       close(fb_keyboard);
-     }
- 
-+    if (fb_input_dir) {
-+      closedir(fb_input_dir);
-+    }
-+
-     if (fb_win) {
-       free(fb_win);
-     }
---- yagears-2.4.orig/CMakeLists.txt
-+++ yagears-2.4/CMakeLists.txt
-@@ -60,12 +60,12 @@
+@@ -60,12 +66,12 @@
    pkg_check_modules(GL gl)
    if(GL_FOUND)
      if(ENABLE_GLESV1_CM)
@@ -785,7 +102,7 @@ exit
        else()
          set(ENABLE_GLESV2 OFF)
        endif()
-@@ -82,7 +82,7 @@
+@@ -82,7 +88,7 @@
    if(ENABLE_GLESV1_CM)
      pkg_check_modules(GLESV1_CM glesv1_cm)
      if(GLESV1_CM_FOUND)
@@ -794,7 +111,7 @@ exit
        set(GLESV1_CM_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV1_CM OFF)
-@@ -93,7 +93,7 @@
+@@ -93,7 +99,7 @@
      pkg_check_modules(GLESV2 glesv2)
      find_program(XXD xxd)
      if(GLESV2_FOUND AND XXD)
@@ -803,7 +120,7 @@ exit
        set(GLESV2_LDFLAGS -ldl)
      else()
        set(ENABLE_GLESV2 OFF)
-@@ -102,7 +102,7 @@
+@@ -102,7 +108,7 @@
  endif()
  
  if(NOT ENABLE_GL AND NOT ENABLE_GLESV1_CM AND NOT ENABLE_GLESV2)
@@ -812,7 +129,7 @@ exit
  endif()
  
  # OpenGL Backends
-@@ -251,7 +251,7 @@
+@@ -251,7 +257,7 @@
  set(EGL_RPI ${ENABLE_EGL_RPI})
  
  if(NOT ENABLE_GL_X11 AND NOT ENABLE_GL_DIRECTFB AND NOT ENABLE_GL_FBDEV AND NOT ENABLE_EGL_X11 AND NOT ENABLE_EGL_DIRECTFB AND NOT ENABLE_EGL_FBDEV AND NOT ENABLE_EGL_WAYLAND AND NOT ENABLE_EGL_XCB AND NOT ENABLE_EGL_DRM AND NOT ENABLE_EGL_RPI)
@@ -821,7 +138,16 @@ exit
  endif()
  
  # Vulkan WSIs
-@@ -463,6 +463,7 @@
+@@ -400,6 +406,8 @@
+     check_library_exists(glut glutExit "" GLUT_FOUND)
+     if(NOT GLUT_FOUND)
+       set(ENABLE_GLUT OFF)
++     else()
++      set(GLUT_LDFLAGS -lglut)
+     endif()
+   endif()
+ endif()
+@@ -463,6 +471,7 @@
      pkg_check_modules(SDL sdl2)
      if(NOT SDL_FOUND)
        set(ENABLE_SDL OFF)
@@ -829,7 +155,7 @@ exit
      endif()
    else()
      set(ENABLE_SDL OFF)
-@@ -576,9 +577,17 @@
+@@ -576,9 +585,17 @@
  
  # Build rules
  
@@ -850,19 +176,19 @@ exit
  
  if(ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB)
    set(VK ON)
-@@ -588,21 +597,27 @@
+@@ -588,21 +605,27 @@
  
  set(MOSAIC ${ENABLE_GLUT})
  
 -if(ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX)
-+if((ENABLE_GL OR ENABLE_GLESV1_CM OR ENABLE_GLESV2) AND (ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX))
++if((ENABLE_GL OR ENABLE_GLESV1_CM OR ENABLE_GLESV2) AND (ENABLE_EFL OR ENABLE_FLTK OR ENABLE_GLFW OR ENABLE_GLUT OR ENABLE_GTK OR ENABLE_QT OR ENABLE_SDL OR ENABLE_SFML OR ENABLE_WX) AND HAVE_CXX)
    set(GUI ON)
  else()
    set(GUI OFF)
  endif()
  
 -if((ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB) AND (ENABLE_GLFW OR ENABLE_SDL))
-+if((ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB OR ENABLE_VK_D2D) AND (ENABLE_GLFW OR ENABLE_SDL AND WITH_SDL STREQUAL 2))
++if((ENABLE_VK_X11 OR ENABLE_VK_DIRECTFB OR ENABLE_VK_FBDEV OR ENABLE_VK_WAYLAND OR ENABLE_VK_XCB) AND (ENABLE_GLFW OR ENABLE_SDL AND WITH_SDL STREQUAL 2) AND HAVE_CXX)
    set(VK_GUI ON)
  else()
    set(VK_GUI OFF)
@@ -882,7 +208,7 @@ exit
  if(GL)
  set(GL_SOURCE gl_gears.c)
  endif()
-@@ -620,14 +635,6 @@
+@@ -620,14 +643,6 @@
  set(GLESV2_SOURCE glesv2_gears.c)
  endif()
  
@@ -897,7 +223,7 @@ exit
  add_library(yagears gears_engine.c ${GL_SOURCE} ${GLESV1_CM_SOURCE} ${GLESV2_SOURCE} ${VERT_XXD_FILE} ${FRAG_XXD_FILE} image_loader.c ${PNG_SOURCE} ${TIFF_SOURCE})
  target_compile_options(yagears PRIVATE ${GL_CFLAGS} ${GLESV1_CM_CFLAGS} ${GLESV2_CFLAGS} ${PNG_CFLAGS} ${TIFF_CFLAGS})
  target_link_libraries(yagears ${GL_LDFLAGS} ${GLESV1_CM_LDFLAGS} ${GLESV2_LDFLAGS} ${PNG_LDFLAGS} ${TIFF_LDFLAGS})
-@@ -636,6 +643,7 @@
+@@ -636,6 +651,7 @@
  target_compile_options(yagears2 PRIVATE ${EGL_CFLAGS} ${X11_CFLAGS} ${DIRECTFB_CFLAGS} ${WAYLAND_EGL_CFLAGS} ${XCB_CFLAGS} ${DRM_CFLAGS} ${RPI_CFLAGS})
  target_link_libraries(yagears2 -Wl,--whole-archive yagears -Wl,--no-whole-archive ${EGL_LDFLAGS} ${X11_LDFLAGS} ${DIRECTFB_LDFLAGS} ${WAYLAND_EGL_LDFLAGS} ${XCB_LDFLAGS} ${DRM_LDFLAGS} ${RPI_LDFLAGS})
  install(TARGETS yagears2 DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -950,17 +276,36 @@ exit
  
  if VK
  vert.spv: vulkan_gears.vert
+--- yagears-2.4.orig/Makefile.in
++++ yagears-2.4/Makefile.in
+@@ -0,0 +1 @@
++# Makefile.in generated by automake 1.15.1
+--- yagears-2.4.orig/configure
++++ yagears-2.4/configure
+@@ -0,0 +1 @@
++# Generated by GNU Autoconf 2.69
 --- yagears-2.4.orig/configure.ac
 +++ yagears-2.4/configure.ac
-@@ -1,6 +1,7 @@
+@@ -1,14 +1,18 @@
  AC_INIT(yagears, 2.4)
  
  AC_CONFIG_HEADERS(config.h)
 +AC_CONFIG_MACRO_DIR([m4])
  
  AM_INIT_AUTOMAKE
++AM_MAINTAINER_MODE
  LT_INIT
-@@ -125,12 +126,12 @@
+ AC_PROG_CC
+ AC_PROG_CXX
+ AC_SYS_LARGEFILE
+ PKG_PROG_PKG_CONFIG
+ 
++AC_CHECK_PROG(have_cxx, $CXX, yes, no)
++
+ CFLAGS="$CFLAGS -Wall -D_GNU_SOURCE"
+ LIBS="$LIBS -lm"
+ 
+@@ -125,12 +129,12 @@
    PKG_CHECK_MODULES(GL, gl, , enable_gl=no)
    if test x$enable_gl = xyes; then
      if test x$enable_glesv1_cm = xyes; then
@@ -975,7 +320,7 @@ exit
        else
          enable_glesv2=no
        fi
-@@ -145,7 +146,7 @@
+@@ -145,7 +149,7 @@
    if test x$enable_glesv1_cm = xyes; then
      PKG_CHECK_MODULES(GLESV1_CM, glesv1_cm, , enable_glesv1_cm=no)
      if test x$enable_glesv1_cm = xyes; then
@@ -984,7 +329,7 @@ exit
        GLESV1_CM_LIBS=-ldl
      fi
    fi
-@@ -155,7 +156,7 @@
+@@ -155,7 +159,7 @@
      if test x$enable_glesv2 = xyes; then
        AC_PATH_TOOL(XXD, xxd)
        if test -n "$XXD"; then
@@ -993,7 +338,7 @@ exit
          GLESV2_LIBS=-ldl
        else
          enable_glesv2=no
-@@ -165,7 +166,7 @@
+@@ -165,7 +169,7 @@
  fi
  
  if test x$enable_gl = xno -a x$enable_glesv1_cm = xno -a x$enable_glesv2 = xno; then
@@ -1002,7 +347,7 @@ exit
  fi
  
  # OpenGL Backends
-@@ -302,7 +303,7 @@
+@@ -302,7 +306,7 @@
  fi
  
  if test x$enable_gl_x11 = xno -a x$enable_gl_directfb = xno -a x$enable_gl_fbdev = xno -a x$enable_egl_x11 = xno -a x$enable_egl_directfb = xno -a x$enable_egl_fbdev = xno -a x$enable_egl_wayland = xno -a x$enable_egl_xcb = xno -a x$enable_egl_drm = xno -a x$enable_egl_rpi = xno; then
@@ -1011,7 +356,7 @@ exit
  fi
  
  # Vulkan WSIs
-@@ -477,6 +478,9 @@
+@@ -477,6 +481,9 @@
    AC_MSG_RESULT([$with_sdl])
    if test x$with_sdl = x2; then
      PKG_CHECK_MODULES(SDL, sdl2, , enable_sdl=no)
@@ -1021,7 +366,7 @@ exit
    else
      enable_sdl=no
    fi
-@@ -575,19 +579,20 @@
+@@ -575,19 +582,20 @@
  
  # Build rules
  
@@ -1038,13 +383,13 @@ exit
  AM_CONDITIONAL(MOSAIC, test x$enable_glut = xyes)
  
 -AM_CONDITIONAL(GUI, test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
-+AM_CONDITIONAL(GUI, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes && test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes)
- 
--AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes)
 -
+-AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes)
++AM_CONDITIONAL(GUI, test x$enable_gl = xyes -o x$enable_glesv1_cm = xyes -o x$enable_glesv2 = xyes && test x$enable_efl = xyes -o x$enable_fltk = xyes -o x$enable_glfw = xyes -o x$enable_glut = xyes -o x$enable_gtk = xyes -o x$enable_qt = xyes -o x$enable_sdl = xyes -o x$enable_sfml = xyes -o x$enable_wx = xyes && test x$have_cxx = xyes)
+ 
 -AM_CONDITIONAL(PNG, test x$enable_png = xyes)
 -AM_CONDITIONAL(TIFF, test x$enable_tiff = xyes)
-+AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes -o x$enable_vk_d2d = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes -a x$with_sdl = x2)
++AM_CONDITIONAL(VK_GUI, test x$enable_vk_x11 = xyes -o x$enable_vk_directfb = xyes -o x$enable_vk_fbdev = xyes -o x$enable_vk_wayland = xyes -o x$enable_vk_xcb = xyes && test x$enable_glfw = xyes -o x$enable_sdl = xyes -a x$with_sdl = x2 && test x$have_cxx = xyes)
  
  AC_OUTPUT(Makefile)
 --- yagears-2.4.orig/gui.cc
@@ -1069,6 +414,10 @@ exit
      glut_win = glutCreateWindow("yagears");
      glutDisplayFunc(glutDisplay);
      glutIdleFunc(glutIdle);
+--- yagears-2.4.orig/ltmain.sh
++++ yagears-2.4/ltmain.sh
+@@ -0,0 +1 @@
++# libtool (GNU libtool) 2.4.6
 --- yagears-2.4.orig/main.c
 +++ yagears-2.4/main.c
 @@ -39,6 +39,10 @@
@@ -1179,7 +528,20 @@ exit
      }
 --- yagears-2.4.orig/meson.build
 +++ yagears-2.4/meson.build
-@@ -54,12 +54,12 @@
+@@ -1,9 +1,11 @@
+-project('yagears', 'c', 'cpp', version: '2.4')
++project('yagears', 'c', version: '2.4')
+ 
+ config_h = configuration_data()
+ 
+ cc = meson.get_compiler('c')
+ 
++have_cxx = add_languages('cpp', required: false)
++
+ add_global_arguments('-D_GNU_SOURCE', language: 'c')
+ add_global_link_arguments('-lm', language: 'c')
+ 
+@@ -54,12 +56,12 @@
    gl_dep = dependency('gl', required: false)
    if gl_dep.found()
      if enable_glesv1_cm
@@ -1194,7 +556,7 @@ exit
        else
          enable_glesv2 = false
        endif
-@@ -78,8 +78,8 @@
+@@ -78,8 +80,8 @@
    if enable_glesv1_cm
      glesv1_cm_dep = dependency('glesv1_cm', required: false)
      if glesv1_cm_dep.found()
@@ -1205,7 +567,7 @@ exit
      else
        enable_glesv1_cm = false
      endif
-@@ -89,8 +89,8 @@
+@@ -89,8 +91,8 @@
      glesv2_dep = dependency('glesv2', required: false)
      xxd = find_program('xxd', required: false)
      if glesv2_dep.found() and xxd.found()
@@ -1216,7 +578,7 @@ exit
      else
        enable_glesv2 = false
      endif
-@@ -98,7 +98,7 @@
+@@ -98,7 +100,7 @@
  endif
  
  if not enable_gl and not enable_glesv1_cm and not enable_glesv2
@@ -1225,7 +587,7 @@ exit
  endif
  
  # OpenGL Backends
-@@ -107,7 +107,7 @@
+@@ -107,7 +109,7 @@
  directfb_dep = []
  if enable_gl
    if enable_gl_x11
@@ -1234,7 +596,7 @@ exit
      if cc.has_function('glXCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
        x11_dep = dependency('x11', required: false)
        if not x11_dep.found()
-@@ -120,8 +120,8 @@
+@@ -120,8 +122,8 @@
  
    if enable_gl_directfb
      message('Checking for DirectFBGL module')
@@ -1245,7 +607,7 @@ exit
        message('DirectFBGL found')
        directfb_dep = dependency('directfb', required: false)
        if not directfb_dep.found()
-@@ -134,7 +134,7 @@
+@@ -134,7 +136,7 @@
    endif
  
    if enable_gl_fbdev
@@ -1254,7 +616,7 @@ exit
      if not cc.has_function('glFBDevCreateContext', dependencies: cc.find_library('GL', dirs: libdir))
        enable_gl_fbdev = false
      endif
-@@ -202,7 +202,7 @@
+@@ -202,7 +204,7 @@
            config_h.set('HAVE_WL_SHELL_SURFACE_SET_POSITION', false, description: 'Have function wl_shell_surface_set_position')
          endif
  
@@ -1263,7 +625,7 @@ exit
        endif
      endif
  
-@@ -221,8 +221,8 @@
+@@ -221,8 +223,8 @@
          endif
        endforeach
        if enable_egl_drm
@@ -1274,7 +636,7 @@ exit
          drimajorversion = modversion.stdout().split('.')[0]
          driminorversion = modversion.stdout().split('.')[1]
          drm_dep = declare_dependency(compile_args: ['-DDRI_DRIVERDIR="@0@"'.format(dridriverdir), '-DDRI_MAJOR_VERSION=@0@'.format(drimajorversion), '-DDRI_MINOR_VERSION=@0@'.format(driminorversion)], link_args: '-ldl', dependencies: drm_dep)
-@@ -254,7 +254,7 @@
+@@ -254,7 +256,7 @@
  config_h.set('EGL_RPI', enable_egl_rpi, description: 'Support for EGL with Raspberry Pi Dispmanx platform')
  
  if not enable_gl_x11 and not enable_gl_directfb and not enable_gl_fbdev and not enable_egl_x11 and not enable_egl_directfb and not enable_egl_fbdev and not enable_egl_wayland and not enable_egl_xcb and not enable_egl_drm and not enable_egl_rpi
@@ -1283,7 +645,7 @@ exit
  endif
  
  # Vulkan WSIs
-@@ -264,7 +264,7 @@
+@@ -264,7 +266,7 @@
    vulkan_dep = dependency('vulkan', required: false)
    glslang_validator = find_program('glslangValidator', required: false)
    if vulkan_dep.found() and glslang_validator.found()
@@ -1292,7 +654,7 @@ exit
  
      if enable_vk_x11
        if cc.has_function('vkCreateXlibSurfaceKHR', dependencies: cc.find_library('vulkan', dirs: libdir))
-@@ -376,7 +376,7 @@
+@@ -376,7 +378,7 @@
  if enable_fltk
    fltk_config = find_program('fltk-config', required: false)
    if fltk_config.found()
@@ -1301,7 +663,7 @@ exit
    else
      enable_fltk = false
    endif
-@@ -465,6 +465,7 @@
+@@ -465,6 +467,7 @@
      sdl_dep = dependency('sdl2', required: false)
      if not sdl_dep.found()
        enable_sdl = false
@@ -1309,7 +671,7 @@ exit
      endif
    else
      enable_sdl = false
-@@ -493,7 +494,7 @@
+@@ -493,7 +496,7 @@
  if enable_wx
    wx_config = find_program('wx-config', required: false)
    if wx_config.found()
@@ -1318,7 +680,7 @@ exit
    else
      enable_wx = false
    endif
-@@ -575,9 +576,17 @@
+@@ -575,9 +578,17 @@
  
  # Build rules
  
@@ -1339,19 +701,19 @@ exit
  
  if enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb
    VK = true
-@@ -587,21 +596,29 @@
+@@ -587,21 +598,29 @@
  
  MOSAIC = enable_glut
  
 -if enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx
-+if (enable_gl or enable_glesv1_cm or enable_glesv2) and (enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx)
++if (enable_gl or enable_glesv1_cm or enable_glesv2) and (enable_efl or enable_fltk or enable_glfw or enable_glut or enable_gtk or enable_qt or enable_sdl or enable_sfml or enable_wx) and have_cxx
    GUI = true
  else
    GUI = false
  endif
  
 -if (enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb) and (enable_glfw or enable_sdl)
-+if (enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb or enable_vk_d2d) and (enable_glfw or enable_sdl and with_sdl == '2')
++if (enable_vk_x11 or enable_vk_directfb or enable_vk_fbdev or enable_vk_wayland or enable_vk_xcb) and (enable_glfw or enable_sdl and with_sdl == '2') and have_cxx
    VK_GUI = true
  else
    VK_GUI = false
@@ -1363,17 +725,17 @@ exit
 +if PNG
 +png_source = 'png_image.c'
 +endif
- 
++
 +tiff_source = []
 +if TIFF
 +tiff_source = 'tiff_image.c'
 +endif
-+
+ 
 +if OPENGL
  gl_source = []
  if GL
  gl_source = 'gl_gears.c'
-@@ -622,16 +639,6 @@
+@@ -622,16 +641,6 @@
  glesv2_source = 'glesv2_gears.c'
  endif
  
@@ -1390,7 +752,7 @@ exit
  libyagears = static_library('yagears',
                              'gears_engine.c', gl_source, glesv1_cm_source, glesv2_source, vert_xxd_file, frag_xxd_file, 'image_loader.c', png_source, tiff_source,
                              dependencies: [gl_dep, glesv1_cm_dep, glesv2_dep, png_dep, tiff_dep])
-@@ -641,6 +648,7 @@
+@@ -641,6 +650,7 @@
             dependencies: [egl_dep, x11_dep, directfb_dep, wayland_egl_dep, xcb_dep, drm_dep, rpi_dep],
             link_whole: libyagears,
             install: true)
@@ -1398,7 +760,7 @@ exit
  
  if VK
  vert_spv_file = custom_target('vert_spv', command: [glslang_validator, '@INPUT@', '-V', '-x'], input: 'vulkan_gears.vert', output: 'vert.spv')
-@@ -670,7 +678,7 @@
+@@ -670,7 +680,7 @@
  
  if VK_GUI
  executable('yagears2-vk-gui',
@@ -1506,3 +868,6 @@ exit
      if (fb_win) {
        free(fb_win);
      }
+
+# source
+https://github.com/caramelli/yagears/archive/v2.4/yagears-2.4.tar.gz

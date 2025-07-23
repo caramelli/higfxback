@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build fontconfig-build glib-build libpng-build p
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.67; am-1.11; lt-2.2.6b)
-libtoolize -c -f; aclocal -I build; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I build; autoheader; autoconf; automake -a -c
 ./configure --disable-interpreter --disable-static --prefix=/fb
 
 # build
@@ -71,6 +71,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- cairo-1.10.2.orig/configure.ac
++++ cairo-1.10.2/configure.ac
+@@ -10,6 +10,7 @@
+ AC_CONFIG_SRCDIR(src/cairo.h)
+ AC_CONFIG_HEADERS(config.h)
+ AM_INIT_AUTOMAKE([1.9.6 gnu -Wall no-define])
++AM_MAINTAINER_MODE
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ AC_LIBTOOL_WIN32_DLL dnl Must be called before AC_PROG_LIBTOOL
+ AC_PROG_LIBTOOL dnl ([1.4]) Don't remove!
 --- cairo-1.10.2.orig/src/cairo-image-surface.c
 +++ cairo-1.10.2/src/cairo-image-surface.c
 @@ -297,7 +297,7 @@
@@ -102,3 +114,6 @@ exit
  	    png_set_read_user_transform_fn (png, convert_bytes_to_data);
  	    break;
      }
+
+# source
+https://cairographics.org/releases/cairo-1.10.2.tar.gz

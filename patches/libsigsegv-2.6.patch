@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.62; am-1.10; lt-2.2.4)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-static --enable-shared --prefix=
 
 # build
@@ -39,6 +39,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libsigsegv-2.6.orig/Makefile.am
 +++ libsigsegv-2.6/Makefile.am
 @@ -23,9 +23,12 @@
@@ -67,7 +69,17 @@ exit
  AC_CONFIG_SRCDIR(src/sigsegv.h.in)
  AC_CONFIG_AUX_DIR([build-aux])
  
-@@ -887,6 +887,7 @@
+@@ -27,6 +27,9 @@
+ { echo; echo "${term_bold}Build Tools:${term_norm}"; } >& AS_MESSAGE_FD
+ 
+ AM_INIT_AUTOMAKE(libsigsegv, 2.6)
++
++AM_MAINTAINER_MODE
++
+ AM_CONFIG_HEADER(config.h)
+ 
+ AC_PROG_CC
+@@ -887,6 +890,7 @@
  
  dnl AC_OUTPUT(Makefile)
  AC_OUTPUT([Makefile
@@ -77,14 +89,18 @@ exit
  
 --- libsigsegv-2.6.orig/libsigsegv.pc.in
 +++ libsigsegv-2.6/libsigsegv.pc.in
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,11 @@
 +prefix=@prefix@
++exec_prefix=@exec_prefix@
 +libdir=@libdir@
 +includedir=@includedir@
 +
 +Name: @PACKAGE_NAME@
-+Description: Handles page faults
++Description: library for handling page faults
 +Version: @PACKAGE_VERSION@
 +
 +Libs: -L${libdir} -lsigsegv
 +Cflags: -I${includedir}
+
+# source
+https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-2.6.tar.gz

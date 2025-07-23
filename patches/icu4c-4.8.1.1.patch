@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-ac-build gcc-g++-build"
+REQUIRES="autotools-wrappers-ac-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -65,6 +65,7 @@ install -m 644 source/common/unicode/utext.h $DESTDIR/include/unicode
 install -m 644 source/common/unicode/utf.h $DESTDIR/include/unicode
 install -m 644 source/common/unicode/utf8.h $DESTDIR/include/unicode
 install -m 644 source/common/unicode/utf16.h $DESTDIR/include/unicode
+install -m 644 source/common/unicode/utf_old.h $DESTDIR/include/unicode
 install -m 644 source/common/unicode/utypes.h $DESTDIR/include/unicode
 install -m 644 source/common/unicode/uvernum.h $DESTDIR/include/unicode
 install -m 644 source/common/unicode/uversion.h $DESTDIR/include/unicode
@@ -133,8 +134,9 @@ devel=\\
 /include/unicode/ustring.h \\
 /include/unicode/utext.h \\
 /include/unicode/utf.h \\
-/include/unicode/utf16.h \\
 /include/unicode/utf8.h \\
+/include/unicode/utf16.h \\
+/include/unicode/utf_old.h \\
 /include/unicode/utypes.h \\
 /include/unicode/uvernum.h \\
 /include/unicode/uversion.h \\
@@ -166,3 +168,6 @@ exec=\\
 EOF
 
 exit
+
+# source
+http://downloads.sourceforge.net/icu/icu4c-4_8_1_1-src.tgz

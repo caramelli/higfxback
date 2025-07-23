@@ -6,7 +6,7 @@ REQUIRES="egl-registry-build make-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /x11
+sh ./Configure --prefix=/x11
 
 # build
 make -C xml
@@ -61,31 +61,24 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- OpenGL-Registry-20191206.orig/Configure
 +++ OpenGL-Registry-20191206/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+sed "/^prefix/s|=.*|=$PREFIX|" xml/opengl-registry.pc.in > opengl-registry.pc
++sed "/^prefix/s|=.*|=$prefix|" xml/opengl-registry.pc.in > opengl-registry.pc
 --- OpenGL-Registry-20191206.orig/xml/Makefile
 +++ OpenGL-Registry-20191206/xml/Makefile
 @@ -17,7 +17,7 @@
@@ -180,7 +173,7 @@ exit
          removeExtensions  = None,
          # add glXPlatformStrings?
 -        prefixText        = prefixStrings + genDateCommentString,
-+        prefixText        = prefixStrings + ['#include <X11/Xutil.h>','typedef unsigned char GLubyte;',''] + genDateCommentString,
++        prefixText        = prefixStrings + ['#include <X11/Xutil.h>'] + genDateCommentString,
          genFuncPointers   = True,
          protectFile       = protectFile,
          protectFeature    = protectFeature,
@@ -189,6 +182,17 @@ exit
          protectProtoStr   = 'GLX_GLXEXT_PROTOTYPES',
          apicall           = '',
          apientry          = '',
+--- OpenGL-Registry-20191206.orig/xml/glx.xml
++++ OpenGL-Registry-20191206/xml/glx.xml
+@@ -1068,7 +1068,7 @@
+         </command>
+         <command>
+             <proto><ptype>__GLXextFuncPtr</ptype> <name>glXGetProcAddress</name></proto>
+-            <param>const <ptype>GLubyte</ptype> *<name>procName</name></param>
++            <param>const unsigned char *<name>procName</name></param>
+         </command>
+         <command>
+             <proto>void <name>glXGetSelectedEvent</name></proto>
 --- OpenGL-Registry-20191206.orig/xml/opengl-registry.pc.in
 +++ OpenGL-Registry-20191206/xml/opengl-registry.pc.in
 @@ -0,0 +1,8 @@
@@ -200,3 +204,6 @@ exit
 +Name: OpenGL Registry
 +Description: OpenGL API registry file
 +Version: 20191206
+
+# source
+https://github.com/KhronosGroup/OpenGL-Registry/archive/9b214157ec7d5e1baccecb54f5889d5cbbaf3ba8/OpenGL-Registry-20191206.tar.gz

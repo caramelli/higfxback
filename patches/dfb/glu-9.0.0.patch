@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build gcc-g++-build"
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libstdc++-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -39,6 +39,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- glu-9.0.0.orig/configure.ac
 +++ glu-9.0.0/configure.ac
 @@ -24,6 +24,7 @@
@@ -71,3 +73,6 @@ exit
     { GL_INVALID_FRAMEBUFFER_OPERATION_EXT, "invalid framebuffer operation" },
  #endif
     /* GLU */
+
+# source
+https://archive.mesa3d.org/glu/glu-9.0.0.tar.gz

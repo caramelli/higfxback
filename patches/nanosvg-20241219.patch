@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -f example/stb_image_write.h
-premake5 --stb_image=/include/stb --without-glfw gmake
+premake5 --stb-dir=/include/stb --without-glfw gmake
 
 # build
 make -C build
@@ -40,6 +40,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- nanosvg-20241219.orig/example/example2.c
 +++ nanosvg-20241219/example/example2.c
 @@ -26,16 +26,20 @@
@@ -80,7 +82,7 @@ exit
  	nsvgDeleteRasterizer(rast);
 --- nanosvg-20241219.orig/premake4.lua
 +++ nanosvg-20241219/premake4.lua
-@@ -3,54 +3,56 @@
+@@ -3,54 +3,59 @@
  
  solution "nanosvg"
  	location ( "build" )
@@ -88,24 +90,29 @@ exit
 +	configurations { "Release", "Debug" }
  	platforms {"native", "x64", "x32"}
 +
-+	newoption { trigger = "stb_image", value = "PATH", description = "Use the given path for stb image headers" }
++	newoption { trigger = "prefix", value = "PATH", description = "Installation prefix", default = "/usr/local" }
++	newoption { trigger = "stb-dir", value = "PATH", description = "Directory for stb image headers" }
 +	newoption { trigger = "without-glfw", description = "Do not use GLFW" }
 +
-+	includedirs { _OPTIONS["stb_image"] }
++	includedirs { "src", _OPTIONS["stb-dir"] }
++	targetdir("build")
    
 +	if not _OPTIONS["without-glfw"] then
 +
  	project "example1"
  		kind "ConsoleApp"
 -		language "C++"
++		language "C"
  		files { "example/example1.c", "example/*.h", "src/*.h" }
- 		includedirs { "example", "src" }
- 		targetdir("build")
+-		includedirs { "example", "src" }
+-		targetdir("build")
++		buildoptions { "-I" .. _OPTIONS["prefix"] .. "/include"}
++		linkoptions { "-L" .. _OPTIONS["prefix"] .. "/lib", "-Wl,-rpath," .. _OPTIONS["prefix"] .. "/lib" }
  	 
 -		configuration { "linux" }
 -			 links { "X11","Xrandr", "rt", "GL", "GLU", "pthread", "glfw" }
 +		filter { "system:linux" }
-+			 links { "GL", "glfw" }
++			 links { "GL", "glfw", "m" }
  
 -		configuration { "windows" }
 -			 links { "glu32","opengl32", "gdi32", "winmm", "user32" }
@@ -136,9 +143,11 @@ exit
  	project "example2"
  		kind "ConsoleApp"
 -		language "C++"
++		language "C"
  		files { "example/example2.c", "example/*.h", "src/*.h" }
- 		includedirs { "example", "src" }
- 		targetdir("build")
+-		includedirs { "example", "src" }
+-		targetdir("build")
++		links { "m" }
  	 
 -		configuration { "linux" }
 -			 links { "X11","Xrandr", "rt", "pthread" }
@@ -376,3 +385,6 @@ exit
  #endif // NANOSVGRAST_IMPLEMENTATION
  
  #endif // NANOSVGRAST_H
+
+# source
+https://github.com/memononen/nanosvg/archive/ea6a6aca009422bba0dbad4c80df6e6ba0c82183/nanosvg-20241219.tar.gz

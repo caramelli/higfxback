@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --disable-x11 --prefix
+sh ./Configure --disable-static --disable-x11 --prefix=
 
 # build
 make
@@ -38,41 +38,30 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libschrift-20230310.orig/Configure
 +++ libschrift-20230310/Configure
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,19 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      NOSTATIC=yes
-+    ;;
-+    --disable-x11)
-+      NOX11=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-x11) NOX11=yes;;
++    --disable-static) NOSTATIC=yes;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" config.mk
 +
-+sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" config.mk
-+
 +sed -i "/^NOX11/s|=.*|= $NOX11|" config.mk
++
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" config.mk
 --- libschrift-20230310.orig/Makefile
 +++ libschrift-20230310/Makefile
 @@ -6,40 +6,60 @@
@@ -278,3 +267,6 @@ exit
  		value    = MIN(value, 1.0);
  		value    = value * 255.0 + 0.5;
  		image[i] = (uint8_t) value;
+
+# source
+https://github.com/tomolt/libschrift/archive/24737d2922b23df4a5692014f5ba03da0c296112/libschrift-20230310.tar.gz

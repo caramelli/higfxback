@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.12; lt-2.4.2)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -41,6 +41,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libffi-3.0.13.orig/include/Makefile.am
 +++ libffi-3.0.13/include/Makefile.am
 @@ -5,5 +5,5 @@
@@ -61,38 +63,6 @@ exit
  
  Name: @PACKAGE_NAME@
  Description: Library supporting Foreign Function Interfaces
---- libffi-3.0.13.orig/m4/ax_enable_builddir.m4
-+++ libffi-3.0.13/m4/ax_enable_builddir.m4
-@@ -205,9 +205,9 @@
- 	; BUILD=$x grep "^#### \$\$HOST " Makefile | sed -e 's/.*|//' $x \\\\\\
- 	; use=$x basename "\$\@" _ALL $x; n=$x echo \$\$BUILD | wc -w $x \\\\\\
- 	; echo "MAKE \$\$HOST : \$\$n * \$\@"; if test "\$\$n" -eq "0" ; then : \\\\\\
--	; BUILD=$x grep "^####.*|" Makefile |tail -1| sed -e 's/.*|//' $x ; fi \\\\\\
-+	; BUILD=$x grep "^####.*|" Makefile |tail -n 1| sed -e 's/.*|//' $x ; fi \\\\\\
- 	; test ".\$\$BUILD" = "." && BUILD="." \\\\\\
--	; test "\$\$use" = "\$\@" && BUILD=$x echo "\$\$BUILD" | tail -1 $x \\\\\\
-+	; test "\$\$use" = "\$\@" && BUILD=$x echo "\$\$BUILD" | tail -n 1 $x \\\\\\
- 	; for i in \$\$BUILD ; do test ".\$\$i" = "." && continue \\\\\\
- 	; (cd "\$\$i" && test ! -f configure && \$(MAKE) \$\$use) || exit; done
- dnl special rule add-on: "dist" copies the tarball to $(PUB). (source tree)
-@@ -218,7 +218,7 @@
- 	; found=$x echo \$\$BUILD | wc -w $x \\\\\\
- 	; echo "MAKE \$\$HOST : \$\$found \$(PACKAGE)-\$(VERSION).tar.*" \\\\\\
- 	; if test "\$\$found" -eq "0" ; then : \\\\\\
--	; BUILD=$x grep "^#### .*|" Makefile |tail -1| sed -e 's/.*|//' $x \\\\\\
-+	; BUILD=$x grep "^#### .*|" Makefile |tail -n 1| sed -e 's/.*|//' $x \\\\\\
- 	; fi ; for i in \$\$BUILD ; do test ".\$\$i" = "." && continue \\\\\\
- 	; for f in \$\$i/\$(PACKAGE)-\$(VERSION).tar.* \\\\\\
- 	; do test -f "\$\$f" && mv "\$\$f" \$(PUB). ; done ; break ; done
-@@ -230,7 +230,7 @@
- 	; found=$x echo \$\$BUILD | wc -w $x \\\\\\
- 	; echo "MAKE \$\$HOST : \$\$found \$(PACKAGE)-\$(VERSION).*" \\\\\\
- 	; if test "\$\$found" -eq "0" ; then : \\\\\\
--	; BUILD=$x grep "^#### .*|" Makefile |tail -1| sed -e 's/.*|//' $x \\\\\\
-+	; BUILD=$x grep "^#### .*|" Makefile |tail -n 1| sed -e 's/.*|//' $x \\\\\\
- 	; fi ; for i in \$\$BUILD ; do test ".\$\$i" = "." && continue \\\\\\
- 	; for f in \$\$i/\$(PACKAGE)-\$(VERSION).* \\\\\\
- 	; do test -f "\$\$f" && mv "\$\$f" \$(PUB). ; done ; break ; done
 --- libffi-3.0.13.orig/m4/lt_sys_symbol_uscore.m4
 +++ libffi-3.0.13/m4/lt_sys_symbol_uscore.m4
 @@ -0,0 +1,37 @@
@@ -133,3 +103,6 @@ exit
 +  sys_symbol_underscore=$lt_cv_sys_symbol_underscore
 +  AC_SUBST([sys_symbol_underscore])
 +])
+
+# source
+https://sourceware.org/pub/libffi/libffi-3.0.13.tar.gz

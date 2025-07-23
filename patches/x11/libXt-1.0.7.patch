@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libsm-build libx11-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11; lt-1.5.24)
-libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I .; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
 
 # build
@@ -74,3 +74,6 @@ exec=\\
 EOF
 
 exit
+
+# source
+https://x.org/releases/individual/lib/libXt-1.0.7.tar.gz

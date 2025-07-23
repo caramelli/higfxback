@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make
@@ -28,26 +28,19 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- tinyxxd-1.1.0.orig/Configure
 +++ tinyxxd-1.1.0/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -60,8 +53,10 @@ exit
  
 -CFLAGS ?= -std=c11 -O2 -pipe -fPIC -fno-plt -fstack-protector-strong -D_GNU_SOURCE -s -z norelro -Wall -Wextra -Wpedantic -Wfatal-errors
 -PREFIX ?= /usr
-+CFLAGS ?= -O2 -pipe -D_GNU_SOURCE -s -z norelro -Wall -Wextra -Wfatal-errors
++CFLAGS ?= -std=c99 -O2 -pipe -D_GNU_SOURCE -s -z norelro -Wall -Wextra -pedantic -Wfatal-errors
 +PREFIX ?= /usr/local
  BINDIR ?= $(PREFIX)/bin
  DESTDIR ?=
  
+# source
+https://github.com/xyproto/tinyxxd/archive/v1.1.0/tinyxxd-1.1.0.tar.gz

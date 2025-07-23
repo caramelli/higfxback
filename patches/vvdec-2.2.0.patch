@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -15,10 +15,10 @@ cmake --build build
 # install
 install -d $DESTDIR/bin
 install bin/release-shared/vvdecapp $DESTDIR/bin
-install -d $DESTDIR/include
-install -m 644 include/vvdec/sei.h $DESTDIR/include
-install -m 644 include/vvdec/vvdec.h $DESTDIR/include
-install -m 644 include/vvdec/vvdecDecl.h $DESTDIR/include
+install -d $DESTDIR/include/vvdec
+install -m 644 include/vvdec/sei.h $DESTDIR/include/vvdec
+install -m 644 include/vvdec/vvdec.h $DESTDIR/include/vvdec
+install -m 644 include/vvdec/vvdecDecl.h $DESTDIR/include/vvdec
 install -d $DESTDIR/lib
 install lib/release-shared/libvvdec.so.2.* $DESTDIR/lib/libvvdec.so.2
 ln -sf libvvdec.so.2 $DESTDIR/lib/libvvdec.so
@@ -46,3 +46,6 @@ exec=\\
 EOF
 
 exit
+
+# source
+https://github.com/fraunhoferhhi/vvdec/archive/v2.2.0/vvdec-2.2.0.tar.gz

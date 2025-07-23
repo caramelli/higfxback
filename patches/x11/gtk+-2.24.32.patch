@@ -8,7 +8,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires cairo-build | grep -q libxext-build || { echo Cairo with Xlib support required; exit 1; }
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix=/x11
 
 # build
@@ -682,8 +682,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- gtk+-2.24.32.orig/configure.ac
 +++ gtk+-2.24.32/configure.ac
+@@ -193,7 +193,7 @@
+ AC_PATH_TOOL(NM, nm, nm)
+ 
+ dnl Initialize maintainer mode
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ AC_MSG_CHECKING([for some Win32 platform])
+ case "$host" in
 @@ -914,14 +914,17 @@
  AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
  
@@ -734,3 +745,6 @@ exit
 -Requires: gtk+-${target}-2.0 @GTK_PACKAGES@
 +Requires: gtk+-2.0 @GTK_PACKAGES@
  Cflags: -I${includedir}/gtk-unix-print-2.0
+
+# source
+https://download.gnome.org/sources/gtk+/2.24/gtk+-2.24.32.tar.xz

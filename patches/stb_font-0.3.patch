@@ -5,6 +5,10 @@ REQUIRES="make-build stb-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+rm -f stb.h
+rm -f stb_truetype.h
+
 # build
 make
 
@@ -761,6 +765,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- stb_font-0.3.orig/Makefile
 +++ stb_font-0.3/Makefile
 @@ -0,0 +1,9 @@
@@ -773,3 +779,9 @@ exit
 +
 +clean:
 +	$(RM) stb_makefont
+
+# source
+https://nothings.org/stb/font/stb_font_latin1.zip
+https://nothings.org/stb/font/stb_font_latin_ext.zip
+https://nothings.org/stb/font/stb_font_usascii.zip
+https://nothings.org/stb/font/stb_font.zip

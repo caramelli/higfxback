@@ -126,7 +126,7 @@ install -m 644 host-`./config.guess`/gcc/include-fixed/limits.h $DESTDIR/lib/gcc
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
-cat > $DESTDIR/share/pkgconfig/gcc-g++-bootstrap-build.pc << EOF
+cat > $DESTDIR/share/pkgconfig/g++-build.pc << EOF
 Name: gcc
 Version: 4.7.4
 Description: GNU Compiler Collection
@@ -237,6 +237,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gcc-4.7.4.orig/gcc/config/i386/linux64.h
++++ gcc-4.7.4/gcc/config/i386/linux64.h
+@@ -29,5 +29,5 @@
+ #define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
+ 
+ #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
+-#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
+-#define GLIBC_DYNAMIC_LINKERX32 "/libx32/ld-linux-x32.so.2"
++#define GLIBC_DYNAMIC_LINKER64 "/lib/ld-linux-x86-64.so.2"
++#define GLIBC_DYNAMIC_LINKERX32 "/lib/ld-linux-x32.so.2"
 --- gcc-4.7.4.orig/gcc/config/i386/t-linux64
 +++ gcc-4.7.4/gcc/config/i386/t-linux64
 @@ -34,6 +34,6 @@
@@ -247,3 +259,6 @@ exit
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-linux-gnu)
  MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:i386-linux-gnu)
  MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-linux-gnux32)
+
+# source
+https://gcc.gnu.org/pub/gcc/releases/gcc-4.7.4/gcc-4.7.4.tar.bz2

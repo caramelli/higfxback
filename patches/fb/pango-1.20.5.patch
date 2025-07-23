@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build cairo-build harfbuzz-old-build"
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.61; am-1.10; lt-1.5.24)
-libtoolize -c -f; aclocal -I . -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I . -I m4; autoheader; autoconf; automake -a -c
 rm -rf pango/opentype
 PKG_CONFIG_PATH=/fb/lib/pkgconfig ./configure --with-system-harfbuzz --prefix=/fb
 
@@ -117,9 +117,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- pango-1.20.5.orig/configure.in
 +++ pango-1.20.5/configure.in
-@@ -183,6 +183,10 @@
+@@ -45,6 +45,7 @@
+ AM_INIT_AUTOMAKE(1.9 gnits dist-bzip2 no-dist-gzip)
+ AM_CONFIG_HEADER([config.h])
+ 
++AM_MAINTAINER_MODE
+ 
+ PANGO_VERSION_MAJOR=pango_version_major()
+ PANGO_VERSION_MINOR=pango_version_minor()
+@@ -183,6 +184,10 @@
                                [disable all source autogeneration rules])],,
                [enable_rebuilds=yes])
  
@@ -130,12 +140,12 @@ exit
  AM_CONDITIONAL(CROSS_COMPILING, [test $cross_compiling = yes])
  
  # define a MAINT-like variable REBUILD which is set if Perl
-@@ -235,7 +239,17 @@
+@@ -235,7 +240,17 @@
    # By freetype, we really always mean freetype+fontconfig
    FREETYPE_CFLAGS="$FREETYPE_CFLAGS $FONTCONFIG_CFLAGS"
    FREETYPE_LIBS="$FREETYPE_LIBS $FONTCONFIG_LIBS"
 +
-+  if test "x$with_system_harfbuzz" = "xyes"; then
++  if test "$with_system_harfbuzz" = "yes"; then
 +    PKG_CHECK_MODULES(OPENTYPE, harfbuzz-old)
 +  else
 +    OPENTYPE_LIBS="opentype/libharfbuzz-1.la"
@@ -148,7 +158,7 @@ exit
  AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
  
  #
-@@ -913,7 +927,6 @@
+@@ -913,7 +928,6 @@
  Makefile 
  pango/Makefile
  pango/mini-fribidi/Makefile
@@ -156,11 +166,11 @@ exit
  pango/pango.rc
  pango/pangoft2.rc
  pango/pangowin32.rc
-@@ -948,6 +961,10 @@
+@@ -948,6 +962,10 @@
  pango-zip.sh
  ])
  
-+if test "x$with_system_harfbuzz" != "xyes"; then
++if test "$with_system_harfbuzz" != "yes"; then
 +  AC_CONFIG_FILES([pango/opentype/Makefile])
 +fi
 +
@@ -248,3 +258,6 @@ exit
  	libpango-$(PANGO_API_VERSION).la	\
  	$(INCLUDED_FC_MODULES)
  libpangoft2_1_0_la_SOURCES =   	\
+
+# source
+https://download.gnome.org/sources/pango/1.20/pango-1.20.5.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build xorg-server-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
-libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal; autoconf; autoheader; automake -a -c
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --prefix=/x11
 
 # build
@@ -29,6 +29,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- xf86-video-fbdev-0.4.4.orig/configure.ac
 +++ xf86-video-fbdev-0.4.4/configure.ac
 @@ -28,6 +28,7 @@
@@ -39,3 +41,6 @@ exit
  AC_CONFIG_AUX_DIR(.)
  
  # Initialize Automake
+
+# source
+https://x.org/releases/individual/driver/xf86-video-fbdev-0.4.4.tar.gz

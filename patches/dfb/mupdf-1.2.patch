@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -rf thirdparty
-sh ./Configure --disable-static --prefix /dfb
+sh ./Configure --disable-static --prefix=/dfb
 
 # build
 make
@@ -46,29 +46,20 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- mupdf-1.2.orig/Configure
 +++ mupdf-1.2/Configure
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,25 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      NOSTATIC=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --disable-static) NOSTATIC=no;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -107,7 +98,7 @@ exit
  LINK_V8_CMD = $(QUIET_LINK) $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS_V8)
  MKDIR_CMD = $(QUIET_MKDIR) mkdir -p $@
  
-@@ -55,23 +59,26 @@
+@@ -55,6 +59,9 @@
  	$(AR_CMD)
  	$(RANLIB_CMD)
  
@@ -117,24 +108,9 @@ exit
  $(OUT)/% : $(OUT)/%.o
  	$(LINK_CMD)
  
- $(OUT)/%.o : fitz/%.c $(FITZ_HDR) | $(OUT)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
- $(OUT)/%.o : draw/%.c $(FITZ_HDR) | $(OUT)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
- $(OUT)/%.o : pdf/%.c $(MUPDF_HDR) | $(OUT)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
- $(OUT)/%.o : pdf/%.cpp $(MUPDF_HDR) | $(OUT)
--	$(CXX_CMD)
-+	$(CXX_CMD) $(LIB_CFLAGS)
- $(OUT)/%.o : xps/%.c $(MUXPS_HDR) | $(OUT)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
+@@ -71,7 +78,7 @@
  $(OUT)/%.o : cbz/%.c $(MUCBZ_HDR) | $(OUT)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
+ 	$(CC_CMD)
  $(OUT)/%.o : apps/%.c fitz/fitz.h pdf/mupdf.h xps/muxps.h cbz/mucbz.h | $(OUT)
 -	$(CC_CMD)
 +	$(CC_CMD) $(X11_CFLAGS)
@@ -153,48 +129,39 @@ exit
  FITZ_V8_LIB := $(OUT)/libfitzv8.a
  
  FITZ_SRC := $(notdir $(wildcard fitz/*.c draw/*.c))
-@@ -162,16 +173,31 @@
+@@ -162,14 +173,24 @@
  # --- Tools and Apps ---
  
  MUDRAW := $(addprefix $(OUT)/, mudraw)
 -$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS)
++$(MUDRAW) : $(FITZ_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUDRAW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
-+else
-+$(MUDRAW) : $(OUT)/mudraw.o
-+	$(LINK_CMD) $(FITZ_LIB)
++$(MUDRAW) : $(THIRD_LIBS) $(LIBS)
 +endif
  
  MUTOOL := $(addprefix $(OUT)/, mutool)
 -$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS)
++$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
++$(MUTOOL) : $(FITZ_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUTOOL) : $(addprefix $(OUT)/, pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o) $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
-+else
-+$(MUTOOL) : $(addprefix $(OUT)/, mutool.o pdfclean.o pdfextract.o pdfinfo.o pdfposter.o pdfshow.o)
-+	$(LINK_CMD) $(FITZ_LIB)
++$(MUTOOL) : $(THIRD_LIBS) $(LIBS)
 +endif
  
  ifeq "$(NOX11)" ""
  MUVIEW := $(OUT)/mupdf
 -$(MUVIEW) : $(FITZ_LIB) $(THIRD_LIBS)
++$(MUVIEW) : $(FITZ_LIB)
 +ifeq "$(NOSTATIC)" ""
-+$(MUVIEW) : $(FITZ_LIB) $(THIRD_LIBS) $(LIBS)
++$(MUVIEW) : $(THIRD_LIBS) $(LIBS)
++endif
  $(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
  	$(LINK_CMD) $(X11_LIBS)
-+else
-+$(MUVIEW) : $(addprefix $(OUT)/, x11_main.o x11_image.o pdfapp.o)
-+	$(LINK_CMD) $(X11_LIBS) $(FITZ_LIB)
-+endif
  
- MUVIEW_V8 := $(OUT)/mupdf-v8
- $(MUVIEW_V8) : $(FITZ_V8_LIB) $(THIRD_LIBS)
-@@ -211,8 +237,11 @@
+@@ -211,8 +232,9 @@
  install: $(FITZ_LIB) $(MUVIEW) $(MUDRAW) $(MUTOOL)
  	install -d $(DESTDIR)$(bindir) $(DESTDIR)$(libdir) $(DESTDIR)$(incdir) $(DESTDIR)$(mandir)/man1
  	install $(FITZ_LIB) $(DESTDIR)$(libdir)
-+	if test -n "$(NOSTATIC)"; then \
-+		ln -sf libfitz.so.1 $(DESTDIR)$(libdir)/libfitz.so; \
-+	fi
++	if test -n "$(NOSTATIC)"; then ln -sf libfitz.so.1 $(DESTDIR)$(libdir)/libfitz.so; fi
  	install fitz/memento.h fitz/fitz.h pdf/mupdf.h xps/muxps.h cbz/mucbz.h $(DESTDIR)$(incdir)
 -	install $(MUVIEW) $(MUDRAW) $(MUBUSY) $(DESTDIR)$(bindir)
 +	install $(MUVIEW) $(MUDRAW) $(MUTOOL) $(DESTDIR)$(bindir)
@@ -208,7 +175,7 @@ exit
  CFLAGS += -Wall
  
 +ifneq "$(NOSTATIC)" ""
-+LIB_CFLAGS = -fPIC
++CFLAGS += -fPIC
 +LDFLAGS += -Wl,-rpath,$(prefix)/lib
 +endif
 +
@@ -245,57 +212,14 @@ exit
  LDFLAGS += -L/usr/local/lib
  X11_LIBS := -lX11 -lXext
  endif
---- mupdf-1.2.orig/Makethird
-+++ mupdf-1.2/Makethird
-@@ -80,6 +80,7 @@
- FT_CFLAGS := -DFT2_BUILD_LIBRARY -DDARWIN_NO_CARBON \
- 	'-DFT_CONFIG_MODULES_H="slimftmodules.h"' \
- 	'-DFT_CONFIG_OPTIONS_H="slimftoptions.h"'
-+FT_CFLAGS += $(LIB_CFLAGS)
- 
- $(OUT)/ft_%.o: $(FREETYPE_DIR)/src/base/%.c	| $(OUT)
- 	$(CC_CMD) $(FT_CFLAGS)
-@@ -134,7 +135,7 @@
- 
- $(JBIG2DEC_LIB): $(addprefix $(OUT)/, $(JBIG2DEC_SRC:%.c=%.o))
- $(OUT)/%.o: $(JBIG2DEC_DIR)/%.c | $(OUT)
--	$(CC_CMD) -DHAVE_STDINT_H
-+	$(CC_CMD) -DHAVE_STDINT_H $(LIB_CFLAGS)
- endif
- 
- # --- JPEG library from IJG ---
-@@ -179,7 +180,7 @@
- 
- $(JPEG_LIB): $(addprefix $(OUT)/jpeg_, $(JPEG_SRC:%.c=%.o))
- $(OUT)/jpeg_%.o: $(JPEG_DIR)/%.c | $(OUT)
--	$(CC_CMD) -Dmain=xxxmain
-+	$(CC_CMD) -Dmain=xxxmain $(LIB_CFLAGS)
- endif
- 
- # --- OpenJPEG ---
-@@ -216,7 +217,7 @@
- 
- $(OPENJPEG_LIB): $(addprefix $(OUT)/opj_, $(OPENJPEG_SRC:%.c=%.o))
- $(OUT)/opj_%.o: $(OPENJPEG_DIR)/libopenjpeg/%.c | $(OUT)
--	$(CC_CMD) -DOPJ_STATIC
-+	$(CC_CMD) -DOPJ_STATIC $(LIB_CFLAGS)
- else
- CFLAGS += $(SYS_OPENJPEG_INC)
- endif
-@@ -242,5 +243,5 @@
- 
- $(ZLIB_LIB): $(addprefix $(OUT)/zlib_, $(ZLIB_SRC:%.c=%.o))
- $(OUT)/zlib_%.o: $(ZLIB_DIR)/%.c | $(OUT)
--	$(CC_CMD)
-+	$(CC_CMD) $(LIB_CFLAGS)
- endif
 --- mupdf-1.2.orig/debian/mupdf.pc
 +++ mupdf-1.2/debian/mupdf.pc
-@@ -1,12 +1,10 @@
+@@ -1,12 +1,9 @@
 -prefix=/usr
+-exec_prefix=${prefix}
+-libdir=${exec_prefix}/lib
 +prefix=/usr/local
- exec_prefix=${prefix}
- libdir=${exec_prefix}/lib
++libdir=${prefix}/lib
  includedir=${prefix}/include
  
  Name: mupdf
@@ -362,3 +286,6 @@ exit
  /* bit magic */
  
  static inline int getbit(const unsigned char *buf, int x)
+
+# source
+http://mupdf.com/downloads/archive/mupdf-1.2-source.zip

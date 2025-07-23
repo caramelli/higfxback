@@ -1,0 +1,30 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install bindechexascii $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/bindechexascii-build.pc << EOF
+Name: BinDecHexAscii
+Version: 20140630
+Description: binary, decimal, hexadecimal, ASCII converter
+Requires: $REQUIRES
+
+exec=\\
+/bin/bindechexascii
+EOF
+
+exit
+
+# source
+https://github.com/xfuw89/BinDecHexAscii/archive/cdc5d630e29d68896206b460360e9db691866c80/BinDecHexAscii-20140630.tar.gz

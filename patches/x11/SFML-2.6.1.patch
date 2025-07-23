@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build egl-opengl-stubs-build gcc-g++-build flac-build freetype-build glad-build libvorbis-build minimp3-build openal-soft-build stb-build vulkan-loader-build"
+REQUIRES="cmake3-build egl-opengl-stubs-build flac-build freetype-build glad-build libstdc++-build libvorbis-build minimp3-build openal-soft-build stb-build vulkan-loader-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -389,6 +389,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SFML-2.6.1.orig/CMakeLists.txt
 +++ SFML-2.6.1/CMakeLists.txt
 @@ -68,6 +68,8 @@
@@ -18545,3 +18547,6 @@ exit
  include_directories("${SRCROOT}/TestUtilities")
  
  # System is always built
+
+# source
+https://github.com/SFML/SFML/archive/2.6.1/SFML-2.6.1.tar.gz

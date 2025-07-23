@@ -64,6 +64,7 @@ install -d $DESTDIR/lib/perl5/File
 install -m 644 lib/File/Basename.pm $DESTDIR/lib/perl5/File
 install -m 644 lib/File/Compare.pm $DESTDIR/lib/perl5/File
 install -m 644 lib/File/Copy.pm $DESTDIR/lib/perl5/File
+install -m 644 lib/File/Find.pm $DESTDIR/lib/perl5/File
 install -m 644 lib/File/Path.pm $DESTDIR/lib/perl5/File
 install -m 644 lib/File/Spec.pm $DESTDIR/lib/perl5/File
 install -m 644 lib/File/stat.pm $DESTDIR/lib/perl5/File
@@ -76,6 +77,8 @@ install -m 644 lib/Getopt/Long.pm $DESTDIR/lib/perl5/Getopt
 install -m 644 lib/Getopt/Std.pm $DESTDIR/lib/perl5/Getopt
 install -d $DESTDIR/lib/perl5/IPC
 install -m 644 lib/IPC/Cmd.pm $DESTDIR/lib/perl5/IPC
+install -m 644 lib/IPC/Open2.pm $DESTDIR/lib/perl5/IPC
+install -m 644 lib/IPC/Open3.pm $DESTDIR/lib/perl5/IPC
 install -d $DESTDIR/lib/perl5/Locale/Maketext
 install -m 644 lib/Locale/Maketext/Simple.pm $DESTDIR/lib/perl5/Locale/Maketext
 install -d $DESTDIR/lib/perl5/Module
@@ -253,6 +256,7 @@ exec=\\
 /lib/perl5/File/Basename.pm \\
 /lib/perl5/File/Compare.pm \\
 /lib/perl5/File/Copy.pm \\
+/lib/perl5/File/Find.pm \\
 /lib/perl5/File/Path.pm \\
 /lib/perl5/File/Spec.pm \\
 /lib/perl5/File/stat.pm \\
@@ -262,6 +266,8 @@ exec=\\
 /lib/perl5/Getopt/Long.pm \\
 /lib/perl5/Getopt/Std.pm \\
 /lib/perl5/IPC/Cmd.pm \\
+/lib/perl5/IPC/Open2.pm \\
+/lib/perl5/IPC/Open3.pm \\
 /lib/perl5/Locale/Maketext/Simple.pm \\
 /lib/perl5/Module/Load.pm \\
 /lib/perl5/Module/Load/Conditional.pm \\
@@ -348,6 +354,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- perl-5.10.1.orig/MANIFEST
 +++ perl-5.10.1/MANIFEST
 @@ -124,22 +124,6 @@
@@ -502,3 +510,6 @@ exit
              utime($atime, $mtime, $to);
              unlink($from)   or die;
          };
+
+# source
+https://cpan.org/src/5.0/perl-5.10.1.tar.gz

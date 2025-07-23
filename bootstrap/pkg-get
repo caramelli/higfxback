@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# This file is part of HiGFXback
+
+test $# -eq 1 || { echo Usage: $0 \"package.patch\"; exit 1; }
+
+PACKAGE=`basename $1 .patch`
+
+test -f $1 || { echo $PACKAGE: package not found; exit 1; }
+
+SOURCE=`tac $1 | awk '/# source/{ exit }{ print }'`
+
+PACKAGE_URL=`printf '%s\n' "$SOURCE" | head -n 1`
+
+ARCHIVE=`basename $PACKAGE_URL`
+
+test -f $ARCHIVE || wget --no-check-certificate $PACKAGE_URL
+
+test -s $ARCHIVE || { echo $1: unable to get package; exit 1; }
+
+if expr $ARCHIVE : .*\.zip$ > /dev/null; then
+  ROOT_ENTRY=`unzip -ql $ARCHIVE | awk 'NR==3 { print $4 }'`
+  if [ ${ROOT_ENTRY%/} != $ROOT_ENTRY ]; then
+    if [ ${ROOT_ENTRY%/} != $PACKAGE ]; then
+      unzip -qo $ARCHIVE && rm -rf $PACKAGE && mv $ROOT_ENTRY $PACKAGE
+    else
+      unzip -qo $ARCHIVE
+    fi
+  else
+    unzip -qo $ARCHIVE -d $PACKAGE
+  fi
+else
+  tar --version | head -n 1 | grep -q GNU && NO_TIMESTAMP=--warning=no-timestamp
+  mkdir -p $PACKAGE
+  if [ `tar tf $ARCHIVE | cut -d/ -f1 | uniq | wc -l` = 1 ]; then
+    tar xf $ARCHIVE --strip-components=1 $NO_TIMESTAMP -C $PACKAGE
+  else
+    tar xf $ARCHIVE $NO_TIMESTAMP -C $PACKAGE
+  fi
+fi
+
+for SUBPACKAGE_URL in `printf '%s\n' $SOURCE | tail -n +2`; do
+  SUBARCHIVE=`basename $SUBPACKAGE_URL`
+  test -f $SUBARCHIVE || wget --no-check-certificate $SUBPACKAGE_URL
+  test -s $SUBARCHIVE || { echo $PACKAGE: unable to get subpackage; exit 1; }
+  if expr $SUBARCHIVE : .*\.zip$ > /dev/null; then
+    unzip -qo $SUBARCHIVE -d $PACKAGE
+  else
+    tar xf $SUBARCHIVE -C $PACKAGE
+  fi
+done

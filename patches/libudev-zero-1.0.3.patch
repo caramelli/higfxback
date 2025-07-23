@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --soversion 0 --prefix
+sh ./Configure --disable-static --soversion=0 --prefix=
 
 # build
 make
@@ -40,32 +40,23 @@ EOF
 ln -sf libudev-zero-build.pc $DESTDIR/share/pkgconfig/libudev-build.pc
 
 exit
+
+# patch
 --- libudev-zero-1.0.3.orig/Configure
 +++ libudev-zero-1.0.3/Configure
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,21 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
 +SOVERSION=1
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --soversion)
-+      SOVERSION=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --soversion=*) SOVERSION=${1#*=};;
++    --disable-static) NOSTATIC=yes;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -73,34 +64,49 @@ exit
 +sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
 +
 +sed -i "/^SOVERSION/s|=.*|= $SOVERSION|" Makefile
++
++sed -i "/^NOSTATIC/s|=.*|= $NOSTATIC|" Makefile
 --- libudev-zero-1.0.3.orig/Makefile
 +++ libudev-zero-1.0.3/Makefile
-@@ -2,13 +2,14 @@
+@@ -1,14 +1,21 @@
+ # SPDX-License-Identifier: ISC
  .POSIX:
  
++NOSTATIC ?= 
++
  PREFIX = /usr/local
 +SOVERSION = 1
  LIBDIR = ${PREFIX}/lib
  INCLUDEDIR = ${PREFIX}/include
  PKGCONFIGDIR = ${LIBDIR}/pkgconfig
- XCFLAGS = ${CPPFLAGS} ${CFLAGS} -std=c99 -fPIC -pthread -D_XOPEN_SOURCE=700 \
- 		  -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wstrict-prototypes \
+-XCFLAGS = ${CPPFLAGS} ${CFLAGS} -std=c99 -fPIC -pthread -D_XOPEN_SOURCE=700 \
+-		  -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wstrict-prototypes \
++XCFLAGS = ${CPPFLAGS} ${CFLAGS} -std=c99 -pthread -D_XOPEN_SOURCE=700 \
++		  -Wall -Wextra -pedantic -Wmissing-prototypes -Wstrict-prototypes \
  		  -Wno-unused-parameter
 -XLDFLAGS = ${LDFLAGS} -shared -Wl,-soname,libudev.so.1
++ifneq "$(NOSTATIC)" ""
++XCFLAGS += -fPIC
++endif
++
 +XLDFLAGS = ${LDFLAGS} -shared -Wl,-soname,libudev.so.${SOVERSION}
  XARFLAGS = -rc
  AR = ar
  
-@@ -19,7 +20,7 @@
+@@ -19,7 +26,11 @@
  	  udev_monitor.o \
  	  udev_enumerate.o
  
 -all: libudev.so.1 libudev.a
-+all: libudev.so.${SOVERSION} libudev.a
++ifneq "$(NOSTATIC)" ""
++all: libudev.so.${SOVERSION}
++else
++all: libudev.a
++endif
  
  .c.o:
  	${CC} ${XCFLAGS} -c -o $@ $<
-@@ -27,7 +28,7 @@
+@@ -27,7 +38,7 @@
  libudev.a: ${OBJ}
  	${AR} ${XARFLAGS} $@ ${OBJ}
  
@@ -109,7 +115,7 @@ exit
  	${CC} ${XCFLAGS} -o $@ ${OBJ} ${XLDFLAGS}
  
  libudev.pc: libudev.pc.in
-@@ -54,10 +55,10 @@
+@@ -54,26 +65,30 @@
  	mkdir -p ${DESTDIR}${PKGCONFIGDIR}
  	cp -f libudev.pc ${DESTDIR}${PKGCONFIGDIR}/libudev.pc
  
@@ -123,7 +129,15 @@ exit
  
  install-static: libudev.a install-headers install-pkgconfig
  	mkdir -p ${DESTDIR}${LIBDIR}
-@@ -68,12 +69,12 @@
+ 	cp -f libudev.a ${DESTDIR}${LIBDIR}/libudev.a
+ 
+-install: install-shared install-static
++ifneq "$(NOSTATIC)" ""
++install: install-shared
++else
++install: install-static
++endif
+ 
  uninstall:
  	rm -f ${DESTDIR}${LIBDIR}/libudev.a \
            ${DESTDIR}${LIBDIR}/libudev.so \
@@ -168,3 +182,6 @@ exit
  
      if (!test_bit(ev_bits, EV_KEY)) {
          return;
+
+# source
+https://github.com/illiliti/libudev-zero/archive/1.0.3/libudev-zero-1.0.3.tar.gz

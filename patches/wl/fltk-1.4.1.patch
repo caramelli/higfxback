@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-ac-build gcc-g++-build libdecor-build nanosvg-build weston-build"
+REQUIRES="autotools-wrappers-ac-build libdecor-build libstdc++-build nanosvg-build weston-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -456,6 +456,8 @@ cat >> $DESTDIR/wl/share/pkgconfig/fltk-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- fltk-1.4.1.orig/configh.in
 +++ fltk-1.4.1/configh.in
 @@ -256,6 +256,30 @@
@@ -2067,3 +2069,6 @@ exit
    // finally, execute program (the system specific part)
  
  #ifdef _WIN32
+
+# source
+https://github.com/fltk/fltk/releases/download/release-1.4.1/fltk-1.4.1-source.tar.gz

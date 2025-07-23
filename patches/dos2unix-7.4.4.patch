@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-nls --prefix
+sh ./Configure --disable-nls --prefix=
 
 # build
 make
@@ -30,30 +30,22 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- dos2unix-7.4.4.orig/Configure
 +++ dos2unix-7.4.4/Configure
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,18 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
++
 +ENABLE_NLS=1
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --disable-nls)
-+      ENABLE_NLS=
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --disable-nls) ENABLE_NLS=;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -72,3 +64,17 @@ exit
  exec_prefix     = $(prefix)
  bindir          = $(exec_prefix)/bin
  datarootdir     = $(prefix)/share
+--- dos2unix-7.4.4.orig/common.c
++++ dos2unix-7.4.4/common.c
+@@ -778,6 +778,8 @@
+ #endif
+ #ifdef ENABLE_NLS
+   D2U_ANSI_FPRINTF(stdout,"LOCALEDIR: %s\n", localedir);
++#else
++  (void) localedir;
+ #endif
+   D2U_ANSI_FPRINTF(stdout,"https://waterlan.home.xs4all.nl/dos2unix.html\n");
+   D2U_ANSI_FPRINTF(stdout,"https://dos2unix.sourceforge.io/\n");
+
+# source
+https://waterlan.home.xs4all.nl/dos2unix/dos2unix-7.4.4.tar.gz

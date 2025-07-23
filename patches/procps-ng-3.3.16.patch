@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build ncurses-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-kill --disable-pidof --disable-static --sbindir=/bin --prefix=
 
 # build
@@ -72,6 +72,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- procps-ng-3.3.16.orig/Makefile.am
 +++ procps-ng-3.3.16/Makefile.am
 @@ -41,7 +41,6 @@
@@ -115,6 +117,16 @@ exit
 +	cd $(DESTDIR)$(bindir) && \
 +	rm -f pkill$(EXEEXT) && \
 +	$(LN_S) pgrep$(EXEEXT) pkill$(EXEEXT)
+--- procps-ng-3.3.16.orig/configure.ac
++++ procps-ng-3.3.16/configure.ac
+@@ -7,6 +7,7 @@
+ 	m4_esyscmd([misc/git-version-gen .tarball-version]),
+ 	[procps@freelists.org],,[https://gitlab.com/procps-ng/procps])
+ AM_INIT_AUTOMAKE([foreign 1.11 subdir-objects -Wall -Wno-portability tar-pax no-dist-gzip dist-xz])
++AM_MAINTAINER_MODE
+ AM_SILENT_RULES([yes])
+ AC_CONFIG_SRCDIR([free.c])
+ AC_CONFIG_HEADERS([config.h])
 --- procps-ng-3.3.16.orig/m4/codeset.m4
 +++ procps-ng-3.3.16/m4/codeset.m4
 @@ -0,0 +1,23 @@
@@ -176,3 +188,6 @@ exit
 +      [Define if your <locale.h> file defines LC_MESSAGES.])
 +  fi
 +])
+
+# source
+http://downloads.sourceforge.net/procps-ng/procps-ng-3.3.16.tar.xz

@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./configure.sh --prefix
+sh ./configure.sh --prefix=
 
 # build
 make
@@ -28,9 +28,11 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- m4-1.4.18.orig/configure.sh
 +++ m4-1.4.18/configure.sh
-@@ -0,0 +1,196 @@
+@@ -0,0 +1,179 @@
 +#!/bin/sh
 +# Shell script to configure GNU M4 without relying on `autotools'.
 +
@@ -53,35 +55,18 @@ exit
 +# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +CC=${CC-gcc}
-+CFLAGS=${CFLAGS--g -O2}
++CFLAGS=${CFLAGS-"-g -O2"}
 +SED=${SED-sed}
 +
 +prefix=/usr/local
-+exec_prefix='${prefix}'
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --exec-prefix)
-+      exec_prefix=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
-+
-+bindir=`eval echo ${exec_prefix}`/bin
-+libdir=`eval echo ${exec_prefix}`/lib
 +
 +srcdir=`dirname $0`
 +
@@ -93,8 +78,8 @@ exit
 +/* lib/configmake.h.  Generated from configure.sh.  */
 +
 +#define PREFIX "$prefix"
-+#define BINDIR "$bindir"
-+#define LIBDIR "$libdir"
++#define BINDIR "$prefix/bin"
++#define LIBDIR "$prefix/lib"
 +EOF
 +
 +cat > lib/config.h << EOF
@@ -222,7 +207,7 @@ exit
 +all: a.out
 +
 +install: all
-+	install -D a.out \$(DESTDIR)$bindir/m4
++	install -D a.out \$(DESTDIR)$prefix/bin/m4
 +
 +clean:
 +	\$(RM) a.out \$(OBJECTS)
@@ -260,3 +245,6 @@ exit
  # endif
  
  # if HAVE_DECL_GETC_UNLOCKED
+
+# source
+https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz

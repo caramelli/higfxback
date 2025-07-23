@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69)
+autoconf
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install help2man $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/help2man-build.pc << EOF
+Name: help2man
+Version: 1.48.5
+Description: Tool for generating man pages from program output
+Requires: $REQUIRES
+
+devel=\\
+/bin/help2man
+EOF
+
+exit
+
+# patch
+--- help2man-1.48.5.orig/help2man.PL
++++ help2man-1.48.5/help2man.PL
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl
++#!/bin/perl
+ 
+ #
+ # Self extracting help2man script.
+
+# source
+https://ftp.gnu.org/gnu/help2man/help2man-1.48.5.tar.xz

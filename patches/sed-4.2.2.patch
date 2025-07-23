@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.12)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -29,3 +29,26 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- sed-4.2.2.orig/build-aux/help2man
++++ sed-4.2.2/build-aux/help2man
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env perl
++#!/bin/env perl
+ 
+ # Generate a short man page from --help and --version output.
+ # Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software
+--- sed-4.2.2.orig/configure.ac
++++ sed-4.2.2/configure.ac
+@@ -5,6 +5,7 @@
+ AM_CONFIG_HEADER(config.h:config_h.in)
+ AC_PREREQ(2.60)
+ AM_INIT_AUTOMAKE
++AM_MAINTAINER_MODE
+ 
+ SED_FEATURE_VERSION=4.2.2
+ AC_DEFINE_UNQUOTED(SED_FEATURE_VERSION, "$SED_FEATURE_VERSION",
+
+# source
+https://ftp.gnu.org/gnu/sed/sed-4.2.2.tar.gz

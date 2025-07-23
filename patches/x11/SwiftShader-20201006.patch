@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="astc-encoder-build cmake3-build gcc-g++-build llvm-build marl-build opengl-registry-build spirv-tools-build vulkan-headers-build"
+REQUIRES="astc-encoder-build cmake3-build libstdc++-build llvm-build marl-build opengl-registry-build spirv-tools-build vulkan-headers-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -21,7 +21,7 @@ test $XLIB || test $XCB || { echo Xlib or XCB packages required; exit 1; }
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf include
 rm -rf third_party/astc-encoder
-rm -rf third_party/llvm-10.0
+rm -rf third_party/llvm*
 rm -rf third_party/marl
 rm -rf third_party/SPIRV-Headers
 rm -rf third_party/SPIRV-Tools
@@ -54,6 +54,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SwiftShader-20201006.orig/CMakeLists.txt
 +++ SwiftShader-20201006/CMakeLists.txt
 @@ -579,6 +579,10 @@
@@ -67,7 +69,7 @@ exit
  ###########################################################
  # libbacktrace and boost
  ###########################################################
-@@ -590,8 +594,10 @@
+@@ -590,24 +594,30 @@
  ###########################################################
  # LLVM
  ###########################################################
@@ -80,7 +82,19 @@ exit
  
  ###########################################################
  # Subzero
-@@ -605,9 +611,11 @@
+ ###########################################################
+-add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
+-add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
+-set_target_properties(llvm-subzero PROPERTIES FOLDER "third_party")
+-set_target_properties(subzero PROPERTIES FOLDER "third_party")
++if(EXISTS ${THIRD_PARTY_DIR}/llvm-subzero AND EXISTS ${THIRD_PARTY_DIR}/subzero)
++    add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
++    add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
++    set_target_properties(llvm-subzero PROPERTIES FOLDER "third_party")
++    set_target_properties(subzero PROPERTIES FOLDER "third_party")
++endif()
+ 
+ ###########################################################
  # marl
  ###########################################################
  if(BUILD_MARL)
@@ -95,7 +109,7 @@ exit
  endif()
  
  if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
-@@ -626,8 +634,10 @@
+@@ -626,8 +636,10 @@
  # astc-encoder
  ###########################################################
  if(SWIFTSHADER_ENABLE_ASTC)
@@ -108,7 +122,7 @@ exit
  endif()
  
  ###########################################################
-@@ -720,7 +730,7 @@
+@@ -720,7 +732,7 @@
  endif(SWIFTSHADER_BUILD_GLES_CM)
  
  if(SWIFTSHADER_BUILD_VULKAN)
@@ -404,3 +418,6 @@ exit
 +    const void*                           pNext;
 +    VkSamplerFilteringPrecisionModeGOOGLE samplerFilteringPrecisionMode;
 +} VkSamplerFilteringPrecisionGOOGLE;
+
+# source
+https://swiftshader.googlesource.com/SwiftShader/+archive/635de036d766ba7c2f31c89c7227a86b3412e74b.tar.gz

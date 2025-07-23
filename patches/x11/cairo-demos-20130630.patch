@@ -1,0 +1,1120 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cairo-build gdk-pixbuf-build gnome-backgrounds-build make-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires cairo-build | grep -q libxcb-build && XCB=1
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires cairo-build | grep -q libxext-build && XLIB=1
+
+# configure
+rm -f kapow/kapow.o
+rm -f png/star_and_ring
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --with-backgroundsdir=/share/backgrounds --with-demosdatadir=/x11/share/cairo-demos --prefix=/x11
+
+# build
+make
+make -C kapow
+make -C png
+make -C PS
+test $XLIB && make -C tsetse
+make -C X11
+
+# install
+install -d $DESTDIR/x11/bin
+install bubble-demo $DESTDIR/x11/bin
+install chart-demo $DESTDIR/x11/bin
+install dragon-demo $DESTDIR/x11/bin
+install fish-demo $DESTDIR/x11/bin
+install flowers-demo $DESTDIR/x11/bin
+install gears-demo $DESTDIR/x11/bin
+install gradient-demo $DESTDIR/x11/bin
+install maze-demo $DESTDIR/x11/bin
+install pythagoras-demo $DESTDIR/x11/bin
+install sierpinski-demo $DESTDIR/x11/bin
+install slideshow-demo $DESTDIR/x11/bin
+install spinner-demo $DESTDIR/x11/bin
+install spiral-complex $DESTDIR/x11/bin
+install spiral-demo $DESTDIR/x11/bin
+install tiger-demo $DESTDIR/x11/bin
+install waterfall-demo $DESTDIR/x11/bin
+install wave-demo $DESTDIR/x11/bin
+install kapow/kapow $DESTDIR/x11/bin
+install png/bevels $DESTDIR/x11/bin
+install png/caps_joins $DESTDIR/x11/bin
+install png/hering $DESTDIR/x11/bin
+install png/outline $DESTDIR/x11/bin
+install png/snapping $DESTDIR/x11/bin
+install png/spiral $DESTDIR/x11/bin
+install png/spline-pipelines $DESTDIR/x11/bin
+install png/splines_tolerance $DESTDIR/x11/bin
+install png/star_and_ring $DESTDIR/x11/bin
+install png/stars $DESTDIR/x11/bin
+install png/text $DESTDIR/x11/bin
+install png/text-rotate $DESTDIR/x11/bin
+install PS/basket $DESTDIR/x11/bin
+test $XLIB && install tsetse/tsetse $DESTDIR/x11/bin
+test $XCB && install X11/cairo-demo-xcb $DESTDIR/x11/bin
+test $XLIB && install X11/cairo-knockout $DESTDIR/x11/bin
+test $XLIB && install X11/cairo-spline $DESTDIR/x11/bin
+install -d $DESTDIR/x11/share/cairo-demos
+install -m 644 bubble.png $DESTDIR/x11/share/cairo-demos
+install -m 644 bubblebg.png $DESTDIR/x11/share/cairo-demos
+install -m 644 fishbg.png $DESTDIR/x11/share/cairo-demos
+install -m 644 fishstrip.png $DESTDIR/x11/share/cairo-demos
+install -d $DESTDIR/x11/share/cairo-demos/images/4000x4000
+install -m 644 images/4000x4000/202672-4000x4000.jpg $DESTDIR/x11/share/cairo-demos/images/4000x4000
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/cairo-demos-build.pc << EOF
+Name: cairo-demos
+Version: 20130630
+Description: A collection of Cairo demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/x11/bin/basket \\
+/x11/bin/bevels \\
+/x11/bin/bubble-demo \\
+EOF
+test $XCB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-demos-build.pc << EOF
+/x11/bin/cairo-demo-xcb \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-demos-build.pc << EOF
+/x11/bin/cairo-knockout \\
+/x11/bin/cairo-spline \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/cairo-demos-build.pc << EOF
+/x11/bin/caps_joins \\
+/x11/bin/chart-demo \\
+/x11/bin/dragon-demo \\
+/x11/bin/fish-demo \\
+/x11/bin/flowers-demo \\
+/x11/bin/gears-demo \\
+/x11/bin/gradient-demo \\
+/x11/bin/hering \\
+/x11/bin/kapow \\
+/x11/bin/maze-demo \\
+/x11/bin/outline \\
+/x11/bin/pythagoras-demo \\
+/x11/bin/sierpinski-demo \\
+/x11/bin/slideshow-demo \\
+/x11/bin/snapping \\
+/x11/bin/spinner-demo \\
+/x11/bin/spiral \\
+/x11/bin/spiral-complex \\
+/x11/bin/spiral-demo \\
+/x11/bin/spline-pipelines \\
+/x11/bin/splines_tolerance \\
+/x11/bin/star_and_ring \\
+/x11/bin/stars \\
+/x11/bin/text \\
+/x11/bin/text-rotate \\
+/x11/bin/tiger-demo \\
+EOF
+test $XLIB && cat >> $DESTDIR/x11/share/pkgconfig/cairo-demos-build.pc << EOF
+/x11/bin/tsetse \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/cairo-demos-build.pc << EOF
+/x11/bin/waterfall-demo \\
+/x11/bin/wave-demo \\
+/x11/share/cairo-demos/bubble.png \\
+/x11/share/cairo-demos/bubblebg.png \\
+/x11/share/cairo-demos/fishbg.png \\
+/x11/share/cairo-demos/fishstrip.png \\
+/x11/share/cairo-demos/images/4000x4000/202672-4000x4000.jpg
+EOF
+
+exit
+
+# patch
+--- cairo-demos-20130630.orig/Configure
++++ cairo-demos-20130630/Configure
+@@ -0,0 +1,45 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++DEMOSDATADIR=.
++
++BACKGROUNDSDIR=images
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --with-demosdatadir=*) DEMOSDATADIR=${1#*=};;
++    --with-backgroundsdir=*) BACKGROUNDSDIR=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" kapow/Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" png/Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" PS/Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" tsetse/Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" X11/Makefile
++
++sed -i "/^DEMOSDATADIR=/s|=.*|=$DEMOSDATADIR|" Makefile
++
++sed -i "/^BACKGROUNDSDIR=/s|=.*|=$BACKGROUNDSDIR|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" kapow/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" png/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" PS/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" tsetse/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" X11/Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" kapow/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" png/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" PS/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" tsetse/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" X11/Makefile
++fi
+--- cairo-demos-20130630.orig/Makefile
++++ cairo-demos-20130630/Makefile
+@@ -1,5 +1,13 @@
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++DEMOSDATADIR=.
++BACKGROUNDSDIR=images
++
++DEFINES:=-DDEMOSDATADIR=\"$(DEMOSDATADIR)\" -DBACKGROUNDSDIR=\"$(BACKGROUNDSDIR)\"
+ SOURCES:=demo.c png.c
+-REQUIRES:=cairo
++REQUIRES:=cairo libpng
+ 
+ DRM:=0
+ ifneq ($(DRM),0)
+@@ -10,7 +18,7 @@
+ DEFINES+=-DHAVE_DRM=0
+ endif
+ 
+-XLIB:=$(shell pkg-config --exists cairo-xlib && echo 1 || echo 0)
++XLIB:=$(shell $(PKG_CONFIG) --exists cairo-xlib && echo 1 || echo 0)
+ ifneq ($(XLIB),0)
+ DEFINES+=-DHAVE_XLIB=1 -DHAVE_XIMAGE=1 -DHAVE_XSHM=1
+ SOURCES+=xlib.c ximage.c xshm.c
+@@ -19,7 +27,7 @@
+ DEFINES+=-DHAVE_XLIB=0 -DHAVE_XIMAGE=0 -DHAVE_XSHM=0
+ endif
+ 
+-XCB:=$(shell pkg-config --exists cairo-xcb && echo 1 || echo 0)
++XCB:=$(shell $(PKG_CONFIG) --exists cairo-xcb && echo 1 || echo 0)
+ ifneq ($(XCB),0)
+ DEFINES+=-DHAVE_XCB=1
+ SOURCES+=xcb.c
+@@ -28,7 +36,7 @@
+ DEFINES+=-DHAVE_XCB=0
+ endif
+ 
+-GLX:=$(shell pkg-config --exists cairo-gl && echo 1 || echo 0)
++GLX:=$(shell $(PKG_CONFIG) --exists cairo-gl && echo 1 || echo 0)
+ GLX:=0
+ ifneq ($(GLX),0)
+ DEFINES+=-DHAVE_GLX=1
+@@ -38,7 +46,7 @@
+ DEFINES+=-DHAVE_GLX=0
+ endif
+ 
+-COGL:=$(shell pkg-config --exists cairo-cogl && echo 1 || echo 0)
++COGL:=$(shell $(PKG_CONFIG) --exists cairo-cogl && echo 1 || echo 0)
+ ifneq ($(COGL),0)
+ DEFINES+=-DHAVE_COGL=1
+ SOURCES+=cogl.c
+@@ -47,7 +55,7 @@
+ DEFINES+=-DHAVE_COGL=0
+ endif
+ 
+-SKIA:=$(shell pkg-config --exists cairo-skia && echo 1 || echo 0)
++SKIA:=$(shell $(PKG_CONFIG) --exists cairo-skia && echo 1 || echo 0)
+ ifneq ($(SKIA),0)
+ DEFINES+=-DHAVE_SKIA=1
+ SOURCES+=skia.c
+@@ -58,22 +66,24 @@
+ 
+ all: spiral-demo tiger-demo fish-demo flowers-demo gears-demo gradient-demo chart-demo waterfall-demo dragon-demo pythagoras-demo wave-demo sierpinski-demo maze-demo bubble-demo
+ 
+-ifeq ($(shell pkg-config --exists poppler-glib && echo 1), 1)
++ifeq ($(shell $(PKG_CONFIG) --exists poppler-glib && echo 1), 1)
+ all: poppler-demo
+ REQUIRES+=poppler-glib
+ endif
+ 
+-ifeq ($(shell pkg-config --exists gdk-pixbuf-2.0 && echo 1), 1)
+-all: spinner-demo slideshow-demo
++ifeq ($(shell $(PKG_CONFIG) --exists gdk-pixbuf-2.0 && echo 1), 1)
++all: spinner-demo spiral-complex slideshow-demo
+ REQUIRES+=gdk-pixbuf-2.0
+ DEFINES+=-DHAVE_GDK_PIXBUF
+ endif
+ 
+-CFLAGS:=$(shell pkg-config --cflags $(REQUIRES)) -Wall -g3
+-LIBS:=$(shell pkg-config --libs $(REQUIRES)) -lpng -lm
++CFLAGS:=$(shell $(PKG_CONFIG) --cflags $(REQUIRES)) -Wall -g3
++LIBS:=$(shell $(PKG_CONFIG) --libs $(REQUIRES)) -lm -Wl,-rpath,$(PREFIX)/lib
+ 
+ spinner-demo: spinner-demo.c $(SOURCES) demo.h Makefile
+ 	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LIBS)
++spiral-complex: spiral-complex.c $(SOURCES) demo.h Makefile
++	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-complex.c $(SOURCES) $(LIBS)
+ spiral-demo: spiral-demo.c $(SOURCES) demo.h Makefile
+ 	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-demo.c $(SOURCES) $(LIBS)
+ slideshow-demo: slideshow-demo.c $(SOURCES) demo.h Makefile
+--- cairo-demos-20130630.orig/PS/Makefile
++++ cairo-demos-20130630/PS/Makefile
+@@ -1,3 +1,7 @@
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
+ EXAMPLES=basket
+ 
+ # I'd like to put a bunch of compiler-specific warning flags here, but
+@@ -9,16 +13,13 @@
+ #
+ # CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing" make
+ 
+-MYCFLAGS=`pkg-config --cflags cairo libpng12`
+-MYLDFLAGS=`pkg-config --libs cairo libpng12`
++MYCFLAGS=`$(PKG_CONFIG) --cflags cairo libpng`
++MYLDFLAGS=`$(PKG_CONFIG) --libs cairo libpng` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: ${EXAMPLES}
+ 
+-%.o: %.c
+-	$(CC) -c $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} $< -o $@
+-
+ %: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
+ 
+ clean:
+-	rm -f ${EXAMPLES} *.o
++	rm -f ${EXAMPLES} *.o *.ps
+--- cairo-demos-20130630.orig/X11/Makefile
++++ cairo-demos-20130630/X11/Makefile
+@@ -1,4 +1,18 @@
+-PROGS=cairo-demo-xcb cairo-spline cairo-knockout
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++XLIB:=$(shell $(PKG_CONFIG) --exists cairo-xlib && echo 1 || echo 0)
++ifneq ($(XLIB),0)
++PROGS+=cairo-knockout cairo-spline
++REQUIRES+=cairo-xlib
++endif
++
++XCB:=$(shell $(PKG_CONFIG) --exists cairo-xcb && echo 1 || echo 0)
++ifneq ($(XCB),0)
++PROGS+=cairo-demo-xcb
++REQUIRES+=cairo-xcb
++endif
+ 
+ # I'd like to put a bunch of compiler-specific warning flags here, but
+ # I don't know a good way to choose the right flags based on the
+@@ -9,14 +23,11 @@
+ #
+ # CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing" make
+ 
+-MYCFLAGS=`pkg-config --cflags cairo xcb`
+-MYLDFLAGS=`pkg-config --libs cairo xcb`
++MYCFLAGS=`$(PKG_CONFIG) --cflags $(REQUIRES)`
++MYLDFLAGS=`$(PKG_CONFIG) --libs $(REQUIRES)` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: $(PROGS)
+ 
+-%.o: %.c
+-	$(CC) -c $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} $< -o $@
+-
+ %: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
+ 
+--- cairo-demos-20130630.orig/X11/cairo-demo-xcb.c
++++ cairo-demos-20130630/X11/cairo-demo-xcb.c
+@@ -8,14 +8,14 @@
+ #define PI 3.1415926535
+ 
+ typedef struct win {
+-    XCBConnection *dpy;
++    xcb_connection_t *dpy;
+ 
+-    XCBWINDOW win;
+-    XCBGCONTEXT gc;
++    xcb_window_t win;
++    xcb_gcontext_t gc;
+ 
+     int width, height;
+ 
+-    XCBVISUALTYPE *visual;
++    xcb_visualtype_t *visual;
+ } win_t;
+ 
+ static void triangle(cairo_t *cr);
+@@ -31,7 +31,7 @@
+ {
+     win_t win;
+ 
+-    win.dpy = XCBConnectBasic();
++    win.dpy = xcb_connect(NULL, NULL);
+ 
+     if (win.dpy == NULL) {
+ 	fprintf(stderr, "Failed to open display\n");
+@@ -46,7 +46,7 @@
+ 
+     win_deinit(&win);
+ 
+-    XCBDisconnect(win.dpy);
++    xcb_disconnect(win.dpy);
+ 
+     return 0;
+ }
+@@ -198,12 +198,10 @@
+     static double dash[NUM_DASH] = {SIZE/4.0, SIZE/4.0};
+     cairo_surface_t *surface;
+     cairo_t *cr;
+-    XCBDRAWABLE drawable;
+-    drawable.window = win->win;
+ 
+-    XCBClearArea(win->dpy, 0, win->win, 0, 0, 0, 0);
++    xcb_clear_area(win->dpy, 0, win->win, 0, 0, 0, 0);
+ 
+-    surface = cairo_xcb_surface_create (win->dpy, drawable, win->visual,
++    surface = cairo_xcb_surface_create (win->dpy, win->win, win->visual,
+ 					win->width, win->height);
+     cr = cairo_create(surface);
+ 
+@@ -272,21 +270,24 @@
+     }
+ 
+     cairo_destroy(cr);
++    cairo_surface_destroy(surface);
++
++    xcb_flush(win->dpy);
+ }
+ 
+ static int
+-id_to_visual(XCBSCREEN *root, XCBVISUALTYPE **visual)
++id_to_visual(xcb_screen_t *root, xcb_visualtype_t **visual)
+ {
+-    XCBDEPTHIter di;
+-    XCBVISUALTYPE *v;
++    xcb_depth_iterator_t di;
++    xcb_visualtype_t *v;
+ 
+-    for(di = XCBSCREENAllowedDepthsIter(root); di.rem; XCBDEPTHNext(&di))
++    for(di = xcb_screen_allowed_depths_iterator(root); di.rem; xcb_depth_next(&di))
+     {
+ 	int i;
+-	const int count = XCBDEPTHVisualsLength(di.data);
+-	v = XCBDEPTHVisuals(di.data);
++	const int count = xcb_depth_visuals_length(di.data);
++	v = xcb_depth_visuals(di.data);
+ 	for(i = 0; i < count; ++i)
+-	    if(v->visual_id.id == root->root_visual.id)
++	    if(v->visual_id == root->root_visual)
+ 	    {
+ 		*visual = v;
+ 		return di.data->depth;
+@@ -298,49 +299,50 @@
+ static void
+ win_init(win_t *win)
+ {
+-    XCBSCREEN *root = XCBConnSetupSuccessRepRootsIter(XCBGetSetup(win->dpy)).data;
+-    CARD32 mask = XCBCWBackPixel | XCBCWEventMask;
+-    CARD32 values[] = { root->black_pixel, StructureNotifyMask | ExposureMask };
++    xcb_screen_t *root = xcb_setup_roots_iterator(xcb_get_setup(win->dpy)).data;
++    uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
++    uint32_t values[] = { root->black_pixel, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_EXPOSURE };
+     int depth;
+ 
+     win->width = 400;
+     win->height = 400;
+ 
+-    win->win = XCBWINDOWNew(win->dpy);
++    win->win = xcb_generate_id(win->dpy);
+     depth = id_to_visual(root, &win->visual);
+-    XCBCreateWindow(win->dpy, depth, win->win, root->root, 0, 0, win->width,
+-		    win->height, 0, InputOutput, win->visual->visual_id,
++    xcb_create_window(win->dpy, depth, win->win, root->root, 0, 0, win->width,
++		    win->height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, win->visual->visual_id,
+ 		    mask, values);
+-    XCBMapWindow(win->dpy, win->win);
++
++    xcb_map_window(win->dpy, win->win);
+ }
+ 
+ static void
+ win_deinit(win_t *win)
+ {
+-    XCBDestroyWindow(win->dpy, win->win);
++    xcb_destroy_window(win->dpy, win->win);
+ }
+ 
+ static void
+ win_handle_events(win_t *win)
+ {
+-    XCBGenericEvent *xev;
++    xcb_generic_event_t *xev;
+ 
+     while (1) {
+-	xev = XCBWaitEvent(win->dpy);
++	xev = xcb_wait_for_event(win->dpy);
+ 	if(!xev)
+ 		return;
+ 	switch(xev->response_type) {
+-	case XCBConfigureNotify:
++	case XCB_CONFIGURE_NOTIFY:
+ 	{
+-	    XCBConfigureNotifyEvent *cev = (XCBConfigureNotifyEvent *) xev;
++	    xcb_configure_notify_event_t *cev = (xcb_configure_notify_event_t *) xev;
+ 
+ 	    win->width = cev->width;
+ 	    win->height = cev->height;
+ 	}
+ 	break;
+-	case XCBExpose:
++	case XCB_EXPOSE:
+ 	{
+-	    XCBExposeEvent *eev = (XCBExposeEvent *) xev;
++	    xcb_expose_event_t *eev = (xcb_expose_event_t *) xev;
+ 
+ 	    if (eev->count == 0)
+ 		win_draw(win);
+--- cairo-demos-20130630.orig/bubble-demo.c
++++ cairo-demos-20130630/bubble-demo.c
+@@ -29,7 +29,7 @@
+ 	cairo_matrix_t m;
+ 	cairo_t *cr;
+ 
+-	image = surface_create_from_png(device->scanout, "bubblebg.png");
++	image = surface_create_from_png(device->scanout, DEMOSDATADIR"/bubblebg.png");
+ 	s->height = cairo_image_surface_get_height(image);
+ 	s->width = cairo_image_surface_get_width(image);
+ 
+@@ -117,7 +117,7 @@
+ 	cairo_surface_t *image;
+ 	cairo_t *cr;
+ 
+-	image = surface_create_from_png(device->scanout, "bubble.png");
++	image = surface_create_from_png(device->scanout, DEMOSDATADIR"/bubble.png");
+ 	s->height = cairo_image_surface_get_height(image);
+ 	s->width = cairo_image_surface_get_width(image);
+ 
+@@ -312,6 +312,7 @@
+ 		cairo_paint(cr);
+ 		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+ 		cairo_set_source(cr, bg.pattern);
++		cairo_paint(cr);
+ 		cairo_mask(cr, mask.pattern);
+ 
+ 		for (n = 0; n < num_bubbles; n++)
+--- cairo-demos-20130630.orig/chart-demo.c
++++ cairo-demos-20130630/chart-demo.c
+@@ -295,7 +295,7 @@
+ 		for (n = 0; n < 5; n++)
+ 			chart_update(&c[n]);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/demo.c
++++ cairo-demos-20130630/demo.c
+@@ -226,7 +226,10 @@
+ 	exit(1);
+     }
+ 
+-    printf("Using backend \"%s\"\n", device->name);
++    if (!getenv("CAIRO_DEMOS_QUIET")) {
++	printf("Using backend \"%s\"\n", device->name);
++    }
++
+     return device;
+ }
+ 
+@@ -309,6 +312,8 @@
+ 		cairo_pixels += cairo_stride;
+ 	}
+ 
++	cairo_surface_mark_dirty(surface);
++
+ 	return surface;
+ }
+ #endif
+@@ -351,11 +356,11 @@
+ 			      name, frame_count, frame_count == 1 ? "" : "s");
+     } else {
+ 	    if (version)
+-		    snprintf (buf, sizeof (buf), "%s (%s): %.1f fps, %d frames",
+-			      name, version, 1. / avg, frame_count);
++		    snprintf (buf, sizeof (buf), "%s (%s): %.1f fps",
++			      name, version, 1. / avg);
+ 	    else
+-		    snprintf (buf, sizeof (buf), "%s: %.1f fps, %d frames",
+-			      name, 1. / avg, frame_count);
++		    snprintf (buf, sizeof (buf), "%s: %.1f fps",
++			      name, 1. / avg);
+     }
+     cairo_set_font_size (cr, 18);
+     cairo_text_extents (cr, buf, &extents);
+--- cairo-demos-20130630.orig/dragon-demo.c
++++ cairo-demos-20130630/dragon-demo.c
+@@ -27,6 +27,7 @@
+  */
+ 
+ #include "demo.h"
++#include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
+ #include <signal.h>
+@@ -181,13 +182,11 @@
+ 	int stroke = 1;
+ 	int benchmark;
+ 	const char *version;
+-	enum clip clip;
+ 
+ 	int n;
+ 
+ 	device = device_open(argc, argv);
+ 	version = device_show_version(argc, argv);
+-	clip = device_get_clip(argc, argv);
+ 	benchmark = device_get_benchmark(argc, argv);
+ 	if (benchmark == 0)
+ 		benchmark = 20;
+@@ -223,7 +222,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/fish-demo.c
++++ cairo-demos-20130630/fish-demo.c
+@@ -30,7 +30,7 @@
+ 	double sf;
+ 	cairo_t *cr;
+ 
+-	image = surface_create_from_png(device->scanout, "fishbg.png");
++	image = surface_create_from_png(device->scanout, DEMOSDATADIR"/fishbg.png");
+ 	height = cairo_image_surface_get_height(image);
+ 	width = cairo_image_surface_get_width(image);
+ 	sf = height / (double)device->height;
+@@ -64,7 +64,7 @@
+ 	int width, height, x, y;
+ 	cairo_t *cr;
+ 
+-	image = surface_create_from_png(device->scanout, "fishstrip.png");
++	image = surface_create_from_png(device->scanout, DEMOSDATADIR"/fishstrip.png");
+ 	width = cairo_image_surface_get_width(image);
+ 	height = cairo_image_surface_get_height(image);
+ 	surface = cairo_surface_create_similar(device->scanout,
+@@ -264,7 +264,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/flowers-demo.c
++++ cairo-demos-20130630/flowers-demo.c
+@@ -422,7 +422,7 @@
+ 
+ 		flowers_update(device->width, device->height);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/gradient-demo.c
++++ cairo-demos-20130630/gradient-demo.c
+@@ -219,7 +219,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/kapow/.gitignore
++++ cairo-demos-20130630/kapow/.gitignore
+@@ -1 +1,2 @@
+ kapow
++kapow.o
+--- cairo-demos-20130630.orig/kapow/Makefile
++++ cairo-demos-20130630/kapow/Makefile
+@@ -1,5 +1,9 @@
+-MYCFLAGS= $(shell pkg-config --cflags cairo libpng) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
+-LDLIBS	= $(shell pkg-config --libs cairo libpng) -g
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++MYCFLAGS= $(shell $(PKG_CONFIG) --cflags cairo libpng) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
++LDLIBS	= $(shell $(PKG_CONFIG) --libs cairo libpng) -lm -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: kapow
+ 
+@@ -9,4 +13,4 @@
+ kapow : kapow.o
+ 
+ clean :
+-	rm kapow.o kapow
++	rm -f kapow.o kapow kapow.png
+--- cairo-demos-20130630.orig/maze-demo.c
++++ cairo-demos-20130630/maze-demo.c
+@@ -259,7 +259,6 @@
+ 	int show_fps = 1;
+ 	int benchmark;
+ 	const char *version = device_show_version(argc, argv);
+-	//enum clip clip = device_get_clip(argc, argv);
+ 
+ 	int n;
+ 
+--- cairo-demos-20130630.orig/png/.gitignore
++++ cairo-demos-20130630/png/.gitignore
+@@ -4,7 +4,9 @@
+ outline
+ snapping
+ spiral
++spline-pipelines
+ splines_tolerance
++star_and_ring
+ stars
+ text
+ text-rotate
+--- cairo-demos-20130630.orig/png/Makefile
++++ cairo-demos-20130630/png/Makefile
+@@ -1,4 +1,8 @@
+-EXAMPLES=bevels caps_joins hering outline spiral splines_tolerance snapping stars star_and_ring text text-rotate
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++EXAMPLES=bevels caps_joins hering outline spiral spline-pipelines splines_tolerance snapping stars star_and_ring text text-rotate
+ 
+ # I'd like to put a bunch of compiler-specific warning flags here, but
+ # I don't know a good way to choose the right flags based on the
+@@ -9,14 +13,11 @@
+ #
+ # CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing" make
+ 
+-MYCFLAGS=`pkg-config --cflags cairo libpng12`
+-MYLDFLAGS=`pkg-config --libs cairo libpng12`
++MYCFLAGS=`$(PKG_CONFIG) --cflags cairo libpng`
++MYLDFLAGS=`$(PKG_CONFIG) --libs cairo libpng` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: $(EXAMPLES)
+ 
+-%.o: %.c
+-	$(CC) -c $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} $< -o $@
+-
+ %: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
+ 
+--- cairo-demos-20130630.orig/png/snapping.c
++++ cairo-demos-20130630/png/snapping.c
+@@ -43,6 +43,13 @@
+ #include <cairo.h>
+ #include <math.h>
+ 
++static inline int
++fast_floor (double x)
++{
++    int i = (int) x;
++    return i - (i > x);
++}
++
+ #define WIDTH 175
+ #define HEIGHT 175
+ #define STRIDE (WIDTH * 4)
+@@ -62,8 +69,8 @@
+ {
+     /* Convert to device space, round, then convert back to user space. */
+     cairo_user_to_device (cr, x, y);
+-    *x = floor (*x + 0.5);
+-    *y = floor (*y + 0.5);
++    *x = fast_floor (*x + 0.5);
++    *y = fast_floor (*y + 0.5);
+     cairo_device_to_user (cr, x, y);
+ }
+ 
+@@ -98,8 +105,8 @@
+     y_offset = y_width_dev_2 - (int) (y_width_dev_2);
+ 
+     cairo_user_to_device (cr, x, y);
+-    *x = floor (*x + x_offset + 0.5);
+-    *y = floor (*y + y_offset + 0.5);
++    *x = fast_floor (*x + x_offset + 0.5);
++    *y = fast_floor (*y + y_offset + 0.5);
+     *x -= x_offset;
+     *y -= y_offset;
+     cairo_device_to_user (cr, x, y);
+@@ -125,7 +132,7 @@
+     /* If the line width is less than 1 then it will round to 0 and
+      * disappear. Instead, we clamp it to 1.0, but we must preserve
+      * its sign for the case of a reflecting transformation. */
+-    x_width_snapped = floor (x_width + 0.5);
++    x_width_snapped = fast_floor (x_width + 0.5);
+     if (fabs(x_width_snapped) < 1.0) {
+ 	if (x_width > 0)
+ 	    x_width_snapped = 1.0;
+@@ -133,7 +140,7 @@
+ 	    x_width_snapped = -1.0;
+     }
+ 
+-    y_width_snapped = floor (y_width + 0.5);
++    y_width_snapped = fast_floor (y_width + 0.5);
+     if (fabs(y_width_snapped) < 1.0) {
+ 	if (y_width > 0)
+ 	    y_width_snapped = 1.0;
+--- cairo-demos-20130630.orig/pythagoras-demo.c
++++ cairo-demos-20130630/pythagoras-demo.c
+@@ -27,6 +27,7 @@
+ 
+ #define _USE_MATH_DEFINES /* for M_SQRT2 on win32 */
+ #include <math.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
+ #include <signal.h>
+@@ -102,14 +103,12 @@
+ 	int show_fps = 1;
+ 	int benchmark;
+ 	const char *version;
+-	enum clip clip;
+ 	double size = 2;
+ 
+ 	int n;
+ 
+ 	device = device_open(argc, argv);
+ 	version = device_show_version(argc, argv);
+-	clip = device_get_clip(argc, argv);
+ 	benchmark = device_get_benchmark(argc, argv);
+ 	if (benchmark == 0)
+ 		benchmark = 20;
+@@ -144,7 +143,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/sierpinski-demo.c
++++ cairo-demos-20130630/sierpinski-demo.c
+@@ -1,4 +1,5 @@
+ #include "demo.h"
++#include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
+ #include <signal.h>
+@@ -71,14 +72,12 @@
+ 	int show_fps = 1;
+ 	int benchmark;
+ 	const char *version;
+-	enum clip clip;
+ 	double theta = 0;
+ 
+ 	int n;
+ 
+ 	device = device_open(argc, argv);
+ 	version = device_show_version(argc, argv);
+-	clip = device_get_clip(argc, argv);
+ 	benchmark = device_get_benchmark(argc, argv);
+ 	if (benchmark == 0)
+ 		benchmark = 20;
+@@ -122,7 +121,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/slideshow-demo.c
++++ cairo-demos-20130630/slideshow-demo.c
+@@ -142,7 +142,7 @@
+ 	}
+ 	closedir(dir);
+ 
+-	if (count)
++	if (count && !getenv("CAIRO_DEMOS_QUIET"))
+ 		printf("Loaded %d images from %s\n", count, path);
+ }
+ 
+@@ -198,11 +198,13 @@
+ 		}
+ 	}
+ 	if (num_sources == 0)
+-		load_sources("/usr/share/backgrounds", device,
++		load_sources(BACKGROUNDSDIR, device,
+ 			     device->get_framebuffer(device)->surface);
+ 
+-	printf("Loaded %d images, %ld/%ld pixels in total\n",
+-	       num_sources, (long)out_pixels, (long)in_pixels);
++	if (!getenv("CAIRO_DEMOS_QUIET"))
++		printf("Loaded %d images, %ld/%ld pixels in total\n",
++		       num_sources, (long)out_pixels, (long)in_pixels);
++
+ 	if (num_sources == 0)
+ 		return 0;
+ 
+@@ -265,7 +267,7 @@
+ 		frames++;
+ 		delta = now.tv_sec - last_tty.tv_sec;
+ 		delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+-		if (delta >  5) {
++		if (delta >  5 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			printf("%.2f fps\n", frames/delta);
+ 			last_tty = now;
+ 			frames = 0;
+--- cairo-demos-20130630.orig/spinner-demo.c
++++ cairo-demos-20130630/spinner-demo.c
+@@ -119,7 +119,7 @@
+ {
+ 	struct device *device;
+ 	struct timeval start, last_tty, last_fps, now;
+-	const char *filename = "images/4000x4000/202672-4000x4000.jpg";
++	const char *filename = DEMOSDATADIR"/images/4000x4000/202672-4000x4000.jpg";
+ 	int frames, n;
+ 	int frame = 0;
+ 	double factor = 1.0125;
+@@ -200,7 +200,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			frames++;
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+--- cairo-demos-20130630.orig/spiral-complex.c
++++ cairo-demos-20130630/spiral-complex.c
+@@ -32,7 +32,7 @@
+ 	if (pb == NULL)
+ 		return 0;
+ 
+-	image = _cairo_image_surface_create_from_pixbuf(pb);
++	image = surface_create_from_pixbuf(target, pb);
+ 	g_object_unref(pb);
+ 
+ 	width = cairo_image_surface_get_width(image);
+@@ -124,7 +124,7 @@
+ 	}
+ 	closedir(dir);
+ 
+-	if (count)
++	if (count && !getenv("CAIRO_DEMOS_QUIET"))
+ 		printf("Loaded %d images from %s\n", count, path);
+ }
+ 
+@@ -144,7 +144,7 @@
+ int main(int argc, char **argv)
+ {
+ 	struct device *device;
+-	const char *path = "/usr/share/backgrounds";
++	const char *path = BACKGROUNDSDIR;
+ 	float sincos_lut[360];
+ 	struct timeval start, last_tty, last_fps, now;
+ 	int theta, frames, n;
+@@ -160,6 +160,8 @@
+ 		if (strcmp (argv[n], "--images") == 0) {
+ 			path = argv[n+1];
+ 			n++;
++	    } else if (strcmp (argv[n], "--prescale") == 0) {
++		prescale = 1;
+ 	    } else if (strcmp (argv[n], "--hide-path") == 0) {
+ 		show_path = 0;
+ 	    } else if (strcmp (argv[n], "--hide-outline") == 0) {
+@@ -181,8 +183,9 @@
+ 	}
+ 
+ 	load_sources(path, device->get_framebuffer(device)->surface);
+-	printf("Loaded %d images, %ld/%ld pixels in total from %s\n",
+-	       num_sources, (long)out_pixels, (long)in_pixels, path);
++	if (!getenv("CAIRO_DEMOS_QUIET"))
++		printf("Loaded %d images, %ld/%ld pixels in total from %s\n",
++		       num_sources, (long)out_pixels, (long)in_pixels, path);
+ 
+ 	gettimeofday(&start, 0); now = last_tty = last_fps = start;
+ 	frames = 0;
+@@ -299,7 +302,7 @@
+ 		frames++;
+ 		delta = now.tv_sec - last_tty.tv_sec;
+ 		delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+-		if (delta >  5) {
++		if (delta >  5 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			printf("%.2f fps\n", frames/delta);
+ 			last_tty = now;
+ 			frames = 0;
+--- cairo-demos-20130630.orig/spiral-demo.c
++++ cairo-demos-20130630/spiral-demo.c
+@@ -148,7 +148,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/tiger-demo.c
++++ cairo-demos-20130630/tiger-demo.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include <cairo.h>
++#include <stdlib.h>
+ #include <sys/time.h>
+ #include <stdio.h>
+ #include <signal.h>
+@@ -129,10 +130,10 @@
+ 		fb->destroy (fb);
+ 
+ 		++frame;
+-		if (frame % 256 == 0)
++		if (frame % 192 == 0)
+ 			factor = 1./factor;
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/tsetse/Makefile
++++ cairo-demos-20130630/tsetse/Makefile
+@@ -1,10 +1,14 @@
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
+ APPS    = tsetse
+ 
+ CFLAGS  = -Wall
+ LDFLAGS = -lm
+ 
+-CFLAGS  += `pkg-config cairo --cflags`
+-LDFLAGS += `pkg-config cairo --libs`
++CFLAGS  += `$(PKG_CONFIG) cairo --cflags`
++LDFLAGS += `$(PKG_CONFIG) cairo x11 --libs` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: $(APPS) 
+ 
+--- cairo-demos-20130630.orig/waterfall-demo.c
++++ cairo-demos-20130630/waterfall-demo.c
+@@ -170,7 +170,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/wave-demo.c
++++ cairo-demos-20130630/wave-demo.c
+@@ -123,13 +123,11 @@
+ 	int show_fps = 1;
+ 	int benchmark;
+ 	const char *version;
+-	enum clip clip;
+ 
+ 	int n;
+ 
+ 	device = device_open(argc, argv);
+ 	version = device_show_version(argc, argv);
+-	clip = device_get_clip(argc, argv);
+ 	benchmark = device_get_benchmark(argc, argv);
+ 	if (benchmark == 0)
+ 		benchmark = 20;
+@@ -162,7 +160,7 @@
+ 		fb->show (fb);
+ 		fb->destroy (fb);
+ 
+-		if (benchmark < 0 && 0) {
++		if (benchmark < 0 && !getenv("CAIRO_DEMOS_QUIET")) {
+ 			delta = now.tv_sec - last_tty.tv_sec;
+ 			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
+ 			frames++;
+--- cairo-demos-20130630.orig/xcb.c
++++ cairo-demos-20130630/xcb.c
+@@ -81,7 +81,7 @@
+     xcb_connection_t *c;
+     xcb_screen_t *s;
+     xcb_visualtype_t *v;
+-    uint32_t values[] = { 1 };
++    uint32_t values[] = { 0 };
+     int i;
+ 
+     c = xcb_connect (NULL, NULL);
+--- cairo-demos-20130630.orig/ximage.c
++++ cairo-demos-20130630/ximage.c
+@@ -132,7 +132,7 @@
+ 	    break;
+     }
+ 
+-    attr.override_redirect = True;
++    attr.override_redirect = False;
+     win = XCreateWindow (dpy, DefaultRootWindow (dpy),
+ 			 x, y,
+ 			 device->base.width, device->base.height, 0,
+--- cairo-demos-20130630.orig/xlib.c
++++ cairo-demos-20130630/xlib.c
+@@ -115,7 +115,7 @@
+ 	    break;
+     }
+ 
+-    attr.override_redirect = True;
++    attr.override_redirect = False;
+     device->drawable = XCreateWindow (dpy, DefaultRootWindow (dpy),
+ 				      x, y,
+ 				      device->base.width, device->base.height, 0,
+--- cairo-demos-20130630.orig/xshm.c
++++ cairo-demos-20130630/xshm.c
+@@ -148,7 +148,7 @@
+ 	    break;
+     }
+ 
+-    attr.override_redirect = True;
++    attr.override_redirect = False;
+     device->drawable = XCreateWindow (dpy, DefaultRootWindow (dpy),
+ 				      x, y,
+ 				      device->base.width, device->base.height, 0,
+@@ -175,7 +175,6 @@
+     XShmQueryVersion (dpy, &major, &minor, &has_pixmap);
+ 
+     if (has_pixmap) {
+-	printf ("Using SHM Pixmap\n");
+ 	device->pixmap = XShmCreatePixmap (dpy,
+ 					   device->drawable,
+ 					   device->shm.shmaddr,
+@@ -184,7 +183,6 @@
+ 					   device->base.height,
+ 					   24);
+     } else {
+-	printf ("Using SHM PutImage\n");
+ 	device->pixmap = 0;
+     }
+ 
+# source
+https://github.com/caramelli/cairo-demos/archive/4abf841dd0b560588512c6b49c3b5df06a4fcee6/cairo-demos-20130630.tar.gz

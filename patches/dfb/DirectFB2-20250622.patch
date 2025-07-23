@@ -1,0 +1,337 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="meson-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists libdrm-build; then
+  DRM=1
+  REQUIRES="$REQUIRES libdrm-build"
+fi
+
+# configure
+meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/include/directfb
+install -m 644 build/include/directfb_build.h $DESTDIR/dfb/include/directfb
+install -m 644 build/include/directfb_keynames.h $DESTDIR/dfb/include/directfb
+install -m 644 build/include/directfb_strings.h $DESTDIR/dfb/include/directfb
+install -m 644 build/include/directfb_version.h $DESTDIR/dfb/include/directfb
+install -m 644 include/dfiff.h $DESTDIR/dfb/include/directfb
+install -m 644 include/dfvff.h $DESTDIR/dfb/include/directfb
+install -m 644 include/dgiff.h $DESTDIR/dfb/include/directfb
+install -m 644 include/directfb.h $DESTDIR/dfb/include/directfb
+install -m 644 include/directfb_keyboard.h $DESTDIR/dfb/include/directfb
+install -m 644 include/directfb_util.h $DESTDIR/dfb/include/directfb
+install -m 644 include/directfb_windows.h $DESTDIR/dfb/include/directfb
+install -m 644 include/directfbgl.h $DESTDIR/dfb/include/directfb
+install -d $DESTDIR/dfb/include/directfb/direct
+install -m 644 build/lib/direct/build.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/atomic.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/clock.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/compiler.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/conf.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/debug.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/direct.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/filesystem.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/hash.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/interface.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/interface_implementation.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/list.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/log.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/log_domain.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/map.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/mem.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/memcpy.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/messages.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/modules.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/mutex.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/result.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/serial.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/signals.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/stream.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/system.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/thread.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/trace.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/types.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/utf8.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/util.h $DESTDIR/dfb/include/directfb/direct
+install -m 644 lib/direct/waitqueue.h $DESTDIR/dfb/include/directfb/direct
+install -d $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/clock.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/filesystem.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/log.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/mem.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/mutex.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/signals.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/system.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/thread.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/types.h $DESTDIR/dfb/include/directfb/direct/os
+install -m 644 lib/direct/os/waitqueue.h $DESTDIR/dfb/include/directfb/direct/os
+install -d $DESTDIR/dfb/include/directfb/direct/os/linux
+install -m 644 lib/direct/os/linux/filesystem.h $DESTDIR/dfb/include/directfb/direct/os/linux
+install -m 644 lib/direct/os/linux/mutex.h $DESTDIR/dfb/include/directfb/direct/os/linux
+install -m 644 lib/direct/os/linux/thread.h $DESTDIR/dfb/include/directfb/direct/os/linux
+install -m 644 lib/direct/os/linux/types.h $DESTDIR/dfb/include/directfb/direct/os/linux
+install -m 644 lib/direct/os/linux/waitqueue.h $DESTDIR/dfb/include/directfb/direct/os/linux
+install -d $DESTDIR/dfb/include/directfb/fusion
+install -m 644 build/lib/fusion/build.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/arena.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/call.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/conf.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/fusion.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/hash.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/lock.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/object.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/protocol.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/reactor.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/ref.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/shmalloc.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/types.h $DESTDIR/dfb/include/directfb/fusion
+install -m 644 lib/fusion/vector.h $DESTDIR/dfb/include/directfb/fusion
+install -d $DESTDIR/dfb/include/directfb/fusion/shm
+install -m 644 lib/fusion/shm/pool.h $DESTDIR/dfb/include/directfb/fusion/shm
+install -d $DESTDIR/dfb/include/directfb-internal
+install -m 644 build/src/build.h $DESTDIR/dfb/include/directfb-internal
+install -m 644 src/idirectfb.h $DESTDIR/dfb/include/directfb-internal
+install -d $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/CoreGraphicsStateClient.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/CoreSlave_includes.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/core.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/core_resourcemanager.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/core_system.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/coredefs.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/coretypes.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/fonts.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/gfxcard.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/graphics_driver.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/input.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/input_driver.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/layer_context.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/layer_control.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/layer_region.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/layers.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/palette.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/screen.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/screens.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/state.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/surface.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/surface_allocation.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/surface_buffer.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/surface_client.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/surface_pool.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/surface_pool_bridge.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/system.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/video_mode.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/windows.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/windowstack.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/wm.h $DESTDIR/dfb/include/directfb-internal/core
+install -m 644 src/core/wm_module.h $DESTDIR/dfb/include/directfb-internal/core
+install -d $DESTDIR/dfb/include/directfb-internal/display
+install -m 644 src/display/idirectfbsurface.h $DESTDIR/dfb/include/directfb-internal/display
+install -d $DESTDIR/dfb/include/directfb-internal/gfx
+install -m 644 src/gfx/clip.h $DESTDIR/dfb/include/directfb-internal/gfx
+install -m 644 src/gfx/convert.h $DESTDIR/dfb/include/directfb-internal/gfx
+install -m 644 src/gfx/util.h $DESTDIR/dfb/include/directfb-internal/gfx
+install -d $DESTDIR/dfb/include/directfb-internal/media
+install -m 644 src/media/idirectfbdatabuffer.h $DESTDIR/dfb/include/directfb-internal/media
+install -m 644 src/media/idirectfbfont.h $DESTDIR/dfb/include/directfb-internal/media
+install -m 644 src/media/idirectfbimageprovider.h $DESTDIR/dfb/include/directfb-internal/media
+install -m 644 src/media/idirectfbvideoprovider.h $DESTDIR/dfb/include/directfb-internal/media
+install -d $DESTDIR/dfb/include/directfb-internal/misc
+install -m 644 src/misc/conf.h $DESTDIR/dfb/include/directfb-internal/misc
+install -m 644 src/misc/gfx_util.h $DESTDIR/dfb/include/directfb-internal/misc
+install -d $DESTDIR/dfb/lib
+install build/lib/direct/libdirect-2.0.so.0.*[!p] $DESTDIR/dfb/lib/libdirect-2.0.so.0
+ln -sf libdirect-2.0.so.0 $DESTDIR/dfb/lib/libdirect.so
+install build/src/libdirectfb-2.0.so.0.*[!p] $DESTDIR/dfb/lib/libdirectfb-2.0.so.0
+ln -sf libdirectfb-2.0.so.0 $DESTDIR/dfb/lib/libdirectfb.so
+install build/lib/fusion/libfusion-2.0.so.0.*[!p] $DESTDIR/dfb/lib/libfusion-2.0.so.0
+ln -sf libfusion-2.0.so.0 $DESTDIR/dfb/lib/libfusion.so
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/inputdrivers
+install build/inputdrivers/linux_input/libdirectfb_linux_input.so $DESTDIR/dfb/lib/directfb-2.0-0/inputdrivers
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/ICoreResourceManager
+install build/interfaces/ICoreResourceManager/libicoreresourcemanager_default.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/ICoreResourceManager
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont
+install build/interfaces/IDirectFBFont/libidirectfbfont_dgiff.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install build/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_dfiff.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+install build/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_dfvff.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows
+install build/interfaces/IDirectFBWindows/libidirectfbwindows_default.so $DESTDIR/dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/systems
+test $DRM && install build/systems/drmkms/libdirectfb_drmkms.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
+install build/systems/dummy/libdirectfb_dummy.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
+install build/systems/fbdev/libdirectfb_fbdev.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/wm
+install build/wm/default/libdirectfbwm_default.so $DESTDIR/dfb/lib/directfb-2.0-0/wm
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/direct.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/directfb.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/directfb-internal.pc $DESTDIR/dfb/lib/pkgconfig
+install -m 644 build/meson-private/fusion.pc $DESTDIR/dfb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
+Name: DirectFB2
+Version: 20250622
+Description: Core DirectFB library
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/directfb/dfiff.h \\
+/dfb/include/directfb/dfvff.h \\
+/dfb/include/directfb/dgiff.h \\
+/dfb/include/directfb/directfb.h \\
+/dfb/include/directfb/directfb_build.h \\
+/dfb/include/directfb/directfb_keyboard.h \\
+/dfb/include/directfb/directfb_keynames.h \\
+/dfb/include/directfb/directfb_strings.h \\
+/dfb/include/directfb/directfb_util.h \\
+/dfb/include/directfb/directfb_version.h \\
+/dfb/include/directfb/directfb_windows.h \\
+/dfb/include/directfb/directfbgl.h \\
+/dfb/include/directfb/direct/atomic.h \\
+/dfb/include/directfb/direct/build.h \\
+/dfb/include/directfb/direct/clock.h \\
+/dfb/include/directfb/direct/compiler.h \\
+/dfb/include/directfb/direct/conf.h \\
+/dfb/include/directfb/direct/debug.h \\
+/dfb/include/directfb/direct/direct.h \\
+/dfb/include/directfb/direct/filesystem.h \\
+/dfb/include/directfb/direct/hash.h \\
+/dfb/include/directfb/direct/interface.h \\
+/dfb/include/directfb/direct/interface_implementation.h \\
+/dfb/include/directfb/direct/list.h \\
+/dfb/include/directfb/direct/log.h \\
+/dfb/include/directfb/direct/log_domain.h \\
+/dfb/include/directfb/direct/map.h \\
+/dfb/include/directfb/direct/mem.h \\
+/dfb/include/directfb/direct/memcpy.h \\
+/dfb/include/directfb/direct/messages.h \\
+/dfb/include/directfb/direct/modules.h \\
+/dfb/include/directfb/direct/mutex.h \\
+/dfb/include/directfb/direct/result.h \\
+/dfb/include/directfb/direct/serial.h \\
+/dfb/include/directfb/direct/signals.h \\
+/dfb/include/directfb/direct/stream.h \\
+/dfb/include/directfb/direct/system.h \\
+/dfb/include/directfb/direct/thread.h \\
+/dfb/include/directfb/direct/trace.h \\
+/dfb/include/directfb/direct/types.h \\
+/dfb/include/directfb/direct/utf8.h \\
+/dfb/include/directfb/direct/util.h \\
+/dfb/include/directfb/direct/waitqueue.h \\
+/dfb/include/directfb/direct/os/clock.h \\
+/dfb/include/directfb/direct/os/filesystem.h \\
+/dfb/include/directfb/direct/os/log.h \\
+/dfb/include/directfb/direct/os/mem.h \\
+/dfb/include/directfb/direct/os/mutex.h \\
+/dfb/include/directfb/direct/os/signals.h \\
+/dfb/include/directfb/direct/os/system.h \\
+/dfb/include/directfb/direct/os/thread.h \\
+/dfb/include/directfb/direct/os/types.h \\
+/dfb/include/directfb/direct/os/waitqueue.h \\
+/dfb/include/directfb/direct/os/linux/filesystem.h \\
+/dfb/include/directfb/direct/os/linux/mutex.h \\
+/dfb/include/directfb/direct/os/linux/thread.h \\
+/dfb/include/directfb/direct/os/linux/types.h \\
+/dfb/include/directfb/direct/os/linux/waitqueue.h \\
+/dfb/include/directfb/fusion/arena.h \\
+/dfb/include/directfb/fusion/build.h \\
+/dfb/include/directfb/fusion/call.h \\
+/dfb/include/directfb/fusion/conf.h \\
+/dfb/include/directfb/fusion/fusion.h \\
+/dfb/include/directfb/fusion/hash.h \\
+/dfb/include/directfb/fusion/lock.h \\
+/dfb/include/directfb/fusion/object.h \\
+/dfb/include/directfb/fusion/protocol.h \\
+/dfb/include/directfb/fusion/reactor.h \\
+/dfb/include/directfb/fusion/ref.h \\
+/dfb/include/directfb/fusion/shmalloc.h \\
+/dfb/include/directfb/fusion/types.h \\
+/dfb/include/directfb/fusion/vector.h \\
+/dfb/include/directfb/fusion/shm/pool.h \\
+/dfb/include/directfb-internal/build.h \\
+/dfb/include/directfb-internal/idirectfb.h \\
+/dfb/include/directfb-internal/core/CoreGraphicsStateClient.h \\
+/dfb/include/directfb-internal/core/CoreSlave_includes.h \\
+/dfb/include/directfb-internal/core/core.h \\
+/dfb/include/directfb-internal/core/core_resourcemanager.h \\
+/dfb/include/directfb-internal/core/core_system.h \\
+/dfb/include/directfb-internal/core/coredefs.h \\
+/dfb/include/directfb-internal/core/coretypes.h \\
+/dfb/include/directfb-internal/core/fonts.h \\
+/dfb/include/directfb-internal/core/gfxcard.h \\
+/dfb/include/directfb-internal/core/graphics_driver.h \\
+/dfb/include/directfb-internal/core/input.h \\
+/dfb/include/directfb-internal/core/input_driver.h \\
+/dfb/include/directfb-internal/core/layer_context.h \\
+/dfb/include/directfb-internal/core/layer_control.h \\
+/dfb/include/directfb-internal/core/layer_region.h \\
+/dfb/include/directfb-internal/core/layers.h \\
+/dfb/include/directfb-internal/core/palette.h \\
+/dfb/include/directfb-internal/core/screen.h \\
+/dfb/include/directfb-internal/core/screens.h \\
+/dfb/include/directfb-internal/core/state.h \\
+/dfb/include/directfb-internal/core/surface.h \\
+/dfb/include/directfb-internal/core/surface_allocation.h \\
+/dfb/include/directfb-internal/core/surface_buffer.h \\
+/dfb/include/directfb-internal/core/surface_client.h \\
+/dfb/include/directfb-internal/core/surface_pool.h \\
+/dfb/include/directfb-internal/core/surface_pool_bridge.h \\
+/dfb/include/directfb-internal/core/system.h \\
+/dfb/include/directfb-internal/core/video_mode.h \\
+/dfb/include/directfb-internal/core/windows.h \\
+/dfb/include/directfb-internal/core/windowstack.h \\
+/dfb/include/directfb-internal/core/wm.h \\
+/dfb/include/directfb-internal/core/wm_module.h \\
+/dfb/include/directfb-internal/display/idirectfbsurface.h \\
+/dfb/include/directfb-internal/gfx/clip.h \\
+/dfb/include/directfb-internal/gfx/convert.h \\
+/dfb/include/directfb-internal/gfx/util.h \\
+/dfb/include/directfb-internal/media/idirectfbdatabuffer.h \\
+/dfb/include/directfb-internal/media/idirectfbfont.h \\
+/dfb/include/directfb-internal/media/idirectfbimageprovider.h \\
+/dfb/include/directfb-internal/media/idirectfbvideoprovider.h \\
+/dfb/include/directfb-internal/misc/conf.h \\
+/dfb/include/directfb-internal/misc/gfx_util.h \\
+/dfb/lib/libdirect.so \\
+/dfb/lib/libdirectfb.so \\
+/dfb/lib/libfusion.so \\
+/dfb/lib/pkgconfig/direct.pc \\
+/dfb/lib/pkgconfig/directfb.pc \\
+/dfb/lib/pkgconfig/directfb-internal.pc \\
+/dfb/lib/pkgconfig/fusion.pc
+
+exec=\\
+/dfb/lib/libdirect-2.0.so.0 \\
+/dfb/lib/libdirectfb-2.0.so.0 \\
+/dfb/lib/libfusion-2.0.so.0 \\
+/dfb/lib/directfb-2.0-0/inputdrivers/libdirectfb_linux_input.so \\
+/dfb/lib/directfb-2.0-0/interfaces/ICoreResourceManager/libicoreresourcemanager_default.so \\
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBFont/libidirectfbfont_dgiff.so \\
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBImageProvider/libidirectfbimageprovider_dfiff.so \\
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBVideoProvider/libidirectfbvideoprovider_dfvff.so \\
+/dfb/lib/directfb-2.0-0/interfaces/IDirectFBWindows/libidirectfbwindows_default.so \\
+EOF
+test $DRM && cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
+/dfb/lib/directfb-2.0-0/systems/libdirectfb_drmkms.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/directfb2-build.pc << EOF
+/dfb/lib/directfb-2.0-0/systems/libdirectfb_dummy.so \\
+/dfb/lib/directfb-2.0-0/systems/libdirectfb_fbdev.so \\
+/dfb/lib/directfb-2.0-0/wm/libdirectfbwm_default.so
+EOF
+
+exit
+
+# source
+https://github.com/directfb2/DirectFB2/archive/2d2dbd54f72d8db4881d4e0e2800b14d84567aae/DirectFB2-20250622.tar.gz

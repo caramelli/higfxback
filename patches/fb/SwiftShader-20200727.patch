@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="astc-encoder-build cmake3-build gcc-g++-build llvm-build marl-build spirv-tools-build vulkan-headers-build"
+REQUIRES="astc-encoder-build cmake3-build libstdc++-build llvm-build marl-build spirv-tools-build vulkan-headers-build"
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -9,7 +9,7 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf include
 rm -rf third_party/astc-encoder
-rm -rf third_party/llvm-10.0
+rm -rf third_party/llvm*
 rm -rf third_party/marl
 rm -rf third_party/SPIRV-Headers
 rm -rf third_party/SPIRV-Tools
@@ -38,6 +38,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SwiftShader-20200727.orig/CMakeLists.txt
 +++ SwiftShader-20200727/CMakeLists.txt
 @@ -561,6 +561,10 @@
@@ -51,7 +53,7 @@ exit
  ###########################################################
  # libbacktrace and boost
  ###########################################################
-@@ -572,7 +576,9 @@
+@@ -572,20 +576,26 @@
  ###########################################################
  # LLVM
  ###########################################################
@@ -62,7 +64,15 @@ exit
  
  ###########################################################
  # Subzero
-@@ -584,8 +590,10 @@
+ ###########################################################
+-add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
+-add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
++if(EXISTS ${THIRD_PARTY_DIR}/llvm-subzero AND EXISTS ${THIRD_PARTY_DIR}/subzero)
++    add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
++    add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
++endif()
+ 
+ ###########################################################
  # marl
  ###########################################################
  if(BUILD_MARL)
@@ -75,7 +85,7 @@ exit
  endif()
  
  if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
-@@ -604,7 +612,9 @@
+@@ -604,7 +614,9 @@
  # astc-encoder
  ###########################################################
  if(SWIFTSHADER_ENABLE_ASTC)
@@ -86,7 +96,7 @@ exit
  endif()
  
  ###########################################################
-@@ -689,7 +699,7 @@
+@@ -689,7 +701,7 @@
  endif(SWIFTSHADER_BUILD_GLES_CM)
  
  if(SWIFTSHADER_BUILD_VULKAN)
@@ -95,7 +105,7 @@ exit
          # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
          set(SPIRV-Headers_SOURCE_DIR "${THIRD_PARTY_DIR}/SPIRV-Headers")
          set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
-@@ -719,6 +729,7 @@
+@@ -719,6 +731,7 @@
                  target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WAYLAND_KHR")
              endif()
          endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
@@ -631,3 +641,6 @@ exit
 +
 +}  // namespace vk
 +#endif  //SWIFTSHADER_FBDEVSURFACEEXT_HPP
+
+# source
+https://swiftshader.googlesource.com/SwiftShader/+archive/12c9d4ac61f26e787dfe4ea256b2e1b8fa35e040.tar.gz

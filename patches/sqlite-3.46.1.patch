@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build tcl-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; lt-2.2.6)
-libtoolize -c -f -i; cat m4/* > aclocal.m4; autoconf; autoheader
+libtoolize -c -f -i; cat m4/* > aclocal.m4; autoheader; autoconf
 ./configure --disable-static --prefix=
 
 # build
@@ -42,6 +42,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- sqlite-3.46.1.orig/configure.ac
 +++ sqlite-3.46.1/configure.ac
 @@ -88,6 +88,7 @@
@@ -52,3 +54,5 @@ exit
  LT_INIT
  AC_PROG_INSTALL
  
+# source
+https://sqlite.org/src/tarball/sqlite-3.46.1.tar.gz?r=version-3.46.1

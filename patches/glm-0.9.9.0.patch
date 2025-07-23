@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -232,6 +232,8 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- glm-0.9.9.0.orig/cmake/GNUInstallDirs.cmake
 +++ glm-0.9.9.0/cmake/GNUInstallDirs.cmake
 @@ -78,8 +78,10 @@
@@ -246,3 +248,6 @@ exit
      if (EXISTS "/etc/debian_version") # is this a debian system ?
         if(CMAKE_LIBRARY_ARCHITECTURE)
           set(_LIBDIR_DEFAULT "lib/${CMAKE_LIBRARY_ARCHITECTURE}")
+
+# source
+https://github.com/g-truc/glm/archive/0.9.9.0/glm-0.9.9.0.tar.gz

@@ -6,8 +6,8 @@ REQUIRES="autotools-wrappers-lt-build libsigsegv-build readline-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
-cd extension; libtoolize -c -f; aclocal -I ../m4; autoconf; autoheader -f; automake -a -c; cd -
+aclocal -I m4; autoheader; autoconf; automake -a -c
+cd extension; libtoolize -c -f; aclocal -I ../m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --prefix=
 
 # build
@@ -38,3 +38,29 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gawk-4.2.1.orig/configure.ac
++++ gawk-4.2.1/configure.ac
+@@ -42,6 +42,8 @@
+ AC_PREREQ([2.69])
+ AM_INIT_AUTOMAKE([1.15 dist-xz dist-lzip])
+ 
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+ dnl Additional argument stuff
+--- gawk-4.2.1.orig/extension/configure.ac
++++ gawk-4.2.1/extension/configure.ac
+@@ -32,6 +32,7 @@
+ 
+ AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
+ 
++AM_MAINTAINER_MODE
+ 
+ AC_USE_SYSTEM_EXTENSIONS
+ AC_ZOS_USS
+
+# source
+https://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.gz

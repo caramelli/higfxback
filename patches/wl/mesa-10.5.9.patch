@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build bison-build gcc-g++-build opengl-registry-build wayland-build"
+REQUIRES="autotools-wrappers-lt-build bison-build libstdc++-build opengl-registry-build wayland-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -44,6 +44,13 @@ Version: 10.5.9
 Description: Implementation of Khronos specifications
 Requires: $REQUIRES
 
+EOF
+test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
+devel=\\
+/wl/lib/pkgconfig/dri.pc
+
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
 exec=\\
 /wl/lib/libglapi.so.0 \\
 /wl/lib/libmesaEGL.so.1 \\
@@ -62,12 +69,11 @@ EOF
 cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
 /wl/lib/egl/egl_gallium.so \\
 EOF
-test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
-/wl/lib/pkgconfig/dri.pc \\
-EOF
 sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc
 
 exit
+
+# patch
 --- mesa-10.5.9.orig/bin/config.rpath
 +++ mesa-10.5.9/bin/config.rpath
 @@ -0,0 +1,690 @@
@@ -777,7 +783,7 @@ exit
  AC_PROG_INSTALL
  
 +AM_GNU_GETTEXT([external])
-+AM_CONDITIONAL([USE_NLS], [test "x${USE_NLS}" = "xyes"])
++AM_CONDITIONAL([USE_NLS], [test "$USE_NLS" = "yes"])
 +
  dnl We need a POSIX shell for parts of the build. Assume we have one
  dnl in most cases.
@@ -3747,3 +3753,6 @@ exit
  
  # Update .mo files from the corresponding .po files.
  %/LC_MESSAGES/options.mo: %.po
+
+# source
+https://archive.mesa3d.org/older-versions/10.x/10.5.9/mesa-10.5.9.tar.gz

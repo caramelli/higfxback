@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build jpeg-build libpng-build tiff-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --without-x --prefix=/dfb
 
 # build
@@ -70,3 +70,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- imlib2-1.4.10.orig/configure.ac
++++ imlib2-1.4.10/configure.ac
+@@ -9,6 +9,7 @@
+ 
+ AM_INIT_AUTOMAKE(1.6 dist-bzip2)
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
++AM_MAINTAINER_MODE
+ 
+ AC_C_BIGENDIAN
+ AC_PROG_CC
+
+# source
+http://downloads.sourceforge.net/enlightenment/imlib2-1.4.10.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build lua-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --prefix=/
 
 # build
@@ -38,3 +38,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- luaposix-33.4.0.orig/configure.ac
++++ luaposix-33.4.0/configure.ac
+@@ -17,6 +17,8 @@
+ AM_INIT_AUTOMAKE([-Wall subdir-objects])
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
++AM_MAINTAINER_MODE
++
+ ## Check for programs
+ AC_PROG_MKDIR_P
+ AC_PROG_EGREP
+
+# source
+https://github.com/luaposix/luaposix/archive/release-v33.4.0/luaposix-33.4.0.tar.gz

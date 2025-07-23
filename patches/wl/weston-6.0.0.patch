@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build cairo-build jpeg-build libinput-build libxkbcommon-build xkeyboard-config-build wayland-protocols-build"
+REQUIRES="autotools-wrappers-lt-build cairo-build jpeg-build libinput-build libxkbcommon-build wayland-protocols-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -30,7 +30,7 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists pango-build; then
 fi
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib WESTON_NATIVE_BACKEND=$DEFAULT_BACKEND-backend.so ./configure $COMPOSITOR --disable-fullscreen-shell --disable-ivi-shell --disable-weston-launch --disable-xcompose --disable-xwayland --enable-autotools --enable-demo-clients-install --libexecdir=/wl/lib/weston --prefix=/wl
 
 # build
@@ -151,6 +151,8 @@ cat >> $DESTDIR/wl/share/pkgconfig/weston-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- weston-6.0.0.orig/Makefile.am
 +++ weston-6.0.0/Makefile.am
 @@ -41,7 +41,8 @@
@@ -295,7 +297,16 @@ exit
  const char *
 --- weston-6.0.0.orig/configure.ac
 +++ weston-6.0.0/configure.ac
-@@ -129,12 +129,7 @@
+@@ -42,6 +42,8 @@
+ 
+ AM_INIT_AUTOMAKE([1.11 parallel-tests foreign no-dist-gzip dist-xz color-tests subdir-objects])
+ 
++AM_MAINTAINER_MODE
++
+ AM_SILENT_RULES([yes])
+ 
+ # Check Weston and libweston version consistency
+@@ -129,12 +131,7 @@
  AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
  
  # check for libdrm as a build-time dependency only
@@ -309,7 +320,7 @@ exit
  
  COMPOSITOR_MODULES="wayland-server >= $WAYLAND_PREREQ_VERSION pixman-1 >= 0.25.2"
  
-@@ -168,9 +163,11 @@
+@@ -168,9 +165,11 @@
  
  COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
  
@@ -606,3 +617,6 @@ exit
  
  	for (p = config_dirs; *p != '\0'; p = next) {
  		next = strchrnul(p, ':');
+
+# source
+https://wayland.freedesktop.org/releases/weston-6.0.0.tar.xz

@@ -1,14 +1,15 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build directfb2-build gcc-g++-build glm-build glslang-build imgui-build ktx-software-build stb_font-build tinygltf-build vulkan-loader-build"
+REQUIRES="cmake3-build directfb2-build glm-build glslang-build imgui-build ktx-software-build libstdc++-build stb_font-build tinygltf-build vulkan-loader-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf external
-PKG_CONFIG_PATH=/dfb/lib/pkgconfig cmake -DCMAKE_INSTALL_PREFIX=/dfb -DCMAKE_INSTALL_BINDIR=/dfb/share/Vulkan-Examples -DCMAKE_INSTALL_RPATH=/dfb/lib -DRESOURCE_INSTALL_DIR=/dfb/share/Vulkan-Examples -DUSE_DIRECTFB_WSI=ON -B build -G "$GENERATOR"
+find Vulkan-Assets* -maxdepth 1 -mindepth 1 -exec ln -sf ../{} data \;
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig cmake -DUSE_DIRECTFB_WSI=ON -DRESOURCE_INSTALL_DIR=/dfb/share/Vulkan-Examples -DCMAKE_INSTALL_BINDIR=/dfb/share/Vulkan-Examples -DCMAKE_INSTALL_PREFIX=/dfb -DCMAKE_INSTALL_RPATH=/dfb/lib -B build -G "$GENERATOR"
 
 # build
 find data/shaders/glsl -mindepth 1 -type d -exec python3 ./data/shaders/glsl/compileshaders.py {} \;
@@ -949,6 +950,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- Vulkan-Examples-20200913.orig/CMakeLists.txt
 +++ Vulkan-Examples-20200913/CMakeLists.txt
 @@ -6,13 +6,21 @@
@@ -1118,11 +1121,28 @@ exit
  ENDIF ()
 --- Vulkan-Examples-20200913.orig/cmake/FindVulkan.cmake
 +++ Vulkan-Examples-20200913/cmake/FindVulkan.cmake
-@@ -0,0 +1,4 @@
-+find_library(Vulkan_LIBRARY NAMES vulkan)
-+find_path(Vulkan_INCLUDE_DIR NAMES vulkan/vulkan.h)
+@@ -0,0 +1,21 @@
++# Try to find Vulkan
++#
++# This module defines the following variables::
++#
++#   Vulkan_FOUND       - True if Vulkan was found
++#   Vulkan_LIBRARY     - Link against this library to use Vulkan
++#   Vulkan_INCLUDE_DIR - Include directory for Vulkan
++#
++
++FIND_PACKAGE(PkgConfig QUIET)
++PKG_CHECK_MODULES(PKG_VULKAN QUIET vulkan)
++
++FIND_PATH(Vulkan_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS ${PKG_VULKAN_INCLUDE_DIRS})
++
++FIND_LIBRARY(Vulkan_LIBRARY  NAMES vulkan          HINTS ${PKG_VULKAN_LIBRARY_DIRS})
++
 +include(FindPackageHandleStandardArgs)
-+find_package_handle_standard_args(Vulkan DEFAULT_MSG Vulkan_LIBRARY Vulkan_INCLUDE_DIR)
++
++FIND_PACKAGE_HANDLE_STANDARD_ARGS(Vulkan DEFAULT_MSG Vulkan_LIBRARY Vulkan_INCLUDE_DIR)
++
++MARK_AS_ADVANCED(Vulkan_INCLUDE_DIR Vulkan_LIBRARY)
 --- Vulkan-Examples-20200913.orig/examples/CMakeLists.txt
 +++ Vulkan-Examples-20200913/examples/CMakeLists.txt
 @@ -13,7 +13,11 @@
@@ -1332,3 +1352,6 @@ exit
  
  #define ENABLE_VALIDATION false
  
+# source
+https://github.com/SaschaWillems/Vulkan-Assets/archive/fa1202c0648ee2e544bb73136715468f906f5703/Vulkan-Assets-20200726.tar.gz
+https://github.com/SaschaWillems/Vulkan/archive/3cb3df4cbf7955e673c1902ad6c3e03428adad00/Vulkan-Examples-20200913.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.14; lt-2.4.2)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -63,14 +63,20 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- json-c-0.13.1.orig/configure.ac
 +++ json-c-0.13.1/configure.ac
-@@ -5,7 +5,7 @@
+@@ -5,7 +5,9 @@
  
  AM_INIT_AUTOMAKE
  
 -AC_CONFIG_MACRO_DIRS([autoconf-archive/m4])
++AM_MAINTAINER_MODE
++
 +AC_CONFIG_MACRO_DIR([autoconf-archive/m4])
  
  AC_PROG_MAKE_SET
  
+# source
+https://s3.amazonaws.com/json-c_releases/releases/json-c-0.13.1.tar.gz

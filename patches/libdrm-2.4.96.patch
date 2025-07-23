@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-amdgpu --disable-intel --disable-libkms --disable-nouveau --disable-radeon --disable-vmwgfx --enable-install-test-programs --prefix=
 
 # build
@@ -63,6 +63,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- libdrm-2.4.96.orig/configure.ac
++++ libdrm-2.4.96/configure.ac
+@@ -38,6 +38,7 @@
+ XORG_MANPAGE_SECTIONS
+ 
+ AM_INIT_AUTOMAKE([1.10 foreign dist-bzip2])
++AM_MAINTAINER_MODE
+ 
+ # Enable quiet compiles on automake 1.11.
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 --- libdrm-2.4.96.orig/tests/modetest/modetest.c
 +++ libdrm-2.4.96/tests/modetest/modetest.c
 @@ -442,7 +442,7 @@
@@ -118,3 +130,6 @@ exit
  
      sscanf(value, "%u", &count);
      free(value);
+
+# source
+https://dri.freedesktop.org/libdrm/libdrm-2.4.96.tar.gz

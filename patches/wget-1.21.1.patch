@@ -16,7 +16,7 @@ else
 fi
 
 # configure (ac-2.70; am-1.16)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure $SSL --prefix=
 
 # build
@@ -39,9 +39,20 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- wget-1.21.1.orig/configure.ac
 +++ wget-1.21.1/configure.ac
-@@ -338,8 +338,6 @@
+@@ -48,6 +48,8 @@
+ dnl
+ AM_INIT_AUTOMAKE([subdir-objects dist-lzip])
+ 
++AM_MAINTAINER_MODE
++
+ AC_USE_SYSTEM_EXTENSIONS
+ AC_PROG_CC
+ AM_PROG_CC_C_O
+@@ -338,8 +340,6 @@
  AM_ICONV
  gl_INIT
  
@@ -82,3 +93,6 @@ exit
          {
            if (!strncmp (param, "force", 5))
              current_impl_locked = 1;
+
+# source
+https://ftp.gnu.org/gnu/wget/wget-1.21.1.tar.gz

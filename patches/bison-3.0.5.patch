@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16)
 cd src; rm -f scan-code.c scan-gram.c scan-skel.c; cd -
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -48,6 +48,20 @@ devel=\\
 EOF
 
 exit
+
+# patch
+--- bison-3.0.5.orig/configure.ac
++++ bison-3.0.5/configure.ac
+@@ -47,6 +47,9 @@
+                  m4_bmatch(m4_defn([AC_PACKAGE_VERSION]), [[-_]],
+                            [gnu], [gnits]))
+ AM_SILENT_RULES([yes])
++
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_HEADERS([lib/config.h:lib/config.in.h])
+ 
+ # Checks for the compiler.
 --- bison-3.0.5.orig/doc/local.mk
 +++ bison-3.0.5/doc/local.mk
 @@ -110,7 +110,7 @@
@@ -59,3 +73,6 @@ exit
  endif
  
  $(top_srcdir)/doc/bison.1: $(MAN_DEPS)
+
+# source
+https://ftp.gnu.org/gnu/bison/bison-3.0.5.tar.gz

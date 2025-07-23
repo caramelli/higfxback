@@ -11,9 +11,9 @@ if pkg-config --exists python2-build; then
 fi
 
 # configure (ac-2.69; am-1.12)
-aclocal; autoconf; autoheader -f; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 rm -rf usbhid-dump
-./configure --disable-usbids --with-system-usbhid-dump --prefix=
+./configure --disable-usbids --with-system-usbhid-dump --with-noarch-pkgconfigdir=/lib/pkgconfig --prefix=
 
 # build
 make
@@ -23,6 +23,8 @@ install -d $DESTDIR/bin
 install lsusb $DESTDIR/bin
 test $PYTHON && install lsusb.py $DESTDIR/bin
 install usb-devices $DESTDIR/bin
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 usbutils.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -31,6 +33,9 @@ Name: usbutils
 Version: 007
 Description: USB utilities
 Requires: $REQUIRES
+
+devel=\\
+/lib/pkgconfig/usbutils.pc
 
 exec=\\
 /bin/lsusb \\
@@ -43,6 +48,8 @@ cat >> $DESTDIR/share/pkgconfig/usbutils-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- usbutils-007.orig/Makefile.am
 +++ usbutils-007/Makefile.am
 @@ -1,5 +1,5 @@
@@ -94,17 +101,23 @@ exit
  	usb.ids.gz \
 --- usbutils-007.orig/configure.ac
 +++ usbutils-007/configure.ac
-@@ -2,7 +2,9 @@
+@@ -2,10 +2,15 @@
  	[007],
  	[linux-usb@vger.kernel.org])
  AC_PREREQ(2.60)
 +AC_CONFIG_MACRO_DIR([m4])
  AM_INIT_AUTOMAKE([check-news foreign 1.9 dist-bzip2])
-+PKG_NOARCH_INSTALLDIR
  m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
  AC_PREFIX_DEFAULT([/usr])
  
-@@ -26,11 +28,23 @@
++AM_MAINTAINER_MODE
++
++PKG_NOARCH_INSTALLDIR
++
+ AC_USE_SYSTEM_EXTENSIONS
+ AC_SYS_LARGEFILE
+ 
+@@ -26,11 +31,23 @@
  
  PKG_CHECK_MODULES(LIBUSB, libusb-1.0 >= 1.0.0)
  
@@ -121,7 +134,7 @@ exit
 +AC_ARG_WITH(system-usbhid-dump,
 +	AC_HELP_STRING([--with-system-usbhid-dump], [use system usbhid-dump utility]))
 +
-+if test "x$with_system_usbhid_dump" != "xyes"; then
++if test "$with_system_usbhid_dump" != "yes"; then
 +	USBHID_DUMP_SUBDIR=usbhid-dump
 +	AC_CONFIG_SUBDIRS([usbhid-dump])
 +fi
@@ -129,7 +142,7 @@ exit
  
  AC_OUTPUT
  AC_MSG_RESULT([
-@@ -42,7 +56,7 @@
+@@ -42,7 +59,7 @@
  	datadir:                ${datadir}
  	mandir:                 ${mandir}
  
@@ -175,3 +188,6 @@ exit
  
  # Copyright: 2009 Greg Kroah-Hartman <greg@kroah.com>
  #            2009 Randy Dunlap <rdunlap@xenotime.net>
+
+# source
+https://kernel.org/pub/linux/utils/usb/usbutils/usbutils-007.tar.gz

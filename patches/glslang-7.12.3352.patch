@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -31,6 +31,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- glslang-7.12.3352.orig/CMakeLists.txt
 +++ glslang-7.12.3352/CMakeLists.txt
 @@ -4,6 +4,9 @@
@@ -60,3 +62,6 @@ exit
  endif()
  
  # We depend on these for later projects, so they should come first.
+
+# source
+https://github.com/KhronosGroup/glslang/archive/7.12.3352/glslang-7.12.3352.tar.gz

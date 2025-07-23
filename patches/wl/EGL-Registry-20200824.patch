@@ -6,7 +6,7 @@ REQUIRES="lxml-build make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /wl
+sh ./Configure --prefix=/wl
 
 # build
 make -C api
@@ -41,31 +41,24 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- EGL-Registry-20200824.orig/Configure
 +++ EGL-Registry-20200824/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+sed "/^prefix/s|=.*|=$PREFIX|" api/egl-registry.pc.in > egl-registry.pc
++sed "/^prefix/s|=.*|=$prefix|" api/egl-registry.pc.in > egl-registry.pc
 --- EGL-Registry-20200824.orig/api/EGL/eglplatform.h
 +++ EGL-Registry-20200824/api/EGL/eglplatform.h
 @@ -48,7 +48,13 @@
@@ -105,3 +98,6 @@ exit
      '** This header is generated from the Khronos EGL XML API Registry.',
      '** The current version of the Registry, generator scripts',
      '** used to make the header, and the header can be found at',
+
+# source
+https://github.com/KhronosGroup/EGL-Registry/archive/5a9a7e3fcb79fd275e0edcc4a96982f3fd0d2604/EGL-Registry-20200824.tar.gz

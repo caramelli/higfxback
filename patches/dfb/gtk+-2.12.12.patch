@@ -6,7 +6,7 @@ REQUIRES="atk-build autotools-wrappers-lt-build gdk-pixbuf-build pango-build"
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.62; am-1.7; lt-1.5.24)
-libtoolize -c -f; aclocal -I .; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I .; autoheader; autoconf; automake -a -c
 rm -rf gdk-pixbuf*
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --with-gdktarget=directfb --with-system-gdk-pixbuf --prefix=/dfb
 
@@ -616,6 +616,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- gtk+-2.12.12.orig/Makefile.am
 +++ gtk+-2.12.12/Makefile.am
 @@ -1,6 +1,6 @@
@@ -644,7 +646,7 @@ exit
 +AC_ARG_WITH(system-gdk-pixbuf,
 +            [AC_HELP_STRING([--with-system-gdk-pixbuf], [use system gdk-pixbuf library])])
 +
-+if test "x$with_system_gdk_pixbuf" != "xyes"; then
++if test "$with_system_gdk_pixbuf" != "yes"; then
  
  #
  # gdk-pixbuf gets versioned separately, and for now, using standard
@@ -669,7 +671,7 @@ exit
  # Checks for gdk-pixbuf
  ##################################################
  
-+if test "x$with_system_gdk_pixbuf" = "xyes"; then
++if test "$with_system_gdk_pixbuf" = "yes"; then
 +
 +AM_CONDITIONAL(BUILD_DYNAMIC_MODULES, true)
 +AM_CONDITIONAL(INCLUDE_PNG, true)
@@ -711,7 +713,7 @@ exit
      REBUILD_PNGS=#
    fi
 +else
-+  if test "x$with_system_gdk_pixbuf" = "xyes"; then
++  if test "$with_system_gdk_pixbuf" = "yes"; then
 +    PKG_CHECK_MODULES(GDK_PIXBUF_CSOURCE, gdk-pixbuf-2.0,
 +      [GDK_PIXBUF_CSOURCE=`$PKG_CONFIG --variable=gdk_pixbuf_csource gdk-pixbuf-2.0`],
 +      [AC_PATH_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, no)])
@@ -728,7 +730,7 @@ exit
  
  AC_SUBST(REBUILD_PNGS)
  
-+if test "x$with_system_gdk_pixbuf" = "xyes"; then
++if test "$with_system_gdk_pixbuf" = "yes"; then
 +
 +PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0)
 +
@@ -784,7 +786,7 @@ exit
  contrib/gdk-pixbuf-xlib/Makefile
  contrib/gdk-pixbuf-xlib/gdk-pixbuf-xlib-2.0.pc
  ])
-+if test "x$with_system_gdk_pixbuf" != "xyes"; then
++if test "$with_system_gdk_pixbuf" != "yes"; then
 +AC_CONFIG_FILES([
 +gdk-pixbuf-2.0.pc
 +gdk-pixbuf-2.0-uninstalled.pc
@@ -15476,3 +15478,6 @@ exit
  testrecentchooser_LDADD = $(LDADDS)
  testrecentchoosermenu_LDADD = $(LDADDS)
  testrgb_LDADD = $(LDADDS)
+
+# source
+https://download.gnome.org/sources/gtk+/2.12/gtk+-2.12.12.tar.gz

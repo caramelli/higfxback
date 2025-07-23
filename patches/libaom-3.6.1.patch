@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -62,6 +62,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libaom-3.6.1.orig/build/cmake/pkg_config.cmake
 +++ libaom-3.6.1/build/cmake/pkg_config.cmake
 @@ -10,7 +10,7 @@
@@ -73,3 +75,6 @@ exit
                    "CMAKE_INSTALL_BINDIR" "CMAKE_INSTALL_INCLUDEDIR"
                    "CMAKE_INSTALL_LIBDIR" "CMAKE_PROJECT_NAME"
                    "CONFIG_MULTITHREAD" "HAVE_PTHREAD_H")
+
+# source
+https://storage.googleapis.com/aom-releases/libaom-3.6.1.tar.gz

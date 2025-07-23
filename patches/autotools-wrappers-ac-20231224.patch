@@ -37,8 +37,8 @@ make pkgdatadir=/share/autoconf-2.52.20150926 -C autoconf-2.52-20150926
 make pkgdatadir=/share/autoconf-2.52.20170501 -C autoconf-2.52-20170501
 make pkgdatadir=/share/autoconf-2.52.20200111 -C autoconf-2.52-20200111
 make pkgdatadir=/share/autoconf-2.59 -C autoconf-2.59
-MAKEFLAGS=-j1 make pkgdatadir=/share/autoconf-2.60 -C autoconf-2.60
-MAKEFLAGS=-j1 make pkgdatadir=/share/autoconf-2.61 -C autoconf-2.61
+make pkgdatadir=/share/autoconf-2.60 -C autoconf-2.60
+make pkgdatadir=/share/autoconf-2.61 -C autoconf-2.61
 make pkgdatadir=/share/autoconf-2.62 -C autoconf-2.62
 make pkgdatadir=/share/autoconf-2.63 -C autoconf-2.63
 make pkgdatadir=/share/autoconf-2.64 -C autoconf-2.64
@@ -683,16 +683,103 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- autotools-wrappers-ac-20231224.orig/ac-wrapper.sh
 +++ autotools-wrappers-ac-20231224/ac-wrapper.sh
-@@ -213,6 +213,10 @@
+@@ -213,6 +213,11 @@
  #
  export WANT_AUTOCONF="${binary_ver}"
  
 +if test -f configure && ! test -x configure; then
++	sleep 1
 +	chmod +x configure
 +fi
 +
  #
  # Now try to run the binary
  #
+--- autotools-wrappers-ac-20231224.orig/autoconf-2.60/bin/Makefile.in
++++ autotools-wrappers-ac-20231224/autoconf-2.60/bin/Makefile.in
+@@ -477,6 +477,8 @@
+ 	  rm -f forbidden.log; \
+ 	fi
+ 
++$(top_builddir)/bin/autom4te: autom4te
++
+ # autoconf is written in M4sh.
+ # FIXME: this target should depend on the frozen files below lib/m4sugar,
+ # otherwise autom4te may pick up a frozen m4sh.m4f from an earlier
+--- autotools-wrappers-ac-20231224.orig/autoconf-2.61/bin/Makefile.in
++++ autotools-wrappers-ac-20231224/autoconf-2.61/bin/Makefile.in
+@@ -494,6 +494,8 @@
+ 	  rm -f forbidden.log; \
+ 	fi
+ 
++$(top_builddir)/bin/autom4te: autom4te
++
+ # autoconf is written in M4sh.
+ # FIXME: this target should depend on the frozen files below lib/m4sugar,
+ # otherwise autom4te may pick up a frozen m4sh.m4f from an earlier
+--- autotools-wrappers-ac-20231224.orig/autoconf-2.66/lib/autoconf/general.m4
++++ autotools-wrappers-ac-20231224/autoconf-2.66/lib/autoconf/general.m4
+@@ -224,14 +224,20 @@
+ # The solution is to require AC_INIT in each of these macros.  AC_INIT
+ # has the needed magic so that it can't be expanded twice.
+ 
+-
++# _AC_INIT_LITERAL(STRING)
++# ------------------------
++m4_define([_AC_INIT_LITERAL],
++m4_if(m4_index([$1], [@S|@]),
++  [m4_warn([syntax],[AC_INIT: not a literal: $1])],
++  m4_if(m4_index(m4_translit([[$1]], [\`], [$]), [$]), [],
++    [m4_warn([syntax],[AC_INIT: not a literal: $1])])))
+ 
+ # _AC_INIT_PACKAGE(PACKAGE-NAME, VERSION, BUG-REPORT, [TARNAME], [URL])
+ # ---------------------------------------------------------------------
+ m4_define([_AC_INIT_PACKAGE],
+-[AS_LITERAL_IF([$1], [], [m4_warn([syntax], [AC_INIT: not a literal: $1])])
+-AS_LITERAL_IF([$2], [],  [m4_warn([syntax], [AC_INIT: not a literal: $2])])
+-AS_LITERAL_IF([$3], [],  [m4_warn([syntax], [AC_INIT: not a literal: $3])])
++[_AC_INIT_LITERAL([$1])
++_AC_INIT_LITERAL([$2])
++_AC_INIT_LITERAL([$3])
+ m4_ifndef([AC_PACKAGE_NAME],
+ 	  [m4_define([AC_PACKAGE_NAME],     [$1])])
+ m4_ifndef([AC_PACKAGE_TARNAME],
+--- autotools-wrappers-ac-20231224.orig/autoconf-2.67/lib/autoconf/general.m4
++++ autotools-wrappers-ac-20231224/autoconf-2.67/lib/autoconf/general.m4
+@@ -239,7 +239,7 @@
+ m4_define([_AC_INIT_PACKAGE],
+ [_AC_INIT_LITERAL([$1])
+ _AC_INIT_LITERAL([$2])
+-AS_LITERAL_IF([$3], [],  [m4_warn([syntax], [AC_INIT: not a literal: $3])])
++_AC_INIT_LITERAL([$3])
+ m4_ifndef([AC_PACKAGE_NAME],
+ 	  [m4_define([AC_PACKAGE_NAME],     [$1])])
+ m4_ifndef([AC_PACKAGE_TARNAME],
+
+# source
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz
+https://invisible-island.net/archives/autoconf/autoconf-2.52-20101002.tgz
+https://invisible-island.net/archives/autoconf/autoconf-2.52-20121002.tgz
+https://invisible-island.net/archives/autoconf/autoconf-2.52-20141204.tgz
+https://invisible-island.net/archives/autoconf/autoconf-2.52-20150926.tgz
+https://invisible-island.net/archives/autoconf/autoconf-2.52-20170501.tgz
+https://invisible-island.net/archives/autoconf/autoconf-2.52-20200111.tgz
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.59.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.60.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.61.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.62.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.63.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.64.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.65.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.66.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.67.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.70.tar.xz
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.xz
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz
+https://gitweb.gentoo.org/proj/autotools-wrappers.git/snapshot/autotools-wrappers-at-20231224.tar.gz

@@ -1,14 +1,19 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="lodepng-build make-build stb-build"
+REQUIRES="make-build stb-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists lodepng-build; then
+  LODEPNG=--lodepng-file=lodepng/lodepng.cpp
+  REQUIRES="$REQUIRES lodepng-build"
+fi
 
 # configure
 rm -f lodepng.*
 rm -f stb_image.c
-sh ./Configure --lodepng-file lodepng/lodepng.cpp --stb_image-file stb/stb_image.h --prefix /fb
+sh ./Configure $LODEPNG --stb_image-file=stb/stb_image.h --prefix=/fb
 
 # build
 make
@@ -30,38 +35,25 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- fbvis-20151208.orig/Configure
 +++ fbvis-20151208/Configure
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,23 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+LODEPNG_FILE=lodepng.c
++LODEPNG_FILE=
 +
 +STB_IMAGE_FILE=stb_image.c
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --lodepng-file)
-+      LODEPNG_FILE=$2
-+      shift
-+    ;;
-+    --stb_image-file)
-+      STB_IMAGE_FILE=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --lodepng-file=*) LODEPNG_FILE=${1#*=};;
++    --stb_image-file=*) STB_IMAGE_FILE=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -73,13 +65,17 @@ exit
 +sed -i "/^STB_IMAGE_FILE/s|=.*|= $STB_IMAGE_FILE|" Makefile
 --- fbvis-20151208.orig/Makefile
 +++ fbvis-20151208/Makefile
-@@ -1,11 +1,17 @@
+@@ -1,11 +1,20 @@
 +PREFIX = /usr/local
-+LODEPNG_FILE = lodepng.c
-+STB_IMAGE_FILE = stb_image.c
  CC = cc
- CFLAGS = -Wall -O2 -DSTB_IMAGE_IMPLEMENTATION
-+CFLAGS += -DLODEPNG_FILE=\"$(LODEPNG_FILE)\" -DSTB_IMAGE_FILE=\"$(STB_IMAGE_FILE)\"
+-CFLAGS = -Wall -O2 -DSTB_IMAGE_IMPLEMENTATION
++LODEPNG_FILE = 
++STB_IMAGE_FILE = stb_image.c
++CFLAGS = -Wall -O2
++CFLAGS += -DSTB_IMAGE_FILE=\"$(STB_IMAGE_FILE)\" -DSTB_IMAGE_IMPLEMENTATION
++ifneq "$(LODEPNG_FILE)" ""
++CFLAGS += -DLODEPNG_FILE=\"$(LODEPNG_FILE)\"
++endif
  LDFLAGS = -lm
  
  all: fbvis
@@ -94,13 +90,29 @@ exit
 +	install -D fbvis $(DESTDIR)$(PREFIX)/fbvis
 --- fbvis-20151208.orig/fbvis.c
 +++ fbvis-20151208/fbvis.c
-@@ -13,7 +13,8 @@
+@@ -13,7 +13,10 @@
  #include <unistd.h>
  #include <pty.h>
  #include "draw.h"
 -#include "lodepng.h"
-+#include LODEPNG_FILE
 +#include STB_IMAGE_FILE
++#ifdef LODEPNG_FILE
++#include LODEPNG_FILE
++#endif
  
  /* optimized version of fb_val() */
  #define FB_VAL(r, g, b)	fb_val(r, g, b)
+@@ -88,8 +91,10 @@
+ 		return 1;
+ 	fclose(fp);
+ 	ch = 4;
++#ifdef LODEPNG_FILE
+ 	lodepng_decode32_file(&obuf, (void *) &ocols, (void *) &orows, path);
+ 	if (!obuf)
++#endif
+ 		obuf = stbi_load(path, &ocols, &orows, &ch, 0);
+ 	if (!obuf) {
+ 		ch = 3;
+
+# source
+https://repo.or.cz/fbvis.git/snapshot/58caabc93604a586f8470f0f2274270182bc643d.tar.gz

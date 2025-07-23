@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -506,6 +506,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- llvm-10.0.1.orig/CMakeLists.txt
 +++ llvm-10.0.1/CMakeLists.txt
 @@ -647,17 +647,8 @@
@@ -549,3 +551,6 @@ exit
    endif()
  
    if(TARGET libLLVMExports)
+
+# source
+https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/llvm-10.0.1.src.tar.xz

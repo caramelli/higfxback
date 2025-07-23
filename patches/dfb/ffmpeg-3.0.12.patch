@@ -229,6 +229,8 @@ cat >> $DESTDIR/dfb/share/pkgconfig/ffmpeg-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- ffmpeg-3.0.12.orig/configure
 +++ ffmpeg-3.0.12/configure
 @@ -196,6 +196,7 @@
@@ -476,14 +478,6 @@ exit
 +    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
 +    .priv_class     = &directfb_class,
 +};
---- ffmpeg-3.0.12.orig/version.sh
-+++ ffmpeg-3.0.12/version.sh
-@@ -46,7 +46,7 @@
- fi
- 
- NEW_REVISION="#define FFMPEG_VERSION \"$version\""
--OLD_REVISION=$(cat "$2" 2> /dev/null | head -3 | tail -1)
-+OLD_REVISION=$(cat "$2" 2> /dev/null | head -3 | tail -n -1)
- 
- # String used for preprocessor guard
- GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
+
+# source
+https://www.ffmpeg.org/releases/ffmpeg-3.0.12.tar.gz

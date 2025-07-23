@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-ac-build util-linux-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69)
-cat m4/* acinclude.m4 > aclocal.m4; autoconf; autoheader
+cat m4/* acinclude.m4 > aclocal.m4; autoheader; autoconf
 ./configure --disable-e2initrd-helper --disable-fsck --disable-libblkid --disable-libuuid --enable-elf-shlibs --enable-symlink-install --sbindir=/bin --prefix=
 
 # build
@@ -136,6 +136,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- e2fsprogs-1.42.13.orig/e2fsck/unix.c
 +++ e2fsprogs-1.42.13/e2fsck/unix.c
 @@ -262,7 +262,7 @@
@@ -4360,3 +4362,6 @@ exit
 +  AC_REQUIRE([gl_SIZE_MAX])
 +  AC_CHECK_HEADERS([stdint.h])
 +])
+
+# source
+http://downloads.sourceforge.net/e2fsprogs/e2fsprogs-1.42.13.tar.gz

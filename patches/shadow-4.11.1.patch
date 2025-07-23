@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-shadowgrp --disable-static --disable-subordinate-ids --without-nscd --without-sssd --sbindir=/bin --prefix=
 
 # build
@@ -115,6 +115,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- shadow-4.11.1.orig/configure.ac
 +++ shadow-4.11.1/configure.ac
 @@ -737,6 +737,7 @@
@@ -222,3 +224,5 @@ exit
  suidperms = 4755
  sgidperms = 2755
  
+# source
+https://github.com/shadow-maint/shadow/releases/download/v4.11.1/shadow-4.11.1.tar.gz

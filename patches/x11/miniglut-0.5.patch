@@ -6,7 +6,7 @@ REQUIRES="egl-opengl-stubs-build libx11-build make-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-static --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig sh ./Configure --disable-static --prefix=/x11
 
 # build
 make
@@ -45,29 +45,20 @@ EOF
 ln -sf miniglut-build.pc $DESTDIR/x11/share/pkgconfig/glut-build.pc
 
 exit
+
+# patch
 --- miniglut-0.5.orig/Configure
 +++ miniglut-0.5/Configure
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,23 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      NOSTATIC=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-static) NOSTATIC=no;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -422,3 +413,6 @@ exit
  
  void glutExit(void);
  void glutMainLoop(void);
+
+# source
+https://github.com/jtsiomb/miniglut/archive/v0.5/miniglut-0.5.tar.gz

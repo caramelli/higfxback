@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build gdk-pixbuf-build libaom-build libde265-build libwebp-build x265-build"
+REQUIRES="cmake3-build gdk-pixbuf-build libaom-build libde265-build libstdc++-build libwebp-build x265-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -54,6 +54,74 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- libheif-1.17.6.orig/cmake/modules/FindJPEG.cmake
++++ libheif-1.17.6/cmake/modules/FindJPEG.cmake
+@@ -0,0 +1,30 @@
++include(LibFindMacros)
++
++libfind_pkg_check_modules(JPEG_PKGCONF libjpeg)
++
++find_path(JPEG_INCLUDE_DIR
++    NAMES jpeglib.h
++    HINTS ${JPEG_PKGCONF_INCLUDE_DIRS}
++)
++
++find_library(JPEG_LIBRARY
++    NAMES jpeg
++    HINTS ${JPEG_PKGCONF_LIBRARY_DIRS}
++)
++
++set(JPEG_PROCESS_LIBS ${JPEG_LIBRARY})
++set(JPEG_PROCESS_INCLUDES ${JPEG_INCLUDE_DIR})
++libfind_process(JPEG)
++
++add_library(JPEG::JPEG UNKNOWN IMPORTED)
++set_target_properties(JPEG::JPEG PROPERTIES
++    IMPORTED_LOCATION "${JPEG_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${JPEG_INCLUDE_DIR}"
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(JPEG
++    REQUIRED_VARS
++        JPEG_INCLUDE_DIR
++        JPEG_LIBRARIES
++)
+--- libheif-1.17.6.orig/cmake/modules/FindPNG.cmake
++++ libheif-1.17.6/cmake/modules/FindPNG.cmake
+@@ -0,0 +1,30 @@
++include(LibFindMacros)
++
++libfind_pkg_check_modules(PNG_PKGCONF libpng)
++
++find_path(PNG_INCLUDE_DIR
++    NAMES png.h
++    HINTS ${PNG_PKGCONF_INCLUDE_DIRS}
++)
++
++find_library(PNG_LIBRARY
++    NAMES png
++    HINTS ${PNG_PKGCONF_LIBRARY_DIRS}
++)
++
++set(PNG_PROCESS_LIBS ${PNG_LIBRARY})
++set(PNG_PROCESS_INCLUDES ${PNG_INCLUDE_DIR})
++libfind_process(PNG)
++
++add_library(PNG::PNG UNKNOWN IMPORTED)
++set_target_properties(PNG::PNG PROPERTIES
++    IMPORTED_LOCATION "${PNG_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${PNG_INCLUDE_DIR}"
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(PNG
++    REQUIRED_VARS
++        PNG_INCLUDE_DIR
++        PNG_LIBRARIES
++)
 --- libheif-1.17.6.orig/gdk-pixbuf/CMakeLists.txt
 +++ libheif-1.17.6/gdk-pixbuf/CMakeLists.txt
 @@ -3,10 +3,7 @@
@@ -68,3 +136,5 @@ exit
  
      add_library(pixbufloader-heif MODULE pixbufloader-heif.c)
  
+# source
+https://github.com/strukturag/libheif/releases/download/v1.17.6/libheif-1.17.6.tar.gz

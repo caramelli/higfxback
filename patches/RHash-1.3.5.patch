@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --disable-static --prefix
+sh ./Configure --disable-static --prefix=
 
 # build
 make
@@ -41,32 +41,23 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- RHash-1.3.5.orig/Configure
 +++ RHash-1.3.5/Configure
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,25 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
++
 +TARGET=\$\(TARGET\)
 +LIBRARY=\$\(LIBRARY\)
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    --disable-static)
-+      TARGET=\$\(SHARED_TRG\)
-+      LIBRARY=\$\(SONAME\)
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-static) TARGET=\$\(SHARED_TRG\); LIBRARY=\$\(SONAME\);;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
@@ -82,10 +73,9 @@ exit
 +sed -i "/^prefix/s|=.*|=$PREFIX|" dist/librhash.pc
 --- RHash-1.3.5.orig/dist/librhash.pc
 +++ RHash-1.3.5/dist/librhash.pc
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,10 @@
 +prefix=/usr/local
-+exec_prefix=${prefix}
-+libdir=${exec_prefix}/lib
++libdir=${prefix}/lib
 +includedir=${prefix}/include
 +
 +Name: librash
@@ -94,3 +84,6 @@ exit
 +Cflags: -I${includedir}
 +Libs: -L${libdir} -lrhash
 +Libs.private: -ldl
+
+# source
+https://github.com/rhash/RHash/archive/v1.3.5/RHash-1.3.5.tar.gz

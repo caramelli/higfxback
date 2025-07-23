@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -73,6 +73,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- marl-20200616.orig/CMakeLists.txt
 +++ marl-20200616/CMakeLists.txt
 @@ -49,7 +49,7 @@
@@ -137,3 +139,6 @@ exit
 +Version: @MARL_VERSION@
 +Libs: -L${libdir} -lmarl
 +Cflags: -I${includedir}
+
+# source
+https://github.com/google/marl/archive/d29553a3730f2bbe7ab4afd37e926e787faae4a0/marl-20200616.tar.gz

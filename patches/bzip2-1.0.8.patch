@@ -6,7 +6,7 @@ REQUIRES="make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix
+sh ./Configure --prefix=
 
 # build
 make -f Makefile-libbz2_so
@@ -61,49 +61,39 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- bzip2-1.0.8.orig/Configure
 +++ bzip2-1.0.8/Configure
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,28 @@
 +#!/bin/sh
-+
-+# ------------------------------------------------------------------
-+# This file is part of bzip2/libbzip2, a program and library for
-+# lossless, block-sorting data compression.
-+#
-+# bzip2/libbzip2 version 1.0.8 of 13 July 2019
-+# Copyright (C) 1996-2019 Julian Seward <jseward@acm.org>
-+#
-+# Please read the WARNING, DISCLAIMER and PATENTS sections in the 
-+# README file.
-+#
-+# This program is released under the terms of the license contained
-+# in the file LICENSE.
-+# ------------------------------------------------------------------
 +
 +PREFIX=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-static) BUILD_STATIC=#;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" Makefile
 +
-+sed -i "/^PREFIX/s|=.*|=${PREFIX}|" Makefile-libbz2_so
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" Makefile-libbz2_so
 +
 +sed -i "/^prefix/s|=.*|=$PREFIX|" bzip2.pc
++
++cat > GNUmakefile << EOF
++all:
++	$BUILD_STATIC\$(MAKE) -f Makefile
++	\$(MAKE) -f Makefile-libbz2_so
++
++clean:
++	$BUILD_STATIC\$(MAKE) -f Makefile clean
++	\$(MAKE) -f Makefile-libbz2_so clean
++EOF
 --- bzip2-1.0.8.orig/Makefile
 +++ bzip2-1.0.8/Makefile
 @@ -26,7 +26,6 @@
@@ -123,7 +113,7 @@ exit
  
  bzip2: libbz2.a bzip2.o
  	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2 bzip2.o -L. -lbz2
-@@ -70,43 +69,43 @@
+@@ -70,68 +69,51 @@
  	@cat words3
  
  install: bzip2 bzip2recover
@@ -204,14 +194,33 @@ exit
  
  clean: 
  	rm -f *.o libbz2.a bzip2 bzip2recover \
-@@ -114,7 +113,6 @@
+ 	sample1.rb2 sample2.rb2 sample3.rb2 \
  	sample1.tst sample2.tst sample3.tst
  
- blocksort.o: blocksort.c
+-blocksort.o: blocksort.c
 -	@cat words0
- 	$(CC) $(CFLAGS) -c blocksort.c
- huffman.o: huffman.c
- 	$(CC) $(CFLAGS) -c huffman.c
+-	$(CC) $(CFLAGS) -c blocksort.c
+-huffman.o: huffman.c
+-	$(CC) $(CFLAGS) -c huffman.c
+-crctable.o: crctable.c
+-	$(CC) $(CFLAGS) -c crctable.c
+-randtable.o: randtable.c
+-	$(CC) $(CFLAGS) -c randtable.c
+-compress.o: compress.c
+-	$(CC) $(CFLAGS) -c compress.c
+-decompress.o: decompress.c
+-	$(CC) $(CFLAGS) -c decompress.c
+-bzlib.o: bzlib.c
+-	$(CC) $(CFLAGS) -c bzlib.c
+-bzip2.o: bzip2.c
+-	$(CC) $(CFLAGS) -c bzip2.c
+-bzip2recover.o: bzip2recover.c
+-	$(CC) $(CFLAGS) -c bzip2recover.c
++%.o: %.c
++	$(CC) $(CFLAGS) -c $<
+ 
+ 
+ distclean: clean
 --- bzip2-1.0.8.orig/Makefile-libbz2_so
 +++ bzip2-1.0.8/Makefile-libbz2_so
 @@ -1,11 +1,3 @@
@@ -226,7 +235,7 @@ exit
  # ------------------------------------------------------------------
  # This file is part of bzip2/libbzip2, a program and library for
  # lossless, block-sorting data compression.
-@@ -20,40 +12,97 @@
+@@ -20,40 +12,81 @@
  # in the file LICENSE.
  # ------------------------------------------------------------------
  
@@ -257,25 +266,25 @@ exit
 -	$(CC) $(CFLAGS) -o bzip2-shared bzip2.c libbz2.so.1.0.8
 -	rm -f libbz2.so.1.0
 -	ln -s libbz2.so.1.0.8 libbz2.so.1.0
-+OBJS= blocksort.lo  \
-+      huffman.lo    \
-+      crctable.lo   \
-+      randtable.lo  \
-+      compress.lo   \
-+      decompress.lo \
-+      bzlib.lo
++OBJS= blocksort.pic.o  \
++      huffman.pic.o    \
++      crctable.pic.o   \
++      randtable.pic.o  \
++      compress.pic.o   \
++      decompress.pic.o \
++      bzlib.pic.o
 +
 +all: libbz2.so.1.0.8 bzip2-shared bzip2recover-shared
 +
-+bzip2-shared: libbz2.so.1.0.8 bzip2.lo
-+	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2-shared bzip2.lo -L. -lbz2
++bzip2-shared: libbz2.so.1.0.8 bzip2.pic.o
++	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2-shared bzip2.pic.o -L. -lbz2
 +
-+bzip2recover-shared: bzip2recover.lo
-+	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2recover-shared bzip2recover.lo
++bzip2recover-shared: bzip2recover.pic.o
++	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2recover-shared bzip2recover.pic.o
 +
 +libbz2.so.1.0.8: $(OBJS)
 +	$(CC) -shared -Wl,-soname -Wl,libbz2.so.1 -o libbz2.so.1.0.8 $(OBJS)
-+	rm -f libbz2.so libbz2.so.1.0
++	rm -f libbz2.so.1 libbz2.so
 +	ln -s libbz2.so.1.0.8 libbz2.so
 +	ln -s libbz2.so.1.0.8 libbz2.so.1
 +
@@ -320,7 +329,7 @@ exit
  
  clean: 
 -	rm -f $(OBJS) bzip2.o libbz2.so.1.0.8 libbz2.so.1.0 bzip2-shared
-+	rm -f *.lo libbz2.so* bzip2-shared bzip2recover-shared
++	rm -f *.pic.o libbz2.so* bzip2-shared bzip2recover-shared
  
 -blocksort.o: blocksort.c
 -	$(CC) $(CFLAGS) -c blocksort.c
@@ -336,24 +345,18 @@ exit
 -	$(CC) $(CFLAGS) -c decompress.c
 -bzlib.o: bzlib.c
 -	$(CC) $(CFLAGS) -c bzlib.c
-+blocksort.lo: blocksort.c
-+	$(CC) $(CFLAGS) -c -o $@ blocksort.c
-+huffman.lo: huffman.c
-+	$(CC) $(CFLAGS) -c -o $@ huffman.c
-+crctable.lo: crctable.c
-+	$(CC) $(CFLAGS) -c -o $@ crctable.c
-+randtable.lo: randtable.c
-+	$(CC) $(CFLAGS) -c -o $@ randtable.c
-+compress.lo: compress.c
-+	$(CC) $(CFLAGS) -c -o $@ compress.c
-+decompress.lo: decompress.c
-+	$(CC) $(CFLAGS) -c -o $@ decompress.c
-+bzlib.lo: bzlib.c
-+	$(CC) $(CFLAGS) -c -o $@ bzlib.c
-+bzip2.lo: bzip2.c
-+	$(CC) $(CFLAGS) -c -o $@ bzip2.c
-+bzip2recover.lo: bzip2recover.c
-+	$(CC) $(CFLAGS) -c -o $@ bzip2recover.c
++%.pic.o: %.c
++	$(CC) $(CFLAGS) -c -o $@ $<
+--- bzip2-1.0.8.orig/blocksort.c
++++ bzip2-1.0.8/blocksort.c
+@@ -343,7 +343,6 @@
+ 
+ /*---------------------------------------------*/
+ static
+-__inline__
+ Bool mainGtU ( UInt32  i1, 
+                UInt32  i2,
+                UChar*  block, 
 --- bzip2-1.0.8.orig/bzip2.pc
 +++ bzip2-1.0.8/bzip2.pc
 @@ -0,0 +1,10 @@
@@ -367,3 +370,6 @@ exit
 +
 +Libs: -L${libdir} -lbz2
 +Cflags: -I${includedir}
+
+# source
+https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz

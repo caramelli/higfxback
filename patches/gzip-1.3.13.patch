@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.64; am-1.11)
-aclocal -I m4; autoconf; autoheader; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -55,3 +55,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gzip-1.3.13.orig/configure.ac
++++ gzip-1.3.13/configure.ac
+@@ -29,6 +29,7 @@
+ AC_CONFIG_HEADERS([lib/config.h:lib/config.hin])
+ AM_INIT_AUTOMAKE([1.11 dist-xz])
+ AM_SILENT_RULES([yes]) # make --enable-silent-rules the default.
++AM_MAINTAINER_MODE
+ 
+ AC_PROG_CC_STDC
+ AM_PROG_CC_C_O
+
+# source
+https://ftp.gnu.org/gnu/gzip/gzip-1.3.13.tar.gz

@@ -8,7 +8,7 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 pkg-config --exists libudev-build && REQUIRES="$REQUIRES libudev-build"
 
 # configure (ac-2.69; am-1.13; lt-2.4.2)
-libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal; autoconf; autoheader; automake -a -c
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig ./configure --prefix=/x11
 
 # build
@@ -31,6 +31,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- xf86-video-modesetting-0.8.1.orig/src/driver.c
 +++ xf86-video-modesetting-0.8.1/src/driver.c
 @@ -29,6 +29,8 @@
@@ -42,3 +44,6 @@ exit
  #ifdef HAVE_CONFIG_H
  #include "config.h"
  #endif
+
+# source
+https://x.org/releases/individual/driver/xf86-video-modesetting-0.8.1.tar.gz

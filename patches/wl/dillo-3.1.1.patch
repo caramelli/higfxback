@@ -8,7 +8,7 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 pkg-config --exists openssl-build && REQUIRES="$REQUIRES openssl-build"
 
 # configure (ac-2.72; am-1.16)
-aclocal; autoconf; autoheader; automake -a -c
+aclocal; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-xembed --prefix=/wl
 
 # build
@@ -43,9 +43,21 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- dillo-3.1.1.orig/configure.ac
 +++ dillo-3.1.1/configure.ac
-@@ -187,24 +187,23 @@
+@@ -6,6 +6,9 @@
+ AC_CANONICAL_TARGET
+ 
+ AM_INIT_AUTOMAKE
++
++AM_MAINTAINER_MODE
++
+ AC_CONFIG_SRCDIR([src/dillo.cc])
+ AC_CONFIG_HEADERS([config.h])
+ 
+@@ -187,24 +190,23 @@
  fi
  
  
@@ -168,3 +180,6 @@ exit
  
  #include "paths.hh"
  #include "keys.hh"
+
+# source
+https://github.com/dillo-browser/dillo/releases/download/v3.1.1/dillo-3.1.1.tar.bz2

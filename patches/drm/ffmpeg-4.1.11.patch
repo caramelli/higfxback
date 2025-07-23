@@ -229,6 +229,8 @@ cat >> $DESTDIR/drm/share/pkgconfig/ffmpeg-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- ffmpeg-4.1.11.orig/configure
 +++ ffmpeg-4.1.11/configure
 @@ -3265,6 +3265,7 @@
@@ -263,17 +265,6 @@ exit
  @section libndi_newtek
  
  The libndi_newtek output device provides playback capabilities for using NDI (Network
---- ffmpeg-4.1.11.orig/ffbuild/version.sh
-+++ ffmpeg-4.1.11/ffbuild/version.sh
-@@ -46,7 +46,7 @@
- fi
- 
- NEW_REVISION="#define FFMPEG_VERSION \"$version\""
--OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -1)
-+OLD_REVISION=$(cat "$2" 2> /dev/null | head -4 | tail -n -1)
- 
- # String used for preprocessor guard
- GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
 --- ffmpeg-4.1.11.orig/libavdevice/Makefile
 +++ ffmpeg-4.1.11/libavdevice/Makefile
 @@ -32,6 +32,7 @@
@@ -543,3 +534,6 @@ exit
 +    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
 +    .priv_class     = &kmsdumb_class,
 +};
+
+# source
+https://www.ffmpeg.org/releases/ffmpeg-4.1.11.tar.gz

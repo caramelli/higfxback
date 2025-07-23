@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loader-build"
+REQUIRES="cmake3-build glslang-build libstdc++-build vulkan-hpp-build vulkan-loader-build"
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -62,6 +62,8 @@ cat >> $DESTDIR/x11/share/pkgconfig/vulkan-tools-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- Vulkan-Tools-1.2.156.orig/CMakeLists.txt
 +++ Vulkan-Tools-1.2.156/CMakeLists.txt
 @@ -27,7 +27,7 @@
@@ -3843,3 +3845,6 @@ exit
  endif()
  
  if(UNIX AND NOT APPLE) # i.e. Linux
+
+# source
+https://github.com/KhronosGroup/Vulkan-Tools/archive/v1.2.156/Vulkan-Tools-1.2.156.tar.gz

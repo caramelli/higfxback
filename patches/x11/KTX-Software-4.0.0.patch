@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build zstd-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -19,7 +19,7 @@ fi
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf other_include
 rm -rf other_lib
-cmake $GL $VK -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -DKTX_FEATURE_TESTS=OFF -B build -G "$GENERATOR"
+cmake $GL $VK -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DKTX_FEATURE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/x11 -DCMAKE_INSTALL_RPATH=/x11/lib -B build -G "$GENERATOR"
 
 # build
 cmake --build build
@@ -62,6 +62,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- KTX-Software-4.0.0.orig/CMakeLists.txt
 +++ KTX-Software-4.0.0/CMakeLists.txt
 @@ -38,6 +38,9 @@
@@ -74,17 +76,37 @@ exit
  set_target_processor_type(CPU_ARCHITECTURE)
  if(CPU_ARCHITECTURE STREQUAL x86_64 OR CPU_ARCHITECTURE STREQUAL x86)
      option( BASISU_SUPPORT_SSE "Compile with SSE support so applications can choose to use it" ON )
-@@ -161,6 +164,9 @@
+@@ -121,7 +124,6 @@
+     lib/basisu/transcoder/basisu_transcoder.cpp
+     lib/basisu/transcoder/basisu_transcoder.h
+     lib/basisu/transcoder/basisu.h
+-    lib/basisu/zstd/zstd.c
+     lib/checkheader.c
+     lib/dfdutils/createdfd.c
+     lib/dfdutils/colourspaces.c
+@@ -161,6 +163,13 @@
      lib/vkformat_str.c
      )
  
++if(NOT LINUX)
++    list(APPEND KTX_MAIN_SRC lib/basisu/zstd/zstd.c)
++endif()
++
 +execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot OUTPUT_VARIABLE SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
 +include_directories(${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include)
 +
  # Main library
  add_library( ktx ${LIB_TYPE}
      ${KTX_MAIN_SRC}
-@@ -356,6 +362,14 @@
+@@ -328,6 +337,7 @@
+         PUBLIC
+             dl
+             Threads::Threads
++            zstd
+         )
+     endif()
+ 
+@@ -356,6 +366,14 @@
          target_compile_definitions( ${lib} PRIVATE KTX_OMIT_VULKAN=1 )
      endif()
  
@@ -99,7 +121,7 @@ exit
  endmacro(commom_lib_settings)
  
  set(KTX_BUILD_DIR "${CMAKE_BINARY_DIR}")
-@@ -628,6 +642,17 @@
+@@ -628,6 +646,17 @@
      COMPONENT library
  )
  
@@ -565,3 +587,6 @@ exit
  #endif
  
  #ifndef GL_SR8
+
+# source
+https://github.com/KhronosGroup/KTX-Software/archive/v4.0.0/KTX-Software-4.0.0.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build libice-build util-linux-build"
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.63; am-1.11; lt-2.2.6)
-libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; ACLOCAL_PATH=/x11/share/aclocal aclocal -I m4; autoheader; autoconf; automake -a -c
 PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --prefix=/x11
 
 # build
@@ -41,6 +41,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- libSM-1.1.1.orig/configure.ac
 +++ libSM-1.1.1/configure.ac
 @@ -8,6 +8,7 @@
@@ -51,3 +53,6 @@ exit
  AM_INIT_AUTOMAKE([dist-bzip2])
  
  AM_MAINTAINER_MODE
+
+# source
+https://x.org/releases/individual/lib/libSM-1.1.1.tar.gz

@@ -1,0 +1,214 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libstdc++-build sdl2_image-build sdl2_mixer-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --print-requires sdl2_mixer-build | grep -q libvorbis-build || { echo SDL2_mixer with Vorbis support required; exit 1; }
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoheader; autoconf; cp README.md README; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --with-highscore-prefix=/drm/var/games/pinball --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install src/pinball $DESTDIR/drm/bin
+install -d $DESTDIR/drm/lib/pinball
+install -m 644 data/professor/libModuleProfessor.la $DESTDIR/drm/lib/pinball
+install data/professor/.libs/libModuleProfessor.so.0.* $DESTDIR/drm/lib/pinball/libModuleProfessor.so.0
+install -m 644 data/tux/libModuleTux.la $DESTDIR/drm/lib/pinball
+install data/tux/.libs/libModuleTux.so.0.* $DESTDIR/drm/lib/pinball/libModuleTux.so.0
+install -d $DESTDIR/drm/share/pinball
+install -m 644 data/font_34.png $DESTDIR/drm/share/pinball
+install -m 644 data/splash.png $DESTDIR/drm/share/pinball
+install -d $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/bump.wav $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/bumpsoft.wav $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/flip.wav $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/floor.png $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/gameover.wav $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/introp.ogg $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/nudge.wav $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/pinball.pbl $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/professor.ogg $DESTDIR/drm/share/pinball/professor
+install -m 644 data/professor/professor.png $DESTDIR/drm/share/pinball/professor
+install -d $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/bumphard.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/bumpsoft.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/bump.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/face2.png $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/flip.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/floor2.png $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/floor3.png $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/game.ogg $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/gameover.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/lock.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/intro.ogg $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/multiball.ogg $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/nudge.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/opentux.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/pinball.pbl $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/shoot.wav $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/tiles.png $DESTDIR/drm/share/pinball/tux
+install -m 644 data/tux/up.wav $DESTDIR/drm/share/pinball/tux
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/pinball-build.pc << EOF
+Name: pinball
+Version: 0.3.20241114
+Description: Pinball game
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/pinball \\
+/drm/lib/pinball/libModuleProfessor.la \\
+/drm/lib/pinball/libModuleProfessor.so.0 \\
+/drm/lib/pinball/libModuleTux.la \\
+/drm/lib/pinball/libModuleTux.so.0 \\
+/drm/share/pinball/font_34.png \\
+/drm/share/pinball/splash.png \\
+/drm/share/pinball/professor/bump.wav \\
+/drm/share/pinball/professor/bumpsoft.wav \\
+/drm/share/pinball/professor/flip.wav \\
+/drm/share/pinball/professor/floor.png \\
+/drm/share/pinball/professor/gameover.wav \\
+/drm/share/pinball/professor/introp.ogg \\
+/drm/share/pinball/professor/nudge.wav \\
+/drm/share/pinball/professor/pinball.pbl \\
+/drm/share/pinball/professor/professor.ogg \\
+/drm/share/pinball/professor/professor.png \\
+/drm/share/pinball/tux/bumphard.wav \\
+/drm/share/pinball/tux/bumpsoft.wav \\
+/drm/share/pinball/tux/bump.wav \\
+/drm/share/pinball/tux/face2.png \\
+/drm/share/pinball/tux/flip.wav \\
+/drm/share/pinball/tux/floor2.png \\
+/drm/share/pinball/tux/floor3.png \\
+/drm/share/pinball/tux/game.ogg \\
+/drm/share/pinball/tux/gameover.wav \\
+/drm/share/pinball/tux/lock.wav \\
+/drm/share/pinball/tux/intro.ogg \\
+/drm/share/pinball/tux/multiball.ogg \\
+/drm/share/pinball/tux/nudge.wav \\
+/drm/share/pinball/tux/opentux.wav \\
+/drm/share/pinball/tux/pinball.pbl \\
+/drm/share/pinball/tux/shoot.wav \\
+/drm/share/pinball/tux/tiles.png \\
+/drm/share/pinball/tux/up.wav
+EOF
+
+exit
+
+# patch
+--- pinball-0.3.20241114.orig/Makefile.am
++++ pinball-0.3.20241114/Makefile.am
+@@ -1,6 +1,6 @@
+ AUTOMAKE_OPTIONS = gnu
+ 
+-SUBDIRS = addon base data src test
++SUBDIRS = libltdl addon base data src test
+ 
+ EXTRA_DIST = bootstrap pinball.spec clean pinball.desktop
+ 
+--- pinball-0.3.20241114.orig/Makefile.in
++++ pinball-0.3.20241114/Makefile.in
+@@ -0,0 +1 @@
++# Makefile.in generated by automake 1.14.1
+--- pinball-0.3.20241114.orig/configure
++++ pinball-0.3.20241114/configure
+@@ -0,0 +1 @@
++# Generated by GNU Autoconf 2.69
+--- pinball-0.3.20241114.orig/configure.ac
++++ pinball-0.3.20241114/configure.ac
+@@ -15,6 +15,8 @@
+ 
+ AM_INIT_AUTOMAKE
+ 
++AM_MAINTAINER_MODE
++
+ dnl this is a c++ program
+ dnl CFLAGS="-g -W -Wall -O2"
+ dnl CXXFLAGS="-g -W -Wall -O2"
+@@ -34,6 +36,9 @@
+ AC_PROG_INSTALL
+ 
+ LT_INIT([dlopen])
++LTDL_INIT
++
++PKG_PROG_PKG_CONFIG
+ 
+ dnl *******************************************
+ dnl PATHS AND DIRS ****************************
+@@ -115,15 +120,11 @@
+ 	[enable_gles=no])
+ if test "x$enable_gles" = "xyes"; then
+   MATHLIB="-lm"
+-  AC_CHECK_HEADER(
+-      [GLES/gl.h],
+-      [ac_cv_search_glLoadMatrixx="none required"],
+-      [AC_MSG_ERROR(*** OpenGL ES headers not found on system!)]
++  PKG_CHECK_MODULES(
++      [GL], [glesv1_cm],
++      [CPPFLAGS="$CPPFLAGS $GL_CFLAGS"],
++      [AC_MSG_ERROR(*** OpenGL ES not found on system!)]
+   )
+-  AC_ARG_WITH(gles-library,
+-  	[AS_HELP_STRING([--with-gles-library=LIBRARY],[OpenGL ES library @<:@default=GLESv1_CM@:>@])],
+-  	GL_LIBS=-l"$withval",
+-  	GL_LIBS="-lGLESv1_CM")
+   AC_DEFINE(HAVE_OPENGLES, [1], [Support for OpenGL ES])
+ else
+ case "$target" in
+@@ -143,10 +144,10 @@
+         ;;
+     *)
+         MATHLIB="-lm"
+-        AC_CHECK_HEADER(
+-            [GL/gl.h],
+-            AC_SEARCH_LIBS(glVertex3f, [opengl32 GL GL2 OpenGL], [test $ac_cv_search_glVertex3f = "none required" || GL_LIBS="$ac_cv_search_gVertex3f $GL_LIBS"], [AC_MSG_ERROR(*** OpenGL library not found on system!)]),
+-            [AC_MSG_ERROR(*** OpenGL headers not found on system!)]
++        PKG_CHECK_MODULES(
++            [GL], [gl],
++            [CPPFLAGS="$CPPFLAGS $GL_CFLAGS"],
++            [AC_MSG_ERROR(*** OpenGL not found on system!)]
+         )
+         ;;
+ esac
+--- pinball-0.3.20241114.orig/ltmain.sh
++++ pinball-0.3.20241114/ltmain.sh
+@@ -0,0 +1 @@
++# libtool (GNU libtool) 2.4.2
+--- pinball-0.3.20241114.orig/src/Makefile.am
++++ pinball-0.3.20241114/src/Makefile.am
+@@ -7,9 +7,9 @@
+ 
+ pinlib_LIBRARIES = libemilia_pin.a
+ 
+-AM_CPPFLAGS = -I../base -I../addon
++AM_CPPFLAGS = -I../base -I../addon @INCLTDL@
+ 
+-pinball_LDADD = libemilia_pin.a ../addon/libemilia_addon.a ../base/libemilia_base.a -lltdl
++pinball_LDADD = libemilia_pin.a ../addon/libemilia_addon.a ../base/libemilia_base.a @LIBLTDL@
+ pinball_LDFLAGS = -export-dynamic
+ 
+ pinball_SOURCES = Pinball.cpp
+--- pinball-0.3.20241114.orig/test/Makefile.am
++++ pinball-0.3.20241114/test/Makefile.am
+@@ -7,7 +7,7 @@
+ # noinst_PROGRAMS = unittest
+ 
+ AM_CPPFLAGS = -I../base -I../addon -I../src
+-LDADD = ../src/libemilia_pin.a ../addon/libemilia_addon.a ../base/libemilia_base.a -lltdl
++LDADD = ../src/libemilia_pin.a ../addon/libemilia_addon.a ../base/libemilia_base.a @LIBLTDL@
+ 
+ testlib_LTLIBRARIES = libModuleTest.la
+ 
+# source
+https://github.com/adoptware/pinball/archive/7f6887d8912340c0eee7f96b4c4bb84c8d889246/pinball-0.3.20241114.tar.gz

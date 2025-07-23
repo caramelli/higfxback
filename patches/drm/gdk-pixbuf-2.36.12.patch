@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build glib-build jpeg-build libpng-build tiff-bu
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=/drm
 
 # build
@@ -98,8 +98,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- gdk-pixbuf-2.36.12.orig/configure.ac
 +++ gdk-pixbuf-2.36.12/configure.ac
+@@ -40,7 +40,7 @@
+ cflags_set=${CFLAGS+set}
+ 
+ AM_INIT_AUTOMAKE([1.11 foreign no-define -Wno-portability dist-xz no-dist-gzip tar-ustar])
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ # Support silent build rules. Disable
+ # by either passing --disable-silent-rules to configure or passing V=0
 @@ -102,6 +102,11 @@
  AC_CHECK_LIB(m, round, AC_DEFINE(HAVE_ROUND, [1], [Define to 1 if libm has round]))
  AC_CHECK_LIB(m, lrint, AC_DEFINE(HAVE_LRINT, [1], [Define to 1 if libm has lrint]))
@@ -172,3 +183,6 @@ exit
  fi
  
  AM_CONDITIONAL(HAVE_TIFF, test "x$libtiff_found" != xno)
+
+# source
+https://download.gnome.org/sources/gdk-pixbuf/2.36/gdk-pixbuf-2.36.12.tar.xz

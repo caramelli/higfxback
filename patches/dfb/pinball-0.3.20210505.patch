@@ -1,0 +1,218 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build egl-opengl-stubs-build libstdc++-build sdl2_image-build sdl2_mixer-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --print-requires sdl2_mixer-build | grep -q libvorbis-build || { echo SDL2_mixer with Vorbis support required; exit 1; }
+
+# configure (ac-2.69; am-1.14; lt-2.4.2)
+libtoolize -c -f; aclocal; autoheader; autoconf; cp README.md README; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --with-highscore-prefix=/dfb/var/games/pinball --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/bin
+install src/pinball $DESTDIR/dfb/bin
+install -d $DESTDIR/dfb/lib/pinball
+install -m 644 data/professor/libModuleProfessor.la $DESTDIR/dfb/lib/pinball
+install data/professor/.libs/libModuleProfessor.so.0.* $DESTDIR/dfb/lib/pinball/libModuleProfessor.so.0
+install -m 644 data/tux/libModuleTux.la $DESTDIR/dfb/lib/pinball
+install data/tux/.libs/libModuleTux.so.0.* $DESTDIR/dfb/lib/pinball/libModuleTux.so.0
+install -d $DESTDIR/dfb/share/pinball
+install -m 644 data/font_34.png $DESTDIR/dfb/share/pinball
+install -m 644 data/splash.png $DESTDIR/dfb/share/pinball
+install -d $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/bump.wav $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/bumpsoft.wav $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/flip.wav $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/floor.png $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/gameover.wav $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/introp.ogg $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/nudge.wav $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/pinball.pbl $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/professor.ogg $DESTDIR/dfb/share/pinball/professor
+install -m 644 data/professor/professor.png $DESTDIR/dfb/share/pinball/professor
+install -d $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/bumphard.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/bumpsoft.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/bump.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/face2.png $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/flip.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/floor2.png $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/floor3.png $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/game.ogg $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/gameover.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/lock.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/intro.ogg $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/multiball.ogg $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/nudge.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/opentux.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/pinball.pbl $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/shoot.wav $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/tiles.png $DESTDIR/dfb/share/pinball/tux
+install -m 644 data/tux/up.wav $DESTDIR/dfb/share/pinball/tux
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/pinball-build.pc << EOF
+Name: pinball
+Version: 0.3.20210505
+Description: Pinball game
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/pinball \\
+/dfb/lib/pinball/libModuleProfessor.la \\
+/dfb/lib/pinball/libModuleProfessor.so.0 \\
+/dfb/lib/pinball/libModuleTux.la \\
+/dfb/lib/pinball/libModuleTux.so.0 \\
+/dfb/share/pinball/font_34.png \\
+/dfb/share/pinball/splash.png \\
+/dfb/share/pinball/professor/bump.wav \\
+/dfb/share/pinball/professor/bumpsoft.wav \\
+/dfb/share/pinball/professor/flip.wav \\
+/dfb/share/pinball/professor/floor.png \\
+/dfb/share/pinball/professor/gameover.wav \\
+/dfb/share/pinball/professor/introp.ogg \\
+/dfb/share/pinball/professor/nudge.wav \\
+/dfb/share/pinball/professor/pinball.pbl \\
+/dfb/share/pinball/professor/professor.ogg \\
+/dfb/share/pinball/professor/professor.png \\
+/dfb/share/pinball/tux/bumphard.wav \\
+/dfb/share/pinball/tux/bumpsoft.wav \\
+/dfb/share/pinball/tux/bump.wav \\
+/dfb/share/pinball/tux/face2.png \\
+/dfb/share/pinball/tux/flip.wav \\
+/dfb/share/pinball/tux/floor2.png \\
+/dfb/share/pinball/tux/floor3.png \\
+/dfb/share/pinball/tux/game.ogg \\
+/dfb/share/pinball/tux/gameover.wav \\
+/dfb/share/pinball/tux/lock.wav \\
+/dfb/share/pinball/tux/intro.ogg \\
+/dfb/share/pinball/tux/multiball.ogg \\
+/dfb/share/pinball/tux/nudge.wav \\
+/dfb/share/pinball/tux/opentux.wav \\
+/dfb/share/pinball/tux/pinball.pbl \\
+/dfb/share/pinball/tux/shoot.wav \\
+/dfb/share/pinball/tux/tiles.png \\
+/dfb/share/pinball/tux/up.wav
+EOF
+
+exit
+
+# patch
+--- pinball-0.3.20210505.orig/Makefile.in
++++ pinball-0.3.20210505/Makefile.in
+@@ -0,0 +1 @@
++# Makefile.in generated by automake 1.14.1
+--- pinball-0.3.20210505.orig/base/TextureUtil.cpp
++++ pinball-0.3.20210505/base/TextureUtil.cpp
+@@ -185,6 +185,10 @@
+        : 0);
+   #ifdef HAVE_OPENGLES
+   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles");
++  SDL_setenv("SDL_OPENGL_LIBRARY", "libGLESv1_CM.so.1", 1);
++  #else
++  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
++  SDL_setenv("SDL_OPENGL_LIBRARY", "libGL.so.1", 1);
+   #endif
+   SDL_CreateWindowAndRenderer(0, 0, window_flags, &m_window, &sdlRenderer);
+   SDL_SetWindowSize(m_window, config->getWidth(), config->getHeight());
+--- pinball-0.3.20210505.orig/configure
++++ pinball-0.3.20210505/configure
+@@ -0,0 +1 @@
++# Generated by GNU Autoconf 2.69
+--- pinball-0.3.20210505.orig/configure.ac
++++ pinball-0.3.20210505/configure.ac
+@@ -8,7 +8,7 @@
+ 	[http://pinball.sf.net])
+ 
+ AC_CONFIG_MACRO_DIRS([libltdl/m4])
+-AM_CONFIG_HEADER(pinconfig.h)
++AC_CONFIG_HEADERS(pinconfig.h)
+ LT_CONFIG_LTDL_DIR([libltdl])
+ 
+ AC_CANONICAL_HOST
+@@ -16,6 +16,8 @@
+ 
+ AM_INIT_AUTOMAKE
+ 
++AM_MAINTAINER_MODE
++
+ dnl this is a c++ program
+ dnl CFLAGS="-g -W -Wall -O2"
+ dnl CXXFLAGS="-g -W -Wall -O2"
+@@ -39,6 +41,8 @@
+ LT_INIT
+ LTDL_INIT
+ 
++PKG_PROG_PKG_CONFIG
++
+ AC_SUBST(INCLTDL)
+ AC_SUBST(LIBLTDL)
+ 
+@@ -107,12 +111,11 @@
+ AC_ARG_ENABLE(gles, [  --enable-gles           Enable OpenGL ES])
+ if test "x$enable_gles" = "xyes"; then
+   MATHLIB="-lm"
+-  AC_CHECK_HEADER(
+-      [GLES/gl.h],
+-      [ac_cv_search_glLoadMatrixx="none required"],
+-      [AC_MSG_ERROR(*** OpenGL ES headers not found on system!)]
++  PKG_CHECK_MODULES(
++      [GL], [glesv1_cm],
++      [CPPFLAGS="$CPPFLAGS $GL_CFLAGS"],
++      [AC_MSG_ERROR(*** OpenGL ES not found on system!)]
+   )
+-  AC_ARG_WITH(gles-library, [  --with-gles-library=LIBRARY OpenGL ES library @<:@default=GLESv1_CM@:>@], GL_LIBS=-l"$withval", GL_LIBS="-lGLESv1_CM")
+   AC_DEFINE(HAVE_OPENGLES, [1], [Support for OpenGL ES])
+ else
+ case "$target" in
+@@ -132,10 +135,10 @@
+         ;;
+     *)
+         MATHLIB="-lm"
+-        AC_CHECK_HEADER(
+-            [GL/gl.h],
+-            AC_SEARCH_LIBS(glVertex3f, [opengl32 GL GL2 OpenGL], [test $ac_cv_search_glVertex3f = "none required" || GL_LIBS="$ac_cv_search_gVertex3f $GL_LIBS"], [AC_MSG_ERROR(*** OpenGL library not found on system!)]),
+-            [AC_MSG_ERROR(*** OpenGL headers not found on system!)]
++        PKG_CHECK_MODULES(
++            [GL], [gl],
++            [CPPFLAGS="$CPPFLAGS $GL_CFLAGS"],
++            [AC_MSG_ERROR(*** OpenGL not found on system!)]
+         )
+         ;;
+ esac
+--- pinball-0.3.20210505.orig/ltmain.sh
++++ pinball-0.3.20210505/ltmain.sh
+@@ -0,0 +1 @@
++# libtool (GNU libtool) 2.4.2
+--- pinball-0.3.20210505.orig/src/Pinball.cpp
++++ pinball-0.3.20210505/src/Pinball.cpp
+@@ -10,8 +10,6 @@
+ 
+ #include <fstream>
+ #include <string>
+-//#include <sstream>
+-#include <strstream>
+ #include <iostream>
+ 
+ #include <sys/stat.h>
+@@ -144,7 +142,7 @@
+     return EM_MENU_NOP;
+   }
+   const char * getText() {
+-    ostrstream stm;
++    ostringstream stm;
+     stm.clear();
+     string name(m_Name);
+     const char * keyname = Config::getInstance()->getKeyCommonName(Config::getInstance()->getKey(name));
+
+# source
+https://github.com/adoptware/pinball/archive/69421c0f1fada27ba0f1816f127c8a31929a5319/pinball-0.3.20210505.tar.gz

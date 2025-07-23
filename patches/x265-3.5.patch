@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build gcc-g++-build"
+REQUIRES="cmake3-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -44,6 +44,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- x265-3.5.orig/source/cmake/FindNasm.cmake
 +++ x265-3.5/source/cmake/FindNasm.cmake
 @@ -20,6 +20,6 @@
@@ -62,3 +64,6 @@ exit
  
 -find_package_handle_standard_args(NUMA REQUIRED_VARS NUMA_ROOT_DIR NUMA_INCLUDE_DIR NUMA_LIBRARY)
 +find_package_handle_standard_args(Numa REQUIRED_VARS NUMA_ROOT_DIR NUMA_INCLUDE_DIR NUMA_LIBRARY)
+
+# source
+https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.5.tar.gz

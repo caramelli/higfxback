@@ -1,9 +1,15 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build egl-opengl-stubs-build glad-build linmath-build libxkbcommon-build stb-build tinycthread-build wayland-protocols-build"
+REQUIRES="cmake3-build egl-opengl-stubs-build glad-build linmath-build libxkbcommon-build stb-build tinycthread-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists libdecor-build; then
+  REQUIRES="$REQUIRES libdecor-build"
+else
+  REQUIRES="$REQUIRES wayland-protocols-build"
+fi
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists vulkan-loader-build; then
   VK=1
@@ -13,7 +19,7 @@ fi
 # configure
 GENERATOR=${GENERATOR-Unix Makefiles}
 rm -rf deps
-PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DGLFW_BUILD_X11=OFF -DCMAKE_INSTALL_PREFIX=/wl -DCMAKE_INSTALL_RPATH=/wl/lib -DUSE_XCOMPOSE=OFF -B build -G "$GENERATOR"
+PKG_CONFIG_PATH=/wl/lib/pkgconfig cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DGLFW_BUILD_X11=OFF -DUSE_XCOMPOSE=OFF -DCMAKE_INSTALL_PREFIX=/wl -DCMAKE_INSTALL_RPATH=/wl/lib -B build -G "$GENERATOR"
 
 # build
 cmake --build build
@@ -101,6 +107,8 @@ cat >> $DESTDIR/wl/share/pkgconfig/glfw-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- glfw-3.4.orig/CMakeLists.txt
 +++ glfw-3.4/CMakeLists.txt
 @@ -41,6 +41,7 @@
@@ -1092,3 +1100,6 @@ exit
      uint32_t gpu_count;
  
      err = vkCreateInstance(&inst_info, NULL, &demo->inst);
+
+# source
+https://github.com/glfw/glfw/archive/3.4/glfw-3.4.tar.gz

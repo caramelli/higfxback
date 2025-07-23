@@ -1,0 +1,163 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69)
+autoconf
+./configure --enable-shared --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install ruby $DESTDIR/bin
+install bin/irb $DESTDIR/bin
+install -d $DESTDIR/include/ruby-1.9.1
+install -m 644 include/ruby.h $DESTDIR/include/ruby-1.9.1
+install -d $DESTDIR/include/ruby-1.9.1/ruby
+install -m 644 include/ruby/defines.h $DESTDIR/include/ruby-1.9.1/ruby
+install -m 644 include/ruby/intern.h $DESTDIR/include/ruby-1.9.1/ruby
+install -m 644 include/ruby/missing.h $DESTDIR/include/ruby-1.9.1/ruby
+install -m 644 include/ruby/ruby.h $DESTDIR/include/ruby-1.9.1/ruby
+install -m 644 include/ruby/st.h $DESTDIR/include/ruby-1.9.1/ruby
+install -m 644 include/ruby/subst.h $DESTDIR/include/ruby-1.9.1/ruby
+install -d $DESTDIR/include/ruby-1.9.1/`ls .ext/include | grep -v ruby`/ruby
+install -m 644 .ext/include/`ls .ext/include | grep -v ruby`/ruby/config.h $DESTDIR/include/ruby-1.9.1/`ls .ext/include | grep -v ruby`/ruby
+install -d $DESTDIR/lib
+install libruby.so.1.* $DESTDIR/lib/libruby.so.1
+ln -sf libruby.so.1 $DESTDIR/lib/libruby.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 ruby-1.9.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/lib/ruby/1.9.1
+install -m 644 ext/pathname/lib/pathname.rb $DESTDIR/lib/ruby/1.9.1
+install -m 644 lib/e2mmap.rb $DESTDIR/lib/ruby/1.9.1
+install -m 644 lib/irb.rb $DESTDIR/lib/ruby/1.9.1
+install -m 644 lib/rubygems.rb $DESTDIR/lib/ruby/1.9.1
+install -d $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/context.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/extend-command.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/init.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/input-method.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/inspector.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/locale.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/magic-file.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/notifier.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/output-method.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/ruby-lex.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/ruby-token.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/slex.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/src_encoding.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -m 644 lib/irb/workspace.rb $DESTDIR/lib/ruby/1.9.1/irb
+install -d $DESTDIR/lib/ruby/1.9.1/irb/lc
+install -m 644 lib/irb/lc/error.rb $DESTDIR/lib/ruby/1.9.1/irb/lc
+install -d $DESTDIR/lib/ruby/1.9.1/rubygems
+install -m 644 lib/rubygems/custom_require.rb $DESTDIR/lib/ruby/1.9.1/rubygems
+install -m 644 lib/rubygems/defaults.rb $DESTDIR/lib/ruby/1.9.1/rubygems
+install -m 644 lib/rubygems/deprecate.rb $DESTDIR/lib/ruby/1.9.1/rubygems
+install -m 644 lib/rubygems/exceptions.rb $DESTDIR/lib/ruby/1.9.1/rubygems
+install -m 644 lib/rubygems/platform.rb $DESTDIR/lib/ruby/1.9.1/rubygems
+install -m 644 lib/rubygems/requirement.rb $DESTDIR/lib/ruby/1.9.1/rubygems
+install -d $DESTDIR/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`
+install -m 644 rbconfig.rb $DESTDIR/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`
+install .ext/`ls .ext/include | grep -v ruby`/digest.so $DESTDIR/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`
+install .ext/`ls .ext/include | grep -v ruby`/pathname.so $DESTDIR/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`
+install -d $DESTDIR/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`/digest
+install .ext/`ls .ext/include | grep -v ruby`/digest/sha1.so $DESTDIR/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`/digest
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/ruby-build.pc << EOF
+Name: ruby
+Version: 1.9.3.p551
+Description: Ruby programming language
+Requires: $REQUIRES
+
+devel=\\
+/include/ruby-1.9.1/ruby.h \\
+/include/ruby-1.9.1/ruby/defines.h \\
+/include/ruby-1.9.1/ruby/intern.h \\
+/include/ruby-1.9.1/ruby/missing.h \\
+/include/ruby-1.9.1/ruby/ruby.h \\
+/include/ruby-1.9.1/ruby/st.h \\
+/include/ruby-1.9.1/ruby/subst.h \\
+/include/ruby-1.9.1/`ls .ext/include | grep -v ruby`/ruby/config.h \\
+/lib/libruby.so \\
+/lib/pkgconfig/ruby-1.9.pc
+
+exec=\\
+/bin/irb \\
+/bin/ruby \\
+/lib/libruby.so.1 \\
+/lib/ruby/1.9.1/e2mmap.rb
+/lib/ruby/1.9.1/irb.rb
+/lib/ruby/1.9.1/pathname.rb
+/lib/ruby/1.9.1/rubygems.rb
+/lib/ruby/1.9.1/irb/context.rb \\
+/lib/ruby/1.9.1/irb/extend-command.rb \\
+/lib/ruby/1.9.1/irb/init.rb \\
+/lib/ruby/1.9.1/irb/input-method.rb \\
+/lib/ruby/1.9.1/irb/inspector.rb \\
+/lib/ruby/1.9.1/irb/locale.rb \\
+/lib/ruby/1.9.1/irb/magic-file.rb \\
+/lib/ruby/1.9.1/irb/notifier.rb \\
+/lib/ruby/1.9.1/irb/output-method.rb \\
+/lib/ruby/1.9.1/irb/ruby-lex.rb \\
+/lib/ruby/1.9.1/irb/ruby-token.rb \\
+/lib/ruby/1.9.1/irb/slex.rb \\
+/lib/ruby/1.9.1/irb/src_encoding.rb \\
+/lib/ruby/1.9.1/irb/workspace.rb \\
+/lib/ruby/1.9.1/irb/lc/error.rb \\
+/lib/ruby/1.9.1/rubygems/custom_require.rb \\
+/lib/ruby/1.9.1/rubygems/defaults.rb \\
+/lib/ruby/1.9.1/rubygems/deprecate.rb \\
+/lib/ruby/1.9.1/rubygems/exceptions.rb \\
+/lib/ruby/1.9.1/rubygems/platform.rb \\
+/lib/ruby/1.9.1/rubygems/requirement.rb \\
+/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`/digest.so \\
+/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`/pathname.so \\
+/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`/rbconfig.rb \\
+/lib/ruby/1.9.1/`ls .ext/include | grep -v ruby`/digest/sha1.so
+EOF
+
+exit
+
+# patch
+--- ruby-1.9.3.p551.orig/bin/irb
++++ ruby-1.9.3.p551/bin/irb
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env ruby
++#!/bin/env ruby
+ #
+ #   irb.rb - interactive ruby
+ #   	$Release Version: 0.9.6 $
+--- ruby-1.9.3.p551.orig/common.mk
++++ ruby-1.9.3.p551/common.mk
+@@ -404,7 +404,7 @@
+ 
+ rdoc: PHONY main
+ 	@echo Generating RDoc documentation
+-	$(Q) $(XRUBY) "$(srcdir)/bin/rdoc" --encoding=UTF-8 --no-force-update --all --ri --op "$(RDOCOUT)" $(RDOCFLAGS) "$(srcdir)"
++	$(Q) $(XRUBY) "$(srcdir)/bin/rdoc" --encoding=UTF-8 --all --ri --op "$(RDOCOUT)" $(RDOCFLAGS) "$(srcdir)"
+ 
+ rdoc-coverage: PHONY main
+ 	@echo Generating RDoc coverage report
+--- ruby-1.9.3.p551.orig/configure.in
++++ ruby-1.9.3.p551/configure.in
+@@ -2383,8 +2383,8 @@
+ 	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR) lib$(RUBY_SO_NAME).so'
+ 	],
+     [linux* | gnu* | k*bsd*-gnu | atheos* | kopensolaris*-gnu], [
+-	LIBRUBY_DLDFLAGS='-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR)'
+-	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR) lib$(RUBY_SO_NAME).so'
++	LIBRUBY_DLDFLAGS='-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR)'
++	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR) lib$(RUBY_SO_NAME).so'
+ 	if test "$load_relative" = yes; then
+ 	    LIBRUBY_RPATHFLAGS="'-Wl,-rpath,\$\${ORIGIN}/../${libdir_basename}'"
+ 	    LIBRUBY_RELATIVE=yes
+
+# source
+https://cache.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p551.tar.gz

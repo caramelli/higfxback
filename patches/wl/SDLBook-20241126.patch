@@ -6,7 +6,7 @@ REQUIRES="djvulibre-build make-build mupdf-build"
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --sdl2 --prefix /wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --sdl2 --prefix=/wl
 
 # build
 make
@@ -28,45 +28,36 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- SDLBook-20241126.orig/Configure
 +++ SDLBook-20241126/Configure
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,25 @@
 +#!/bin/sh
 +
 +prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      prefix=$2
-+      shift
-+    ;;
-+    --sdl2)
-+      SDL2=yes
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --sdl2) SDL2=yes;;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+test -f config.mak && rm config.mak
++rm -f config.mak
 +
 +test "$prefix" != /usr/local && echo prefix = $prefix > config.mak
 +
++test $SDL2 && echo SDL2 = $SDL2 >> config.mak
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
-+  test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +  echo PKG_CONFIG := PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG >> config.mak
 +else
-+  test $PKG_CONFIG && echo PKG_CONFIG := $PKG_CONFIG >> config.mak
++  test $PKG_CONFIG != pkg-config && echo PKG_CONFIG := $PKG_CONFIG >> config.mak
 +fi
-+
-+test $SDL2 && echo SDL2 = $SDL2 >> config.mak
 --- SDLBook-20241126.orig/Makefile
 +++ SDLBook-20241126/Makefile
 @@ -2,29 +2,30 @@
@@ -90,7 +81,7 @@ exit
  else
 -SDL_LIBS = -lSDL2
 -CPPF_SDL = -DUSE_SDL2
-+SDL_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl2)
++SDL_CFLAGS := $(shell $(PKG_CONFIG) --cflags sdl2)
 +SDL_LIBS := $(shell $(PKG_CONFIG) --libs sdl2)
 +CPPF_SDL := -DUSE_SDL2
  endif
@@ -148,3 +139,6 @@ exit
  					*(p++) = event.which;
  					*p = 0;
  				}
+
+# source
+https://github.com/rofl0r/SDLBook/archive/b1fbc394163a03d13b93b508f7e42a7ce16bc37e/SDLBook-20241126.tar.gz

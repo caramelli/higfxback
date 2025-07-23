@@ -1,0 +1,33 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="directfb2-build egl-opengl-stubs-build libgbm-stub-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/lib/directfb-2.0-0/systems
+install build/libdirectfb_eglgbm.so $DESTDIR/dfb/lib/directfb-2.0-0/systems
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/directfb2-eglgbm-build.pc << EOF
+Name: DirectFB2-eglgbm
+Version: 20250622
+Description: EGL system module for GBM platform
+Requires: $REQUIRES
+
+exec=\\
+/dfb/lib/directfb-2.0-0/systems/libdirectfb_eglgbm.so
+EOF
+
+exit
+
+# source
+https://github.com/directfb2/DirectFB2-eglgbm/archive/22293f071c7b6fa39e9cfe4b14061012ebb9a31d/DirectFB2-eglgbm-20250622.tar.gz

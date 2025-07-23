@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build glib-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4 -I common/m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4 -I common/m4; autoheader; autoconf; automake -a -c
 ./configure --libexecdir=/x11/lib --prefix=/x11
 
 # build
@@ -303,6 +303,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- gstreamer-1.10.5.orig/configure.ac
++++ gstreamer-1.10.5/configure.ac
+@@ -23,7 +23,7 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ dnl sets host_* variables
+ AC_CANONICAL_HOST
 --- gstreamer-1.10.5.orig/libs/gst/net/net.h
 +++ gstreamer-1.10.5/libs/gst/net/net.h
 @@ -22,7 +22,6 @@
@@ -313,3 +326,6 @@ exit
  #include <gst/net/gstnetaddressmeta.h>
  #include <gst/net/gstnetclientclock.h>
  #include <gst/net/gstnettimepacket.h>
+
+# source
+https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.10.5.tar.xz

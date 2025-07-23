@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="cmake3-build directfb2-build gcc-g++-build glslang-build vulkan-hpp-build vulkan-loader-build"
+REQUIRES="cmake3-build directfb2-build glslang-build libstdc++-build vulkan-hpp-build vulkan-loader-build"
 
 PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -34,6 +34,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- Vulkan-Tools-1.2.151.orig/CMakeLists.txt
 +++ Vulkan-Tools-1.2.151/CMakeLists.txt
 @@ -27,7 +27,7 @@
@@ -3642,3 +3644,6 @@ exit
 +           cause Vk*FlagBits values with bit 31 set to result in a 64 bit
 +           enumerated type, so disallows such flags."""
 +        return bitpos >= 0 and bitpos < 31
+
+# source
+https://github.com/KhronosGroup/Vulkan-Tools/archive/v1.2.151/Vulkan-Tools-1.2.151.tar.gz

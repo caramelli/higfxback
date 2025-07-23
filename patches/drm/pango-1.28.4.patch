@@ -15,7 +15,7 @@ else
 fi
 
 # configure (ac-2.65; am-1.11; lt-2.2.6b)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 rm -rf pango/opentype
 PKG_CONFIG_PATH=/drm/lib/pkgconfig ./configure --with-system-harfbuzz=$HARFBUZZ --prefix=/drm
 
@@ -128,6 +128,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- pango-1.28.4.orig/configure.in
 +++ pango-1.28.4/configure.in
 @@ -36,6 +36,7 @@
@@ -138,7 +140,15 @@ exit
  
  dnl -Wno-portability tells automake to stop complaining about the
  dnl usage of GNU Make specific features.
-@@ -210,6 +211,11 @@
+@@ -43,6 +44,7 @@
+ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+ AM_CONFIG_HEADER([config.h])
+ 
++AM_MAINTAINER_MODE
+ 
+ PANGO_VERSION_MAJOR=pango_version_major()
+ PANGO_VERSION_MINOR=pango_version_minor()
+@@ -210,6 +212,11 @@
                                [disable all source autogeneration rules])],,
                [enable_rebuilds=yes])
  
@@ -150,17 +160,17 @@ exit
  AM_CONDITIONAL(CROSS_COMPILING, [test $cross_compiling = yes])
  
  have_x=false
-@@ -249,7 +255,22 @@
+@@ -249,7 +256,22 @@
    # By freetype, we really always mean freetype+fontconfig
    FREETYPE_CFLAGS="$FREETYPE_CFLAGS $FONTCONFIG_CFLAGS"
    FREETYPE_LIBS="$FREETYPE_LIBS $FONTCONFIG_LIBS"
 +
-+  if test "x$with_system_harfbuzz" = "xno"; then
++  if test "$with_system_harfbuzz" = "no"; then
 +    OPENTYPE_LIBS="opentype/libharfbuzz.la"
 +    OPENTYPE_DEPS="$OPENTYPE_LIBS"
 +    OPENTYPE_SUBDIR=opentype
 +  else
-+    if test "x$with_system_harfbuzz" = "xyes" -o "x$with_system_harfbuzz" = "xng"; then
++    if test "$with_system_harfbuzz" = "yes" -o "$with_system_harfbuzz" = "ng"; then
 +      PKG_CHECK_MODULES(OPENTYPE, harfbuzz-ng)
 +    else
 +      PKG_CHECK_MODULES(OPENTYPE, harfbuzz-old)
@@ -173,7 +183,7 @@ exit
  AM_CONDITIONAL(HAVE_FREETYPE, $have_freetype)
  
  #
-@@ -946,7 +967,6 @@
+@@ -946,7 +968,6 @@
  Makefile 
  pango/Makefile
  pango/mini-fribidi/Makefile
@@ -181,11 +191,11 @@ exit
  pango/pango.rc
  pango/pangoft2.rc
  pango/pangowin32.rc
-@@ -983,6 +1003,10 @@
+@@ -983,6 +1004,10 @@
  pango-zip.sh
  ])
  
-+if test "x$with_system_harfbuzz" = "xno"; then
++if test "$with_system_harfbuzz" = "no"; then
 +  AC_CONFIG_FILES([pango/opentype/Makefile])
 +fi
 +
@@ -1302,3 +1312,5 @@ exit
  }
  
  
+# source
+https://download.gnome.org/sources/pango/1.28/pango-1.28.4.tar.gz

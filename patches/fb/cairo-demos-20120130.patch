@@ -5,8 +5,16 @@ REQUIRES="cairo-build gdk-pixbuf-build gnome-backgrounds-build make-build"
 
 PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+# configure
+rm -f kapow/kapow.o
+rm -f png/star_and_ring
+PKG_CONFIG_PATH=/fb/lib/pkgconfig sh ./Configure --with-backgroundsdir=/share/backgrounds --with-demosdatadir=/fb/share/cairo-demos --prefix=/fb
+
 # build
-PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib DEFINES=-DBACKGROUNDDIR="\\\"/share/backgrounds\\\" -DDEMOSDATADIR=\\\"/fb/share/cairo-demos\\\"" make
+make
+make -C kapow
+make -C png
+make -C PS
 
 # install
 install -d $DESTDIR/fb/bin
@@ -19,6 +27,20 @@ install slideshow-demo $DESTDIR/fb/bin
 install spinner-demo $DESTDIR/fb/bin
 install spiral-demo $DESTDIR/fb/bin
 install tiger-demo $DESTDIR/fb/bin
+install kapow/kapow $DESTDIR/fb/bin
+install png/bevels $DESTDIR/fb/bin
+install png/caps_joins $DESTDIR/fb/bin
+install png/hering $DESTDIR/fb/bin
+install png/outline $DESTDIR/fb/bin
+install png/snapping $DESTDIR/fb/bin
+install png/spiral $DESTDIR/fb/bin
+install png/spline-pipelines $DESTDIR/fb/bin
+install png/splines_tolerance $DESTDIR/fb/bin
+install png/star_and_ring $DESTDIR/fb/bin
+install png/stars $DESTDIR/fb/bin
+install png/text $DESTDIR/fb/bin
+install png/text-rotate $DESTDIR/fb/bin
+install PS/basket $DESTDIR/fb/bin
 install -d $DESTDIR/fb/share/cairo-demos
 install -m 644 fishbg.png $DESTDIR/fb/share/cairo-demos
 install -m 644 fishstrip.png $DESTDIR/fb/share/cairo-demos
@@ -32,26 +54,92 @@ Description: A collection of Cairo demos and test programs
 Requires: $REQUIRES
 
 exec=\\
+/fb/bin/basket \\
+/fb/bin/bevels \\
+/fb/bin/caps_joins \\
 /fb/bin/chart-demo \\
 /fb/bin/fish-demo \\
 /fb/bin/flowers-demo \\
 /fb/bin/gears-demo \\
 /fb/bin/gradient-demo \\
+/fb/bin/hering \\
+/fb/bin/kapow \\
+/fb/bin/outline \\
 /fb/bin/slideshow-demo \\
+/fb/bin/snapping \\
 /fb/bin/spinner-demo \\
+/fb/bin/spiral \\
 /fb/bin/spiral-demo \\
+/fb/bin/spline-pipelines \\
+/fb/bin/splines_tolerance \\
+/fb/bin/star_and_ring \\
+/fb/bin/stars \\
+/fb/bin/text \\
+/fb/bin/text-rotate \\
 /fb/bin/tiger-demo \\
 /fb/share/cairo-demos/fishbg.png \\
 /fb/share/cairo-demos/fishstrip.png
 EOF
 
 exit
+
+# patch
+--- cairo-demos-20120130.orig/Configure
++++ cairo-demos-20120130/Configure
+@@ -0,0 +1,39 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++DEMOSDATADIR=.
++
++BACKGROUNDSDIR=.
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --with-demosdatadir=*) DEMOSDATADIR=${1#*=};;
++    --with-backgroundsdir=*) BACKGROUNDSDIR=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" kapow/Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" png/Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" PS/Makefile
++
++sed -i "/^DEMOSDATADIR=/s|=.*|=$DEMOSDATADIR|" Makefile
++
++sed -i "/^BACKGROUNDSDIR=/s|=.*|=$BACKGROUNDSDIR|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" kapow/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" png/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" PS/Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" kapow/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" png/Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" PS/Makefile
++fi
 --- cairo-demos-20120130.orig/Makefile
 +++ cairo-demos-20120130/Makefile
-@@ -1,6 +1,13 @@
+@@ -1,6 +1,21 @@
 -SOURCES:=demo.c xlib.c ximage.c
 -REQUIRES:=cairo-xlib xext gdk-pixbuf-2.0
 -DEFINES:=-DHAVE_XLIB=1 -DHAVE_XIMAGE=1
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++DEMOSDATADIR=.
++BACKGROUNDSDIR=.
++
++DEFINES:=-DDEMOSDATADIR=\"$(DEMOSDATADIR)\" -DBACKGROUNDSDIR=\"$(BACKGROUNDSDIR)\"
 +SOURCES:=demo.c
 +REQUIRES:=cairo gdk-pixbuf-2.0
 +
@@ -65,11 +153,12 @@ exit
  
  DRM:=0
  ifneq ($(DRM),0)
-@@ -11,6 +18,15 @@
+@@ -11,7 +26,16 @@
  DEFINES+=-DHAVE_DRM=0
  endif
  
-+XLIB:=$(shell pkg-config --exists cairo-xlib && echo 1 || echo 0)
+-XCB:=$(shell pkg-config --exists cairo-xcb && echo 1 || echo 0)
++XLIB:=$(shell $(PKG_CONFIG) --exists cairo-xlib && echo 1 || echo 0)
 +ifneq ($(XLIB),0)
 +DEFINES+=-DHAVE_XLIB=1 -DHAVE_XIMAGE=1
 +SOURCES+=xlib.c ximage.c
@@ -78,48 +167,75 @@ exit
 +DEFINES+=-DHAVE_XLIB=0 -DHAVE_XIMAGE=0
 +endif
 +
- XCB:=$(shell pkg-config --exists cairo-xcb && echo 1 || echo 0)
++XCB:=$(shell $(PKG_CONFIG) --exists cairo-xcb && echo 1 || echo 0)
  ifneq ($(XCB),0)
  DEFINES+=-DHAVE_XCB=1
-@@ -49,27 +65,27 @@
- LIBS:=$(shell pkg-config --libs $(REQUIRES))
+ SOURCES+=xcb.c
+@@ -20,7 +44,7 @@
+ DEFINES+=-DHAVE_XCB=0
+ endif
+ 
+-GLX:=$(shell pkg-config --exists cairo-gl && echo 1 || echo 0)
++GLX:=$(shell $(PKG_CONFIG) --exists cairo-gl && echo 1 || echo 0)
+ ifneq ($(GLX),0)
+ DEFINES+=-DHAVE_GLX=1
+ SOURCES+=glx.c
+@@ -29,7 +53,7 @@
+ DEFINES+=-DHAVE_GLX=0
+ endif
+ 
+-COGL:=$(shell pkg-config --exists cairo-cogl && echo 1 || echo 0)
++COGL:=$(shell $(PKG_CONFIG) --exists cairo-cogl && echo 1 || echo 0)
+ ifneq ($(COGL),0)
+ DEFINES+=-DHAVE_COGL=1
+ SOURCES+=cogl.c
+@@ -40,13 +64,13 @@
+ 
+ all: spinner-demo spiral-demo slideshow-demo tiger-demo fish-demo flowers-demo gears-demo gradient-demo chart-demo
+ 
+-ifeq ($(shell pkg-config --exists poppler-glib && echo 1), 1)
++ifeq ($(shell $(PKG_CONFIG) --exists poppler-glib && echo 1), 1)
+ all: poppler-demo
+ REQUIRES+=poppler-glib
+ endif
+ 
+-CFLAGS:=$(shell pkg-config --cflags $(REQUIRES)) -Wall -g3
+-LIBS:=$(shell pkg-config --libs $(REQUIRES))
++CFLAGS:=$(shell $(PKG_CONFIG) --cflags $(REQUIRES)) -Wall -g3
++LIBS:=$(shell $(PKG_CONFIG) --libs $(REQUIRES)) -Wl,-rpath,$(PREFIX)/lib
  
  spinner-demo: spinner-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- spiral-demo: spiral-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- slideshow-demo: slideshow-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ slideshow-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ slideshow-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- poppler-demo: poppler-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ poppler-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ poppler-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- tiger-demo: tiger-demo.c $(SOURCES) demo.h Makefile tiger.inc
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ tiger-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ tiger-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- fish-demo: fish-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- fish2-demo: fish2-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish2-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ fish2-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- flowers-demo: flowers-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ flowers-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ flowers-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- gears-demo: gears-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ gears-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ gears-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- gradient-demo: gradient-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ gradient-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ gradient-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- chart-demo: chart-demo.c $(SOURCES) demo.h Makefile
--	$(CC) $(DEFINES) $(CFLAGS) -o $@ chart-demo.c $(SOURCES) $(LIBS)
-+	$(CC) $(DEFINES) $(CFLAGS) -o $@ chart-demo.c $(SOURCES) $(LDFLAGS) $(LIBS)
- clean:
- 	rm -f *-demo
+ 	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LIBS)
+--- cairo-demos-20120130.orig/PS/Makefile
++++ cairo-demos-20120130/PS/Makefile
+@@ -1,3 +1,7 @@
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
+ EXAMPLES=basket
  
+ # I'd like to put a bunch of compiler-specific warning flags here, but
+@@ -9,16 +13,13 @@
+ #
+ # CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing" make
+ 
+-MYCFLAGS=`pkg-config --cflags cairo libpng12`
+-MYLDFLAGS=`pkg-config --libs cairo libpng12`
++MYCFLAGS=`$(PKG_CONFIG) --cflags cairo libpng`
++MYLDFLAGS=`$(PKG_CONFIG) --libs cairo libpng` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: ${EXAMPLES}
+ 
+-%.o: %.c
+-	$(CC) -c $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} $< -o $@
+-
+ %: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
+ 
+ clean:
+-	rm -f ${EXAMPLES} *.o
++	rm -f ${EXAMPLES} *.o *.ps
 --- cairo-demos-20120130.orig/chart-demo.c
 +++ cairo-demos-20120130/chart-demo.c
 @@ -243,7 +243,7 @@
@@ -217,6 +333,15 @@ exit
  			}
  		} else {
  			guchar *end = p + 4 * width;
+@@ -231,6 +242,8 @@
+ 		cairo_pixels += cairo_stride;
+ 	}
+ 
++	cairo_surface_mark_dirty(surface);
++
+ 	return surface;
+ }
+ 
 --- cairo-demos-20120130.orig/demo.h
 +++ cairo-demos-20120130/demo.h
 @@ -78,6 +78,12 @@
@@ -407,6 +532,128 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
+--- cairo-demos-20120130.orig/kapow/.gitignore
++++ cairo-demos-20120130/kapow/.gitignore
+@@ -1 +1,2 @@
+ kapow
++kapow.o
+--- cairo-demos-20120130.orig/kapow/Makefile
++++ cairo-demos-20120130/kapow/Makefile
+@@ -1,5 +1,9 @@
+-MYCFLAGS= $(shell pkg-config --cflags cairo libpng) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
+-LDLIBS	= $(shell pkg-config --libs cairo libpng) -g
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++MYCFLAGS= $(shell $(PKG_CONFIG) --cflags cairo libpng) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
++LDLIBS	= $(shell $(PKG_CONFIG) --libs cairo libpng) -lm -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: kapow
+ 
+@@ -9,4 +13,4 @@
+ kapow : kapow.o
+ 
+ clean :
+-	rm kapow.o kapow
++	rm -f kapow.o kapow kapow.png
+--- cairo-demos-20120130.orig/png/.gitignore
++++ cairo-demos-20120130/png/.gitignore
+@@ -4,7 +4,9 @@
+ outline
+ snapping
+ spiral
++spline-pipelines
+ splines_tolerance
++star_and_ring
+ stars
+ text
+ text-rotate
+--- cairo-demos-20120130.orig/png/Makefile
++++ cairo-demos-20120130/png/Makefile
+@@ -1,4 +1,8 @@
+-EXAMPLES=bevels caps_joins hering outline spiral splines_tolerance snapping stars star_and_ring text text-rotate
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
++EXAMPLES=bevels caps_joins hering outline spiral spline-pipelines splines_tolerance snapping stars star_and_ring text text-rotate
+ 
+ # I'd like to put a bunch of compiler-specific warning flags here, but
+ # I don't know a good way to choose the right flags based on the
+@@ -9,14 +13,11 @@
+ #
+ # CFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing" make
+ 
+-MYCFLAGS=`pkg-config --cflags cairo libpng12`
+-MYLDFLAGS=`pkg-config --libs cairo libpng12`
++MYCFLAGS=`$(PKG_CONFIG) --cflags cairo libpng`
++MYLDFLAGS=`$(PKG_CONFIG) --libs cairo libpng` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: $(EXAMPLES)
+ 
+-%.o: %.c
+-	$(CC) -c $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} $< -o $@
+-
+ %: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
+ 
+--- cairo-demos-20120130.orig/png/snapping.c
++++ cairo-demos-20120130/png/snapping.c
+@@ -43,6 +43,13 @@
+ #include <cairo.h>
+ #include <math.h>
+ 
++static inline int
++fast_floor (double x)
++{
++    int i = (int) x;
++    return i - (i > x);
++}
++
+ #define WIDTH 175
+ #define HEIGHT 175
+ #define STRIDE (WIDTH * 4)
+@@ -62,8 +69,8 @@
+ {
+     /* Convert to device space, round, then convert back to user space. */
+     cairo_user_to_device (cr, x, y);
+-    *x = floor (*x + 0.5);
+-    *y = floor (*y + 0.5);
++    *x = fast_floor (*x + 0.5);
++    *y = fast_floor (*y + 0.5);
+     cairo_device_to_user (cr, x, y);
+ }
+ 
+@@ -98,8 +105,8 @@
+     y_offset = y_width_dev_2 - (int) (y_width_dev_2);
+ 
+     cairo_user_to_device (cr, x, y);
+-    *x = floor (*x + x_offset + 0.5);
+-    *y = floor (*y + y_offset + 0.5);
++    *x = fast_floor (*x + x_offset + 0.5);
++    *y = fast_floor (*y + y_offset + 0.5);
+     *x -= x_offset;
+     *y -= y_offset;
+     cairo_device_to_user (cr, x, y);
+@@ -125,7 +132,7 @@
+     /* If the line width is less than 1 then it will round to 0 and
+      * disappear. Instead, we clamp it to 1.0, but we must preserve
+      * its sign for the case of a reflecting transformation. */
+-    x_width_snapped = floor (x_width + 0.5);
++    x_width_snapped = fast_floor (x_width + 0.5);
+     if (fabs(x_width_snapped) < 1.0) {
+ 	if (x_width > 0)
+ 	    x_width_snapped = 1.0;
+@@ -133,7 +140,7 @@
+ 	    x_width_snapped = -1.0;
+     }
+ 
+-    y_width_snapped = floor (y_width + 0.5);
++    y_width_snapped = fast_floor (y_width + 0.5);
+     if (fabs(y_width_snapped) < 1.0) {
+ 	if (y_width > 0)
+ 	    y_width_snapped = 1.0;
 --- cairo-demos-20120130.orig/slideshow-demo.c
 +++ cairo-demos-20120130/slideshow-demo.c
 @@ -142,7 +142,7 @@
@@ -423,7 +670,7 @@ exit
  	}
  	if (num_sources == 0)
 -		load_sources("/usr/share/backgrounds", device,
-+		load_sources(BACKGROUNDDIR, device,
++		load_sources(BACKGROUNDSDIR, device,
  			     device->get_framebuffer(device)->surface);
  
 -	printf("Loaded %d images, %ld/%ld pixels in total\n",
@@ -460,7 +707,7 @@ exit
  	}
  	if (num_sources == 0)
 -		load_sources("/usr/share/backgrounds", device,
-+		load_sources(BACKGROUNDDIR, device,
++		load_sources(BACKGROUNDSDIR, device,
  			     device->get_framebuffer(device)->surface);
  
 -	printf("Loaded %d images, %ld/%ld pixels in total\n",
@@ -497,7 +744,7 @@ exit
  {
  	struct device *device;
 -	const char *path = "/usr/share/backgrounds";
-+	const char *path = BACKGROUNDDIR;
++	const char *path = BACKGROUNDSDIR;
  	float sincos_lut[360];
  	struct timeval start, last_tty, last_fps, now;
  	int theta, frames, n;
@@ -573,3 +820,6 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
+
+# source
+https://github.com/caramelli/cairo-demos/archive/de0b06d10b7cd05bf6ef193a2bbc93d8eb94bbfc/cairo-demos-20120130.tar.gz

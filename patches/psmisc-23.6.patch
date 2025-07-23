@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-am-build ncurses-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.71; am-1.16)
-aclocal -I m4; autoconf; autoheader -f; automake -a -c
+aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --prefix=
 
 # build
@@ -39,3 +39,18 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- psmisc-23.6.orig/configure.ac
++++ psmisc-23.6/configure.ac
+@@ -3,6 +3,7 @@
+ AC_CONFIG_MACRO_DIR([m4])
+ AC_INIT([psmisc],[m4_esyscmd(misc/git-version-gen .tarball-version)],[],[],[],[https://www.gitlab.com/psmisc/psmisc])
+ AM_INIT_AUTOMAKE([foreign 1.11 subdir-objects -Wall -Wno-portability tar-pax no-dist-gzip dist-xz])
++AM_MAINTAINER_MODE
+ AM_SILENT_RULES([yes])
+ AC_CONFIG_SRCDIR([src/comm.h])
+ AC_CONFIG_HEADERS([config.h])
+
+# source
+http://downloads.sourceforge.net/psmisc/psmisc-23.6.tar.xz

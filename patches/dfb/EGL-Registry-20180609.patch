@@ -6,7 +6,7 @@ REQUIRES="lxml-build make-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-sh ./Configure --prefix /dfb
+sh ./Configure --prefix=/dfb
 
 # build
 make -C api
@@ -41,31 +41,24 @@ devel=\\
 EOF
 
 exit
+
+# patch
 --- EGL-Registry-20180609.orig/Configure
 +++ EGL-Registry-20180609/Configure
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,13 @@
 +#!/bin/sh
 +
-+PREFIX=/usr/local
++prefix=/usr/local
 +
-+while : ; do
-+  case "$1" in
-+    "")
-+      break
-+    ;;
-+    --prefix)
-+      PREFIX=$2
-+      shift
-+    ;;
-+    *)
-+      echo Unknown option \"$1\".
-+      exit 1
-+    ;;
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift
 +done
 +
-+sed "/^prefix/s|=.*|=$PREFIX|" api/egl-registry.pc.in > egl-registry.pc
++sed "/^prefix/s|=.*|=$prefix|" api/egl-registry.pc.in > egl-registry.pc
 --- EGL-Registry-20180609.orig/api/EGL/eglplatform.h
 +++ EGL-Registry-20180609/api/EGL/eglplatform.h
 @@ -67,7 +67,13 @@
@@ -169,3 +162,6 @@ exit
      '** used to make the header, and the header can be found at',
      '**   http://www.khronos.org/registry/egl',
      '**',
+
+# source
+https://github.com/KhronosGroup/EGL-Registry/archive/e2562a9e7f567b837cdf96cf8b12e7fc0d88cc30/EGL-Registry-20180609.tar.gz

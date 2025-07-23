@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -42,6 +42,8 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- lame-3.100.orig/configure.in
 +++ lame-3.100/configure.in
 @@ -20,6 +20,7 @@
@@ -60,6 +62,17 @@ exit
  		 libmp3lame/i386/Makefile \
  		 libmp3lame/vector/Makefile \
  		 frontend/Makefile \
+--- lame-3.100.orig/frontend/Makefile.am
++++ lame-3.100/frontend/Makefile.am
+@@ -38,7 +38,7 @@
+ CFLAGS = @CFLAGS@ @GTK_CFLAGS@ @FRONTEND_CFLAGS@ @SNDFILE_CFLAGS@
+ LDFLAGS = @LDFLAGS@ @FRONTEND_LDFLAGS@ @SNDFILE_LIBS@
+ 
+-INCLUDES = -I$(top_srcdir)/libmp3lame -I$(top_srcdir)/include -I$(top_builddir)
++AM_CPPFLAGS = -I$(top_srcdir)/libmp3lame -I$(top_srcdir)/include -I$(top_builddir)
+ 
+ LDADD = @LDADD@ \
+ 	$(top_builddir)/libmp3lame/libmp3lame.la \
 --- lame-3.100.orig/include/libmp3lame.sym
 +++ lame-3.100/include/libmp3lame.sym
 @@ -229,6 +229,8 @@
@@ -73,7 +86,14 @@ exit
  lame_get_maximum_number_of_samples
 --- lame-3.100.orig/libmp3lame/Makefile.am
 +++ lame-3.100/libmp3lame/Makefile.am
-@@ -31,6 +31,7 @@
+@@ -25,12 +25,13 @@
+ 			-export-symbols $(top_srcdir)/include/libmp3lame.sym \
+ 			-no-undefined
+ 
+-INCLUDES = @INCLUDES@ -I$(top_srcdir)/mpglib -I$(top_builddir)
++libmp3lame_la_CFLAGS = @INCLUDES@ -I$(top_srcdir)/mpglib -I$(top_builddir)
+ 
+ DEFS = @DEFS@ @CONFIG_DEFS@
  
  EXTRA_DIST = \
  	lame.rc \
@@ -90,6 +110,17 @@ exit
 +pkgconfig_DATA = lame.pc
 +
 +DISTCLEANFILES = $(pkgconfig_DATA)
+--- lame-3.100.orig/libmp3lame/i386/Makefile.am
++++ lame-3.100/libmp3lame/i386/Makefile.am
+@@ -25,7 +25,7 @@
+ 
+ noinst_HEADERS = nasm.h
+ 
+-INCLUDES = @INCLUDES@ -I$(top_srcdir)/libmp3lame/@CPUTYPE@
++liblameasmroutines_la_CFLAGS = @INCLUDES@ -I$(top_srcdir)/libmp3lame/@CPUTYPE@
+ 
+ SUFFIXES = .nas .lo
+ 
 --- lame-3.100.orig/libmp3lame/lame.pc.in
 +++ lame-3.100/libmp3lame/lame.pc.in
 @@ -0,0 +1,11 @@
@@ -104,6 +135,17 @@ exit
 +Libs: -L${libdir} -lmp3lame
 +Libs.private: -lm
 +Cflags: -I${includedir}/lame
+--- lame-3.100.orig/libmp3lame/vector/Makefile.am
++++ lame-3.100/libmp3lame/vector/Makefile.am
+@@ -9,7 +9,7 @@
+ ##liblamecpuroutines_la_LIBADD = 
+ ##liblamecpuroutines_la_LDFLAGS =
+ 
+-INCLUDES = @INCLUDES@ \
++liblamevectorroutines_la_CFLAGS = @INCLUDES@ \
+ 	-I$(top_srcdir)/libmp3lame \
+ 	-I$(top_srcdir)/mpglib \
+ 	-I$(top_builddir)
 --- lame-3.100.orig/m4/iconv.m4
 +++ lame-3.100/m4/iconv.m4
 @@ -0,0 +1,268 @@
@@ -1504,3 +1546,17 @@ exit
 +  esac
 +  test -n "$acl_libdirstem2" || acl_libdirstem2="$acl_libdirstem"
 +])
+--- lame-3.100.orig/mpglib/Makefile.am
++++ lame-3.100/mpglib/Makefile.am
+@@ -2,7 +2,7 @@
+ 
+ include $(top_srcdir)/Makefile.am.global
+ 
+-INCLUDES = @INCLUDES@ -I$(top_srcdir)/libmp3lame -I$(top_builddir)
++libmpgdecoder_la_CFLAGS = @INCLUDES@ -I$(top_srcdir)/libmp3lame -I$(top_builddir)
+ 
+ EXTRA_DIST = \
+ 	AUTHORS \
+
+# source
+http://downloads.sourceforge.net/lame/lame-3.100.tar.gz

@@ -233,6 +233,8 @@ cat >> $DESTDIR/fb/share/pkgconfig/ffmpeg-build.pc << EOF
 EOF
 
 exit
+
+# patch
 --- ffmpeg-2.8.22.orig/ffplay.c
 +++ ffmpeg-2.8.22/ffplay.c
 @@ -3214,7 +3214,7 @@
@@ -244,14 +246,6 @@ exit
      /* OS X needs to reallocate the SDL overlays */
      int i;
      for (i = 0; i < VIDEO_PICTURE_QUEUE_SIZE; i++)
---- ffmpeg-2.8.22.orig/version.sh
-+++ ffmpeg-2.8.22/version.sh
-@@ -46,7 +46,7 @@
- fi
- 
- NEW_REVISION="#define FFMPEG_VERSION \"$version\""
--OLD_REVISION=$(cat "$2" 2> /dev/null | head -3 | tail -1)
-+OLD_REVISION=$(cat "$2" 2> /dev/null | head -3 | tail -n -1)
- 
- # String used for preprocessor guard
- GUARD=$(echo "$2" | sed 's/\//_/' | sed 's/\./_/' | tr '[:lower:]' '[:upper:]' | sed 's/LIB//')
+
+# source
+https://www.ffmpeg.org/releases/ffmpeg-2.8.22.tar.gz

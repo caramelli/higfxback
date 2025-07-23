@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build readline-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.16; lt-2.4.6)
-libtoolize -c -f; aclocal -I m4; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
 ./configure --disable-bfs --disable-cramfs --disable-minix --disable-nologin --disable-static --disable-use-tty-group --without-python --enable-pg --enable-tunelp --enable-write --enable-fs-paths-default=/bin --sbindir=/bin --prefix=
 
 # build
@@ -268,10 +268,25 @@ exec=\\
 EOF
 
 exit
+
+# patch
 --- util-linux-2.32.1.orig/configure.ac
 +++ util-linux-2.32.1/configure.ac
-@@ -90,7 +90,7 @@
- usrbin_execdir='${exec_prefix}/bin'
+@@ -13,6 +13,8 @@
+ AC_USE_SYSTEM_EXTENSIONS
+ AM_INIT_AUTOMAKE([-Wall foreign 1.10 tar-pax no-dist-gzip dist-xz subdir-objects])
+ 
++AM_MAINTAINER_MODE
++
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
+ 			    [AC_SUBST([AM_DEFAULT_VERBOSITY], [1])])
+ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+@@ -87,10 +89,10 @@
+ 
+ 
+ # The original default values of {bin,sbin,lib}dir
+-usrbin_execdir='${exec_prefix}/bin'
++usrbin_execdir='${exec_prefix}/'`basename $bindir`
  AC_SUBST([usrbin_execdir])
  
 -usrsbin_execdir='${exec_prefix}/sbin'
@@ -279,3 +294,6 @@ exit
  AC_SUBST([usrsbin_execdir])
  
  AS_CASE([$libdir],
+
+# source
+https://kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.1.tar.gz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build expat-build libffi-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-documentation --disable-dtd-validation --disable-static --prefix=/wl
 
 # build
@@ -88,6 +88,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- wayland-1.17.0.orig/configure.ac
++++ wayland-1.17.0/configure.ac
+@@ -22,6 +22,8 @@
+ 
+ AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz subdir-objects])
+ 
++AM_MAINTAINER_MODE
++
+ AM_SILENT_RULES([yes])
+ 
+ # Check for programs
 --- wayland-1.17.0.orig/protocol/wayland.xml
 +++ wayland-1.17.0/protocol/wayland.xml
 @@ -1232,6 +1232,14 @@
@@ -200,3 +213,6 @@ exit
  /** Get the interface name (class) of a proxy object
   *
   * \param proxy The proxy object
+
+# source
+https://wayland.freedesktop.org/releases/wayland-1.17.0.tar.xz

@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-lt-build gawk-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.69; am-1.15; lt-2.4.6)
-libtoolize -c -f; aclocal; autoconf; autoheader -f; automake -a -c
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
 ./configure --disable-static --prefix=
 
 # build
@@ -44,3 +44,19 @@ exec=\\
 EOF
 
 exit
+
+# patch
+--- check-0.15.2.orig/configure.ac
++++ check-0.15.2/configure.ac
+@@ -24,6 +24,8 @@
+ # Change to using into-in-builddir in the future:
+ #AM_INIT_AUTOMAKE([info-in-builddir -Wall -Werror gnits 1.14])
+ 
++AM_MAINTAINER_MODE
++
+ # define things like _GNU_SOURCE appropriately
+ # From patch 2803433, request system extensions to generate 64-bit safe code
+ AC_USE_SYSTEM_EXTENSIONS
+
+# source
+https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz
