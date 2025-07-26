@@ -15,8 +15,6 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists vulkan-loader-build; 
   REQUIRES="$REQUIRES vulkan-loader-build"
 fi
 
-test $GL || test $VK || { echo OpenGL or Vulkan packages required; exit 1; }
-
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   test $VK && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires glfw-build | grep -q vulkan-loader-build || { echo GLFW with Vulkan support required; exit 1; }
   GLFW=1
@@ -36,10 +34,12 @@ rm -f imstb_textedit.h
 rm -f imstb_truetype.h
 
 # build
-test $GL && test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_glfw_opengl2
-test $VK && test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_glfw_vulkan
-test $GL && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_sdl2_opengl3
-test $VK && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-I/include/stb -DIMGUI_STB_RECT_PACK_FILENAME=\\\"stb_rect_pack.h\\\" -DIMGUI_STB_TEXTEDIT_FILENAME=\\\"stb_textedit.h\\\" -DIMGUI_STB_TRUETYPE_FILENAME=\\\"stb_truetype.h\\\"" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_sdl2_vulkan
+test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-DIMGUI_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DIMGUI_STB_TEXTEDIT_FILENAME=\<stb/stb_textedit.h\> -DIMGUI_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_glfw_opengl2
+test $VK && test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-DIMGUI_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DIMGUI_STB_TEXTEDIT_FILENAME=\<stb/stb_textedit.h\> -DIMGUI_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_glfw_vulkan
+test $GL && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-DIMGUI_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DIMGUI_STB_TEXTEDIT_FILENAME=\<stb/stb_textedit.h\> -DIMGUI_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_sdl2_opengl2
+test $GL && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig USE_OPENGLES=1 CXXFLAGS="-DIMGUI_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DIMGUI_STB_TEXTEDIT_FILENAME=\<stb/stb_textedit.h\> -DIMGUI_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_sdl2_opengl3
+test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-DIMGUI_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DIMGUI_STB_TEXTEDIT_FILENAME=\<stb/stb_textedit.h\> -DIMGUI_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_sdl2_sdlrenderer2
+test $VK && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CXXFLAGS="-DIMGUI_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DIMGUI_STB_TEXTEDIT_FILENAME=\<stb/stb_textedit.h\> -DIMGUI_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C examples/example_sdl2_vulkan
 
 # install
 install -d $DESTDIR/wl/include/imgui
@@ -60,11 +60,15 @@ test $GLFW && install -m 644 backends/imgui_impl_glfw.cpp $DESTDIR/wl/include/im
 test $GLFW && install -m 644 backends/imgui_impl_glfw.h $DESTDIR/wl/include/imgui
 test $SDL2 && install -m 644 backends/imgui_impl_sdl2.cpp $DESTDIR/wl/include/imgui
 test $SDL2 && install -m 644 backends/imgui_impl_sdl2.h $DESTDIR/wl/include/imgui
+test $SDL2 && install -m 644 backends/imgui_impl_sdlrenderer2.cpp $DESTDIR/wl/include/imgui
+test $SDL2 && install -m 644 backends/imgui_impl_sdlrenderer2.h $DESTDIR/wl/include/imgui
 install -d $DESTDIR/wl/share/imgui
 install -m 644 imgui_demo.cpp $DESTDIR/wl/share/imgui
-test $GL && test $GLFW && install examples/example_glfw_opengl2/example_glfw_opengl2 $DESTDIR/wl/share/imgui
+test $GLFW && install examples/example_glfw_opengl2/example_glfw_opengl2 $DESTDIR/wl/share/imgui/example_glfw_opengl
 test $VK && test $GLFW && install examples/example_glfw_vulkan/example_glfw_vulkan $DESTDIR/wl/share/imgui
-test $GL && test $SDL2 && install examples/example_sdl2_opengl3/example_sdl2_opengl3 $DESTDIR/wl/share/imgui
+test $GL && test $SDL2 && install examples/example_sdl2_opengl2/example_sdl2_opengl2 $DESTDIR/wl/share/imgui/example_sdl2_opengl
+test $GL && test $SDL2 && install examples/example_sdl2_opengl3/example_sdl2_opengl3 $DESTDIR/wl/share/imgui/example_sdl2_opengles
+test $SDL2 && install examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2 $DESTDIR/wl/share/imgui/example_sdl2_renderer
 test $VK && test $SDL2 && install examples/example_sdl2_vulkan/example_sdl2_vulkan $DESTDIR/wl/share/imgui
 
 # build.pc
@@ -98,6 +102,8 @@ EOF
 test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
 /wl/include/imgui/imgui_impl_sdl2.cpp \\
 /wl/include/imgui/imgui_impl_sdl2.h \\
+/wl/include/imgui/imgui_impl_sdlrenderer2.cpp \\
+/wl/include/imgui/imgui_impl_sdlrenderer2.h \\
 EOF
 cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
 /wl/include/imgui/imgui_internal.h \\
@@ -107,14 +113,18 @@ cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
 
 exec=\\
 EOF
-test $GL && test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
-/wl/share/imgui/example_glfw_opengl2 \\
+test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
+/wl/share/imgui/example_glfw_opengl \\
 EOF
 test $VK && test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
 /wl/share/imgui/example_glfw_vulkan \\
 EOF
 test $GL && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
-/wl/share/imgui/example_sdl2_opengl3 \\
+/wl/share/imgui/example_sdl2_opengl \\
+/wl/share/imgui/example_sdl2_opengles \\
+EOF
+test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
+/wl/share/imgui/example_sdl2_renderer \\
 EOF
 test $VK && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/imgui-build.pc << EOF
 /wl/share/imgui/example_sdl2_vulkan \\
@@ -171,7 +181,7 @@ exit
  
  ##---------------------------------------------------------------------
  ## BUILD FLAGS PER PLATFORM
-@@ -32,7 +31,7 @@
+@@ -32,10 +31,9 @@
  
  ifeq ($(UNAME_S), Linux) #LINUX
  	ECHO_MESSAGE = "Linux"
@@ -179,8 +189,27 @@ exit
 +	LIBS += -lGL `pkg-config --libs glfw3`
  
  	CXXFLAGS += `pkg-config --cflags glfw3`
- 	CFLAGS = $(CXXFLAGS)
-@@ -74,7 +73,7 @@
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ifeq ($(UNAME_S), Darwin) #APPLE
+@@ -46,7 +44,6 @@
+ 	LIBS += -lglfw
+ 
+ 	CXXFLAGS += -I/usr/local/include -I/opt/local/include -I/opt/homebrew/include
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ifeq ($(OS), Windows_NT)
+@@ -54,7 +51,6 @@
+ 	LIBS += -lglfw3 -lgdi32 -lopengl32 -limm32
+ 
+ 	CXXFLAGS += `pkg-config --cflags glfw3`
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ##---------------------------------------------------------------------
+@@ -74,8 +70,7 @@
  	@echo Build complete for $(ECHO_MESSAGE)
  
  $(EXE): $(OBJS)
@@ -189,9 +218,10 @@ exit
  
  clean:
  	rm -f $(EXE) $(OBJS)
+-
 --- imgui-1.89.9.orig/examples/example_glfw_vulkan/Makefile
 +++ imgui-1.89.9/examples/example_glfw_vulkan/Makefile
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,50 @@
 +#
 +# You will need GLFW (http://www.glfw.org)
 +#
@@ -205,11 +235,21 @@ exit
 +SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 +SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp
 +OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
++UNAME_S := $(shell uname -s)
 +
 +CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -g -Wall -Wformat
-+CXXFLAGS += `pkg-config --cflags glfw3`
-+LIBS += `pkg-config --libs glfw3` -lvulkan
++
++##---------------------------------------------------------------------
++## BUILD FLAGS PER PLATFORM
++##---------------------------------------------------------------------
++
++ifeq ($(UNAME_S), Linux) #LINUX
++	ECHO_MESSAGE = "Linux"
++	LIBS += -lvulkan `pkg-config --libs glfw3`
++
++	CXXFLAGS += `pkg-config --cflags glfw3`
++endif
 +
 +##---------------------------------------------------------------------
 +## BUILD RULES
@@ -225,20 +265,29 @@ exit
 +	$(CXX) $(CXXFLAGS) -c -o $@ $<
 +
 +all: $(EXE)
++	@echo Build complete for $(ECHO_MESSAGE)
 +
 +$(EXE): $(OBJS)
 +	$(CXX) -o $@ $^ $(LIBS)
 +
 +clean:
 +	rm -f $(EXE) $(OBJS)
---- imgui-1.89.9.orig/examples/example_sdl2_opengl3/Makefile
-+++ imgui-1.89.9/examples/example_sdl2_opengl3/Makefile
-@@ -21,19 +21,18 @@
- SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl2.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
+--- imgui-1.89.9.orig/examples/example_glfw_vulkan/main.cpp
++++ imgui-1.89.9/examples/example_glfw_vulkan/main.cpp
+@@ -159,6 +159,8 @@
+         debug_report_ci.pUserData = nullptr;
+         err = vkCreateDebugReportCallbackEXT(g_Instance, &debug_report_ci, g_Allocator, &g_DebugReport);
+         check_vk_result(err);
++#else
++        IM_UNUSED(g_DebugReport);
+ #endif
+     }
+ 
+--- imgui-1.89.9.orig/examples/example_sdl2_opengl2/Makefile
++++ imgui-1.89.9/examples/example_sdl2_opengl2/Makefile
+@@ -22,9 +22,8 @@
  OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
  UNAME_S := $(shell uname -s)
--LINUX_GL_LIBS = -lGL
-+# LINUX_GL_LIBS = -lGL
  
 -CXXFLAGS = -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
@@ -246,9 +295,69 @@ exit
 -LIBS =
  
  ##---------------------------------------------------------------------
+ ## BUILD FLAGS PER PLATFORM
+@@ -32,10 +31,9 @@
+ 
+ ifeq ($(UNAME_S), Linux) #LINUX
+ 	ECHO_MESSAGE = "Linux"
+-	LIBS += -lGL -ldl `sdl2-config --libs`
++	LIBS += -lGL `pkg-config --libs sdl2`
+ 
+-	CXXFLAGS += `sdl2-config --cflags`
+-	CFLAGS = $(CXXFLAGS)
++	CXXFLAGS += `pkg-config --cflags sdl2`
+ endif
+ 
+ ifeq ($(UNAME_S), Darwin) #APPLE
+@@ -45,7 +43,6 @@
+ 
+ 	CXXFLAGS += `sdl2-config --cflags`
+ 	CXXFLAGS += -I/usr/local/include -I/opt/local/include
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ifeq ($(OS), Windows_NT)
+@@ -53,7 +50,6 @@
+ 	LIBS += -lgdi32 -lopengl32 -limm32 `pkg-config --static --libs sdl2`
+ 
+ 	CXXFLAGS += `pkg-config --cflags sdl2`
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ##---------------------------------------------------------------------
+@@ -73,7 +69,7 @@
+ 	@echo Build complete for $(ECHO_MESSAGE)
+ 
+ $(EXE): $(OBJS)
+-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
++	$(CXX) -o $@ $^ $(LIBS)
+ 
+ clean:
+ 	rm -f $(EXE) $(OBJS)
+--- imgui-1.89.9.orig/examples/example_sdl2_opengl3/Makefile
++++ imgui-1.89.9/examples/example_sdl2_opengl3/Makefile
+@@ -21,22 +21,28 @@
+ SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl2.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
+ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+ UNAME_S := $(shell uname -s)
+-LINUX_GL_LIBS = -lGL
+ 
+-CXXFLAGS = -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
+ CXXFLAGS += -g -Wall -Wformat
+-LIBS =
++
++##---------------------------------------------------------------------
++## OPENGL
++##---------------------------------------------------------------------
++
++LINUX_GL_LIBS = -ldl -lGL
+ 
+ ##---------------------------------------------------------------------
  ## OPENGL ES
  ##---------------------------------------------------------------------
  
++ifdef USE_OPENGLES
  ## This assumes a GL ES library available in the system, e.g. libGLESv2.so
 -# CXXFLAGS += -DIMGUI_IMPL_OPENGL_ES2
 -# LINUX_GL_LIBS = -lGLESv2
@@ -257,19 +366,92 @@ exit
  ## If you're on a Raspberry Pi and want to use the legacy drivers,
  ## use the following instead:
  # LINUX_GL_LIBS = -L/opt/vc/lib -lbrcmGLESv2
-@@ -44,9 +43,9 @@
++endif
+ 
+ ##---------------------------------------------------------------------
+ ## BUILD FLAGS PER PLATFORM
+@@ -44,10 +50,9 @@
  
  ifeq ($(UNAME_S), Linux) #LINUX
  	ECHO_MESSAGE = "Linux"
 -	LIBS += $(LINUX_GL_LIBS) -ldl `sdl2-config --libs`
-+	LIBS += $(LINUX_GL_LIBS) -ldl `pkg-config --libs sdl2`
++	LIBS += $(LINUX_GL_LIBS) `pkg-config --libs sdl2`
  
 -	CXXFLAGS += `sdl2-config --cflags`
+-	CFLAGS = $(CXXFLAGS)
 +	CXXFLAGS += `pkg-config --cflags sdl2`
- 	CFLAGS = $(CXXFLAGS)
  endif
  
-@@ -85,7 +84,7 @@
+ ifeq ($(UNAME_S), Darwin) #APPLE
+@@ -57,7 +62,6 @@
+ 
+ 	CXXFLAGS += `sdl2-config --cflags`
+ 	CXXFLAGS += -I/usr/local/include -I/opt/local/include
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ifeq ($(OS), Windows_NT)
+@@ -65,7 +69,6 @@
+     LIBS += -lgdi32 -lopengl32 -limm32 `pkg-config --static --libs sdl2`
+ 
+     CXXFLAGS += `pkg-config --cflags sdl2`
+-    CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ##---------------------------------------------------------------------
+@@ -85,7 +88,7 @@
+ 	@echo Build complete for $(ECHO_MESSAGE)
+ 
+ $(EXE): $(OBJS)
+-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
++	$(CXX) -o $@ $^ $(LIBS)
+ 
+ clean:
+ 	rm -f $(EXE) $(OBJS)
+--- imgui-1.89.9.orig/examples/example_sdl2_sdlrenderer2/Makefile
++++ imgui-1.89.9/examples/example_sdl2_sdlrenderer2/Makefile
+@@ -22,9 +22,8 @@
+ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+ UNAME_S := $(shell uname -s)
+ 
+-CXXFLAGS = -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
++CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
+ CXXFLAGS += -g -Wall -Wformat
+-LIBS =
+ 
+ ##---------------------------------------------------------------------
+ ## BUILD FLAGS PER PLATFORM
+@@ -32,10 +31,9 @@
+ 
+ ifeq ($(UNAME_S), Linux) #LINUX
+ 	ECHO_MESSAGE = "Linux"
+-	LIBS += -lGL -ldl `sdl2-config --libs`
++	LIBS += `pkg-config --libs sdl2`
+ 
+-	CXXFLAGS += `sdl2-config --cflags`
+-	CFLAGS = $(CXXFLAGS)
++	CXXFLAGS += `pkg-config --cflags sdl2`
+ endif
+ 
+ ifeq ($(UNAME_S), Darwin) #APPLE
+@@ -45,15 +43,13 @@
+ 
+ 	CXXFLAGS += `sdl2-config --cflags`
+ 	CXXFLAGS += -I/usr/local/include -I/opt/local/include
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ifeq ($(OS), Windows_NT)
+ 	ECHO_MESSAGE = "MinGW"
+-	LIBS += -lgdi32 -lopengl32 -limm32 `pkg-config --static --libs sdl2`
++	LIBS += -lgdi32 -limm32 `pkg-config --static --libs sdl2`
+ 
+ 	CXXFLAGS += `pkg-config --cflags sdl2`
+-	CFLAGS = $(CXXFLAGS)
+ endif
+ 
+ ##---------------------------------------------------------------------
+@@ -73,7 +69,7 @@
  	@echo Build complete for $(ECHO_MESSAGE)
  
  $(EXE): $(OBJS)
@@ -280,7 +462,7 @@ exit
  	rm -f $(EXE) $(OBJS)
 --- imgui-1.89.9.orig/examples/example_sdl2_vulkan/Makefile
 +++ imgui-1.89.9/examples/example_sdl2_vulkan/Makefile
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,50 @@
 +#
 +# You will need SDL2 (http://www.libsdl.org)
 +#
@@ -294,11 +476,21 @@ exit
 +SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 +SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl2.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp
 +OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
++UNAME_S := $(shell uname -s)
 +
 +CXXFLAGS += -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 +CXXFLAGS += -g -Wall -Wformat
-+CXXFLAGS += `pkg-config --cflags sdl2`
-+LIBS += `pkg-config --libs sdl2` -lvulkan
++
++##---------------------------------------------------------------------
++## BUILD FLAGS PER PLATFORM
++##---------------------------------------------------------------------
++
++ifeq ($(UNAME_S), Linux) #LINUX
++	ECHO_MESSAGE = "Linux"
++	LIBS += -lvulkan `pkg-config --libs sdl2`
++
++	CXXFLAGS += `pkg-config --cflags sdl2`
++endif
 +
 +##---------------------------------------------------------------------
 +## BUILD RULES
@@ -314,12 +506,24 @@ exit
 +	$(CXX) $(CXXFLAGS) -c -o $@ $<
 +
 +all: $(EXE)
++	@echo Build complete for $(ECHO_MESSAGE)
 +
 +$(EXE): $(OBJS)
 +	$(CXX) -o $@ $^ $(LIBS)
 +
 +clean:
 +	rm -f $(EXE) $(OBJS)
+--- imgui-1.89.9.orig/examples/example_sdl2_vulkan/main.cpp
++++ imgui-1.89.9/examples/example_sdl2_vulkan/main.cpp
+@@ -147,6 +147,8 @@
+         debug_report_ci.pUserData = nullptr;
+         err = vkCreateDebugReportCallbackEXT(g_Instance, &debug_report_ci, g_Allocator, &g_DebugReport);
+         check_vk_result(err);
++#else
++        IM_UNUSED(g_DebugReport);
+ #endif
+     }
+ 
 --- imgui-1.89.9.orig/imgui_internal.h
 +++ imgui-1.89.9/imgui_internal.h
 @@ -204,7 +204,11 @@

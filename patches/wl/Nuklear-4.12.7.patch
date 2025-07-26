@@ -1,0 +1,608 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build stb-build wayland-protocols-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
+  GL=1
+  REQUIRES="$REQUIRES egl-opengl-stubs-build"
+fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
+  VK=1
+  REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
+fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
+  test $VK && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires glfw-build | grep -q vulkan-loader-build || { echo GLFW with Vulkan support required; exit 1; }
+  GLFW=1
+  REQUIRES="$REQUIRES glfw-build"
+fi
+
+if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2-build; then
+  test $GL && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build || { echo SDL2 with OpenGL support required; exit 1; }
+  test $VK && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q vulkan-loader-build || { echo SDL2 with Vulkan support required; exit 1; }
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build"
+fi
+
+# configure
+rm -f demo/common/filebrowser/stb_image.h
+rm -f src/stb_rect_pack.h
+rm -f src/stb_truetype.h
+> src/extern.h
+make nuke
+
+# build
+test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig DATADIR=\"/wl/share/nuklear\" CFLAGS="-DNUKLEAR_STB_IMAGE_FILENAME=\<stb/stb_image.h\> -DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/glfw_opengl2
+test $VK && test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig DATADIR=\"/wl/share/nuklear\" GLSL_COMPILER="glslangValidator -V" CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/glfw_vulkan
+test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/rawfb/sdl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/rawfb/wayland
+test $GL && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/sdl_opengl2
+test $GL && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/sdl_opengles2
+test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/sdl_renderer
+test $VK && test $SDL2 && PKG_CONFIG_PATH=/wl/lib/pkgconfig DATADIR=\"/wl/share/nuklear\" GLSL_COMPILER="glslangValidator -V" CFLAGS="-DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/sdl_vulkan
+
+# install
+install -d $DESTDIR/wl/include/nuklear
+install -m 644 nuklear.h $DESTDIR/wl/include/nuklear
+test $GLFW && install -m 644 demo/glfw_opengl2/nuklear_glfw_gl2.h $DESTDIR/wl/include/nuklear
+test $VK && test $GLFW && install -m 644 demo/glfw_vulkan/nuklear_glfw_vulkan.h $DESTDIR/wl/include/nuklear
+install -m 644 demo/rawfb/nuklear_rawfb.h $DESTDIR/wl/include/nuklear
+test $GL && test $SDL2 && install -m 644 demo/sdl_opengl2/nuklear_sdl_gl2.h $DESTDIR/wl/include/nuklear
+test $GL && test $SDL2 && install -m 644 demo/sdl_opengles2/nuklear_sdl_gles2.h $DESTDIR/wl/include/nuklear
+test $SDL2 && install -m 644 demo/sdl_renderer/nuklear_sdl_renderer.h $DESTDIR/wl/include/nuklear
+test $VK && test $SDL2 && install -m 644 demo/sdl_vulkan/nuklear_sdl_vulkan.h $DESTDIR/wl/include/nuklear
+install -d $DESTDIR/wl/share/nuklear
+test $GLFW && install demo/glfw_opengl2/bin/demo $DESTDIR/wl/share/nuklear/demo_glfw_opengl
+test $VK && test $GLFW && install demo/glfw_vulkan/bin/demo $DESTDIR/wl/share/nuklear/demo_glfw_vulkan
+test $SDL2 && install demo/rawfb/sdl/demo $DESTDIR/wl/share/nuklear/demo_sdl2
+install demo/rawfb/wayland/demo $DESTDIR/wl/share/nuklear/demo_wayland
+test $GL && test $SDL2 && install demo/sdl_opengl2/bin/demo $DESTDIR/wl/share/nuklear/demo_sdl2_opengl
+test $GL && test $SDL2 && install demo/sdl_opengles2/bin/demo $DESTDIR/wl/share/nuklear/demo_sdl2_opengles
+test $SDL2 && install demo/sdl_renderer/bin/demo $DESTDIR/wl/share/nuklear/demo_sdl2_renderer
+test $VK && test $SDL2 && install demo/sdl_vulkan/bin/demo $DESTDIR/wl/share/nuklear/demo_sdl2_vulkan
+test $GLFW && install -d $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/computer.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/default.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/desktop.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/directory.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/font.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/home.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/img.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/movie.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/music.png $DESTDIR/wl/share/nuklear/icon
+test $GLFW && install -m 644 demo/common/filebrowser/icon/text.png $DESTDIR/wl/share/nuklear/icon
+test $VK && test $GLFW && install -d $DESTDIR/wl/share/nuklear/shaders
+test $VK && test $GLFW && install -m 644 demo/glfw_vulkan/shaders/demo.frag.spv $DESTDIR/wl/share/nuklear/shaders
+test $VK && test $GLFW && install -m 644 demo/glfw_vulkan/shaders/demo.vert.spv $DESTDIR/wl/share/nuklear/shaders
+test $VK && test $SDL && install -m 644 demo/glfw_vulkan/shaders/demo.frag.spv $DESTDIR/wl/share/nuklear/shaders
+test $VK && test $SDL && install -m 644 demo/glfw_vulkan/shaders/demo.vert.spv $DESTDIR/wl/share/nuklear/shaders
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+Name: Nuklear
+Version: 4.12.7
+Description: Immediate mode GUI
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/nuklear/nuklear.h \\
+EOF
+test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/include/nuklear/nuklear_glfw_gl2.h \\
+EOF
+test $VK && test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/include/nuklear/nuklear_glfw_vulkan.h \\
+EOF
+test $GL && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/include/nuklear/nuklear_sdl_gl2.h \\
+/wl/include/nuklear/nuklear_sdl_gles2.h \\
+EOF
+test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/include/nuklear/nuklear_sdl_renderer.h \\
+EOF
+test $VK && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/include/nuklear/nuklear_sdl_vulkan.h \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/include/nuklear/nuklear_rawfb.h
+
+exec=\\
+EOF
+test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_glfw_opengl \\
+EOF
+test $VK && test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_glfw_vulkan \\
+EOF
+test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_sdl2 \\
+EOF
+test $GL && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_sdl2_opengl \\
+EOF
+test $GL && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_sdl2_opengles \\
+EOF
+test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_sdl2_renderer \\
+EOF
+test $VK && test $SDL2 && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_sdl2_vulkan \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/demo_wayland \\
+EOF
+test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/icon/computer.png \\
+/wl/share/nuklear/icon/default.png \\
+/wl/share/nuklear/icon/desktop.png \\
+/wl/share/nuklear/icon/directory.png \\
+/wl/share/nuklear/icon/font.png \\
+/wl/share/nuklear/icon/home.png \\
+/wl/share/nuklear/icon/img.png \\
+/wl/share/nuklear/icon/movie.png \\
+/wl/share/nuklear/icon/music.png \\
+/wl/share/nuklear/icon/text.png \\
+EOF
+test $VK && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+/wl/share/nuklear/shaders/demo.frag.spv \\
+/wl/share/nuklear/shaders/demo.vert.spv \\
+EOF
+sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/nuklear-build.pc
+
+exit
+
+# patch
+--- Nuklear-4.12.7.orig/Makefile
++++ Nuklear-4.12.7/Makefile
+@@ -23,7 +23,7 @@
+ 
+ PRIV1 = nuklear_internal.h nuklear_math.c nuklear_util.c nuklear_color.c nuklear_utf8.c nuklear_buffer.c nuklear_string.c nuklear_draw.c nuklear_vertex.c 
+ 
+-EXTERN =  stb_rect_pack.h stb_truetype.h 
++EXTERN = extern.h
+ 
+ PRIV2 = nuklear_font.c nuklear_input.c nuklear_style.c nuklear_context.c nuklear_pool.c nuklear_page_element.c nuklear_table.c nuklear_panel.c nuklear_window.c nuklear_popup.c nuklear_contextual.c nuklear_menu.c nuklear_layout.c nuklear_tree.c nuklear_group.c nuklear_list_view.c nuklear_widget.c nuklear_text.c nuklear_image.c nuklear_9slice.c nuklear_button.c nuklear_toggle.c nuklear_selectable.c nuklear_slider.c nuklear_knob.c nuklear_progress.c nuklear_scrollbar.c nuklear_text_editor.c nuklear_edit.c nuklear_property.c nuklear_chart.c nuklear_color_picker.c nuklear_combo.c nuklear_tooltip.c
+ 
+--- Nuklear-4.12.7.orig/demo/glfw_opengl2/Makefile
++++ Nuklear-4.12.7/demo/glfw_opengl2/Makefile
+@@ -1,21 +1,26 @@
+ # Install
+ BIN = demo
+ 
++# Data directory
++DATADIR ?= ../common/filebrowser
++
+ # Flags
+-CFLAGS += -std=c99 -Wall -Wextra -pedantic
++CFLAGS += -Wall -Wextra -pedantic
++CFLAGS +=-DDATADIR=\"$(DATADIR)\"
+ 
+ SRC = main.c
+ OBJ = $(SRC:.c=.o)
+ 
+ ifeq ($(OS),Windows_NT)
+ BIN := $(BIN).exe
+-LIBS = -lglfw3 -lopengl32 -lm -lGLU32
++LIBS = -lglfw3 -lopengl32 -lm
+ else
+ 	UNAME_S := $(shell uname -s)
+ 	ifeq ($(UNAME_S),Darwin)
+ 		LIBS := -lglfw3 -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -lm -lGLEW -L/usr/local/lib
+ 	else
+-		LIBS = -lglfw -lGL -lm -lGLU
++		LIBS += $(shell pkg-config --libs glfw3) -lGL -lm
++		CFLAGS += $(shell pkg-config --cflags glfw3)
+ 	endif
+ endif
+ 
+--- Nuklear-4.12.7.orig/demo/glfw_opengl2/main.c
++++ Nuklear-4.12.7/demo/glfw_opengl2/main.c
+@@ -23,9 +23,6 @@
+ #include "../../nuklear.h"
+ #include "nuklear_glfw_gl2.h"
+ 
+-#define STB_IMAGE_IMPLEMENTATION
+-#include "../../demo/common/filebrowser/stb_image.h"
+-
+ #define WINDOW_WIDTH 1200
+ #define WINDOW_HEIGHT 800
+ 
+@@ -65,6 +62,12 @@
+   #include "../../demo/common/canvas.c"
+ #endif
+ #ifdef INCLUDE_FILE_BROWSER
++  #define STB_IMAGE_IMPLEMENTATION
++  #ifdef NUKLEAR_STB_IMAGE_FILENAME
++  #include NUKLEAR_STB_IMAGE_FILENAME
++  #else
++  #include "../../demo/common/filebrowser/stb_image.h"
++  #endif
+   #include "../../demo/common/file_browser.c"
+ #endif
+ #ifdef INCLUDE_OVERVIEW
+@@ -135,16 +138,16 @@
+     #ifdef INCLUDE_FILE_BROWSER
+     /* icons */
+     glEnable(GL_TEXTURE_2D);
+-    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
+-    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
+-    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
+-    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
+-    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
+-    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
+-    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
+-    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
+-    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
+-    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
++    media.icons.home = icon_load(DATADIR"/icon/home.png");
++    media.icons.directory = icon_load(DATADIR"/icon/directory.png");
++    media.icons.computer = icon_load(DATADIR"/icon/computer.png");
++    media.icons.desktop = icon_load(DATADIR"/icon/desktop.png");
++    media.icons.default_file = icon_load(DATADIR"/icon/default.png");
++    media.icons.text_file = icon_load(DATADIR"/icon/text.png");
++    media.icons.music_file = icon_load(DATADIR"/icon/music.png");
++    media.icons.font_file =  icon_load(DATADIR"/icon/font.png");
++    media.icons.img_file = icon_load(DATADIR"/icon/img.png");
++    media.icons.movie_file = icon_load(DATADIR"/icon/movie.png");
+     media_init(&media);
+ 
+     file_browser_init(&browser, &media);
+--- Nuklear-4.12.7.orig/demo/glfw_vulkan/Makefile
++++ Nuklear-4.12.7/demo/glfw_vulkan/Makefile
+@@ -1,8 +1,15 @@
+ # Install
+ BIN = demo
+ 
++# Data directory
++DATADIR ?= .
++
++# GLSL compiler
++GLSL_COMPILER ?= glslc --target-env=vulkan
++
+ # Flags
+-CFLAGS += -std=c89 -Wall -Wextra -pedantic
++CFLAGS += -Wall -Wextra -pedantic
++CFLAGS +=-DDATADIR=\"$(DATADIR)\"
+ 
+ SRC = main.c
+ OBJ = $(SRC:.c=.o)
+@@ -11,19 +18,17 @@
+ BIN := $(BIN).exe
+ LIBS = -lglfw3 -lvulkan -lm
+ else
+-	UNAME_S := $(shell uname -s)
+-	GLFW3 := $(shell pkg-config --libs glfw3)
+-    LIBS = $(GLFW3) -lvulkan -lm
++	LIBS += $(shell pkg-config --libs glfw3) -lvulkan -lm
++	CFLAGS += $(shell pkg-config --cflags glfw3)
+ endif
+ 
+-
+ $(BIN): shaders/demo.vert.spv shaders/demo.frag.spv
+ 	@mkdir -p bin
+ 	rm -f bin/$(BIN) $(OBJS)
+ 	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
+ 
+ shaders/demo.vert.spv: shaders/demo.vert
+-	glslc --target-env=vulkan shaders/demo.vert -o shaders/demo.vert.spv
++	$(GLSL_COMPILER) shaders/demo.vert -o shaders/demo.vert.spv
+ 
+ shaders/demo.frag.spv: shaders/demo.frag
+-	glslc --target-env=vulkan shaders/demo.frag -o shaders/demo.frag.spv
++	$(GLSL_COMPILER) shaders/demo.frag -o shaders/demo.frag.spv
+--- Nuklear-4.12.7.orig/demo/glfw_vulkan/main.c
++++ Nuklear-4.12.7/demo/glfw_vulkan/main.c
+@@ -1263,7 +1263,7 @@
+     VkGraphicsPipelineCreateInfo pipeline_info;
+     size_t read_result;
+ 
+-    fp = fopen("shaders/demo.vert.spv", "rb");
++    fp = fopen(DATADIR"/shaders/demo.vert.spv", "rb");
+     if (!fp) {
+         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
+         return false;
+@@ -1284,7 +1284,7 @@
+         goto cleanup;
+     }
+ 
+-    fp = fopen("shaders/demo.frag.spv", "rb");
++    fp = fopen(DATADIR"/shaders/demo.frag.spv", "rb");
+     if (!fp) {
+         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
+         return false;
+@@ -1892,7 +1892,6 @@
+ }
+ 
+ bool recreate_swap_chain(struct vulkan_demo *demo) {
+-    printf("recreating swapchain\n");
+     if (!destroy_swap_chain_related_resources(demo)) {
+         return false;
+     }
+--- Nuklear-4.12.7.orig/demo/rawfb/sdl/Makefile
++++ Nuklear-4.12.7/demo/rawfb/sdl/Makefile
+@@ -1,9 +1,12 @@
+-CFLAGS+=`sdl2-config --cflags --libs`   -std=c89 -Wall -Wextra -pedantic -Wno-unused-function -O0 -g -fvisibility=hidden `pkg-config SDL2_ttf --cflags --libs`
++SDL=`pkg-config sdl2 --cflags --libs`
++
++LIBS+=-lm
++CFLAGS+=-Wall -Wextra -pedantic -Wno-unused-function
+ 
+ .PHONY: clean
+ 
+ demo: main.c ../nuklear_rawfb.h
+-	$(CC) -o demo *.c $(CFLAGS) -lrt -lm
++	$(CC) $(CFLAGS) -o demo *.c $(SDL) $(LIBS)
+ 
+ clean:
+ 	$(RM) demo
+--- Nuklear-4.12.7.orig/demo/rawfb/sdl/main.c
++++ Nuklear-4.12.7/demo/rawfb/sdl/main.c
+@@ -155,14 +155,11 @@
+     NK_UNUSED(argv);
+ 
+     SDL_Init(SDL_INIT_VIDEO);
+-    printf("sdl init called...\n");
+ 
+     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+ 
+     SDL_GetDesktopDisplayMode(0, &dm);
+ 
+-    printf("desktop display mode %d %d\n", dm.w, dm.h);
+-
+ 
+     window = SDL_CreateWindow("Puzzle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
+     if (!window)
+@@ -281,6 +278,5 @@
+     SDL_FreeSurface(surface);
+     SDL_DestroyRenderer(renderer);
+     SDL_DestroyWindow(window);
++	  return 0;
+ }
+-
+-
+--- Nuklear-4.12.7.orig/demo/rawfb/wayland/Makefile
++++ Nuklear-4.12.7/demo/rawfb/wayland/Makefile
+@@ -1,13 +1,14 @@
+ WAYLAND=`pkg-config wayland-client --cflags --libs`
+-WAYLAND_SCANNER=wayland-scanner
+-WAYLAND_PROTOCOLS_DIR=/usr/share/wayland-protocols
++WAYLAND_SCANNER=`pkg-config --variable=wayland_scanner wayland-scanner`
++WAYLAND_PROTOCOLS_DIR=`pkg-config --variable=pkgdatadir wayland-protocols`
+ 
+-CFLAGS+=-std=c99 -Wall -Wextra -pedantic -Wno-unused-function -O3 -fvisibility=hidden
++LIBS+=-lm
++CFLAGS+=-Wall -Wextra -pedantic -Wno-unused-function
+ 
+ .PHONY: clean
+ 
+-demo: main.c xdg-shell.c xdg-shell.h
+-	$(CC) $(CFLAGS) -o demo *.c $(WAYLAND) -lrt -lm
++demo: main.c xdg-shell.c xdg-shell.h ../nuklear_rawfb.h
++	$(CC) $(CFLAGS) -o demo *.c $(WAYLAND) $(LIBS)
+ 
+ xdg-shell.c:
+ 	$(WAYLAND_SCANNER) code $(WAYLAND_PROTOCOLS_DIR)/stable/xdg-shell/xdg-shell.xml xdg-shell.c
+--- Nuklear-4.12.7.orig/demo/rawfb/wayland/main.c
++++ Nuklear-4.12.7/demo/rawfb/wayland/main.c
+@@ -100,12 +100,14 @@
+ {
+     NK_UNUSED(data);
+     NK_UNUSED(wl_output);
++    NK_UNUSED(x);
++    NK_UNUSED(y);
++    NK_UNUSED(w);
++    NK_UNUSED(h);
+     NK_UNUSED(subpixel);
+     NK_UNUSED(make);
+     NK_UNUSED(model);
+     NK_UNUSED(transform);
+-
+-    printf("wl_output geometry x=%d, y=%d, w=%d, h=%d make=%s, model=%s \n", x,y,w,h, make, model);
+ }
+ 
+ static void nk_wayland_output_cb_mode(void *data, struct wl_output *wl_output, unsigned int flags, int w, int h, int refresh)
+@@ -247,8 +249,8 @@
+     NK_UNUSED(keyboard);
+     NK_UNUSED(serial);
+     NK_UNUSED(time);
++    NK_UNUSED(key);
+     NK_UNUSED(state);
+-    printf("key: %d \n", key);
+ }
+ 
+ static void nk_wayland_keyboard_modifiers (void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
+@@ -516,7 +518,7 @@
+     pl.gloss = 0;
+     pl.bloss = 0;
+ 
+-    nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, pl);
++    nk_wayland_ctx.rawfb = nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, pl);
+ 
+ 
+     //4. rendering UI
+--- Nuklear-4.12.7.orig/demo/sdl_opengl2/Makefile
++++ Nuklear-4.12.7/demo/sdl_opengl2/Makefile
+@@ -2,20 +2,21 @@
+ BIN = demo
+ 
+ # Flags
+-CFLAGS += -std=c89 -Wall -Wextra -pedantic -DSDL_DISABLE_IMMINTRIN_H
++CFLAGS += -Wall -Wextra -pedantic
+ 
+ SRC = main.c
+ OBJ = $(SRC:.c=.o)
+ 
+ ifeq ($(OS),Windows_NT)
+ BIN := $(BIN).exe
+-LIBS = -lmingw32 -lSDL2main -lSDL2 -lopengl32 -lm -lGLU32
++LIBS = -lmingw32 -lSDL2main -lSDL2 -lopengl32 -lm
+ else
+ 	UNAME_S := $(shell uname -s)
+ 	ifeq ($(UNAME_S),Darwin)
+ 		LIBS = -lSDL2 -framework OpenGL -lm
+ 	else
+-		LIBS = -lSDL2 -lGL -lm -lGLU
++		LIBS += $(shell pkg-config --libs sdl2) -lGL -lm
++		CFLAGS += $(shell pkg-config --cflags sdl2)
+ 	endif
+ endif
+ 
+--- Nuklear-4.12.7.orig/demo/sdl_opengles2/Makefile
++++ Nuklear-4.12.7/demo/sdl_opengles2/Makefile
+@@ -2,7 +2,7 @@
+ BIN = demo
+ 
+ # Flags
+-CFLAGS += -std=c89 -Wall -Wextra -pedantic -DSDL_DISABLE_IMMINTRIN_H
++CFLAGS += -Wall -Wextra -pedantic
+ 
+ SRC = main.c
+ OBJ = $(SRC:.c=.o)
+@@ -11,7 +11,8 @@
+ ifeq ($(UNAME_S),Darwin)
+ 	LIBS = -lSDL2 -framework OpenGLES -lm
+ else
+-	LIBS = -lSDL2 -lGLESv2 -lm
++	LIBS += $(shell pkg-config --libs sdl2) -lGLESv2 -lm
++	CFLAGS += $(shell pkg-config --cflags sdl2)
+ endif
+ 
+ $(BIN): prepare
+--- Nuklear-4.12.7.orig/demo/sdl_renderer/Makefile
++++ Nuklear-4.12.7/demo/sdl_renderer/Makefile
+@@ -2,23 +2,17 @@
+ BIN = demo
+ 
+ # Flags
+-CFLAGS += -std=c89 -Wall -Wextra -pedantic -O2 -DSDL_DISABLE_IMMINTRIN_H
+-CFLAGS += `sdl2-config --cflags`
++CFLAGS += -Wall -Wextra -pedantic
+ 
+ SRC = main.c
+ OBJ = $(SRC:.c=.o)
+ 
+ ifeq ($(OS),Windows_NT)
+-#TODO
+-#BIN := $(BIN).exe
+-#LIBS = -lmingw32 -lSDL2main -lSDL2 -lopengl32 -lm -lGLU32
++BIN := $(BIN).exe
++LIBS = -lmingw32 -lSDL2main -lSDL2 -lm
+ else
+-	UNAME_S := $(shell uname -s)
+-	ifeq ($(UNAME_S),Darwin)
+-#TODO		LIBS = -lSDL2 -framework OpenGL -lm
+-	else
+-		LIBS += -lm -ldl `sdl2-config --libs`
+-	endif
++	LIBS += $(shell pkg-config --libs sdl2) -lm
++	CFLAGS += $(shell pkg-config --cflags sdl2)
+ endif
+ 
+ $(BIN):
+--- Nuklear-4.12.7.orig/demo/sdl_vulkan/Makefile
++++ Nuklear-4.12.7/demo/sdl_vulkan/Makefile
+@@ -1,9 +1,15 @@
+ # Install
+ BIN = demo
+ 
++# Data directory
++DATADIR ?= .
++
++# GLSL compiler
++GLSL_COMPILER ?= glslc --target-env=vulkan
++
+ # Flags
+-CFLAGS += -std=c89 -Wall -Wextra -pedantic -fsanitize=address -O2
+-CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
++CFLAGS += -Wall -Wextra -pedantic
++CFLAGS +=-DDATADIR=\"$(DATADIR)\"
+ 
+ SRC = main.c
+ OBJ = $(SRC:.c=.o)
+@@ -12,19 +18,17 @@
+ BIN := $(BIN).exe
+ LIBS = -lsdl2 -lvulkan -lm
+ else
+-	UNAME_S := $(shell uname -s)
+-	SDL2 := $(shell pkg-config --libs sdl2)
+-	LIBS = $(SDL2) -lvulkan -lm
++	LIBS += $(shell pkg-config --libs sdl2) -lvulkan -lm
++	CFLAGS += $(shell pkg-config --cflags sdl2)
+ endif
+ 
+-
+ $(BIN): shaders/demo.vert.spv shaders/demo.frag.spv
+ 	@mkdir -p bin
+ 	rm -f bin/$(BIN) $(OBJS)
+ 	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
+ 
+ shaders/demo.vert.spv: shaders/demo.vert
+-	glslc --target-env=vulkan shaders/demo.vert -o shaders/demo.vert.spv
++	$(GLSL_COMPILER) shaders/demo.vert -o shaders/demo.vert.spv
+ 
+ shaders/demo.frag.spv: shaders/demo.frag
+-	glslc --target-env=vulkan shaders/demo.frag -o shaders/demo.frag.spv
++	$(GLSL_COMPILER) shaders/demo.frag -o shaders/demo.frag.spv
+--- Nuklear-4.12.7.orig/demo/sdl_vulkan/main.c
++++ Nuklear-4.12.7/demo/sdl_vulkan/main.c
+@@ -1256,7 +1256,7 @@
+     VkGraphicsPipelineCreateInfo pipeline_info;
+     size_t read_result;
+ 
+-    fp = fopen("shaders/demo.vert.spv", "r");
++    fp = fopen(DATADIR"/shaders/demo.vert.spv", "r");
+     if (!fp) {
+         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
+         return false;
+@@ -1277,7 +1277,7 @@
+         goto cleanup;
+     }
+ 
+-    fp = fopen("shaders/demo.frag.spv", "r");
++    fp = fopen(DATADIR"/shaders/demo.frag.spv", "r");
+     if (!fp) {
+         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
+         return false;
+@@ -1883,7 +1883,6 @@
+ }
+ 
+ bool recreate_swap_chain(struct vulkan_demo *demo) {
+-    printf("recreating swapchain\n");
+     if (!destroy_swap_chain_related_resources(demo)) {
+         return false;
+     }
+--- Nuklear-4.12.7.orig/src/nuklear_font.c
++++ Nuklear-4.12.7/src/nuklear_font.c
+@@ -8,7 +8,11 @@
+  *
+  * --------------------------------------------------------------*/
+ 
++#ifdef NUKLEAR_STB_RECT_PACK_FILENAME
++#include NUKLEAR_STB_RECT_PACK_FILENAME
++#else
+ #include "stb_rect_pack.h"
++#endif
+ 
+ /*
+  * ==============================================================
+@@ -18,7 +22,11 @@
+  * ===============================================================
+  */
+ #define STBTT_MAX_OVERSAMPLE   8
++#ifdef NUKLEAR_STB_TRUETYPE_FILENAME
++#include NUKLEAR_STB_TRUETYPE_FILENAME
++#else
+ #include "stb_truetype.h"
++#endif
+ 
+ /* -------------------------------------------------------------
+  *
+
+# source
+https://github.com/Immediate-Mode-UI/Nuklear/archive/4.12.7/Nuklear-4.12.7.tar.gz
