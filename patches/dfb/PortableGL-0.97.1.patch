@@ -13,9 +13,9 @@ fi
 # configure
 rm -f glcommon/stb_*
 rm -rf demos/imgui
-premake5 --file=demos/premake4.lua --stb-dir=/include/stb --demosdatadir=/dfb/share/PortableGL/media --prefix=/dfb gmake
+premake5 --file=demos/premake4.lua --demosdatadir=/dfb/share/PortableGL/media --with-stb-dir=/include/stb --prefix=/dfb gmake
 premake5 --file=examples/premake5.lua --prefix=/dfb gmake
-premake5 --file=testing/premake4.lua --stb-dir=/include/stb --testingdatadir=/dfb/share/PortableGL/media --prefix=/dfb gmake
+premake5 --file=testing/premake4.lua --testingdatadir=/dfb/share/PortableGL/media --with-stb-dir=/include/stb --prefix=/dfb gmake
 
 # build
 test $SDL2 && make -C demos
@@ -260,7 +260,7 @@ exit
  	
 -	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
 +	newoption {
-+		trigger     = "stb-dir",
++		trigger     = "with-stb-dir",
 +		value       = "PATH",
 +		description = "Directory for stb image headers",
 +		default     = "../stb"
@@ -280,7 +280,7 @@ exit
 +		default     = "/usr/local"
 +	}
 +
-+	includedirs { "../", _OPTIONS["stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
  
  	-- stuff up here common to all projects
  	kind "ConsoleApp"
@@ -655,6 +655,17 @@ exit
  
  
  	cvector_vec3 face_normals = { 0 };
+--- PortableGL-0.97.1.orig/glcommon/gltools.c
++++ PortableGL-0.97.1/glcommon/gltools.c
+@@ -375,7 +375,7 @@
+ {
+ 	GLubyte* image = NULL;
+ 	int w, h, n, frames;
+-	if (!(image = stbi_xload(filename, &w, &h, &n, STBI_rgb_alpha, &frames))) {
++	if (!(image = stbi_xload(filename, &w, &h, &n, STBI_rgb_alpha, &frames, NULL))) {
+ 		fprintf(stdout, "Error loading image %s: %s\n\n", filename, stbi_failure_reason());
+ 		return GL_FALSE;
+ 	}
 --- PortableGL-0.97.1.orig/glcommon/rsw_halfedge.cpp
 +++ PortableGL-0.97.1/glcommon/rsw_halfedge.cpp
 @@ -258,7 +258,6 @@
@@ -1700,7 +1711,7 @@ exit
 +	configurations { "Release", "Debug" }
 +
 +	newoption {
-+		trigger     = "stb-dir",
++		trigger     = "with-stb-dir",
 +		value       = "PATH",
 +		description = "Directory for stb image headers",
 +		default     = "../stb"
@@ -1721,7 +1732,7 @@ exit
 +		default     = "/usr/local"
 +	}
 +
-+	includedirs { "../", _OPTIONS["stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
  
  	-- stuff up here common to all projects
  	kind "ConsoleApp"

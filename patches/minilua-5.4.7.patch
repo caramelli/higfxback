@@ -1,0 +1,35 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+make -C tests
+
+# install
+install -d $DESTDIR/bin
+install tests/lua $DESTDIR/bin/minilua
+install -d $DESTDIR/include
+install -m 644 minilua.h $DESTDIR/include
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/minilua-build.pc << EOF
+Name: minilua
+Version: 5.4.7
+Description: single-file LUA library
+Requires: $REQUIRES
+
+devel=\\
+/include/minilua.h
+
+exec=\\
+/bin/minilua
+EOF
+
+exit
+
+# source
+https://github.com/edubart/minilua/archive/v5.4.7/minilua-5.4.7.tar.gz

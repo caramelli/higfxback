@@ -6,14 +6,14 @@ REQUIRES="make-build stb-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 if pkg-config --exists lodepng-build; then
-  LODEPNG=--lodepng-file=lodepng/lodepng.cpp
+  LODEPNG=--with-lodepng-file=lodepng/lodepng.cpp
   REQUIRES="$REQUIRES lodepng-build"
 fi
 
 # configure
 rm -f lodepng.*
 rm -f stb_image.c
-sh ./Configure $LODEPNG --stb_image-file=stb/stb_image.h --prefix=/fb
+sh ./Configure $LODEPNG --with-stb-image-file=stb/stb_image.h --prefix=/fb
 
 # build
 make
@@ -51,8 +51,8 @@ exit
 +while [ $# != 0 ]; do
 +  case $1 in
 +    --prefix=*) PREFIX=${1#*=};;
-+    --lodepng-file=*) LODEPNG_FILE=${1#*=};;
-+    --stb_image-file=*) STB_IMAGE_FILE=${1#*=};;
++    --with-lodepng-file=*) LODEPNG_FILE=${1#*=};;
++    --with-stb-image-file=*) STB_IMAGE_FILE=${1#*=};;
 +    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift

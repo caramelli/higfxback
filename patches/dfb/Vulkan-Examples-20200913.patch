@@ -971,7 +971,7 @@ exit
 +execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot OUTPUT_VARIABLE SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
 +include_directories(${SYSROOT}/include/stb)
 +include_directories(${SYSROOT}/include/stb_font/latin1/consolas)
-+include_directories(${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui)
++include_directories(${SYSROOT}${CMAKE_INSTALL_PREFIX}/include/imgui)
 +endif()
 +
  include_directories(base)
@@ -1006,10 +1006,10 @@ exit
 +        ../external/imgui/imgui_widgets.cpp)
 +else()
 +    set(BASE_SRC ${BASE_SRC}
-+        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui.cpp
-+        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_draw.cpp
-+        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_tables.cpp
-+        ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_widgets.cpp)
++        ${SYSROOT}${CMAKE_INSTALL_PREFIX}/include/imgui/imgui.cpp
++        ${SYSROOT}${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_draw.cpp
++        ${SYSROOT}${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_tables.cpp
++        ${SYSROOT}${CMAKE_INSTALL_PREFIX}/include/imgui/imgui_widgets.cpp)
 +endif()
  file(GLOB BASE_HEADERS "*.hpp" "*.h")
  
@@ -1153,7 +1153,7 @@ exit
 +		IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/external)
 +			SET(ADD_SOURCE ${CMAKE_SOURCE_DIR}/external/imgui/imgui_demo.cpp)
 +		ELSE()
-+			SET(ADD_SOURCE ${SYSROOT}/${CMAKE_INSTALL_PREFIX}/share/imgui/imgui_demo.cpp)
++			SET(ADD_SOURCE ${SYSROOT}${CMAKE_INSTALL_PREFIX}/share/imgui/imgui_demo.cpp)
 +		ENDIF()
  		SET(SOURCE ${SOURCE} ${ADD_SOURCE})
  	ENDIF()

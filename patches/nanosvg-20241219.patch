@@ -7,7 +7,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 rm -f example/stb_image_write.h
-premake5 --stb-dir=/include/stb --without-glfw gmake
+premake5 --with-stb-dir=/include/stb --without-glfw gmake
 
 # build
 make -C build
@@ -91,10 +91,10 @@ exit
  	platforms {"native", "x64", "x32"}
 +
 +	newoption { trigger = "prefix", value = "PATH", description = "Installation prefix", default = "/usr/local" }
-+	newoption { trigger = "stb-dir", value = "PATH", description = "Directory for stb image headers" }
++	newoption { trigger = "with-stb-dir", value = "PATH", description = "Directory for stb image headers" }
 +	newoption { trigger = "without-glfw", description = "Do not use GLFW" }
 +
-+	includedirs { "src", _OPTIONS["stb-dir"] }
++	includedirs { "src", _OPTIONS["with-stb-dir"] }
 +	targetdir("build")
    
 +	if not _OPTIONS["without-glfw"] then

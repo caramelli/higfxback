@@ -49,12 +49,12 @@ exit
 # patch
 --- stb-20200214.orig/stb_image.h
 +++ stb-20200214/stb_image.h
-@@ -6777,6 +6777,65 @@
+@@ -6777,6 +6777,85 @@
  {
     return stbi__gif_info_raw(s,x,y,comp);
  }
 +
-+STBIDEF stbi_uc *stbi_xload(char const *filename, int *x, int *y, int *comp, int req_comp, int *frames)
++STBIDEF stbi_uc *stbi_xload(char const *filename, int *x, int *y, int *comp, int req_comp, int *frames, stbi__uint16 **delays)
 +{
 +   stbi_uc *result = 0;
 +   stbi__context s;
@@ -70,28 +70,34 @@ exit
 +      stbi_uc *two_back = 0;
 +      stbi__gif g = { 0 };
 +      int stride;
++      int delays_cap = 500;
++      stbi__uint16 *l_delays = (stbi__uint16*) STBI_MALLOC(delays_cap * sizeof(stbi__uint16));
 +
 +      do {
 +         u = stbi__gif_load_next(&s, &g, comp, req_comp, two_back);
-+         if (u == (stbi_uc *)&s) u = 0;  // end of animated gif marker
++         if (u == (stbi_uc *) &s) u = 0;  // end of animated gif marker
 +
 +         if (u) {
 +            *x = g.w;
 +            *y = g.h;
 +            stride = g.w * g.h * 4;
 +
++            if (layers == delays_cap) {
++               delays_cap *= 2;
++               l_delays = (stbi__uint16*) STBI_REALLOC(l_delays, delays_cap * sizeof(stbi__uint16));
++            }
++            l_delays[layers] = g.delay;
++
 +            ++layers;
 +
-+            out = (stbi_uc*) STBI_REALLOC(out, layers * (stride+2));
++            out = (stbi_uc*) STBI_REALLOC(out, layers * stride);
 +
-+            pos = out + ((layers-1) * (stride+2));
++            pos = out + (layers - 1) * stride;
 +            memcpy( pos, u, stride );
 +            pos += stride;
-+            *pos++ = g.delay & 0xFF;
-+            *pos++ = (g.delay & 0xFF00) >> 8;
 +
 +            if (layers >= 2) {
-+               two_back = pos - 2 * (stride+2);
++               two_back = pos - 2 * stride;
 +            }
 +         }
 +      } while (u != 0);
@@ -101,12 +107,26 @@ exit
 +      STBI_FREE(g.history);
 +      STBI_FREE(g.background);
 +
++      if (req_comp && req_comp != 4)
++         out = stbi__convert_format(out, 4, req_comp, layers * g.w, g.h);
++
++      if (delays) {
++         if (layers > 1) {
++            *delays = (stbi__uint16*) STBI_REALLOC(l_delays, layers * sizeof(stbi__uint16));
++         } else {
++            *delays = NULL;
++            free(l_delays);
++         }
++      } else
++         free(l_delays);
++
 +      *frames = layers;
 +      result = out;
 +   } else {
 +      stbi__result_info ri;
 +      result = (stbi_uc*)stbi__load_main(&s, x, y, comp, req_comp, &ri, 8);
 +      *frames = !!result;
++      if (delays) *delays = NULL;
 +   }
 +
 +   fclose(f);

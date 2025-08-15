@@ -32,8 +32,8 @@ fi
 rm -f demo/common/filebrowser/stb_image.h
 rm -f src/stb_rect_pack.h
 rm -f src/stb_truetype.h
-> src/extern.h
-make nuke
+> src/empty.h
+EXTERN=empty.h make nuke
 
 # build
 test $GLFW && PKG_CONFIG_PATH=/wl/lib/pkgconfig DATADIR=\"/wl/share/nuklear\" CFLAGS="-DNUKLEAR_STB_IMAGE_FILENAME=\<stb/stb_image.h\> -DNUKLEAR_STB_RECT_PACK_FILENAME=\<stb/stb_rect_pack.h\> -DNUKLEAR_STB_TRUETYPE_FILENAME=\<stb/stb_truetype.h\>" LIBS=-Wl,-rpath,/wl/lib make -C demo/glfw_opengl2
@@ -165,7 +165,7 @@ exit
  PRIV1 = nuklear_internal.h nuklear_math.c nuklear_util.c nuklear_color.c nuklear_utf8.c nuklear_buffer.c nuklear_string.c nuklear_draw.c nuklear_vertex.c 
  
 -EXTERN =  stb_rect_pack.h stb_truetype.h 
-+EXTERN = extern.h
++EXTERN ?= stb_rect_pack.h stb_truetype.h
  
  PRIV2 = nuklear_font.c nuklear_input.c nuklear_style.c nuklear_context.c nuklear_pool.c nuklear_page_element.c nuklear_table.c nuklear_panel.c nuklear_window.c nuklear_popup.c nuklear_contextual.c nuklear_menu.c nuklear_layout.c nuklear_tree.c nuklear_group.c nuklear_list_view.c nuklear_widget.c nuklear_text.c nuklear_image.c nuklear_9slice.c nuklear_button.c nuklear_toggle.c nuklear_selectable.c nuklear_slider.c nuklear_knob.c nuklear_progress.c nuklear_scrollbar.c nuklear_text_editor.c nuklear_edit.c nuklear_property.c nuklear_chart.c nuklear_color_picker.c nuklear_combo.c nuklear_tooltip.c
  
@@ -505,6 +505,59 @@ exit
  endif
  
  $(BIN):
+--- Nuklear-4.12.7.orig/demo/sdl_renderer/nuklear_sdl_renderer.h
++++ Nuklear-4.12.7/demo/sdl_renderer/nuklear_sdl_renderer.h
+@@ -22,6 +22,7 @@
+ NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
+ NK_API void                 nk_sdl_shutdown(void);
+ NK_API void                 nk_sdl_handle_grab(void);
++NK_API void                 nk_sdl_scale(float x_scale, float y_scale);
+ 
+ #if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 22)
+ /* Metal API does not support cliprects with negative coordinates or large
+@@ -67,6 +68,9 @@
+     Uint64 time_of_last_frame;
+ } sdl;
+ 
++static float scale_x = 1.0f;
++static float scale_y = 1.0f;
++
+ NK_INTERN void
+ nk_sdl_device_upload_atlas(const void *image, int width, int height)
+ {
+@@ -352,7 +356,7 @@
+         case SDL_MOUSEBUTTONDOWN:
+             {
+                 int down = evt->type == SDL_MOUSEBUTTONDOWN;
+-                const int x = evt->button.x, y = evt->button.y;
++                const int x = evt->button.x / scale_x, y = evt->button.y / scale_y;
+                 switch(evt->button.button)
+                 {
+                     case SDL_BUTTON_LEFT:
+@@ -368,9 +372,9 @@
+         case SDL_MOUSEMOTION:
+             if (ctx->input.mouse.grabbed) {
+                 int x = (int)ctx->input.mouse.prev.x, y = (int)ctx->input.mouse.prev.y;
+-                nk_input_motion(ctx, x + evt->motion.xrel, y + evt->motion.yrel);
++                nk_input_motion(ctx, x + evt->motion.xrel / scale_x, y + evt->motion.yrel / scale_y);
+             }
+-            else nk_input_motion(ctx, evt->motion.x, evt->motion.y);
++            else nk_input_motion(ctx, evt->motion.x / scale_x, evt->motion.y / scale_y);
+             return 1;
+ 
+         case SDL_TEXTINPUT:
+@@ -400,4 +404,11 @@
+     memset(&sdl, 0, sizeof(sdl));
+ }
+ 
++NK_API void
++nk_sdl_scale(float x_scale, float y_scale)
++{
++	scale_x = x_scale;
++	scale_y = y_scale;
++}
++
+ #endif /* NK_SDL_RENDERER_IMPLEMENTATION */
 --- Nuklear-4.12.7.orig/demo/sdl_vulkan/Makefile
 +++ Nuklear-4.12.7/demo/sdl_vulkan/Makefile
 @@ -1,9 +1,15 @@
@@ -577,6 +630,78 @@ exit
      if (!destroy_swap_chain_related_resources(demo)) {
          return false;
      }
+--- Nuklear-4.12.7.orig/nuklear.h
++++ Nuklear-4.12.7/nuklear.h
+@@ -3713,7 +3713,8 @@
+     NK_EDIT_NO_HORIZONTAL_SCROLL    = NK_FLAG(8),
+     NK_EDIT_ALWAYS_INSERT_MODE      = NK_FLAG(9),
+     NK_EDIT_MULTILINE               = NK_FLAG(10),
+-    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11)
++    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11),
++    NK_EDIT_IMMEDIATE_FOCUS         = NK_FLAG(12)
+ };
+ enum nk_edit_types {
+     NK_EDIT_SIMPLE  = NK_EDIT_ALWAYS_INSERT_MODE,
+@@ -3895,6 +3896,7 @@
+     NK_CURSOR_COUNT
+ };
+ NK_API void nk_style_default(struct nk_context*);
++NK_API const struct nk_color* nk_get_default_color_table(void);
+ NK_API void nk_style_from_table(struct nk_context*, const struct nk_color*);
+ NK_API void nk_style_load_cursor(struct nk_context*, enum nk_style_cursor, const struct nk_cursor*);
+ NK_API void nk_style_load_all_cursors(struct nk_context*, const struct nk_cursor*);
+@@ -18519,6 +18521,11 @@
+ #undef NK_COLOR
+ };
+ 
++NK_API const struct nk_color*
++nk_get_default_color_table(void)
++{
++    return nk_default_color_style;
++}
+ NK_API const char*
+ nk_style_get_color_by_name(enum nk_style_colors c)
+ {
+@@ -28011,6 +28018,8 @@
+                                 bounds.x, bounds.y, bounds.w, bounds.h);
+     }
+ 
++    edit->active = edit->active || (flags & NK_EDIT_IMMEDIATE_FOCUS);
++
+     /* (de)activate text editor */
+     if (!prev_state && edit->active) {
+         const enum nk_text_edit_type type = (flags & NK_EDIT_MULTILINE) ?
+--- Nuklear-4.12.7.orig/src/nuklear.h
++++ Nuklear-4.12.7/src/nuklear.h
+@@ -3490,7 +3490,8 @@
+     NK_EDIT_NO_HORIZONTAL_SCROLL    = NK_FLAG(8),
+     NK_EDIT_ALWAYS_INSERT_MODE      = NK_FLAG(9),
+     NK_EDIT_MULTILINE               = NK_FLAG(10),
+-    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11)
++    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11),
++    NK_EDIT_IMMEDIATE_FOCUS         = NK_FLAG(12)
+ };
+ enum nk_edit_types {
+     NK_EDIT_SIMPLE  = NK_EDIT_ALWAYS_INSERT_MODE,
+@@ -3672,6 +3673,7 @@
+     NK_CURSOR_COUNT
+ };
+ NK_API void nk_style_default(struct nk_context*);
++NK_API const struct nk_color* nk_get_default_color_table(void);
+ NK_API void nk_style_from_table(struct nk_context*, const struct nk_color*);
+ NK_API void nk_style_load_cursor(struct nk_context*, enum nk_style_cursor, const struct nk_cursor*);
+ NK_API void nk_style_load_all_cursors(struct nk_context*, const struct nk_cursor*);
+--- Nuklear-4.12.7.orig/src/nuklear_edit.c
++++ Nuklear-4.12.7/src/nuklear_edit.c
+@@ -193,6 +193,8 @@
+                                 bounds.x, bounds.y, bounds.w, bounds.h);
+     }
+ 
++    edit->active = edit->active || (flags & NK_EDIT_IMMEDIATE_FOCUS);
++
+     /* (de)activate text editor */
+     if (!prev_state && edit->active) {
+         const enum nk_text_edit_type type = (flags & NK_EDIT_MULTILINE) ?
 --- Nuklear-4.12.7.orig/src/nuklear_font.c
 +++ Nuklear-4.12.7/src/nuklear_font.c
 @@ -8,7 +8,11 @@
@@ -603,6 +728,20 @@ exit
  
  /* -------------------------------------------------------------
   *
+--- Nuklear-4.12.7.orig/src/nuklear_style.c
++++ Nuklear-4.12.7/src/nuklear_style.c
+@@ -53,6 +53,11 @@
+ #undef NK_COLOR
+ };
+ 
++NK_API const struct nk_color*
++nk_get_default_color_table(void)
++{
++    return nk_default_color_style;
++}
+ NK_API const char*
+ nk_style_get_color_by_name(enum nk_style_colors c)
+ {
 
 # source
 https://github.com/Immediate-Mode-UI/Nuklear/archive/4.12.7/Nuklear-4.12.7.tar.gz

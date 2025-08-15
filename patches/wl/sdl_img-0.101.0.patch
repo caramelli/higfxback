@@ -1,0 +1,611 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="curl-build make-build nuklear-build wjcryptlib-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists lua-build; then
+  LUA=--disable-minilua
+  REQUIRES="$REQUIRES lua-build"
+elif pkg-config --exists minilua-build; then
+  REQUIRES="$REQUIRES minilua-build"
+else
+  echo lua or minilua packages required; exit 1
+fi
+
+# configure
+rm -rf src/extlibs
+PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure $LUA --enable-legacy-stb-image-resize --with-system-sqlite --with-system-wjcryptlib --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/bin
+install sdl_img $DESTDIR/wl/bin
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/sdl_img-build.pc << EOF
+Name: sdl_img
+Version: 0.101.0
+Description: SDL-based image viewer
+Requires: $REQUIRES
+
+exec=\\
+/wl/bin/sdl_img
+EOF
+
+exit
+
+# patch
+--- sdl_img-0.101.0.orig/Configure
++++ sdl_img-0.101.0/Configure
+@@ -0,0 +1,38 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++HAVE_MINILUA=1
++
++STB_IMAGE_RESIZE_VERSION=2
++
++USE_SYSTEM_SQLITE=no
++USE_SYSTEM_WJCRYPTLIB=no
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --disable-minilua) HAVE_MINILUA=0;;
++    --enable-legacy-stb-image-resize) STB_IMAGE_RESIZE_VERSION=1;;
++    --with-system-sqlite) USE_SYSTEM_SQLITE=yes;;
++    --with-system-wjcryptlib) USE_SYSTEM_WJCRYPTLIB=yes;;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
++
++sed -i "/^HAVE_MINILUA/s|=.*|=$HAVE_MINILUA|" Makefile
++
++sed -i "/^STB_IMAGE_RESIZE_VERSION/s|=.*|=$STB_IMAGE_RESIZE_VERSION|" Makefile
++
++sed -i "/^USE_SYSTEM_SQLITE/s|=.*|=$USE_SYSTEM_SQLITE|" Makefile
++sed -i "/^USE_SYSTEM_WJCRYPTLIB/s|=.*|=$USE_SYSTEM_WJCRYPTLIB|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" Makefile
++fi
+--- sdl_img-0.101.0.orig/Makefile
++++ sdl_img-0.101.0/Makefile
+@@ -1,4 +1,4 @@
+-
++PREFIX ?= /usr/local
+ 
+ # default to linux
+ PLAT=linux
+@@ -6,14 +6,21 @@
+ # TODO extract from src/compile_constants.h
+ VERSION=0.101.0
+ 
++PKG_CONFIG=pkg-config
++
++HAVE_MINILUA=1
++
++STB_IMAGE_RESIZE_VERSION=2
++
++USE_SYSTEM_SQLITE=no
++USE_SYSTEM_WJCRYPTLIB=no
++
++config=release
++
+ # windows: msys2 mingw64 environment
+ #
+ # cross_win: msys2 clang/ucrt64 cross compile env using
+-# using https://github.com/HolyBlackCat/quasi-msys2
+-
+-PLATS=linux cross_win msys2
+-
+-#CC=tcc
++# https://github.com/HolyBlackCat/quasi-msys2
+ 
+ # for some reason the sanitizers aren't working in my cross compile environment
+ # but it's really only for creating a windows release/package anyway
+@@ -56,25 +63,38 @@
+ endif
+ endif
+ 
++ifeq ($(HAVE_MINILUA), 1)
++OPTS+=-DMINILUA
++LUA_LIBS=-ldl
++else
++LUA_LIBS=`$(PKG_CONFIG) lua --libs`
++endif
+ 
++OPTS+=-DSTB_IMAGE_RESIZE_VERSION=$(STB_IMAGE_RESIZE_VERSION)
+ 
+-#CFLAGS=`pkg-config sdl2 libcurl --cflags` -Ilua-5.4.7/src
+-#LIBS=`pkg-config sdl2 libcurl --libs` -lm -Llua-5.4.7/src -llua
++ifeq ($(USE_SYSTEM_SQLITE), yes)
++SQLITE_LIBS=`$(PKG_CONFIG) sqlite3 --libs`
++else
++SQLITE_OBJS=sqlite3.o
++endif
+ 
+-CFLAGS=`pkg-config sdl2 libcurl --cflags` -Ilua-5.4.7/src -Isrc/extlibs
+-LIBS=`pkg-config sdl2 libcurl --libs` -lm
++ifeq ($(USE_SYSTEM_WJCRYPTLIB), yes)
++WJCRYPTLIB_LIBS=`$(PKG_CONFIG) wjcryptlib --libs`
++else
++WJCRYPTLIB_OBJS=WjCryptLib_Md5.o
++endif
+ 
+-# for tradititonal make install
+-PREFIX ?= /usr/local
+ 
++CFLAGS=`$(PKG_CONFIG) sdl2 libcurl --cflags` -I`$(CC) -print-sysroot`/include/stb -I`$(CC) -print-sysroot`$(PREFIX)/include/nuklear -Isrc/extlibs
++LIBS=`$(PKG_CONFIG) sdl2 libcurl --libs` $(LUA_LIBS) $(SQLITE_LIBS) $(WJCRYPTLIB_LIBS) -Wl,-rpath,$(PREFIX)/lib -lm
++
++# for tradititonal make install
+ DESTDIR ?=
+ 
+ # generated folder for building packages
+ # has to match INST_FOLDER in make_installer.nsi
+ PKGDIR=package
+ 
+-#PKG_DIR=$(PKGDIR)$(DESTDIR)
+-
+ # in repo dir of packaging related files
+ PKGSRC=package_files
+ 
+@@ -88,20 +108,20 @@
+ 
+ all: $(TARGET)
+ 
+-sdl_img: $(SRCS) nuklear.o minilua.o sqlite3.o
+-	$(CC) $(OPTS) src/sdl_img.c minilua.o nuklear.o sqlite3.o -o $@ $(CFLAGS) $(LIBS)
++sdl_img: $(SRCS) nuklear.o $(WJCRYPTLIB_OBJS) $(SQLITE_OBJS)
++	$(CC) $(OPTS) src/sdl_img.c nuklear.o $(WJCRYPTLIB_OBJS) $(SQLITE_OBJS) -o $@ $(CFLAGS) $(LIBS)
+ 
+-sdl_img.exe: $(SRCS) nuklear.o minilua.o sqlite3.o
+-	$(CC) $(OPTS) src/sdl_img.c nuklear.o minilua.o sqlite3.o -o $@ $(CFLAGS) $(LIBS)
++sdl_img.exe: $(SRCS) nuklear.o WjCryptLib_Md5.o sqlite3.o
++	$(CC) $(OPTS) src/sdl_img.c nuklear.o WjCryptLib_Md5.o sqlite3.o -o $@ $(CFLAGS) $(LIBS)
+ 
+ sqlite3.o: src/extlibs/sqlite3.c
+ 	$(CC) $(OPTS) -c src/extlibs/sqlite3.c
+ 
+-nuklear.o: src/extlibs/nuklear.h src/extlibs/nuklear_sdl_renderer.h
+-	$(CC) $(OPTS) -c src/extlibs/nuklear.c `pkg-config sdl2 --cflags`
++nuklear.o:
++	$(CC) $(OPTS) -c src/nuklear.c `$(PKG_CONFIG) sdl2 --cflags` -I`$(CC) -print-sysroot`/include/stb -I`$(CC) -print-sysroot`$(PREFIX)/include/nuklear -Isrc/extlibs
+ 
+-minilua.o: src/extlibs/minilua.c
+-	$(CC) $(OPTS) -c src/extlibs/minilua.c -lm
++WjCryptLib_Md5.o: src/extlibs/WjCryptLib_Md5.c
++	$(CC) $(OPTS) -c src/extlibs/WjCryptLib_Md5.c
+ 
+ 
+ # Stupid debian doesn't allow '_' in package names so some mismatches below
+@@ -151,35 +171,7 @@
+ 
+ clean:
+ 	rm -f sdl_img *.o *.exe
+-	$(MAKE) -C lua-5.4.7/ clean
+ 	rm -rf $(PKGDIR)
+ 	rm -rf AppDir
+-	rm *.deb
+-	rm *.tar
+-
+-
+-# Below here are no longer used... unless/until I update them
+-windows: nuklear.o minilua.o
+-	$(CC) $(OPTS) src/sdl_img.c nuklear.o minilua.o -o sdl_img.exe $(CFLAGS) $(LIBS)
+-
+-windows_package: windows
+-	ldd sdl_img.exe | grep mingw64 | cut -d' ' -f3 | xargs -I{} cp {} $(PKGDIR)
+-	cp LICENSE $(PKGDIR)
+-	cp LICENSE $(PKGDIR)/LICENSE.txt
+-	cp README.md $(PKGDIR)
+-	unix2dos $(PKGDIR)/README.md $(PKGDIR)/LICENSE*
+-	cp sdl_img.exe $(PKGDIR)
+-	makensis.exe make_installer.nsi
+-
+-
+-
+-lua:
+-	$(MAKE) -C lua-5.4.7/
+-
+-lua_win:
+-	cd lua-5.4.7/src && $(MAKE) PLAT=mingw
+-
+-# These are using https://github.com/HolyBlackCat/quasi-msys2
+-lua_cross_win:
+-	cd lua-5.4.7/src && $(MAKE) CC=win-clang PLAT=generic
+-
++	rm -f *.deb
++	rm -f *.tar
+--- sdl_img-0.101.0.orig/src/draw_library.c
++++ sdl_img-0.101.0/src/draw_library.c
+@@ -722,8 +722,6 @@
+ 	// Can't get it to automatically have focus *and* auto select I have
+ 	// to pick one or the other, so I immediately push another click when
+ 	// they click on a selected playlist to trigger focus the "natural" way
+-	SDL_Event click_event = { .type = SDL_MOUSEBUTTONDOWN };
+-	click_event.button.button = SDL_BUTTON_LEFT;
+ 	int x, y;
+ 	SDL_GetMouseState(&x, &y);
+ 
+--- sdl_img-0.101.0.orig/src/events.c
++++ sdl_img-0.101.0/src/events.c
+@@ -595,6 +595,7 @@
+ 			// Have to think about this, best way to do drag select while still supporting
+ 			// CTRL and SHIFT selection modifiers, and other existing mouse/selection
+ 			// behaviors and edge cases and scrolling
++			(void)mouse_state;
+ 
+ 			/*
+ 			if (SDL_BUTTON_LMASK & mouse_state) {
+@@ -1153,8 +1154,6 @@
+ 	SDL_Event e;
+ 	int sc;
+ 
+-	SDL_Keymod mod_state = SDL_GetModState();
+-
+ 	int ticks = SDL_GetTicks();
+ 
+ 	// always show gui in popup
+--- sdl_img-0.101.0.orig/src/lua_config.c
++++ sdl_img-0.101.0/src/lua_config.c
+@@ -4,10 +4,6 @@
+ #define LH_LOG SDL_Log
+ #include "lua_helper.h"
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
+-#include "lualib.h"
+-
+ #define MAX_COLOR 255
+ 
+ enum {
+@@ -165,7 +161,6 @@
+ 	luaL_openlibs(L);
+ 
+ 	if (luaL_dofile(L, filename)) {
+-		//error(L, "cannot run config. file: %s\n", lua_tostring(L, -1));
+ 		g->lua_error = CVEC_STRDUP(lua_tostring(L, -1));
+ 		LH_LOG("1 lua error: %s\n", g->lua_error);
+ 		lua_close(L);
+@@ -439,9 +434,9 @@
+ 			}
+ 		}
+ 		// TODO list allowed values in error?
+-		error(L, "invalid value for enum %s: '%s'\n", name, value);
++		LH_ERROR(L, "invalid value for enum %s: '%s'\n", name, value);
+ 	} else {
+-		error(L, "%s is a %s not a string, expected a string value for enum\n", name, lua_typename(L, type));
++		LH_ERROR(L, "%s is a %s not a string, expected a string value for enum\n", name, lua_typename(L, type));
+ 	}
+ 
+ 	// should never get here, just getting rid of compiler warning
+@@ -494,7 +489,7 @@
+ 			}
+ 		}
+ 		if (!colortable[i].name) {
+-			error(L, "invalid color name (%s)\n", colorname);
++			LH_ERROR(L, "invalid color name (%s)\n", colorname);
+ 		} else {
+ 			*c = colortable[i].c;
+ 		}
+@@ -522,7 +517,7 @@
+ 			}
+ 		}
+ 	} else {
+-		error(L, "Expected color is not a table or valid color string\n");
++		LH_ERROR(L, "Expected color is not a table or valid color string\n");
+ 	}
+ }
+ 
+@@ -542,7 +537,7 @@
+ 	int result = 0;
+ 
+ 	if (lua_type(L, index) != LUA_TNUMBER) {
+-		error(L, "invalid component in color, must be a number\n");
++		LH_ERROR(L, "invalid component in color, must be a number\n");
+ 	}
+ 
+ 	if (lua_isinteger(L, index)) {
+--- sdl_img-0.101.0.orig/src/lua_helper.h
++++ sdl_img-0.101.0/src/lua_helper.h
+@@ -1,22 +1,27 @@
+ #ifndef LUA_HELPER_H
+ #define LUA_HELPER_H
+ 
+-#include "lua.h"
++#ifdef MINILUA
++#define LUA_IMPL
++#include "minilua.h"
++#else
+ #include "lauxlib.h"
++#include "lualib.h"
++#endif
+ 
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-// TODO Is there really any reason to do the variadic macro form like I do in
+-// file_browser.h with FB_LOG?
++#ifndef LH_ERROR
++#define LH_ERROR lh_error
++#endif
++
+ #ifndef LH_LOG
+ #define LH_LOG lh_log
+ #endif
+ 
+-void error(lua_State* L, const char *fmt, ...);
+-
+ int get_int(lua_State* L, const char* var);
+ int get_int_clamp(lua_State* L, const char* var, int min, int max);
+ 
+@@ -48,7 +53,7 @@
+ void stackDump(lua_State* L);
+ 
+ 
+-void error(lua_State* L, const char *fmt, ...)
++void lh_error(lua_State* L, const char *fmt, ...)
+ {
+ 	va_list argp;
+ 	va_start(argp, fmt);
+@@ -126,7 +131,7 @@
+ 	lua_getglobal(L, var);
+ 	result = (int)lua_tointegerx(L, -1, &isnum);
+ 	if (!isnum) {
+-		error(L, "'%s', should be an integer\n", var);
++		LH_ERROR(L, "'%s', should be an integer\n", var);
+ 	}
+ 	lua_pop(L, 1);  // remove result from stack
+ 	return result;
+@@ -181,7 +186,7 @@
+ 	lua_getglobal(L, var);
+ 	double result = (double)lua_tonumberx(L, -1, &isnum);
+ 	if (!isnum) {
+-		error(L, "'%s', should be a number\n", var);
++		LH_ERROR(L, "'%s', should be a number\n", var);
+ 	}
+ 	lua_pop(L, 1);  // remove result from stack
+ 	return result;
+@@ -237,7 +242,7 @@
+ {
+ 	lua_getglobal(L, var);
+ 	if (!lua_isboolean(L, -1)) {
+-		error(L, "'%s', should be a boolean\n", var);
++		LH_ERROR(L, "'%s', should be a boolean\n", var);
+ 	}
+ 	int result = lua_toboolean(L, -1);
+ 	lua_pop(L, 1);  // remove result from stack
+@@ -274,7 +279,7 @@
+ {
+ 	lua_getglobal(L, var);
+ 	if (lua_type(L, -1) != LUA_TSTRING) {
+-		error(L, "'%s', should be a string\n", var);
++		LH_ERROR(L, "'%s', should be a string\n", var);
+ 	}
+ 	char* result = strdup(lua_tostring(L, -1));
+ 	lua_pop(L, 1);  // remove result from stack
+@@ -310,16 +315,16 @@
+ int get_strbuf(lua_State* L, const char* var, char* buf, int buf_sz)
+ {
+ 	if (!lua_getglobal(L, var)) {
+-		error(L, "global var '%s' does not exist\n", var);
++		LH_ERROR(L, "global var '%s' does not exist\n", var);
+ 	}
+ 
+ 	if (lua_type(L, -1) != LUA_TSTRING) {
+-		error(L, "'%s', should be a string\n", var);
++		LH_ERROR(L, "'%s', should be a string\n", var);
+ 	}
+ 	size_t len;
+ 	const char* result = lua_tolstring(L, -1, &len);
+ 	if (len >= buf_sz) {
+-		error(L, "'%s' is too long for provided string buffer\n", var);
++		LH_ERROR(L, "'%s' is too long for provided string buffer\n", var);
+ 	}
+ 	memcpy(buf, result, len+1);
+ 
+@@ -383,11 +388,11 @@
+ 	}
+ 
+ 	if (!lua_getglobal(L, var)) {
+-		error(L, "global var '%s' does not exist\n", var);
++		LH_ERROR(L, "global var '%s' does not exist\n", var);
+ 	}
+ 
+ 	if (!lua_istable(L, -1)) {
+-		error(L, "'%s', should be a table (array of strings)\n", var);
++		LH_ERROR(L, "'%s', should be a table (array of strings)\n", var);
+ 	}
+ 
+ 	int n_strs = lua_rawlen(L, -1);
+@@ -398,7 +403,7 @@
+ 
+ 	for (int i=1; i<=n_strs; i++) {
+ 		if (lua_geti(L, -1, i) != LUA_TSTRING) {
+-			error(L, "expected a string\n");
++			LH_ERROR(L, "expected a string\n");
+ 		}
+ 
+ 		// inline strdup that also handles
+@@ -450,7 +455,7 @@
+ 		case '>':
+ 			goto endargs;
+ 		default:
+-			error(L, "invalid option (%c)\n", sig[-1]);
++			LH_ERROR(L, "invalid option (%c)\n", sig[-1]);
+ 		}
+ 	}
+ endargs:
+@@ -458,7 +463,7 @@
+ 	nres = strlen(sig); // number of expected results
+ 
+ 	if (lua_pcall(L, narg, nres, 0)) {
+-		error(L, "error calling '%s': %s\n", func, lua_tostring(L, -1));
++		LH_ERROR(L, "error calling '%s': %s\n", func, lua_tostring(L, -1));
+ 	}
+ 
+ 	nres = -nres;  // stack index of first result
+@@ -473,7 +478,7 @@
+ 		case 'f':
+ 			dres = lua_tonumberx(L, nres, &isnum);
+ 			if (!isnum) {
+-				error(L, "wrong result type\n");
++				LH_ERROR(L, "wrong result type\n");
+ 			}
+ 			*va_arg(v1, double*) = dres;
+ 			break;
+@@ -481,24 +486,24 @@
+ 		case 'i':
+ 			ires = lua_tointegerx(L, nres, &isnum);
+ 			if (!isnum) {
+-				error(L, "wrong result type\n");
++				LH_ERROR(L, "wrong result type\n");
+ 			}
+ 			*va_arg(v1, int*) = ires;
+ 			break;
+ 		case 's':
+ 			if (!(sres = lua_tostring(L, nres))) {
+-				error(L, "wrong result type\n");
++				LH_ERROR(L, "wrong result type\n");
+ 			}
+ 			*va_arg(v1, char**) = (char*)sres;
+ 			break;
+ 		case 'b':
+ 			if (!(bool_res = lua_toboolean(L, nres))) {
+-				error(L, "wrong result type\n");
++				LH_ERROR(L, "wrong result type\n");
+ 			}
+ 			*va_arg(v1, int*) = bool_res;
+ 			break;
+ 		default:
+-			error(L, "invalid option (%c)\n", sig[-1]);
++			LH_ERROR(L, "invalid option (%c)\n", sig[-1]);
+ 		}
+ 		nres++;
+ 	}
+--- sdl_img-0.101.0.orig/src/nuklear.c
++++ sdl_img-0.101.0/src/nuklear.c
+@@ -0,0 +1,12 @@
++#define NK_INCLUDE_FIXED_TYPES
++#define NK_INCLUDE_STANDARD_IO
++#define NK_INCLUDE_STANDARD_VARARGS
++#define NK_INCLUDE_DEFAULT_ALLOCATOR
++#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
++#define NK_INCLUDE_FONT_BAKING
++#define NK_INCLUDE_DEFAULT_FONT
++#define NK_IMPLEMENTATION
++#include "nuklear.h"
++
++#define NK_SDL_RENDERER_IMPLEMENTATION
++#include "nuklear_sdl_renderer.h"
+--- sdl_img-0.101.0.orig/src/sdl_img.c
++++ sdl_img-0.101.0/src/sdl_img.c
+@@ -17,13 +17,17 @@
+ 
+ #include "controls_str.c"
+ 
+-#include "WjCryptLib_Md5.c"
++#include "WjCryptLib_Md5.h"
+ 
+ // for TCC
+ //#define STBIR_NO_SIMD
+ 
+ #define STB_IMAGE_RESIZE_IMPLEMENTATION
++#if STB_IMAGE_RESIZE_VERSION == 1
++#include "stb_image_resize.h"
++#else
+ #include "stb_image_resize2.h"
++#endif
+ 
+ // for TCC
+ //#define STBI_NO_SIMD
+@@ -1617,7 +1621,7 @@
+ 	setup(argc, argv);
+ 
+ 	old_ticks = SDL_GetTicks();
+-	int frame_count;
++	int frame_count = 0;
+ 	while (1) {
+ 		if (handle_events())
+ 			break;
+--- sdl_img-0.101.0.orig/src/sorting.c
++++ sdl_img-0.101.0/src/sorting.c
+@@ -24,45 +24,6 @@
+ 
+ typedef int (*compare_func)(const void* a, const void* b);
+ 
+-// TODO use quick sort or generic quicksort
+-//
+-//Mirrored Insertion sort, sorts a and b based on a
+-void sort(file* a, thumb_state* b, i64 n, compare_func cmp)
+-{
+-	int j;
+-	file temp;
+-	thumb_state tmp_thumb;
+-
+-	if (b) {
+-		for (int i=1; i<n; ++i) {
+-			j = i-1;
+-			temp = a[i];
+-			tmp_thumb = b[i];
+-			
+-			while (j >= 0 && cmp(&a[j], &temp) > 0) {
+-				a[j+1] = a[j];
+-				b[j+1] = b[j];
+-				--j;
+-			}
+-			a[j+1] = temp;
+-			b[j+1] = tmp_thumb;
+-		}
+-	} else {
+-		for (int i=1; i<n; ++i) {
+-			j = i-1;
+-			temp = a[i];
+-			
+-			while (j >= 0 && cmp(&a[j], &temp) > 0) {
+-				a[j+1] = a[j];
+-				--j;
+-			}
+-			a[j+1] = temp;
+-		}
+-	}
+-
+-	return;
+-}
+-
+ 
+ #define MAX_MIRRORS 10
+ 
+--- sdl_img-0.101.0.orig/src/thumbs.c
++++ sdl_img-0.101.0/src/thumbs.c
+@@ -106,7 +106,11 @@
+ 		cleanup(0, 1);
+ 	}
+ 
++#if STB_IMAGE_RESIZE_VERSION == 1
++  if (!stbir_resize_uint8       (pix, w, h, 0, outpix, out_w, out_h, 0, 4)) {
++#else
+ 	if (!stbir_resize_uint8_linear(pix, w, h, 0, outpix, out_w, out_h, 0, STBIR_RGBA)) {
++#endif
+ 		SDL_Log("Failed to resize for thumbnail!\n");
+ 		free(outpix);
+ 		return 0;
+
+# source
+https://github.com/rswinkle/sdl_img/archive/0.101.0/sdl_img-0.101.0.tar.gz

@@ -8,7 +8,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 # configure
 rm -f Source/stb_image.h
 rm -f Source/stb_image_write.h
-cd Source; sh ./Configure --stb-dir=/include/stb --prefix=; cd -
+cd Source; sh ./Configure --with-stb-dir=/include/stb --prefix=; cd -
 
 # build
 make -C Source
@@ -65,7 +65,7 @@ exit
 +while [ $# != 0 ]; do
 +  case $1 in
 +    --prefix=*) PREFIX=${1#*=};;
-+    --stb-dir=*) STB_DIR=${1#*=};;
++    --with-stb-dir=*) STB_DIR=${1#*=};;
 +    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
 +  shift

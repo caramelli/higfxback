@@ -1,0 +1,231 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="cmake3-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+GENERATOR=${GENERATOR-Unix Makefiles}
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX= -B build -G "$GENERATOR"
+
+# build
+cmake --build build
+
+# install
+install -d $DESTDIR/bin
+install build/projects/AesBlock/AesBlock $DESTDIR/bin
+install build/projects/AesCtrOutput/AesCtrOutput $DESTDIR/bin
+install build/projects/AesOfbOutput/AesOfbOutput $DESTDIR/bin
+install build/projects/Md5String/Md5String $DESTDIR/bin
+install build/projects/Rc4Output/Rc4Output $DESTDIR/bin
+install build/projects/Sha1String/Sha1String $DESTDIR/bin
+install build/projects/Sha256String/Sha256String $DESTDIR/bin
+install build/projects/Sha512String/Sha512String $DESTDIR/bin
+install build/projects/WjCryptLibTest/WjCryptLibTest $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 lib/WjCryptLib_Aes.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_AesCbc.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_AesCtr.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_AesOfb.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_Md5.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_Rc4.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_Sha1.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_Sha256.h $DESTDIR/include
+install -m 644 lib/WjCryptLib_Sha512.h $DESTDIR/include
+install -d $DESTDIR/lib
+install build/libWjCryptLib.so.2 $DESTDIR/lib
+ln -sf libWjCryptLib.so.2 $DESTDIR/lib/libWjCryptLib.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 build/wjcryptlib.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/wjcryptlib-build.pc << EOF
+Name: WjCryptLib
+Version: 2.3.0
+Description: Cryptographic library
+Requires: $REQUIRES
+
+devel=\\
+/include/WjCryptLib_Aes.h \\
+/include/WjCryptLib_AesCbc.h \\
+/include/WjCryptLib_AesCtr.h \\
+/include/WjCryptLib_AesOfb.h \\
+/include/WjCryptLib_Md5.h \\
+/include/WjCryptLib_Rc4.h \\
+/include/WjCryptLib_Sha1.h \\
+/include/WjCryptLib_Sha256.h \\
+/include/WjCryptLib_Sha512.h \\
+/lib/libWjCryptLib.so \\
+/lib/pkgconfig/wjcryptlib.pc
+
+exec=\\
+/bin/AesBlock \\
+/bin/AesCtrOutput \\
+/bin/AesOfbOutput \\
+/bin/Md5String \\
+/bin/Rc4Output \\
+/bin/Sha1String \\
+/bin/Sha256String \\
+/bin/Sha512String \\
+/bin/WjCryptLibTest \\
+/lib/libWjCryptLib.so.2
+EOF
+
+exit
+
+# patch
+--- WjCryptLib-2.3.0.orig/CMakeLists.txt
++++ WjCryptLib-2.3.0/CMakeLists.txt
+@@ -1,9 +1,11 @@
+ cmake_minimum_required(VERSION 3.6.0)
+ 
+-project( WjCryptLib )
++project( WjCryptLib VERSION 2.3.0 )
++
++include(GNUInstallDirs)
+ 
+ # WjCryptLib Static Library
+-add_library( WjCryptLib STATIC
++add_library( WjCryptLib
+     lib/WjCryptLib_Aes.h
+     lib/WjCryptLib_Aes.c
+     lib/WjCryptLib_AesCbc.h
+@@ -23,7 +25,7 @@
+     lib/WjCryptLib_Sha512.h
+     lib/WjCryptLib_Sha512.c )
+ target_include_directories( WjCryptLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib )
+-set_target_properties ( WjCryptLib PROPERTIES FOLDER lib )
++set_target_properties( WjCryptLib PROPERTIES SOVERSION 2 )
+ 
+ 
+ # Add the demo project directories
+@@ -36,3 +38,18 @@
+ add_subdirectory( projects/AesBlock )
+ add_subdirectory( projects/AesCtrOutput )
+ add_subdirectory( projects/AesOfbOutput )
++
++install(TARGETS WjCryptLib DESTINATION lib)
++
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/WjCryptLib
++    FILES_MATCHING PATTERN *.h)
++
++configure_file(
++    ${CMAKE_CURRENT_SOURCE_DIR}/wjcryptlib.pc.in
++    ${CMAKE_CURRENT_BINARY_DIR}/wjcryptlib.pc
++    @ONLY
++)
++
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/wjcryptlib.pc
++    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+--- WjCryptLib-2.3.0.orig/projects/AesBlock/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/AesBlock/CMakeLists.txt
+@@ -3,4 +3,4 @@
+ target_link_libraries( AesBlock
+     WjCryptLib )
+ 
+-install(TARGETS AesBlock DESTINATION .)
++install(TARGETS AesBlock DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/AesCtrOutput/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/AesCtrOutput/CMakeLists.txt
+@@ -3,5 +3,4 @@
+ target_link_libraries( AesCtrOutput
+     WjCryptLib )
+ 
+-install(TARGETS AesCtrOutput DESTINATION .)
+-
++install(TARGETS AesCtrOutput DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/AesOfbOutput/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/AesOfbOutput/CMakeLists.txt
+@@ -3,5 +3,5 @@
+ target_link_libraries( AesOfbOutput
+     WjCryptLib )
+ 
+-install(TARGETS AesOfbOutput DESTINATION .)
++install(TARGETS AesOfbOutput DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+--- WjCryptLib-2.3.0.orig/projects/Md5String/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/Md5String/CMakeLists.txt
+@@ -1,8 +1,6 @@
+-SET( MODULE_NAME Md5String )
+-
+-add_executable( ${MODULE_NAME}
++add_executable( Md5String
+     Md5String.c )
+-target_link_libraries( ${MODULE_NAME}
++target_link_libraries( Md5String
+     WjCryptLib )
+ 
+-install(TARGETS ${MODULE_NAME} DESTINATION .)
++install(TARGETS Md5String DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/Rc4Output/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/Rc4Output/CMakeLists.txt
+@@ -3,5 +3,4 @@
+ target_link_libraries( Rc4Output
+     WjCryptLib )
+ 
+-install(TARGETS Rc4Output DESTINATION .)
+-
++install(TARGETS Rc4Output DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/Sha1String/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/Sha1String/CMakeLists.txt
+@@ -3,5 +3,4 @@
+ target_link_libraries( Sha1String
+     WjCryptLib )
+ 
+-install(TARGETS Sha1String DESTINATION .)
+-
++install(TARGETS Sha1String DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/Sha256String/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/Sha256String/CMakeLists.txt
+@@ -3,4 +3,4 @@
+ target_link_libraries( Sha256String
+     WjCryptLib )
+ 
+-install(TARGETS Sha256String DESTINATION .)
++install(TARGETS Sha256String DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/Sha512String/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/Sha512String/CMakeLists.txt
+@@ -3,5 +3,4 @@
+ target_link_libraries( Sha512String
+     WjCryptLib )
+ 
+-install(TARGETS Sha512String DESTINATION .)
+-
++install(TARGETS Sha512String DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/WjCryptLibTest/CMakeLists.txt
++++ WjCryptLib-2.3.0/projects/WjCryptLibTest/CMakeLists.txt
+@@ -17,4 +17,4 @@
+ target_link_libraries( ${MODULE_NAME}
+     WjCryptLib )
+ 
+-install(TARGETS ${MODULE_NAME} DESTINATION .)
++install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+--- WjCryptLib-2.3.0.orig/projects/WjCryptLibTest/WjCryptLibTest_AesCbc.c
++++ WjCryptLib-2.3.0/projects/WjCryptLibTest/WjCryptLibTest_AesCbc.c
+@@ -88,7 +88,7 @@
+ };
+ 
+ #define NUM_TEST_VECTORS ( sizeof(gTestVectors) / sizeof(gTestVectors[0]) )
+-#define TEST_VECTOR_OUTPUT_SIZE     48
++#define TEST_VECTOR_OUTPUT_SIZE     64
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //  INTERNAL FUNCTIONS
+--- WjCryptLib-2.3.0.orig/wjcryptlib.pc.in
++++ WjCryptLib-2.3.0/wjcryptlib.pc.in
+@@ -0,0 +1,9 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
++libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
++
++Name: WjCryptLib
++Description: Cryptographic functions
++Version: @WjCryptLib_VERSION@
++Libs: -L${libdir} -lWjCryptLib
++Cflags: -I${includedir}
+
+# source
+https://github.com/WaterJuice/WjCryptLib/archive/Version_2.3.0/WjCryptLib-2.3.0.tar.gz
