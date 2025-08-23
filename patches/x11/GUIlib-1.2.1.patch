@@ -1,0 +1,166 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl-build"
+
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.59; am-1.9; lt-1.5.24)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-static --with-testdatadir=/x11/share/GUI/test --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/include/GUI
+install -m 644 GUI.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_C.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_area.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_button.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_font.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_generic.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_image.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_menu.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_scroll.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_scrollbar.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_status.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_termwin.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_widget.h $DESTDIR/x11/include/GUI
+install -m 644 GUI_widgets.h $DESTDIR/x11/include/GUI
+install -d $DESTDIR/x11/lib
+install .libs/libGUI-1.2.so.0.* $DESTDIR/x11/lib/libGUI-1.2.so.0
+ln -sf libGUI-1.2.so.0 $DESTDIR/x11/lib/libGUI.so
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 gui.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/GUI/test
+install .libs/hello $DESTDIR/x11/share/GUI/test
+install -m 644 hello.bmp $DESTDIR/x11/share/GUI/test
+install -m 644 hello2.bmp $DESTDIR/x11/share/GUI/test
+install -m 644 scroll_dn.bmp $DESTDIR/x11/share/GUI/test
+install -m 644 scroll_up.bmp $DESTDIR/x11/share/GUI/test
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/guilib-build.pc << EOF
+Name: GUIlib
+Version: 1.2.1
+Description: Graphical User Interface library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/GUI/GUI.h \\
+/x11/include/GUI/GUI_C.h \\
+/x11/include/GUI/GUI_area.h \\
+/x11/include/GUI/GUI_button.h \\
+/x11/include/GUI/GUI_font.h \\
+/x11/include/GUI/GUI_generic.h \\
+/x11/include/GUI/GUI_image.h \\
+/x11/include/GUI/GUI_menu.h \\
+/x11/include/GUI/GUI_scroll.h \\
+/x11/include/GUI/GUI_scrollbar.h \\
+/x11/include/GUI/GUI_status.h \\
+/x11/include/GUI/GUI_termwin.h \\
+/x11/include/GUI/GUI_widget.h \\
+/x11/include/GUI/GUI_widgets.h \\
+/x11/lib/libGUI.so \\
+/x11/lib/pkgconfig/gui.pc
+
+exec=\\
+/x11/lib/libGUI-1.2.so.0 \\
+/x11/share/GUI/test/hello \\
+/x11/share/GUI/test/hello.bmp \\
+/x11/share/GUI/test/hello2.bmp \\
+/x11/share/GUI/test/scroll_dn.bmp \\
+/x11/share/GUI/test/scroll_up.bmp
+EOF
+
+exit
+
+# patch
+--- GUIlib-1.2.1.orig/Makefile.am
++++ GUIlib-1.2.1/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL sample image loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libGUI.la
+ 
+ libGUIincludedir = $(includedir)/GUI
+@@ -56,11 +58,14 @@
+ 	-release $(LT_RELEASE)	\
+ 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = gui.pc
+ 
+ noinst_PROGRAMS = genimage hello hello_C keyboard okay
+ 
+ genimage_SOURCES = genimage.c
+ hello_SOURCES = hello.cpp
++hello_CPPFLAGS = -DTESTDATADIR=\"@TESTDATADIR@\"
+ hello_LDADD = libGUI.la
+ hello_C_SOURCES = hello_C.c
+ hello_C_LDADD = libGUI.la
+--- GUIlib-1.2.1.orig/acinclude.m4
++++ GUIlib-1.2.1/acinclude.m4
+@@ -37,11 +37,12 @@
+   fi
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+ 
+--- GUIlib-1.2.1.orig/configure.in
++++ GUIlib-1.2.1/configure.in
+@@ -62,7 +62,14 @@
+ dnl C++ flags are the same as C flags
+ CXXFLAGS="$CFLAGS"
+ 
++AC_ARG_WITH(testdatadir,
++            [AS_HELP_STRING([--with-testdatadir], [test data directory])],
++            [TESTDATADIR=$with_testdatadir],
++            [TESTDATADIR=.])
++AC_SUBST(TESTDATADIR)
++
+ # Finally create all the generated files
+ AC_OUTPUT([
+ Makefile
++gui.pc
+ ])
+--- GUIlib-1.2.1.orig/gui.pc.in
++++ GUIlib-1.2.1/gui.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: GUIlib
++Description: GUI library for Simple DirectMedia Layer
++Version: @VERSION@
++Requires: sdl
++Libs: -L${libdir} -lGUI
++Cflags: -I${includedir}/GUI
+--- GUIlib-1.2.1.orig/hello.cpp
++++ GUIlib-1.2.1/hello.cpp
+@@ -19,7 +19,7 @@
+ 	NUM_IMAGES
+ };
+ char *image_files[NUM_IMAGES] = {
+-	"hello.bmp", "hello2.bmp", "scroll_up.bmp", "scroll_dn.bmp"
++	TESTDATADIR"/hello.bmp", TESTDATADIR"/hello2.bmp", TESTDATADIR"/scroll_up.bmp", TESTDATADIR"/scroll_dn.bmp"
+ };
+ SDL_Surface *images[NUM_IMAGES];
+ 
+# source
+https://www.libsdl.org/projects/GUIlib/src/GUIlib-1.2.1.tar.gz

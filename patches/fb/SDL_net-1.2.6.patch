@@ -1,0 +1,173 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists guilib-build; then
+  GUILIB=1
+  REQUIRES="$REQUIRES guilib-build"
+fi
+
+# configure (ac-2.59; am-1.9; lt-1.5.24)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --prefix=/fb
+
+# build
+make
+
+# install
+test $GUILIB && install -d $DESTDIR/fb/bin
+test $GUILIB && install .libs/chat $DESTDIR/fb/bin
+test $GUILIB && install .libs/chatd $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/SDL
+install -m 644 SDL_net.h $DESTDIR/fb/include/SDL
+install -d $DESTDIR/fb/lib
+install .libs/libSDL_net-1.2.so.0.* $DESTDIR/fb/lib/libSDL_net-1.2.so.0
+ln -sf libSDL_net-1.2.so.0 $DESTDIR/fb/lib/libSDL_net.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 SDL_net.pc $DESTDIR/fb/lib/pkgconfig
+test $GUILIB && install -d $DESTDIR/fb/share/SDL_net
+test $GUILIB && install -m 644 quit.bmp $DESTDIR/fb/share/SDL_net
+test $GUILIB && install -m 644 scroll_dn.bmp $DESTDIR/fb/share/SDL_net
+test $GUILIB && install -m 644 scroll_up.bmp $DESTDIR/fb/share/SDL_net
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/sdl_net-build.pc << EOF
+Name: SDL_net
+Version: 1.2.6
+Description: Network library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/SDL/SDL_net.h \\
+/fb/lib/libSDL_net.so \\
+/fb/lib/pkgconfig/SDL_net.pc
+
+exec=\\
+EOF
+test $GUILIB && cat >> $DESTDIR/fb/share/pkgconfig/sdl_net-build.pc << EOF
+/fb/bin/chat \\
+/fb/bin/chatd \\
+EOF
+cat >> $DESTDIR/fb/share/pkgconfig/sdl_net-build.pc << EOF
+/fb/lib/libSDL_net-1.2.so.0 \\
+EOF
+test $GUILIB && cat >> $DESTDIR/fb/share/pkgconfig/sdl_net-build.pc << EOF
+/fb/share/SDL_net/quit.bmp \\
+/fb/share/SDL_net/scroll_dn.bmp \\
+/fb/share/SDL_net/scroll_up.bmp \\
+EOF
+sed -i '$ s/ \\//' $DESTDIR/fb/share/pkgconfig/sdl_net-build.pc
+
+exit
+
+# patch
+--- SDL_net-1.2.6.orig/Makefile.am
++++ SDL_net-1.2.6/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL sample image loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libSDL_net.la
+ 
+ libSDL_netincludedir = $(includedir)/SDL
+@@ -41,6 +43,8 @@
+ noinst_PROGRAMS = $(EXAMPLES)
+ 
+ chat_SOURCES = chat.cpp chat.h
++chat_CPPFLAGS = -DDATADIR=\"$(pkgdatadir)\"
++chat_CXXFLAGS = -I$(includedir)/GUI
+ chat_LDADD = libSDL_net.la -lGUI
+ chatd_SOURCES = chatd.c
+ chatd_LDADD = libSDL_net.la
+@@ -52,3 +56,5 @@
+ rpm: $(PACKAGE)-$(VERSION).tar.gz
+ 	rpm -ta $(PACKAGE)-$(VERSION).tar.gz
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = SDL_net.pc
+--- SDL_net-1.2.6.orig/SDL_net.pc.in
++++ SDL_net-1.2.6/SDL_net.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: SDL_net
++Description: net library for Simple DirectMedia Layer
++Version: @VERSION@
++Requires: sdl
++Libs: -L${libdir} -lSDL_net
++Cflags: -I${includedir}/SDL
+--- SDL_net-1.2.6.orig/SDLnet.c
++++ SDL_net-1.2.6/SDLnet.c
+@@ -24,8 +24,6 @@
+ 
+ #include <string.h>
+ 
+-#include "SDL_byteorder.h"
+-
+ #include "SDLnetsys.h"
+ #include "SDL_net.h"
+ 
+--- SDL_net-1.2.6.orig/acinclude.m4
++++ SDL_net-1.2.6/acinclude.m4
+@@ -37,11 +37,12 @@
+   fi
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+ 
+--- SDL_net-1.2.6.orig/chat.cpp
++++ SDL_net-1.2.6/chat.cpp
+@@ -32,13 +32,10 @@
+ #include <string.h>
+ 
+ #include "SDL_net.h"
+-#ifdef macintosh
++
+ #include "GUI.h"
+ #include "GUI_widgets.h"
+-#else
+-#include <GUI/GUI.h>
+-#include <GUI/GUI_widgets.h>
+-#endif
++
+ #include "chat.h"
+ 
+ 
+@@ -62,7 +59,7 @@
+ 	NUM_IMAGES
+ };
+ char *image_files[NUM_IMAGES] = {
+-	"quit.bmp", "scroll_up.bmp", "scroll_dn.bmp"
++	DATADIR"/quit.bmp", DATADIR"/scroll_up.bmp", DATADIR"/scroll_dn.bmp"
+ };
+ SDL_Surface *images[NUM_IMAGES];
+ 
+--- SDL_net-1.2.6.orig/configure.in
++++ SDL_net-1.2.6/configure.in
+@@ -114,5 +114,5 @@
+ 
+ # Finally create all the generated files
+ AC_OUTPUT([
+-Makefile SDL_net.spec SDL_net.qpg
++Makefile SDL_net.spec SDL_net.qpg SDL_net.pc
+ ])
+
+# source
+https://www.libsdl.org/projects/SDL_net/release/SDL_net-1.2.6.tar.gz

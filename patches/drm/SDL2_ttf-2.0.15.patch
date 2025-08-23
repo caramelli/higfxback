@@ -1,0 +1,112 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build freetype-build sdl2-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build && GL=1
+
+# configure (ac-2.69; am-1.16; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+test $GL && install .libs/glfont $DESTDIR/drm/bin
+install .libs/showfont $DESTDIR/drm/bin
+install -d $DESTDIR/drm/include/SDL2
+install -m 644 SDL_ttf.h $DESTDIR/drm/include/SDL2
+install -d $DESTDIR/drm/lib
+install .libs/libSDL2_ttf-2.0.so.0.* $DESTDIR/drm/lib/libSDL2_ttf-2.0.so.0
+ln -sf libSDL2_ttf-2.0.so.0 $DESTDIR/drm/lib/libSDL2_ttf.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 SDL2_ttf.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/sdl2_ttf-build.pc << EOF
+Name: SDL2_ttf
+Version: 2.0.15
+Description: TrueType font library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/SDL2/SDL2_ttf.h \\
+/drm/lib/libSDL2_ttf.so \\
+/drm/lib/pkgconfig/SDL2_ttf.pc
+
+exec=\\
+EOF
+test $GL && cat >> $DESTDIR/drm/share/pkgconfig/sdl2_ttf-build.pc << EOF
+/drm/bin/glfont \\
+EOF
+cat >> $DESTDIR/drm/share/pkgconfig/sdl2_ttf-build.pc << EOF
+/drm/bin/showfont \\
+/drm/lib/libSDL2_ttf-2.0.so.0
+EOF
+
+exit
+
+# patch
+--- SDL2_ttf-2.0.15.orig/configure.in
++++ SDL2_ttf-2.0.15/configure.in
+@@ -1,5 +1,4 @@
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT(README.txt)
+ 
+ dnl Set various version strings - taken gratefully from the GTk sources
+ 
+@@ -11,19 +10,24 @@
+ # if backwards compatibility has been broken,
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+-MAJOR_VERSION=2
+-MINOR_VERSION=0
+-MICRO_VERSION=15
+-INTERFACE_AGE=1
+-BINARY_AGE=15
+-VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+-
+-AC_SUBST(MAJOR_VERSION)
+-AC_SUBST(MINOR_VERSION)
+-AC_SUBST(MICRO_VERSION)
+-AC_SUBST(INTERFACE_AGE)
+-AC_SUBST(BINARY_AGE)
+-AC_SUBST(VERSION)
++m4_define([MAJOR_VERSION_MACRO], [2])
++m4_define([MINOR_VERSION_MACRO], [0])
++m4_define([MICRO_VERSION_MACRO], [14])
++m4_define([INTERFACE_AGE_MACRO], [0])
++m4_define([BINARY_AGE_MACRO], [14])
++
++AC_INIT([SDL2_ttf],
++        MAJOR_VERSION_MACRO.MINOR_VERSION_MACRO.MICRO_VERSION_MACRO,
++        [https://github.com/libsdl-org/SDL_ttf/issues],
++        [SDL2_ttf])
++AC_CONFIG_MACRO_DIR([acinclude])
++AC_CONFIG_SRCDIR([SDL_ttf.c])
++ 
++AC_SUBST([MAJOR_VERSION], MAJOR_VERSION_MACRO)
++AC_SUBST([MINOR_VERSION], MINOR_VERSION_MACRO)
++AC_SUBST([MICRO_VERSION], MICRO_VERSION_MACRO)
++AC_SUBST([INTERFACE_AGE], INTERFACE_AGE_MACRO)
++AC_SUBST([BINARY_AGE], BINARY_AGE_MACRO)
+ 
+ # libtool versioning
+ LT_INIT([win32-dll])
+@@ -42,7 +46,7 @@
+ AC_CANONICAL_HOST
+ 
+ dnl Setup for automake
+-AM_INIT_AUTOMAKE(SDL2_ttf, $VERSION)
++AM_INIT_AUTOMAKE([foreign])
+ 
+ dnl Check for tools
+ AC_PROG_LIBTOOL
+
+# source
+https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.15.tar.gz

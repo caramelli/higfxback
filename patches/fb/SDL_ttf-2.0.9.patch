@@ -1,0 +1,160 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build freetype-build sdl-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl-build | grep -q egl-opengl-stubs-build && GL=1
+
+# configure (ac-2.59; am-1.9; lt-1.5.24)
+libtoolize -c -f; aclocal -I . -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+test $GL && install .libs/glfont $DESTDIR/fb/bin
+install .libs/showfont $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/SDL
+install -m 644 SDL_ttf.h $DESTDIR/fb/include/SDL
+install -d $DESTDIR/fb/lib
+install .libs/libSDL_ttf-1.2.so.0.* $DESTDIR/fb/lib/libSDL_ttf-1.2.so.0
+ln -sf libSDL_ttf-1.2.so.0 $DESTDIR/fb/lib/libSDL_ttf.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 SDL_ttf.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/sdl_ttf-build.pc << EOF
+Name: SDL_ttf
+Version: 2.0.9
+Description: TrueType font library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/SDL/SDL_ttf.h \\
+/fb/lib/libSDL_ttf.so \\
+/fb/lib/pkgconfig/SDL_ttf.pc
+
+exec=\\
+EOF
+test $GL && cat >> $DESTDIR/fb/share/pkgconfig/sdl_ttf-build.pc << EOF
+/fb/bin/glfont \\
+EOF
+cat >> $DESTDIR/fb/share/pkgconfig/sdl_ttf-build.pc << EOF
+/fb/bin/showfont \\
+/fb/lib/libSDL_ttf-1.2.so.0
+EOF
+
+exit
+
+# patch
+--- SDL_ttf-2.0.9.orig/Makefile.am
++++ SDL_ttf-2.0.9/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL truetype font loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libSDL_ttf.la
+ 
+ libSDL_ttfincludedir = $(includedir)/SDL
+@@ -34,6 +36,9 @@
+ 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+ endif
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = SDL_ttf.pc
++
+ %.o : %.rc
+ 	$(WINDRES) $< $@
+ 
+--- SDL_ttf-2.0.9.orig/SDL_ttf.pc.in
++++ SDL_ttf-2.0.9/SDL_ttf.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: SDL_ttf
++Description: ttf library for Simple DirectMedia Layer with FreeType 2 support
++Version: @VERSION@
++Requires: sdl
++Libs: -L${libdir} -lSDL_ttf
++Cflags: -I${includedir}/SDL
+--- SDL_ttf-2.0.9.orig/acinclude/sdl.m4
++++ SDL_ttf-2.0.9/acinclude/sdl.m4
+@@ -37,11 +37,12 @@
+   fi
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+ 
+--- SDL_ttf-2.0.9.orig/configure.in
++++ SDL_ttf-2.0.9/configure.in
+@@ -11,8 +11,8 @@
+ # if backwards compatibility has been broken,
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+-MAJOR_VERSION=2
+-MINOR_VERSION=0
++MAJOR_VERSION=1
++MINOR_VERSION=2
+ MICRO_VERSION=9
+ INTERFACE_AGE=3
+ BINARY_AGE=9
+@@ -116,9 +116,12 @@
+ AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
+ no_freetype=""
+ if test "$FREETYPE_CONFIG" = "no" ; then
++    PKG_CHECK_MODULES([FT2], [freetype2], [
++    CFLAGS="$CFLAGS $FT2_CFLAGS"
++    LIBS="$LIBS $FT2_LIBS"],
+     AC_MSG_ERROR([
+ *** Unable to find FreeType2 library (http://www.freetype.org/)
+-])
+++]))
+ else
+     CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
+     LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
+@@ -155,14 +158,11 @@
+         ;;
+     *)
+         MATHLIB="-lm"
+-        AC_PATH_X
+-        AC_PATH_XTRA
+-        if test x$have_x = xyes; then
+-            CFLAGS="$CFLAGS $X_CFLAGS"
+-            SYS_GL_LIBS="$X_LIBS -lGL"
+-        else
++        PKG_CHECK_MODULES([SYS_GL], [gl], [
++            CFLAGS="$CFLAGS $SYS_GL_CFLAGS"
++        ], [
+             SYS_GL_LIBS="-lGL"
+-        fi
++        ])
+         ;;
+ esac
+ AC_MSG_CHECKING(for OpenGL support)
+@@ -189,4 +189,5 @@
+ AC_OUTPUT([
+ Makefile
+ SDL_ttf.spec
++SDL_ttf.pc
+ ])
+
+# source
+https://www.libsdl.org/projects/SDL_ttf/release/SDL_ttf-2.0.9.tar.gz

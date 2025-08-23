@@ -7,8 +7,10 @@ PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires sdl_mixer-build | grep -q libvorbis-build || { echo SDL_mixer with Vorbis support required; exit 1; }
 
+PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists sdl_net-build && REQUIRES="$REQUIRES sdl_net-build"
+
 # configure
-PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --prefix /x11
+PKG_CONFIG_PATH=/x11/lib/pkgconfig LDFLAGS=-Wl,-rpath,/x11/lib ./configure --disable-python --prefix /x11
 
 # build
 make
@@ -89,7 +91,20 @@ exit
  }
  
  check_voice_files() {
-@@ -322,6 +320,9 @@
+@@ -152,6 +150,12 @@
+ }
+ 
+ check_python_lib() {
++    if pkg-config --exists python3; then
++        CFLAGS="$(pkg-config --cflags python3) $CFLAGS"
++        LDFLAGS="$(pkg-config --libs python3) $LDFLAGS"
++        return 0
++    fi
++
+     if [ -z "$PYTHON3_CONFIG" ]; then
+         PYTHON3_CONFIG="python3-config"
+     fi
+@@ -322,6 +326,9 @@
  # Parse command-line arguments
  parse_arguments $*
  

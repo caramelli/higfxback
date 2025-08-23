@@ -7,7 +7,7 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2-build | grep -q egl-opengl-stubs-build && GL=1
 
-# configure (ac-2.69; am-1.16; lt-2.2.6)
+# configure (ac-2.69; am-1.13; lt-2.2.6)
 libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
 PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-static --prefix=/wl
 
@@ -54,25 +54,60 @@ exit
 # patch
 --- SDL2_ttf-2.0.14.orig/configure.in
 +++ SDL2_ttf-2.0.14/configure.in
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,4 @@
  dnl Process this file with autoconf to produce a configure script.
 -AC_INIT(README.txt)
-+AC_INIT(SDL_ttf, 2.0.14)
-+AC_CONFIG_SRCDIR(README.txt)
-+AC_CONFIG_MACRO_DIR(acinclude)
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
-@@ -42,7 +44,7 @@
+@@ -11,19 +10,24 @@
+ # if backwards compatibility has been broken,
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+-MAJOR_VERSION=2
+-MINOR_VERSION=0
+-MICRO_VERSION=14
+-INTERFACE_AGE=0
+-BINARY_AGE=14
+-VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+-
+-AC_SUBST(MAJOR_VERSION)
+-AC_SUBST(MINOR_VERSION)
+-AC_SUBST(MICRO_VERSION)
+-AC_SUBST(INTERFACE_AGE)
+-AC_SUBST(BINARY_AGE)
+-AC_SUBST(VERSION)
++m4_define([MAJOR_VERSION_MACRO], [2])
++m4_define([MINOR_VERSION_MACRO], [0])
++m4_define([MICRO_VERSION_MACRO], [14])
++m4_define([INTERFACE_AGE_MACRO], [0])
++m4_define([BINARY_AGE_MACRO], [14])
++
++AC_INIT([SDL2_ttf],
++        MAJOR_VERSION_MACRO.MINOR_VERSION_MACRO.MICRO_VERSION_MACRO,
++        [https://github.com/libsdl-org/SDL_ttf/issues],
++        [SDL2_ttf])
++AC_CONFIG_MACRO_DIR([acinclude])
++AC_CONFIG_SRCDIR([SDL_ttf.c])
++ 
++AC_SUBST([MAJOR_VERSION], MAJOR_VERSION_MACRO)
++AC_SUBST([MINOR_VERSION], MINOR_VERSION_MACRO)
++AC_SUBST([MICRO_VERSION], MICRO_VERSION_MACRO)
++AC_SUBST([INTERFACE_AGE], INTERFACE_AGE_MACRO)
++AC_SUBST([BINARY_AGE], BINARY_AGE_MACRO)
+ 
+ # libtool versioning
+ LT_INIT([win32-dll])
+@@ -42,7 +46,7 @@
  AC_CANONICAL_HOST
  
  dnl Setup for automake
 -AM_INIT_AUTOMAKE(SDL2_ttf, $VERSION)
-+AM_INIT_AUTOMAKE(foreign)
++AM_INIT_AUTOMAKE([foreign])
  
  dnl Check for tools
  AC_PROG_LIBTOOL
-@@ -112,9 +114,12 @@
+@@ -112,9 +116,12 @@
  AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
  no_freetype=""
  if test "$FREETYPE_CONFIG" = "no" ; then
@@ -86,6 +121,6 @@ exit
  else
      CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
      LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
- 
+
 # source
 https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.14.tar.gz

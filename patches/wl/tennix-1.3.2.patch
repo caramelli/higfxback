@@ -7,8 +7,10 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires sdl2_mixer-build | grep -q libvorbis-build || { echo SDL2_mixer with Vorbis support required; exit 1; }
 
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists sdl2_net-build && REQUIRES="$REQUIRES sdl2_net-build"
+
 # configure
-PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --prefix /wl
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-python --prefix /wl
 
 # build
 make
@@ -100,6 +102,19 @@ exit
  }
  
  check_voice_files() {
+@@ -156,6 +158,12 @@
+ }
+ 
+ check_python_lib() {
++    if pkg-config --exists python3; then
++        CFLAGS="$(pkg-config --cflags python3) $CFLAGS"
++        LDFLAGS="$(pkg-config --libs python3) $LDFLAGS"
++        return 0
++    fi
++
+     if [ -z "$PYTHON3_CONFIG" ]; then
+         PYTHON3_CONFIG="python3-config"
+     fi
 --- tennix-1.3.2.orig/src/graphics.cc
 +++ tennix-1.3.2/src/graphics.cc
 @@ -33,8 +33,6 @@

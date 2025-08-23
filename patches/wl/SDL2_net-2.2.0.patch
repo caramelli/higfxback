@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl2-build"
+
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/wl/lib/pkgconfig LDFLAGS=-Wl,-rpath,/wl/lib ./configure --disable-examples --disable-static --prefix=/wl
+
+# build
+make
+
+# install
+install -d $DESTDIR/wl/include/SDL
+install -m 644 SDL_net.h $DESTDIR/wl/include/SDL2
+install -d $DESTDIR/wl/lib
+install .libs/libSDL2_net-2.0.so.0.* $DESTDIR/wl/lib/libSDL2_net-2.0.so.0
+ln -sf libSDL2_net-2.0.so.0 $DESTDIR/wl/lib/libSDL2_net.so
+install -d $DESTDIR/wl/lib/pkgconfig
+install -m 644 SDL2_net.pc $DESTDIR/wl/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/wl/share/pkgconfig
+cat > $DESTDIR/wl/share/pkgconfig/sdl2_net-build.pc << EOF
+Name: SDL2_net
+Version: 2.2.0
+Description: Network library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/wl/include/SDL2/SDL_net.h \\
+/wl/lib/libSDL2_net.so \\
+/wl/lib/pkgconfig/SDL2_net.pc
+
+exec=\\
+/wl/lib/libSDL2_net-2.0.so.0
+EOF
+
+exit
+
+# source
+https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.2.0.tar.gz

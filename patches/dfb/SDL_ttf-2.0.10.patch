@@ -52,18 +52,26 @@ EOF
 exit
 
 # patch
+--- SDL_ttf-2.0.10.orig/Makefile.am
++++ SDL_ttf-2.0.10/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL truetype font loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libSDL_ttf.la
+ 
+ libSDL_ttfincludedir = $(includedir)/SDL
 --- SDL_ttf-2.0.10.orig/configure.in
 +++ SDL_ttf-2.0.10/configure.in
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,6 @@
  dnl Process this file with autoconf to produce a configure script.
--AC_INIT(README)
-+AC_INIT(SDL_ttf, 2.0.10)
-+AC_CONFIG_SRCDIR(README)
+ AC_INIT(README)
 +AC_CONFIG_MACRO_DIR(acinclude)
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
-@@ -11,8 +13,8 @@
+@@ -11,8 +12,8 @@
  # if backwards compatibility has been broken,
  # set BINARY_AGE and INTERFACE_AGE to 0.
  
@@ -74,16 +82,7 @@ exit
  MICRO_VERSION=10
  INTERFACE_AGE=0
  BINARY_AGE=10
-@@ -42,7 +44,7 @@
- AC_CANONICAL_HOST
- 
- dnl Setup for automake
--AM_INIT_AUTOMAKE(SDL_ttf, $VERSION)
-+AM_INIT_AUTOMAKE(foreign)
- 
- dnl Check for tools
- AC_PROG_LIBTOOL
-@@ -116,9 +118,12 @@
+@@ -116,9 +117,12 @@
  AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
  no_freetype=""
  if test "$FREETYPE_CONFIG" = "no" ; then
@@ -97,7 +96,7 @@ exit
  else
      CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
      LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
-@@ -156,14 +161,11 @@
+@@ -156,14 +160,11 @@
          ;;
      *)
          MATHLIB="-lm"

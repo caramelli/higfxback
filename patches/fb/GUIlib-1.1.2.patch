@@ -1,0 +1,181 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.59; am-1.9; lt-1.5.24)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --with-testdatadir=/fb/share/GUI/test --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/include/GUI
+install -m 644 GUI.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_C.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_area.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_button.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_font.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_generic.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_image.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_menu.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_scroll.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_scrollbar.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_status.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_termwin.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_widget.h $DESTDIR/fb/include/GUI
+install -m 644 GUI_widgets.h $DESTDIR/fb/include/GUI
+install -d $DESTDIR/fb/lib
+install .libs/libGUI-1.1.so.0.* $DESTDIR/fb/lib/libGUI-1.1.so.0
+ln -sf libGUI-1.1.so.0 $DESTDIR/fb/lib/libGUI.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 gui.pc $DESTDIR/fb/lib/pkgconfig
+install -d $DESTDIR/fb/share/GUI/test
+install .libs/hello $DESTDIR/fb/share/GUI/test
+install -m 644 hello.bmp $DESTDIR/fb/share/GUI/test
+install -m 644 hello2.bmp $DESTDIR/fb/share/GUI/test
+install -m 644 scroll_dn.bmp $DESTDIR/fb/share/GUI/test
+install -m 644 scroll_up.bmp $DESTDIR/fb/share/GUI/test
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/guilib-build.pc << EOF
+Name: GUIlib
+Version: 1.1.2
+Description: Graphical User Interface library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/GUI/GUI.h \\
+/fb/include/GUI/GUI_C.h \\
+/fb/include/GUI/GUI_area.h \\
+/fb/include/GUI/GUI_button.h \\
+/fb/include/GUI/GUI_font.h \\
+/fb/include/GUI/GUI_generic.h \\
+/fb/include/GUI/GUI_image.h \\
+/fb/include/GUI/GUI_menu.h \\
+/fb/include/GUI/GUI_scroll.h \\
+/fb/include/GUI/GUI_scrollbar.h \\
+/fb/include/GUI/GUI_status.h \\
+/fb/include/GUI/GUI_termwin.h \\
+/fb/include/GUI/GUI_widget.h \\
+/fb/include/GUI/GUI_widgets.h \\
+/fb/lib/libGUI.so \\
+/fb/lib/pkgconfig/gui.pc
+
+exec=\\
+/fb/lib/libGUI-1.1.so.0 \\
+/fb/share/GUI/test/hello \\
+/fb/share/GUI/test/hello.bmp \\
+/fb/share/GUI/test/hello2.bmp \\
+/fb/share/GUI/test/scroll_dn.bmp \\
+/fb/share/GUI/test/scroll_up.bmp
+EOF
+
+exit
+
+# patch
+--- GUIlib-1.1.2.orig/GUI_menu.h
++++ GUIlib-1.1.2/GUI_menu.h
+@@ -39,9 +39,9 @@
+   virtual void AddSubitem(GUI_Menuitem *newitem);
+   virtual GUI_Menuitem* GetSubItem(int Aid);
+ 
+-  GUI_status GUI_Submenu:: MouseDown(int x, int y, int button);
+-  GUI_status GUI_Submenu::MouseUp(int x,int y,int button);
+-  GUI_status GUI_Submenu::MouseMotion(int x,int y,Uint8 state);
++  GUI_status MouseDown(int x, int y, int button);
++  GUI_status MouseUp(int x,int y,int button);
++  GUI_status MouseMotion(int x,int y,Uint8 state);
+ 
+   inline virtual int GetSubmenuId()
+     {return submenuid;}
+--- GUIlib-1.1.2.orig/Makefile.am
++++ GUIlib-1.1.2/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL sample image loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libGUI.la
+ 
+ libGUIincludedir = $(includedir)/GUI
+@@ -53,11 +55,14 @@
+         -release $(LT_RELEASE)	\
+ 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = gui.pc
+ 
+ noinst_PROGRAMS = genimage hello hello_C keyboard okay
+ 
+ genimage_SOURCES = genimage.c
+ hello_SOURCES = hello.cpp
++hello_CPPFLAGS = -DTESTDATADIR=\"@TESTDATADIR@\"
+ hello_LDADD = libGUI.la
+ hello_C_SOURCES = hello_C.c
+ hello_C_LDADD = libGUI.la
+--- GUIlib-1.1.2.orig/acinclude.m4
++++ GUIlib-1.1.2/acinclude.m4
+@@ -37,11 +37,12 @@
+   fi
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+ 
+--- GUIlib-1.1.2.orig/configure.in
++++ GUIlib-1.1.2/configure.in
+@@ -62,7 +62,14 @@
+ dnl C++ flags are the same as C flags
+ CXXFLAGS="$CFLAGS"
+ 
++AC_ARG_WITH(testdatadir,
++            [AS_HELP_STRING([--with-testdatadir], [test data directory])],
++            [TESTDATADIR=$with_testdatadir],
++            [TESTDATADIR=.])
++AC_SUBST(TESTDATADIR)
++
+ # Finally create all the generated files
+ AC_OUTPUT([
+ Makefile
++gui.pc
+ ])
+--- GUIlib-1.1.2.orig/gui.pc.in
++++ GUIlib-1.1.2/gui.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: GUIlib
++Description: GUI library for Simple DirectMedia Layer
++Version: @VERSION@
++Requires: sdl
++Libs: -L${libdir} -lGUI
++Cflags: -I${includedir}/GUI
+--- GUIlib-1.1.2.orig/hello.cpp
++++ GUIlib-1.1.2/hello.cpp
+@@ -19,7 +19,7 @@
+ 	NUM_IMAGES
+ };
+ char *image_files[NUM_IMAGES] = {
+-	"hello.bmp", "hello2.bmp", "scroll_up.bmp", "scroll_dn.bmp"
++	TESTDATADIR"/hello.bmp", TESTDATADIR"/hello2.bmp", TESTDATADIR"/scroll_up.bmp", TESTDATADIR"/scroll_dn.bmp"
+ };
+ SDL_Surface *images[NUM_IMAGES];
+ 
+# source
+https://www.libsdl.org/projects/GUIlib/src/GUIlib-1.1.2.tar.gz

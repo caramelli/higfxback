@@ -1,0 +1,192 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.59; am-1.9; lt-1.5.24)
+libtoolize -c -f; aclocal; autoconf; automake -a -c
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --with-testdatadir=/dfb/share/GUI/test --prefix=/dfb
+
+# build
+make
+
+# install
+install -d $DESTDIR/dfb/include/GUI
+install -m 644 GUI.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_C.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_area.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_button.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_font.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_generic.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_image.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_menu.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_scroll.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_scrollbar.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_status.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_termwin.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_widget.h $DESTDIR/dfb/include/GUI
+install -m 644 GUI_widgets.h $DESTDIR/dfb/include/GUI
+install -d $DESTDIR/dfb/lib
+install .libs/libGUI-1.2.so.0.* $DESTDIR/dfb/lib/libGUI-1.2.so.0
+ln -sf libGUI-1.2.so.0 $DESTDIR/dfb/lib/libGUI.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 gui.pc $DESTDIR/dfb/lib/pkgconfig
+install -d $DESTDIR/dfb/share/GUI/test
+install .libs/hello $DESTDIR/dfb/share/GUI/test
+install -m 644 hello.bmp $DESTDIR/dfb/share/GUI/test
+install -m 644 hello2.bmp $DESTDIR/dfb/share/GUI/test
+install -m 644 scroll_dn.bmp $DESTDIR/dfb/share/GUI/test
+install -m 644 scroll_up.bmp $DESTDIR/dfb/share/GUI/test
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/guilib-build.pc << EOF
+Name: GUIlib
+Version: 1.2.0
+Description: Graphical User Interface library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/GUI/GUI.h \\
+/dfb/include/GUI/GUI_C.h \\
+/dfb/include/GUI/GUI_area.h \\
+/dfb/include/GUI/GUI_button.h \\
+/dfb/include/GUI/GUI_font.h \\
+/dfb/include/GUI/GUI_generic.h \\
+/dfb/include/GUI/GUI_image.h \\
+/dfb/include/GUI/GUI_menu.h \\
+/dfb/include/GUI/GUI_scroll.h \\
+/dfb/include/GUI/GUI_scrollbar.h \\
+/dfb/include/GUI/GUI_status.h \\
+/dfb/include/GUI/GUI_termwin.h \\
+/dfb/include/GUI/GUI_widget.h \\
+/dfb/include/GUI/GUI_widgets.h \\
+/dfb/lib/libGUI.so \\
+/dfb/lib/pkgconfig/gui.pc
+
+exec=\\
+/dfb/lib/libGUI-1.2.so.0 \\
+/dfb/share/GUI/test/hello \\
+/dfb/share/GUI/test/hello.bmp \\
+/dfb/share/GUI/test/hello2.bmp \\
+/dfb/share/GUI/test/scroll_dn.bmp \\
+/dfb/share/GUI/test/scroll_up.bmp
+EOF
+
+exit
+
+# patch
+--- GUIlib-1.2.0.orig/GUI_menu.h
++++ GUIlib-1.2.0/GUI_menu.h
+@@ -39,9 +39,9 @@
+   virtual void AddSubitem(GUI_Menuitem *newitem);
+   virtual GUI_Menuitem* GetSubItem(int Aid);
+ 
+-  GUI_status GUI_Submenu:: MouseDown(int x, int y, int button);
+-  GUI_status GUI_Submenu::MouseUp(int x,int y,int button);
+-  GUI_status GUI_Submenu::MouseMotion(int x,int y,Uint8 state);
++  GUI_status MouseDown(int x, int y, int button);
++  GUI_status MouseUp(int x,int y,int button);
++  GUI_status MouseMotion(int x,int y,Uint8 state);
+ 
+   inline virtual int GetSubmenuId()
+     {return submenuid;}
+--- GUIlib-1.2.0.orig/Makefile.am
++++ GUIlib-1.2.0/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL sample image loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libGUI.la
+ 
+ libGUIincludedir = $(includedir)/GUI
+@@ -53,11 +55,14 @@
+         -release $(LT_RELEASE)	\
+ 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = gui.pc
+ 
+ noinst_PROGRAMS = genimage hello hello_C keyboard okay
+ 
+ genimage_SOURCES = genimage.c
+ hello_SOURCES = hello.cpp
++hello_CPPFLAGS = -DTESTDATADIR=\"@TESTDATADIR@\"
+ hello_LDADD = libGUI.la
+ hello_C_SOURCES = hello_C.c
+ hello_C_LDADD = libGUI.la
+--- GUIlib-1.2.0.orig/acinclude.m4
++++ GUIlib-1.2.0/acinclude.m4
+@@ -37,11 +37,12 @@
+   fi
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+ 
+--- GUIlib-1.2.0.orig/configure.in
++++ GUIlib-1.2.0/configure.in
+@@ -14,8 +14,8 @@
+ MAJOR_VERSION=1
+ MINOR_VERSION=2
+ MICRO_VERSION=0
+-INTERFACE_AGE=2
+-BINARY_AGE=2
++INTERFACE_AGE=0
++BINARY_AGE=0
+ VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+ 
+ AC_SUBST(MAJOR_VERSION)
+@@ -62,7 +62,14 @@
+ dnl C++ flags are the same as C flags
+ CXXFLAGS="$CFLAGS"
+ 
++AC_ARG_WITH(testdatadir,
++            [AS_HELP_STRING([--with-testdatadir], [test data directory])],
++            [TESTDATADIR=$with_testdatadir],
++            [TESTDATADIR=.])
++AC_SUBST(TESTDATADIR)
++
+ # Finally create all the generated files
+ AC_OUTPUT([
+ Makefile
++gui.pc
+ ])
+--- GUIlib-1.2.0.orig/gui.pc.in
++++ GUIlib-1.2.0/gui.pc.in
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: GUIlib
++Description: GUI library for Simple DirectMedia Layer
++Version: @VERSION@
++Requires: sdl
++Libs: -L${libdir} -lGUI
++Cflags: -I${includedir}/GUI
+--- GUIlib-1.2.0.orig/hello.cpp
++++ GUIlib-1.2.0/hello.cpp
+@@ -19,7 +19,7 @@
+ 	NUM_IMAGES
+ };
+ char *image_files[NUM_IMAGES] = {
+-	"hello.bmp", "hello2.bmp", "scroll_up.bmp", "scroll_dn.bmp"
++	TESTDATADIR"/hello.bmp", TESTDATADIR"/hello2.bmp", TESTDATADIR"/scroll_up.bmp", TESTDATADIR"/scroll_dn.bmp"
+ };
+ SDL_Surface *images[NUM_IMAGES];
+ 
+# source
+https://www.libsdl.org/projects/GUIlib/src/GUIlib-1.2.0.tar.gz

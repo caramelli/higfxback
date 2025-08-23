@@ -48,26 +48,24 @@ EOF
 exit
 
 # patch
+--- SDL2_image-2.0.4.orig/Makefile.am
++++ SDL2_image-2.0.4/Makefile.am
+@@ -1,5 +1,7 @@
+ # Makefile.am for the SDL sample image loading library and viewer
+ 
++AUTOMAKE_OPTIONS = foreign
++
+ lib_LTLIBRARIES = libSDL2_image.la
+ 
+ libSDL2_imageincludedir = $(includedir)/SDL2
 --- SDL2_image-2.0.4.orig/configure.in
 +++ SDL2_image-2.0.4/configure.in
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,6 @@
  dnl Process this file with autoconf to produce a configure script.
--AC_INIT(README.txt)
-+AC_INIT([SDL2_image], [2.0.4])
-+AC_CONFIG_SRCDIR([README.txt])
+ AC_INIT(README.txt)
 +AC_CONFIG_MACRO_DIR([acinclude])
  
  dnl Set various version strings - taken gratefully from the GTk sources
  
-@@ -42,7 +44,7 @@
- AC_CANONICAL_HOST
- 
- dnl Setup for automake
--AM_INIT_AUTOMAKE(SDL2_image, $VERSION)
-+AM_INIT_AUTOMAKE([foreign])
- 
- dnl Check for tools
- AC_PROG_LIBTOOL
-
 # source
 https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.tar.gz

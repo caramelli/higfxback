@@ -1,0 +1,355 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libstdc++-build make-build sdl_image-build sdl_mixer-build sdl_ttf-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --print-requires sdl_mixer-build | grep -q libvorbis-build || { echo SDL_mixer with Vorbis support required; exit 1; }
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists sdl_net-build && REQUIRES="$REQUIRES sdl_net-build"
+
+# configure
+PKG_CONFIG_PATH=/fb/lib/pkgconfig sh ./configure --disable-python --prefix /fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install tennix $DESTDIR/fb/bin
+install -d $DESTDIR/fb/share/tennix
+install -m 644 tennix.tnx $DESTDIR/fb/share/tennix
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/tennix-build.pc << EOF
+Name: tennix
+Version: 1.1
+Description: Tennis game
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/tennix \\
+/fb/share/tennix/tennix.tnx
+EOF
+
+exit
+
+# patch
+--- tennix-1.1.orig/SDL_rotozoom.h
++++ tennix-1.1/SDL_rotozoom.h
+@@ -21,7 +21,7 @@
+ #define M_PI	3.141592654
+ #endif
+ 
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ 
+ /* ---- Defines */
+ 
+--- tennix-1.1.orig/configure
++++ tennix-1.1/configure
+@@ -0,0 +1,36 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++USE_PYTHON=1
++
++while : ; do
++  case $1 in
++    "")
++      break
++      ;;
++    --prefix)
++      PREFIX=$2
++      shift
++      ;;
++    --disable-python)
++      USE_PYTHON=0
++      ;;
++    *)
++      echo Unknown argument: $1
++      exit 1
++      ;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" makefile
++
++sed -i "/^USE_PYTHON/s|=.*|= $USE_PYTHON|" makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" makefile
++fi
+--- tennix-1.1.orig/game.c
++++ tennix-1.1/game.c
+@@ -167,7 +167,9 @@
+     Uint32 accumulator = 0;
+     bool quit = false;
+     int p;
++#ifdef HAVE_SDL_NET
+     int i=0;
++#endif
+     RenderState r = {
+         SOUND_EVENT_NONE,
+         REFEREE_COUNT,
+@@ -214,12 +216,14 @@
+         while( accumulator >= dt) {
+             step(s);
+ 
++#ifdef HAVE_SDL_NET
+             network_receive(c);
+             network_get_gamestate(c, s);
+ 
+             if ((i++) % 10 == 0) {
+                 network_send_state(c, s);
+             }
++#endif
+ 
+             quit = handle_input(s, c);
+             accumulator -= dt;
+@@ -411,6 +415,7 @@
+     SDL_PumpEvents();
+     keys = SDL_GetKeyState(NULL);
+ 
++#ifdef HAVE_SDL_NET
+     if (keys['1']) {
+         net_serialize_gamestate(s, &tmp);
+     } else if (keys['2']) {
+@@ -418,17 +423,22 @@
+     }
+ 
+     network_get_input(c, &net_input);
++#endif
+     if (s->winner == WINNER_NONE) {
+         for (p=1; p<=MAXPLAYERS; p++) {
+             if( PLAYER(s, p).type == PLAYER_TYPE_HUMAN) {
++#ifdef HAVE_SDL_NET
+                 if (PLAYER(s, p).input->type == INPUT_TYPE_NETWORK) {
+                     memcpy(&(PLAYER(s, p).input->net), &net_input,
+                             sizeof(NetworkInputData));
+                 }
++#endif
+                 input_human(s, p);
++#ifdef HAVE_SDL_NET
+                 if (PLAYER(s, p).input->type != INPUT_TYPE_NETWORK) {
+                     network_send_input(c, &(PLAYER(s, p).input->net));
+                 }
++#endif
+             } else {
+                 input_ai(s, p);
+             }
+--- tennix-1.1.orig/input.c
++++ tennix-1.1/input.c
+@@ -21,6 +21,7 @@
+  *
+  **/
+ 
++#include <assert.h>
+ #include <string.h>
+ 
+ #include "tennix.h"
+--- tennix-1.1.orig/makefile
++++ tennix-1.1/makefile
+@@ -29,22 +29,22 @@
+ 
+ RELEASE   =  1.1
+ 
+-UNAME = $(shell uname)
++PKG_CONFIG ?= pkg-config
+ 
+ PREFIX ?= /usr/local
+ BINDIR ?= $(PREFIX)/bin
+ DATAROOTDIR ?= $(PREFIX)/share
+ DATADIR ?= $(DATAROOTDIR)/games
+ 
+-LIBS =
++LIBS += -Wl,-rpath,$(PREFIX)/lib
+ CFLAGS += -W -Wall -ansi -pedantic -Wcast-qual -Wwrite-strings -DVERSION=\"$(RELEASE)\" -O2 -DPREFIX=\"$(PREFIX)\" -g
+ CXXFLAGS += $(CFLAGS)
+ 
+ USE_PYTHON ?= 1
+ 
+ ifeq ($(USE_PYTHON),1)
+-  CFLAGS += `python-config --includes` -DTENNIX_PYTHON
+-  LIBS += `python-config --libs`
++  CFLAGS += $(shell $(PKG_CONFIG) --cflags python2) -DTENNIX_PYTHON
++  LIBS += $(shell $(PKG_CONFIG) --libs python2)
+ endif
+ 
+ ifeq ($(NONFREE_LOCATIONS),1)
+@@ -67,13 +67,12 @@
+   CFLAGS += -DMAEMO
+ endif
+ 
+-ifeq ($(UNAME),Darwin)
+-  SDLLIBS=$$(sdl-config --prefix)/lib
+-  LIBS += $$(sdl-config --static-libs) $(SDLLIBS)/libSDL_mixer.a $(SDLLIBS)/libSDL_image.a $(SDLLIBS)/libSDL_ttf.a $(SDLLIBS)/libSDL_net.a $$(freetype-config --prefix)/lib/libfreetype.a
+-  CFLAGS += $$(sdl-config --cflags) -lz
+-else
+-  LIBS += $$(sdl-config --libs) -lSDL_mixer -lSDL_image -lSDL_ttf -lSDL_net
+-  CFLAGS += $$(sdl-config --cflags)
++LIBS += $(shell $(PKG_CONFIG) --libs sdl) -lSDL_mixer -lSDL_image -lSDL_ttf
++CFLAGS += $(shell $(PKG_CONFIG) --cflags sdl)
++
++ifeq ($(shell $(PKG_CONFIG) --exists SDL_net && echo 1), 1)
++  CFLAGS += -DHAVE_SDL_NET
++  LIBS += -lSDL_net
+ endif
+ 
+ SRC = tennix.cc game.c graphics.cc input.c util.c sound.cc animation.c network.c
+--- tennix-1.1.orig/network.c
++++ tennix-1.1/network.c
+@@ -21,11 +21,13 @@
+  *
+  **/
+ 
++#ifdef HAVE_SDL_NET
++
+ #include "game.h"
+ #include "network.h"
+ 
+ #include <assert.h>
+-#include <SDL/SDL_net.h>
++#include <SDL_net.h>
+ 
+ /* HELPER FUNCTIONS */
+ 
+@@ -271,3 +273,4 @@
+     dest->status_message = src->status_message;
+ }
+ 
++#endif
+--- tennix-1.1.orig/network.h
++++ tennix-1.1/network.h
+@@ -27,7 +27,9 @@
+ #include "game.h"
+ #include "input.h"
+ 
+-#include <SDL/SDL_net.h>
++#ifdef HAVE_SDL_NET
++#include <SDL_net.h>
++#endif
+ 
+ /* Vanity ports "STNX" and "MTNX" */
+ #define TENNIXNET_PORT_SLAVE 7869
+--- tennix-1.1.orig/tennix.cc
++++ tennix-1.1/tennix.cc
+@@ -108,8 +108,10 @@
+     AnimationState *intro_playback;
+     float wiggle;
+     TennixNet* connection = NULL;
++#ifdef HAVE_SDL_NET
+     char* net_host = NULL;
+     bool net_master = false;
++#endif
+     TennixArchive* tnxar = NULL;
+ 
+     MenuButton btn_back = {
+@@ -200,6 +202,7 @@
+         else if (OPTION_SET("--benchmark", "-b")) {
+             benchmark = true;
+         }
++#ifdef HAVE_SDL_NET
+         else if (OPTION_SET("--slave", "-s")) {
+             net_host = OPTION_VALUE;
+             if (OPTION_VALUE != NULL) {
+@@ -222,6 +225,7 @@
+                 break;
+             }
+         }
++#endif
+         else {
+             fprintf(stderr, "Unknown option: %s\n", argv[i]);
+             do_help = true;
+@@ -234,8 +238,10 @@
+         " Where [OPTIONS] are zero or more of the following:\n\n"
+         "    [--fullscreen|-f]           Fullscreen mode\n"
+         "    [--benchmark|-b]            Run in benchmark/attract mode\n"
++#ifdef HAVE_SDL_NET
+         "    [--master|-m <IP-of-slave>] Network play as master\n"
+         "    [--slave|-s <IP-of-master>] Network play as slave\n"
++#endif
+         "    [--help|-h]                 Show help information\n\n"
+         " See tennix(6) for details.\n", argv[0]);
+         return 0;
+@@ -267,12 +273,16 @@
+     init_graphics(*tnxar);
+     init_sound(*tnxar);
+     init_input(*tnxar);
++#ifdef HAVE_SDL_NET
+     init_network();
++#endif
+     delete tnxar;
+ 
++#ifdef HAVE_SDL_NET
+     if (net_host != NULL) {
+         connection = network_connect(net_host, net_master);
+     }
++#endif
+ 
+     menu_button_init(&btn_back);
+     menu_button_init(&btn_start);
+@@ -800,7 +810,9 @@
+ 
+     uninit_graphics();
+     uninit_input();
++#ifdef HAVE_SDL_NET
+     uninit_network();
++#endif
+ 
+     SDL_Quit();
+     return 0;
+--- tennix-1.1.orig/tennix.h
++++ tennix-1.1/tennix.h
+@@ -26,8 +26,11 @@
+ 
+ #include <sys/param.h>
+ 
+-#include <SDL/SDL.h>
+-#include <SDL/SDL_net.h>
++#include <SDL.h>
++
++#ifdef HAVE_SDL_NET
++#include <SDL_net.h>
++#endif
+ 
+ typedef struct {
+     unsigned char x;
+@@ -35,7 +38,7 @@
+     unsigned char keys; /* bitfield (0 = key pressed, 1 = not pressed) */
+ } NetworkInputData;
+ 
+-
++#ifdef HAVE_SDL_NET
+ typedef struct {
+     UDPsocket send_socket;
+     UDPsocket recv_input_socket;
+@@ -56,6 +59,9 @@
+ 
+     bool master;
+ } TennixNet;
++#else
++typedef void TennixNet;
++#endif
+ 
+ #ifdef DELUXE_EDITION
+ #  define HAVE_VOICE_FILES
+@@ -70,7 +76,7 @@
+ #ifdef MACOSX
+ #  define ARCHIVE_FILE_INSTALLED "Tennix.app/Contents/Resources/" ARCHIVE_FILE
+ #else
+-#  define ARCHIVE_FILE_INSTALLED "/" PREFIX "/share/games/tennix/" ARCHIVE_FILE
++#  define ARCHIVE_FILE_INSTALLED "/" PREFIX "/share/tennix/" ARCHIVE_FILE
+ #endif
+ 
+ #ifdef WIN32
+
+# source
+https://icculus.org/tennix/downloads/tennix-1.1.tar.gz

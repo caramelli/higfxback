@@ -1,0 +1,44 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl2-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16; lt-2.2.6)
+libtoolize -c -f; aclocal -I acinclude; autoconf; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-examples --disable-static --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/include/SDL
+install -m 644 SDL_net.h $DESTDIR/drm/include/SDL2
+install -d $DESTDIR/drm/lib
+install .libs/libSDL2_net-2.0.so.0.* $DESTDIR/drm/lib/libSDL2_net-2.0.so.0
+ln -sf libSDL2_net-2.0.so.0 $DESTDIR/drm/lib/libSDL2_net.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 SDL2_net.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/sdl2_net-build.pc << EOF
+Name: SDL2_net
+Version: 20230906
+Description: Network library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/SDL2/SDL_net.h \\
+/drm/lib/libSDL2_net.so \\
+/drm/lib/pkgconfig/SDL2_net.pc
+
+exec=\\
+/drm/lib/libSDL2_net-2.0.so.0
+EOF
+
+exit
+
+# source
+https://github.com/libsdl-org/SDL_net/archive/cafbafc9ceda8e8f4a349623dfa69af544d21181/SDL2_net-20230906.tar.gz
