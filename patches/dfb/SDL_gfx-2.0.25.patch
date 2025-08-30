@@ -1,0 +1,645 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build sdl-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; ACLOCAL_PATH=/dfb/share/aclocal aclocal -I m4; autoconf; automake -a -c
+cd Test; libtoolize -c -f; ACLOCAL_PATH=/dfb/share/aclocal aclocal -I m4; autoconf; automake -a -c; cd -
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/dfb/lib ./configure --disable-static --prefix=/dfb
+cd Test; PKG_CONFIG_PATH=/dfb/lib/pkgconfig CPPFLAGS=-I.. LDFLAGS=-L../.libs ./configure --bindir=/dfb/share/SDL_gfx/test --with-testdatadir=/dfb/share/SDL_gfx/test; cd -
+
+# build
+make
+make -C Test
+
+# install
+install -d $DESTDIR/dfb/include/SDL
+install -m 644 SDL_framerate.h $DESTDIR/dfb/include/SDL
+install -m 644 SDL_gfxBlitFunc.h $DESTDIR/dfb/include/SDL
+install -m 644 SDL_gfxPrimitives.h $DESTDIR/dfb/include/SDL
+install -m 644 SDL_rotozoom.h $DESTDIR/dfb/include/SDL
+install -d $DESTDIR/dfb/lib
+install .libs/libSDL_gfx-1.2.so.15.* $DESTDIR/dfb/lib/libSDL_gfx-1.2.so.15
+ln -sf libSDL_gfx-1.2.so.15 $DESTDIR/dfb/lib/libSDL_gfx.so
+install -d $DESTDIR/dfb/lib/pkgconfig
+install -m 644 SDL_gfx.pc $DESTDIR/dfb/lib/pkgconfig
+install -d $DESTDIR/dfb/share/SDL_gfx/Fonts
+install -m 644 Fonts/5x7.fnt $DESTDIR/dfb/share/SDL_gfx/Fonts
+install -m 644 Fonts/7x13.fnt $DESTDIR/dfb/share/SDL_gfx/Fonts
+install -m 644 Fonts/7x13B.fnt $DESTDIR/dfb/share/SDL_gfx/Fonts
+install -m 644 Fonts/7x13O.fnt $DESTDIR/dfb/share/SDL_gfx/Fonts
+install -d $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample8.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample8-box.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample24.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample24-box.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample2x2.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample3x3.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/sample16x16.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/texture.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install -m 644 Test/texture_alpha.bmp $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestABGR $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestFonts $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestFramerate $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestGfxBlit $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestGfxPrimitives $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestGfxTexture $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestRotozoom $DESTDIR/dfb/share/SDL_gfx/test
+install Test/.libs/TestShrink $DESTDIR/dfb/share/SDL_gfx/test
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/sdl_gfx-build.pc << EOF
+Name: SDL_gfx
+Version: 2.0.25
+Description: Graphics drawing library for SDL
+Requires: $REQUIRES
+
+devel=\\
+/dfb/include/SDL/SDL_framerate.h \\
+/dfb/include/SDL/SDL_gfxBlitFunc.h \\
+/dfb/include/SDL/SDL_gfxPrimitives.h \\
+/dfb/include/SDL/SDL_rotozoom.h \\
+/dfb/lib/libSDL_gfx.so \\
+/dfb/lib/pkgconfig/SDL_gfx.pc
+
+exec=\\
+/dfb/lib/libSDL_gfx-1.2.so.15 \\
+/dfb/share/SDL_gfx/Fonts/5x7.fnt \\
+/dfb/share/SDL_gfx/Fonts/7x13.fnt \\
+/dfb/share/SDL_gfx/Fonts/7x13B.fnt \\
+/dfb/share/SDL_gfx/Fonts/7x13O.fnt \\
+/dfb/share/SDL_gfx/test/sample8.bmp \\
+/dfb/share/SDL_gfx/test/sample8-box.bmp \\
+/dfb/share/SDL_gfx/test/sample24-box.bmp \\
+/dfb/share/SDL_gfx/test/sample24.bmp \\
+/dfb/share/SDL_gfx/test/sample2x2.bmp \\
+/dfb/share/SDL_gfx/test/sample3x3.bmp \\
+/dfb/share/SDL_gfx/test/sample16x16.bmp \\
+/dfb/share/SDL_gfx/test/TestABGR \\
+/dfb/share/SDL_gfx/test/TestFonts \\
+/dfb/share/SDL_gfx/test/TestFramerate \\
+/dfb/share/SDL_gfx/test/TestGfxBlit \\
+/dfb/share/SDL_gfx/test/TestGfxPrimitives \\
+/dfb/share/SDL_gfx/test/TestGfxTexture \\
+/dfb/share/SDL_gfx/test/TestRotozoom \\
+/dfb/share/SDL_gfx/test/TestShrink \\
+/dfb/share/SDL_gfx/test/texture.bmp \\
+/dfb/share/SDL_gfx/test/texture_alpha.bmp
+EOF
+
+exit
+
+# patch
+--- SDL_gfx-2.0.25.orig/Makefile.am
++++ SDL_gfx-2.0.25/Makefile.am
+@@ -22,7 +22,9 @@
+ 
+ DEFS = @DEFS@ -DBUILD_DLL
+ libSDL_gfx_la_LDFLAGS = 	\
+-	-no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
++	-no-undefined		\
++	-release $(LT_RELEASE)	\
++	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = SDL_gfx.pc
+--- SDL_gfx-2.0.25.orig/SDL_gfxPrimitives.c
++++ SDL_gfx-2.0.25/SDL_gfxPrimitives.c
+@@ -6040,9 +6040,6 @@
+ 			linepos += pitch;
+ 		}
+ 
+-		/* Unlock font-surface */
+-		SDL_UnlockSurface(gfxPrimitivesFont[ci]);
+-
+ 		/* Maybe rotate and replace cached image */
+ 		if (charRotation>0)
+ 		{
+@@ -6050,6 +6047,9 @@
+ 			SDL_FreeSurface(gfxPrimitivesFont[ci]);
+ 			gfxPrimitivesFont[ci] = rotatedCharacter;
+ 		}
++
++		/* Unlock font-surface */
++		SDL_UnlockSurface(gfxPrimitivesFont[ci]);
+ 	}
+ 
+ 	/*
+--- SDL_gfx-2.0.25.orig/Test/Makefile.am
++++ SDL_gfx-2.0.25/Test/Makefile.am
+@@ -1,6 +1,8 @@
+ AUTOMAKE_OPTIONS = no-dependencies
+ ACLOCAL_AMFLAGS = -I m4
+ 
++AM_CPPFLAGS = -DTESTDATADIR=\"@TESTDATADIR@\"
++
+ bin_PROGRAMS = \
+ 	TestGfxPrimitives \
+ 	TestRotozoom \
+--- SDL_gfx-2.0.25.orig/Test/TestABGR.c
++++ SDL_gfx-2.0.25/Test/TestABGR.c
+@@ -14,12 +14,7 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+- #include <windows.h>
+- #include "SDL_gfxPrimitives.h"
+-#else
+- #include "SDL/SDL_gfxPrimitives.h"
+-#endif
++#include "SDL_gfxPrimitives.h"
+ 
+ #define WIDTH	400
+ #define HEIGHT	424
+@@ -101,9 +96,6 @@
+ 		exit(2);
+ 	}
+ 
+-	/* Use alpha blending */
+-	SDL_SetAlpha(screen, SDL_SRCALPHA, 0);
+-
+ 	/* Set title for window */
+ 	SDL_WM_SetCaption(title,title);
+ 
+--- SDL_gfx-2.0.25.orig/Test/TestFonts.c
++++ SDL_gfx-2.0.25/Test/TestFonts.c
+@@ -14,15 +14,10 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_gfxPrimitives.h"
+-#else
+-#include "SDL/SDL_gfxPrimitives.h"
+-#endif
+ 
+-#define WIDTH	1024
+-#define HEIGHT	768
++#define WIDTH	800
++#define HEIGHT	600
+ 
+ void WaitForEvent()
+ {
+@@ -72,7 +67,7 @@
+ 	return 0;
+ }
+ 
+-#define NUM_SDLGFX_FONTS	7
++#define NUM_SDLGFX_FONTS	5
+ 
+ /* Filenames of font files */
+ static	char *fontfile[NUM_SDLGFX_FONTS] = {
+@@ -81,8 +76,6 @@
+ 	"7x13.fnt",
+ 	"7x13B.fnt",
+ 	"7x13O.fnt",
+-	"9x18.fnt",
+-	"9x18B.fnt",
+ };
+ 
+ /* Width of font characters */
+@@ -92,8 +85,6 @@
+ 	7,
+ 	7,
+ 	7,
+-	9,
+-	9,
+ };	
+ 
+ /* Height of fonts characters */
+@@ -103,8 +94,6 @@
+ 	13,
+ 	13,
+ 	13,
+-	18,
+-	18,
+ };
+ 
+ /* Bytes of fontfiles */
+@@ -114,8 +103,6 @@
+ 	3328,
+ 	3328,
+ 	3328,
+-	9216,
+-	9216,
+ };	
+ 
+ /* Helper that searches and loads a fontfile */
+@@ -137,7 +124,7 @@
+ 	if (myfont) {
+ 		if (strcmp(fontfile[i],"default")) {
+ 			/* Load a font data */
+-			sprintf(filename,"../Fonts/%s",fontfile[i]);
++			sprintf(filename,TESTDATADIR"/../Fonts/%s",fontfile[i]);
+ 			if (!FileExists(filename))
+ 			{
+ 				sprintf(filename,"..\\Fonts\\%s",fontfile[i]);
+--- SDL_gfx-2.0.25.orig/Test/TestFramerate.c
++++ SDL_gfx-2.0.25/Test/TestFramerate.c
+@@ -14,14 +14,8 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_framerate.h"
+ #include "SDL_gfxPrimitives.h"
+-#else
+-#include "SDL/SDL_framerate.h"
+-#include "SDL/SDL_gfxPrimitives.h"
+-#endif
+ 
+ #define WIDTH	640
+ #define HEIGHT	480
+--- SDL_gfx-2.0.25.orig/Test/TestGfxBlit.c
++++ SDL_gfx-2.0.25/Test/TestGfxBlit.c
+@@ -6,10 +6,6 @@
+ 
+ */
+ 
+-#ifdef WIN32
+-#include <windows.h>
+-#endif
+-
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -17,17 +13,9 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_framerate.h"
+ #include "SDL_gfxPrimitives.h"
+ #include "SDL_gfxBlitFunc.h"
+-#else
+-#include "SDL/SDL_framerate.h"
+-#include "SDL/SDL_gfxPrimitives.h"
+-#include "SDL/SDL_gfxBlitFunc.h"
+-#endif
+-
+ 
+ void HandleEvent()
+ {
+@@ -261,9 +249,6 @@
+ 								break;
+ 	}
+ 
+-	/* Force double buffering */
+-	video_flags |= SDL_DOUBLEBUF;
+-
+ 	/* Initialize SDL */
+ 	if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
+ 		fprintf(stderr,
+@@ -286,11 +271,6 @@
+ 	printf("Video surface located in %s memory.\n",
+ 		(screen->flags&SDL_HWSURFACE) ? "video" : "system");
+ 
+-	/* Check for double buffering */
+-	if ( screen->flags & SDL_DOUBLEBUF ) {
+-		printf("Double-buffering enabled - good!\n");
+-	}
+-
+ 	/* Set the window manager title bar */
+ 	SDL_WM_SetCaption("gfxBlitRGBA", "gfxBlitRGBA");
+ 
+--- SDL_gfx-2.0.25.orig/Test/TestGfxPrimitives.c
++++ SDL_gfx-2.0.25/Test/TestGfxPrimitives.c
+@@ -15,11 +15,7 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+ #include "SDL_gfxPrimitives.h"
+-#else
+-#include "SDL/SDL_gfxPrimitives.h"
+-#endif
+ 
+ #define WIDTH	640
+ #define HEIGHT	480
+@@ -2508,7 +2504,7 @@
+ 	InitRandomPoints();
+ 
+ 	/* Load texture surface */
+-	texture = SDL_LoadBMP("texture.bmp");
++	texture = SDL_LoadBMP(TESTDATADIR"/texture.bmp");
+ 
+ 	/* Draw A=255 */
+ 	SetClip(screen,0,60,WIDTH/2,60+(HEIGHT-80)/2);
+@@ -2555,7 +2551,7 @@
+ 	SDL_Surface *texture;
+ 
+ 	/* Load texture surface */
+-	texture = SDL_LoadBMP("texture.bmp");
++	texture = SDL_LoadBMP(TESTDATADIR"/texture.bmp");
+ 
+ 	/* Create random points */
+ 	srand((int)time(NULL));
+@@ -2604,7 +2600,7 @@
+ 	SDL_Surface *texture;
+ 
+ 	/* Load texture surface */
+-	texture = SDL_LoadBMP("texture.bmp");
++	texture = SDL_LoadBMP(TESTDATADIR"/texture.bmp");
+ 
+ 	/* Create random points */
+ 	srand((int)time(NULL));
+@@ -2667,7 +2663,7 @@
+ 	SDL_Surface *texture;
+ 
+ 	/* Load texture surface */
+-	texture = SDL_LoadBMP("texture.bmp");
++	texture = SDL_LoadBMP(TESTDATADIR"/texture.bmp");
+ 
+ 	/* Create random points */
+ 	srand((int)time(NULL));
+@@ -2857,9 +2853,6 @@
+ 		exit(2);
+ 	}
+ 
+-	/* Use alpha blending */
+-	SDL_SetAlpha(screen, SDL_SRCALPHA, 0);
+-
+ 	/* Set title for window */
+ 	SDL_WM_SetCaption(title,title);
+ 
+--- SDL_gfx-2.0.25.orig/Test/TestGfxTexture.c
++++ SDL_gfx-2.0.25/Test/TestGfxTexture.c
+@@ -14,14 +14,8 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_gfxPrimitives.h"
+ #include "SDL_framerate.h"
+-#else
+-#include "SDL/SDL_gfxPrimitives.h"
+-#include "SDL/SDL_framerate.h"
+-#endif
+ 
+ void HandleEvent()
+ {
+@@ -73,8 +67,8 @@
+ 	int height_half = screen->h/2;
+ 
+ 	/* Load texture surfaces */
+-	texture = SDL_LoadBMP("texture.bmp");
+-	texture_alpha = SDL_LoadBMP("texture_alpha.bmp");
++	texture = SDL_LoadBMP(TESTDATADIR"/texture.bmp");
++	texture_alpha = SDL_LoadBMP(TESTDATADIR"/texture_alpha.bmp");
+ 	SDL_SetAlpha(texture_alpha, SDL_SRCALPHA, 128);
+ 
+ 	/* Initialize variables */
+--- SDL_gfx-2.0.25.orig/Test/TestImageFilter.c
++++ SDL_gfx-2.0.25/Test/TestImageFilter.c
+@@ -14,15 +14,7 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_imageFilter.h"
+-#ifndef bcmp
+-#define bcmp(s1, s2, n) memcmp ((s1), (s2), (n))
+-#endif
+-#else
+-#include "SDL/SDL_imageFilter.h"
+-#endif
+ 
+ #define SRC_SIZE 23
+ 
+@@ -86,7 +78,7 @@
+ void print_compare(unsigned char *dst1, unsigned char *dst2) 
+ { 
+ 	total_count++;
+-	if (bcmp(dst1,dst2,SRC_SIZE)==0) {
++	if (memcmp(dst1,dst2,SRC_SIZE)==0) {
+ 		printf ("OK\n");
+ 		ok_count++;
+ 	} else {
+--- SDL_gfx-2.0.25.orig/Test/TestRotozoom.c
++++ SDL_gfx-2.0.25/Test/TestRotozoom.c
+@@ -12,14 +12,8 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_gfxPrimitives.h"
+ #include "SDL_rotozoom.h"
+-#else
+-#include "SDL/SDL_gfxPrimitives.h"
+-#include "SDL/SDL_rotozoom.h"
+-#endif
+ 
+ /* Pause flag */
+ int pause = 0;
+@@ -542,7 +536,7 @@
+ 		printf("8 bit tests ...\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample8.bmp";
++		bmpfile = TESTDATADIR"/sample8.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -607,7 +601,7 @@
+ 		printf("24 bit tests ...\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -686,7 +680,7 @@
+ 		printf("32 bit tests ...\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -758,7 +752,7 @@
+ 		printf("32 bit flip tests ...\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -826,7 +820,7 @@
+ 		printf("Loading 24bit image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -854,7 +848,7 @@
+ 		printf("Loading 8bit image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample8.bmp";
++		bmpfile = TESTDATADIR"/sample8.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -877,7 +871,7 @@
+ 		printf("Loading 24bit image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -917,7 +911,7 @@
+ 
+ 	if (start <= 27) {
+ 		/* Load the image into a surface */
+-		bmpfile = "sample2x2.bmp";
++		bmpfile = TESTDATADIR"/sample2x2.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -932,7 +926,7 @@
+ 		SDL_FreeSurface(picture);
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample3x3.bmp";
++		bmpfile = TESTDATADIR"/sample3x3.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -947,7 +941,7 @@
+ 		SDL_FreeSurface(picture);
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample16x16.bmp";
++		bmpfile = TESTDATADIR"/sample16x16.bmp";
+ 		printf("Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+--- SDL_gfx-2.0.25.orig/Test/TestShrink.c
++++ SDL_gfx-2.0.25/Test/TestShrink.c
+@@ -12,12 +12,7 @@
+ 
+ #include "SDL.h"
+ 
+-#ifdef WIN32
+-#include <windows.h>
+ #include "SDL_rotozoom.h"
+-#else
+-#include "SDL/SDL_rotozoom.h"
+-#endif
+ 
+ void HandleEvent()
+ {
+@@ -100,7 +95,7 @@
+ 		fprintf (stderr,"Loading 8bit square image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample8-box.bmp";
++		bmpfile = TESTDATADIR"/sample8-box.bmp";
+ 		fprintf(stderr, "Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -123,7 +118,7 @@
+ 		fprintf (stderr,"Loading 8bit image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample8.bmp";
++		bmpfile = TESTDATADIR"/sample8.bmp";
+ 		fprintf(stderr, "Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -149,7 +144,7 @@
+ 		fprintf (stderr,"Loading 24bit square image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24-box.bmp";
++		bmpfile = TESTDATADIR"/sample24-box.bmp";
+ 		fprintf(stderr, "Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -171,7 +166,7 @@
+ 		fprintf (stderr,"Loading 24bit image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		fprintf(stderr, "Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -195,7 +190,7 @@
+ 		fprintf (stderr,"Loading 24bit square image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24-box.bmp";
++		bmpfile = TESTDATADIR"/sample24-box.bmp";
+ 		fprintf(stderr, "Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+@@ -225,7 +220,7 @@
+ 		fprintf (stderr,"Loading 24bit image\n");
+ 
+ 		/* Load the image into a surface */
+-		bmpfile = "sample24.bmp";
++		bmpfile = TESTDATADIR"/sample24.bmp";
+ 		fprintf(stderr, "Loading picture: %s\n", bmpfile);
+ 		picture = SDL_LoadBMP(bmpfile);
+ 		if ( picture == NULL ) {
+--- SDL_gfx-2.0.25.orig/Test/configure.in
++++ SDL_gfx-2.0.25/Test/configure.in
+@@ -72,16 +72,13 @@
+ CFLAGS="$CFLAGS $SDL_CFLAGS"
+ LIBS="$LIBS $SDL_LIBS"
+ 
+-dnl Check for the SDL_gfx lib
+-have_sdlgfx=no
+-AC_CHECK_LIB(SDL_gfx, pixelColor , have_sdlgfx=yes)
+-if test x$have_sdlgfx = xyes; then
+-    LIBS="$LIBS -lSDL_gfx"
+-else
+-    AC_MSG_ERROR([
+-*** Unable to find SDL_gfx library
+-])
+-fi
++LIBS="$LIBS -lSDL_gfx"
++
++AC_ARG_WITH(testdatadir,
++            [AS_HELP_STRING([--with-testdatadir], [test data directory])],
++            [TESTDATADIR=$with_testdatadir],
++            [TESTDATADIR=.])
++AC_SUBST(TESTDATADIR)
+ 
+ # Finally create all the generated files
+ AC_OUTPUT([Makefile])
+--- SDL_gfx-2.0.25.orig/configure.in
++++ SDL_gfx-2.0.25/configure.in
+@@ -18,8 +18,8 @@
+ # if backwards compatibility has been broken,
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+-MAJOR_VERSION=2
+-MINOR_VERSION=0
++MAJOR_VERSION=1
++MINOR_VERSION=2
+ MICRO_VERSION=25
+ INTERFACE_AGE=1
+ BINARY_AGE=10
+
+# source
+http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz

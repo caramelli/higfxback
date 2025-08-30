@@ -61,6 +61,8 @@ install build/.libs/libSDL-1.2.so.0.* $DESTDIR/x11/lib/libSDL-1.2.so.0
 ln -sf libSDL-1.2.so.0 $DESTDIR/x11/lib/libSDL.so
 install -d $DESTDIR/x11/lib/pkgconfig
 install -m 644 sdl.pc $DESTDIR/x11/lib/pkgconfig
+install -d $DESTDIR/x11/share/aclocal
+install -m 644 sdl.m4 $DESTDIR/x11/share/aclocal
 install -d $DESTDIR/x11/share/SDL/test
 install test/checkkeys $DESTDIR/x11/share/SDL/test
 install test/graywin $DESTDIR/x11/share/SDL/test
@@ -144,7 +146,8 @@ cat >> $DESTDIR/x11/share/pkgconfig/sdl-build.pc << EOF
 /x11/include/SDL/SDL_version.h \\
 /x11/include/SDL/SDL_video.h \\
 /x11/lib/libSDL.so \\
-/x11/lib/pkgconfig/sdl.pc
+/x11/lib/pkgconfig/sdl.pc \\
+/x11/share/aclocal/sdl.m4
 
 exec=\\
 /x11/lib/libSDL-1.2.so.0 \\
@@ -258,6 +261,23 @@ exit
  #endif
  #ifndef NO_SDL_GLEXT
  #undef __glext_h_
+--- SDL-1.2.15.orig/sdl.m4
++++ SDL-1.2.15/sdl.m4
+@@ -41,11 +41,12 @@
+   AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+   PATH="$as_save_PATH"
+   min_sdl_version=ifelse([$1], ,0.11.0,$1)
+-  AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   no_sdl=""
+   if test "$SDL_CONFIG" = "no" ; then
+-    no_sdl=yes
++    PKG_CHECK_MODULES(SDL, [sdl >= $min_sdl_version], [], [no_sdl=yes])
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+   else
++    AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
+     SDL_CFLAGS=`$SDL_CONFIG $sdl_config_args --cflags`
+     SDL_LIBS=`$SDL_CONFIG $sdl_config_args --libs`
+ 
 --- SDL-1.2.15.orig/test/Makefile.in
 +++ SDL-1.2.15/test/Makefile.in
 @@ -4,7 +4,7 @@

@@ -5,15 +5,9 @@ REQUIRES="make-build stb-build wayland-protocols-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build; then
-  GL=1
-  REQUIRES="$REQUIRES egl-opengl-stubs-build"
-fi
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-build && GL=1
 
-if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build; then
-  VK=1
-  REQUIRES="$REQUIRES glslang-build vulkan-loader-build"
-fi
+PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glslang-build vulkan-loader-build && VK=1
 
 if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists glfw-build; then
   test $VK && PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires glfw-build | grep -q vulkan-loader-build || { echo GLFW with Vulkan support required; exit 1; }
@@ -149,7 +143,7 @@ test $GLFW && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
 /wl/share/nuklear/icon/music.png \\
 /wl/share/nuklear/icon/text.png \\
 EOF
-test $VK && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
+test $VK && ( test $GLFW || test $SDL2 ) && cat >> $DESTDIR/wl/share/pkgconfig/nuklear-build.pc << EOF
 /wl/share/nuklear/shaders/demo.frag.spv \\
 /wl/share/nuklear/shaders/demo.vert.spv \\
 EOF

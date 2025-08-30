@@ -1,0 +1,150 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build sdl_gfx-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# build
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LIBS=-Wl,-rpath,/fb/lib make -C demo/sdl1_2
+
+# install
+install -d $DESTDIR/fb/include/nuklear
+install -m 644 nuklear.h $DESTDIR/fb/include/nuklear
+install -m 644 demo/sdl1_2/nuklear_sdl.h $DESTDIR/fb/include/nuklear
+install -d $DESTDIR/fb/share/nuklear
+install demo/sdl1_2/bin/demo $DESTDIR/fb/share/nuklear/demo_sdl
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/nuklear-build.pc << EOF
+Name: Nuklear
+Version: 20161105
+Description: Immediate mode GUI
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/nuklear/nuklear.h \\
+/fb/include/nuklear/nuklear_sdl.h
+
+exec=\\
+/fb/share/nuklear/demo_sdl
+EOF
+
+exit
+
+# patch
+--- Nuklear-20161105.orig/demo/calculator.c
++++ Nuklear-20161105/demo/calculator.c
+@@ -3,7 +3,7 @@
+ calculator(struct nk_context *ctx)
+ {
+     struct nk_panel layout;
+-    if (nk_begin(ctx, &layout, "Calculator", nk_rect(10, 10, 180, 250),
++    if (nk_begin(ctx, "Calculator", nk_rect(10, 10, 180, 250),
+         NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE))
+     {
+         static int set = 0, prev = 0, op = 0;
+--- Nuklear-20161105.orig/demo/sdl1_2/Makefile
++++ Nuklear-20161105/demo/sdl1_2/Makefile
+@@ -11,7 +11,8 @@
+ BIN := $(BIN).exe
+ LIBS = -lmingw32 -lSDLmain -lSDL -lm
+ else
+-LIBS = -lSDL -lSDL_gfx -lm
++	LIBS += $(shell pkg-config --libs sdl) -lSDL_gfx -lm
++	CFLAGS += $(shell pkg-config --cflags sdl)
+ endif
+ 
+ $(BIN):
+--- Nuklear-20161105.orig/demo/sdl1_2/main.c
++++ Nuklear-20161105/demo/sdl1_2/main.c
+@@ -7,8 +7,10 @@
+ #include <math.h>
+ #include <assert.h>
+ #include <math.h>
++#include <limits.h>
++#include <time.h>
+ 
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ 
+ #define NK_INCLUDE_FIXED_TYPES
+ #define NK_INCLUDE_STANDARD_IO
+@@ -22,6 +24,8 @@
+ #define WINDOW_WIDTH 800
+ #define WINDOW_HEIGHT 600
+ 
++#define LEN(a) (sizeof(a)/sizeof(a)[0])
++
+ /* ===============================================================
+  *
+  *                          EXAMPLE
+@@ -80,8 +84,7 @@
+         nk_input_end(ctx);
+ 
+         /* GUI */
+-        {struct nk_panel layout;
+-        if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 210, 250),
++        if (nk_begin(ctx, "Demo", nk_rect(50, 50, 210, 250),
+             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+             NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+         {
+@@ -101,11 +104,10 @@
+             nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
+             nk_edit_string(ctx, NK_EDIT_SIMPLE, buffer, &len, 64, 0);
+ 
+-            {struct nk_panel combo;
+             nk_layout_row_dynamic(ctx, 30, 1);
+             nk_label(ctx, "background:", NK_TEXT_LEFT);
+             nk_layout_row_dynamic(ctx, 25, 1);
+-            if (nk_combo_begin_color(ctx, &combo, background, 400)) {
++            if (nk_combo_begin_color(ctx, background, nk_vec2(nk_widget_width(ctx),400))) {
+                 nk_layout_row_dynamic(ctx, 120, 1);
+                 background = nk_color_picker(ctx, background, NK_RGBA);
+                 nk_layout_row_dynamic(ctx, 25, 1);
+@@ -114,9 +116,9 @@
+                 background.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, background.b, 255, 1,1);
+                 background.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, background.a, 255, 1,1);
+                 nk_combo_end(ctx);
+-            }}
++            }
+         }
+-        nk_end(ctx);}
++        nk_end(ctx);
+ 
+         /* -------------- EXAMPLES ---------------- */
+         /*calculator(ctx);*/
+--- Nuklear-20161105.orig/demo/sdl1_2/nuklear_sdl.h
++++ Nuklear-20161105/demo/sdl1_2/nuklear_sdl.h
+@@ -13,7 +13,7 @@
+ #ifndef NK_SDL_H_
+ #define NK_SDL_H_
+ 
+-#include <SDL/SDL.h>
++#include <SDL.h>
+ typedef struct nk_sdl_Font nk_sdl_Font;
+ NK_API struct nk_context*   nk_sdl_init(SDL_Surface *screen_surface);
+ NK_API void                 nk_sdl_handle_event(SDL_Event *evt);
+@@ -31,8 +31,7 @@
+ #ifdef NK_SDL_IMPLEMENTATION
+ 
+ #include <string.h>
+-#include <SDL/SDL.h>
+-#include <SDL/SDL_gfxPrimitives.h>
++#include <SDL_gfxPrimitives.h>
+ 
+ #ifndef MAX
+ #define MAX(a,b) ((a) < (b) ? (b) : (a))
+@@ -367,7 +366,7 @@
+ NK_API struct nk_context*
+ nk_sdl_init(SDL_Surface *screen_surface)
+ {
+-    struct nk_user_font font;
++    static struct nk_user_font font;
+     sdl_font = (nk_sdl_Font*)calloc(1, sizeof(nk_sdl_Font));
+     sdl_font->width = 8; /* Default in  the SDL_gfx library */
+     sdl_font->height = 8; /* Default in  the SDL_gfx library */
+
+# source
+https://github.com/Immediate-Mode-UI/Nuklear/archive/ebed2e6c0c6621a25e2750cf7cb26fc857a6bc2b/Nuklear-20161105.tar.gz

@@ -29,8 +29,8 @@ install -m 644 GUI_termwin.h $DESTDIR/fb/include/GUI
 install -m 644 GUI_widget.h $DESTDIR/fb/include/GUI
 install -m 644 GUI_widgets.h $DESTDIR/fb/include/GUI
 install -d $DESTDIR/fb/lib
-install .libs/libGUI-1.1.so.0.* $DESTDIR/fb/lib/libGUI-1.1.so.0
-ln -sf libGUI-1.1.so.0 $DESTDIR/fb/lib/libGUI.so
+install .libs/libGUI-1.2.so.0.* $DESTDIR/fb/lib/libGUI-1.2.so.0
+ln -sf libGUI-1.2.so.0 $DESTDIR/fb/lib/libGUI.so
 install -d $DESTDIR/fb/lib/pkgconfig
 install -m 644 gui.pc $DESTDIR/fb/lib/pkgconfig
 install -d $DESTDIR/fb/share/GUI/test
@@ -67,7 +67,7 @@ devel=\\
 /fb/lib/pkgconfig/gui.pc
 
 exec=\\
-/fb/lib/libGUI-1.1.so.0 \\
+/fb/lib/libGUI-1.2.so.0 \\
 /fb/share/GUI/test/hello \\
 /fb/share/GUI/test/hello.bmp \\
 /fb/share/GUI/test/hello2.bmp \\
@@ -137,6 +137,21 @@ exit
  
 --- GUIlib-1.1.2.orig/configure.in
 +++ GUIlib-1.1.2/configure.in
+@@ -12,10 +12,10 @@
+ # set BINARY_AGE and INTERFACE_AGE to 0.
+ 
+ MAJOR_VERSION=1
+-MINOR_VERSION=1
+-MICRO_VERSION=2
+-INTERFACE_AGE=2
+-BINARY_AGE=2
++MINOR_VERSION=2
++MICRO_VERSION=0
++INTERFACE_AGE=0
++BINARY_AGE=0
+ VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+ 
+ AC_SUBST(MAJOR_VERSION)
 @@ -62,7 +62,14 @@
  dnl C++ flags are the same as C flags
  CXXFLAGS="$CFLAGS"
