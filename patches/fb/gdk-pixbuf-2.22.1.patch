@@ -160,6 +160,22 @@ exit
  	       success = FALSE;
  	       goto cleanup;
         }
-
+--- gdk-pixbuf-2.22.1.orig/gdk-pixbuf-2.0.pc.in
++++ gdk-pixbuf-2.22.1/gdk-pixbuf-2.0.pc.in
+@@ -7,11 +7,13 @@
+ gdk_pixbuf_binarydir=@libdir@/gdk-pixbuf-@GDK_PIXBUF_API_VERSION@/@GDK_PIXBUF_BINARY_VERSION@
+ gdk_pixbuf_moduledir=${gdk_pixbuf_binarydir}/loaders
+ gdk_pixbuf_cache_file=${gdk_pixbuf_binarydir}/loaders.cache
++gdk_pixbuf_csource=${exec_prefix}/bin/gdk-pixbuf-csource
+ 
+ Name: GdkPixbuf
+ Description: Image loading and scaling
+ Version: @VERSION@
+ Requires: gobject-2.0 gmodule-no-export-2.0 @PNG_DEP_CFLAGS_PACKAGES@
+-Libs: -L${libdir} -lgdk_pixbuf-@GDK_PIXBUF_API_VERSION@ @GDK_PIXBUF_EXTRA_LIBS@
++Libs: -L${libdir} -lgdk_pixbuf-@GDK_PIXBUF_API_VERSION@
++Libs.private: @GDK_PIXBUF_EXTRA_LIBS@
+ Cflags: -I${includedir}/gdk-pixbuf-@GDK_PIXBUF_API_VERSION@ @GDK_PIXBUF_EXTRA_CFLAGS@
+ 
 # source
 https://download.gnome.org/sources/gdk-pixbuf/2.22/gdk-pixbuf-2.22.1.tar.gz

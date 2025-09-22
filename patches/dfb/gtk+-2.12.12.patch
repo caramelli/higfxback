@@ -659,56 +659,59 @@ exit
  GETTEXT_PACKAGE=gtk20
  AC_SUBST(GETTEXT_PACKAGE)
  AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE")
-@@ -125,6 +131,7 @@
-     ;;
+@@ -521,6 +527,7 @@
+   ;;
  esac
- AC_MSG_RESULT([$os_win32])
-+AC_SUBST(MATH_LIB)
  
- case $host in
-   *-*-linux*)
-@@ -690,6 +697,31 @@
++AC_SUBST(MATH_LIB)
+ #
+ # see bug 162979
+ #
+@@ -690,6 +697,33 @@
  # Checks for gdk-pixbuf
  ##################################################
  
 +if test "$with_system_gdk_pixbuf" = "yes"; then
 +
 +AM_CONDITIONAL(BUILD_DYNAMIC_MODULES, true)
-+AM_CONDITIONAL(INCLUDE_PNG, true)
-+AM_CONDITIONAL(INCLUDE_BMP, true)
-+AM_CONDITIONAL(INCLUDE_WBMP, true)
-+AM_CONDITIONAL(INCLUDE_GIF, true)
-+AM_CONDITIONAL(INCLUDE_ICO, true)
-+AM_CONDITIONAL(INCLUDE_ANI, true)
-+AM_CONDITIONAL(INCLUDE_JPEG, true)
-+AM_CONDITIONAL(INCLUDE_PNM, true)
-+AM_CONDITIONAL(INCLUDE_RAS, true)
-+AM_CONDITIONAL(INCLUDE_TIFF, true)
-+AM_CONDITIONAL(INCLUDE_XPM, true)
-+AM_CONDITIONAL(INCLUDE_XBM, true)
-+AM_CONDITIONAL(INCLUDE_TGA, true)
-+AM_CONDITIONAL(INCLUDE_PCX, true)
-+AM_CONDITIONAL(HAVE_TIFF, true)
-+AM_CONDITIONAL(HAVE_PNG, true)
-+AM_CONDITIONAL(HAVE_JPEG, true)
-+AM_CONDITIONAL(USE_MEDIALIB, false)
++
++AM_CONDITIONAL(INCLUDE_PNG,    false)
++AM_CONDITIONAL(INCLUDE_BMP,    false)
++AM_CONDITIONAL(INCLUDE_WBMP,   false)
++AM_CONDITIONAL(INCLUDE_GIF,    false)
++AM_CONDITIONAL(INCLUDE_ICO,    false)
++AM_CONDITIONAL(INCLUDE_ANI,    false)
++AM_CONDITIONAL(INCLUDE_JPEG,   false)
++AM_CONDITIONAL(INCLUDE_PNM,    false)
++AM_CONDITIONAL(INCLUDE_RAS,    false)
++AM_CONDITIONAL(INCLUDE_TIFF,   false)
++AM_CONDITIONAL(INCLUDE_XPM,    false)
++AM_CONDITIONAL(INCLUDE_XBM,    false)
++AM_CONDITIONAL(INCLUDE_TGA,    false)
++AM_CONDITIONAL(INCLUDE_PCX,    false)
++AM_CONDITIONAL(HAVE_TIFF,      false)
++AM_CONDITIONAL(HAVE_PNG,       false)
++AM_CONDITIONAL(HAVE_JPEG,      false)
++AM_CONDITIONAL(USE_MEDIALIB,   false)
 +AM_CONDITIONAL(USE_MEDIALIB25, false)
++AM_CONDITIONAL(USE_MMX,        false)
 +
 +else
 +
  dnl ********************************************************
  dnl * See whether we need to load our modules as .la files *
  dnl ********************************************************
-@@ -980,6 +1012,8 @@
- AM_CONDITIONAL(USE_MEDIALIB, test $use_mlib = yes)
- AM_CONDITIONAL(USE_MEDIALIB25, test $use_mlib25 = yes)
+@@ -1020,9 +1054,6 @@
  
-+fi
-+
- # Checks to see if we should compile in MMX support (there will be
- # a runtime test when the code is actually run to see if it should
- # be used - this just checks if we can compile it.)
-@@ -1035,6 +1069,17 @@
+ AM_CONDITIONAL(USE_MMX, test x$use_mmx_asm = xyes)
+ 
+-REBUILD_PNGS=
+-if test -z "$LIBPNG"; then
+-  REBUILD_PNGS=#
+ fi
+ 
+ dnl Look for a host system's gdk-pixbuf-csource if we are cross-compiling
+@@ -1035,6 +1066,17 @@
    if test x$GTK_UPDATE_ICON_CACHE = xno; then
      REBUILD_PNGS=#
    fi
@@ -726,10 +729,11 @@ exit
  fi
  
  if test ! -f $srcdir/gtk/gtkbuiltincache.h && 
-@@ -1047,12 +1092,32 @@
+@@ -1045,7 +1087,13 @@
+ *** don't have a prebuilt gtk-update-icon-cache on the build system.])
+ fi
  
- AC_SUBST(REBUILD_PNGS)
- 
+-AC_SUBST(REBUILD_PNGS)
 +if test "$with_system_gdk_pixbuf" = "yes"; then
 +
 +PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0)
@@ -737,10 +741,10 @@ exit
 +GDK_PIXBUF_EXTRA_CFLAGS="$GDK_PIXBUF_CFLAGS"
 +
 +else
-+
+ 
  GDK_PIXBUF_PACKAGES="gmodule-no-export-2.0 gobject-2.0"
  GDK_PIXBUF_EXTRA_LIBS="$STATIC_LIB_DEPS $MATH_LIB $MEDIA_LIB"
- GDK_PIXBUF_EXTRA_CFLAGS= 
+@@ -1053,6 +1101,18 @@
  GDK_PIXBUF_DEP_LIBS="`$PKG_CONFIG --libs $GDK_PIXBUF_PACKAGES` $GDK_PIXBUF_EXTRA_LIBS"
  GDK_PIXBUF_DEP_CFLAGS="`$PKG_CONFIG --cflags  gthread-2.0 $GDK_PIXBUF_PACKAGES $PNG_DEP_CFLAGS_PACKAGES` $GDK_PIXBUF_EXTRA_CFLAGS"
  
@@ -759,7 +763,7 @@ exit
  ########################################
  # Windowing system checks
  ########################################
-@@ -1755,11 +1820,9 @@
+@@ -1755,11 +1815,9 @@
  config.h.win32
  gtk-zip.sh
  Makefile
@@ -771,7 +775,7 @@ exit
  gdk-2.0-uninstalled.pc
  gtk+-2.0-uninstalled.pc
  m4macros/Makefile
-@@ -1780,10 +1843,6 @@
+@@ -1780,10 +1838,6 @@
  docs/faq/Makefile
  docs/tools/Makefile
  docs/tutorial/Makefile
@@ -782,7 +786,7 @@ exit
  gdk/Makefile
  gdk/x11/Makefile
  gdk/win32/Makefile
-@@ -1814,6 +1873,16 @@
+@@ -1814,6 +1868,16 @@
  contrib/gdk-pixbuf-xlib/Makefile
  contrib/gdk-pixbuf-xlib/gdk-pixbuf-xlib-2.0.pc
  ])
@@ -816,9 +820,14 @@ exit
  	$(top_builddir)/gdk/$(gdktargetlib)        			\
  	$(top_builddir)/gtk/$(gtktargetlib)
  
-@@ -34,13 +34,8 @@
+@@ -29,18 +29,11 @@
+ 	pixbuf-demo
+ 
+ # Need to build test-inline-pixbufs.h for testpixbuf
+-if HAVE_PNG
+ noinst_PROGRAMS += testpixbuf
  BUILT_SOURCES = test-inline-pixbufs.h
- endif
+-endif
  
 -if CROSS_COMPILING
  pixbuf_csource=$(GDK_PIXBUF_CSOURCE)
@@ -831,7 +840,7 @@ exit
  
  test-inline-pixbufs.h: $(pixbuf_csource_deps) apple-red.png gnome-foot.png
  	$(pixbuf_csource) --raw --build-list		\
-@@ -61,7 +56,7 @@
+@@ -61,7 +54,7 @@
  testpixbuf_save_LDADD = $(LDADDS)
  testpixbuf_scale_LDADD = $(LDADDS)
  testanimation_LDADD = $(LDADDS)
@@ -940,20 +949,22 @@ exit
  
 --- gtk+-2.12.12.orig/gdk/directfb/gdkcolor-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkcolor-directfb.c
-@@ -31,29 +31,21 @@
+@@ -30,30 +30,22 @@
+  *            Sven Neumann <sven@convergence.de>
   */
  
- #include "config.h"
+-#include "config.h"
 -#include "gdk.h"
--
++#include <config.h>
+ 
 -
 -#include <stdio.h>
 -#include <stdlib.h>
 -#include <string.h>
- 
+-
 -#include "gdkcolor.h"
 -#include "gdkinternals.h"
-+#include "gdk.h"
++#include "gdkscreen.h"
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
  #include "gdkalias.h"
@@ -989,6 +1000,15 @@ exit
 -
  GType
  gdk_colormap_get_type (void)
+ {
+@@ -135,7 +126,7 @@
+   G_OBJECT_CLASS (parent_class)->finalize (object);
+ }
+ 
+-GdkColormap*
++GdkColormap *
+ gdk_colormap_new (GdkVisual *visual,
+                   gboolean   private_cmap)
  {
 @@ -152,25 +143,34 @@
      {
@@ -1032,6 +1052,22 @@ exit
          colormap->windowing_data = private;
  
          gdk_directfb_allocate_color_key (colormap);
+@@ -197,13 +197,13 @@
+   return colormap;
+ }
+ 
+-GdkScreen*
++GdkScreen *
+ gdk_colormap_get_screen (GdkColormap *cmap)
+ {
+   return _gdk_screen;
+ }
+ 
+-GdkColormap*
++GdkColormap *
+ gdk_screen_get_system_colormap (GdkScreen *screen)
+ {
+   static GdkColormap *colormap = NULL;
 @@ -216,6 +216,8 @@
        if (visual->type == GDK_VISUAL_PSEUDO_COLOR)
          {
@@ -1139,17 +1175,17 @@ exit
  #include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkcursor-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkcursor-directfb.c
-@@ -29,24 +29,17 @@
+@@ -29,24 +29,18 @@
   * Written by Denis Oliver Kropp <dok@convergence.de> and
   *            Sven Neumann <sven@convergence.de>
   */
--#include <config.h>
++
+ #include <config.h>
 -#include "gdk.h"
  
 -#include "gdkdirectfb.h"
-+#include "config.h"
-+
-+#include "gdk.h"
++#include "gdkpixbuf.h"
++#include "gdkpixmap.h"
  #include "gdkprivate-directfb.h"
 -#include "gdkcursor.h"
  #include "gdkalias.h"
@@ -1169,7 +1205,7 @@ exit
    const guchar *bits;
    int width, height, hotx, hoty;
    GdkCursor *cursor;
-@@ -208,26 +201,28 @@
+@@ -208,26 +202,28 @@
  };
  
  GdkCursor *
@@ -1209,7 +1245,7 @@ exit
  
        if (!temp)
          {
-@@ -235,14 +230,13 @@
+@@ -235,14 +231,13 @@
          }
        else
          {
@@ -1228,7 +1264,7 @@ exit
  
                temp->Release (temp);
  
-@@ -255,6 +249,7 @@
+@@ -255,6 +250,7 @@
                gint  p = ((stock_cursors[cursor_type].width + 7) / 8) * 8;
                gint mp = ((stock_cursors[cursor_type+1].width + 7) / 8) * 8;
  
@@ -1236,7 +1272,7 @@ exit
                const guchar *src;
                const guchar *mask;
  
-@@ -263,22 +258,24 @@
+@@ -263,22 +259,24 @@
                src  = stock_cursors[cursor_type].bits;
                mask = stock_cursors[cursor_type+1].bits;
  
@@ -1270,7 +1306,7 @@ exit
                        u32 alpha = mask[mbit/8] & (1 << mbit%8) ? (a << 24) : 0;
  
                        dst[x + y*pitch] = alpha | color;
-@@ -289,21 +286,22 @@
+@@ -289,21 +287,22 @@
              }
          }
  
@@ -1301,7 +1337,7 @@ exit
  
        shape->SetColor (shape, 0, 0, 0, 0x30);
        shape->Blit (shape, temp, NULL, 0, 0);
-@@ -357,11 +355,12 @@
+@@ -357,11 +356,12 @@
    impl = GDK_DRAWABLE_IMPL_DIRECTFB (GDK_PIXMAP_OBJECT (source)->impl);
    mask_impl = GDK_DRAWABLE_IMPL_DIRECTFB (GDK_PIXMAP_OBJECT (mask)->impl);
  
@@ -1318,7 +1354,7 @@ exit
    if (!shape)
      {
        return NULL;
-@@ -377,8 +376,8 @@
+@@ -377,8 +377,8 @@
    shape->Clear (shape, bg->red >> 8, bg->green >> 8, bg->blue >> 8, 0xFF);
  
    shape->SetColor (shape, fg->red >> 8, fg->green >> 8, fg->blue >> 8, 0xFF);
@@ -1329,7 +1365,7 @@ exit
    shape->Blit (shape, impl->surface, NULL, 0, 0);
  
    shape->SetPorterDuff (shape, DSPD_DST_IN);
-@@ -405,64 +404,63 @@
+@@ -405,64 +405,63 @@
                              gint        x,
                              gint        y)
  {
@@ -1346,6 +1382,9 @@ exit
 - g_return_val_if_fail (GDK_IS_PIXBUF (pixbuf), NULL);
 - g_return_val_if_fail (0 <= x && x < gdk_pixbuf_get_width (pixbuf), NULL);
 - g_return_val_if_fail (0 <= y && y < gdk_pixbuf_get_height (pixbuf), NULL);
+-
+- width = gdk_pixbuf_get_width(pixbuf);
+- height = gdk_pixbuf_get_height(pixbuf);
 +  GdkPixmap *pixmap, *mask;
 +  GdkCursor  *cursor;
 +  gint width, height, depth = 8;
@@ -1367,15 +1406,12 @@ exit
 +  visual = gdk_rgb_get_visual ();
 +  depth  = visual->depth;
  
-- width = gdk_pixbuf_get_width(pixbuf);
-- height = gdk_pixbuf_get_height(pixbuf);
-+  gdk_pixbuf_render_pixmap_and_mask (pixbuf, &pixmap, &mask, 0);
- 
 - pixmap = gdk_pixmap_new ( NULL, width, height, depth);
 - mask = gdk_pixmap_new ( NULL, width, height, 1);
 - visual = gdk_rgb_get_visual ();
 - depth = visual->depth;
--
++  gdk_pixbuf_render_pixmap_and_mask (pixbuf, &pixmap, &mask, 0);
+ 
 - gdk_pixbuf_render_pixmap_and_mask (pixbuf, &pixmap, &mask, 0);
 -
 - g_return_val_if_fail (GDK_IS_PIXMAP (pixmap), NULL);
@@ -1424,20 +1460,20 @@ exit
 +    return NULL;
  
 +  g_return_val_if_fail (GDK_IS_PIXBUF (pixbuf), NULL);
- 
--GdkPixbuf*
++
 +  cursor = gdk_cursor_new_from_pixbuf (display, pixbuf, 1, 1);
 +
 +  g_object_unref (pixbuf);
 +
 +  return cursor;
 +}
-+
+ 
+-GdkPixbuf*
 +GdkPixbuf *
  gdk_cursor_get_image (GdkCursor *cursor)
  {
    g_return_val_if_fail (cursor != NULL, NULL);
-@@ -470,8 +468,6 @@
+@@ -470,8 +469,6 @@
    return NULL;
  }
  
@@ -1446,7 +1482,7 @@ exit
  void
  _gdk_cursor_destroy (GdkCursor *cursor)
  {
-@@ -494,46 +490,25 @@
+@@ -494,46 +491,25 @@
  }
  
  guint
@@ -1499,7 +1535,7 @@ exit
    return TRUE;
  }
  
-@@ -541,9 +516,9 @@
+@@ -541,9 +517,9 @@
  gdk_display_supports_cursor_color (GdkDisplay *display)
  {
    g_return_val_if_fail (GDK_IS_DISPLAY (display), FALSE);
@@ -1638,7 +1674,7 @@ exit
  
 --- gtk+-2.12.12.orig/gdk/directfb/gdkdisplay-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkdisplay-directfb.c
-@@ -21,114 +21,98 @@
+@@ -21,114 +21,96 @@
   * Modified by the GTK+ Team and others 1997-2000.  See the AUTHORS
   * file for a list of people on the GTK+ Team.  See the ChangeLog
   * files for a list of changes.  These files are distributed with
@@ -1646,17 +1682,15 @@ exit
 + * GTK+ at ftp://ftp.gtk.org/pub/gtk/.
   */
  
--#include <config.h>
+ #include <config.h>
  
 -#include <glib.h>
-+#include "config.h"
-+
  #include "gdk.h"
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
 -#include "gdkscreen.h"
 -#include "gdkdisplaymanager.h"
- #include "gdkintl.h"
+-#include "gdkintl.h"
  #include "gdkalias.h"
  
 +D_DEBUG_DOMAIN( GDKDFB_GrabKeyboard, "GDKDFB/Grab/Kbd", "GDK DirectFB Keyboard Grabbing" );
@@ -1723,8 +1757,7 @@ exit
  
 -  int argc=0;
 -  char **argv=NULL;
-+  ret = DirectFBInit (&argc, &argv);
- 
+-
 -#if 0  /* arg hack arg support broken*/
 -  if(directfb_args ) {
 -	argc=2;
@@ -1733,7 +1766,8 @@ exit
 -	argv[1] = "--dfb:system=SDL";
 -  }
 -#endif
--
++  ret = DirectFBInit (&argc, &argv);
+ 
 -  ret = DirectFBInit (&argc,&argv);
    if (ret != DFB_OK)
 -{
@@ -1803,7 +1837,7 @@ exit
    _gdk_visual_init ();
  
    gdk_screen_set_default_colormap (_gdk_screen,
-@@ -139,13 +123,14 @@
+@@ -139,13 +121,14 @@
    _gdk_input_init ();
    _gdk_dnd_init ();
  
@@ -1821,7 +1855,7 @@ exit
  }
  
  GType
-@@ -176,30 +161,42 @@
+@@ -176,30 +159,42 @@
    return object_type;
  }
  
@@ -1882,7 +1916,7 @@ exit
  }
  
  G_CONST_RETURN gchar *
-@@ -211,42 +208,53 @@
+@@ -211,42 +206,53 @@
  int
  gdk_display_get_n_screens (GdkDisplay *display)
  {
@@ -1944,7 +1978,7 @@ exit
  }
  
  void
-@@ -256,36 +264,32 @@
+@@ -256,36 +262,32 @@
                               GdkAtom    *targets,
                               gint        n_targets)
  {
@@ -1970,9 +2004,9 @@ exit
  {
 -       return FALSE;
 -}
+-
 +  g_return_val_if_fail (GDK_IS_DISPLAY_DFB (display), FALSE);
  
--
 -GdkWindow *gdk_display_get_default_group (GdkDisplay *display)
 -{
 -  g_return_val_if_fail (GDK_IS_DISPLAY (display), NULL);
@@ -1993,7 +2027,7 @@ exit
  
  GdkGrabStatus
  gdk_directfb_pointer_grab (GdkWindow    *window,
-@@ -297,12 +301,31 @@
+@@ -297,12 +299,31 @@
                             gboolean      implicit_grab)
  {
    GdkWindow             *toplevel;
@@ -2025,7 +2059,7 @@ exit
        gdk_pointer_ungrab (time);
      }
  
-@@ -311,6 +334,8 @@
+@@ -311,6 +332,8 @@
  
    if (impl->window)
      {
@@ -2034,7 +2068,7 @@ exit
        if (impl->window->GrabPointer (impl->window) == DFB_LOCKED)
          return GDK_GRAB_ALREADY_GRABBED;
      }
-@@ -323,45 +348,55 @@
+@@ -323,45 +346,55 @@
    _gdk_directfb_pointer_implicit_grab     = implicit_grab;
    _gdk_directfb_pointer_grab_window       = g_object_ref (window);
    _gdk_directfb_pointer_grab_owner_events = owner_events;
@@ -2103,7 +2137,7 @@ exit
  
    if (_gdk_directfb_pointer_grab_confine)
      {
-@@ -375,86 +410,100 @@
+@@ -375,86 +408,100 @@
        _gdk_directfb_pointer_grab_cursor = NULL;
      }
  
@@ -2243,7 +2277,7 @@ exit
  }
  
  gint
-@@ -464,12 +513,20 @@
+@@ -464,12 +511,20 @@
  }
  
  void
@@ -2265,7 +2299,7 @@ exit
  gdk_display_beep (GdkDisplay *display)
  {
  }
-@@ -484,34 +541,16 @@
+@@ -484,34 +539,16 @@
  {
  }
  
@@ -2300,7 +2334,7 @@ exit
  gboolean
  gdk_display_supports_composite (GdkDisplay *display)
  {
-@@ -520,4 +559,3 @@
+@@ -520,4 +557,3 @@
  
  #define __GDK_DISPLAY_X11_C__
  #include "gdkaliasdef.c"
@@ -2381,13 +2415,11 @@ exit
 +#endif /* __GDK_DISPLAY_DFB_H__ */
 --- gtk+-2.12.12.orig/gdk/directfb/gdkdnd-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkdnd-directfb.c
-@@ -30,17 +30,13 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -31,16 +31,12 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
-+#include "config.h"
 +
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
@@ -2929,18 +2961,17 @@ exit
  {
 --- gtk+-2.12.12.orig/gdk/directfb/gdkdrawable-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkdrawable-directfb.c
-@@ -30,52 +30,30 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -31,51 +31,30 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
 -#include <assert.h>
 -
 -#include <string.h>
-+#include "config.h"
  
-+#include "gdk.h"
++#include "gdkpixmap.h"
++#include "gdkscreen.h"
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
  
@@ -2994,7 +3025,7 @@ exit
  
  static void
  gdk_directfb_set_colormap (GdkDrawable *drawable,
-@@ -85,6 +63,8 @@
+@@ -85,6 +64,8 @@
  
    impl = GDK_DRAWABLE_IMPL_DIRECTFB (drawable);
  
@@ -3003,7 +3034,7 @@ exit
    if (impl->colormap == colormap)
      return;
  
-@@ -97,17 +77,19 @@
+@@ -97,17 +78,19 @@
      g_object_ref (colormap);
  }
  
@@ -3028,7 +3059,7 @@ exit
  
    return retval;
  }
-@@ -117,7 +99,7 @@
+@@ -117,7 +100,7 @@
  {
    GdkDrawableImplDirectFB *impl = GDK_DRAWABLE_IMPL_DIRECTFB (drawable);
  
@@ -3037,7 +3068,16 @@ exit
  }
  
  static void
-@@ -145,18 +127,20 @@
+@@ -136,7 +119,7 @@
+     *height = impl->height;
+ }
+ 
+-static GdkVisual*
++static GdkVisual *
+ gdk_directfb_get_visual (GdkDrawable *drawable)
+ {
+   return gdk_visual_get_system ();
+@@ -145,18 +128,20 @@
  /* Calculates the real clipping region for a drawable, taking into account
   * other windows and the gc clip region.
   */
@@ -3064,23 +3104,23 @@ exit
  
    private = GDK_DRAWABLE_IMPL_DIRECTFB (drawable);
  
-@@ -170,42 +154,63 @@
+@@ -170,42 +155,63 @@
        draw_rect = &rect;
      }
  
 -  clip_region = gdk_region_rectangle (draw_rect);
 +  D_DEBUG_AT( GDKDFB_DrawClip, "  -> draw rectangle   == %4d,%4d - %4dx%4d =\n",
 +              draw_rect->x, draw_rect->y, draw_rect->width, draw_rect->height );
-+
+ 
+-  if (private->buffered && private->paint_region)
+-    gdk_region_intersect (clip_region, private->paint_region);
 +  temp_region_init_rectangle (ret_clip, draw_rect);
 +
 +  if (private->buffered)
 +    {
 +      D_DEBUG_AT( GDKDFB_DrawClip, "  -> buffered region   > %4d,%4d - %4dx%4d <  (%ld boxes)\n",
 +                  GDKDFB_RECTANGLE_VALS_FROM_BOX (&private->paint_region.extents), private->paint_region.numRects );
- 
--  if (private->buffered && private->paint_region)
--    gdk_region_intersect (clip_region, private->paint_region);
++
 +      gdk_region_intersect (ret_clip, &private->paint_region);
 +    }
  
@@ -3141,7 +3181,7 @@ exit
  
        for (cur = GDK_WINDOW_OBJECT (private->wrapper)->children;
             cur;
-@@ -221,23 +226,22 @@
+@@ -221,23 +227,22 @@
  
            cur_impl = GDK_DRAWABLE_IMPL_DIRECTFB (cur_private->impl);
  
@@ -3176,7 +3216,7 @@ exit
  static inline void
  gdk_directfb_set_color (GdkDrawableImplDirectFB *impl,
                          GdkColor                *color,
-@@ -304,8 +308,7 @@
+@@ -304,8 +309,7 @@
            break;
  
          default:
@@ -3186,7 +3226,7 @@ exit
            flags = DSDRAW_NOFX;
            break;
          }
-@@ -318,39 +321,43 @@
+@@ -318,39 +322,43 @@
    return TRUE;
  }
  
@@ -3244,7 +3284,7 @@ exit
            if (DFB_PIXELFORMAT_IS_INDEXED (impl->format))
              impl->surface->SetColorIndex (impl->surface, 255);
            else
-@@ -359,20 +366,19 @@
+@@ -359,20 +367,19 @@
                                       gdk_directfb_bg_color.g,
                                       gdk_directfb_bg_color.b,
                                       gdk_directfb_bg_color.a);
@@ -3270,7 +3310,7 @@ exit
            if (DFB_PIXELFORMAT_IS_INDEXED (impl->format))
              impl->surface->SetColorIndex (impl->surface, 255);
            else
-@@ -381,18 +387,18 @@
+@@ -381,18 +388,18 @@
                                       gdk_directfb_bg_color.b,
                                       gdk_directfb_bg_color.g,
                                       gdk_directfb_bg_color.a);
@@ -3294,7 +3334,7 @@ exit
  
        if (gc_private && gc_private->values_mask & GDK_GC_FILL)
          {
-@@ -400,18 +406,26 @@
+@@ -400,18 +407,26 @@
                gc_private->values_mask & GDK_GC_STIPPLE &&
                gc_private->values.stipple)
              {
@@ -3325,7 +3365,7 @@ exit
              }
          }
  
-@@ -422,33 +436,35 @@
+@@ -422,33 +437,35 @@
            if (gc_private->values_mask & GDK_GC_TS_Y_ORIGIN)
              y = gc_private->values.ts_y_origin;
  
@@ -3375,7 +3415,7 @@ exit
      }
    else
      {
-@@ -459,9 +475,7 @@
+@@ -459,9 +476,7 @@
        /*  DirectFB does not draw rectangles the X way. Using DirectFB,
            a filled Rectangle has the same size as a drawn one, while
            X draws the rectangle one pixel taller and wider.  */
@@ -3386,7 +3426,7 @@ exit
      }
  }
  
-@@ -476,7 +490,7 @@
+@@ -476,7 +491,7 @@
                         gint         angle1,
                         gint         angle2)
  {
@@ -3395,7 +3435,7 @@ exit
  }
  
  static void
-@@ -488,18 +502,20 @@
+@@ -488,18 +503,20 @@
  {
    g_return_if_fail (GDK_IS_DRAWABLE (drawable));
  
@@ -3421,7 +3461,7 @@ exit
              gint                     i;
  
              impl = GDK_DRAWABLE_IMPL_DIRECTFB (drawable);
-@@ -507,12 +523,12 @@
+@@ -507,12 +524,12 @@
              if (!gdk_directfb_setup_for_drawing (impl, GDK_GC_DIRECTFB (gc)))
                return;
  
@@ -3438,7 +3478,7 @@ exit
  
                  impl->surface->SetClip (impl->surface, &reg);
                  impl->surface->FillTriangle (impl->surface,
-@@ -521,14 +537,14 @@
+@@ -521,14 +538,14 @@
                                               points[2].x, points[2].y);
  
                }
@@ -3458,7 +3498,7 @@ exit
      }
  
    if (points[0].x != points[npoints-1].x ||
-@@ -560,7 +576,7 @@
+@@ -560,7 +577,7 @@
                          const gchar *text,
                          gint         text_length)
  {
@@ -3467,7 +3507,7 @@ exit
  }
  
  static void
-@@ -572,7 +588,7 @@
+@@ -572,7 +589,7 @@
                             const GdkWChar *text,
                             gint            text_length)
  {
@@ -3476,7 +3516,7 @@ exit
  }
  
  static void
-@@ -588,14 +604,15 @@
+@@ -588,14 +605,15 @@
  {
    GdkDrawableImplDirectFB *impl;
    GdkDrawableImplDirectFB *src_impl;
@@ -3499,16 +3539,16 @@ exit
  
    impl = GDK_DRAWABLE_IMPL_DIRECTFB (drawable);
  
-@@ -611,19 +628,22 @@
+@@ -611,19 +629,22 @@
    else
      return;
  
 -  clip = gdk_directfb_clip_region (drawable, gc, &dest_rect);
 +  gdk_directfb_clip_region (drawable, gc, &dest_rect, &clip);
++
++  impl->surface->SetBlittingFlags (impl->surface, DSBLIT_NOFX);
  
 -  for (i = 0; i < clip->numRects; i++)
-+  impl->surface->SetBlittingFlags (impl->surface, DSBLIT_NOFX);
-+
 +  for (i = 0; i < clip.numRects; i++)
      {
 -      DFBRegion reg = { clip->rects[i].x1,     clip->rects[i].y1,
@@ -3530,7 +3570,7 @@ exit
  }
  
  static void
-@@ -633,10 +653,12 @@
+@@ -633,10 +654,12 @@
                            gint         npoints)
  {
    GdkDrawableImplDirectFB *impl;
@@ -3544,7 +3584,7 @@ exit
    if (npoints < 1)
      return;
  
-@@ -645,22 +667,24 @@
+@@ -645,22 +668,24 @@
    if (!gdk_directfb_setup_for_drawing (impl, GDK_GC_DIRECTFB (gc)))
      return;
  
@@ -3571,7 +3611,7 @@ exit
            if (points->y > region.y2)
              region.y2 = points->y;
          }
-@@ -669,7 +693,7 @@
+@@ -669,7 +694,7 @@
        points++;
      }
  
@@ -3580,7 +3620,7 @@ exit
  }
  
  static void
-@@ -679,10 +703,10 @@
+@@ -679,10 +704,10 @@
                              gint         nsegs)
  {
    GdkDrawableImplDirectFB *impl;
@@ -3593,7 +3633,7 @@ exit
  
    if (nsegs < 1)
      return;
-@@ -692,62 +716,19 @@
+@@ -692,62 +717,19 @@
    if (!gdk_directfb_setup_for_drawing (impl, GDK_GC_DIRECTFB (gc)))
      return;
  
@@ -3662,7 +3702,7 @@ exit
  }
  
  static void
-@@ -757,13 +738,15 @@
+@@ -757,13 +739,15 @@
                           gint         npoints)
  {
    GdkDrawableImplDirectFB *impl;
@@ -3679,7 +3719,7 @@ exit
    if (npoints < 2)
      return;
  
-@@ -801,20 +784,18 @@
+@@ -801,20 +785,18 @@
    lines[i].x2 = points->x;
    lines[i].y2 = points->y;
  
@@ -3705,7 +3745,7 @@ exit
  }
  
  static void
-@@ -830,111 +811,87 @@
+@@ -830,111 +812,87 @@
  {
    GdkDrawableImplDirectFB *impl;
    GdkImageDirectFB        *image_private;
@@ -3769,8 +3809,9 @@ exit
      }
  
 -  gdk_region_destroy (clip);
--}
--
++  temp_region_deinit (&clip);
+ }
+ 
 -static inline void
 -convert_rgba_pixbuf_to_image (guint32 *src,
 -                              guint    src_pitch,
@@ -3778,9 +3819,13 @@ exit
 -                              guint    dest_pitch,
 -                              guint    width,
 -                              guint    height)
--{
++static inline const char *
++drawable_impl_type_name (GObject *object)
+ {
 -  guint i;
--
++  if (GDK_IS_PIXMAP (object))
++    return "PIXMAP";
+ 
 -  while (height--)
 -    {
 -      for (i = 0; i < width; i++)
@@ -3788,12 +3833,15 @@ exit
 -          guint32 pixel = GUINT32_FROM_BE (src[i]);
 -          dest[i] = (pixel >> 8) | (pixel << 24);
 -        }
--
++  if (GDK_IS_WINDOW (object))
++    return "WINDOW";
+ 
 -      src  += src_pitch;
 -      dest += dest_pitch;
 -    }
-+  temp_region_deinit (&clip);
- }
+-}
++  if (GDK_IS_DRAWABLE_IMPL_DIRECTFB (object))
++    return "DRAWABLE";
  
 -static inline void
 -convert_rgb_pixbuf_to_image (guchar  *src,
@@ -3802,25 +3850,17 @@ exit
 -                             guint    dest_pitch,
 -                             guint    width,
 -                             guint    height)
-+static inline const char *
-+drawable_impl_type_name (GObject *object)
- {
+-{
 -  guint   i;
 -  guchar *s;
-+  if (GDK_IS_PIXMAP (object))
-+    return "PIXMAP";
- 
+-
 -  while (height--)
 -    {
 -      s = src;
-+  if (GDK_IS_WINDOW (object))
-+    return "WINDOW";
- 
+-
 -      for (i = 0; i < width; i++, s += 3)
 -        dest[i] = 0xFF000000 | (s[0] << 16) | (s[1] << 8) | s[2];
-+  if (GDK_IS_DRAWABLE_IMPL_DIRECTFB (object))
-+    return "DRAWABLE";
- 
+-
 -      src  += src_pitch;
 -      dest += dest_pitch;
 -    }
@@ -3857,7 +3897,7 @@ exit
    G_OBJECT_CLASS (parent_class)->finalize (object);
  }
  
-@@ -948,43 +905,29 @@
+@@ -948,43 +906,29 @@
  
    object_class->finalize = gdk_drawable_impl_directfb_finalize;
  
@@ -3919,7 +3959,7 @@ exit
  }
  
  GType
-@@ -1015,44 +958,49 @@
+@@ -1015,44 +959,49 @@
    return object_type;
  }
  
@@ -3996,10 +4036,12 @@ exit
 -#include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkevents-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkevents-directfb.c
-@@ -31,16 +31,13 @@
+@@ -30,17 +30,14 @@
+  *            Sven Neumann <sven@convergence.de>
   */
  
- #include "config.h"
+-#include "config.h"
++#include <config.h>
 +
  #include "gdk.h"
  #include "gdkdirectfb.h"
@@ -4274,10 +4316,10 @@ exit
 +  GdkDisplaySource *display_source;
 +  GdkDisplayDFB    *display_dfb = GDK_DISPLAY_DFB (display);
 +  IDirectFB        *dfb         = _gdk_display_dfb->directfb;
-+
-+  D_DEBUG_AT( GDKDFB_Events, "%s( %p )\n", __FUNCTION__, display );
  
 -  ret = DirectFB->CreateEventBuffer (DirectFB, &EventBuffer);
++  D_DEBUG_AT( GDKDFB_Events, "%s( %p )\n", __FUNCTION__, display );
++
 +  /* Create an event buffer for this display. */
 +  ret = dfb->CreateEventBuffer (dfb, &_gdk_display_dfb->buffer);
    if (ret)
@@ -4336,7 +4378,8 @@ exit
  {
 -  GdkDisplay *display = gdk_display_get_default ();
 +  GList *tmp_list;
-+
+ 
+-  return _gdk_event_queue_find_first (display) ? TRUE : FALSE;
 +  D_DEBUG_AT( GDKDFB_Events, "%s()\n", __FUNCTION__ );
 +
 +  /* Check local queues. */
@@ -4367,8 +4410,7 @@ exit
 +          return TRUE;
 +        }
 +    }
- 
--  return _gdk_event_queue_find_first (display) ? TRUE : FALSE;
++
 +  return FALSE;
  }
  
@@ -5702,9 +5744,7 @@ exit
 +                           event_window,
 +                           factory.win_x, factory.win_y,
 +                           event->motion.is_hint ? "true" : "false"));
- 
--        _gdk_directfb_mouse_x = dfbevent->cx;
--        _gdk_directfb_mouse_y = dfbevent->cy;
++
 +      if (event_window)
 +        {
 +          event->motion.x_root  = _gdk_directfb_mouse_x;
@@ -5714,6 +5754,11 @@ exit
 +          event->motion.state   = _gdk_directfb_modifiers;
 +          event->motion.is_hint = FALSE;
 +          event->motion.device  = display->core_pointer;
+ 
+-        _gdk_directfb_mouse_x = dfbevent->cx;
+-        _gdk_directfb_mouse_y = dfbevent->cy;
++          D_DEBUG_AT( GDKDFB_EventTrans, "  => MOTION      %4.0f,%4.0f (0x%08x)\n",
++                      event->motion.x, event->motion.y, event->motion.state );
  
 -	//child = gdk_directfb_child_at (window, &dfbevent->x, &dfbevent->y);
 -    /* Go all the way to root to catch popup menus */
@@ -5772,9 +5817,6 @@ exit
 -	     gdk_directfb_window_send_crossing_events (NULL,ev_win,GDK_CROSSING_NORMAL);
 -*/
 -      }
-+          D_DEBUG_AT( GDKDFB_EventTrans, "  => MOTION      %4.0f,%4.0f (0x%08x)\n",
-+                      event->motion.x, event->motion.y, event->motion.state );
-+
 +          return_val = TRUE;
 +        }
        break;
@@ -5795,12 +5837,12 @@ exit
      case DWET_POSITION:
 -      {
 -        GdkWindow *event_win;
+-
+-        private->x = dfbevent->x;
+-        private->y = dfbevent->y;
 +      factory.priv->x = dfbevent->x;
 +      factory.priv->y = dfbevent->y;
  
--        private->x = dfbevent->x;
--        private->y = dfbevent->y;
--
 -        event_win = gdk_directfb_other_event_window (window, GDK_CONFIGURE);
 +      if (event_window)
 +        {
@@ -5839,10 +5881,10 @@ exit
 -        GdkDrawableImplDirectFB *impl;
 -        GdkWindow               *event_win;
 -        GList                   *list;
+-
+-        impl = GDK_DRAWABLE_IMPL_DIRECTFB (private->impl);
 +        GList *list;
  
--        impl = GDK_DRAWABLE_IMPL_DIRECTFB (private->impl);
--
 -        event_win = gdk_directfb_other_event_window (window, GDK_CONFIGURE);
 -
 -        if (event_win)
@@ -6084,10 +6126,10 @@ exit
 -  /* XXX: display should be used */
 -  GdkClientFilter *filter = g_new (GdkClientFilter, 1);
 +  GdkClientFilter *filter;
-+
-+  g_return_if_fail (GDK_IS_DISPLAY (display));
  
 -  filter->type = message_type;
++  g_return_if_fail (GDK_IS_DISPLAY (display));
++
 +  filter = g_new (GdkClientFilter, 1);
 +
 +  filter->type     = message_type;
@@ -6101,7 +6143,7 @@ exit
  }
  
  
-@@ -816,42 +1741,75 @@
+@@ -816,47 +1741,80 @@
  
  void
  gdk_screen_broadcast_client_message (GdkScreen *screen,
@@ -6145,11 +6187,6 @@ exit
 +{
 +  if (window == _gdk_directfb_mouse_window)
 +    return;
-+
-+  if (window)
-+    g_object_ref (window);
-+  if (_gdk_directfb_mouse_window)
-+    g_object_unref (_gdk_directfb_mouse_window);
  
 -/**
 - * gdk_net_wm_supports:
@@ -6162,9 +6199,14 @@ exit
 - *
 - * Return value: %TRUE if the window manager supports @property
 - **/
++  if (window)
++    g_object_ref (window);
++  if (_gdk_directfb_mouse_window)
++    g_object_unref (_gdk_directfb_mouse_window);
+ 
 +  _gdk_directfb_mouse_window = window;
 +}
- 
++
 +/* Update current cursor */
 +void
 +gdk_directfb_events_update_cursor (GdkWindow *window)
@@ -6196,6 +6238,12 @@ exit
  
  gboolean
  gdk_net_wm_supports (GdkAtom property)
+ {
+-   return FALSE;
++  return FALSE;
+ }
+ 
+ #define __GDK_EVENTS_X11_C__
 --- gtk+-2.12.12.orig/gdk/directfb/gdkfont-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkfont-directfb.c
 @@ -30,31 +30,17 @@
@@ -6203,13 +6251,12 @@ exit
   */
  
 -#undef GDK_DISABLE_DEPRECATED
-+#include "config.h"
- 
--#include <config.h>
+-
+ #include <config.h>
 -#include "gdk.h"
 -
 -#include <string.h>
--
+ 
 -#include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
 -
@@ -6257,8 +6304,9 @@ exit
    return font;
  }
  
- GdkFont*
+-GdkFont*
 -gdk_font_from_description_for_display (GdkDisplay * display,PangoFontDescription *font_desc)
++GdkFont *
 +gdk_font_from_description_for_display (GdkDisplay           *display,
 +                                       PangoFontDescription *font_desc)
  {
@@ -6435,22 +6483,20 @@ exit
   */
  
 -#undef GDK_DISABLE_DEPRECATED
-+#include "config.h"
- 
--#include <config.h>
+-
+ #include <config.h>
 -#include "gdk.h"
 -
 -#include <string.h>
--
+ 
 -#include "gdkdirectfb.h"
--#include "gdkprivate-directfb.h"
+ #include "gdkprivate-directfb.h"
 -
 -#include "gdkgc.h"
 -#include "gdkfont.h"
  #include "gdkpixmap.h"
 -#include "gdkregion-generic.h"
 -
-+#include "gdkprivate-directfb.h"
  #include "gdkalias.h"
  
  static void gdk_directfb_gc_get_values (GdkGC           *gc,
@@ -6665,11 +6711,13 @@ exit
 -#include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkgeometry-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkgeometry-directfb.c
-@@ -31,14 +31,13 @@
+@@ -30,15 +30,14 @@
+  *            Sven Neumann <sven@convergence.de>
   */
  
- #include "config.h"
+-#include "config.h"
 -#include "gdk.h"        /* For gdk_rectangle_intersect */
++#include <config.h>
  
 +#include "gdk.h"
  #include "gdkdirectfb.h"
@@ -6880,13 +6928,11 @@ exit
  }
 --- gtk+-2.12.12.orig/gdk/directfb/gdkglobals-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkglobals-directfb.c
-@@ -30,33 +30,52 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -31,32 +31,51 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
-+#include "config.h"
  
 -#include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
@@ -6950,14 +6996,18 @@ exit
 +GdkModifierType      _gdk_directfb_modifiers                  = 0;
 --- gtk+-2.12.12.orig/gdk/directfb/gdkim-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkim-directfb.c
-@@ -32,24 +32,10 @@
+@@ -30,27 +30,14 @@
+  *            Sven Neumann <sven@convergence.de>
+  */
  
- #include "config.h"
+-#include "config.h"
++#include <config.h>
  
--#include <string.h>
+ #include <string.h>
  #include <locale.h>
  
- #include "gdkdirectfb.h"
+-#include "gdkdirectfb.h"
++#include "gdktypes.h"
  
 -/*
 - *--------------------------------------------------------------
@@ -6972,10 +7022,12 @@ exit
 - *--------------------------------------------------------------
 - */
 -
- gchar*
+-gchar*
++gchar *
  gdk_set_locale (void)
  {
-@@ -58,22 +44,13 @@
+   if (!setlocale (LC_ALL,""))
+@@ -58,22 +45,13 @@
  
    return setlocale (LC_ALL, NULL);
  }
@@ -7001,7 +7053,7 @@ exit
  
    wcp = src;
    len = 0;
-@@ -135,7 +112,6 @@
+@@ -135,7 +113,6 @@
            len = 6;
          }
  
@@ -7009,7 +7061,7 @@ exit
        switch (len)
          {
          case 6: bp[5] = (c & 0x3f) | 0x80; c >>= 6; /* Fall through */
-@@ -151,35 +127,19 @@
+@@ -151,35 +128,19 @@
  
    *bp = 0;
  
@@ -7050,7 +7102,7 @@ exit
    n = 0;
    while (cp != end && dest != dest + dest_max)
      {
-@@ -239,79 +199,6 @@
+@@ -239,79 +200,6 @@
        n++;
      }
  
@@ -7132,14 +7184,12 @@ exit
  
 --- gtk+-2.12.12.orig/gdk/directfb/gdkimage-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkimage-directfb.c
-@@ -30,19 +30,12 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -31,18 +31,11 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
 -
-+#include "config.h"
  
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
@@ -7187,9 +7237,9 @@ exit
 -  image->width  = w;
 -  image->height = h;
 -  image->depth  = 1;
- 
--  GDK_NOTE (MISC, g_print ("gdk_image_new_bitmap: %dx%d\n", w, h));
 -
+-  GDK_NOTE (MISC, g_print ("gdk_image_new_bitmap: %dx%d\n", w, h));
+ 
 -  g_message ("not fully implemented %s", G_STRLOC);
 -
 -  image->bpl = (w + 7) / 8;
@@ -7211,6 +7261,15 @@ exit
  
    return image;
  }
+@@ -170,7 +154,7 @@
+ {
+ }
+ 
+-GdkImage*
++GdkImage *
+ _gdk_image_new_for_depth (GdkScreen    *screen,
+                           GdkImageType  type,
+                           GdkVisual    *visual,
 @@ -209,59 +193,65 @@
        format = DSPF_ARGB;
        break;
@@ -7267,7 +7326,7 @@ exit
  }
  
 -
- GdkImage*
+-GdkImage*
 -_gdk_directfb_copy_to_image (GdkDrawable *drawable,
 -                             GdkImage    *image,
 -                             gint         src_x,
@@ -7276,6 +7335,7 @@ exit
 -                             gint         dest_y,
 -                             gint         width,
 -                             gint         height)
++GdkImage *
 +gdk_directfb_copy_to_image (GdkDrawable *drawable,
 +                            GdkImage    *image,
 +                            gint         src_x,
@@ -7393,13 +7453,11 @@ exit
    image->windowing_data = NULL;
 --- gtk+-2.12.12.orig/gdk/directfb/gdkinput-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkinput-directfb.c
-@@ -31,37 +31,22 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -32,36 +32,21 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
-+#include "config.h"
  
 -#include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
@@ -7718,13 +7776,11 @@ exit
  #endif /* __GDK_INPUT_DIRECTFB_H__ */
 --- gtk+-2.12.12.orig/gdk/directfb/gdkkeys-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkkeys-directfb.c
-@@ -30,29 +30,19 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -31,28 +31,18 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
-+#include "config.h"
  
 -#include <stdlib.h>
 -#include <string.h>
@@ -8733,7 +8789,7 @@ exit
  #include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkmain-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkmain-directfb.c
-@@ -32,36 +32,24 @@
+@@ -32,7 +32,7 @@
   */
  
  /*
@@ -8742,14 +8798,13 @@ exit
   most stuff in main is moved over to gdkdisplay-directfb.c
   I'll move stub functions here that make no sense for directfb
   and true globals
-  Michael Emmel
+@@ -40,28 +40,16 @@
  */
  
--#include <config.h>
+ #include <config.h>
 -#include <string.h> 
 -#include <stdlib.h> 
 -#include "gdk.h"
-+#include "config.h"
  
 -#include "gdkdisplay.h"
 -#include "gdkdirectfb.h"
@@ -9208,16 +9263,14 @@ exit
  #define __GDK_MAIN_X11_C__
 --- gtk+-2.12.12.orig/gdk/directfb/gdkpixmap-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkpixmap-directfb.c
-@@ -31,29 +31,19 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -32,28 +32,18 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
 -
 -#include <stdlib.h>
 -#include <string.h>
-+#include "config.h"
  
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
@@ -9257,7 +9310,8 @@ exit
      G_OBJECT_CLASS (parent_class)->finalize (object);
  }
  
- GdkPixmap*
+-GdkPixmap*
++GdkPixmap *
  gdk_pixmap_new (GdkDrawable *drawable,
 -                gint       width,
 -                gint       height,
@@ -9359,10 +9413,11 @@ exit
          }
      }
  
-@@ -251,13 +242,13 @@
+@@ -250,14 +241,14 @@
+   return pixmap;
  }
  
- GdkPixmap*
+-GdkPixmap*
 -gdk_pixmap_create_from_data (GdkDrawable   *drawable,
 -                             const gchar *data,
 -                             gint         width,
@@ -9370,6 +9425,7 @@ exit
 -                             gint         depth,
 -                             const GdkColor    *fg,
 -                             const GdkColor    *bg)
++GdkPixmap *
 +gdk_pixmap_create_from_data (GdkDrawable    *drawable,
 +                             const gchar    *data,
 +                             gint            width,
@@ -9408,7 +9464,7 @@ exit
  
            for (i = 0; i < height; i++)
              {
-@@ -295,22 +288,24 @@
+@@ -295,46 +288,50 @@
                data += src_pitch;
              }
  
@@ -9438,7 +9494,12 @@ exit
  {
    return gdk_pixmap_foreign_new(anid);
  }
-@@ -322,19 +317,20 @@
+ 
+-GdkPixmap*
++GdkPixmap *
+ gdk_pixmap_foreign_new_for_screen (GdkScreen       *screen,
+                                    GdkNativeWindow  anid,
+                                    gint             width,
                                     gint             height,
                                     gint             depth)
  {
@@ -9460,8 +9521,9 @@ exit
  }
  
 -GdkPixmap* gdk_pixmap_lookup_for_display (GdkDisplay *display,GdkNativeWindow anid)
-+GdkPixmap* gdk_pixmap_lookup_for_display (GdkDisplay      *display,
-+                                          GdkNativeWindow  anid)
++GdkPixmap *
++gdk_pixmap_lookup_for_display (GdkDisplay      *display,
++                               GdkNativeWindow  anid)
  {
    return gdk_pixmap_lookup (anid);
  }
@@ -9996,15 +10058,13 @@ exit
  #endif /* __GDK_PRIVATE_DIRECTFB_H__ */
 --- gtk+-2.12.12.orig/gdk/directfb/gdkproperty-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkproperty-directfb.c
-@@ -30,24 +30,16 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -31,23 +31,15 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
 -
 -#include <string.h>
-+#include "config.h"
  
  #include "gdkproperty.h"
 -
@@ -10176,10 +10236,12 @@ exit
  #include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkscreen-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkscreen-directfb.c
-@@ -32,21 +32,18 @@
+@@ -31,22 +31,19 @@
+  *            Sven Neumann <sven@convergence.de>
   */
  
- #include "config.h"
+-#include "config.h"
++#include <config.h>
 +
  #include "gdk.h"
 -#include "gdkscreen.h"
@@ -10200,6 +10262,15 @@ exit
  }
  
  GdkWindow *
+@@ -55,7 +52,7 @@
+   return _gdk_parent_root;
+ }
+ 
+-GdkColormap*
++GdkColormap *
+ gdk_screen_get_default_colormap (GdkScreen *screen)
+ {
+   return default_colormap;
 @@ -63,7 +60,7 @@
  
  void
@@ -10333,12 +10404,15 @@ exit
  #include "gdkaliasdef.c"
 --- gtk+-2.12.12.orig/gdk/directfb/gdkselection-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkselection-directfb.c
-@@ -32,24 +32,17 @@
+@@ -30,26 +30,19 @@
+  *            Sven Neumann <sven@convergence.de>
+  */
  
- #include "config.h"
- 
--#include <string.h>
+-#include "config.h"
 -
+-#include <string.h>
++#include <config.h>
+ 
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
 -
@@ -10856,14 +10930,12 @@ exit
        (*list)[count] = NULL;
 --- gtk+-2.12.12.orig/gdk/directfb/gdkspawn-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkspawn-directfb.c
-@@ -19,86 +19,81 @@
-  * Authors: Mark McLoughlin <mark@skynet.ie>
+@@ -20,85 +20,80 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include <glib.h>
 -#include "gdk.h"
-+#include "config.h"
 +
  #include "gdkspawn.h"
 -#include "gdkprivate.h"
@@ -10991,7 +11063,12 @@ exit
    return retval;
 --- gtk+-2.12.12.orig/gdk/directfb/gdkvisual-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkvisual-directfb.c
-@@ -34,40 +34,33 @@
+@@ -30,44 +30,37 @@
+  *            Sven Neumann <sven@convergence.de>
+  */
+ 
+-#include "config.h"
++#include <config.h>
  
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
@@ -11394,14 +11471,12 @@ exit
      if (available_depths[i] == visual->depth)
 --- gtk+-2.12.12.orig/gdk/directfb/gdkwindow-directfb.c
 +++ gtk+-2.12.12/gdk/directfb/gdkwindow-directfb.c
-@@ -31,105 +31,160 @@
-  *            Sven Neumann <sven@convergence.de>
+@@ -32,104 +32,159 @@
   */
  
--#include <config.h>
+ #include <config.h>
 -#include "gdk.h"
 -#include "gdkwindow.h"
-+#include "config.h"
  
 +#include "gdk.h"
  #include "gdkdirectfb.h"
@@ -11664,8 +11739,12 @@ exit
        impl->window = NULL;
      }
  
-@@ -245,16 +300,22 @@
- static GdkRegion*
+@@ -242,19 +297,25 @@
+     G_OBJECT_CLASS (parent_class)->finalize (object);
+ }
+ 
+-static GdkRegion*
++static GdkRegion *
  gdk_window_impl_directfb_get_visible_region (GdkDrawable *drawable)
  {
 -  GdkDrawableImplDirectFB *priv = GDK_DRAWABLE_IMPL_DIRECTFB (drawable);
@@ -14833,7 +14912,13 @@ exit
 -
 --- gtk+-2.12.12.orig/gdk/directfb/gdkwindowid.c
 +++ gtk+-2.12.12/gdk/directfb/gdkwindowid.c
-@@ -35,14 +35,19 @@
+@@ -30,19 +30,24 @@
+  *            Sven Neumann <sven@convergence.de>
+  */
+ 
+-#include "config.h"
++#include <config.h>
+ 
  #include "gdkdirectfb.h"
  #include "gdkprivate-directfb.h"
  
@@ -15125,16 +15210,6 @@ exit
  	}
        
        if (!start_status)
---- gtk+-2.12.12.orig/gdk/gdkspawn.h
-+++ gtk+-2.12.12/gdk/gdkspawn.h
-@@ -23,7 +23,6 @@
- #define __GDK_SPAWN_H__
- 
- #include <gdk/gdkscreen.h>
--#include <glib/gspawn.h>
- 
- G_BEGIN_DECLS
- 
 --- gtk+-2.12.12.orig/gdk/x11/Makefile.am
 +++ gtk+-2.12.12/gdk/x11/Makefile.am
 @@ -69,7 +69,7 @@
@@ -15270,18 +15345,6 @@ exit
  
  gtkbuiltincache.h: @REBUILD@ stamp-icons
  	$(MAKE) $(AM_MAKEFLAGS) gtk-update-icon-cache$(EXEEXT)
---- gtk+-2.12.12.orig/gtk/gtkbuilderprivate.h
-+++ gtk+-2.12.12/gtk/gtkbuilderprivate.h
-@@ -21,9 +21,6 @@
- #ifndef __GTK_BUILDER_PRIVATE_H__
- #define __GTK_BUILDER_PRIVATE_H__
- 
--#include <glib/gmarkup.h>
--#include <glib/gslist.h>
--
- #include <glib-object.h>
- #include "gtkbuilder.h"
- 
 --- gtk+-2.12.12.orig/gtk/gtkfilechoosersettings.c
 +++ gtk+-2.12.12/gtk/gtkfilechoosersettings.c
 @@ -32,7 +32,6 @@
@@ -15292,17 +15355,6 @@ exit
  #include <glib/gi18n-lib.h>
  #include "gtkfilechoosersettings.h"
  #include "gtkalias.h"
---- gtk+-2.12.12.orig/gtk/gtksearchenginesimple.c
-+++ gtk+-2.12.12/gtk/gtksearchenginesimple.c
-@@ -39,8 +39,6 @@
- 
- #include <string.h>
- 
--#include <glib/gstrfuncs.h>
--
- #define BATCH_SIZE 500
- 
- typedef struct 
 --- gtk+-2.12.12.orig/gtk/theme-bits/Makefile.am
 +++ gtk+-2.12.12/gtk/theme-bits/Makefile.am
 @@ -1,10 +1,10 @@
