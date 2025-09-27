@@ -110,9 +110,9 @@ exit
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" png/Makefile
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" PS/Makefile
 +
-+sed -i "/^DEMOSDATADIR=/s|=.*|=$DEMOSDATADIR|" Makefile
++sed -i "/^DEMOSDATADIR/s|=.*|=$DEMOSDATADIR|" Makefile
 +
-+sed -i "/^BACKGROUNDSDIR=/s|=.*|=$BACKGROUNDSDIR|" Makefile
++sed -i "/^BACKGROUNDSDIR/s|=.*|=$BACKGROUNDSDIR|" Makefile
 +
 +test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
@@ -202,7 +202,7 @@ exit
 -CFLAGS:=$(shell pkg-config --cflags $(REQUIRES)) -Wall -g3
 -LIBS:=$(shell pkg-config --libs $(REQUIRES))
 +CFLAGS:=$(shell $(PKG_CONFIG) --cflags $(REQUIRES)) -Wall -g3
-+LIBS:=$(shell $(PKG_CONFIG) --libs $(REQUIRES)) -Wl,-rpath,$(PREFIX)/lib
++LIBS:=$(shell $(PKG_CONFIG) --libs $(REQUIRES)) -lm -Wl,-rpath,$(PREFIX)/lib
  
  spinner-demo: spinner-demo.c $(SOURCES) demo.h Makefile
  	$(CC) $(DEFINES) $(CFLAGS) -o $@ spinner-demo.c $(SOURCES) $(LIBS)

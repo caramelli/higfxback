@@ -157,7 +157,7 @@ exit
  #include "tennix.h"
 --- tennix-1.1.orig/makefile
 +++ tennix-1.1/makefile
-@@ -29,22 +29,22 @@
+@@ -29,22 +29,21 @@
  
  RELEASE   =  1.1
  
@@ -167,7 +167,7 @@ exit
  PREFIX ?= /usr/local
  BINDIR ?= $(PREFIX)/bin
  DATAROOTDIR ?= $(PREFIX)/share
- DATADIR ?= $(DATAROOTDIR)/games
+-DATADIR ?= $(DATAROOTDIR)/games
  
 -LIBS =
 +LIBS += -Wl,-rpath,$(PREFIX)/lib
@@ -184,7 +184,7 @@ exit
  endif
  
  ifeq ($(NONFREE_LOCATIONS),1)
-@@ -67,13 +67,12 @@
+@@ -67,13 +66,12 @@
    CFLAGS += -DMAEMO
  endif
  
@@ -204,6 +204,22 @@ exit
  endif
  
  SRC = tennix.cc game.c graphics.cc input.c util.c sound.cc animation.c network.c
+@@ -106,13 +104,13 @@
+ 	install -d -m 755 $(DESTDIR)$(DATAROOTDIR)/applications
+ 	install -d -m 755 $(DESTDIR)$(DATAROOTDIR)/man/man6
+ 	install -d -m 755 $(DESTDIR)$(DATAROOTDIR)/icons/hicolor/scalable/apps
+-	install -d -m 755 $(DESTDIR)$(DATADIR)/tennix
++	install -d -m 755 $(DESTDIR)$(DATAROOTDIR)/tennix
+ 	install -m 755 tennix $(DESTDIR)$(BINDIR)/
+ 	install -m 644 tennix.6 $(DESTDIR)$(DATAROOTDIR)/man/man6/
+ 	install -m 644 data/icon.png $(DESTDIR)$(DATAROOTDIR)/pixmaps/tennix.png
+ 	install -m 644 data/icon.svg $(DESTDIR)$(DATAROOTDIR)/icons/hicolor/scalable/apps/tennix.svg
+ 	install -m 644 tennix.desktop $(DESTDIR)$(DATAROOTDIR)/applications/
+-	install -m 644 tennix.tnx $(DESTDIR)$(DATADIR)/tennix/
++	install -m 644 tennix.tnx $(DESTDIR)$(DATAROOTDIR)/tennix/
+ 
+ archive.o: archive.cc archive.cc
+ tennix.o: tennix.cc tennix.h game.h graphics.h input.h util.h animation.h sound.h locations.h util.h archive.hh
 --- tennix-1.1.orig/network.c
 +++ tennix-1.1/network.c
 @@ -21,11 +21,13 @@

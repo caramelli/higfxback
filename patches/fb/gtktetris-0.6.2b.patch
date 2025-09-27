@@ -1,0 +1,91 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build gtk2-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/fb/lib/pkgconfig sh ./Configure --prefix=/fb --with-highscore-path=/fb/var/games/pinball
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install gtktetris $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/gtktetris-build.pc << EOF
+Name: gtktetris
+Version: 0.6.2b
+Description: Tetris clone with GTK interface
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/gtktetris
+EOF
+
+exit
+
+# patch
+--- gtktetris-0.6.2b.orig/Configure
++++ gtktetris-0.6.2b/Configure
+@@ -0,0 +1,25 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++HIGHSCORE_PATH=/var/games/gtktetris
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --with-highscore-path=*) HIGHSCORE_PATH=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
++
++sed -i "/^HIGHSCORE_PATH/s|=.*|= $HIGHSCORE_PATH|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
++fi
+--- gtktetris-0.6.2b.orig/Makefile
++++ gtktetris-0.6.2b/Makefile
+@@ -1,18 +1,20 @@
+ PROGRAM = gtktetris
+-GETTEXT_PACKAGE = gtktetris
++PREFIX = /usr/local
+ OBJS = misc.o highscore.o tetris.o interface.o
+-BIN_PATH = /usr/local/bin
+-HIGHSCORE_PATH = /usr/local/games/gtktetris
++BIN_PATH = $(PREFIX)/bin
++HIGHSCORE_PATH = /var/games/gtktetris
+ GROUP = root
+ HIGHSCORE_FILE = $(HIGHSCORE_PATH)/highscore.dat
+ #SIZE = -DBIGGERBLOCKS
+ SIZE = -DBIGBLOCKS
+ CC = gcc
++PKG_CONFIG = pkg-config
+ 
+-CFLAGS = `pkg-config gtk+-2.0 --cflags` -Wall -O2 \
++CFLAGS = `$(PKG_CONFIG) gtk+-2.0 --cflags` -Wall -O2 \
+ 	-DHIGHSCORE_FILE=\"$(HIGHSCORE_FILE)\" $(SIZE) 
+ 
+-LIBS = `pkg-config gtk+-2.0 --libs`
++LIBS = `$(PKG_CONFIG) gtk+-2.0 --libs` \
++	-Wl,-rpath,$(PREFIX)/lib
+ 
+ all: $(OBJS)
+ 	$(CC) $(CFLAGS) $(OBJS) -o $(PROGRAM) $(LIBS)
+
+# source
+http://downloads.sourceforge.net/gtktetris/gtktetris-0.6.2b.tgz
