@@ -41,7 +41,7 @@ cross-gcc: cross-binutils
 	@test -d $(GCC) || ( wget -qO- https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 | tar xj && patch -d $(GCC) -p1 < $(GCC).patch )
 	@test -d $(GCC)/gmp || ( wget -qO- https://gmplib.org/download/gmp/$(GMP).tar.bz2 | tar xj && mv $(GMP) $(GCC)/gmp )
 	@test -d $(GCC)/mpc || ( wget -qO- https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz | tar xz && mv $(MPC) $(GCC)/mpc )
-	@test -d $(GCC)/mpfr || ( wget -qO- https://mpfr.org/mpfr-4.1.1/$(MPFR).tar.bz2 | tar xj && mv $(MPFR) $(GCC)/mpfr )
+	@test -d $(GCC)/mpfr || ( wget -qO- https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 | tar xj && mv $(MPFR) $(GCC)/mpfr )
 	@test -d $(GCC)/cross || mkdir $(GCC)/cross
 	@test -f $(GCC)/cross/config.status || ( cd $(GCC)/cross; ../configure --build=$(MACHTYPE) --target=$(HOST) --enable-languages=c --with-newlib --disable-decimal-float --disable-lto --disable-plugin --disable-threads --disable-shared --with-sysroot=$(STAGING_DIR) --prefix= --libexecdir=/lib --with-local-prefix=/ )
 	$(MAKE) -C $(GCC)/cross all-gcc all-target-libgcc
@@ -95,7 +95,7 @@ gcc:
 	@test -d $(GCC) || ( wget -qO- https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 | tar xj && patch -d $(GCC) -p1 < $(GCC).patch )
 	@test -d $(GCC)/gmp || ( wget -qO- https://gmplib.org/download/gmp/$(GMP).tar.bz2 | tar xj && mv $(GMP) $(GCC)/gmp )
 	@test -d $(GCC)/mpc || ( wget -qO- https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz | tar xz && mv $(MPC) $(GCC)/mpc )
-	@test -d $(GCC)/mpfr || ( wget -qO- https://mpfr.org/mpfr-4.1.1/$(MPFR).tar.bz2 | tar xj && mv $(MPFR) $(GCC)/mpfr )
+	@test -d $(GCC)/mpfr || ( wget -qO- https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 | tar xj && mv $(MPFR) $(GCC)/mpfr )
 	@test -d $(GCC)/build || mkdir $(GCC)/build
 	@test -f $(GCC)/build/config.status || ( cd $(GCC)/build; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/build
@@ -136,15 +136,14 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@install $(BINUTILS)/build/binutils/strip-new rootfs/bin/strip
 	@install $(BINUTILS)/build/gas/as-new rootfs/bin/as
 	@install $(BINUTILS)/build/ld/ld-new rootfs/bin/ld
-	@install $(BINUTILS)/build/gprof/gprof rootfs/bin
+	@install $(GCC)/build/gcc/cpp rootfs/bin
 	@install $(GCC)/build/gcc/xgcc rootfs/bin/gcc
 	@ln -sf gcc rootfs/bin/cc
-	@install $(GCC)/build/gcc/cpp rootfs/bin
-	@install $(GCC)/build/gcc/gcov rootfs/bin
 	@install $(PKG_CONFIG_LITE)/pkg-config rootfs/bin
 	@install $(STAGING_DIR)/bin/getconf rootfs/bin
 	@install $(STAGING_DIR)/bin/ldd rootfs/bin
 	@install $(SYSLINUX)/extlinux/extlinux rootfs/bin
+	@install pkg-build rootfs/bin
 	@install pkg-get rootfs/bin
 	@install -d rootfs/boot
 	@install $(LINUX)/arch/x86/boot/bzImage rootfs/boot
@@ -286,9 +285,13 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@cp -r $(STAGING_DIR)/include/scsi rootfs/include
 	@cp -r $(STAGING_DIR)/include/sys rootfs/include
 	@install -d rootfs/lib
+	@ln -sf ../bin/cpp rootfs/lib/cpp
+	@install -m 644 $(STAGING_DIR)/lib/crt1.o rootfs/lib
+	@install -m 644 $(STAGING_DIR)/lib/crti.o rootfs/lib
+	@install -m 644 $(STAGING_DIR)/lib/crtn.o rootfs/lib
 	@install $(STAGING_DIR)/lib/ld-*.so rootfs/lib/ld-linux-x86-64.so.2
-	@install $(STAGING_DIR)/lib/libc-*.so rootfs/lib/libc.so.6
 	@install $(STAGING_DIR)/lib/libc.so rootfs/lib
+	@install $(STAGING_DIR)/lib/libc-*.so rootfs/lib/libc.so.6
 	@install -m 644 $(STAGING_DIR)/lib/libc_nonshared.a rootfs/lib
 	@install $(STAGING_DIR)/lib/libcrypt-*.so rootfs/lib/libcrypt.so.1
 	@ln -sf libcrypt.so.1 rootfs/lib/libcrypt.so
@@ -311,12 +314,8 @@ rootfs: linux busybox binutils gcc pkg-config-lite syslinux
 	@ln -sf librt.so.1 rootfs/lib/librt.so
 	@install $(STAGING_DIR)/lib/libutil-*.so rootfs/lib/libutil.so.1
 	@ln -sf libutil.so.1 rootfs/lib/libutil.so
-	@install -m 644 $(STAGING_DIR)/lib/crt1.o rootfs/lib
-	@install -m 644 $(STAGING_DIR)/lib/crti.o rootfs/lib
-	@install -m 644 $(STAGING_DIR)/lib/crtn.o rootfs/lib
 	@install -m 644 $(STAGING_DIR)/lib/gcrt1.o rootfs/lib
 	@install -m 644 $(STAGING_DIR)/lib/Scrt1.o rootfs/lib
-	@ln -sf ../bin/cpp rootfs/lib/cpp
 	@install $(GCC)/build/gcc/libgcc_s.so.1 rootfs/lib
 	@ln -sf libgcc_s.so.1 rootfs/lib/libgcc_s.so
 	@install -d rootfs/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`
