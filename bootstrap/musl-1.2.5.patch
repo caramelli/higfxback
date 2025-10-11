@@ -1,0 +1,75 @@
+--- musl-1.2.5.orig/Makefile
++++ musl-1.2.5/Makefile
+@@ -62,18 +62,19 @@
+ ALL_INCLUDES = $(sort $(INCLUDES:$(srcdir)/%=%) $(GENH:obj/%=%) $(ARCH_INCLUDES:$(srcdir)/arch/$(ARCH)/%=include/%) $(GENERIC_INCLUDES:$(srcdir)/arch/generic/%=include/%))
+ 
+ EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
+-EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
++EMPTY_STATIC_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
++EMPTY_SHARED_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.so)
+ CRT_LIBS = $(addprefix lib/,$(notdir $(CRT_OBJS)))
+ STATIC_LIBS = lib/libc.a
+-SHARED_LIBS = lib/libc.so
++SHARED_LIBS = lib/libc.so.6
+ TOOL_LIBS = lib/musl-gcc.specs
+-ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
++ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS) $(EMPTY_STATIC_LIBS) $(EMPTY_SHARED_LIBS) $(TOOL_LIBS)
+ ALL_TOOLS = obj/musl-gcc
+ 
+ WRAPCC_GCC = gcc
+ WRAPCC_CLANG = clang
+ 
+-LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
++LDSO_PATHNAME = $(syslibdir)/ld-linux-$(ARCH)$(SUBARCH).so.2
+ 
+ -include config.mak
+ -include $(srcdir)/arch/$(ARCH)/arch.mak
+@@ -158,19 +159,23 @@
+ obj/%.lo: $(srcdir)/%.c $(GENH) $(IMPH)
+ 	$(CC_CMD)
+ 
+-lib/libc.so: $(LOBJS) $(LDSO_OBJS)
++$(SHARED_LIBS): $(LOBJS) $(LDSO_OBJS)
+ 	$(CC) $(CFLAGS_ALL) $(LDFLAGS_ALL) -nostdlib -shared \
+ 	-Wl,-e,_dlstart -o $@ $(LOBJS) $(LDSO_OBJS) $(LIBCC)
+ 
+-lib/libc.a: $(AOBJS)
++$(STATIC_LIBS): $(AOBJS)
+ 	rm -f $@
+ 	$(AR) rc $@ $(AOBJS)
+ 	$(RANLIB) $@
+ 
+-$(EMPTY_LIBS):
++$(EMPTY_STATIC_LIBS):
+ 	rm -f $@
+ 	$(AR) rc $@
+ 
++$(EMPTY_SHARED_LIBS):
++	rm -f $@
++	ln -s libc.so $@
++
+ lib/%.o: obj/crt/$(ARCH)/%.o
+ 	cp $< $@
+ 
+@@ -192,7 +197,7 @@
+ 	$(INSTALL) -D $< $@
+ 
+ $(DESTDIR)$(libdir)/%.so: lib/%.so
+-	$(INSTALL) -D -m 755 $< $@
++	cp -P $< $@
+ 
+ $(DESTDIR)$(libdir)/%: lib/%
+ 	$(INSTALL) -D -m 644 $< $@
+@@ -209,8 +214,11 @@
+ $(DESTDIR)$(includedir)/%: $(srcdir)/include/%
+ 	$(INSTALL) -D -m 644 $< $@
+ 
++$(DESTDIR)$(libdir)/libc.so: $(DESTDIR)$(libdir)/$(notdir $(SHARED_LIBS))
++	$(INSTALL) -D -l $(notdir $(SHARED_LIBS)) $@ || true
++
+ $(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(libdir)/libc.so
+-	$(INSTALL) -D -l $(libdir)/libc.so $@ || true
++	$(INSTALL) -D -l $(notdir $(SHARED_LIBS)) $@ || true
+ 
+ install-libs: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
+ 

@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # configure
-sh ./configure.sh --prefix=
+GLOBLIB=glob/libglob.a sh ./configure.sh --prefix=
 
 # build
 ./build.sh
@@ -264,6 +264,36 @@ exit
 +chmod +x build.sh
 +
 +cp $srcdir/config.h.linux config.h
+--- make-3.82.orig/dir.c
++++ make-3.82/dir.c
+@@ -1105,10 +1105,10 @@
+   };
+ 
+ /* Forward declarations.  */
+-static __ptr_t open_dirstream (const char *);
+-static struct dirent *read_dirstream (__ptr_t);
++static void *open_dirstream (const char *);
++static struct dirent *read_dirstream (void *);
+ 
+-static __ptr_t
++static void *
+ open_dirstream (const char *directory)
+ {
+   struct dirstream *new;
+@@ -1128,11 +1128,11 @@
+   new->contents = dir->contents;
+   new->dirfile_slot = (struct dirfile **) new->contents->dirfiles.ht_vec;
+ 
+-  return (__ptr_t) new;
++  return new;
+ }
+ 
+ static struct dirent *
+-read_dirstream (__ptr_t stream)
++read_dirstream (void *stream)
+ {
+   static char *buf;
+   static unsigned int bufsz;
 
 # source
 https://ftp.gnu.org/gnu/make/make-3.82.tar.gz

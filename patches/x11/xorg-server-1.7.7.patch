@@ -624,6 +624,21 @@ exit
  xf86ValidateModesUserConfig(ScrnInfoPtr pScrn, DisplayModePtr modeList);
  
  extern _X_EXPORT DisplayModePtr
+--- xorg-server-1.7.7.orig/hw/xfree86/os-support/xf86_OSlib.h
++++ xorg-server-1.7.7/hw/xfree86/os-support/xf86_OSlib.h
+@@ -212,11 +212,7 @@
+ # include <sys/types.h>
+ # include <assert.h>
+ 
+-# ifdef __linux__
+-#  include <termio.h>
+-# else /* __GLIBC__ */
+-#  include <termios.h>
+-# endif
++# include <termios.h>
+ # ifdef __sparc__
+ #  include <sys/param.h>
+ # endif
 --- xorg-server-1.7.7.orig/hw/xfree86/utils/cvt/Makefile.am
 +++ xorg-server-1.7.7/hw/xfree86/utils/cvt/Makefile.am
 @@ -24,6 +24,7 @@
@@ -697,6 +712,18 @@ exit
  EXTRA_DIST = $(SECURERPC_SRCS) $(INTERNALMALLOC_SRCS) \
       $(XDMCP_SRCS) $(STRLCAT_SRCS)
  
+--- xorg-server-1.7.7.orig/os/access.c
++++ xorg-server-1.7.7/os/access.c
+@@ -86,6 +86,9 @@
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
++#ifndef _GNU_SOURCE
++#define _GNU_SOURCE
++#endif
+ #define XSERV_t
+ #define TRANS_SERVER
+ #define TRANS_REOPEN
 --- xorg-server-1.7.7.orig/randr/randrstr.h
 +++ xorg-server-1.7.7/randr/randrstr.h
 @@ -498,9 +498,6 @@

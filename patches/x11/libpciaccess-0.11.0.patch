@@ -40,5 +40,35 @@ EOF
 
 exit
 
+# patch
+--- libpciaccess-0.11.0.orig/src/linux_sysfs.c
++++ libpciaccess-0.11.0/src/linux_sysfs.c
+@@ -40,6 +40,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <limits.h>
+ #include <sys/mman.h>
+ #include <dirent.h>
+ #include <errno.h>
+@@ -382,7 +383,7 @@
+ 
+ 
+     while ( temp_size > 0 ) {
+-	const ssize_t bytes = pread64( fd, data_bytes, temp_size, offset );
++	const ssize_t bytes = pread( fd, data_bytes, temp_size, offset );
+ 
+ 	/* If zero bytes were read, then we assume it's the end of the
+ 	 * config file.
+@@ -440,7 +441,7 @@
+ 
+ 
+     while ( temp_size > 0 ) {
+-	const ssize_t bytes = pwrite64( fd, data_bytes, temp_size, offset );
++	const ssize_t bytes = pwrite( fd, data_bytes, temp_size, offset );
+ 
+ 	/* If zero bytes were written, then we assume it's the end of the
+ 	 * config file.
+
 # source
 https://x.org/releases/individual/lib/libpciaccess-0.11.0.tar.gz

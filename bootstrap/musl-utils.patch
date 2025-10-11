@@ -1,0 +1,21 @@
+--- musl-utils.orig/src/makefile
++++ musl-utils/src/makefile
+@@ -0,0 +1,18 @@
++include ../config.mak
++
++CFLAGS += -I../../arch/$(ARCH) -I../../arch/generic -I../../include -I../obj/include
++LDFLAGS += -B../lib
++
++PROGRAMS = getconf getent iconv
++
++VPATH = ../../utils/src
++
++all: $(PROGRAMS)
++
++$(DESTDIR)$(bindir)/%: %
++	install -D $< $@
++
++install: $(PROGRAMS:%=$(DESTDIR)$(bindir)/%)
++
++clean:
++	$(RM) $(PROGRAMS)

@@ -32,7 +32,7 @@ exit
 # patch
 --- m4-1.4.18.orig/configure.sh
 +++ m4-1.4.18/configure.sh
-@@ -0,0 +1,179 @@
+@@ -0,0 +1,188 @@
 +#!/bin/sh
 +# Shell script to configure GNU M4 without relying on `autotools'.
 +
@@ -82,6 +82,8 @@ exit
 +#define LIBDIR "$prefix/lib"
 +EOF
 +
++echo 'int main() { return __freadahead(); }' | $CC -xc - 2>/dev/null && HAVE___FREADAHEAD=1 || { HAVE___FREADAHEAD=0; FREADAHEAD_OBJ=\$\(srcdir\)/lib/freadahead.o; }
++
 +cat > lib/config.h << EOF
 +/* lib/config.h.  Generated from configure.sh.  */
 +
@@ -92,6 +94,7 @@ exit
 +#define GNULIB_FILENAMECAT 1
 +#define GNULIB_FOPEN_SAFER 1
 +#define GNULIB_PIPE2_SAFER 1
++#define HAVE___FREADAHEAD $HAVE___FREADAHEAD
 +#define HAVE_ALLOCA 1
 +#define HAVE_DECL_FERROR_UNLOCKED 1
 +#define HAVE_DECL_FPUTS_UNLOCKED 1
@@ -99,6 +102,7 @@ exit
 +#define HAVE_DECL_PROGRAM_INVOCATION_NAME 1
 +#define HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME 1
 +#define HAVE_DECL_SIGALTSTACK 1
++#define HAVE_DECL_STRERROR_R 1
 +#define HAVE_LANGINFO_CODESET 1
 +#define HAVE_LONG_LONG_INT 1
 +#define HAVE_MEMPCPY 1
@@ -149,6 +153,8 @@ exit
 +
 +CFLAGS += -Ilib -I\$(srcdir)/lib -D_GNU_SOURCE
 +
++FREADAHEAD_OBJ = $FREADAHEAD_OBJ
++
 +OBJECTS = \\
 +	\$(srcdir)/lib/basename-lgpl.o \\
 +	\$(srcdir)/lib/c-stack.o \\
@@ -158,6 +164,7 @@ exit
 +	\$(srcdir)/lib/closein.o \\
 +	\$(srcdir)/lib/closeout.o \\
 +	\$(srcdir)/lib/dup-safer.o \\
++	\$(srcdir)/lib/error.o \\
 +	\$(srcdir)/lib/execute.o \\
 +	\$(srcdir)/lib/exitfail.o \\
 +	\$(srcdir)/lib/fatal-signal.o \\
@@ -165,7 +172,7 @@ exit
 +	\$(srcdir)/lib/filenamecat.o \\
 +	\$(srcdir)/lib/filenamecat-lgpl.o \\
 +	\$(srcdir)/lib/fopen-safer.o \\
-+	\$(srcdir)/lib/freadahead.o \\
++	$FREADAHEAD_OBJ \\
 +	\$(srcdir)/lib/getprogname.o \\
 +	\$(srcdir)/lib/gl_avltree_oset.o \\
 +	\$(srcdir)/lib/gl_linkedhash_list.o \\
@@ -173,9 +180,11 @@ exit
 +	\$(srcdir)/lib/malloca.o \\
 +	\$(srcdir)/lib/memchr2.o \\
 +	\$(srcdir)/lib/mkstemp-safer.o \\
++	\$(srcdir)/lib/obstack.o \\
 +	\$(srcdir)/lib/pipe-safer.o \\
 +	\$(srcdir)/lib/progname.o \\
 +	\$(srcdir)/lib/quotearg.o \\
++	\$(srcdir)/lib/regex.o \\
 +	\$(srcdir)/lib/spawn-pipe.o \\
 +	\$(srcdir)/lib/tmpdir.o \\
 +	\$(srcdir)/lib/verror.o \\
@@ -224,6 +233,21 @@ exit
  
  /* The MSVC7 <stdio.h> doesn't like to be included after '#define fileno ...',
     so we include it here first.  */
+--- m4-1.4.18.orig/lib/error.c
++++ m4-1.4.18/lib/error.c
+@@ -44,6 +44,12 @@
+ # define _GL_ARG_NONNULL(a)
+ #else
+ # include "getprogname.h"
++#ifndef _GL_ATTRIBUTE_FORMAT_PRINTF
++# define _GL_ATTRIBUTE_FORMAT_PRINTF(a, b) __attribute__ ((format(printf, a, b)))
++#endif
++#ifndef _GL_ARG_NONNULL
++# define _GL_ARG_NONNULL(a) __attribute__ ((nonnull a))
++#endif
+ #endif
+ 
+ #if USE_UNLOCKED_IO
 --- m4-1.4.18.orig/lib/unlocked-io.h
 +++ m4-1.4.18/lib/unlocked-io.h
 @@ -86,14 +86,18 @@
