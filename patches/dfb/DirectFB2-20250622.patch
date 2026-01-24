@@ -334,6 +334,17 @@ EOF
 exit
 
 # patch
+--- DirectFB2-20250622.orig/lib/fusion/fusion.c
++++ DirectFB2-20250622/lib/fusion/fusion.c
+@@ -3693,8 +3693,6 @@
+      direct_waitqueue_signal( &world->event_dispatcher_call_cond );
+      direct_waitqueue_signal( &world->event_dispatcher_cond );
+ 
+-     direct_thread_join( world->event_dispatcher_thread );
+-
+      direct_thread_destroy( world->event_dispatcher_thread );
+ 
+      direct_mutex_deinit( &world->event_dispatcher_mutex );
 --- DirectFB2-20250622.orig/systems/fbdev/fbdev_system.c
 +++ DirectFB2-20250622/systems/fbdev/fbdev_system.c
 @@ -16,8 +16,6 @@

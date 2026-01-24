@@ -641,6 +641,49 @@ EOF
 exit
 
 # patch
+--- gcc-6.5.0.orig/config.guess
++++ gcc-6.5.0/config.guess
+@@ -134,9 +134,7 @@
+ 
+ case "${UNAME_SYSTEM}" in
+ Linux|GNU|GNU/*)
+-	# If the system lacks a compiler, then just pick glibc.
+-	# We could probably try harder.
+-	LIBC=gnu
++	LIBC=unknown
+ 
+ 	eval $set_cc_for_build
+ 	cat <<-EOF > $dummy.c
+@@ -145,11 +143,17 @@
+ 	LIBC=uclibc
+ 	#elif defined(__dietlibc__)
+ 	LIBC=dietlibc
+-	#else
++	#elif defined(__GLIBC__)
+ 	LIBC=gnu
+ 	#endif
+ 	EOF
+ 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^LIBC' | sed 's, ,,g'`
++
++	if [ "$LIBC" = unknown ] &&
++	   command -v ldd >/dev/null &&
++	   ldd --version 2>&1 | grep -q ^musl; then
++		LIBC=musl
++	fi
+ 	;;
+ esac
+ 
+--- gcc-6.5.0.orig/gcc/config/i386/i386.c
++++ gcc-6.5.0/gcc/config/i386/i386.c
+@@ -8747,7 +8747,7 @@
+ 			 HOST_WIDE_INT words)
+ {
+   int res = 0;
+-  bool error_p = NULL;
++  bool error_p = false;
+ 
+   if (TARGET_IAMCU)
+     {
 --- gcc-6.5.0.orig/gcc/config/i386/linux64.h
 +++ gcc-6.5.0/gcc/config/i386/linux64.h
 @@ -28,8 +28,8 @@

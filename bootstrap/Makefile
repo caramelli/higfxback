@@ -79,7 +79,7 @@ musl: cross-gcc linux-headers
 	@test -d $(MUSL)/build/bin || mkdir $(MUSL)/build/bin
 	$(MAKE) -C $(MUSL)/build/bin -f ../../utils/src/makefile
 	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL)/build/bin -f ../../utils/src/makefile install
-	@ln -sf ../ld-linux-x86-64.so.2 $(STAGING_DIR)/musl/bin/ldd
+	@ln -sf ../lib/ld-musl-x86_64.so.1 $(STAGING_DIR)/musl/bin/ldd
 	@test -d $(STAGING_DIR)/musl/share || ( mkdir $(STAGING_DIR)/musl/share; echo $(MUSL) > $(STAGING_DIR)/musl/share/libc-VERSION )
 
 toolchain: $(LIBC_IMPLEMENTATIONS)
@@ -126,7 +126,7 @@ gcc-%: libc-%
 	@test -d $(GCC)/mpc || { ( test -f $(MPC).tar.gz || wget -q https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz ) && tar xzf $(MPC).tar.gz && mv $(MPC) $(GCC)/mpc; }
 	@test -d $(GCC)/mpfr || { ( test -f $(MPFR).tar.bz2 || wget -q https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 ) && tar xjf $(MPFR).tar.bz2 && mv $(MPFR) $(GCC)/mpfr; }
 	@test -d $(GCC)/$*-build || mkdir $(GCC)/$*-build
-	@test -f $(GCC)/$*-build/config.status || ( cd $(GCC)/$*-build; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
+	@test -f $(GCC)/$*-build/config.status || ( cd $(GCC)/$*-build; sed -i "s/DEFAULT_LIBC=LIBC_GLIBC/DEFAULT_LIBC=LIBC_$(shell echo $* | tr a-z A-Z)/" ../gcc/config.gcc; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/$*-build
 
 pkg-config-lite-%: libc-%
@@ -322,6 +322,7 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-lite-% syslinux-%
 	@install -m 644 $(STAGING_DIR)/$*/lib/crti.o                                                 rootfs-$*/lib/crti.o
 	@install -m 644 $(STAGING_DIR)/$*/lib/crtn.o                                                 rootfs-$*/lib/crtn.o
 	@set -- $(STAGING_DIR)/$*/lib/ld-*.so*; cp -P $$1                                            rootfs-$*/lib/ld-linux-x86-64.so.2
+	@set -- $(STAGING_DIR)/$*/lib/ld-*.so*; [ -L $(STAGING_DIR)/$*/lib/ld-linux-x86-64.so.2 ] || ln -sf ld-linux-x86-64.so.2 rootfs-$*/lib/$${1##*/}
 	@cp -P $(STAGING_DIR)/$*/lib/libc.so                                                         rootfs-$*/lib/libc.so
 	@install $(STAGING_DIR)/$*/lib/libc.so.6                                                     rootfs-$*/lib/libc.so.6
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/lib/libc_nonshared.a                           rootfs-$*/lib/libc_nonshared.a       || true # glibc
@@ -348,7 +349,7 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-lite-% syslinux-%
 	@cp -P $(STAGING_DIR)/$*/lib/libutil.so                                                      rootfs-$*/lib/libutil.so
 	@install -m 644 $(STAGING_DIR)/$*/lib/Scrt1.o                                                rootfs-$*/lib/Scrt1.o
 	@install $(GCC)/$*-build/gcc/libgcc_s.so.1                                                   rootfs-$*/lib/libgcc_s.so.1
-	@cp -P $(GCC)/$*-build/gcc/libgcc_s.so                                                       rootfs-$*/lib/libgcc_s.so
+	@ln -sf libgcc_s.so.1                                                                        rootfs-$*/lib/libgcc_s.so
 	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`
 	@install $(GCC)/$*-build/gcc/cc1                                                             rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/cc1
 	@install -m 644 $(GCC)/$*-build/gcc/crtbegin.o                                               rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtbegin.o

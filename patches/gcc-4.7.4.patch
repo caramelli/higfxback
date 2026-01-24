@@ -6,7 +6,7 @@ REQUIRES="autotools-wrappers-ac-build mpc-build"
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure (ac-2.64)
-./configure --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-gxx-include-dir=/include/c++ --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
+./configure --disable-libgomp --disable-libitm --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-gxx-include-dir=/include/c++ --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
 
 # build
 make
@@ -239,6 +239,200 @@ EOF
 exit
 
 # patch
+--- gcc-4.7.4.orig/config.guess
++++ gcc-4.7.4/config.guess
+@@ -142,6 +142,31 @@
+ 
+ # Note: order is significant - the case branches are not exclusive.
+ 
++case "$UNAME_SYSTEM" in
++Linux|GNU|GNU/*)
++	LIBC=unknown
++
++	eval $set_cc_for_build
++	cat <<-EOF > $dummy.c
++	#include <features.h>
++	#if defined(__UCLIBC__)
++	LIBC=uclibc
++	#elif defined(__dietlibc__)
++	LIBC=dietlibc
++	#elif defined(__GLIBC__)
++	LIBC=gnu
++	#endif
++	EOF
++	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^LIBC' | sed 's, ,,g'`
++
++	if [ "$LIBC" = unknown ] &&
++	   command -v ldd >/dev/null &&
++	   ldd --version 2>&1 | grep -q ^musl; then
++		LIBC=musl
++	fi
++	;;
++esac
++
+ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
+     *:NetBSD:*:*)
+ 	# NetBSD (nbsd) targets should (where applicable) match one or
+@@ -872,56 +897,48 @@
+ 	  EV68*) UNAME_MACHINE=alphaev68 ;;
+ 	esac
+ 	objdump --private-headers /bin/sh | grep -q ld.so.1
+-	if test "$?" = 0 ; then LIBC="libc1" ; else LIBC="" ; fi
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu${LIBC}
++	if test "$?" = 0 ; then LIBC="gnulibc1" ; fi
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     arm*:Linux:*:*)
+ 	eval $set_cc_for_build
+ 	if echo __ARM_EABI__ | $CC_FOR_BUILD -E - 2>/dev/null \
+ 	    | grep -q __ARM_EABI__
+ 	then
+-	    echo ${UNAME_MACHINE}-unknown-linux-gnu
++	    echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	else
+ 	    if echo __ARM_PCS_VFP | $CC_FOR_BUILD -E - 2>/dev/null \
+ 		| grep -q __ARM_PCS_VFP
+ 	    then
+-		echo ${UNAME_MACHINE}-unknown-linux-gnueabi
++		echo ${UNAME_MACHINE}-unknown-linux-${LIBC}eabi
+ 	    else
+-		echo ${UNAME_MACHINE}-unknown-linux-gnueabihf
++		echo ${UNAME_MACHINE}-unknown-linux-${LIBC}eabihf
+ 	    fi
+ 	fi
+ 	exit ;;
+     avr32*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     cris:Linux:*:*)
+-	echo cris-axis-linux-gnu
++	echo cris-axis-linux-${LIBC}
+ 	exit ;;
+     crisv32:Linux:*:*)
+-	echo crisv32-axis-linux-gnu
++	echo crisv32-axis-linux-${LIBC}
+ 	exit ;;
+     frv:Linux:*:*)
+-	echo frv-unknown-linux-gnu
++	echo frv-unknown-linux-${LIBC}
+ 	exit ;;
+     i*86:Linux:*:*)
+-	LIBC=gnu
+-	eval $set_cc_for_build
+-	sed 's/^	//' << EOF >$dummy.c
+-	#ifdef __dietlibc__
+-	LIBC=dietlibc
+-	#endif
+-EOF
+-	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^LIBC'`
+ 	echo "${UNAME_MACHINE}-pc-linux-${LIBC}"
+ 	exit ;;
+     ia64:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     m32r*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     m68*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     mips:Linux:*:* | mips64:Linux:*:*)
+ 	eval $set_cc_for_build
+@@ -940,54 +957,54 @@
+ 	#endif
+ EOF
+ 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^CPU'`
+-	test x"${CPU}" != x && { echo "${CPU}-unknown-linux-gnu"; exit; }
++	test x"${CPU}" != x && { echo "${CPU}-unknown-linux-${LIBC}"; exit; }
+ 	;;
+     or32:Linux:*:*)
+-	echo or32-unknown-linux-gnu
++	echo or32-unknown-linux-${LIBC}
+ 	exit ;;
+     padre:Linux:*:*)
+-	echo sparc-unknown-linux-gnu
++	echo sparc-unknown-linux-${LIBC}
+ 	exit ;;
+     parisc64:Linux:*:* | hppa64:Linux:*:*)
+-	echo hppa64-unknown-linux-gnu
++	echo hppa64-unknown-linux-${LIBC}
+ 	exit ;;
+     parisc:Linux:*:* | hppa:Linux:*:*)
+ 	# Look for CPU level
+ 	case `grep '^cpu[^a-z]*:' /proc/cpuinfo 2>/dev/null | cut -d' ' -f2` in
+-	  PA7*) echo hppa1.1-unknown-linux-gnu ;;
+-	  PA8*) echo hppa2.0-unknown-linux-gnu ;;
+-	  *)    echo hppa-unknown-linux-gnu ;;
++	  PA7*) echo hppa1.1-unknown-linux-${LIBC} ;;
++	  PA8*) echo hppa2.0-unknown-linux-${LIBC} ;;
++	  *)    echo hppa-unknown-linux-${LIBC} ;;
+ 	esac
+ 	exit ;;
+     ppc64:Linux:*:*)
+-	echo powerpc64-unknown-linux-gnu
++	echo powerpc64-unknown-linux-${LIBC}
+ 	exit ;;
+     ppc:Linux:*:*)
+-	echo powerpc-unknown-linux-gnu
++	echo powerpc-unknown-linux-${LIBC}
+ 	exit ;;
+     s390:Linux:*:* | s390x:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-ibm-linux
+ 	exit ;;
+     sh64*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     sh*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     sparc:Linux:*:* | sparc64:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     tile*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     vax:Linux:*:*)
+-	echo ${UNAME_MACHINE}-dec-linux-gnu
++	echo ${UNAME_MACHINE}-dec-linux-${LIBC}
+ 	exit ;;
+     x86_64:Linux:*:*)
+-	echo x86_64-unknown-linux-gnu
++	echo x86_64-unknown-linux-${LIBC}
+ 	exit ;;
+     xtensa*:Linux:*:*)
+-	echo ${UNAME_MACHINE}-unknown-linux-gnu
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     i*86:DYNIX/ptx:4*:*)
+ 	# ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.
+--- gcc-4.7.4.orig/config.sub
++++ gcc-4.7.4/config.sub
+@@ -125,7 +125,7 @@
+ maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
+ case $maybe_os in
+   nto-qnx* | linux-gnu* | linux-android* | linux-dietlibc | linux-newlib* | \
+-  linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | \
++  linux-musl | linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | \
+   knetbsd*-gnu* | netbsd*-gnu* | \
+   kopensolaris*-gnu* | \
+   storm-chaos* | os2-emx* | rtmk-nova*)
+@@ -1345,7 +1345,7 @@
+ 	      | -chorusos* | -chorusrdb* | -cegcc* \
+ 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
+ 	      | -mingw32* | -linux-gnu* | -linux-android* \
+-	      | -linux-newlib* | -linux-uclibc* \
++	      | -linux-newlib* | -linux-musl* | -linux-uclibc* \
+ 	      | -uxpv* | -beos* | -mpeix* | -udk* \
+ 	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
+ 	      | -openstep* | -oskit* | -conix* | -pw32* | -nonstopux* \
 --- gcc-4.7.4.orig/gcc/config/i386/linux64.h
 +++ gcc-4.7.4/gcc/config/i386/linux64.h
 @@ -29,5 +29,5 @@
@@ -259,6 +453,131 @@ exit
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-linux-gnu)
  MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:i386-linux-gnu)
  MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-linux-gnux32)
+--- gcc-4.7.4.orig/gcc/config/linux.h
++++ gcc-4.7.4/gcc/config/linux.h
+@@ -33,10 +33,12 @@
+ #define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
+ #define OPTION_UCLIBC (DEFAULT_LIBC == LIBC_UCLIBC)
+ #define OPTION_BIONIC (DEFAULT_LIBC == LIBC_BIONIC)
++#define OPTION_MUSL   (DEFAULT_LIBC == LIBC_MUSL)
+ #else
+ #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+ #define OPTION_UCLIBC (linux_libc == LIBC_UCLIBC)
+ #define OPTION_BIONIC (linux_libc == LIBC_BIONIC)
++#define OPTION_MUSL   (linux_libc == LIBC_MUSL)
+ #endif
+ 
+ #define GNU_USER_TARGET_OS_CPP_BUILTINS()			\
+@@ -51,21 +53,25 @@
+     } while (0)
+ 
+ /* Determine which dynamic linker to use depending on whether GLIBC or
+-   uClibc or Bionic is the default C library and whether
+-   -muclibc or -mglibc or -mbionic has been passed to change the default.  */
++   uClibc or Bionic or musl is the default C library and whether
++   -muclibc or -mglibc or -mbionic or -mmusl has been passed to change
++   the default.  */
+ 
+-#define CHOOSE_DYNAMIC_LINKER1(LIBC1, LIBC2, LIBC3, LD1, LD2, LD3)	\
+-  "%{" LIBC2 ":" LD2 ";:%{" LIBC3 ":" LD3 ";:" LD1 "}}"
++#define CHOOSE_DYNAMIC_LINKER1(LIBC1, LIBC2, LIBC3, LIBC4, LD1, LD2, LD3, LD4)	\
++  "%{" LIBC2 ":" LD2 ";:%{" LIBC3 ":" LD3 ";:%{" LIBC4 ":" LD4 ";:" LD1 "}}}"
+ 
+ #if DEFAULT_LIBC == LIBC_GLIBC
+-#define CHOOSE_DYNAMIC_LINKER(G, U, B) \
+-  CHOOSE_DYNAMIC_LINKER1 ("mglibc", "muclibc", "mbionic", G, U, B)
++#define CHOOSE_DYNAMIC_LINKER(G, U, B, M) \
++  CHOOSE_DYNAMIC_LINKER1 ("mglibc", "muclibc", "mbionic", "mmusl", G, U, B, M)
+ #elif DEFAULT_LIBC == LIBC_UCLIBC
+-#define CHOOSE_DYNAMIC_LINKER(G, U, B) \
+-  CHOOSE_DYNAMIC_LINKER1 ("muclibc", "mglibc", "mbionic", U, G, B)
++#define CHOOSE_DYNAMIC_LINKER(G, U, B, M) \
++  CHOOSE_DYNAMIC_LINKER1 ("muclibc", "mglibc", "mbionic", "mmusl", U, G, B, M)
+ #elif DEFAULT_LIBC == LIBC_BIONIC
+-#define CHOOSE_DYNAMIC_LINKER(G, U, B) \
+-  CHOOSE_DYNAMIC_LINKER1 ("mbionic", "mglibc", "muclibc", B, G, U)
++#define CHOOSE_DYNAMIC_LINKER(G, U, B, M) \
++  CHOOSE_DYNAMIC_LINKER1 ("mbionic", "mglibc", "muclibc", "mmusl", B, G, U, M)
++#elif DEFAULT_LIBC == LIBC_MUSL
++#define CHOOSE_DYNAMIC_LINKER(G, U, B, M) \
++  CHOOSE_DYNAMIC_LINKER1 ("mmusl", "mglibc", "muclibc", "mbionic", M, G, U, B)
+ #else
+ #error "Unsupported DEFAULT_LIBC"
+ #endif /* DEFAULT_LIBC */
+@@ -82,19 +88,23 @@
+ #define BIONIC_DYNAMIC_LINKER32 "/system/bin/linker"
+ #define BIONIC_DYNAMIC_LINKER64 "/system/bin/linker64"
+ #define BIONIC_DYNAMIC_LINKERX32 "/system/bin/linkerx32"
++#define MUSL_DYNAMIC_LINKER "/lib/ld-musl-i386.so.1"
++#define MUSL_DYNAMIC_LINKER32 "/lib/ld-musl-i386.so.1"
++#define MUSL_DYNAMIC_LINKER64 "/lib/ld-musl-x86_64.so.1"
++#define MUSL_DYNAMIC_LINKERX32 "/lib/ld-musl-x32.so.1"
+ 
+ #define GNU_USER_DYNAMIC_LINKER						\
+   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER,	\
+-			 BIONIC_DYNAMIC_LINKER)
++			 BIONIC_DYNAMIC_LINKER, MUSL_DYNAMIC_LINKER)
+ #define GNU_USER_DYNAMIC_LINKER32					\
+   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32, \
+-			 BIONIC_DYNAMIC_LINKER32)
++			 BIONIC_DYNAMIC_LINKER32, MUSL_DYNAMIC_LINKER32)
+ #define GNU_USER_DYNAMIC_LINKER64					\
+   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64, \
+-			 BIONIC_DYNAMIC_LINKER64)
++			 BIONIC_DYNAMIC_LINKER64, MUSL_DYNAMIC_LINKER64)
+ #define GNU_USER_DYNAMIC_LINKERX32					\
+   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKERX32, UCLIBC_DYNAMIC_LINKERX32, \
+-			 BIONIC_DYNAMIC_LINKERX32)
++			 BIONIC_DYNAMIC_LINKERX32, MUSL_DYNAMIC_LINKERX32)
+ 
+ /* Determine whether the entire c99 runtime
+    is present in the runtime library.  */
+--- gcc-4.7.4.orig/gcc/config/linux.opt
++++ gcc-4.7.4/gcc/config/linux.opt
+@@ -28,5 +28,9 @@
+ Use GNU C library
+ 
+ muclibc
+-Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) Negative(mbionic)
++Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) Negative(mmusl)
+ Use uClibc C library
++
++mmusl
++Target Report RejectNegative Var(linux_libc,LIBC_MUSL) Negative(mbionic)
++Use musl C library
+--- gcc-4.7.4.orig/gcc/config.gcc
++++ gcc-4.7.4/gcc/config.gcc
+@@ -522,7 +522,7 @@
+ esac
+ 
+ # Common C libraries.
+-tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3"
++tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3 LIBC_MUSL=4"
+ 
+ # Common parts for widely ported systems.
+ case ${target} in
+@@ -625,6 +625,9 @@
+     *-*-*uclibc*)
+       tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
+       ;;
++    *-*-*musl*)
++      tm_defines="$tm_defines DEFAULT_LIBC=LIBC_MUSL"
++      ;;
+     *)
+       tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+       ;;
+--- gcc-4.7.4.orig/libstdc++-v3/configure.host
++++ gcc-4.7.4/libstdc++-v3/configure.host
+@@ -242,6 +242,9 @@
+   freebsd*)
+     os_include_dir="os/bsd/freebsd"
+     ;;
++  linux-musl*)
++    os_include_dir="os/generic"
++    ;;
+   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+     if [ "$uclibc" = "yes" ]; then
+       os_include_dir="os/uclibc"
 
 # source
 https://gcc.gnu.org/pub/gcc/releases/gcc-4.7.4/gcc-4.7.4.tar.bz2

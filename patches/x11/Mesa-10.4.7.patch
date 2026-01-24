@@ -890,6 +890,20 @@ exit
  fi
  
  echo ""
+--- Mesa-10.4.7.orig/include/c11/threads_posix.h
++++ Mesa-10.4.7/include/c11/threads_posix.h
+@@ -178,11 +178,7 @@
+         return thrd_error;
+     pthread_mutexattr_init(&attr);
+     if ((type & mtx_recursive) != 0) {
+-#if defined(__linux__) || defined(__linux)
+-        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+-#else
+         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+-#endif
+     }
+     pthread_mutex_init(mtx, &attr);
+     pthread_mutexattr_destroy(&attr);
 --- Mesa-10.4.7.orig/install-gallium-links.mk
 +++ Mesa-10.4.7/install-gallium-links.mk
 @@ -13,8 +13,8 @@
@@ -3839,6 +3853,39 @@ exit
  	$(GL_LIB_DEPS)
  
  lib@GL_LIB@_la_LDFLAGS = \
+--- Mesa-10.4.7.orig/src/mesa/main/querymatrix.c
++++ Mesa-10.4.7/src/mesa/main/querymatrix.c
+@@ -37,8 +37,10 @@
+ #define INT_TO_FIXED(x) ((GLfixed) ((x) << 16))
+ #define FLOAT_TO_FIXED(x) ((GLfixed) ((x) * 65536.0))
+ 
+-#if defined(_MSC_VER)
+-#if _MSC_VER < 1800  /* Not required on VS2013 and above. */
++#if defined(fpclassify)
++/* fpclassify is available. */
++#elif defined(_MSC_VER)
++/* Not required on VS2013 and above. */
+ /* Oddly, the fpclassify() function doesn't exist in such a form
+  * on MSVC.  This is an implementation using slightly different
+  * lower-level Windows functions.
+@@ -71,16 +73,7 @@
+             return FP_NAN;
+     }
+ }
+-#endif  /* _MSC_VER < 1800 */
+-
+-#elif defined(__APPLE__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
+-     defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || \
+-     (defined(__sun) && defined(__C99FEATURES__)) || defined(__MINGW32__) || \
+-     (defined(__sun) && defined(__GNUC__)) || defined(ANDROID) || defined(__HAIKU__)
+-
+-/* fpclassify is available. */
+-
+-#elif !defined(_XOPEN_SOURCE) || _XOPEN_SOURCE < 600
++#else
+ 
+ enum {FP_NAN, FP_INFINITE, FP_ZERO, FP_SUBNORMAL, FP_NORMAL}
+ fpclassify(double x)
 
 # source
 https://archive.mesa3d.org/older-versions/10.x/10.4.7/MesaLib-10.4.7.tar.gz

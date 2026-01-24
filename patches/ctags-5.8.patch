@@ -1,0 +1,96 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-ac-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.61)
+autoheader; autoconf
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install ctags $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/ctags-build.pc << EOF
+Name: ctags
+Version: 5.8
+Description: Exuberant Ctags
+Requires: $REQUIRES
+
+exec=\\
+/bin/ctags
+EOF
+
+exit
+
+# patch
+--- ctags-5.8.orig/Makefile.in
++++ ctags-5.8/Makefile.in
+@@ -85,12 +85,12 @@
+ #
+ CTAGS_EXEC	= $(CTAGS_PROG)$(EXEEXT)
+ ETAGS_EXEC	= $(ETAGS_PROG)$(EXEEXT)
+-DEST_CTAGS	= $(bindir)/$(CTAGS_EXEC)
+-DEST_ETAGS	= $(bindir)/$(ETAGS_EXEC)
+-DEST_READ_LIB	= $(libdir)/$(READ_LIB)
+-DEST_READ_INC	= $(incdir)/$(READ_INC)
+-DEST_CMAN	= $(man1dir)/$(CMAN)
+-DEST_EMAN	= $(man1dir)/$(EMAN)
++DEST_CTAGS	= $(DESTDIR)$(bindir)/$(CTAGS_EXEC)
++DEST_ETAGS	= $(DESTDIR)$(bindir)/$(ETAGS_EXEC)
++DEST_READ_LIB	= $(DESTDIR)$(libdir)/$(READ_LIB)
++DEST_READ_INC	= $(DESTDIR)$(incdir)/$(READ_INC)
++DEST_CMAN	= $(DESTDIR)$(man1dir)/$(CMAN)
++DEST_EMAN	= $(DESTDIR)$(man1dir)/$(EMAN)
+ 
+ #
+ # primary rules
+@@ -125,7 +125,7 @@
+ install-ctags: install-cbin install-cman
+ install-etags: install-ebin install-eman
+ 
+-$(bindir) $(man1dir) $(libdir) $(incdir):
++$(DESTDIR)$(bindir) $(DESTDIR)$(man1dir) $(DESTDIR)$(libdir) $(DESTDIR)$(incdir):
+ 	$(srcdir)/mkinstalldirs $@
+ 
+ FORCE:
+@@ -138,7 +138,7 @@
+ install-ebin: $(DEST_ETAGS)
+ install-lib: $(DEST_READ_LIB) $(DEST_READ_INC)
+ 
+-$(DEST_CTAGS): $(CTAGS_EXEC) $(bindir) FORCE
++$(DEST_CTAGS): $(CTAGS_EXEC) $(DESTDIR)$(bindir) FORCE
+ 	$(INSTALL_PROG) $(CTAGS_EXEC) $@  &&  chmod 755 $@
+ 
+ $(DEST_ETAGS):
+@@ -153,7 +153,7 @@
+ install-cman: $(DEST_CMAN)
+ install-eman: $(DEST_EMAN)
+ 
+-$(DEST_CMAN): $(man1dir) $(MANPAGE) FORCE
++$(DEST_CMAN): $(DESTDIR)$(man1dir) $(MANPAGE) FORCE
+ 	- $(INSTALL_DATA) $(srcdir)/$(MANPAGE) $@  &&  chmod 644 $@
+ 
+ $(DEST_EMAN):
+@@ -164,10 +164,10 @@
+ #
+ # install the library
+ #
+-$(DEST_READ_LIB): $(READ_LIB) $(libdir) FORCE
++$(DEST_READ_LIB): $(READ_LIB) $(DESTDIR)$(libdir) FORCE
+ 	$(INSTALL_PROG) $(READ_LIB) $@  &&  chmod 644 $@
+ 
+-$(DEST_READ_INC): $(READ_INC) $(incdir) FORCE
++$(DEST_READ_INC): $(READ_INC) $(DESTDIR)$(incdir) FORCE
+ 	$(INSTALL_PROG) $(READ_INC) $@  &&  chmod 644 $@
+ 
+ 
+# source
+http://downloads.sourceforge.net/ctags/ctags-5.8.tar.gz

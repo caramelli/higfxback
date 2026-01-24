@@ -1,6 +1,6 @@
 --- musl-1.2.5.orig/Makefile
 +++ musl-1.2.5/Makefile
-@@ -62,18 +62,19 @@
+@@ -62,12 +62,13 @@
  ALL_INCLUDES = $(sort $(INCLUDES:$(srcdir)/%=%) $(GENH:obj/%=%) $(ARCH_INCLUDES:$(srcdir)/arch/$(ARCH)/%=include/%) $(GENERIC_INCLUDES:$(srcdir)/arch/generic/%=include/%))
  
  EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
@@ -17,13 +17,6 @@
  ALL_TOOLS = obj/musl-gcc
  
  WRAPCC_GCC = gcc
- WRAPCC_CLANG = clang
- 
--LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
-+LDSO_PATHNAME = $(syslibdir)/ld-linux-$(ARCH)$(SUBARCH).so.2
- 
- -include config.mak
- -include $(srcdir)/arch/$(ARCH)/arch.mak
 @@ -158,19 +159,23 @@
  obj/%.lo: $(srcdir)/%.c $(GENH) $(IMPH)
  	$(CC_CMD)

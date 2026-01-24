@@ -4,6 +4,8 @@
 
 test $# -eq 1 || { echo Usage: $0 \"package.patch\"; exit 1; }
 
+CACHEDIR=${CACHEDIR-}
+
 PACKAGE=`basename $1 .patch`
 
 test -f $1 || { echo $PACKAGE: package not found; exit 1; }
@@ -14,7 +16,11 @@ PACKAGE_URL=`printf '%s\n' "$SOURCE" | head -n 1`
 
 ARCHIVE=`basename $PACKAGE_URL`
 
-test -f $ARCHIVE || wget --no-check-certificate $PACKAGE_URL
+if [ -n $CACHEDIR ] && [ -f $CACHEDIR/$ARCHIVE ]; then
+  cp $CACHEDIR/$ARCHIVE .
+else
+  test -f $ARCHIVE || wget --no-check-certificate $PACKAGE_URL
+fi
 
 test -s $ARCHIVE || { echo $1: unable to get package; exit 1; }
 
@@ -41,7 +47,11 @@ fi
 
 for SUBPACKAGE_URL in `printf '%s\n' $SOURCE | tail -n +2`; do
   SUBARCHIVE=`basename $SUBPACKAGE_URL`
-  test -f $SUBARCHIVE || wget --no-check-certificate $SUBPACKAGE_URL
+  if [ -n $CACHEDIR ] && [ -f $CACHEDIR/$SUBARCHIVE ]; then
+    cp $CACHEDIR/$SUBARCHIVE .
+  else
+    test -f $SUBARCHIVE || wget --no-check-certificate $SUBPACKAGE_URL
+  fi
   test -s $SUBARCHIVE || { echo $PACKAGE: unable to get subpackage; exit 1; }
   if expr $SUBARCHIVE : .*\.zip$ > /dev/null; then
     unzip -qo $SUBARCHIVE -d $PACKAGE
