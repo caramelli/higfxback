@@ -6,17 +6,17 @@ HOST := x86_64-unknown-linux
 STAGING_DIR := $(PWD)/$(HOST)
 PATH := $(STAGING_DIR)/bin:$(PATH)
 
-BINUTILS        := binutils-2.25.1
-BUSYBOX         := busybox-1.36.1
-GCC             := gcc-4.7.4
-GLIBC           := glibc-2.19
-GMP             := gmp-6.2.1
-LINUX           := linux-4.14.336
-MPFR            := mpfr-4.1.1
-MPC             := mpc-1.3.1
-MUSL            := musl-1.2.5
-PKG_CONFIG_LITE := pkg-config-lite-0.28-1
-SYSLINUX        := syslinux-3.86
+BINUTILS   := binutils-2.25.1
+BUSYBOX    := busybox-1.36.1
+GCC        := gcc-4.7.4
+GLIBC      := glibc-2.19
+GMP        := gmp-6.2.1
+LINUX      := linux-4.14.336
+MPFR       := mpfr-4.1.1
+MPC        := mpc-1.3.1
+MUSL       := musl-1.2.5
+PKG_CONFIG := pkg-config-lite-0.28-1
+SYSLINUX   := syslinux-3.86
 
 LIBC_IMPLEMENTATIONS ?= glibc musl
 
@@ -129,12 +129,12 @@ gcc-%: libc-%
 	@test -f $(GCC)/$*-build/config.status || ( cd $(GCC)/$*-build; sed -i "s/DEFAULT_LIBC=LIBC_GLIBC/DEFAULT_LIBC=LIBC_$(shell echo $* | tr a-z A-Z)/" ../gcc/config.gcc; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/$*-build
 
-pkg-config-lite-%: libc-%
+pkg-config-%: libc-%
 	@echo Build $@
-	@test -d $(PKG_CONFIG_LITE) || { ( test -f $(PKG_CONFIG_LITE).tar.gz || wget -q https://sourceforge.net/projects/pkgconfiglite/files/0.28-1/$(PKG_CONFIG_LITE).tar.gz ) && tar xzf $(PKG_CONFIG_LITE).tar.gz && patch -d $(PKG_CONFIG_LITE) -p1 < $(PKG_CONFIG_LITE).patch; }
-	@test -d $(PKG_CONFIG_LITE)/$*-build || mkdir $(PKG_CONFIG_LITE)/$*-build
-	@test -f $(PKG_CONFIG_LITE)/$*-build/config.status || ( cd $(PKG_CONFIG_LITE)/$*-build; ../configure --host=$(HOST) --prefix= )
-	$(MAKE) -C $(PKG_CONFIG_LITE)/$*-build
+	@test -d $(PKG_CONFIG) || { ( test -f $(PKG_CONFIG).tar.gz || wget -q https://sourceforge.net/projects/pkgconfiglite/files/0.28-1/$(PKG_CONFIG).tar.gz ) && tar xzf $(PKG_CONFIG).tar.gz && patch -d $(PKG_CONFIG) -p1 < $(PKG_CONFIG).patch; }
+	@test -d $(PKG_CONFIG)/$*-build || mkdir $(PKG_CONFIG)/$*-build
+	@test -f $(PKG_CONFIG)/$*-build/config.status || ( cd $(PKG_CONFIG)/$*-build; ../configure --host=$(HOST) --prefix= )
+	$(MAKE) -C $(PKG_CONFIG)/$*-build
 
 syslinux-%: libc-%
 	@echo Build $@
@@ -145,7 +145,7 @@ syslinux-%: libc-%
 
 ################################################################################
 
-rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-lite-% syslinux-%
+rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@echo Create $*-based rootfs tarball
 	@install -d                                                                                  rootfs-$*/bin
 	@install $(BUSYBOX)/$*-build/busybox                                                         rootfs-$*/bin/busybox
@@ -171,12 +171,12 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-lite-% syslinux-%
 	@install $(GCC)/$*-build/gcc/cpp                                                             rootfs-$*/bin/cpp
 	@install $(GCC)/$*-build/gcc/xgcc                                                            rootfs-$*/bin/gcc
 	@ln -sf  gcc                                                                                 rootfs-$*/bin/cc
-	@install $(PKG_CONFIG_LITE)/$*-build/pkg-config                                              rootfs-$*/bin/pkg-config
+	@install $(PKG_CONFIG)/$*-build/pkg-config                                                   rootfs-$*/bin/pkg-config
 	@install $(STAGING_DIR)/$*/bin/getconf                                                       rootfs-$*/bin/getconf
 	@cp -P $(STAGING_DIR)/$*/bin/ldd                                                             rootfs-$*/bin/ldd
-	@install $(SYSLINUX)/$*-build/extlinux                                                       rootfs-$*/bin/extlinux
 	@install pkg-build                                                                           rootfs-$*/bin/pkg-build
 	@install pkg-get                                                                             rootfs-$*/bin/pkg-get
+	@install ../scripts/*                                                                        rootfs-$*/bin
 	@install -d                                                                                  rootfs-$*/boot
 	@install $(LINUX)/arch/x86/boot/bzImage                                                      rootfs-$*/boot/bzImage
 	@install -d                                                                                  rootfs-$*/dev
@@ -375,9 +375,11 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-lite-% syslinux-%
 	@install -d                                                                                  rootfs-$*/mnt/share
 	@install -d                                                                                  rootfs-$*/proc
 	@install -d                                                                                  rootfs-$*/root
+	@cp -r ../patches                                                                            rootfs-$*/root
+	@install -d                                                                                  rootfs-$*/root/sources
 	@install -d                                                                                  rootfs-$*/run
 	@install -d                                                                                  rootfs-$*/share/aclocal
-	@install -m 644 $(PKG_CONFIG_LITE)/pkg.m4                                                    rootfs-$*/share/aclocal/pkg.m4
+	@install -m 644 $(PKG_CONFIG)/pkg.m4                                                         rootfs-$*/share/aclocal/pkg.m4
 	@install -d                                                                                  rootfs-$*/share/busybox
 	@install $(BUSYBOX)/$*-build/busybox.links                                                   rootfs-$*/share/busybox/busybox.links
 	@echo '#!/bin/sh'                                                                         >  rootfs-$*/share/busybox/default.script
@@ -392,9 +394,6 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-lite-% syslinux-%
 	@echo 'esac'                                                                              >> rootfs-$*/share/busybox/default.script
 	@chmod 755                                                                                   rootfs-$*/share/busybox/default.script
 	@install keymaps/fr.kmap                                                                     rootfs-$*/share/busybox/fr.kmap
-	@install -d                                                                                  rootfs-$*/share/syslinux
-	@install -m 644 $(SYSLINUX)/core/isolinux.bin                                                rootfs-$*/share/syslinux/isolinux.bin
-	@install -m 644 $(SYSLINUX)/mbr/mbr.bin                                                      rootfs-$*/share/syslinux/mbr.bin
 	@install -d                                                                                  rootfs-$*/sys
 	@install -d                                                                                  rootfs-$*/tmp
 	@install -d                                                                                  rootfs-$*/var

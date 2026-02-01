@@ -1,0 +1,51 @@
+# This file is part of HiGFXback
+
+REQUIRES="autotools-wrappers-ac-build ncurses-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.72)
+autoheader; autoconf
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install less $DESTDIR/bin
+install lessecho $DESTDIR/bin
+install lesskey $DESTDIR/bin
+ln -sf less $DESTDIR/bin/more
+
+# pkg-build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/less-build.pc << EOF
+Name: less
+Version: 691
+Description: file pager
+Requires: $REQUIRES
+
+exec=\\
+/bin/less \\
+/bin/lessecho \\
+/bin/lesskey \\
+/bin/more
+EOF
+
+exit
+
+# patch
+--- less-691.orig/configure.ac
++++ less-691/configure.ac
+@@ -16,7 +16,6 @@
+ # Checks for programs.
+ AC_PROG_CC
+ AC_SEARCH_LIBS([strerror],[cposix])
+-AC_PROG_GCC_TRADITIONAL
+ AC_PROG_INSTALL
+ 
+ # Checks for compilation model.
+
+# source
+https://www.greenwoodsoftware.com/less/less-691.tar.gz

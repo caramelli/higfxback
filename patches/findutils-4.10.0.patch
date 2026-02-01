@@ -5,7 +5,7 @@ REQUIRES="autotools-wrappers-am-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69; am-1.16)
+# configure (ac-2.72; am-1.16)
 aclocal -I m4 -I gl/m4; autoheader; autoconf; automake -a -c
 ./configure --libexecdir=/lib/findutils --prefix=
 
@@ -25,7 +25,7 @@ install locate/frcode $DESTDIR/lib/findutils
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/findutils-build.pc << EOF
 Name: findutils
-Version: 4.9.0
+Version: 4.10.0
 Description: GNU utilities to find files
 Requires: $REQUIRES
 
@@ -40,8 +40,8 @@ EOF
 exit
 
 # patch
---- findutils-4.9.0.orig/configure.ac
-+++ findutils-4.9.0/configure.ac
+--- findutils-4.10.0.orig/configure.ac
++++ findutils-4.10.0/configure.ac
 @@ -44,6 +44,7 @@
  
  AC_CONFIG_AUX_DIR(build-aux)
@@ -52,4 +52,4 @@ exit
  AC_CONFIG_SRCDIR([find/pred.c])
 
 # source
-https://ftp.gnu.org/gnu/findutils/findutils-4.9.0.tar.xz
+https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz

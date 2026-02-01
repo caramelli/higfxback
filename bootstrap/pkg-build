@@ -2,26 +2,31 @@
 #
 # This file is part of HiGFXback
 
-test $# -eq 1 || { echo Usage: $0 \"package name\"; exit 1; }
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <package name> [<package name> ...]"
+  exit 1
+fi
 
 PATCHES=$(realpath ${PATCHES:-../patches})
 
-BACKEND=`dirname $1`
+for pkg in $@; do
+  BACKEND=`dirname $pkg`
 
-CANONICAL_PACKAGE=`basename $1 | tr '[:upper:]' '[:lower:]'`
+  CANONICAL_PACKAGE=`basename $pkg | tr '[:upper:]' '[:lower:]'`
 
-PATCH=`grep -l /$CANONICAL_PACKAGE-build.pc $PATCHES/$BACKEND/*.patch`
+  PATCH=`grep -l /$CANONICAL_PACKAGE-build.pc $PATCHES/$BACKEND/*.patch`
 
-test -n "$PATCH" || { echo $CANONICAL_PACKAGE: package not found; exit 1; }
+  test -n "$PATCH" || { echo $CANONICAL_PACKAGE: package not found; exit 1; }
 
-PACKAGE=`sed -n 's/^Name: //p' $PATCH`-`sed -n 's/^Version: //p' $PATCH`
+  PACKAGE=`sed -n 's/^Name: //p' $PATCH`-`sed -n 's/^Version: //p' $PATCH`
 
-REQUIRES=`sed -n 's/^REQUIRES="\(.*\)"/\1/p' $PATCHES/$BACKEND/$PACKAGE.patch`
-test -z "$REQUIRES" || PKG_CONFIG_PATH=/$BACKEND/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+  REQUIRES=`sed -n 's/^REQUIRES="\(.*\)"/\1/p' $PATCHES/$BACKEND/$PACKAGE.patch`
+  test -z "$REQUIRES" || PKG_CONFIG_PATH=/$BACKEND/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-NEW_FILES=$(awk '/^---/{ oldfile = $2 }/^\+\+\+/{ newfile = $2 }/^@@ -0,0/{ print newfile }' $PATCHES/$BACKEND/$PACKAGE.patch)
-for FILE in $NEW_FILES; do test -f $FILE && rm -f $FILE; done
+  NEW_FILES=$(awk '/^---/{ oldfile = $2 }/^\+\+\+/{ newfile = $2 }/^@@ -0,0/{ print newfile }' $PATCHES/$BACKEND/$PACKAGE.patch)
+  for FILE in $NEW_FILES; do test -f $FILE && rm -f $FILE; done
 
-pkg-get $PATCHES/$BACKEND/$PACKAGE.patch
-( cd $PACKAGE && patch -p1 < $PATCHES/$BACKEND/$PACKAGE.patch )
-( cd $PACKAGE && sh $PATCHES/$BACKEND/$PACKAGE.patch )
+  pkg-get $PATCHES/$BACKEND/$PACKAGE.patch
+  ( cd $PACKAGE && patch -p1 < $PATCHES/$BACKEND/$PACKAGE.patch )
+  ( cd $PACKAGE && sh $PATCHES/$BACKEND/$PACKAGE.patch )
+done

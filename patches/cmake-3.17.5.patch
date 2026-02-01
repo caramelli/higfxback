@@ -1,9 +1,14 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="curl-build jsoncpp-build libarchive-build libstdc++-build libuv-build make-build ncurses-build ninja-build rhash-build"
+REQUIRES="curl-build jsoncpp-build libarchive-build libstdc++-build libuv-build make-build rhash-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists ncurses-build; then
+  NCURSES=1
+  REQUIRES="$REQUIRES ncurses-build"
+fi
 
 # configure
 rm -rf Utilities/cmbzip2
@@ -23,7 +28,7 @@ make
 
 # install
 install -d $DESTDIR/bin
-install bin/ccmake $DESTDIR/bin
+test $NCURSES && install bin/ccmake $DESTDIR/bin
 install bin/cmake $DESTDIR/bin
 install bin/cpack $DESTDIR/bin
 install bin/ctest $DESTDIR/bin
@@ -192,7 +197,11 @@ Description: CMake build system
 Requires: $REQUIRES
 
 devel=\\
+EOF
+test $NCURSES && cat >> $DESTDIR/share/pkgconfig/cmake3-build.pc << EOF
 /bin/ccmake \\
+EOF
+cat >> $DESTDIR/share/pkgconfig/cmake3-build.pc << EOF
 /bin/cmake \\
 /bin/cpack \\
 /bin/ctest \\

@@ -11,7 +11,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 test $SYSTEM && rm -f /dfb/etc/directfbrc
 
 if [ ! -f /dfb/etc/directfbrc ]; then
-	SYSTEM=${SYSTEM-fbdev}
+	SYSTEM=${SYSTEM:-fbdev}
 	install -d /dfb/etc
 	cat > /dfb/etc/directfbrc <<- EOF
 		system=$SYSTEM

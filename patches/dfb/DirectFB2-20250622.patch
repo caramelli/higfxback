@@ -336,15 +336,65 @@ exit
 # patch
 --- DirectFB2-20250622.orig/lib/fusion/fusion.c
 +++ DirectFB2-20250622/lib/fusion/fusion.c
-@@ -3693,8 +3693,6 @@
-      direct_waitqueue_signal( &world->event_dispatcher_call_cond );
-      direct_waitqueue_signal( &world->event_dispatcher_cond );
+@@ -3686,6 +3686,9 @@
  
--     direct_thread_join( world->event_dispatcher_thread );
--
-      direct_thread_destroy( world->event_dispatcher_thread );
+      fusion_shm_pool_destroy( world, world->shared->main_pool );
  
-      direct_mutex_deinit( &world->event_dispatcher_mutex );
++     if (emergency)
++          return DR_OK;
++
+      direct_mutex_lock( &world->event_dispatcher_mutex );
+      world->dispatch_stop = 1;
+      direct_mutex_unlock( &world->event_dispatcher_mutex );
+--- DirectFB2-20250622.orig/src/idirectfb.c
++++ DirectFB2-20250622/src/idirectfb.c
+@@ -286,7 +286,7 @@
+           }
+      }
+ 
+-     ret = dfb_core_destroy( data->core, false );
++     ret = dfb_core_destroy( data->core, dfb_config->core_emergency );
+ 
+      DIRECT_DEALLOCATE_INTERFACE( thiz );
+ 
+--- DirectFB2-20250622.orig/src/misc/conf.c
++++ DirectFB2-20250622/src/misc/conf.c
+@@ -45,6 +45,7 @@
+      "  [no-]sync                      Flush all disk buffers before initializing DirectFB\n"
+      "  [no-]always-indirect           Use purely indirect Flux calls (for secure master)\n"
+      "  [no-]block-all-signals         Block all signals\n"
++     "  [no-]core-emergency            Enable emergency shutdowns (default enabled)\n"
+      "  [no-]core-sighandler           Enable core signal handler, for emergency shutdowns (default enabled)\n"
+      "  [no-]ownership-check           Check privileges when calling GetSurface() or GetWindow() (default enabled)\n"
+      "  [no-]deinit-check              Check if all allocated resources have been released on exit (default enabled)\n"
+@@ -251,6 +252,7 @@
+ 
+      dfb_config->banner                                = true;
+ 
++     dfb_config->core_emergency                        = true;
+      dfb_config->core_sighandler                       = true;
+ 
+      dfb_config->ownership_check                       = true;
+@@ -448,6 +450,9 @@
+      if (strcmp( name, "no-block-all-signals" ) == 0) {
+           dfb_config->block_all_signals = false;
+      } else
++     if (strcmp( name, "core-emergency" ) == 0) {
++          dfb_config->core_emergency = true;
++     } else
+      if (strcmp( name, "core-sighandler" ) == 0) {
+           dfb_config->core_sighandler = true;
+      } else
+--- DirectFB2-20250622.orig/src/misc/conf.h
++++ DirectFB2-20250622/src/misc/conf.h
+@@ -68,6 +68,7 @@
+      bool                        sync;
+      FusionCallExecFlags         call_nodirect;
+      bool                        block_all_signals;
++     bool                        core_emergency;
+      bool                        core_sighandler;
+      bool                        ownership_check;
+      bool                        deinit_check;
 --- DirectFB2-20250622.orig/systems/fbdev/fbdev_system.c
 +++ DirectFB2-20250622/systems/fbdev/fbdev_system.c
 @@ -16,8 +16,6 @@

@@ -15,7 +15,7 @@ install -d /x11/var/log
 test $DDX && rm -f /x11/etc/X11/xorg.conf
 
 if [ ! -f /x11/etc/X11/xorg.conf ]; then
-	DDX=${DDX-fbdev}
+	DDX=${DDX:-fbdev}
 	KEYBOARD=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=120013/{ print handler; exit }' | grep -o event[0-9]*`
 	POINTER=/dev/input/`cat /proc/bus/input/devices | awk '/Handlers=/{ handler = $0 }/EV=(7|17|1f)/{ print handler; exit }' | grep -o event[0-9]*`
 	install -d /x11/etc/X11

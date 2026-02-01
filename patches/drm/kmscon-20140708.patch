@@ -1,13 +1,21 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build libdrm-build libtsm-build libudev-build pixman-build"
+REQUIRES="autotools-wrappers-lt-build libdrm-build libtsm-build libudev-build"
 
 PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
+if pkg-config --exists pixman-build; then
+  PIXMAN=1
+  RENDERERS=--with-renderers=bbulk,pixman
+  REQUIRES="$REQUIRES pixman-build"
+else
+  RENDERERS=--with-renderers=bbulk
+fi
+
 # configure (ac-2.69; am-1.14; lt-2.4.2)
 libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
-PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --with-fonts=unifont --with-renderers=pixman --with-video=drm2d --prefix=/drm
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --disable-static --with-fonts=unifont $RENDERERS --with-video=drm2d --prefix=/drm
 
 # build
 make
@@ -16,7 +24,8 @@ make
 install -d $DESTDIR/drm/bin
 install kmscon $DESTDIR/drm/bin
 install -d $DESTDIR/drm/lib/kmscon
-install .libs/mod-pixman.so $DESTDIR/drm/lib/kmscon
+install .libs/mod-bbulk.so $DESTDIR/drm/lib/kmscon
+test $PIXMAN && install .libs/mod-pixman.so $DESTDIR/drm/lib/kmscon
 install .libs/mod-unifont.so $DESTDIR/drm/lib/kmscon
 
 # build.pc
@@ -29,7 +38,12 @@ Requires: $REQUIRES
 
 exec=\\
 /drm/bin/kmscon \\
+/drm/lib/kmscon/mod-bbulk.so \\
+EOF
+test $PIXMAN && cat >> $DESTDIR/share/pkgconfig/kmscon-build.pc << EOF
 /drm/lib/kmscon/mod-pixman.so \\
+EOF
+cat >> $DESTDIR/share/pkgconfig/kmscon-build.pc << EOF
 /drm/lib/kmscon/mod-unifont.so
 EOF
 
@@ -48,6 +62,14 @@ exit
  AM_CPPFLAGS = \
  	-DBUILD_MODULE_DIR='"$(moduledir)"' \
  	-include $(top_builddir)/config.h \
+@@ -459,6 +458,7 @@
+ 	src/kmscon_mod_pixman.c
+ mod_pixman_la_CPPFLAGS = \
+ 	$(AM_CPPFLAGS) \
++	$(TSM_CFLAGS) \
+ 	$(PIXMAN_CFLAGS)
+ mod_pixman_la_LIBADD = \
+ 	$(PIXMAN_LIBS) \
 --- kmscon-20140708.orig/Makefile.in
 +++ kmscon-20140708/Makefile.in
 @@ -0,0 +1 @@
@@ -101,6 +123,16 @@ exit
  			unsigned int width,
  			unsigned int posx, unsigned int posy,
  			const struct tsm_screen_attr *attr,
+--- kmscon-20140708.orig/src/uterm_vt.h
++++ kmscon-20140708/src/uterm_vt.h
+@@ -36,6 +36,7 @@
+ #include <inttypes.h>
+ #include <stdbool.h>
+ #include <stdlib.h>
++#include <sys/sysmacros.h>
+ #include <uterm_input.h>
+ 
+ struct uterm_vt;
 
 # source
 https://github.com/dvdhrm/kmscon/archive/0b3452719992f855b64fa21c9d7fbd6158a8d23a/kmscon-20140708.tar.gz
