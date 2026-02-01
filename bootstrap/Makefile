@@ -6,17 +6,20 @@ HOST := x86_64-unknown-linux
 STAGING_DIR := $(PWD)/$(HOST)
 PATH := $(STAGING_DIR)/bin:$(PATH)
 
-BINUTILS   := binutils-2.25.1
-BUSYBOX    := busybox-1.36.1
-GCC        := gcc-4.7.4
-GLIBC      := glibc-2.19
-GMP        := gmp-6.2.1
-LINUX      := linux-4.14.336
-MPFR       := mpfr-4.1.1
-MPC        := mpc-1.3.1
-MUSL       := musl-1.2.5
-PKG_CONFIG := pkg-config-lite-0.28-1
-SYSLINUX   := syslinux-3.86
+BINUTILS     := binutils-2.25.1
+BUSYBOX      := busybox-1.36.1
+GCC          := gcc-4.7.4
+GLIBC        := glibc-2.19
+GMP          := gmp-6.2.1
+LINUX        := linux-4.14.336
+MPFR         := mpfr-4.1.1
+MPC          := mpc-1.3.1
+MUSL         := musl-1.2.5
+MUSL_ARGP    := argp-standalone-1.4.1
+MUSL_FTS     := musl-fts-1.2.7
+MUSL_OBSTACK := musl-obstack-1.2.3
+PKG_CONFIG   := pkg-config-lite-0.28-1
+SYSLINUX     := syslinux-3.86
 
 LIBC_IMPLEMENTATIONS ?= glibc musl
 
@@ -30,7 +33,7 @@ all:
 
 cross-binutils:
 	@echo Build $@
-	@test -d $(BINUTILS) || { ( test -f $(BINUTILS).tar.bz2 || wget -q https://ftp.gnu.org/gnu/binutils/$(BINUTILS).tar.bz2 ) && tar xjf $(BINUTILS).tar.bz2; }
+	@test -d $(BINUTILS) || { ( test -f $(BINUTILS).tar.bz2 || wget -q https://ftp.gnu.org/gnu/binutils/$(BINUTILS).tar.bz2 ) && tar xf $(BINUTILS).tar.bz2; }
 	@test -d $(BINUTILS)/cross-build || mkdir $(BINUTILS)/cross-build
 	@test -f $(BINUTILS)/cross-build/config.status || ( cd $(BINUTILS)/cross-build; ../configure --build=$(MACHTYPE) --target=$(HOST) --with-sysroot=$(STAGING_DIR) --prefix= )
 	$(MAKE) -C $(BINUTILS)/cross-build
@@ -41,10 +44,10 @@ cross-binutils:
 
 cross-gcc: cross-binutils
 	@echo Build $@
-	@test -d $(GCC) || { ( test -f $(GCC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 ) && tar xjf $(GCC).tar.bz2 && patch -d $(GCC) -p1 < $(GCC).patch; }
-	@test -d $(GCC)/gmp || { ( test -f $(GMP).tar.bz2 || wget -q https://gmplib.org/download/gmp/$(GMP).tar.bz2 ) && tar xjf $(GMP).tar.bz2 && mv $(GMP) $(GCC)/gmp; }
-	@test -d $(GCC)/mpc || { ( test -f $(MPC).tar.gz || wget -q https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz ) && tar xzf $(MPC).tar.gz && mv $(MPC) $(GCC)/mpc; }
-	@test -d $(GCC)/mpfr || { ( test -f $(MPFR).tar.bz2 || wget -q https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 ) && tar xjf $(MPFR).tar.bz2 && mv $(MPFR) $(GCC)/mpfr; }
+	@test -d $(GCC) || { ( test -f $(GCC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 ) && tar xf $(GCC).tar.bz2 && patch -d $(GCC) -p1 < $(GCC).patch; }
+	@test -d $(GCC)/gmp || { ( test -f $(GMP).tar.bz2 || wget -q https://gmplib.org/download/gmp/$(GMP).tar.bz2 ) && tar xf $(GMP).tar.bz2 && mv $(GMP) $(GCC)/gmp; }
+	@test -d $(GCC)/mpc || { ( test -f $(MPC).tar.gz || wget -q https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz ) && tar xf $(MPC).tar.gz && mv $(MPC) $(GCC)/mpc; }
+	@test -d $(GCC)/mpfr || { ( test -f $(MPFR).tar.bz2 || wget -q https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 ) && tar xf $(MPFR).tar.bz2 && mv $(MPFR) $(GCC)/mpfr; }
 	@test -d $(GCC)/cross-build || mkdir $(GCC)/cross-build
 	@test -f $(GCC)/cross-build/config.status || ( cd $(GCC)/cross-build; ../configure --build=$(MACHTYPE) --target=$(HOST) --enable-languages=c --with-newlib --disable-decimal-float --disable-lto --disable-plugin --disable-threads --disable-shared --with-sysroot=$(STAGING_DIR) --prefix= --libexecdir=/lib --with-local-prefix=/ )
 	$(MAKE) -C $(GCC)/cross-build all-gcc all-target-libgcc
@@ -55,12 +58,12 @@ cross-gcc: cross-binutils
 
 linux-headers:
 	@echo Build $@
-	@test -d $(LINUX) || { ( test -f $(LINUX).tar.xz || wget -q https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz ) && tar xJf $(LINUX).tar.xz && patch -d $(LINUX) -p1 < $(LINUX).patch; }
+	@test -d $(LINUX) || { ( test -f $(LINUX).tar.xz || wget -q https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz ) && tar xf $(LINUX).tar.xz && patch -d $(LINUX) -p1 < $(LINUX).patch; }
 	$(MAKE) INSTALL_HDR_PATH=$(STAGING_DIR) -C $(LINUX) headers_install
 
 glibc: cross-gcc linux-headers
 	@echo Build $@
-	@test -d $(GLIBC) || { ( test -f $(GLIBC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/glibc/$(GLIBC).tar.bz2 ) && tar xjf $(GLIBC).tar.bz2 && patch -d $(GLIBC) -p1 < $(GLIBC).patch; }
+	@test -d $(GLIBC) || { ( test -f $(GLIBC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/glibc/$(GLIBC).tar.bz2 ) && tar xf $(GLIBC).tar.bz2 && patch -d $(GLIBC) -p1 < $(GLIBC).patch; }
 	@test -d $(GLIBC)/build || mkdir $(GLIBC)/build
 	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=no libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
 	$(MAKE) -C $(GLIBC)/build
@@ -70,16 +73,29 @@ glibc: cross-gcc linux-headers
 
 musl: cross-gcc linux-headers
 	@echo Build $@
-	@test -d $(MUSL) || { ( test -f $(MUSL).tar.gz || wget -q https://musl.libc.org/releases/$(MUSL).tar.gz ) && tar xzf $(MUSL).tar.gz && patch -d $(MUSL) -p1 < $(MUSL).patch; }
+	@test -d $(MUSL) || { ( test -f $(MUSL).tar.gz || wget -q https://musl.libc.org/releases/$(MUSL).tar.gz ) && tar xf $(MUSL).tar.gz && patch -d $(MUSL) -p1 < $(MUSL).patch; }
 	@test -d $(MUSL)/build || mkdir $(MUSL)/build
 	@test -f $(MUSL)/build/config.mak || ( cd $(MUSL)/build; ../configure --host=$(HOST) --prefix= )
 	$(MAKE) -C $(MUSL)/build
 	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL)/build install
-	@test -d $(MUSL)/utils || { ( test -f musl-utils.tar.gz || wget -q https://github.com/boltlinux/musl-utils/archive/master/musl-utils.tar.gz ) && tar xzf musl-utils.tar.gz && mv musl-utils-master $(MUSL)/utils && patch -d $(MUSL)/utils -p1 < musl-utils.patch; }
+	@install -d $(STAGING_DIR)/musl/bin
+	@ln -sf ../lib/ld-musl-x86_64.so.1 $(STAGING_DIR)/musl/bin/ldd
+	@test -d $(MUSL)/utils || { ( test -f musl-utils.tar.gz || wget -q https://github.com/boltlinux/musl-utils/archive/master/musl-utils.tar.gz ) && tar xf musl-utils.tar.gz && mv musl-utils-master $(MUSL)/utils && patch -d $(MUSL)/utils -p1 < musl-utils.patch; }
 	@test -d $(MUSL)/build/bin || mkdir $(MUSL)/build/bin
 	$(MAKE) -C $(MUSL)/build/bin -f ../../utils/src/makefile
 	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL)/build/bin -f ../../utils/src/makefile install
-	@ln -sf ../lib/ld-musl-x86_64.so.1 $(STAGING_DIR)/musl/bin/ldd
+	@test -d $(MUSL_ARGP) || { ( test -f $(MUSL_ARGP).tar.gz || wget -q https://github.com/ericonr/argp-standalone/archive/$(subst argp-standalone-,,$(MUSL_ARGP))/$(MUSL_ARGP).tar.gz ) && tar xf $(MUSL_ARGP).tar.gz && patch -d $(MUSL_ARGP) -p1 < $(MUSL_ARGP).patch; }
+	@test -d $(MUSL_ARGP) || mkdir $(MUSL_ARGP)
+	@test -f $(MUSL_ARGP)/config.status || ( cd $(MUSL_ARGP); CC="$(HOST)-gcc --sysroot=$(STAGING_DIR)/musl" sh ./configure --host=$(HOST) --prefix= )
+	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL_ARGP) install
+	@test -d $(MUSL_FTS) || { ( test -f $(MUSL_FTS).tar.gz || wget -q https://github.com/void-linux/musl-fts/archive/v$(subst musl-fts-,,$(MUSL_FTS))/$(MUSL_FTS).tar.gz ) && tar xf $(MUSL_FTS).tar.gz && patch -d $(MUSL_FTS) -p1 < $(MUSL_FTS).patch; }
+	@test -d $(MUSL_FTS) || mkdir $(MUSL_FTS)
+	@test -f $(MUSL_FTS)/config.status || ( cd $(MUSL_FTS); CC="$(HOST)-gcc --sysroot=$(STAGING_DIR)/musl" sh ./configure --host=$(HOST) --prefix= )
+	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL_FTS) install
+	@test -d $(MUSL_OBSTACK) || { ( test -f $(MUSL_OBSTACK).tar.gz || wget -q https://github.com/void-linux/musl-obstack/archive/v$(subst musl-obstack-,,$(MUSL_OBSTACK))/$(MUSL_OBSTACK).tar.gz ) && tar xf $(MUSL_OBSTACK).tar.gz && patch -d $(MUSL_OBSTACK) -p1 < $(MUSL_OBSTACK).patch; }
+	@test -d $(MUSL_OBSTACK) || mkdir $(MUSL_OBSTACK)
+	@test -f $(MUSL_OBSTACK)/config.status || ( cd $(MUSL_OBSTACK); CC="$(HOST)-gcc --sysroot=$(STAGING_DIR)/musl" sh ./configure --host=$(HOST) --prefix= )
+	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL_OBSTACK) install
 	@test -d $(STAGING_DIR)/musl/share || ( mkdir $(STAGING_DIR)/musl/share; echo $(MUSL) > $(STAGING_DIR)/musl/share/libc-VERSION )
 
 toolchain: $(LIBC_IMPLEMENTATIONS)
@@ -100,13 +116,13 @@ libc-%:
 linux:
 	@test -f $(STAGING_DIR)/share/gcc-VERSION || { echo "'cross-gcc' build required"; exit 1; }
 	@echo Build $@
-	@test -d $(LINUX) || { ( test -f $(LINUX).tar.xz || wget -q https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz ) && tar xJf $(LINUX).tar.xz && patch -d $(LINUX) -p1 < $(LINUX).patch; }
+	@test -d $(LINUX) || { ( test -f $(LINUX).tar.xz || wget -q https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/$(LINUX).tar.xz ) && tar xf $(LINUX).tar.xz && patch -d $(LINUX) -p1 < $(LINUX).patch; }
 	@test -f $(LINUX)/.config || ( cp $(LINUX)-fragment-x86_64.config $(LINUX)/arch/x86/configs/fragment-x86_64.config; $(MAKE) -C $(LINUX) x86_64_defconfig fragment-x86_64.config )
 	$(MAKE) CROSS_COMPILE=$(HOST)- -C $(LINUX)
 
 busybox-%: libc-%
 	@echo Build $@
-	@test -d $(BUSYBOX) || { ( test -f $(BUSYBOX).tar.bz2 || wget -q https://busybox.net/downloads/$(BUSYBOX).tar.bz2 ) && tar xjf $(BUSYBOX).tar.bz2 && patch -d $(BUSYBOX) -p1 < $(BUSYBOX).patch; }
+	@test -d $(BUSYBOX) || { ( test -f $(BUSYBOX).tar.bz2 || wget -q https://busybox.net/downloads/$(BUSYBOX).tar.bz2 ) && tar xf $(BUSYBOX).tar.bz2 && patch -d $(BUSYBOX) -p1 < $(BUSYBOX).patch; }
 	@test -d $(BUSYBOX)/$*-build || mkdir $(BUSYBOX)/$*-build
 	@test -f $(BUSYBOX)/$*-build/.config || cp $(BUSYBOX).config $(BUSYBOX)/$*-build/.config
 	$(MAKE) CROSS_COMPILE=$(HOST)- O=$*-build -C $(BUSYBOX)
@@ -114,31 +130,31 @@ busybox-%: libc-%
 
 binutils-%: libc-%
 	@echo Build $@
-	@test -d $(BINUTILS) || { ( test -f $(BINUTILS).tar.bz2 || wget -q https://ftp.gnu.org/gnu/binutils/$(BINUTILS).tar.bz2 ) && tar xjf $(BINUTILS).tar.bz2; }
+	@test -d $(BINUTILS) || { ( test -f $(BINUTILS).tar.bz2 || wget -q https://ftp.gnu.org/gnu/binutils/$(BINUTILS).tar.bz2 ) && tar xf $(BINUTILS).tar.bz2; }
 	@test -d $(BINUTILS)/$*-build || mkdir $(BINUTILS)/$*-build
 	@test -f $(BINUTILS)/$*-build/config.status || ( cd $(BINUTILS)/$*-build; ../configure --build=$(MACHTYPE) --host=$(HOST) --prefix= )
 	$(MAKE) -C $(BINUTILS)/$*-build
 
 gcc-%: libc-%
 	@echo Build $@
-	@test -d $(GCC) || { ( test -f $(GCC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 ) && tar xjf $(GCC).tar.bz2 && patch -d $(GCC) -p1 < $(GCC).patch; }
-	@test -d $(GCC)/gmp || { ( test -f $(GMP).tar.bz2 || wget -q https://gmplib.org/download/gmp/$(GMP).tar.bz2 ) && tar xjf $(GMP).tar.bz2 && mv $(GMP) $(GCC)/gmp; }
-	@test -d $(GCC)/mpc || { ( test -f $(MPC).tar.gz || wget -q https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz ) && tar xzf $(MPC).tar.gz && mv $(MPC) $(GCC)/mpc; }
-	@test -d $(GCC)/mpfr || { ( test -f $(MPFR).tar.bz2 || wget -q https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 ) && tar xjf $(MPFR).tar.bz2 && mv $(MPFR) $(GCC)/mpfr; }
+	@test -d $(GCC) || { ( test -f $(GCC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2 ) && tar xf $(GCC).tar.bz2 && patch -d $(GCC) -p1 < $(GCC).patch; }
+	@test -d $(GCC)/gmp || { ( test -f $(GMP).tar.bz2 || wget -q https://gmplib.org/download/gmp/$(GMP).tar.bz2 ) && tar xf $(GMP).tar.bz2 && mv $(GMP) $(GCC)/gmp; }
+	@test -d $(GCC)/mpc || { ( test -f $(MPC).tar.gz || wget -q https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz ) && tar xf $(MPC).tar.gz && mv $(MPC) $(GCC)/mpc; }
+	@test -d $(GCC)/mpfr || { ( test -f $(MPFR).tar.bz2 || wget -q https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 ) && tar xf $(MPFR).tar.bz2 && mv $(MPFR) $(GCC)/mpfr; }
 	@test -d $(GCC)/$*-build || mkdir $(GCC)/$*-build
 	@test -f $(GCC)/$*-build/config.status || ( cd $(GCC)/$*-build; sed -i "s/DEFAULT_LIBC=LIBC_GLIBC/DEFAULT_LIBC=LIBC_$(shell echo $* | tr a-z A-Z)/" ../gcc/config.gcc; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/$*-build
 
 pkg-config-%: libc-%
 	@echo Build $@
-	@test -d $(PKG_CONFIG) || { ( test -f $(PKG_CONFIG).tar.gz || wget -q https://sourceforge.net/projects/pkgconfiglite/files/0.28-1/$(PKG_CONFIG).tar.gz ) && tar xzf $(PKG_CONFIG).tar.gz && patch -d $(PKG_CONFIG) -p1 < $(PKG_CONFIG).patch; }
+	@test -d $(PKG_CONFIG) || { ( test -f $(PKG_CONFIG).tar.gz || wget -q https://sourceforge.net/projects/pkgconfiglite/files/$(subst pkg-config-lite-,,$(PKG_CONFIG))/$(PKG_CONFIG).tar.gz ) && tar xf $(PKG_CONFIG).tar.gz && patch -d $(PKG_CONFIG) -p1 < $(PKG_CONFIG).patch; }
 	@test -d $(PKG_CONFIG)/$*-build || mkdir $(PKG_CONFIG)/$*-build
 	@test -f $(PKG_CONFIG)/$*-build/config.status || ( cd $(PKG_CONFIG)/$*-build; ../configure --host=$(HOST) --prefix= )
 	$(MAKE) -C $(PKG_CONFIG)/$*-build
 
 syslinux-%: libc-%
 	@echo Build $@
-	@test -d $(SYSLINUX) || { ( test -f $(SYSLINUX).tar.xz || wget -q https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/3.xx/$(SYSLINUX).tar.xz ) && tar xJf $(SYSLINUX).tar.xz && patch -d $(SYSLINUX) -p1 < $(SYSLINUX).patch; }
+	@test -d $(SYSLINUX) || { ( test -f $(SYSLINUX).tar.xz || wget -q https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/3.xx/$(SYSLINUX).tar.xz ) && tar xf $(SYSLINUX).tar.xz && patch -d $(SYSLINUX) -p1 < $(SYSLINUX).patch; }
 	@test -d $(SYSLINUX)/$*-build || mkdir $(SYSLINUX)/$*-build
 	$(MAKE) -C $(SYSLINUX)/libinstaller
 	$(MAKE) CC=$(HOST)-gcc -C $(SYSLINUX)/$*-build -f ../extlinux/Makefile
@@ -212,7 +228,7 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/aio.h                                              rootfs-$*/include/aio.h
 	@install -m 644 $(STAGING_DIR)/$*/include/alloca.h                                           rootfs-$*/include/alloca.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ar.h                                               rootfs-$*/include/ar.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/argp.h                                 rootfs-$*/include/argp.h             || true # glibc
+	@install -m 644 $(STAGING_DIR)/$*/include/argp.h                                             rootfs-$*/include/argp.h
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/argz.h                                 rootfs-$*/include/argz.h             || true # glibc
 	@install -m 644 $(STAGING_DIR)/$*/include/assert.h                                           rootfs-$*/include/assert.h
 	@install -m 644 $(STAGING_DIR)/$*/include/byteswap.h                                         rootfs-$*/include/byteswap.h
@@ -233,7 +249,7 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/fenv.h                                             rootfs-$*/include/fenv.h
 	@install -m 644 $(STAGING_DIR)/$*/include/fmtmsg.h                                           rootfs-$*/include/fmtmsg.h
 	@install -m 644 $(STAGING_DIR)/$*/include/fnmatch.h                                          rootfs-$*/include/fnmatch.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/fts.h                                  rootfs-$*/include/fts.h              || true # glibc
+	@install -m 644 $(STAGING_DIR)/$*/include/fts.h                                              rootfs-$*/include/fts.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ftw.h                                              rootfs-$*/include/ftw.h
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/gconv.h                                rootfs-$*/include/gconv.h            || true # glibc
 	@install -m 644 $(STAGING_DIR)/$*/include/getopt.h                                           rootfs-$*/include/getopt.h
@@ -259,7 +275,7 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/mqueue.h                                           rootfs-$*/include/mqueue.h
 	@install -m 644 $(STAGING_DIR)/$*/include/netdb.h                                            rootfs-$*/include/netdb.h
 	@install -m 644 $(STAGING_DIR)/$*/include/nl_types.h                                         rootfs-$*/include/nl_types.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/obstack.h                              rootfs-$*/include/obstack.h          || true # glibc
+	@install -m 644 $(STAGING_DIR)/$*/include/obstack.h                                          rootfs-$*/include/obstack.h
 	@install -m 644 $(STAGING_DIR)/$*/include/paths.h                                            rootfs-$*/include/paths.h
 	@install -m 644 $(STAGING_DIR)/$*/include/poll.h                                             rootfs-$*/include/poll.h
 	@install -m 644 $(STAGING_DIR)/$*/include/pthread.h                                          rootfs-$*/include/pthread.h
@@ -326,18 +342,24 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@cp -P $(STAGING_DIR)/$*/lib/libc.so                                                         rootfs-$*/lib/libc.so
 	@install $(STAGING_DIR)/$*/lib/libc.so.6                                                     rootfs-$*/lib/libc.so.6
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/lib/libc_nonshared.a                           rootfs-$*/lib/libc_nonshared.a       || true # glibc
+	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libargp.so.0                                      rootfs-$*/lib/libargp.so.0           || true # musl
+	@[ -L $(STAGING_DIR)/$*/lib/libargp.so.0 ] && ln -sf libargp.so.0                            rootfs-$*/lib/libargp.so             || true # musl
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libcrypt.so.1                                     rootfs-$*/lib/libcrypt.so.1          || true # glibc
 	@cp -P $(STAGING_DIR)/$*/lib/libcrypt.so                                                     rootfs-$*/lib/libcrypt.so
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libdl.so.2                                        rootfs-$*/lib/libdl.so.2             || true # glibc
 	@cp -P $(STAGING_DIR)/$*/lib/libdl.so                                                        rootfs-$*/lib/libdl.so
+	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libfts.so.0                                       rootfs-$*/lib/libfts.so.0            || true # musl
+	@[ -L $(STAGING_DIR)/$*/lib/libfts.so.0 ] && ln -sf libfts.so.0                              rootfs-$*/lib/libfts.so              || true # musl
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libm.so.6                                         rootfs-$*/lib/libm.so.6              || true # glibc
 	@cp -P $(STAGING_DIR)/$*/lib/libm.so                                                         rootfs-$*/lib/libm.so
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libnsl.so.1                                       rootfs-$*/lib/libnsl.so.1            || true # glibc
-	@cp 2>/dev/null -P $(STAGING_DIR)/$*/lib/libnsl.so                                           rootfs-$*/lib/libnsl.so              || true # glibc
+	@[ -L $(STAGING_DIR)/$*/lib/libnsl.so.1 ] && ln -sf libnsl.so.1                              rootfs-$*/lib/libnsl.so              || true # glibc
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libnss_dns.so.2                                   rootfs-$*/lib/libnss_dns.so.2        || true # glibc
-	@cp 2>/dev/null -P $(STAGING_DIR)/$*/lib/libnss_dns.so                                       rootfs-$*/lib/libnss_dns.so          || true # glibc
+	@[ -L $(STAGING_DIR)/$*/lib/libnss_dns.so.2 ] && ln -sf libnss_dns.so.2                      rootfs-$*/lib/libnss_dns.so          || true # glibc
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libnss_files.so.2                                 rootfs-$*/lib/libnss_files.so.2      || true # glibc
-	@cp 2>/dev/null -P $(STAGING_DIR)/$*/lib/libnss_files.so                                     rootfs-$*/lib/libnss_files.so        || true # glibc
+	@[ -L $(STAGING_DIR)/$*/lib/libnss_files.so.2 ] && ln -sf libnss_files.so.2                  rootfs-$*/lib/libnss_files.so        || true # glibc
+	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libobstack.so.1                                   rootfs-$*/lib/libobstack.so.1        || true # musl
+	@[ -L $(STAGING_DIR)/$*/lib/libobstack.so.1 ] && ln -sf libobstack.so.1                      rootfs-$*/lib/libobstack.so          || true # musl
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libpthread.so.0                                   rootfs-$*/lib/libpthread.so.0        || true # glibc
 	@cp -P $(STAGING_DIR)/$*/lib/libpthread.so                                                   rootfs-$*/lib/libpthread.so
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/lib/libpthread_nonshared.a                        rootfs-$*/lib/libpthread_nonshared.a || true # glibc

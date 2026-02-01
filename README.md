@@ -1,4 +1,4 @@
-**HiGFXback** (**History of graphics backends**) is a Linux from scratch distribution whose aim is to preserve and maintain historical backends used for graphics on Linux system.
+**HiGFXback** (**History of graphics backends**) is a Linux from scratch distribution designed to preserve and maintain historical graphics backends on Linux systems.
 
 ![](backends.png)
 
@@ -91,7 +91,7 @@ The initrd serves as an installer (and optionally as a rescue disk) for the dist
 
 * _**busybox**_, which combines lightweight versions of many Unix utilities
 * _**syslinux**_, with its EXTLINUX bootloader
-*  the **C library** (_glibc_ or _musl_)
+*  the **C library** (_glibc_ or _musl_), runtime files only (no development files)
 
 The generated root filesystem contains only:
 
@@ -100,7 +100,7 @@ The generated root filesystem contains only:
 * _**binutils**_, providing, among other tools, the assembler and linker used by the C compiler
 * _**gcc**_, the GNU _C_ compiler
 * _**pkg-config**_, a tool typically invoked when compiling applications and libraries, but whose usage is extended to manage packages and their dependencies on the system
-* the **C library** (_glibc_ or _musl_)
+* the **C library** (_glibc_ or _musl_), both the runtime and development files
 
 > Since a common cross-compiler is used to build the source code regardless of the target **C library**, all binaries in the minimal system have the same dynamic linker/loader _**ld-linux.so.2**_ in the `PT_INTERP ELF` segment. But note that the compiler present in this minimal root filesystem, and used to build and install packages that will replace the initial minimal system binaries, compiles source code by setting the `PT_INTERP ELF` segment to the dynamic linker/loader name corresponding to the selected **C library** (i.e. _**ld-linux.so.2**_ for _glibc_ or _**ld-musl-x86_64.so.1**_ for _musl_).
 
@@ -183,7 +183,7 @@ QEMU options used:
 
 * `-monitor stdio` to redirect the QEMU monitor to the host console.
 * `-enable-kvm -cpu host` to enable KVM acceleration with the host CPU exposed to the guest system.
-* `-smp 8 -m 8G_ to set 8 CPUs and 8 GiB of RAM.
+* `-smp 8 -m 8G` to set 8 CPUs and 8 GiB of RAM.
 * `-netdev tap,id=net0,ifname=tap0,script=no -device e1000,netdev=net0` to add an Intel e1000 network device connected to the host networking via the TAP interface.
 * `-usb -device usb-tablet` to add a USB controller with a USB tablet pointing device.
 * `-device intel-hda -device hda-duplex` to add an Intel High Definition Audio controller with microphone and speakers devices.
@@ -197,7 +197,7 @@ Once the VM has started, run the DHCP client from the guest system’s shell pro
 # udhcpc eth0
 ```
 
-Then, enter the sources directory to begin installing packages, and optionally set the `MAKEFLAGS` environment variable to speed up compilation:
+Then, enter the sources directory to begin installing packages, and optionally set the `MAKEFLAGS` environment variable to speed up compilations launched by the _**pkg-build**_ tool:
 
 ```
 # cd sources
