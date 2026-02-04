@@ -36,7 +36,7 @@ The host system is used to build a cross-toolchain for the target system:
 $ make toolchain
 ```
 
-A single cross-toolchain capable of supporting multiple **C libraries** (_glibc_, _musl_, …) and based on **Binutils**, **GCC** (_C_ compiler only), the **Linux headers**, is generated in a staging directory.
+A single cross-toolchain capable of supporting multiple **C libraries** (_glibc_, _musl_, …) and based on **Binutils**, **GCC** (only the _C_ compiler), the **Linux headers**, is generated in a staging directory.
 
 The same cross-compiler is thus used to build the various **C libraries**, each placed in a dedicated directory within the staging directory:
 
@@ -77,30 +77,46 @@ For a minimal _glibc-based_ system:
 
 ```
 $ make initrd-glibc
-$ make rootfs-glibc
+$ make rootfs-tcc-glibc
 ```
 
 For a minimal _musl-based_ system:
 
 ```
 $ make initrd-musl
-$ make rootfs-musl
+$ make rootfs-tcc-musl
 ```
 
-The initrd serves as an installer (and optionally as a rescue disk) for the distribution, and is composed of:
+The initrd serves as an installer for the distribution (and optionally as a rescue disk), and is composed of:
 
 * _**busybox**_, which combines lightweight versions of many Unix utilities
 * _**syslinux**_, with its EXTLINUX bootloader
-*  the **C library** (_glibc_ or _musl_), runtime files only (no development files)
+*  the **C library** (_glibc_ or _musl_), the runtime files only (no development files)
 
-The generated root filesystem contains only:
+The generated root filesystem contains:
 
 * _**linux**_, the operating system kernel
 * _**busybox**_, providing the shell environment with standard Unix-like commands (same binary as in the initrd)
-* _**binutils**_, providing, among other tools, the assembler and linker used by the C compiler
-* _**gcc**_, the GNU _C_ compiler
+* _**tcc**_, the Tiny _C_ compiler (which includes an internal assembler, archiver, and linker)
 * _**pkg-config**_, a tool typically invoked when compiling applications and libraries, but whose usage is extended to manage packages and their dependencies on the system
 * the **C library** (_glibc_ or _musl_), both the runtime and development files
+
+Alternatively, the root filesystem can be generated without _**tcc**_, to instead contain:
+
+* _**binutils**_, the GNU Binary Utilities, providing, among other tools, the assembler, archiver, and linker
+* _**gcc**_, the GNU C compiler
+	
+To do this for a _glibc-based_ system:
+
+```
+$ make rootfs-binutils-gcc-glibc
+```
+
+or, for a _musl-based_ system:
+
+```
+$ make rootfs-binutils-gcc-musl
+```
 
 > Since a common cross-compiler is used to build the source code regardless of the target **C library**, all binaries in the minimal system have the same dynamic linker/loader _**ld-linux.so.2**_ in the `PT_INTERP ELF` segment. But note that the compiler present in this minimal root filesystem, and used to build and install packages that will replace the initial minimal system binaries, compiles source code by setting the `PT_INTERP ELF` segment to the dynamic linker/loader name corresponding to the selected **C library** (i.e. _**ld-linux.so.2**_ for _glibc_ or _**ld-musl-x86_64.so.1**_ for _musl_).
 
@@ -212,10 +228,25 @@ The **Autoconf** build system is partly written in the _M4_ and _Perl_ languages
 The _**m4**_ package, as well as the _**bzip2**_ and _**zlib**_ packages, are built using the _**make**_ utility, which is therefore the first package added to the system:
 
 ```
+# CC=tcc pkg-build make
+```
+
+At this stage, for a minimal system based on _**tcc**_, _**binutils**_ is added, followed by _**gcc**_:
+
+```
+# CC=tcc AR='tcc -ar' pkg-build binutils 
+# CC=tcc pkg-build gcc
+```
+
+Indeed, **GCC** is preferred over **TinyCC** for building packages because **TinyCC** performs very little optimization (its focus is on compilation speed rather than runtime performance), has very few extensions beyond standard _C_, provides only a limited preprocessor, and linking is basic (no support for shared libraries).
+
+Note that with an initial minimal system that was generated with _**binutils**_ and _**gcc**_, simply run:
+
+```
 # pkg-build make
 ```
 
-Once _**make**_ is available:
+Once these prerequisites are in place:
 
 ```
 # pkg-build m4
@@ -288,6 +319,7 @@ For the _Linux Framebuffer_ graphics backend:
 ```
 
 For the _KMS/DRM_ graphics backend graphics backend:
+
 ```
 # pkg-build libdrm
 # pkg-build byacc flex bison

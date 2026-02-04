@@ -20,6 +20,7 @@ MUSL_FTS     := musl-fts-1.2.7
 MUSL_OBSTACK := musl-obstack-1.2.3
 PKG_CONFIG   := pkg-config-lite-0.28-1
 SYSLINUX     := syslinux-3.86
+TINYCC       := tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604
 
 LIBC_IMPLEMENTATIONS ?= glibc musl
 
@@ -142,8 +143,16 @@ gcc-%: libc-%
 	@test -d $(GCC)/mpc || { ( test -f $(MPC).tar.gz || wget -q https://ftp.gnu.org/gnu/mpc/$(MPC).tar.gz ) && tar xf $(MPC).tar.gz && mv $(MPC) $(GCC)/mpc; }
 	@test -d $(GCC)/mpfr || { ( test -f $(MPFR).tar.bz2 || wget -q https://mpfr.org/$(MPFR)/$(MPFR).tar.bz2 ) && tar xf $(MPFR).tar.bz2 && mv $(MPFR) $(GCC)/mpfr; }
 	@test -d $(GCC)/$*-build || mkdir $(GCC)/$*-build
+	@test -f $(GCC)/gcc/config.gcc.glibc && cp $(GCC)/gcc/config.gcc.glibc $(GCC)/gcc/config.gcc || cp $(GCC)/gcc/config.gcc $(GCC)/gcc/config.gcc.glibc
 	@test -f $(GCC)/$*-build/config.status || ( cd $(GCC)/$*-build; sed -i "s/DEFAULT_LIBC=LIBC_GLIBC/DEFAULT_LIBC=LIBC_$(shell echo $* | tr a-z A-Z)/" ../gcc/config.gcc; ../configure --build=$(MACHTYPE) --host=$(HOST) --target=$(HOST) --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix= )
 	$(MAKE) -C $(GCC)/$*-build
+
+tcc-%: libc-%
+	@echo Build $@
+	@test -d $(TINYCC) || { ( test -f $(TINYCC).tar.gz || wget -q https://github.com/TinyCC/tinycc/archive/$(subst tinycc-,,$(TINYCC))/$(TINYCC).tar.gz ) && tar xf $(TINYCC).tar.gz && patch -d $(TINYCC) -p1 < $(TINYCC).patch; }
+	@test -d $(TINYCC)/$*-build || mkdir $(TINYCC)/$*-build
+	@test -f $(TINYCC)/$*-build/config.h || ( cd $(TINYCC)/$*-build; ../configure --config-$* --cross-prefix=$(HOST)- --crtprefix=/lib --usrinclude=/include  --prefix=/ )
+	$(MAKE) x86_64-libtcc1-usegcc=yes -C $(TINYCC)/$*-build
 
 pkg-config-%: libc-%
 	@echo Build $@
@@ -161,15 +170,7 @@ syslinux-%: libc-%
 
 ################################################################################
 
-rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
-	@echo Create $*-based rootfs tarball
-	@install -d                                                                                  rootfs-$*/bin
-	@install $(BUSYBOX)/$*-build/busybox                                                         rootfs-$*/bin/busybox
-	@for l in `sort $(BUSYBOX)/$*-build/busybox.links`; do ln -sf busybox                        rootfs-$*$$l; done
-	@echo 'loadkmap < /share/busybox/$$1.kmap'                                                >  rootfs-$*/bin/loadkeys
-	@chmod 755                                                                                   rootfs-$*/bin/loadkeys
-	@echo mdev -d                                                                             >  rootfs-$*/bin/mdevd
-	@chmod 755                                                                                   rootfs-$*/bin/mdevd
+rootfs_binutils-%: binutils-%
 	@install $(BINUTILS)/$*-build/binutils/addr2line                                             rootfs-$*/bin/addr2line
 	@install $(BINUTILS)/$*-build/binutils/ar                                                    rootfs-$*/bin/ar
 	@install $(BINUTILS)/$*-build/binutils/cxxfilt                                               rootfs-$*/bin/c++filt
@@ -184,9 +185,53 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install $(BINUTILS)/$*-build/binutils/strip-new                                             rootfs-$*/bin/strip
 	@install $(BINUTILS)/$*-build/gas/as-new                                                     rootfs-$*/bin/as
 	@install $(BINUTILS)/$*-build/ld/ld-new                                                      rootfs-$*/bin/ld
+
+rootfs_gcc-%: gcc-%
 	@install $(GCC)/$*-build/gcc/cpp                                                             rootfs-$*/bin/cpp
 	@install $(GCC)/$*-build/gcc/xgcc                                                            rootfs-$*/bin/gcc
 	@ln -sf  gcc                                                                                 rootfs-$*/bin/cc
+	@ln -sf ../bin/cpp                                                                           rootfs-$*/lib/cpp
+	@install $(GCC)/$*-build/gcc/libgcc_s.so.1                                                   rootfs-$*/lib/libgcc_s.so.1
+	@ln -sf libgcc_s.so.1                                                                        rootfs-$*/lib/libgcc_s.so
+	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`
+	@install $(GCC)/$*-build/gcc/cc1                                                             rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/cc1
+	@install -m 644 $(GCC)/$*-build/gcc/crtbegin.o                                               rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtbegin.o
+	@install -m 644 $(GCC)/$*-build/gcc/crtbeginS.o                                              rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtbeginS.o
+	@install -m 644 $(GCC)/$*-build/gcc/crtend.o                                                 rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtend.o
+	@install -m 644 $(GCC)/$*-build/gcc/crtendS.o                                                rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtendS.o
+	@install -m 644 $(GCC)/$*-build/gcc/crtfastmath.o                                            rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtfastmath.o
+	@install -m 644 $(GCC)/$*-build/gcc/libgcc.a                                                 rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/libgcc.a
+	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
+	@install -m 644 $(GCC)/$*-build/gcc/include/emmintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/emmintrin.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/float.h                                          rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/float.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/immintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/immintrin.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/mm_malloc.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/mm_malloc.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/mmintrin.h                                       rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/mmintrin.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/stdarg.h                                         rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stdarg.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/stdbool.h                                        rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stdbool.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/stddef.h                                         rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stddef.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/xmmintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/xmmintrin.h
+	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include-fixed
+	@install -m 644 $(GCC)/$*-build/gcc/include-fixed/limits.h                                   rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include-fixed/limits.h
+
+rootfs_tcc-%: tcc-%
+	@install $(TINYCC)/$*-build/tcc                                                              rootfs-$*/bin/tcc
+	@install -d                                                                                  rootfs-$*/lib/tcc
+	@install -m 644 $(TINYCC)/$*-build/libtcc1.a                                                 rootfs-$*/lib/tcc/libtcc1.a
+	@install -d                                                                                  rootfs-$*/lib/tcc/include
+	@install -m 644 $(TINYCC)/include/float.h                                                    rootfs-$*/lib/tcc/include/float.h
+	@install -m 644 $(TINYCC)/include/stdarg.h                                                   rootfs-$*/lib/tcc/include/stdarg.h
+	@install -m 644 $(TINYCC)/include/stddef.h                                                   rootfs-$*/lib/tcc/include/stddef.h
+
+rootfs-%: linux busybox-% pkg-config-%
+	@echo Create $*-based rootfs tarball
+	@install -d                                                                                  rootfs-$*/bin
+	@install $(BUSYBOX)/$*-build/busybox                                                         rootfs-$*/bin/busybox
+	@for l in `sort $(BUSYBOX)/$*-build/busybox.links`; do ln -sf busybox                        rootfs-$*$$l; done
+	@echo 'loadkmap < /share/busybox/$$1.kmap'                                                >  rootfs-$*/bin/loadkeys
+	@chmod 755                                                                                   rootfs-$*/bin/loadkeys
+	@echo mdev -d                                                                             >  rootfs-$*/bin/mdevd
+	@chmod 755                                                                                   rootfs-$*/bin/mdevd
 	@install $(PKG_CONFIG)/$*-build/pkg-config                                                   rootfs-$*/bin/pkg-config
 	@install $(STAGING_DIR)/$*/bin/getconf                                                       rootfs-$*/bin/getconf
 	@cp -P $(STAGING_DIR)/$*/bin/ldd                                                             rootfs-$*/bin/ldd
@@ -333,7 +378,6 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install -d rootfs-$*/include/scsi;        cp $(STAGING_DIR)/$*/include/scsi/*               rootfs-$*/include/scsi
 	@install -d rootfs-$*/include/sys;         cp $(STAGING_DIR)/$*/include/sys/*                rootfs-$*/include/sys
 	@install -d                                                                                  rootfs-$*/lib
-	@ln -sf ../bin/cpp                                                                           rootfs-$*/lib/cpp
 	@install -m 644 $(STAGING_DIR)/$*/lib/crt1.o                                                 rootfs-$*/lib/crt1.o
 	@install -m 644 $(STAGING_DIR)/$*/lib/crti.o                                                 rootfs-$*/lib/crti.o
 	@install -m 644 $(STAGING_DIR)/$*/lib/crtn.o                                                 rootfs-$*/lib/crtn.o
@@ -370,28 +414,6 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libutil.so.1                                      rootfs-$*/lib/libutil.so.1           || true # glibc
 	@cp -P $(STAGING_DIR)/$*/lib/libutil.so                                                      rootfs-$*/lib/libutil.so
 	@install -m 644 $(STAGING_DIR)/$*/lib/Scrt1.o                                                rootfs-$*/lib/Scrt1.o
-	@install $(GCC)/$*-build/gcc/libgcc_s.so.1                                                   rootfs-$*/lib/libgcc_s.so.1
-	@ln -sf libgcc_s.so.1                                                                        rootfs-$*/lib/libgcc_s.so
-	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`
-	@install $(GCC)/$*-build/gcc/cc1                                                             rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/cc1
-	@install -m 644 $(GCC)/$*-build/gcc/crtbegin.o                                               rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtbegin.o
-	@install -m 644 $(GCC)/$*-build/gcc/crtbeginS.o                                              rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtbeginS.o
-	@install -m 644 $(GCC)/$*-build/gcc/crtend.o                                                 rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtend.o
-	@install -m 644 $(GCC)/$*-build/gcc/crtendS.o                                                rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtendS.o
-	@install -m 644 $(GCC)/$*-build/gcc/crtfastmath.o                                            rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/crtfastmath.o
-	@install -m 644 $(GCC)/$*-build/gcc/libgcc.a                                                 rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/libgcc.a
-	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include
-	@install -m 644 $(GCC)/$*-build/gcc/include/emmintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/emmintrin.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/float.h                                          rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/float.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/immintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/immintrin.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/mm_malloc.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/mm_malloc.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/mmintrin.h                                       rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/mmintrin.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/stdarg.h                                         rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stdarg.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/stdbool.h                                        rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stdbool.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/stddef.h                                         rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stddef.h
-	@install -m 644 $(GCC)/$*-build/gcc/include/xmmintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/xmmintrin.h
-	@install -d                                                                                  rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include-fixed
-	@install -m 644 $(GCC)/$*-build/gcc/include-fixed/limits.h                                   rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include-fixed/limits.h
 	@install -d                                                                                  rootfs-$*/mnt/cdrom
 	@install -d                                                                                  rootfs-$*/mnt/disk
 	@install -d                                                                                  rootfs-$*/mnt/share
@@ -420,6 +442,17 @@ rootfs-%: linux busybox-% binutils-% gcc-% pkg-config-%
 	@install -d                                                                                  rootfs-$*/tmp
 	@install -d                                                                                  rootfs-$*/var
 	@rm -f rootfs-$*/var/run; ln -s /run                                                         rootfs-$*/var/run
+
+rootfs-binutils-gcc-%:
+	$(MAKE) rootfs-$*
+	$(MAKE) rootfs_binutils-$*
+	$(MAKE) rootfs_gcc-$*
+	@find rootfs-$* -type f -exec file {} + | awk -F: '/ELF/ && !/crt/ { print $$1 }' | xargs $(HOST)-strip
+	@tar -C rootfs-$* -czf rootfs-$*.tgz .
+
+rootfs-tcc-%:
+	$(MAKE) rootfs-$*
+	$(MAKE) rootfs_tcc-$*
 	@find rootfs-$* -type f -exec file {} + | awk -F: '/ELF/ && !/crt/ { print $$1 }' | xargs $(HOST)-strip
 	@tar -C rootfs-$* -czf rootfs-$*.tgz .
 

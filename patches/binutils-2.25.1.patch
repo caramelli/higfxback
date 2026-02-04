@@ -1,0 +1,59 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="make-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install binutils/addr2line $DESTDIR/bin
+install binutils/ar $DESTDIR/bin
+install binutils/cxxfilt $DESTDIR/bin/c++filt
+install binutils/elfedit $DESTDIR/bin
+install binutils/nm-new $DESTDIR/bin/nm
+install binutils/objcopy $DESTDIR/bin
+install binutils/objdump $DESTDIR/bin
+install binutils/ranlib $DESTDIR/bin
+install binutils/readelf $DESTDIR/bin
+install binutils/size $DESTDIR/bin
+install binutils/strings $DESTDIR/bin
+install binutils/strip-new $DESTDIR/bin/strip
+install gas/as-new $DESTDIR/bin/as
+install ld/ld-new $DESTDIR/bin/ld
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/binutils-build.pc << EOF
+Name: binutils
+Version: 2.25.1
+Description: GNU Binary Utilities
+Requires: $REQUIRES
+
+exec=\\
+/bin/addr2line \\
+/bin/ar \\
+/bin/as \\
+/bin/c++filt \\
+/bin/elfedit \\
+/bin/ld \\
+/bin/nm \\
+/bin/objcopy \\
+/bin/objdump \\
+/bin/ranlib \\
+/bin/readelf \\
+/bin/size \\
+/bin/strings \\
+/bin/strip
+EOF
+
+exit
+
+# source
+https://ftp.gnu.org/gnu/binutils/binutils-2.25.1.tar.bz2

@@ -1,15 +1,12 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="binutils-build make-build"
+REQUIRES="autotools-wrappers-ac-build mpc-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure
-test -d gmp-6.2.1 && rm -rf gmp && mv gmp-6.2.1 gmp
-test -d mpfr-4.1.1 && rm -rf mpfr && mv mpfr-4.1.1 mpfr
-test -d mpc-1.3.1 && rm -rf mpc && mv mpc-1.3.1 mpc
-./configure --disable-build-poststage1-with-cxx --disable-libgomp --disable-libitm --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
+# configure (ac-2.64)
+./configure --disable-libgomp --disable-libitm --disable-libmudflap --disable-libquadmath --disable-libssp --disable-lto --disable-multilib --disable-plugin --disable-static --enable-languages=c++ --with-gxx-include-dir=/include/c++ --with-native-system-header-dir=/include --libexecdir=/lib --prefix=
 
 # build
 make
@@ -17,13 +14,90 @@ make
 # install
 install -d $DESTDIR/bin
 install host-`./config.guess`/gcc/cpp $DESTDIR/bin
+install host-`./config.guess`/gcc/g++ $DESTDIR/bin
+ln -sf g++ $DESTDIR/bin/c++
 install host-`./config.guess`/gcc/xgcc $DESTDIR/bin/gcc
 ln -sf gcc $DESTDIR/bin/cc
+install -d $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/algorithm $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cctype $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/clocale $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cstdio $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cstdlib $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cstring $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/c_global/cwchar $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/iosfwd $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/list $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/map $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/set $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/string $DESTDIR/include/c++
+install -m 644 libstdc++-v3/include/std/utility $DESTDIR/include/c++
+install -d $DESTDIR/include/c++/backward
+install -m 644 libstdc++-v3/include/backward/binders.h $DESTDIR/include/c++/backward
+install -d $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/algorithmfwd.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/allocator.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/basic_string.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/basic_string.tcc $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/char_traits.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/concept_check.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/cpp_type_traits.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/functexcept.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/list.tcc $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/localefwd.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/move.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/ostream_insert.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/postypes.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/range_access.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_algo.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_algobase.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_construct.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_function.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_heap.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_iterator.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_iterator_base_funcs.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_iterator_base_types.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_list.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_map.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_multimap.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_multiset.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_pair.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_relops.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_set.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_tempbuf.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stl_tree.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/include/bits/stringfwd.h $DESTDIR/include/c++/bits
+install -d $DESTDIR/include/c++/debug
+install -m 644 libstdc++-v3/include/debug/debug.h $DESTDIR/include/c++/debug
+install -d $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/alloc_traits.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/atomicity.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/new_allocator.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/numeric_traits.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/include/ext/type_traits.h $DESTDIR/include/c++/ext
+install -m 644 libstdc++-v3/libsupc++/atomic_lockfree_defines.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/libsupc++/cxxabi_forced.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/libsupc++/exception $DESTDIR/include/c++
+install -m 644 libstdc++-v3/libsupc++/exception_defines.h $DESTDIR/include/c++/bits
+install -m 644 libstdc++-v3/libsupc++/new $DESTDIR/include/c++
+install -d $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/atomic_word.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++allocator.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++config.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++locale.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/cpu_defines.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr-default.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr.h $DESTDIR/include/c++/`./config.guess`/bits
+install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/os_defines.h $DESTDIR/include/c++/`./config.guess`/bits
+install -d $DESTDIR/lib
 ln -sf ../bin/cpp $DESTDIR/lib/cpp
 install host-`./config.guess`/gcc/libgcc_s.so.1 $DESTDIR/lib
 ln -sf libgcc_s.so.1 $DESTDIR/lib/libgcc_s.so
+install `./config.guess`/libstdc++-v3/src/.libs/libstdc++.so.6.* $DESTDIR/lib/libstdc++.so.6
+ln -sf libstdc++.so.6 $DESTDIR/lib/libstdc++.so
 install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install host-`./config.guess`/gcc/cc1 $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
+install host-`./config.guess`/gcc/cc1plus $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/crtbegin.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/crtbeginS.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/crtend.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
@@ -31,53 +105,135 @@ install -m 644 host-`./config.guess`/gcc/crtendS.o $DESTDIR/lib/gcc/`./config.gu
 install -m 644 host-`./config.guess`/gcc/crtfastmath.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -m 644 host-`./config.guess`/gcc/libgcc.a $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
 install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/cpuid.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/emmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/float.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/ia32intrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/immintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/mm_malloc.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/mmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/smmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/stdarg.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/stdbool.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/stddef.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/stdnoreturn.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/tmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/unwind.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
+install -m 644 host-`./config.guess`/gcc/include/x86intrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -m 644 host-`./config.guess`/gcc/include/xmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
 install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
 install -m 644 host-`./config.guess`/gcc/include-fixed/limits.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
-cat > $DESTDIR/share/pkgconfig/gcc-build.pc << EOF
+cat > $DESTDIR/share/pkgconfig/g++-build.pc << EOF
 Name: gcc
 Version: 4.7.4
 Description: GNU Compiler Collection
 Requires: $REQUIRES
 
 devel=\\
+/bin/c++ \\
 /bin/cc \\
 /bin/cpp \\
+/bin/g++ \\
 /bin/gcc \\
+/include/c++/algorithm \\
+/include/c++/cctype \\
+/include/c++/clocale \\
+/include/c++/cstdio \\
+/include/c++/cstdlib \\
+/include/c++/cstring \\
+/include/c++/cwchar \\
+/include/c++/exception \\
+/include/c++/iosfwd \\
+/include/c++/list \\
+/include/c++/map \\
+/include/c++/new \\
+/include/c++/set \\
+/include/c++/string \\
+/include/c++/utility \\
+/include/c++/backward/binders.h \\
+/include/c++/bits/algorithmfwd.h \\
+/include/c++/bits/allocator.h \\
+/include/c++/bits/atomic_lockfree_defines.h \\
+/include/c++/bits/basic_string.h \\
+/include/c++/bits/basic_string.tcc \\
+/include/c++/bits/char_traits.h \\
+/include/c++/bits/concept_check.h \\
+/include/c++/bits/cpp_type_traits.h \\
+/include/c++/bits/cxxabi_forced.h \\
+/include/c++/bits/exception_defines.h \\
+/include/c++/bits/functexcept.h \\
+/include/c++/bits/list.tcc \\
+/include/c++/bits/localefwd.h \\
+/include/c++/bits/move.h \\
+/include/c++/bits/ostream_insert.h \\
+/include/c++/bits/postypes.h \\
+/include/c++/bits/range_access.h \\
+/include/c++/bits/stl_algo.h \\
+/include/c++/bits/stl_algobase.h \\
+/include/c++/bits/stl_construct.h \\
+/include/c++/bits/stl_function.h \\
+/include/c++/bits/stl_heap.h \\
+/include/c++/bits/stl_iterator.h \\
+/include/c++/bits/stl_iterator_base_funcs.h \\
+/include/c++/bits/stl_iterator_base_types.h \\
+/include/c++/bits/stl_list.h \\
+/include/c++/bits/stl_map.h \\
+/include/c++/bits/stl_multimap.h \\
+/include/c++/bits/stl_multiset.h \\
+/include/c++/bits/stl_pair.h \\
+/include/c++/bits/stl_relops.h \\
+/include/c++/bits/stl_set.h \\
+/include/c++/bits/stl_tempbuf.h \\
+/include/c++/bits/stl_tree.h \\
+/include/c++/bits/stringfwd.h \\
+/include/c++/debug/debug.h \\
+/include/c++/ext/alloc_traits.h \\
+/include/c++/ext/atomicity.h \\
+/include/c++/ext/new_allocator.h \\
+/include/c++/ext/numeric_traits.h \\
+/include/c++/`./config.guess`/bits/atomic_word.h \\
+/include/c++/`./config.guess`/bits/c++allocator.h \\
+/include/c++/`./config.guess`/bits/c++config.h \\
+/include/c++/`./config.guess`/bits/c++locale.h \\
+/include/c++/`./config.guess`/bits/cpu_defines.h \\
+/include/c++/`./config.guess`/bits/gthr-default.h \\
+/include/c++/`./config.guess`/bits/gthr.h \\
+/include/c++/`./config.guess`/bits/os_defines.h \\
 /lib/cpp \\
 /lib/libgcc_s.so \\
 /lib/libstdc++.so \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1 \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1plus \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbegin.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbeginS.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtend.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtendS.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtfastmath.o \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/libgcc.a \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/cpuid.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/emmintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/float.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/ia32intrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/immintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mm_malloc.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mmintrin.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/smmintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdarg.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdbool.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stddef.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdnoreturn.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/tmmintrin.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/unwind.h \\
+/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/x86intrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/xmmintrin.h \\
 /lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed/limits.h
 
 exec=\\
-/lib/libgcc_s.so.1
+/lib/libgcc_s.so.1 \\
+/lib/libstdc++.so.6
 EOF
 
 exit
@@ -277,21 +433,6 @@ exit
  	      | -uxpv* | -beos* | -mpeix* | -udk* \
  	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
  	      | -openstep* | -oskit* | -conix* | -pw32* | -nonstopux* \
---- gcc-4.7.4.orig/configure
-+++ gcc-4.7.4/configure
-@@ -5198,9 +5198,9 @@
-   gmplibs="-L$with_mpfr_lib $gmplibs"
- fi
- if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
--  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir $gmplibs"
--  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
--  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir"
-+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir $gmplibs"
-+  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr/src -I$$s/mpfr/src '"$gmpinc"
-+  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr/src --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir"
-   # Do not test the mpfr version.  Assume that it is sufficient, since
-   # it is in the source tree, and the library has not been built yet
-   # but it would be included on the link line in the version check below
 --- gcc-4.7.4.orig/gcc/config/i386/linux64.h
 +++ gcc-4.7.4/gcc/config/i386/linux64.h
 @@ -29,5 +29,5 @@
@@ -425,9 +566,18 @@ exit
      *)
        tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
        ;;
+--- gcc-4.7.4.orig/libstdc++-v3/configure.host
++++ gcc-4.7.4/libstdc++-v3/configure.host
+@@ -242,6 +242,9 @@
+   freebsd*)
+     os_include_dir="os/bsd/freebsd"
+     ;;
++  linux-musl*)
++    os_include_dir="os/generic"
++    ;;
+   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+     if [ "$uclibc" = "yes" ]; then
+       os_include_dir="os/uclibc"
 
 # source
-https://gmplib.org/download/gmp/gmp-6.2.1.tar.bz2
-https://mpfr.org/mpfr-4.1.1/mpfr-4.1.1.tar.bz2
-https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz
 https://gcc.gnu.org/pub/gcc/releases/gcc-4.7.4/gcc-4.7.4.tar.bz2

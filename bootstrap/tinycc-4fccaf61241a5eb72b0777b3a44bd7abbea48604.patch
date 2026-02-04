@@ -1,0 +1,146 @@
+--- tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604.orig/configure
++++ tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604/configure
+@@ -29,6 +29,7 @@
+ cross_prefix=""
+ os_release=""
+ cc="gcc"
++host_cc="gcc"
+ ar="ar"
+ bigendian="no"
+ mingw32="no"
+@@ -55,7 +56,7 @@
+ build_cross=
+ 
+ # use CC/AR from environment when set
+-test -n "$CC" && cc="$CC"
++test -n "$CC" && cc="$CC" && host_cc="$CC"
+ test -n "$AR" && ar="$AR"
+ 
+ # set default CFLAGS if unset in environment
+@@ -128,6 +129,8 @@
+   ;;
+   --cc=*) assign_opt "$opt"
+   ;;
++  --host-cc=*) assign_opt "$opt" host_cc
++  ;;
+   --ar=*) assign_opt "$opt" ; ar_set="yes"
+   ;;
+   --extra-cflags=*) assign_opt "$opt" CFLAGS
+@@ -136,6 +139,8 @@
+   ;;
+   --extra-libs=*) assign_opt "$opt" extralibs
+   ;;
++  --usrinclude=*) assign_opt "$opt" tcc_usrinclude
++  ;;
+   --sysincludepaths=*) assign_opt "$opt" tcc_sysincludepaths
+   ;;
+   --libpaths=*) assign_opt "$opt" tcc_libpaths
+@@ -362,6 +367,7 @@
+     if test -z "$build_cross"; then
+       cc=`command -v cc`
+       cc=`readlink $cc || echo clang`
++      host_cc="${cc}"
+       tcc_usrinclude="`xcrun --show-sdk-path`/usr/include"
+       if test "${confvars%new_macho*}" = "${confvars}"; then
+           # if new_macho was not specified and (known) ver <= 10, use old (=no)
+@@ -584,6 +590,7 @@
+ infodir=\$(DESTDIR)$infodir
+ docdir=\$(DESTDIR)$docdir
+ CC=$cc
++HOST_CC=$host_cc
+ CC_NAME=$cc_name
+ GCC_MAJOR=$gcc_major
+ GCC_MINOR=$gcc_minor
+--- tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604.orig/lib/bcheck.c
++++ tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604/lib/bcheck.c
+@@ -22,7 +22,9 @@
+ #include <stdarg.h>
+ #include <string.h>
+ #include <setjmp.h>
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+ #include <stdatomic.h>
++#endif
+ 
+ #if !defined(__FreeBSD__) \
+  && !defined(__FreeBSD_kernel__) \
+@@ -351,7 +353,11 @@
+ static unsigned char print_statistic;
+ static unsigned char no_strdup;
+ static unsigned char use_sem;
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+ static _Atomic int never_fatal;
++#else
++static int never_fatal;
++#endif
+ #if HAVE_TLS_FUNC
+ #if defined(_WIN32)
+ static int no_checking = 0;
+@@ -393,7 +399,11 @@
+ #define NO_CHECKING_GET()  no_checking
+ #define NO_CHECKING_SET(v) no_checking = v 
+ #else
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+ static _Atomic int no_checking = 0;
++#else
++static int no_checking = 0;
++#endif
+ #define NO_CHECKING_GET()  no_checking
+ #define NO_CHECKING_SET(v) no_checking = v 
+ #endif
+@@ -490,7 +500,11 @@
+ #if HAVE_TLS_FUNC || HAVE_TLS_VAR
+     NO_CHECKING_SET(NO_CHECKING_GET() + no_check);
+ #else
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+     atomic_fetch_add (&no_checking, no_check);
++#else
++    __sync_fetch_and_add(&no_checking, no_check);
++#endif
+ #endif
+ }
+ 
+@@ -507,7 +521,11 @@
+ /* enable/disable checking. This can be used in signal handlers. */
+ void __bound_never_fatal (int neverfatal)
+ {
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+     atomic_fetch_add (&never_fatal, neverfatal);
++#else
++    __sync_fetch_and_add(&never_fatal, neverfatal);
++#endif
+ }
+ 
+ /* return '(p + offset)' for pointer arithmetic (a pointer can reach
+--- tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604.orig/libtcc.c
++++ tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604/libtcc.c
+@@ -1874,7 +1874,7 @@
+ {
+     TCCState *s1 = s;
+     const TCCOption *popt;
+-    const char *optarg, *r;
++    const char *optarg, *r = NULL;
+     const char *run = NULL;
+     int optind = 1, empty = 1, x;
+     char **argv = *pargv;
+--- tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604.orig/Makefile
++++ tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604/Makefile
+@@ -256,7 +256,7 @@
+ 	$S./c2str.exe $< $@
+ 
+ c2str.exe : conftest.c
+-	$S$(CC) -DC2STR $< -o $@
++	$S$(HOST_CC) -DC2STR $< -o $@
+ 
+ # target specific object rule
+ $(X)%.o : %.c $(LIBTCC_INC)
+--- tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604.orig/tcc.h
++++ tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604/tcc.h
+@@ -306,7 +306,7 @@
+ # elif defined TCC_TARGET_ARM64
+ #  define CONFIG_TCC_ELFINTERP "/lib/ld-linux-aarch64.so.1"
+ # elif defined(TCC_TARGET_X86_64)
+-#  define CONFIG_TCC_ELFINTERP "/lib64/ld-linux-x86-64.so.2"
++#  define CONFIG_TCC_ELFINTERP "/lib/ld-linux-x86-64.so.2"
+ # elif defined(TCC_TARGET_RISCV64)
+ #  define CONFIG_TCC_ELFINTERP "/lib/ld-linux-riscv64-lp64d.so.1"
+ # elif defined(TCC_ARM_EABI)
