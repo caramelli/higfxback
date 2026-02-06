@@ -21,8 +21,9 @@ MUSL_OBSTACK := musl-obstack-1.2.3
 PKG_CONFIG   := pkg-config-lite-0.28-1
 SYSLINUX     := syslinux-3.86
 TINYCC       := tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604
+UCLIBC       := uClibc-ng-1.0.56
 
-LIBC_IMPLEMENTATIONS ?= glibc musl
+LIBC_IMPLEMENTATIONS ?= glibc musl uclibc
 
 ################################################################################
 
@@ -98,6 +99,20 @@ musl: cross-gcc linux-headers
 	@test -f $(MUSL_OBSTACK)/config.status || ( cd $(MUSL_OBSTACK); CC="$(HOST)-gcc --sysroot=$(STAGING_DIR)/musl" sh ./configure --host=$(HOST) --prefix= )
 	$(MAKE) DESTDIR=$(STAGING_DIR)/musl -C $(MUSL_OBSTACK) install
 	@test -d $(STAGING_DIR)/musl/share || ( mkdir $(STAGING_DIR)/musl/share; echo $(MUSL) > $(STAGING_DIR)/musl/share/libc-VERSION )
+
+uclibc: cross-gcc linux-headers
+	@echo Build $@
+	@test -d $(UCLIBC) || { ( test -f $(UCLIBC).tar.gz || wget -q https://downloads.uclibc-ng.org/releases/$(subst uClibc-ng-,,$(UCLIBC))/$(UCLIBC).tar.gz ) && tar xf $(UCLIBC).tar.gz && patch -d $(UCLIBC) -p1 < $(UCLIBC).patch; }
+	@test -f $(UCLIBC)/build/.config || $(MAKE) -C $(UCLIBC) O=$(PWD)/$(UCLIBC)/build defconfig
+	$(MAKE) DESTDIR=$(STAGING_DIR)/uclibc CROSS_COMPILE=$(HOST)- KERNEL_HEADERS=$(STAGING_DIR)/include O=$(PWD)/$(UCLIBC)/build -C $(UCLIBC) install install_utils
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/libcrypt.so
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/libdl.so
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/libm.so
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/libpthread.so
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/libresolv.so
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/librt.so
+	@ln -sf libc.so.0 $(STAGING_DIR)/uclibc/lib/libutil.so
+	@test -d $(STAGING_DIR)/uclibc/share || ( mkdir $(STAGING_DIR)/uclibc/share; echo $(UCLIBC) > $(STAGING_DIR)/uclibc/share/libc-VERSION )
 
 toolchain: $(LIBC_IMPLEMENTATIONS)
 	@echo Create cross-toolchain
@@ -270,7 +285,7 @@ rootfs-%: linux busybox-% pkg-config-%
 	@chmod 755                                                                                   rootfs-$*/etc/init.d/rcS
 	@install -d                                                                                  rootfs-$*/include
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/_G_config.h                            rootfs-$*/include/_G_config.h        || true # glibc
-	@install -m 644 $(STAGING_DIR)/$*/include/aio.h                                              rootfs-$*/include/aio.h
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/aio.h                                  rootfs-$*/include/aio.h              || true # glibc, musl
 	@install -m 644 $(STAGING_DIR)/$*/include/alloca.h                                           rootfs-$*/include/alloca.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ar.h                                               rootfs-$*/include/ar.h
 	@install -m 644 $(STAGING_DIR)/$*/include/argp.h                                             rootfs-$*/include/argp.h
@@ -287,19 +302,19 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/endian.h                                           rootfs-$*/include/endian.h
 	@install -m 644 $(STAGING_DIR)/$*/include/err.h                                              rootfs-$*/include/err.h
 	@install -m 644 $(STAGING_DIR)/$*/include/errno.h                                            rootfs-$*/include/errno.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/error.h                                rootfs-$*/include/error.h            || true # glibc
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/error.h                                rootfs-$*/include/error.h            || true # glibc, uclibc
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/execinfo.h                             rootfs-$*/include/execinfo.h         || true # glibc
 	@install -m 644 $(STAGING_DIR)/$*/include/fcntl.h                                            rootfs-$*/include/fcntl.h
 	@install -m 644 $(STAGING_DIR)/$*/include/features.h                                         rootfs-$*/include/features.h
 	@install -m 644 $(STAGING_DIR)/$*/include/fenv.h                                             rootfs-$*/include/fenv.h
-	@install -m 644 $(STAGING_DIR)/$*/include/fmtmsg.h                                           rootfs-$*/include/fmtmsg.h
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/fmtmsg.h                               rootfs-$*/include/fmtmsg.h           || true # glibc, musl
 	@install -m 644 $(STAGING_DIR)/$*/include/fnmatch.h                                          rootfs-$*/include/fnmatch.h
 	@install -m 644 $(STAGING_DIR)/$*/include/fts.h                                              rootfs-$*/include/fts.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ftw.h                                              rootfs-$*/include/ftw.h
 	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/gconv.h                                rootfs-$*/include/gconv.h            || true # glibc
 	@install -m 644 $(STAGING_DIR)/$*/include/getopt.h                                           rootfs-$*/include/getopt.h
 	@install -m 644 $(STAGING_DIR)/$*/include/glob.h                                             rootfs-$*/include/glob.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/gnu-versions.h                         rootfs-$*/include/gnu-versions.h     || true # glibc
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/gnu-versions.h                         rootfs-$*/include/gnu-versions.h     || true # glibc, uclibc
 	@install -m 644 $(STAGING_DIR)/$*/include/grp.h                                              rootfs-$*/include/grp.h
 	@install -m 644 $(STAGING_DIR)/$*/include/iconv.h                                            rootfs-$*/include/iconv.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ifaddrs.h                                          rootfs-$*/include/ifaddrs.h
@@ -316,7 +331,7 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/math.h                                             rootfs-$*/include/math.h
 	@install -m 644 $(STAGING_DIR)/$*/include/memory.h                                           rootfs-$*/include/memory.h
 	@install -m 644 $(STAGING_DIR)/$*/include/mntent.h                                           rootfs-$*/include/mntent.h
-	@install -m 644 $(STAGING_DIR)/$*/include/monetary.h                                         rootfs-$*/include/monetary.h
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/monetary.h                             rootfs-$*/include/monetary.h         || true # glibc, musl
 	@install -m 644 $(STAGING_DIR)/$*/include/mqueue.h                                           rootfs-$*/include/mqueue.h
 	@install -m 644 $(STAGING_DIR)/$*/include/netdb.h                                            rootfs-$*/include/netdb.h
 	@install -m 644 $(STAGING_DIR)/$*/include/nl_types.h                                         rootfs-$*/include/nl_types.h
@@ -335,14 +350,14 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/shadow.h                                           rootfs-$*/include/shadow.h
 	@install -m 644 $(STAGING_DIR)/$*/include/signal.h                                           rootfs-$*/include/signal.h
 	@install -m 644 $(STAGING_DIR)/$*/include/spawn.h                                            rootfs-$*/include/spawn.h
-	@install -m 644 $(STAGING_DIR)/$*/include/stdc-predef.h                                      rootfs-$*/include/stdc-predef.h
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/stdc-predef.h                          rootfs-$*/include/stdc-predef.h      || true # glibc, musl
 	@install -m 644 $(STAGING_DIR)/$*/include/stdint.h                                           rootfs-$*/include/stdint.h
 	@install -m 644 $(STAGING_DIR)/$*/include/stdio.h                                            rootfs-$*/include/stdio.h
 	@install -m 644 $(STAGING_DIR)/$*/include/stdio_ext.h                                        rootfs-$*/include/stdio_ext.h
 	@install -m 644 $(STAGING_DIR)/$*/include/stdlib.h                                           rootfs-$*/include/stdlib.h
 	@install -m 644 $(STAGING_DIR)/$*/include/string.h                                           rootfs-$*/include/string.h
 	@install -m 644 $(STAGING_DIR)/$*/include/strings.h                                          rootfs-$*/include/strings.h
-	@install -m 644 $(STAGING_DIR)/$*/include/stropts.h                                          rootfs-$*/include/stropts.h
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/stropts.h                              rootfs-$*/include/stropts.h          || true # glibc, musl
 	@install -m 644 $(STAGING_DIR)/$*/include/syscall.h                                          rootfs-$*/include/syscall.h
 	@install -m 644 $(STAGING_DIR)/$*/include/sysexits.h                                         rootfs-$*/include/sysexits.h
 	@install -m 644 $(STAGING_DIR)/$*/include/syslog.h                                           rootfs-$*/include/syslog.h
@@ -350,7 +365,7 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/termios.h                                          rootfs-$*/include/termios.h
 	@install -m 644 $(STAGING_DIR)/$*/include/tgmath.h                                           rootfs-$*/include/tgmath.h
 	@install -m 644 $(STAGING_DIR)/$*/include/time.h                                             rootfs-$*/include/time.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/ttyent.h                               rootfs-$*/include/ttyent.h           || true # glibc
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/ttyent.h                               rootfs-$*/include/ttyent.h           || true # glibc, uclibc
 	@install -m 644 $(STAGING_DIR)/$*/include/uchar.h                                            rootfs-$*/include/uchar.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ucontext.h                                         rootfs-$*/include/ucontext.h
 	@install -m 644 $(STAGING_DIR)/$*/include/ulimit.h                                           rootfs-$*/include/ulimit.h
@@ -363,12 +378,12 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/include/wchar.h                                            rootfs-$*/include/wchar.h
 	@install -m 644 $(STAGING_DIR)/$*/include/wctype.h                                           rootfs-$*/include/wctype.h
 	@install -m 644 $(STAGING_DIR)/$*/include/wordexp.h                                          rootfs-$*/include/wordexp.h
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/xlocale.h                              rootfs-$*/include/xlocale.h          || true # glibc
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/include/xlocale.h                              rootfs-$*/include/xlocale.h          || true # glibc, uclibc
 	@install -d rootfs-$*/include/arpa;        cp $(STAGING_DIR)/$*/include/arpa/*               rootfs-$*/include/arpa
 	@install -d rootfs-$*/include/asm;         cp $(STAGING_DIR)/include/asm/*                   rootfs-$*/include/asm
 	@install -d rootfs-$*/include/asm-generic; cp $(STAGING_DIR)/include/asm-generic/*           rootfs-$*/include/asm-generic
 	@install -d rootfs-$*/include/bits;        cp $(STAGING_DIR)/$*/include/bits/*               rootfs-$*/include/bits
-	@install -d rootfs-$*/include/gnu;         cp 2>/dev/null $(STAGING_DIR)/$*/include/gnu/*    rootfs-$*/include/gnu                || true # glibc
+	@install -d rootfs-$*/include/gnu;         cp 2>/dev/null $(STAGING_DIR)/$*/include/gnu/*    rootfs-$*/include/gnu                || true # glibc, uclibc
 	@install -d rootfs-$*/include/linux;       cp -r $(STAGING_DIR)/include/linux/*              rootfs-$*/include/linux
 	@install -d rootfs-$*/include/mtd;         cp $(STAGING_DIR)/include/mtd/*                   rootfs-$*/include/mtd
 	@install -d rootfs-$*/include/net;         cp $(STAGING_DIR)/$*/include/net/*                rootfs-$*/include/net
@@ -381,11 +396,11 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -m 644 $(STAGING_DIR)/$*/lib/crt1.o                                                 rootfs-$*/lib/crt1.o
 	@install -m 644 $(STAGING_DIR)/$*/lib/crti.o                                                 rootfs-$*/lib/crti.o
 	@install -m 644 $(STAGING_DIR)/$*/lib/crtn.o                                                 rootfs-$*/lib/crtn.o
-	@set -- $(STAGING_DIR)/$*/lib/ld-*.so*; cp -P $$1                                            rootfs-$*/lib/ld-linux-x86-64.so.2
-	@set -- $(STAGING_DIR)/$*/lib/ld-*.so*; [ -L $(STAGING_DIR)/$*/lib/ld-linux-x86-64.so.2 ] || ln -sf ld-linux-x86-64.so.2 rootfs-$*/lib/$${1##*/}
+	@set -- $(STAGING_DIR)/$*/lib/ld*.so*; cp -P $$1                                             rootfs-$*/lib/ld-linux-x86-64.so.2
+	@set -- $(STAGING_DIR)/$*/lib/ld*.so.*; [ -L $(STAGING_DIR)/$*/lib/ld-linux-x86-64.so.2 ] || ln -sf ld-linux-x86-64.so.2 rootfs-$*/lib/$${1##*/}
 	@cp -P $(STAGING_DIR)/$*/lib/libc.so                                                         rootfs-$*/lib/libc.so
-	@install $(STAGING_DIR)/$*/lib/libc.so.6                                                     rootfs-$*/lib/libc.so.6
-	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/lib/libc_nonshared.a                           rootfs-$*/lib/libc_nonshared.a       || true # glibc
+	@install $(STAGING_DIR)/$*/lib/libc.so.*                                                     rootfs-$*/lib
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/$*/lib/*libc_nonshared.a                          rootfs-$*/lib                        || true # glibc, uclibc
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libargp.so.0                                      rootfs-$*/lib/libargp.so.0           || true # musl
 	@[ -L $(STAGING_DIR)/$*/lib/libargp.so.0 ] && ln -sf libargp.so.0                            rootfs-$*/lib/libargp.so             || true # musl
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libcrypt.so.1                                     rootfs-$*/lib/libcrypt.so.1          || true # glibc
@@ -481,8 +496,8 @@ initrd-%: initrd_deps busybox-% syslinux-%
 	@echo loadkeys fr                                                     >> initrd-$*/etc/init.d/rcS
 	@chmod 755                                                               initrd-$*/etc/init.d/rcS
 	@install -d                                                              initrd-$*/lib
-	@set -- $(STAGING_DIR)/$*/lib/ld-*.so*; cp -P $$1                        initrd-$*/lib/ld-linux-x86-64.so.2
-	@install $(STAGING_DIR)/$*/lib/libc.so.6                                 initrd-$*/lib/libc.so.6
+	@set -- $(STAGING_DIR)/$*/lib/ld*.so*; cp -P $$1                         initrd-$*/lib/ld-linux-x86-64.so.2
+	@install $(STAGING_DIR)/$*/lib/libc.so.*                                 initrd-$*/lib
 	@install -d                                                              initrd-$*/mnt/cdrom
 	@install -d                                                              initrd-$*/mnt/disk
 	@install -d                                                              initrd-$*/proc

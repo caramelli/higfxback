@@ -35,6 +35,15 @@
    --sysincludepaths=*) assign_opt "$opt" tcc_sysincludepaths
    ;;
    --libpaths=*) assign_opt "$opt" tcc_libpaths
+@@ -221,7 +226,7 @@
+   --triplet=...            specify system library/include directory triplet
+   --tcc-switches=...       specify implicit switches passed to tcc
+ 
+-  --config-uClibc,-musl    enable system specific configurations
++  --config-uclibc,-musl    enable system specific configurations
+   --config-mingw32[=yes|no] build on windows using msys, busybox, etc.
+   --config-backtrace=no    disable stack backtraces (with -run or -bt)
+   --config-bcheck=no       disable bounds checker (-b)
 @@ -362,6 +367,7 @@
      if test -z "$build_cross"; then
        cc=`command -v cc`
@@ -43,6 +52,15 @@
        tcc_usrinclude="`xcrun --show-sdk-path`/usr/include"
        if test "${confvars%new_macho*}" = "${confvars}"; then
            # if new_macho was not specified and (known) ver <= 10, use old (=no)
+@@ -480,7 +486,7 @@
+       fi
+       if test "$suggest" = "yes"; then
+         if test -f "/lib/ld-uClibc.so.0" ; then
+-          echo "Perhaps you want ./configure --config-uClibc"
++          echo "Perhaps you want ./configure --config-uclibc"
+         fi
+         if test -f "/lib/ld-musl-${cpu}.so.1"; then
+           echo "Perhaps you want ./configure --config-musl"
 @@ -584,6 +590,7 @@
  infodir=\$(DESTDIR)$infodir
  docdir=\$(DESTDIR)$docdir
@@ -51,6 +69,21 @@
  CC_NAME=$cc_name
  GCC_MAJOR=$gcc_major
  GCC_MINOR=$gcc_minor
+@@ -677,8 +684,12 @@
+         OpenBSD)    default tcc_elfinterp "/usr/libexec/ld.so";;
+       esac
+       ;;
+-    CONFIG_uClibc=yes)      print_num CONFIG_TCC_UCLIBC 1
+-      default tcc_elfinterp "/lib/ld-uClibc.so.0"
++    CONFIG_uclibc=yes)      print_num CONFIG_TCC_UCLIBC 1
++      if test "${cpu%64}" != "${cpu}"; then
++        default tcc_elfinterp "/lib/ld64-uClibc.so.0"
++      else
++        default tcc_elfinterp "/lib/ld-uClibc.so.0"
++      fi
+       ;;
+     CONFIG_musl=yes)        print_num CONFIG_TCC_MUSL 1
+       case "$cpu" in
 --- tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604.orig/lib/bcheck.c
 +++ tinycc-4fccaf61241a5eb72b0777b3a44bd7abbea48604/lib/bcheck.c
 @@ -22,7 +22,9 @@

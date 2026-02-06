@@ -4,7 +4,7 @@
 
 This Linux distribution has a set of characteristics that make it unique.
 
-First, by its construction: **HiGFXback** is a fully **source-based distribution** (system built entirely from source code) that relies on the **C library of your choice** (_glibc_, _musl_, …).
+First, by its construction: **HiGFXback** is a fully **source-based distribution** (system built entirely from source code) that relies on the **C library of your choice** (_glibc_, _musl_, _uClibc_).
 
 Second, it is possible with **HiGFXback** to run components **natively based on the following graphics backends**:
 
@@ -36,33 +36,33 @@ The host system is used to build a cross-toolchain for the target system:
 $ make toolchain
 ```
 
-A single cross-toolchain capable of supporting multiple **C libraries** (_glibc_, _musl_, …) and based on **Binutils**, **GCC** (only the _C_ compiler), the **Linux headers**, is generated in a staging directory.
+A single cross-toolchain capable of supporting multiple **C libraries** (_glibc_, _musl_, _uClibc_) and based on **Binutils**, **GCC** (only the _C_ compiler), the **Linux headers**, is generated in a staging directory.
 
 The same cross-compiler is thus used to build the various **C libraries**, each placed in a dedicated directory within the staging directory:
 
 ```
-	  .                                          .                                         .
-	  |                                          |                                         |
-	  |-- bin                                    |-- glibc                                 |-- musl
-	  |    |-- x86_64-unknown-linux-as                |-- bin                                   |-- bin
-	  |    |-- x86_64-unknown-linux-gcc               |    |-- getconf                          |    |-- getconf
-	  |    |-- x86_64-unknown-linux-ld                |    |-- ldd                              |    |-- ldd
-	  |    |-- ...                                    |    |-- ...                              |    |-- ...
-	  |                                               |                                         |
-	  |--  include                                    |-- include                               |-- include
-	  |    |-- asm                                    |    |-- math.h                           |    |-- math.h
-	  |    |-- linux                                  |    |-- stdio.h                          |    |-- stdio.h
-	  |    |-- ...                                    |    |-- ...                              |    |-- ...
-	  |                                               |                                         |
-	  |-- lib                                         |-- lib                                   |-- lib
-	       |-- gcc                                         |-- crt1.o                                |-- crt1.o
-	            |-- x86_64-unknown-linux                   |-- ld-linux-x86-64.so.2                  |-- ld-musl-x86_64.so.1
-	                 |-- 4.7.4                             |-- libc.so                               |-- libc.so
-	                      |-- cc1                          |-- libc.so.6                             |-- libc.so.6
-	                      |-- crtbegin.o                   |-- libpthread.so                         |-- libpthread.so
-	                      |-- crtend.o                     |-- ...                                   |-- ...
-	                      |-- libgcc.a
-	                      |-- ...
+	  .                                      .                                   .                                  .
+	  |                                      |                                   |                                  |
+	  |-- bin                                |-- glibc                           |-- musl                           |-- uclibc
+	  |    |-- x86_64-unknown-linux-as            |-- bin                             |-- bin                            |-- bin
+	  |    |-- x86_64-unknown-linux-gcc           |    |-- getconf                    |    |-- getconf                   |    |-- getconf
+	  |    |-- x86_64-unknown-linux-ld            |    |-- ldd                        |    |-- ldd                       |    |-- ldd
+	  |    |-- ...                                |    |-- ...                        |    |-- ...                       |    |-- ...
+	  |                                           |                                   |                                  |
+	  |--  include                                |-- include                         |-- include                        |-- include
+	  |    |-- asm                                |    |-- math.h                     |    |-- math.h                    |    |-- math.h
+	  |    |-- linux                              |    |-- stdio.h                    |    |-- stdio.h                   |    |-- stdio.h
+	  |    |-- ...                                |    |-- ...                        |    |-- ...                       |    |-- ...
+	  |                                           |                                   |                                  |
+	  |-- lib                                     |-- lib                             |-- lib                            |-- lib
+	       |-- gcc                                     |-- crt1.o                          |-- crt1.o                         |-- crt1.o
+	            |-- x86_64-unknown-linux               |-- crti.o                          |-- crti.o                         |-- crti.o
+	                 |-- 4.7.4                         |-- crtn.o                          |-- crtn.o                         |-- crtn.o
+	                      |-- cc1                      |-- ld-linux-x86-64.so.2            |-- ld-musl-x86_64.so.1            |-- ld64-uClibc.so.0
+	                      |-- crtbegin.o               |-- libc.so                         |-- libc.so                        |-- libc.so
+	                      |-- crtend.o                 |-- libc.so.6                       |-- libc.so.1                      |-- libc.so.0
+	                      |-- libgcc.a                 |-- libpthread.so                   |-- libpthread.so                  |-- libpthread.so
+	                      |-- ...                      |-- ...                             |-- ...                            |-- ...
 	                      |-- include
 	                           |-- float.h
 	                           |-- stddef.h
@@ -87,11 +87,18 @@ $ make initrd-musl
 $ make rootfs-tcc-musl
 ```
 
+For a minimal _uClibc-based_ system:
+
+```
+$ make initrd-uclibc
+$ make rootfs-tcc-uclibc
+```
+
 The initrd serves as an installer for the distribution (and optionally as a rescue disk), and is composed of:
 
 * _**busybox**_, which combines lightweight versions of many Unix utilities
 * _**syslinux**_, with its EXTLINUX bootloader
-*  the **C library** (_glibc_ or _musl_), the runtime files only (no development files)
+*  the **C library** (_glibc_, _musl_, or _uClibc_), the runtime files only (no development files)
 
 The generated root filesystem contains:
 
@@ -99,7 +106,7 @@ The generated root filesystem contains:
 * _**busybox**_, providing the shell environment with standard Unix-like commands (same binary as in the initrd)
 * _**tcc**_, the Tiny _C_ compiler (which includes an internal assembler, archiver, and linker)
 * _**pkg-config**_, a tool typically invoked when compiling applications and libraries, but whose usage is extended to manage packages and their dependencies on the system
-* the **C library** (_glibc_ or _musl_), both the runtime and development files
+* the **C library** (_glibc_, _musl_, or _uClibc_), both the runtime and development files
 
 Alternatively, the root filesystem can be generated without _**tcc**_, to instead contain:
 
@@ -118,6 +125,12 @@ or, for a _musl-based_ system:
 $ make rootfs-binutils-gcc-musl
 ```
 
+or, for a _uClibc-based_ system:
+
+```
+$ make rootfs-binutils-gcc-uclibc
+```
+
 > Since a common cross-compiler is used to build the source code regardless of the target **C library**, all binaries in the minimal system have the same dynamic linker/loader _**ld-linux.so.2**_ in the `PT_INTERP ELF` segment. But note that the compiler present in this minimal root filesystem, and used to build and install packages that will replace the initial minimal system binaries, compiles source code by setting the `PT_INTERP ELF` segment to the dynamic linker/loader name corresponding to the selected **C library** (i.e. _**ld-linux.so.2**_ for _glibc_ or _**ld-musl-x86_64.so.1**_ for _musl_).
 
 Next, generate the ISO image used for installation:
@@ -130,6 +143,12 @@ or :
 
 ```
 $ make iso-musl
+```
+
+or:
+
+```
+$ make iso-uclibc
 ```
 
 The target machine can now boot from the ISO image.
@@ -148,11 +167,19 @@ $ qemu-img create disk-musl-x86_64.img 64G
 $ qemu-system-x86_64 -boot d -cdrom bootstrap-musl-x86_64.iso -device ahci -drive id=disk,file=disk-musl-x86_64.img,format=raw,if=none -device ide-hd,drive=disk
 ```
 
+Or from the _uClibc-based_ ISO image:
+
+```
+$ qemu-img create disk-uclibc-x86_64.img 64G
+$ qemu-system-x86_64 -boot d -cdrom bootstrap-uclibc-x86_64.iso -device ahci -drive id=disk,file=disk-uclibc-x86_64.img,format=raw,if=none -device ide-hd,drive=disk
+```
+
 Once the VM has started, perform the installation from the guest system’s shell prompt:
 
 ```
 # setup
 ```
+
 The VM can now boot on the freshly installed minimal system (located on the disk image).
 
 # Installing packages
@@ -193,6 +220,12 @@ Or the _musl-based_ VM:
 
 ```
 $ qemu-system-x86_64 -monitor stdio -enable-kvm -cpu host -smp 8 -m 8G -device ahci -drive id=disk,file=disk-musl-x86_64.img,format=raw,if=none -device ide-hd,drive=disk -netdev tap,id=net0,ifname=tap0,script=no -device e1000,netdev=net0 -usb -device usb-tablet -device intel-hda -device hda-duplex
+```
+
+Or the _uClibc-based_ VM:
+
+```
+$ qemu-system-x86_64 -monitor stdio -enable-kvm -cpu host -smp 8 -m 8G -device ahci -drive id=disk,file=disk-uclibc-x86_64.img,format=raw,if=none -device ide-hd,drive=disk -netdev tap,id=net0,ifname=tap0,script=no -device e1000,netdev=net0 -usb -device usb-tablet -device intel-hda -device hda-duplex
 ```
 
 QEMU options used:
@@ -313,8 +346,7 @@ For the _Linux Framebuffer_ graphics backend:
 
 ```
 # pkg-build byacc flex bison fbset
-# pkg-build util-macros libfontenc freetype mkfontscale mkfontdir
-# pkg-build ttf-bitstream-vera
+# pkg-build util-macros libfontenc freetype mkfontscale mkfontdir ttf-bitstream-vera
 # pkg-build fb/ft2tf fb/fbpad
 ```
 
@@ -324,7 +356,7 @@ For the _KMS/DRM_ graphics backend graphics backend:
 # pkg-build libdrm
 # pkg-build byacc flex bison
 # pkg-build util-macros xkeyboard-config libxkbcommon
-# pkg-build libudev-zero libtsm kmscon
+# pkg-build libudev-zero drm/libtsm drm/kmscon
 ```
 
 For the _DirectFB_ graphics backend:
