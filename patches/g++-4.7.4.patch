@@ -13,10 +13,10 @@ make
 
 # install
 install -d $DESTDIR/bin
-install host-`./config.guess`/gcc/cpp $DESTDIR/bin
-install host-`./config.guess`/gcc/g++ $DESTDIR/bin
+install host-*/gcc/cpp $DESTDIR/bin
+install host-*/gcc/g++ $DESTDIR/bin
 ln -sf g++ $DESTDIR/bin/c++
-install host-`./config.guess`/gcc/xgcc $DESTDIR/bin/gcc
+install host-*/gcc/xgcc $DESTDIR/bin/gcc
 ln -sf gcc $DESTDIR/bin/cc
 install -d $DESTDIR/include/c++
 install -m 644 libstdc++-v3/include/std/algorithm $DESTDIR/include/c++
@@ -80,54 +80,55 @@ install -m 644 libstdc++-v3/libsupc++/cxxabi_forced.h $DESTDIR/include/c++/bits
 install -m 644 libstdc++-v3/libsupc++/exception $DESTDIR/include/c++
 install -m 644 libstdc++-v3/libsupc++/exception_defines.h $DESTDIR/include/c++/bits
 install -m 644 libstdc++-v3/libsupc++/new $DESTDIR/include/c++
-install -d $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/atomic_word.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++allocator.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++config.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/c++locale.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/cpu_defines.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr-default.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/gthr.h $DESTDIR/include/c++/`./config.guess`/bits
-install -m 644 `./config.guess`/libstdc++-v3/include/`./config.guess`/bits/os_defines.h $DESTDIR/include/c++/`./config.guess`/bits
+install -d $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/atomic_word.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/c++allocator.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/c++config.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/c++locale.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/cpu_defines.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/gthr-default.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/gthr.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
+install -m 644 `ls -d host* | sed 's/host-//'`/libstdc++-v3/include/`ls -d host* | sed 's/host-//'`/bits/os_defines.h $DESTDIR/include/c++/`ls -d host* | sed 's/host-//'`/bits
 install -d $DESTDIR/lib
 ln -sf ../bin/cpp $DESTDIR/lib/cpp
-install host-`./config.guess`/gcc/libgcc_s.so.1 $DESTDIR/lib
+install host-*/gcc/libgcc_s.so.1 $DESTDIR/lib
 ln -sf libgcc_s.so.1 $DESTDIR/lib/libgcc_s.so
-install `./config.guess`/libstdc++-v3/src/.libs/libstdc++.so.6.* $DESTDIR/lib/libstdc++.so.6
+install `ls -d host* | sed 's/host-//'`/libstdc++-v3/src/.libs/libstdc++.so.6 $DESTDIR/lib
 ln -sf libstdc++.so.6 $DESTDIR/lib/libstdc++.so
-install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install host-`./config.guess`/gcc/cc1 $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install host-`./config.guess`/gcc/cc1plus $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtbegin.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtbeginS.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtend.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtendS.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtfastmath.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/libgcc.a $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/cpuid.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/emmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/float.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/ia32intrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/immintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/mm_malloc.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/mmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/smmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stdarg.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stdbool.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stddef.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stdnoreturn.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/tmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/unwind.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/x86intrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/xmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
-install -m 644 host-`./config.guess`/gcc/include-fixed/limits.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
+install -d $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install host-*/gcc/cc1 $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install host-*/gcc/cc1plus $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtbegin.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtbeginS.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtend.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtendS.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtfastmath.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/libgcc.a $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -d $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/cpuid.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/emmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/float.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/ia32intrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/immintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/mm_malloc.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/mmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/pmmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/smmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stdarg.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stdbool.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stddef.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stdnoreturn.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/tmmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/unwind.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/x86intrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/xmmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -d $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include-fixed
+install -m 644 host-*/gcc/include-fixed/limits.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include-fixed
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/g++-build.pc << EOF
-Name: gcc
+Name: g++
 Version: 4.7.4
 Description: GNU Compiler Collection
 Requires: $REQUIRES
@@ -194,42 +195,43 @@ devel=\\
 /include/c++/ext/atomicity.h \\
 /include/c++/ext/new_allocator.h \\
 /include/c++/ext/numeric_traits.h \\
-/include/c++/`./config.guess`/bits/atomic_word.h \\
-/include/c++/`./config.guess`/bits/c++allocator.h \\
-/include/c++/`./config.guess`/bits/c++config.h \\
-/include/c++/`./config.guess`/bits/c++locale.h \\
-/include/c++/`./config.guess`/bits/cpu_defines.h \\
-/include/c++/`./config.guess`/bits/gthr-default.h \\
-/include/c++/`./config.guess`/bits/gthr.h \\
-/include/c++/`./config.guess`/bits/os_defines.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/atomic_word.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/c++allocator.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/c++config.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/c++locale.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/cpu_defines.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/gthr-default.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/gthr.h \\
+/include/c++/`ls -d host* | sed 's/host-//'`/bits/os_defines.h \\
 /lib/cpp \\
 /lib/libgcc_s.so \\
 /lib/libstdc++.so \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1 \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1plus \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbegin.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbeginS.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtend.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtendS.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtfastmath.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/libgcc.a \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/cpuid.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/emmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/float.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/ia32intrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/immintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mm_malloc.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/smmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdarg.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdbool.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stddef.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdnoreturn.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/tmmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/unwind.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/x86intrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/xmmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed/limits.h
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/cc1 \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/cc1plus \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtbegin.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtbeginS.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtend.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtendS.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtfastmath.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/libgcc.a \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/cpuid.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/emmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/float.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/ia32intrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/immintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/mm_malloc.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/mmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/pmmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/smmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stdarg.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stdbool.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stddef.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stdnoreturn.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/tmmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/unwind.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/x86intrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/xmmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include-fixed/limits.h
 
 exec=\\
 /lib/libgcc_s.so.1 \\

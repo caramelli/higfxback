@@ -16,32 +16,33 @@ make
 
 # install
 install -d $DESTDIR/bin
-install host-`./config.guess`/gcc/cpp $DESTDIR/bin
-install host-`./config.guess`/gcc/xgcc $DESTDIR/bin/gcc
+install host-*/gcc/cpp $DESTDIR/bin
+install host-*/gcc/xgcc $DESTDIR/bin/gcc
 ln -sf gcc $DESTDIR/bin/cc
 ln -sf ../bin/cpp $DESTDIR/lib/cpp
-install host-`./config.guess`/gcc/libgcc_s.so.1 $DESTDIR/lib
+install host-*/gcc/libgcc_s.so.1 $DESTDIR/lib
 ln -sf libgcc_s.so.1 $DESTDIR/lib/libgcc_s.so
-install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install host-`./config.guess`/gcc/cc1 $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtbegin.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtbeginS.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtend.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtendS.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/crtfastmath.o $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -m 644 host-`./config.guess`/gcc/libgcc.a $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`
-install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/emmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/float.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/immintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/mm_malloc.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/mmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stdarg.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stdbool.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/stddef.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -m 644 host-`./config.guess`/gcc/include/xmmintrin.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include
-install -d $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
-install -m 644 host-`./config.guess`/gcc/include-fixed/limits.h $DESTDIR/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed
+install -d $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install host-*/gcc/cc1 $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtbegin.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtbeginS.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtend.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtendS.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/crtfastmath.o $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -m 644 host-*/gcc/libgcc.a $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`
+install -d $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/emmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/float.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/immintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/mm_malloc.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/mmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/pmmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stdarg.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stdbool.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/stddef.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -m 644 host-*/gcc/include/xmmintrin.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include
+install -d $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include-fixed
+install -m 644 host-*/gcc/include-fixed/limits.h $DESTDIR/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include-fixed
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -58,23 +59,24 @@ devel=\\
 /lib/cpp \\
 /lib/libgcc_s.so \\
 /lib/libstdc++.so \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/cc1 \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbegin.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtbeginS.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtend.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtendS.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/crtfastmath.o \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/libgcc.a \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/emmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/float.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/immintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mm_malloc.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/mmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdarg.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stdbool.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/stddef.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include/xmmintrin.h \\
-/lib/gcc/`./config.guess`/`cat gcc/BASE-VER`/include-fixed/limits.h
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/cc1 \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtbegin.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtbeginS.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtend.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtendS.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/crtfastmath.o \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/libgcc.a \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/emmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/float.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/immintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/mm_malloc.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/mmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/pmmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stdarg.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stdbool.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/stddef.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include/xmmintrin.h \\
+/lib/gcc/`ls -d host* | sed 's/host-//'`/`cat gcc/BASE-VER`/include-fixed/limits.h
 
 exec=\\
 /lib/libgcc_s.so.1

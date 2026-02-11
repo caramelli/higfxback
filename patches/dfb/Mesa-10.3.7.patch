@@ -24,11 +24,16 @@ make
 # install
 install -d $DESTDIR/dfb/lib
 install lib/libEGL.so.1 $DESTDIR/dfb/lib/libmesaEGL.so.1
-test $DRM && install lib/libgbm.so.1.* $DESTDIR/dfb/lib/libmesagbm.so.1
-install lib/gallium/libGL.so.1.* $DESTDIR/dfb/lib/libmesaGL.so.1
-install lib/libglapi.so.0.* $DESTDIR/dfb/lib/libglapi.so.0
-install lib/libGLESv1_CM.so.1.* $DESTDIR/dfb/lib/libmesaGLESv1_CM.so.1
-install lib/libGLESv2.so.2.* $DESTDIR/dfb/lib/libmesaGLESv2.so.2
+ln -sf libmesaEGL.so.1 $DESTDIR/dfb/lib/libEGL.so.1
+test $DRM && install lib/libgbm.so.1 $DESTDIR/dfb/lib/libmesagbm.so.1
+test $DRM && ln -sf libmesagbm.so.1 $DESTDIR/dfb/lib/libgbm.so.1
+install lib/gallium/libGL.so.1 $DESTDIR/dfb/lib/libmesaGL.so.1
+ln -sf libmesaGL.so.1 $DESTDIR/dfb/lib/libGL.so.1
+install lib/libGLESv1_CM.so.1 $DESTDIR/dfb/lib/libmesaGLESv1_CM.so.1
+ln -sf libmesaGLESv1_CM.so.1 $DESTDIR/dfb/lib/libGLESv1_CM.so.1
+install lib/libGLESv2.so.2 $DESTDIR/dfb/lib/libmesaGLESv2.so.2
+ln -sf libmesaGLESv2.so.2 $DESTDIR/dfb/lib/libGLESv2.so.2
+install lib/libglapi.so.0 $DESTDIR/dfb/lib
 test $DRM && install -d $DESTDIR/dfb/lib/dri
 test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/dfb/lib/dri
 install -d $DESTDIR/dfb/lib/egl
@@ -52,7 +57,15 @@ devel=\\
 EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
 exec=\\
-/dfb/lib/libglapi.so.0 \\
+/dfb/lib/libEGL.so.1 \\
+EOF
+test $DRM && cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
+/dfb/lib/libgbm.so.1 \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
+/dfb/lib/libGL.so.1 \\
+/dfb/lib/libGLESv1_CM.so.1 \\
+/dfb/lib/libGLESv2.so.2
 /dfb/lib/libmesaEGL.so.1 \\
 EOF
 test $DRM && cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
@@ -62,14 +75,14 @@ cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
 /dfb/lib/libmesaGL.so.1 \\
 /dfb/lib/libmesaGLESv1_CM.so.1 \\
 /dfb/lib/libmesaGLESv2.so.2 \\
+/dfb/lib/libglapi.so.0 \\
 EOF
 test $DRM && cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
 /dfb/lib/dri/kms_swrast_dri.so \\
 EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc << EOF
-/dfb/lib/egl/egl_gallium.so \\
+/dfb/lib/egl/egl_gallium.so
 EOF
-sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/mesa-gl-build.pc
 
 exit
 

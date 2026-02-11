@@ -19,7 +19,7 @@ install tools/.libs/libinput-list-devices $DESTDIR/bin
 install -d $DESTDIR/include
 install -m 644 src/libinput.h $DESTDIR/include
 install -d $DESTDIR/lib
-install src/.libs/libinput.so.10.* $DESTDIR/lib/libinput.so.10
+install src/.libs/libinput.so.10 $DESTDIR/lib
 ln -sf libinput.so.10 $DESTDIR/lib/libinput.so
 install -d $DESTDIR/lib/pkgconfig
 install -m 644 src/libinput.pc $DESTDIR/lib/pkgconfig
@@ -56,6 +56,44 @@ exit
  
  # Before making a release, the LIBINPUT_LT_VERSION string should be
  # modified.
+@@ -44,6 +45,8 @@
+ # Check for programs
+ AC_PROG_CC_C99
+ AC_PROG_CXX # Only used by build C++ test
++AC_CHECK_PROG(HAVE_CXX, $CXX, [yes], [no])
++AM_CONDITIONAL(HAVE_CXX, [test "x$HAVE_CXX" = "xyes"])
+ AC_PROG_GREP
+ 
+ # Initialize libtool
+--- libinput-1.4.3.orig/test/Makefile.am
++++ libinput-1.4.3/test/Makefile.am
+@@ -98,10 +98,13 @@
+ 	test-litest-selftest
+ 
+ build_tests = \
+-	test-build-cxx \
+ 	test-build-linker \
+ 	test-build-pedantic-c99 \
+ 	test-build-std-gnuc90
++if HAVE_CXX
++build_tests += \
++	test-build-cxx
++endif
+ 
+ noinst_PROGRAMS = $(build_tests) $(run_tests)
+ noinst_SCRIPTS = symbols-leak-test
+@@ -195,9 +198,11 @@
+ test_build_linker_CFLAGS = -I$(top_srcdir)/src
+ test_build_linker_LDADD = $(top_builddir)/src/libinput.la $(top_builddir)/src/libinput-util.la
+ 
++if HAVE_CXX
+ # test including from C++
+ test_build_cxx_SOURCES = build-cxx.cc
+ test_build_cxx_CXXFLAGS = -Wall -Wextra -Wno-unused-parameter $(AM_CXXFLAGS)
++endif
+ 
+ AM_TESTS_ENVIRONMENT= LITEST_VERBOSE=1; export LITEST_VERBOSE;
+ 
 --- libinput-1.4.3.orig/test/litest.c
 +++ libinput-1.4.3/test/litest.c
 @@ -525,7 +525,7 @@

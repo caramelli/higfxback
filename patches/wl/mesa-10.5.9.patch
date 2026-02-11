@@ -24,11 +24,16 @@ make
 # install
 install -d $DESTDIR/wl/lib
 install lib/libEGL.so.1 $DESTDIR/wl/lib/libmesaEGL.so.1
-test $DRM && install lib/libgbm.so.1.* $DESTDIR/wl/lib/libmesagbm.so.1
-install lib/gallium/libGL.so.1.* $DESTDIR/wl/lib/libmesaGL.so.1
-install lib/libglapi.so.0.* $DESTDIR/wl/lib/libglapi.so.0
-install lib/libGLESv1_CM.so.1.* $DESTDIR/wl/lib/libmesaGLESv1_CM.so.1
-install lib/libGLESv2.so.2.* $DESTDIR/wl/lib/libmesaGLESv2.so.2
+ln -sf libmesaEGL.so.1 $DESTDIR/wl/lib/libEGL.so.1
+test $DRM && install lib/libgbm.so.1 $DESTDIR/wl/lib/libmesagbm.so.1
+test $DRM && ln -sf libmesagbm.so.1 $DESTDIR/wl/lib/libgbm.so.1
+install lib/gallium/libGL.so.1 $DESTDIR/wl/lib/libmesaGL.so.1
+ln -sf libmesaGL.so.1 $DESTDIR/wl/lib/libGL.so.1
+install lib/libGLESv1_CM.so.1 $DESTDIR/wl/lib/libmesaGLESv1_CM.so.1
+ln -sf libmesaGLESv1_CM.so.1 $DESTDIR/wl/lib/libGLESv1_CM.so.1
+install lib/libGLESv2.so.2 $DESTDIR/wl/lib/libmesaGLESv2.so.2
+ln -sf libmesaGLESv2.so.2 $DESTDIR/wl/lib/libGLESv2.so.2
+install lib/libglapi.so.0 $DESTDIR/wl/lib
 test $DRM && install -d $DESTDIR/wl/lib/dri
 test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/wl/lib/dri
 install -d $DESTDIR/wl/lib/egl
@@ -52,7 +57,15 @@ devel=\\
 EOF
 cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
 exec=\\
-/wl/lib/libglapi.so.0 \\
+/wl/lib/libEGL.so.1 \\
+EOF
+test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
+/wl/lib/libgbm.so.1 \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
+/wl/lib/libGL.so.1 \\
+/wl/lib/libGLESv1_CM.so.1 \\
+/wl/lib/libGLESv2.so.2
 /wl/lib/libmesaEGL.so.1 \\
 EOF
 test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
@@ -62,14 +75,14 @@ cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
 /wl/lib/libmesaGL.so.1 \\
 /wl/lib/libmesaGLESv1_CM.so.1 \\
 /wl/lib/libmesaGLESv2.so.2 \\
+/wl/lib/libglapi.so.0 \\
 EOF
 test $DRM && cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
 /wl/lib/dri/kms_swrast_dri.so \\
 EOF
 cat >> $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc << EOF
-/wl/lib/egl/egl_gallium.so \\
+/wl/lib/egl/egl_gallium.so
 EOF
-sed -i '$ s/ \\//' $DESTDIR/wl/share/pkgconfig/mesa-gl-build.pc
 
 exit
 

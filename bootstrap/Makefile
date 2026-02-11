@@ -69,7 +69,7 @@ glibc: cross-gcc linux-headers
 	@test -d $(GLIBC)/build || mkdir $(GLIBC)/build
 	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=no libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
 	$(MAKE) -C $(GLIBC)/build
-	$(MAKE) install_root=$(STAGING_DIR)/glibc -C $(GLIBC)/build install
+	$(MAKE) DESTDIR=$(STAGING_DIR)/glibc -C $(GLIBC)/build install
 	@rm -rf $(STAGING_DIR)/glibc/share/locale
 	@echo $(GLIBC) > $(STAGING_DIR)/glibc/share/libc-VERSION
 
@@ -222,6 +222,7 @@ rootfs_gcc-%: gcc-%
 	@install -m 644 $(GCC)/$*-build/gcc/include/immintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/immintrin.h
 	@install -m 644 $(GCC)/$*-build/gcc/include/mm_malloc.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/mm_malloc.h
 	@install -m 644 $(GCC)/$*-build/gcc/include/mmintrin.h                                       rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/mmintrin.h
+	@install -m 644 $(GCC)/$*-build/gcc/include/pmmintrin.h                                      rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/pmmintrin.h
 	@install -m 644 $(GCC)/$*-build/gcc/include/stdarg.h                                         rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stdarg.h
 	@install -m 644 $(GCC)/$*-build/gcc/include/stdbool.h                                        rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stdbool.h
 	@install -m 644 $(GCC)/$*-build/gcc/include/stddef.h                                         rootfs-$*/lib/gcc/$(HOST)/`cat $(GCC)/gcc/BASE-VER`/include/stddef.h

@@ -8,6 +8,7 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 # configure
 yes "" | ./configure
 sed -e "s/@VERSION@/$(grep NETPBM_MAJOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ').$(grep NETPBM_MINOR_RELEASE Makefile.common | cut -d= -f2 | tr -d ' ')/" -e "s|@LIBDIR@|/lib|" -e "s|@INCLUDEDIR@|/include|" buildtools/pkgconfig_template > netpbm.pc
+make -C buildtools endiangen
 cat > pm_config.h << EOF
 #ifndef PM_CONFIG_H
 #define PM_CONFIG_H
@@ -329,7 +330,7 @@ install -m 644 lib/pnm.h $DESTDIR/include
 install -m 644 lib/ppm.h $DESTDIR/include
 install -m 644 lib/ppmcmap.h $DESTDIR/include
 install -d $DESTDIR/lib
-install lib/libnetpbm.so.10.* $DESTDIR/lib/libnetpbm.so.10
+install lib/libnetpbm.so.10 $DESTDIR/lib
 ln -sf libnetpbm.so.10 $DESTDIR/lib/libnetpbm.so
 install -m 644 netpbm.pc $DESTDIR/lib/pkgconfig
 

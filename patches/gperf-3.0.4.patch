@@ -5,8 +5,8 @@ REQUIRES="autotools-wrappers-ac-build libstdc++-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-# configure (ac-2.69)
-autoconf; cd lib; autoconf -I ..; cd ../src; autoconf -I ..; autoheader; cd ../tests; autoconf; cd ../doc; autoconf -I ..; cd ..
+# configure (ac-2.61)
+autoconf; cd lib; autoconf -I ..; cd ../src; autoheader; autoconf -I ..; cd ../tests; autoconf; cd ../doc; autoconf -I ..; cd ..
 ./configure --prefix=
 
 # build
@@ -20,7 +20,7 @@ install src/gperf $DESTDIR/bin
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/gperf-build.pc << EOF
 Name: gperf
-Version: 3.1
+Version: 3.0.4
 Description: GNU perfect hash function generator
 Requires: $REQUIRES
 
@@ -31,4 +31,4 @@ EOF
 exit
 
 # source
-https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz
+https://ftp.gnu.org/gnu/gperf/gperf-3.0.4.tar.gz

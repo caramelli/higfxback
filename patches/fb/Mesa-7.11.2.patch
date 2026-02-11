@@ -14,12 +14,15 @@ make
 
 # install
 install -d $DESTDIR/fb/lib
-install lib/libEGL.so.1.* $DESTDIR/fb/lib/libmesaEGL.so.1
-install lib/libGL.so.1.* $DESTDIR/fb/lib/libmesaGL.so.1
-install lib/libGLESv1_CM.so.1.* $DESTDIR/fb/lib/libmesaGLESv1_CM.so.1
-install lib/libGLESv2.so.2.* $DESTDIR/fb/lib/libmesaGLESv2.so.2
-install lib/libglapi.so.0.* $DESTDIR/fb/lib/libglapi.so.0
-ln -sf libglapi.so.0 $DESTDIR/fb/lib/libglapi.so
+install lib/libEGL.so.1 $DESTDIR/fb/lib/libmesaEGL.so.1
+ln -sf libmesaEGL.so.1 $DESTDIR/fb/lib/libEGL.so.1
+install lib/libGL.so.1 $DESTDIR/fb/lib/libmesaGL.so.1
+ln -sf libmesaGL.so.1 $DESTDIR/fb/lib/libGL.so.1
+install lib/libGLESv1_CM.so.1 $DESTDIR/fb/lib/libmesaGLESv1_CM.so.1
+ln -sf libmesaGLESv1_CM.so.1 $DESTDIR/fb/lib/libGLESv1_CM.so.1
+install lib/libGLESv2.so.2 $DESTDIR/fb/lib/libmesaGLESv2.so.2
+ln -sf libmesaGLESv2.so.2 $DESTDIR/fb/lib/libGLESv2.so.2
+install lib/libglapi.so.0 $DESTDIR/fb/lib
 install -d $DESTDIR/fb/lib/egl
 install lib/egl/egl_gallium.so $DESTDIR/fb/lib/egl
 
@@ -32,6 +35,10 @@ Description: Implementation of Khronos specifications
 Requires: $REQUIRES
 
 exec=\\
+/fb/lib/libEGL.so.1 \\
+/fb/lib/libGL.so.1 \\
+/fb/lib/libGLESv1_CM.so.1 \\
+/fb/lib/libGLESv2.so.2
 /fb/lib/libmesaEGL.so.1 \\
 /fb/lib/libmesaGL.so.1 \\
 /fb/lib/libmesaGLESv1_CM.so.1 \\

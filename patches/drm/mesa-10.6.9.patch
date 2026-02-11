@@ -17,11 +17,16 @@ make
 # install
 install -d $DESTDIR/drm/lib
 install lib/libEGL.so.1 $DESTDIR/drm/lib/libmesaEGL.so.1
-install lib/libgbm.so.1.* $DESTDIR/drm/lib/libmesagbm.so.1
-install lib/gallium/libGL.so.1.* $DESTDIR/drm/lib/libmesaGL.so.1
-install lib/libglapi.so.0.* $DESTDIR/drm/lib/libglapi.so.0
-install lib/libGLESv1_CM.so.1.* $DESTDIR/drm/lib/libmesaGLESv1_CM.so.1
-install lib/libGLESv2.so.2.* $DESTDIR/drm/lib/libmesaGLESv2.so.2
+ln -sf libmesaEGL.so.1 $DESTDIR/drm/lib/libEGL.so.1
+install lib/libgbm.so.1 $DESTDIR/drm/lib/libmesagbm.so.1
+ln -sf libmesagbm.so.1 $DESTDIR/drm/lib/libgbm.so.1
+install lib/gallium/libGL.so.1 $DESTDIR/drm/lib/libmesaGL.so.1
+ln -sf libmesaGL.so.1 $DESTDIR/drm/lib/libGL.so.1
+install lib/libGLESv1_CM.so.1 $DESTDIR/drm/lib/libmesaGLESv1_CM.so.1
+ln -sf libmesaGLESv1_CM.so.1 $DESTDIR/drm/lib/libGLESv1_CM.so.1
+install lib/libGLESv2.so.2 $DESTDIR/drm/lib/libmesaGLESv2.so.2
+ln -sf libmesaGLESv2.so.2 $DESTDIR/drm/lib/libGLESv2.so.2
+install lib/libglapi.so.0 $DESTDIR/drm/lib
 install -d $DESTDIR/drm/lib/dri
 install lib/gallium/kms_swrast_dri.so $DESTDIR/drm/lib/dri
 install -d $DESTDIR/drm/lib/pkgconfig
@@ -39,12 +44,17 @@ devel=\\
 /drm/lib/pkgconfig/dri.pc
 
 exec=\\
-/drm/lib/libglapi.so.0 \\
+/drm/lib/libEGL.so.1 \\
+/drm/lib/libgbm.so.1 \\
+/drm/lib/libGL.so.1 \\
+/drm/lib/libGLESv1_CM.so.1 \\
+/drm/lib/libGLESv2.so.2
 /drm/lib/libmesaEGL.so.1 \\
 /drm/lib/libmesagbm.so.1 \\
 /drm/lib/libmesaGL.so.1 \\
 /drm/lib/libmesaGLESv1_CM.so.1 \\
 /drm/lib/libmesaGLESv2.so.2 \\
+/drm/lib/libglapi.so.0 \\
 /drm/lib/dri/kms_swrast_dri.so
 EOF
 

@@ -5,8 +5,8 @@ REQUIRES="autotools-wrappers-lt-build bison-build libstdc++-build libxext-build 
 
 PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if pkg-config --exists libdrm-build; then
-  PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires libx11-build | grep -q libxcb-build || { echo libX11 with XCB support required; exit 1; }
+if pkg-config --exists libdrm-build && test -z ${DRM+x}; then
+  PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --print-requires libx11-build | grep -q libxcb-build || { echo drm platform is enabled: libX11 with XCB support is required, or set DRM= to disable it; exit 1; }
   DRM=1
   DRI="--disable-nls --with-egl-platforms=x11,drm --without-dri-drivers"
   REQUIRES="$REQUIRES expat-build libdrm-build"
@@ -25,11 +25,16 @@ make
 # install
 install -d $DESTDIR/x11/lib
 install lib/libEGL.so.1 $DESTDIR/x11/lib/libmesaEGL.so.1
-test $DRM && install lib/libgbm.so.1.* $DESTDIR/x11/lib/libmesagbm.so.1
-install lib/libGL.so.1.* $DESTDIR/x11/lib/libmesaGL.so.1
-install lib/libglapi.so.0.* $DESTDIR/x11/lib/libglapi.so.0
-install lib/libGLESv1_CM.so.1.* $DESTDIR/x11/lib/libmesaGLESv1_CM.so.1
-install lib/libGLESv2.so.2.* $DESTDIR/x11/lib/libmesaGLESv2.so.2
+ln -sf libmesaEGL.so.1 $DESTDIR/x11/lib/libEGL.so.1
+test $DRM && install lib/libgbm.so.1 $DESTDIR/x11/lib/libmesagbm.so.1
+test $DRM && ln -sf libmesagbm.so.1 $DESTDIR/x11/lib/libgbm.so.1
+install lib/libGL.so.1 $DESTDIR/x11/lib/libmesaGL.so.1
+ln -sf libmesaGL.so.1 $DESTDIR/x11/lib/libGL.so.1
+install lib/libGLESv1_CM.so.1 $DESTDIR/x11/lib/libmesaGLESv1_CM.so.1
+ln -sf libmesaGLESv1_CM.so.1 $DESTDIR/x11/lib/libGLESv1_CM.so.1
+install lib/libGLESv2.so.2 $DESTDIR/x11/lib/libmesaGLESv2.so.2
+ln -sf libmesaGLESv2.so.2 $DESTDIR/x11/lib/libGLESv2.so.2
+install lib/libglapi.so.0 $DESTDIR/x11/lib
 test $DRM && install -d $DESTDIR/x11/lib/dri
 test $DRM && install lib/gallium/kms_swrast_dri.so $DESTDIR/x11/lib/dri
 test $DRM && install lib/gallium/swrast_dri.so $DESTDIR/x11/lib/dri
@@ -54,7 +59,15 @@ devel=\\
 EOF
 cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
 exec=\\
-/x11/lib/libglapi.so.0 \\
+/x11/lib/libEGL.so.1 \\
+EOF
+test $DRM && cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
+/x11/lib/libgbm.so.1 \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
+/x11/lib/libGL.so.1 \\
+/x11/lib/libGLESv1_CM.so.1 \\
+/x11/lib/libGLESv2.so.2
 /x11/lib/libmesaEGL.so.1 \\
 EOF
 test $DRM && cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
@@ -64,15 +77,15 @@ cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
 /x11/lib/libmesaGL.so.1 \\
 /x11/lib/libmesaGLESv1_CM.so.1 \\
 /x11/lib/libmesaGLESv2.so.2 \\
+/x11/lib/libglapi.so.0 \\
 EOF
 test $DRM && cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
 /x11/lib/dri/kms_swrast_dri.so \\
 /x11/lib/dri/swrast_dri.so \\
 EOF
 cat >> $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc << EOF
-/x11/lib/egl/egl_gallium.so \\
+/x11/lib/egl/egl_gallium.so
 EOF
-sed -i '$ s/ \\//' $DESTDIR/x11/share/pkgconfig/mesa-gl-build.pc
 
 exit
 

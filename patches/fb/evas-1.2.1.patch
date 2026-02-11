@@ -1,0 +1,330 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build eina-build freetype-build libpng-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists fontconfig-build && REQUIRES="$REQUIRES fontconfig-build"
+pkg-config --exists harfbuzz-build && REQUIRES="$REQUIRES harfbuzz-build"
+
+if pkg-config --exists giflib-build; then
+  GIF=1
+  REQUIRES="$REQUIRES giflib-build"
+fi
+
+if pkg-config --exists jpeg-build; then
+  JPEG=1
+  REQUIRES="$REQUIRES jpeg-build"
+fi
+
+if pkg-config --exists tiff-build; then
+  TIFF=1
+  REQUIRES="$REQUIRES tiff-build"
+fi
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
+PKG_CONFIG_PATH=/fb/lib/pkgconfig LDFLAGS=-Wl,-rpath,/fb/lib ./configure --disable-static --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install src/bin/.libs/evas_cserve $DESTDIR/fb/bin
+install src/bin/.libs/evas_cserve_tool $DESTDIR/fb/bin
+install -d $DESTDIR/fb/include/evas-1
+install -m 644 src/modules/engines/fb/Evas_Engine_FB.h $DESTDIR/fb/include/evas-1
+install -m 644 src/lib/Evas_GL.h $DESTDIR/fb/include/evas-1
+install -m 644 src/lib/Evas.h $DESTDIR/fb/include/evas-1
+install -m 644 src/modules/engines/buffer/Evas_Engine_Buffer.h $DESTDIR/fb/include/evas-1
+install -d $DESTDIR/fb/lib
+install src/lib/.libs/libevas.so.1 $DESTDIR/fb/lib
+ln -sf libevas.so.1 $DESTDIR/fb/lib/libevas.so
+install -d $DESTDIR/fb/lib/evas/modules/engines/buffer/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/engines/buffer/.libs/module.so $DESTDIR/fb/lib/evas/modules/engines/buffer/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/engines/fb/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/engines/fb/.libs/module.so $DESTDIR/fb/lib/evas/modules/engines/fb/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/engines/software_generic/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/engines/software_generic/.libs/module.so $DESTDIR/fb/lib/evas/modules/engines/software_generic/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/bmp/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/bmp/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/bmp/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/generic/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/generic/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/generic/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $GIF && install -d $DESTDIR/fb/lib/evas/modules/loaders/gif/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $GIF && install src/modules/loaders/gif/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/gif/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/ico/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/ico/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/ico/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $JPEG && install -d $DESTDIR/fb/lib/evas/modules/loaders/jpeg/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $JPEG && install src/modules/loaders/jpeg/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/jpeg/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/pmaps/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/pmaps/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/pmaps/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/png/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/png/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/png/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/psd/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/psd/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/psd/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/tga/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/tga/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/tga/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $TIFF && install -d $DESTDIR/fb/lib/evas/modules/loaders/tiff/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $TIFF && install src/modules/loaders/tiff/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/tiff/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/wbmp/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/wbmp/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/wbmp/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/loaders/xpm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/loaders/xpm/.libs/module.so $DESTDIR/fb/lib/evas/modules/loaders/xpm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $JPEG && install -d $DESTDIR/fb/lib/evas/modules/savers/jpeg/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $JPEG && install src/modules/savers/jpeg/.libs/module.so $DESTDIR/fb/lib/evas/modules/savers/jpeg/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/evas/modules/savers/png/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/savers/png/.libs/module.so $DESTDIR/fb/lib/evas/modules/savers/png/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $TIFF && install -d $DESTDIR/fb/lib/evas/modules/savers/tiff/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+test $TIFF && install src/modules/savers/tiff/.libs/module.so $DESTDIR/fb/lib/evas/modules/savers/tiff/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 evas.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 evas-fb.pc $DESTDIR/fb/lib/pkgconfig
+install -m 644 evas-software-buffer.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+Name: evas
+Version: 1.2.1
+Description: EFL drawing library
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/evas-1/Evas.h \\
+/fb/include/evas-1/Evas_Engine_Buffer.h \\
+/fb/include/evas-1/Evas_Engine_FB.h \\
+/fb/include/evas-1/Evas_GL.h \\
+/fb/lib/libevas.so \\
+/fb/lib/evas/modules/engines/buffer/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/engines/fb/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/engines/software_generic/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/bmp/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/generic/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+test $GIF && cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/loaders/gif/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/loaders/ico/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+test $JPEG && cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/loaders/jpeg/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/loaders/pmaps/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/png/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/psd/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/tga/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/wbmp/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/fb/lib/evas/modules/loaders/xpm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+test $JPEG && cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/savers/jpeg/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/savers/png/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+test $TIFF && cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/evas/modules/savers/tiff/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+EOF
+cat >> $DESTDIR/fb/share/pkgconfig/evas-build.pc << EOF
+/fb/lib/pkgconfig/evas.pc \\
+/fb/lib/pkgconfig/evas-fb.pc \\
+/fb/lib/pkgconfig/evas-software-buffer.pc
+
+exec=\\
+/fb/lib/libevas.so.1
+EOF
+
+exit
+
+# patch
+--- evas-1.2.1.orig/configure.ac
++++ evas-1.2.1/configure.ac
+@@ -3,7 +3,7 @@
+ m4_define([v_maj], [1])
+ m4_define([v_min], [2])
+ m4_define([v_mic], [1])
+-m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
++m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" 2> /dev/null | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
+ m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
+ ##--   When released, remove the dnl on the below line
+ m4_undefine([v_rev])
+@@ -46,6 +46,7 @@
+ ])
+ 
+ AM_INIT_AUTOMAKE([1.6 dist-bzip2])
++AM_MAINTAINER_MODE
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+ AC_GNU_SOURCE
+@@ -159,7 +160,6 @@
+       want_evas_engine_software_xcb="no"
+       want_evas_engine_gl_xcb="no"
+       want_evas_engine_fb="auto"
+-      want_evas_engine_wayland_shm="auto"
+       want_evas_engine_wayland_egl="auto"
+ ### no - not ready/usable/complete
+ #      want_evas_engine_software_8_x11="auto"
+--- evas-1.2.1.orig/src/modules/loaders/gif/evas_image_load_gif.c
++++ evas-1.2.1/src/modules/loaders/gif/evas_image_load_gif.c
+@@ -287,7 +287,11 @@
+ 
+    if (!cmap)
+      {
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++        DGifCloseFile(gif, NULL);
++#else
+         DGifCloseFile(gif);
++#endif
+         for (i = 0; i < h; i++)
+           {
+              free(rows[i]);
+@@ -644,7 +648,11 @@
+         return EINA_FALSE;
+      }
+ 
++#if GIFLIB_MAJOR >= 5
++   gif = DGifOpenFileHandle(fd, NULL);
++#else
+    gif = DGifOpenFileHandle(fd);
++#endif
+    if (!gif)
+      {
+         if (fd) close(fd);
+@@ -659,7 +667,11 @@
+    if ((w < 1) || (h < 1) || (w > IMG_MAX_SIZE) || (h > IMG_MAX_SIZE) ||
+        IMG_TOO_BIG(w, h))
+      {
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++        DGifCloseFile(gif, NULL);
++#else
+         DGifCloseFile(gif);
++#endif
+         if (IMG_TOO_BIG(w, h))
+           *error = EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED;
+         else
+@@ -674,7 +686,11 @@
+         if (DGifGetRecordType(gif, &rec) == GIF_ERROR)
+           {
+              /* PrintGifError(); */
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++             DGifCloseFile(gif, NULL);
++#else
+              DGifCloseFile(gif);
++#endif
+              *error = EVAS_LOAD_ERROR_UNKNOWN_FORMAT;
+              return EINA_FALSE;
+           }
+@@ -688,7 +704,11 @@
+              if (DGifGetImageDesc(gif) == GIF_ERROR)
+                {
+                   /* PrintGifError(); */
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++                  DGifCloseFile(gif, NULL);
++#else
+                   DGifCloseFile(gif);
++#endif
+                   *error = EVAS_LOAD_ERROR_UNKNOWN_FORMAT;
+                   return EINA_FALSE;
+                }
+@@ -696,7 +716,11 @@
+              if (DGifGetCode(gif, &img_code, &img) == GIF_ERROR)
+                {
+                   /* PrintGifError(); */
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++                  DGifCloseFile(gif, NULL);
++#else
+                   DGifCloseFile(gif);
++#endif
+                   *error = EVAS_LOAD_ERROR_UNKNOWN_FORMAT;
+                   return EINA_FALSE;
+                }
+@@ -752,7 +776,11 @@
+         ie->frames = NULL;
+      }
+ 
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++   DGifCloseFile(gif, NULL);
++#else
+    DGifCloseFile(gif);
++#endif
+    *error = EVAS_LOAD_ERROR_NONE;
+    return EINA_TRUE;
+ }
+@@ -776,7 +804,11 @@
+         return EINA_FALSE;
+      }
+ 
++#if GIFLIB_MAJOR >= 5
++   gif = DGifOpenFileHandle(fd, NULL);
++#else
+    gif = DGifOpenFileHandle(fd);
++#endif
+    if (!gif)
+      {
+         if (fd) close(fd);
+@@ -815,7 +847,11 @@
+      }
+ 
+    ie->frames = eina_list_append(ie->frames, frame);
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++   DGifCloseFile(gif, NULL);
++#else
+    DGifCloseFile(gif);
++#endif
+    return EINA_TRUE;
+ }
+ 
+@@ -865,7 +901,11 @@
+                   return EINA_FALSE;
+                }
+ 
++#if GIFLIB_MAJOR >= 5
++             gif = DGifOpenFileHandle(fd, NULL);
++#else
+              gif = DGifOpenFileHandle(fd);
++#endif
+              if (!gif)
+                {
+                   if (fd) close(fd);
+@@ -885,7 +925,11 @@
+                   *error = EVAS_LOAD_ERROR_UNKNOWN_FORMAT;
+                   return EINA_FALSE;
+                }
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++             DGifCloseFile(gif, NULL);
++#else
+              DGifCloseFile(gif);
++#endif
+              *error = EVAS_LOAD_ERROR_NONE;
+              return EINA_TRUE;
+           }
+@@ -938,7 +982,11 @@
+ #endif
+    if (fd < 0) return -1;
+ 
++#if GIFLIB_MAJOR >= 5
++   gif = DGifOpenFileHandle(fd, NULL);
++#else
+    gif = DGifOpenFileHandle(fd);
++#endif
+    if (!gif)
+      {
+         if (fd) close(fd);
+@@ -1002,7 +1050,11 @@
+          }
+      } while (rec != TERMINATE_RECORD_TYPE);
+ 
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++   DGifCloseFile(gif, NULL);
++#else
+    DGifCloseFile(gif);
++#endif
+    return duration;
+ }
+ 
+# source
+https://raw.githubusercontent.com/caramelli/efl-legacy/master/evas-1.2.1.tar.gz

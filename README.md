@@ -131,7 +131,7 @@ or, for a _uClibc-based_ system:
 $ make rootfs-binutils-gcc-uclibc
 ```
 
-> Since a common cross-compiler is used to build the source code regardless of the target **C library**, all binaries in the minimal system have the same dynamic linker/loader _**ld-linux.so.2**_ in the `PT_INTERP ELF` segment. But note that the compiler present in this minimal root filesystem, and used to build and install packages that will replace the initial minimal system binaries, compiles source code by setting the `PT_INTERP ELF` segment to the dynamic linker/loader name corresponding to the selected **C library** (i.e. _**ld-linux.so.2**_ for _glibc_ or _**ld-musl-x86_64.so.1**_ for _musl_).
+> Since a common cross-compiler is used to build the source code regardless of the target **C library**, all binaries in the minimal system have the same dynamic linker/loader _**ld-linux-x86-64.so.2**_ in the `PT_INTERP ELF` segment. But note that the compiler present in this minimal root filesystem, and used to build and install packages that will replace the initial minimal system binaries, compiles source code by setting the `PT_INTERP ELF` segment to the dynamic linker/loader name corresponding to the selected **C library** (i.e. _**ld-linux-x86-64.so.2**_ for _glibc_ or _**ld-musl-x86_64.so.1**_ for _musl_).
 
 Next, generate the ISO image used for installation:
 

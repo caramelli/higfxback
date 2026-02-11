@@ -1,0 +1,198 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.11; lt-2.4.2)
+libtoolize -c -f; aclocal -I m4 -I m4/common -I m4/eina; autoheader; autoconf; automake -a -c
+./configure --disable-static --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/include/eina-1
+install -m 644 src/include/Eina.h $DESTDIR/fb/include/eina-1
+install -m 644 src/include/eina_config.h $DESTDIR/fb/include/eina-1
+install -d $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_accessor.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_array.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_benchmark.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_binbuf.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_binshare.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_clist.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_convert.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_counter.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_cpu.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_error.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_file.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_fp.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_hamster.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_hash.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inarray.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_array.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_clist.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_f16p16.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_f32p32.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_f8p24.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_fp.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_hash.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_list.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_lock_posix.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_log.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_mempool.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_rbtree.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_rectangle.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_str.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_stringshare.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_tiler.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_trash.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_ustringshare.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inline_value.x $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_inlist.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_iterator.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_lalloc.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_list.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_lock.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_log.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_magic.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_main.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_matrixsparse.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_mempool.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_mmap.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_module.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_prefix.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_quadtree.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_rbtree.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_rectangle.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_refcount.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_safety_checks.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_sched.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_simple_xml_parser.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_str.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_strbuf.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_stringshare.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_tiler.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_trash.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_types.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_unicode.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_ustrbuf.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_ustringshare.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_value.h $DESTDIR/fb/include/eina-1/eina
+install -m 644 src/include/eina_xattr.h $DESTDIR/fb/include/eina-1/eina
+install -d $DESTDIR/fb/lib
+install src/lib/.libs/libeina.so.1 $DESTDIR/fb/lib
+ln -sf libeina.so.1 $DESTDIR/fb/lib/libeina.so
+install -d $DESTDIR/fb/lib/pkgconfig
+install -m 644 eina.pc $DESTDIR/fb/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/eina-build.pc << EOF
+Name: eina
+Version: 1.2.1
+Description: EFL data types library
+Requires: $REQUIRES
+
+devel=\\
+/fb/include/eina-1/Eina.h \\
+/fb/include/eina-1/eina_config.h \\
+/fb/include/eina-1/eina/eina_accessor.h \\
+/fb/include/eina-1/eina/eina_array.h \\
+/fb/include/eina-1/eina/eina_benchmark.h \\
+/fb/include/eina-1/eina/eina_binbuf.h \\
+/fb/include/eina-1/eina/eina_binshare.h \\
+/fb/include/eina-1/eina/eina_clist.h \\
+/fb/include/eina-1/eina/eina_convert.h \\
+/fb/include/eina-1/eina/eina_counter.h \\
+/fb/include/eina-1/eina/eina_cpu.h \\
+/fb/include/eina-1/eina/eina_error.h \\
+/fb/include/eina-1/eina/eina_file.h \\
+/fb/include/eina-1/eina/eina_fp.h \\
+/fb/include/eina-1/eina/eina_hamster.h \\
+/fb/include/eina-1/eina/eina_hash.h \\
+/fb/include/eina-1/eina/eina_inarray.h \\
+/fb/include/eina-1/eina/eina_inline_array.x \\
+/fb/include/eina-1/eina/eina_inline_clist.x \\
+/fb/include/eina-1/eina/eina_inline_f16p16.x \\
+/fb/include/eina-1/eina/eina_inline_f32p32.x \\
+/fb/include/eina-1/eina/eina_inline_f8p24.x \\
+/fb/include/eina-1/eina/eina_inline_fp.x \\
+/fb/include/eina-1/eina/eina_inline_hash.x \\
+/fb/include/eina-1/eina/eina_inline_list.x \\
+/fb/include/eina-1/eina/eina_inline_lock_posix.x \\
+/fb/include/eina-1/eina/eina_inline_log.x \\
+/fb/include/eina-1/eina/eina_inline_mempool.x \\
+/fb/include/eina-1/eina/eina_inline_rbtree.x \\
+/fb/include/eina-1/eina/eina_inline_rectangle.x \\
+/fb/include/eina-1/eina/eina_inline_str.x \\
+/fb/include/eina-1/eina/eina_inline_stringshare.x \\
+/fb/include/eina-1/eina/eina_inline_tiler.x \\
+/fb/include/eina-1/eina/eina_inline_trash.x \\
+/fb/include/eina-1/eina/eina_inline_ustringshare.x \\
+/fb/include/eina-1/eina/eina_inline_value.x \\
+/fb/include/eina-1/eina/eina_inlist.h \\
+/fb/include/eina-1/eina/eina_iterator.h \\
+/fb/include/eina-1/eina/eina_lalloc.h \\
+/fb/include/eina-1/eina/eina_list.h \\
+/fb/include/eina-1/eina/eina_lock.h \\
+/fb/include/eina-1/eina/eina_log.h \\
+/fb/include/eina-1/eina/eina_magic.h \\
+/fb/include/eina-1/eina/eina_main.h \\
+/fb/include/eina-1/eina/eina_matrixsparse.h \\
+/fb/include/eina-1/eina/eina_mempool.h \\
+/fb/include/eina-1/eina/eina_mmap.h \\
+/fb/include/eina-1/eina/eina_module.h \\
+/fb/include/eina-1/eina/eina_prefix.h \\
+/fb/include/eina-1/eina/eina_quadtree.h \\
+/fb/include/eina-1/eina/eina_rbtree.h \\
+/fb/include/eina-1/eina/eina_rectangle.h \\
+/fb/include/eina-1/eina/eina_refcount.h \\
+/fb/include/eina-1/eina/eina_safety_checks.h \\
+/fb/include/eina-1/eina/eina_sched.h \\
+/fb/include/eina-1/eina/eina_simple_xml_parser.h \\
+/fb/include/eina-1/eina/eina_str.h \\
+/fb/include/eina-1/eina/eina_strbuf.h \\
+/fb/include/eina-1/eina/eina_stringshare.h \\
+/fb/include/eina-1/eina/eina_tiler.h \\
+/fb/include/eina-1/eina/eina_trash.h \\
+/fb/include/eina-1/eina/eina_types.h \\
+/fb/include/eina-1/eina/eina_unicode.h \\
+/fb/include/eina-1/eina/eina_ustrbuf.h \\
+/fb/include/eina-1/eina/eina_ustringshare.h \\
+/fb/include/eina-1/eina/eina_value.h \\
+/fb/include/eina-1/eina/eina_xattr.h \\
+/fb/lib/libeina.so \\
+/fb/lib/pkgconfig/eina.pc
+
+exec=\\
+/fb/lib/libeina.so.1
+EOF
+
+exit
+
+# patch
+--- eina-1.2.1.orig/configure.ac
++++ eina-1.2.1/configure.ac
+@@ -3,7 +3,7 @@
+ m4_define([v_maj], [1])
+ m4_define([v_min], [2])
+ m4_define([v_mic], [1])
+-m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
++m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" 2> /dev/null | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
+ m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
+ ##--   When released, remove the dnl on the below line
+ m4_undefine([v_rev])
+@@ -33,6 +33,7 @@
+ ])
+ 
+ AM_INIT_AUTOMAKE([1.6 dist-bzip2])
++AM_MAINTAINER_MODE
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+ AC_GNU_SOURCE
+
+# source
+https://raw.githubusercontent.com/caramelli/efl-legacy/master/eina-1.2.1.tar.gz

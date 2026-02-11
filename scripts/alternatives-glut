@@ -8,5 +8,6 @@ if [ $# != 2 ]; then
 fi
 
 test -f /$1/include/GL/${2}glut.h && ln -sf ${2}glut.h /$1/include/GL/glut.h
-test -f /$1/lib/lib${2}glut.so.3 && ln -sf lib${2}glut.so.3 /$1/lib/libglut.so && ln -sf lib${2}glut.so.3 /$1/lib/libglut.so.3
+test -f /$1/lib/lib${2}glut.so.3 && ln -sf lib${2}glut.so.3 /$1/lib/libglut.so.3
+test -f /$1/lib/libglut.so || ln -s libglut.so.3 /$1/lib/libglut.so
 test -f /$1/lib/pkgconfig/${2}glut.pc && ln -sf ${2}glut.pc /$1/lib/pkgconfig/glut.pc
