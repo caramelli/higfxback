@@ -9,7 +9,7 @@ PATH := $(STAGING_DIR)/bin:$(PATH)
 BINUTILS     := binutils-2.25.1
 BUSYBOX      := busybox-1.36.1
 GCC          := gcc-4.7.4
-GLIBC        := glibc-2.19
+GLIBC        := glibc-2.25
 GMP          := gmp-6.2.1
 LINUX        := linux-4.14.336
 MPFR         := mpfr-4.1.1
@@ -67,7 +67,7 @@ glibc: cross-gcc linux-headers
 	@echo Build $@
 	@test -d $(GLIBC) || { ( test -f $(GLIBC).tar.bz2 || wget -q https://ftp.gnu.org/gnu/glibc/$(GLIBC).tar.bz2 ) && tar xf $(GLIBC).tar.bz2 && patch -d $(GLIBC) -p1 < $(GLIBC).patch; }
 	@test -d $(GLIBC)/build || mkdir $(GLIBC)/build
-	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=no libc_cv_ssp=no ../configure --build=$(MACHTYPE) --host=$(HOST) --enable-obsolete-rpc --prefix= --libexecdir=/lib )
+	@test -f $(GLIBC)/build/config.status || ( cd $(GLIBC)/build; ac_cv_path_BASH_SHELL=/bin/sh ../configure --build=$(MACHTYPE) --host=$(HOST) --prefix= --libexecdir=/lib )
 	$(MAKE) -C $(GLIBC)/build
 	$(MAKE) DESTDIR=$(STAGING_DIR)/glibc -C $(GLIBC)/build install
 	@rm -rf $(STAGING_DIR)/glibc/share/locale
@@ -383,7 +383,7 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install -d rootfs-$*/include/arpa;        cp $(STAGING_DIR)/$*/include/arpa/*               rootfs-$*/include/arpa
 	@install -d rootfs-$*/include/asm;         cp $(STAGING_DIR)/include/asm/*                   rootfs-$*/include/asm
 	@install -d rootfs-$*/include/asm-generic; cp $(STAGING_DIR)/include/asm-generic/*           rootfs-$*/include/asm-generic
-	@install -d rootfs-$*/include/bits;        cp $(STAGING_DIR)/$*/include/bits/*               rootfs-$*/include/bits
+	@install -d rootfs-$*/include/bits;        cp -r $(STAGING_DIR)/$*/include/bits/*            rootfs-$*/include/bits
 	@install -d rootfs-$*/include/gnu;         cp 2>/dev/null $(STAGING_DIR)/$*/include/gnu/*    rootfs-$*/include/gnu                || true # glibc, uclibc
 	@install -d rootfs-$*/include/linux;       cp -r $(STAGING_DIR)/include/linux/*              rootfs-$*/include/linux
 	@install -d rootfs-$*/include/mtd;         cp $(STAGING_DIR)/include/mtd/*                   rootfs-$*/include/mtd
@@ -412,6 +412,9 @@ rootfs-%: linux busybox-% pkg-config-%
 	@[ -L $(STAGING_DIR)/$*/lib/libfts.so.0 ] && ln -sf libfts.so.0                              rootfs-$*/lib/libfts.so              || true # musl
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libm.so.6                                         rootfs-$*/lib/libm.so.6              || true # glibc
 	@cp -P $(STAGING_DIR)/$*/lib/libm.so                                                         rootfs-$*/lib/libm.so
+	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libmvec.so.1                                      rootfs-$*/lib/libmvec.so.1           || true # glibc
+	@[ -L $(STAGING_DIR)/$*/lib/libmvec.so.1 ] && ln -sf libmvec.so.1                            rootfs-$*/lib/libmvec.so             || true # glibc
+	@install 2>/dev/null -m 644 $(STAGING_DIR)/lib/libmvec_nonshared.a                           rootfs-$*/lib/libmvec_nonshared.a    || true # glibc
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libnsl.so.1                                       rootfs-$*/lib/libnsl.so.1            || true # glibc
 	@[ -L $(STAGING_DIR)/$*/lib/libnsl.so.1 ] && ln -sf libnsl.so.1                              rootfs-$*/lib/libnsl.so              || true # glibc
 	@install 2>/dev/null $(STAGING_DIR)/$*/lib/libnss_dns.so.2                                   rootfs-$*/lib/libnss_dns.so.2        || true # glibc

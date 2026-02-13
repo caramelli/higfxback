@@ -2014,6 +2014,151 @@ exit
  #endif
    
    for(cp=0,compptr = cinfo.comp_info;cp<cinfo.num_components;
+--- netpbm-10.26.64.orig/converter/ppm/xpmtoppm.c
++++ netpbm-10.26.64/converter/ppm/xpmtoppm.c
+@@ -121,7 +121,7 @@
+ 
+ 
+ static void
+-getline(char * const line, int const size, FILE * const stream) {
++getLine(char * const line, int const size, FILE * const stream) {
+ /*----------------------------------------------------------------------------
+    Read the next line from the input file 'stream', through the one-line
+    buffer lastInputLine[].
+@@ -137,7 +137,7 @@
+    Exit program if the line doesn't fit in the buffer.
+ -----------------------------------------------------------------------------*/
+     if (size > MAX_LINE+1)
+-        pm_error("INTERNAL ERROR: getline() received 'size' parameter "
++        pm_error("INTERNAL ERROR: getLine() received 'size' parameter "
+                  "which is out of bounds");
+ 
+     if (backup) {
+@@ -353,7 +353,7 @@
+                int * const transparentP) {
+ /*----------------------------------------------------------------------------
+   Read the header of the XPM file on stream 'stream'.  Assume the
+-  getline() stream is presently positioned to the beginning of the
++  getLine() stream is presently positioned to the beginning of the
+   file and it is a Version 3 XPM file.  Leave the stream positioned
+   after the header.
+ 
+@@ -384,25 +384,25 @@
+     *widthP = *heightP = *ncolorsP = *chars_per_pixelP = -1;
+ 
+     /* Read the XPM signature comment */
+-    getline(line, sizeof(line), stream);
++    getLine(line, sizeof(line), stream);
+     if (strncmp(line, xpm3_signature, strlen(xpm3_signature)) != 0) 
+         pm_error("Apparent XPM 3 file does not start with '/* XPM */'.  "
+                  "First line is '%s'", xpm3_signature);
+ 
+     /* Read the assignment line */
+-    getline(line, sizeof(line), stream);
++    getLine(line, sizeof(line), stream);
+     if (strncmp(line, "static char", 11) != 0)
+         pm_error("Cannot find data structure declaration.  Expected a "
+                  "line starting with 'static char', but found the line "
+                  "'%s'.", line);
+ 
+ 	/* Read the hints line */
+-    getline(line, sizeof(line), stream);
++    getLine(line, sizeof(line), stream);
+     /* skip the comment line if any */
+     if (!strncmp(line, "/*", 2)) {
+         while (!strstr(line, "*/"))
+-            getline(line, sizeof(line), stream);
+-        getline(line, sizeof(line), stream);
++            getLine(line, sizeof(line), stream);
++        getLine(line, sizeof(line), stream);
+     }
+     if (sscanf(line, "\"%d %d %d %d\",", widthP, heightP,
+                ncolorsP, chars_per_pixelP) != 4)
+@@ -436,10 +436,10 @@
+         *transparentP = -1;  /* initial value */
+ 
+         for (seqNum = 0; seqNum < *ncolorsP; seqNum++) {
+-            getline(line, sizeof(line), stream);
++            getLine(line, sizeof(line), stream);
+             /* skip the comment line if any */
+             if (!strncmp(line, "/*", 2))
+-                getline(line, sizeof(line), stream);
++                getLine(line, sizeof(line), stream);
+             
+             interpretXpm3ColorTableLine(line, seqNum, *chars_per_pixelP, 
+                                         *colorsP, *ptabP, transparentP);
+@@ -454,7 +454,7 @@
+                pixel ** const colorsP, int ** const ptabP) {
+ /*----------------------------------------------------------------------------
+   Read the header of the XPM file on stream 'stream'.  Assume the
+-  getline() stream is presently positioned to the beginning of the
++  getLine() stream is presently positioned to the beginning of the
+   file and it is a Version 1 XPM file.  Leave the stream positioned
+   after the header.
+   
+@@ -473,7 +473,7 @@
+     /* Read the initial defines. */
+     processedStaticChar = FALSE;
+     while (!processedStaticChar) {
+-        getline(line, sizeof(line), stream);
++        getLine(line, sizeof(line), stream);
+ 
+         if (sscanf(line, "#define %s %d", str1, &v) == 2) {
+             char *t1;
+@@ -521,7 +521,7 @@
+     /* If there's a monochrome color table, skip it. */
+     if (!strncmp(t1, "mono", 4)) {
+         for (;;) {
+-            getline(line, sizeof(line), stream);
++            getLine(line, sizeof(line), stream);
+             if (!strncmp(line, "static char", 11))
+                 break;
+         }
+@@ -544,7 +544,7 @@
+ 
+     /* Read color table. */
+     for (i = 0; i < *ncolorsP; ++i) {
+-        getline(line, sizeof(line), stream);
++        getLine(line, sizeof(line), stream);
+ 
+         if ((t1 = strchr(line, '"')) == NULL)
+             pm_error("D error scanning color table");
+@@ -580,7 +580,7 @@
+        "static char ...").
+     */
+     for (;;) {
+-        getline(line, sizeof(line), stream);
++        getLine(line, sizeof(line), stream);
+         if (strncmp(line, "static char", 11) == 0)
+             break;
+     }
+@@ -671,7 +671,7 @@
+     backup = FALSE;
+ 
+     /* Read the header line */
+-    getline(line, sizeof(line), stream);
++    getLine(line, sizeof(line), stream);
+     backup = TRUE;  /* back up so next read reads this line again */
+     
+     rc = sscanf(line, "/* %s */", str1);
+@@ -691,7 +691,7 @@
+         pm_error("Could not get %d bytes of memory for image", totalpixels);
+     cursor = *dataP;
+     maxcursor = *dataP + totalpixels - 1;
+-	getline(line, sizeof(line), stream); 
++	getLine(line, sizeof(line), stream); 
+         /* read next line (first line may not always start with comment) */
+     while (cursor <= maxcursor) {
+         if (strncmp(line, "/*", 2) == 0) {
+@@ -701,7 +701,7 @@
+                              ncolors, ptab, &cursor, maxcursor);
+         }
+         if (cursor <= maxcursor)
+-            getline(line, sizeof(line), stream);
++            getLine(line, sizeof(line), stream);
+     }
+     if (ptab) free(ptab);
+ }
 --- netpbm-10.26.64.orig/editor/pnmflip
 +++ netpbm-10.26.64/editor/pnmflip
 @@ -1,4 +1,4 @@
