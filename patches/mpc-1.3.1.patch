@@ -18,6 +18,8 @@ install -m 644 src/mpc.h $DESTDIR/include
 install -d $DESTDIR/lib
 install src/.libs/libmpc.so.3 $DESTDIR/lib
 ln -sf libmpc.so.3 $DESTDIR/lib/libmpc.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 mpc.pc $DESTDIR/lib/pkgconfig
 
 # build.pc
 install -d $DESTDIR/share/pkgconfig
@@ -29,7 +31,8 @@ Requires: $REQUIRES
 
 devel=\\
 /include/mpc.h \\
-/lib/libmpc.so
+/lib/libmpc.so \\
+/lib/pkgconfig/mpc.pc
 
 exec=\\
 /lib/libmpc.so.3
@@ -38,6 +41,27 @@ EOF
 exit
 
 # patch
+--- mpc-1.3.1.orig/Makefile.am
++++ mpc-1.3.1/Makefile.am
+@@ -25,6 +25,9 @@
+ 
+ SUBDIRS = src tests doc tools
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = mpc.pc
++
+ EXTRA_HEADERS = src/mpc-log.h
+ include_HEADERS = src/mpc.h @MPC_LOG_H@
+ EXTRA_DIST = doc/fdl-1.3.texi src/mpc-log.h
+--- mpc-1.3.1.orig/configure.ac
++++ mpc-1.3.1/configure.ac
+@@ -228,5 +228,5 @@
+ # Looks for short git hash if the version string contains "dev"
+ MPC_GITVERSION
+ 
+-AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile doc/Makefile tools/Makefile tools/bench/Makefile tools/mpcheck/Makefile])
++AC_CONFIG_FILES([mpc.pc Makefile src/Makefile tests/Makefile doc/Makefile tools/Makefile tools/bench/Makefile tools/mpcheck/Makefile])
+ AC_OUTPUT
 --- mpc-1.3.1.orig/m4/mpc.m4
 +++ mpc-1.3.1/m4/mpc.m4
 @@ -178,7 +178,7 @@
@@ -49,6 +73,21 @@ exit
           AC_SUBST([GITVERSION])
           AC_MSG_RESULT([$GITVERSION])
        ])
+--- mpc-1.3.1.orig/mpc.pc.in
++++ mpc-1.3.1/mpc.pc.in
+@@ -0,0 +1,12 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++includedir=@includedir@
++libdir=@libdir@
++
++Name: GNU MPC
++Description: A complex floating-point library with exact rounding
++URL: https://www.multiprecision.org/mpc/
++Version: @VERSION@
++Requires.private: mpfr >= 4.1.0, gmp >= 5.0.0
++Cflags: -I${includedir}
++Libs: -L${libdir} -lmpc
 
 # source
 https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz

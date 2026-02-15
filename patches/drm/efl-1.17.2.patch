@@ -1,0 +1,1138 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build dbus-build freetype-build jpeg-build libdrm-build libinput-build libpng-build libsndfile-build libxkbcommon-build lua-build openssl-build udevd-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if pkg-config --exists giflib-build; then
+  REQUIRES="$REQUIRES giflib-build"
+else
+  GIF=--disable-image-loader-gif
+fi
+
+if pkg-config --exists fontconfig-build; then
+  REQUIRES="$REQUIRES fontconfig-build"
+else
+  FONTCONFIG=--disable-fontconfig
+fi
+
+if pkg-config --exists fribidi-build; then
+  REQUIRES="$REQUIRES fribidi-build"
+else
+  FRIBIDI=--disable-fribidi
+fi
+
+if pkg-config --exists glib-build; then
+  REQUIRES="$REQUIRES glib-build"
+else
+  GLIB=--without-glib
+fi
+
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists gst-plugins-base-build; then
+  REQUIRES="$REQUIRES gst-plugins-base-build"
+else
+  GSTREAMER=--disable-gstreamer1
+fi
+
+if pkg-config --exists util-linux-build; then
+  REQUIRES="$REQUIRES util-linux-build"
+else
+  MOUNT=--disable-libmount
+fi
+
+if pkg-config --exists tiff-build; then
+  REQUIRES="$REQUIRES tiff-build"
+else
+  TIFF=--disable-image-loader-tiff
+fi
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
+./configure $FONTCONFIG $FRIBIDI $GIF $GLIB $GSTREAMER $MOUNT $TIFF --disable-physics --disable-pulseaudio --enable-drm --enable-i-really-know-what-i-am-doing-and-that-this-will-probably-break-things-and-i-will-fix-them-myself-and-send-patches-abb --enable-lua-old --with-x11=none --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install src/bin/eet/diffeet $DESTDIR/drm/bin
+install src/bin/ecore_evas/.libs/ecore_evas_convert $DESTDIR/drm/bin
+install src/bin/edje/.libs/edje_cc $DESTDIR/drm/bin
+install src/bin/eet/.libs/eet $DESTDIR/drm/bin
+install src/bin/embryo/.libs/embryo_cc $DESTDIR/drm/bin
+install src/bin/ethumb/.libs/ethumb $DESTDIR/drm/bin
+install src/bin/ethumb_client/.libs/ethumbd $DESTDIR/drm/bin
+install src/bin/ethumb_client/.libs/ethumbd_client $DESTDIR/drm/bin
+install src/bin/evas/.libs/evas_cserve2_client $DESTDIR/drm/bin
+install src/bin/evas/.libs/evas_cserve2_debug $DESTDIR/drm/bin
+install src/bin/evas/.libs/evas_cserve2_shm_debug $DESTDIR/drm/bin 
+install src/bin/evas/.libs/evas_cserve2_usage $DESTDIR/drm/bin
+install -d $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/Ecore.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_animator.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_animator.eo.legacy.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/Ecore_Common.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/Ecore_Eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_exe.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_exe.eo.legacy.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/Ecore_Getopt.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_idle_enterer.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_idle_exiter.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_idler.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_idler.eo.legacy.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_job.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_job.eo.legacy.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/Ecore_Legacy.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_mainloop.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_poller.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_poller.eo.legacy.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_timer.eo.h $DESTDIR/drm/include/ecore-1
+install -m 644 src/lib/ecore/ecore_timer.eo.legacy.h $DESTDIR/drm/include/ecore-1
+install -d $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/Ecore_Con.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/ecore_con_base.eo.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/ecore_con_base.eo.legacy.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/ecore_con_client.eo.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/ecore_con_client.eo.legacy.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/Ecore_Con_Eo.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/Ecore_Con_Legacy.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/ecore_con_server.eo.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/ecore_con_server.eo.legacy.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/efl_network_connector.eo.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/efl_network_connector.eo.legacy.h $DESTDIR/drm/include/ecore-con-1
+install -m 644 src/lib/ecore_con/efl_network_url.eo.h $DESTDIR/drm/include/ecore-con-1
+install -d $DESTDIR/drm/include/ecore-drm-1
+install -m 644 src/lib/ecore_drm/Ecore_Drm.h $DESTDIR/drm/include/ecore-drm-1
+install -d $DESTDIR/drm/include/ecore-file-1
+install -m 644 src/lib/ecore_file/Ecore_File.h $DESTDIR/drm/include/ecore-file-1
+install -d $DESTDIR/drm/include/ecore-imf-1
+install -m 644 src/lib/ecore_imf/Ecore_IMF.h $DESTDIR/drm/include/ecore-imf-1
+install -d $DESTDIR/drm/include/ecore-input-1
+install -m 644 src/lib/ecore_input/Ecore_Input.h $DESTDIR/drm/include/ecore-input-1
+install -d $DESTDIR/drm/include/ecore-evas-1
+install -m 644 src/lib/ecore_evas/Ecore_Evas.h $DESTDIR/drm/include/ecore-evas-1
+install -m 644 src/lib/ecore_evas/Ecore_Evas_Types.h $DESTDIR/drm/include/ecore-evas-1
+install -d $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/Edje.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/Edje_Common.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/Edje_Edit.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/edje_edit.eo.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/edje_edit.eo.legacy.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/Edje_Eo.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/Edje_Legacy.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/edje_object.eo.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/edje_object.eo.legacy.h $DESTDIR/drm/include/edje-1
+install -m 644 src/lib/edje/edje_types.eot.h $DESTDIR/drm/include/edje-1
+install -d $DESTDIR/drm/include/eet-1
+install -m 644 src/lib/eet/Eet.h $DESTDIR/drm/include/eet-1
+install -d $DESTDIR/drm/include/eeze-1
+install -m 644 src/lib/eeze/Eeze.h $DESTDIR/drm/include/eeze-1
+install -d $DESTDIR/drm/include/efl-1
+install -m 644 src/lib/efl/Efl.h $DESTDIR/drm/include/efl-1
+install -m 644 src/lib/efl/Efl_Config.h $DESTDIR/drm/include/efl-1
+install -m 644 src/lib/efl/Efl_Model_Common.h $DESTDIR/drm/include/efl-1
+install -d $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_control.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_file.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx.x $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_base.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_fill.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_filter.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_gradient_base.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_gradient_linear.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_gradient_radial.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_shape.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_stack.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_gfx_view.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_image.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_model_base.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_player.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_text.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -m 644 src/lib/efl/interfaces/efl_text_properties.eo.h $DESTDIR/drm/include/efl-1/interfaces
+install -d $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/Efreet.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_base.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_desktop.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_icon.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_ini.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_menu.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/Efreet_Mime.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/Efreet_Trash.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_uri.h $DESTDIR/drm/include/efreet-1
+install -m 644 src/lib/efreet/efreet_utils.h $DESTDIR/drm/include/efreet-1
+install -d $DESTDIR/drm/include/eina-1
+install -m 644 src/lib/eina/Eina.h $DESTDIR/drm/include/eina-1
+install -m 644 src/lib/eina/eina_config.h $DESTDIR/drm/include/eina-1
+install -d $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_accessor.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_alloca.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_array.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_benchmark.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_bezier.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_binbuf.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_binshare.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_clist.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_convert.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_counter.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_cow.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_cpu.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_crc.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_error.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_evlog.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_file.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_fp.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_hamster.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_hash.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inarray.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_array.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_clist.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_cpu.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_crc.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_f8p24.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_f16p16.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_f32p32.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_file.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_fp.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_hash.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_inlist.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_list.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_lock_posix.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_log.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_mempool.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_rbtree.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_rectangle.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_str.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_stringshare.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_tiler.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_trash.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_unicode.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_ustringshare.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_value.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_value_util.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inline_vector.x $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_inlist.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_iterator.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_lalloc.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_list.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_lock.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_log.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_magic.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_main.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_matrix.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_matrixsparse.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_mempool.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_mmap.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_module.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_prefix.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_quad.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_quadtree.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_quaternion.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_rbtree.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_rectangle.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_refcount.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_safety_checks.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_sched.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_simple_xml_parser.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_str.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_strbuf.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_stringshare.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_thread.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_thread_queue.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_tiler.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_tmpstr.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_trash.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_types.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_unicode.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_ustrbuf.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_ustringshare.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_util.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_value.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_value_util.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_vector.h $DESTDIR/drm/include/eina-1/eina
+install -m 644 src/lib/eina/eina_xattr.h $DESTDIR/drm/include/eina-1/eina
+install -d $DESTDIR/drm/include/eio-1
+install -m 644 src/lib/eio/Eio.h $DESTDIR/drm/include/eio-1
+install -m 644 src/lib/eio/eio_inline_helper.x $DESTDIR/drm/include/eio-1
+install -d $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/Eldbus.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_connection.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_freedesktop.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_introspection.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_message.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_message_eina_value.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_message_helper.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_model_arguments.eo.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_model_connection.eo.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_model_method.eo.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_model_object.eo.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_model_proxy.eo.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_model_signal.eo.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_object.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_pending.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_proxy.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_service.h $DESTDIR/drm/include/eldbus-1
+install -m 644 src/lib/eldbus/eldbus_signal_handler.h $DESTDIR/drm/include/eldbus-1
+install -d $DESTDIR/drm/include/embryo-1
+install -m 644 src/lib/embryo/Embryo.h $DESTDIR/drm/include/embryo-1
+install -d $DESTDIR/drm/include/emile-1
+install -m 644 src/lib/emile/Emile.h $DESTDIR/drm/include/emile-1
+install -m 644 src/lib/emile/emile_base64.h $DESTDIR/drm/include/emile-1
+install -m 644 src/lib/emile/emile_cipher.h $DESTDIR/drm/include/emile-1
+install -m 644 src/lib/emile/emile_compress.h $DESTDIR/drm/include/emile-1
+install -m 644 src/lib/emile/emile_image.h $DESTDIR/drm/include/emile-1
+install -d $DESTDIR/drm/include/emotion-1
+install -m 644 src/lib/emotion/Emotion.h $DESTDIR/drm/include/emotion-1
+install -m 644 src/lib/emotion/Emotion_Eo.h $DESTDIR/drm/include/emotion-1
+install -m 644 src/lib/emotion/Emotion_Legacy.h $DESTDIR/drm/include/emotion-1
+install -m 644 src/lib/emotion/emotion_object.eo.h $DESTDIR/drm/include/emotion-1
+install -m 644 src/lib/emotion/emotion_object.eo.legacy.h $DESTDIR/drm/include/emotion-1
+install -d $DESTDIR/drm/include/eo-1
+install -m 644 src/lib/eo/Eo.h $DESTDIR/drm/include/eo-1
+install -m 644 src/lib/eo/eo_abstract_class.eo.h $DESTDIR/drm/include/eo-1
+install -m 644 src/lib/eo/eo_base.eo.h $DESTDIR/drm/include/eo-1
+install -d $DESTDIR/drm/include/ethumb-1
+install -m 644 src/lib/ethumb/Ethumb.h $DESTDIR/drm/include/ethumb-1
+install -d $DESTDIR/drm/include/ethumb-client-1
+install -m 644 src/lib/ethumb_client/Ethumb_Client.h $DESTDIR/drm/include/ethumb-client-1
+install -d $DESTDIR/drm/include/evas-1
+install -m 644 src/lib/evas/Evas.h $DESTDIR/drm/include/evas-1
+install -m 644 src/lib/evas/Evas_Common.h $DESTDIR/drm/include/evas-1
+install -m 644 src/lib/evas/Evas_Eo.h $DESTDIR/drm/include/evas-1
+install -m 644 src/lib/evas/Evas_GL.h $DESTDIR/drm/include/evas-1
+install -m 644 src/lib/evas/Evas_Legacy.h $DESTDIR/drm/include/evas-1
+install -m 644 src/lib/evas/Evas_Loader.h $DESTDIR/drm/include/evas-1
+install -d $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_base.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_base.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_container.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_gradient.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_gradient.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_gradient_linear.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_gradient_linear.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_gradient_radial.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_gradient_radial.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_shape.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/efl_vg_shape.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_box.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_box.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_camera.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_light.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_material.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_mesh.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_node.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_object.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_primitive.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_scene.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_canvas3d_texture.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_clickable_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_common_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_common_interface.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_draggable_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_grid.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_grid.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_image.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_image.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_line.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_line.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_object.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_object.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_object_smart.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_object_smart.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_out.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_out.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_polygon.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_polygon.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_rectangle.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_rectangle.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_scrollable_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_selectable_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_signal_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_smart_clipped.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_smart_clipped.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_table.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_table.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_text.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_text.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_textblock.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_textblock.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_textgrid.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_textgrid.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_types.eot.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_vg.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_vg.eo.legacy.h $DESTDIR/drm/include/evas-1/canvas
+install -m 644 src/lib/evas/canvas/evas_zoomable_interface.eo.h $DESTDIR/drm/include/evas-1/canvas
+install -d $DESTDIR/drm/lib
+install src/lib/ecore/.libs/libecore.so.1 $DESTDIR/drm/lib
+ln -sf libecore.so.1 $DESTDIR/drm/lib/libecore.so
+install src/lib/ecore_con/.libs/libecore_con.so.1 $DESTDIR/drm/lib
+ln -sf libecore_con.so.1 $DESTDIR/drm/lib/libecore_con.so
+install src/lib/ecore_drm/.libs/libecore_drm.so.1 $DESTDIR/drm/lib
+ln -sf libecore_drm.so.1 $DESTDIR/drm/lib/libecore_drm.so
+install src/lib/ecore_evas/.libs/libecore_evas.so.1 $DESTDIR/drm/lib
+ln -sf libecore_evas.so.1 $DESTDIR/drm/lib/libecore_evas.so
+install src/lib/ecore_file/.libs/libecore_file.so.1 $DESTDIR/drm/lib
+ln -sf libecore_file.so.1 $DESTDIR/drm/lib/libecore_file.so
+install src/lib/ecore_imf/.libs/libecore_imf.so.1 $DESTDIR/drm/lib
+ln -sf libecore_imf.so.1 $DESTDIR/drm/lib/libecore_imf.so
+install src/lib/ecore_input/.libs/libecore_input.so.1 $DESTDIR/drm/lib
+ln -sf libecore_input.so.1 $DESTDIR/drm/lib/libecore_input.so
+install src/lib/ecore_input_evas/.libs/libecore_input_evas.so.1 $DESTDIR/drm/lib
+ln -sf libecore_input_evas.so.1 $DESTDIR/drm/lib/libecore_input_evas.so
+install src/lib/ector/.libs/libector.so.1 $DESTDIR/drm/lib
+ln -sf libector.so.1 $DESTDIR/drm/lib/libector.so
+install src/lib/edje/.libs/libedje.so.1 $DESTDIR/drm/lib
+ln -sf libedje.so.1 $DESTDIR/drm/lib/libedje.so
+install src/lib/eet/.libs/libeet.so.1 $DESTDIR/drm/lib
+ln -sf libeet.so.1 $DESTDIR/drm/lib/libeet.so
+install src/lib/eeze/.libs/libeeze.so.1 $DESTDIR/drm/lib
+ln -sf libeeze.so.1 $DESTDIR/drm/lib/libeeze.so
+install src/lib/efl/.libs/libefl.so.1 $DESTDIR/drm/lib
+ln -sf libefl.so.1 $DESTDIR/drm/lib/libefl.so
+install src/lib/efreet/.libs/libefreet.so.1 $DESTDIR/drm/lib
+ln -sf libefreet.so.1 $DESTDIR/drm/lib/libefreet.so
+install src/lib/efreet/.libs/libefreet_mime.so.1 $DESTDIR/drm/lib
+ln -sf libefreet_mime.so.1 $DESTDIR/drm/lib/libefreet_mime.so
+install src/lib/efreet/.libs/libefreet_trash.so.1 $DESTDIR/drm/lib
+ln -sf libefreet_trash.so.1 $DESTDIR/drm/lib/libefreet_trash.so
+install src/lib/eina/.libs/libeina.so.1 $DESTDIR/drm/lib
+ln -sf libeina.so.1 $DESTDIR/drm/lib/libeina.so
+install src/lib/eio/.libs/libeio.so.1 $DESTDIR/drm/lib
+ln -sf libeio.so.1 $DESTDIR/drm/lib/libeio.so
+install src/lib/eldbus/.libs/libeldbus.so.1 $DESTDIR/drm/lib
+ln -sf libeldbus.so.1 $DESTDIR/drm/lib/libeldbus.so
+install src/lib/embryo/.libs/libembryo.so.1 $DESTDIR/drm/lib
+ln -sf libembryo.so.1 $DESTDIR/drm/lib/libembryo.so
+install src/lib/emile/.libs/libemile.so.1 $DESTDIR/drm/lib
+ln -sf libemile.so.1 $DESTDIR/drm/lib/libemile.so
+install src/lib/emotion/.libs/libemotion.so.1 $DESTDIR/drm/lib
+ln -sf libemotion.so.1 $DESTDIR/drm/lib/libemotion.so
+install src/lib/eo/.libs/libeo.so.1 $DESTDIR/drm/lib
+ln -sf libeo.so.1 $DESTDIR/drm/lib/libeo.so
+install src/lib/ethumb/.libs/libethumb.so.1 $DESTDIR/drm/lib
+ln -sf libethumb.so.1 $DESTDIR/drm/lib/libethumb.so
+install src/lib/ethumb_client/.libs/libethumb_client.so.1 $DESTDIR/drm/lib
+ln -sf libethumb_client.so.1 $DESTDIR/drm/lib/libethumb_client.so
+install src/lib/evas/.libs/libevas.so.1 $DESTDIR/drm/lib
+ln -sf libevas.so.1 $DESTDIR/drm/lib/libevas.so
+install -d $DESTDIR/drm/lib/edje/utils/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/bin/edje/epp/epp $DESTDIR/drm/lib/edje/utils/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/drm/lib/evas/modules/engines/drm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/modules/evas/engines/drm/.libs/module.so $DESTDIR/drm/lib/evas/modules/engines/drm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/drm/lib/evas/cserve2/bin/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/bin/evas/.libs/evas_cserve2 $DESTDIR/drm/lib/evas/cserve2/bin/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/bin/evas/.libs/evas_cserve2_slave $DESTDIR/drm/lib/evas/cserve2/bin/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/drm/lib/ecore_evas/engines/drm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install ./src/modules/ecore_evas/engines/drm/.libs/module.so $DESTDIR/drm/lib/ecore_evas/engines/drm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/drm/lib/ethumb_client/utils/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install src/bin/ethumb_client/.libs/ethumbd_slave $DESTDIR/drm/lib/ethumb_client/utils/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ector.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-con.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-drm.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-evas.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-file.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-imf.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-imf-evas.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-input.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-input-evas.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ecore-ipc.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/edje.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/eet.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/eeze.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/efreet.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/efreet-mime.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/efreet-trash.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/efl.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/eina.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/eio.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/eldbus.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/embryo.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/emile.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/emotion.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/eo.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ethumb.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/ethumb_client.pc $DESTDIR/drm/lib/pkgconfig
+install -m 644 pc/evas.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/efl-build.pc << EOF
+Name: efl
+Version: 1.17.2
+Description: Enlightenment foundation libraries
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/ecore-1/Ecore.h \\
+/drm/include/ecore-1/ecore_animator.eo.h \\
+/drm/include/ecore-1/ecore_animator.eo.legacy.h \\
+/drm/include/ecore-1/Ecore_Common.h \\
+/drm/include/ecore-1/Ecore_Eo.h \\
+/drm/include/ecore-1/ecore_exe.eo.h \\
+/drm/include/ecore-1/ecore_exe.eo.legacy.h \\
+/drm/include/ecore-1/Ecore_Getopt.h \\
+/drm/include/ecore-1/Ecore_Legacy.h \\
+/drm/include/ecore-1/ecore_idle_enterer.eo.h \\
+/drm/include/ecore-1/ecore_idle_exiter.eo.h \\
+/drm/include/ecore-1/ecore_idler.eo.h \\
+/drm/include/ecore-1/ecore_idler.eo.legacy.h \\
+/drm/include/ecore-1/ecore_job.eo.h \\
+/drm/include/ecore-1/ecore_job.eo.legacy.h \\
+/drm/include/ecore-1/ecore_mainloop.eo.h \\
+/drm/include/ecore-1/ecore_poller.eo.h \\
+/drm/include/ecore-1/ecore_poller.eo.legacy.h \\
+/drm/include/ecore-1/ecore_timer.eo.h \\
+/drm/include/ecore-1/ecore_timer.eo.legacy.h \\
+/drm/include/ecore-con-1/Ecore_Con.h \\
+/drm/include/ecore-con-1/ecore_con_base.eo.h \\
+/drm/include/ecore-con-1/ecore_con_base.eo.legacy.h \\
+/drm/include/ecore-con-1/ecore_con_client.eo.h \\
+/drm/include/ecore-con-1/ecore_con_client.eo.legacy.h \\
+/drm/include/ecore-con-1/Ecore_Con_Eo.h \\
+/drm/include/ecore-con-1/Ecore_Con_Legacy.h \\
+/drm/include/ecore-con-1/ecore_con_server.eo.h \\
+/drm/include/ecore-con-1/ecore_con_server.eo.legacy.h \\
+/drm/include/ecore-con-1/efl_network_connector.eo.h \\
+/drm/include/ecore-con-1/efl_network_connector.eo.legacy.h \\
+/drm/include/ecore-con-1/efl_network_url.eo.h \\
+/drm/include/ecore-drm-1/Ecore_Drm.h \\
+/drm/include/ecore-evas-1/Ecore_Evas.h \\
+/drm/include/ecore-evas-1/Ecore_Evas_Types.h \\
+/drm/include/ecore-file-1/Ecore_File.h \\
+/drm/include/ecore-imf-1/Ecore_IMF.h \\
+/drm/include/ecore-input-1/Ecore_Input.h \\
+/drm/include/edje-1/Edje.h \\
+/drm/include/edje-1/Edje_Common.h \\
+/drm/include/edje-1/Edje_Edit.h \\
+/drm/include/edje-1/edje_edit.eo.h \\
+/drm/include/edje-1/edje_edit.eo.legacy.h \\
+/drm/include/edje-1/Edje_Eo.h \\
+/drm/include/edje-1/Edje_Legacy.h \\
+/drm/include/edje-1/edje_object.eo.h \\
+/drm/include/edje-1/edje_object.eo.legacy.h \\
+/drm/include/edje-1/edje_types.eot.h \\
+/drm/include/eet-1/Eet.h \\
+/drm/include/eeze-1/Eeze.h \\
+/drm/include/efl-1/Efl.h \\
+/drm/include/efl-1/Efl_Config.h \\
+/drm/include/efl-1/Efl_Model_Common.h \\
+/drm/include/efl-1/interfaces/efl_control.eo.h \\
+/drm/include/efl-1/interfaces/efl_file.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx.x \\
+/drm/include/efl-1/interfaces/efl_gfx_base.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_fill.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_filter.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_gradient_base.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_gradient_linear.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_gradient_radial.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_shape.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_stack.eo.h \\
+/drm/include/efl-1/interfaces/efl_gfx_view.eo.h \\
+/drm/include/efl-1/interfaces/efl_image.eo.h \\
+/drm/include/efl-1/interfaces/efl_model_base.eo.h \\
+/drm/include/efl-1/interfaces/efl_player.eo.h \\
+/drm/include/efl-1/interfaces/efl_text.eo.h \\
+/drm/include/efl-1/interfaces/efl_text_properties.eo.h \\
+/drm/include/efreet-1/Efreet.h \\
+/drm/include/efreet-1/efreet_base.h \\
+/drm/include/efreet-1/efreet_desktop.h \\
+/drm/include/efreet-1/efreet_icon.h \\
+/drm/include/efreet-1/efreet_ini.h \\
+/drm/include/efreet-1/efreet_menu.h \\
+/drm/include/efreet-1/Efreet_Mime.h \\
+/drm/include/efreet-1/Efreet_Trash.h \\
+/drm/include/efreet-1/efreet_uri.h \\
+/drm/include/efreet-1/efreet_utils.h \\
+/drm/include/eina-1/Eina.h \\
+/drm/include/eina-1/eina_config.h \\
+/drm/include/eina-1/eina/eina_accessor.h \\
+/drm/include/eina-1/eina/eina_alloca.h \\
+/drm/include/eina-1/eina/eina_array.h \\
+/drm/include/eina-1/eina/eina_benchmark.h \\
+/drm/include/eina-1/eina/eina_bezier.h \\
+/drm/include/eina-1/eina/eina_binbuf.h \\
+/drm/include/eina-1/eina/eina_binshare.h \\
+/drm/include/eina-1/eina/eina_clist.h \\
+/drm/include/eina-1/eina/eina_convert.h \\
+/drm/include/eina-1/eina/eina_counter.h \\
+/drm/include/eina-1/eina/eina_cow.h \\
+/drm/include/eina-1/eina/eina_cpu.h \\
+/drm/include/eina-1/eina/eina_crc.h \\
+/drm/include/eina-1/eina/eina_error.h \\
+/drm/include/eina-1/eina/eina_evlog.h \\
+/drm/include/eina-1/eina/eina_file.h \\
+/drm/include/eina-1/eina/eina_fp.h \\
+/drm/include/eina-1/eina/eina_hamster.h \\
+/drm/include/eina-1/eina/eina_hash.h \\
+/drm/include/eina-1/eina/eina_inarray.h \\
+/drm/include/eina-1/eina/eina_inline_array.x \\
+/drm/include/eina-1/eina/eina_inline_clist.x \\
+/drm/include/eina-1/eina/eina_inline_cpu.x \\
+/drm/include/eina-1/eina/eina_inline_crc.x \\
+/drm/include/eina-1/eina/eina_inline_f8p24.x \\
+/drm/include/eina-1/eina/eina_inline_f16p16.x \\
+/drm/include/eina-1/eina/eina_inline_f32p32.x \\
+/drm/include/eina-1/eina/eina_inline_file.x \\
+/drm/include/eina-1/eina/eina_inline_fp.x \\
+/drm/include/eina-1/eina/eina_inline_hash.x \\
+/drm/include/eina-1/eina/eina_inline_inlist.x \\
+/drm/include/eina-1/eina/eina_inline_list.x \\
+/drm/include/eina-1/eina/eina_inline_lock_posix.x \\
+/drm/include/eina-1/eina/eina_inline_log.x \\
+/drm/include/eina-1/eina/eina_inline_mempool.x \\
+/drm/include/eina-1/eina/eina_inline_rbtree.x \\
+/drm/include/eina-1/eina/eina_inline_rectangle.x \\
+/drm/include/eina-1/eina/eina_inline_str.x \\
+/drm/include/eina-1/eina/eina_inline_stringshare.x \\
+/drm/include/eina-1/eina/eina_inline_tiler.x \\
+/drm/include/eina-1/eina/eina_inline_trash.x \\
+/drm/include/eina-1/eina/eina_inline_unicode.x \\
+/drm/include/eina-1/eina/eina_inline_ustringshare.x \\
+/drm/include/eina-1/eina/eina_inline_value.x \\
+/drm/include/eina-1/eina/eina_inline_value_util.x \\
+/drm/include/eina-1/eina/eina_inline_vector.x \\
+/drm/include/eina-1/eina/eina_inlist.h \\
+/drm/include/eina-1/eina/eina_iterator.h \\
+/drm/include/eina-1/eina/eina_lalloc.h \\
+/drm/include/eina-1/eina/eina_list.h \\
+/drm/include/eina-1/eina/eina_lock.h \\
+/drm/include/eina-1/eina/eina_log.h \\
+/drm/include/eina-1/eina/eina_magic.h \\
+/drm/include/eina-1/eina/eina_main.h \\
+/drm/include/eina-1/eina/eina_matrix.h \\
+/drm/include/eina-1/eina/eina_matrixsparse.h \\
+/drm/include/eina-1/eina/eina_mempool.h \\
+/drm/include/eina-1/eina/eina_mmap.h \\
+/drm/include/eina-1/eina/eina_module.h \\
+/drm/include/eina-1/eina/eina_prefix.h \\
+/drm/include/eina-1/eina/eina_quad.h \\
+/drm/include/eina-1/eina/eina_quadtree.h \\
+/drm/include/eina-1/eina/eina_quaternion.h \\
+/drm/include/eina-1/eina/eina_rbtree.h \\
+/drm/include/eina-1/eina/eina_rectangle.h \\
+/drm/include/eina-1/eina/eina_refcount.h \\
+/drm/include/eina-1/eina/eina_safety_checks.h \\
+/drm/include/eina-1/eina/eina_sched.h \\
+/drm/include/eina-1/eina/eina_simple_xml_parser.h \\
+/drm/include/eina-1/eina/eina_str.h \\
+/drm/include/eina-1/eina/eina_strbuf.h \\
+/drm/include/eina-1/eina/eina_stringshare.h \\
+/drm/include/eina-1/eina/eina_thread.h \\
+/drm/include/eina-1/eina/eina_thread_queue.h \\
+/drm/include/eina-1/eina/eina_tiler.h \\
+/drm/include/eina-1/eina/eina_tmpstr.h \\
+/drm/include/eina-1/eina/eina_trash.h \\
+/drm/include/eina-1/eina/eina_types.h \\
+/drm/include/eina-1/eina/eina_unicode.h \\
+/drm/include/eina-1/eina/eina_ustrbuf.h \\
+/drm/include/eina-1/eina/eina_ustringshare.h \\
+/drm/include/eina-1/eina/eina_util.h \\
+/drm/include/eina-1/eina/eina_value.h \\
+/drm/include/eina-1/eina/eina_value_util.h \\
+/drm/include/eina-1/eina/eina_vector.h \\
+/drm/include/eina-1/eina/eina_xattr.h \\
+/drm/include/eio-1/Eio.h \\
+/drm/include/eio-1/eio_inline_helper.x \\
+/drm/include/eldbus-1/Eldbus.h \\
+/drm/include/eldbus-1/eldbus_connection.h \\
+/drm/include/eldbus-1/eldbus_freedesktop.h \\
+/drm/include/eldbus-1/eldbus_introspection.h \\
+/drm/include/eldbus-1/eldbus_message.h \\
+/drm/include/eldbus-1/eldbus_message_eina_value.h \\
+/drm/include/eldbus-1/eldbus_message_helper.h \\
+/drm/include/eldbus-1/eldbus_model_arguments.eo.h \\
+/drm/include/eldbus-1/eldbus_model_connection.eo.h \\
+/drm/include/eldbus-1/eldbus_model_method.eo.h \\
+/drm/include/eldbus-1/eldbus_model_object.eo.h \\
+/drm/include/eldbus-1/eldbus_model_proxy.eo.h \\
+/drm/include/eldbus-1/eldbus_model_signal.eo.h \\
+/drm/include/eldbus-1/eldbus_object.h \\
+/drm/include/eldbus-1/eldbus_pending.h \\
+/drm/include/eldbus-1/eldbus_proxy.h \\
+/drm/include/eldbus-1/eldbus_service.h \\
+/drm/include/eldbus-1/eldbus_signal_handler.h \\
+/drm/include/embryo-1/Embryo.h \\
+/drm/include/emile-1/Emile.h \\
+/drm/include/emile-1/emile_base64.h \\
+/drm/include/emile-1/emile_cipher.h \\
+/drm/include/emile-1/emile_compress.h \\
+/drm/include/emile-1/emile_image.h \\
+/drm/include/emotion-1/Emotion.h \\
+/drm/include/emotion-1/Emotion_Eo.h \\
+/drm/include/emotion-1/Emotion_Legacy.h \\
+/drm/include/emotion-1/emotion_object.eo.h \\
+/drm/include/emotion-1/emotion_object.eo.legacy.h \\
+/drm/include/eo-1/Eo.h \\
+/drm/include/eo-1/eo_abstract_class.eo.h \\
+/drm/include/eo-1/eo_base.eo.h \\
+/drm/include/ethumb-1/Ethumb.h \\
+/drm/include/ethumb-client-1/Ethumb_Client.h \\
+/drm/include/evas-1/Evas.h \\
+/drm/include/evas-1/Evas_Common.h \\
+/drm/include/evas-1/Evas_Eo.h \\
+/drm/include/evas-1/Evas_GL.h \\
+/drm/include/evas-1/Evas_Legacy.h \\
+/drm/include/evas-1/Evas_Loader.h \\
+/drm/include/evas-1/canvas/efl_vg_base.eo.h \\
+/drm/include/evas-1/canvas/efl_vg_base.eo.legacy.h \\
+/drm/include/evas-1/canvas/efl_vg_container.eo.h \\
+/drm/include/evas-1/canvas/efl_vg_gradient.eo.h \\
+/drm/include/evas-1/canvas/efl_vg_gradient.eo.legacy.h \\
+/drm/include/evas-1/canvas/efl_vg_gradient_linear.eo.h \\
+/drm/include/evas-1/canvas/efl_vg_gradient_linear.eo.legacy.h \\
+/drm/include/evas-1/canvas/efl_vg_gradient_radial.eo.h \\
+/drm/include/evas-1/canvas/efl_vg_gradient_radial.eo.legacy.h \\
+/drm/include/evas-1/canvas/efl_vg_shape.eo.h \\
+/drm/include/evas-1/canvas/efl_vg_shape.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_box.eo.h \\
+/drm/include/evas-1/canvas/evas_box.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_canvas.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_camera.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_light.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_material.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_mesh.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_node.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_object.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_primitive.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_scene.eo.h \\
+/drm/include/evas-1/canvas/evas_canvas3d_texture.eo.h \\
+/drm/include/evas-1/canvas/evas_clickable_interface.eo.h \\
+/drm/include/evas-1/canvas/evas_common_interface.eo.h \\
+/drm/include/evas-1/canvas/evas_common_interface.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_draggable_interface.eo.h \\
+/drm/include/evas-1/canvas/evas_grid.eo.h \\
+/drm/include/evas-1/canvas/evas_grid.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_image.eo.h \\
+/drm/include/evas-1/canvas/evas_image.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_line.eo.h \\
+/drm/include/evas-1/canvas/evas_line.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_object.eo.h \\
+/drm/include/evas-1/canvas/evas_object.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_object_smart.eo.h \\
+/drm/include/evas-1/canvas/evas_object_smart.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_out.eo.h \\
+/drm/include/evas-1/canvas/evas_out.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_polygon.eo.h \\
+/drm/include/evas-1/canvas/evas_polygon.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_rectangle.eo.h \\
+/drm/include/evas-1/canvas/evas_rectangle.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_scrollable_interface.eo.h \\
+/drm/include/evas-1/canvas/evas_selectable_interface.eo.h \\
+/drm/include/evas-1/canvas/evas_signal_interface.eo.h \\
+/drm/include/evas-1/canvas/evas_smart_clipped.eo.h \\
+/drm/include/evas-1/canvas/evas_smart_clipped.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_table.eo.h \\
+/drm/include/evas-1/canvas/evas_table.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_text.eo.h \\
+/drm/include/evas-1/canvas/evas_text.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_textblock.eo.h \\
+/drm/include/evas-1/canvas/evas_textblock.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_textgrid.eo.h \\
+/drm/include/evas-1/canvas/evas_textgrid.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_types.eot.h \\
+/drm/include/evas-1/canvas/evas_vg.eo.h \\
+/drm/include/evas-1/canvas/evas_vg.eo.legacy.h \\
+/drm/include/evas-1/canvas/evas_zoomable_interface.eo.h \\
+/drm/lib/libecore.so \\
+/drm/lib/libecore_con.so \\
+/drm/lib/libecore_drm.so \\
+/drm/lib/libecore_evas.so \\
+/drm/lib/libecore_file.so \\
+/drm/lib/libecore_imf.so \\
+/drm/lib/libecore_input.so \\
+/drm/lib/libecore_input_evas.so \\
+/drm/lib/libector.so \\
+/drm/lib/libedje.so \\
+/drm/lib/libeet.so \\
+/drm/lib/libeeze.so \\
+/drm/lib/libefl.so \\
+/drm/lib/libefreet.so \\
+/drm/lib/libefreet_mime.so \\
+/drm/lib/libefreet_trash.so \\
+/drm/lib/libeina.so \\
+/drm/lib/libeio.so \\
+/drm/lib/libeldbus.so \\
+/drm/lib/libembryo.so \\
+/drm/lib/libemile.so \\
+/drm/lib/libemotion.so \\
+/drm/lib/libeo.so \\
+/drm/lib/libethumb.so \\
+/drm/lib/libethumb_client.so \\
+/drm/lib/libevas.so \\
+/drm/lib/pkgconfig/ecore-con.pc \\
+/drm/lib/pkgconfig/ecore-drm.pc \\
+/drm/lib/pkgconfig/ecore-evas.pc \\
+/drm/lib/pkgconfig/ecore-file.pc \\
+/drm/lib/pkgconfig/ecore-imf-evas.pc \\
+/drm/lib/pkgconfig/ecore-imf.pc \\
+/drm/lib/pkgconfig/ecore-input-evas.pc \\
+/drm/lib/pkgconfig/ecore-input.pc \\
+/drm/lib/pkgconfig/ecore-ipc.pc \\
+/drm/lib/pkgconfig/ecore.pc \\
+/drm/lib/pkgconfig/ector.pc \\
+/drm/lib/pkgconfig/edje.pc \\
+/drm/lib/pkgconfig/eet.pc \\
+/drm/lib/pkgconfig/eeze.pc \\
+/drm/lib/pkgconfig/efl.pc \\
+/drm/lib/pkgconfig/efreet-mime.pc \\
+/drm/lib/pkgconfig/efreet-trash.pc \\
+/drm/lib/pkgconfig/efreet.pc \\
+/drm/lib/pkgconfig/eina.pc \\
+/drm/lib/pkgconfig/eio.pc \\
+/drm/lib/pkgconfig/eldbus.pc \\
+/drm/lib/pkgconfig/embryo.pc \\
+/drm/lib/pkgconfig/emile.pc \\
+/drm/lib/pkgconfig/emotion.pc \\
+/drm/lib/pkgconfig/eo.pc \\
+/drm/lib/pkgconfig/ethumb.pc \\
+/drm/lib/pkgconfig/ethumb_client.pc \\
+/drm/lib/pkgconfig/evas.pc
+
+exec=\\
+/drm/bin/diffeet \\
+/drm/bin/ecore_evas_convert \\
+/drm/bin/edje_cc \\
+/drm/bin/eet \\
+/drm/bin/embryo_cc \\
+/drm/bin/ethumb \\
+/drm/bin/ethumbd \\
+/drm/bin/ethumbd_client \\
+/drm/bin/evas_cserve2_client \\
+/drm/bin/evas_cserve2_debug \\
+/drm/bin/evas_cserve2_shm_debug \\
+/drm/bin/evas_cserve2_usage \\
+/drm/lib/libecore.so.1 \\
+/drm/lib/libecore_con.so.1 \\
+/drm/lib/libecore_drm.so.1 \\
+/drm/lib/libecore_evas.so.1 \\
+/drm/lib/libecore_file.so.1 \\
+/drm/lib/libecore_imf.so.1 \\
+/drm/lib/libecore_input.so.1 \\
+/drm/lib/libecore_input_evas.so.1 \\
+/drm/lib/libector.so.1 \\
+/drm/lib/libedje.so.1 \\
+/drm/lib/libeet.so.1 \\
+/drm/lib/libeeze.so.1 \\
+/drm/lib/libefl.so.1 \\
+/drm/lib/libefreet.so.1 \\
+/drm/lib/libefreet_mime.so.1 \\
+/drm/lib/libefreet_trash.so.1 \\
+/drm/lib/libeina.so.1 \\
+/drm/lib/libeio.so.1 \\
+/drm/lib/libeldbus.so.1 \\
+/drm/lib/libembryo.so.1 \\
+/drm/lib/libemile.so.1 \\
+/drm/lib/libemotion.so.1 \\
+/drm/lib/libeo.so.1 \\
+/drm/lib/libethumb.so.1 \\
+/drm/lib/libethumb_client.so.1 \\
+/drm/lib/libevas.so.1 \\
+/drm/lib/ecore_evas/engines/drm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so \\
+/drm/lib/edje/utils/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/epp \\
+/drm/lib/ethumb_client/utils/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/ethumbd_slave \\
+/drm/lib/evas/cserve2/bin/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/evas_cserve2 \\
+/drm/lib/evas/cserve2/bin/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/evas_cserve2_slave \\
+/drm/lib/evas/modules/engines/drm/`sed -n '/MODULE_ARCH/s/.*"\(.*\)".*/\1/p' config.h`/module.so
+EOF
+
+exit
+
+# patch
+--- efl-1.17.2.orig/configure.ac
++++ efl-1.17.2/configure.ac
+@@ -16,6 +16,7 @@
+ 
+ 
+ AM_INIT_AUTOMAKE([1.6 dist-xz -Wall color-tests subdir-objects])
++AM_MAINTAINER_MODE
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+ # Due to a bug in automake 1.14 we need to use this after AM_INIT_AUTOMAKE
+@@ -301,13 +302,6 @@
+ if test "x${ac_cv_prog_cc_c99}" = "xno" ; then
+    AC_MSG_ERROR([efl requires a c99-capable compiler])
+ fi
+-# We should be using ${CXX} here, but there is a bug in
+-# autotools macro and CXX is always set to g++ even if
+-# it's not found. So we are using an internal variable
+-# that does the work for now, may get broken in the future.
+-if test "x${ac_ct_CXX}" = "x" -a "x${CXX}" = "xg++"; then
+-   AC_MSG_ERROR([efl requires a C++ compiler got ${ac_ct_CXX} and ${CXX}.])
+-fi
+ 
+ AC_SYS_LARGEFILE
+ 
+@@ -3371,12 +3365,6 @@
+    [EEZE_MOUNT], [mount >= 2.18.0])
+ EFL_ADD_FEATURE([EEZE], [libmount], [${have_eeze_mount}])
+ 
+-PKG_CHECK_EXISTS([libudev < 199],
+-                 [have_libudev_old="yes"],
+-                 [have_libudev_old="no"])
+-AC_MSG_CHECKING([Use old libudev API (before 199)])
+-AC_MSG_RESULT([${have_libudev_old}])
+-
+ PKG_CHECK_EXISTS([mount < 2.19.0],
+                  [have_libmount_old="yes"],
+                  [have_libmount_old="no"])
+@@ -3395,10 +3383,6 @@
+ AC_MSG_CHECKING([Use new libmount API (newer than 2.19.0)])
+ AC_MSG_RESULT([${have_libmount_new}])
+ 
+-if test "x${have_libudev_old}" = "xyes"; then
+-  AC_DEFINE_UNQUOTED([OLD_LIBUDEV], [1], [using older version of libudev])
+-fi
+-
+ if test "x${have_libmount_old}" = "xyes"; then
+   AC_DEFINE_UNQUOTED([OLD_LIBMOUNT], [1], [using first version of libmount])
+ fi
+@@ -3472,7 +3456,7 @@
+ EFL_INTERNAL_DEPEND_PKG([ECORE_DRM], [eo])
+ EFL_INTERNAL_DEPEND_PKG([ECORE_DRM], [eina])
+ 
+-EFL_DEPEND_PKG([ECORE_DRM], [DRM], [libdrm >= 2.4 xkbcommon >= 0.3.0 gbm])
++EFL_DEPEND_PKG([ECORE_DRM], [DRM], [libdrm >= 2.4 xkbcommon >= 0.3.0])
+ EFL_DEPEND_PKG([ECORE_DRM], [LIBINPUT], [libinput >= 0.6.0])
+ 
+ EFL_ADD_LIBS([ECORE_DRM], [-lm])
+@@ -4998,8 +4982,8 @@
+ 
+ PKG_CHECK_MODULES([X11_DRI_COMMON],
+    [
+-      libtbm >= 1.1.0,
+-      libdrm >= 2.4.35,
++      libtbm >= 1.1.0
++      libdrm >= 2.4.35
+    ],
+    [have_x11_dri_common_pkgs="yes"],
+    [have_x11_dri_common_pkgs="no"]
+@@ -5013,10 +4997,10 @@
+                      [have_x11_dri2_pkgs="no"])
+    PKG_CHECK_MODULES([X11_DRI3],
+       [
+-         xshmfence,
+-         xcb,
+-         x11-xcb,
+-         xcb-sync,
++         xshmfence
++         xcb
++         x11-xcb
++         xcb-sync
+          xcb-dri3
+       ],
+       [have_x11_dri3_pkgs="yes"],
+--- efl-1.17.2.orig/src/Makefile_Evas.am
++++ efl-1.17.2/src/Makefile_Evas.am
+@@ -1025,10 +1025,12 @@
+ modules/evas/engines/software_ddraw/evas_ddraw_main.cpp \
+ modules/evas/engines/software_ddraw/evas_engine.h
+ if EVAS_STATIC_BUILD_SOFTWARE_DDRAW
+-lib_evas_libevas_la_SOURCES += $(SOFTWARE_DDRAW_SOURCES)
+-lib_evas_libevas_la_CPPFLAGS += @evas_engine_software_ddraw_cflags@
+-lib_evas_libevas_la_CXXFLAGS += -fno-rtti -fno-exceptions
+-lib_evas_libevas_la_LIBADD += @evas_engine_software_ddraw_libs@
++noinst_LTLIBRARIES += lib_evas_software_ddraw.la
++lib_evas_software_ddraw_la_SOURCES = $(SOFTWARE_DDRAW_SOURCES)
++lib_evas_software_ddraw_la_CPPFLAGS = @evas_engine_software_ddraw_cflags@
++lib_evas_software_ddraw_la_CXXFLAGS = -fno-rtti -fno-exceptions
++lib_evas_software_ddraw_la_LIBADD = @evas_engine_software_ddraw_libs@
++lib_evas_libevas_la_LIBADD += lib_evas_software_ddraw.la
+ else
+ enginesoftwareddrawpkgdir = $(libdir)/evas/modules/engines/software_ddraw/$(MODULE_ARCH)
+ enginesoftwareddrawpkg_LTLIBRARIES = modules/evas/engines/software_ddraw/module.la
+--- efl-1.17.2.orig/src/lib/eet/eet_cipher.c
++++ efl-1.17.2/src/lib/eet/eet_cipher.c
+@@ -475,7 +475,7 @@
+    gnutls_datum_t signum = { NULL, 0 };
+    gnutls_privkey_t privkey;
+ # else /* ifdef HAVE_GNUTLS */
+-   EVP_MD_CTX md_ctx;
++   EVP_MD_CTX *md_ctx;
+    unsigned int sign_len = 0;
+    int cert_len = 0;
+ # endif /* ifdef HAVE_GNUTLS */
+@@ -561,12 +561,14 @@
+      }
+ 
+    /* Do the signature. */
+-   EVP_SignInit(&md_ctx, EVP_sha1());
+-   EVP_SignUpdate(&md_ctx, data, st_buf.st_size);
+-   err = EVP_SignFinal(&md_ctx,
++   md_ctx = EVP_MD_CTX_new();
++   EVP_SignInit(md_ctx, EVP_sha1());
++   EVP_SignUpdate(md_ctx, data, st_buf.st_size);
++   err = EVP_SignFinal(md_ctx,
+                        sign,
+                        (unsigned int *)&sign_len,
+                        key->private_key);
++   EVP_MD_CTX_free(md_ctx);
+    if (err != 1)
+      {
+         ERR_print_errors_fp(stdout);
+@@ -739,7 +741,7 @@
+    const unsigned char *tmp;
+    EVP_PKEY *pkey;
+    X509 *x509;
+-   EVP_MD_CTX md_ctx;
++   EVP_MD_CTX *md_ctx;
+    int err;
+ 
+    /* Strange but d2i_X509 seems to put 0 all over the place. */
+@@ -758,9 +760,11 @@
+      }
+ 
+    /* Verify the signature */
+-   EVP_VerifyInit(&md_ctx, EVP_sha1());
+-   EVP_VerifyUpdate(&md_ctx, data_base, data_length);
+-   err = EVP_VerifyFinal(&md_ctx, sign, sign_len, pkey);
++   md_ctx = EVP_MD_CTX_new();
++   EVP_VerifyInit(md_ctx, EVP_sha1());
++   EVP_VerifyUpdate(md_ctx, data_base, data_length);
++   err = EVP_VerifyFinal(md_ctx, sign, sign_len, pkey);
++   EVP_MD_CTX_free(md_ctx);
+ 
+    X509_free(x509);
+    EVP_PKEY_free(pkey);
+--- efl-1.17.2.orig/src/lib/eeze/eeze_udev_syspath.c
++++ efl-1.17.2/src/lib/eeze/eeze_udev_syspath.c
+@@ -214,7 +214,6 @@
+    if (!(device = _new_device(syspath)))
+      return EINA_FALSE;
+ 
+-#ifndef OLD_LIBUDEV
+    char val[16];
+    int test;
+ 
+@@ -222,9 +221,6 @@
+    test = udev_device_set_sysattr_value(device, sysattr, val);
+    if (test == 0)
+      ret = EINA_TRUE;
+-#else
+-   (void)value;
+-#endif
+ 
+   udev_device_unref(device);
+   return ret;
+--- efl-1.17.2.orig/src/lib/emile/emile_cipher_openssl.c
++++ efl-1.17.2/src/lib/emile/emile_cipher_openssl.c
+@@ -85,9 +85,8 @@
+    unsigned int salt;
+    unsigned int tmp = 0;
+    unsigned int crypted_length;
+-   int opened = 0;
+    /* Openssl declarations*/
+-   EVP_CIPHER_CTX ctx;
++   EVP_CIPHER_CTX *ctx = NULL;
+    unsigned int *buffer = NULL;
+    int tmp_len;
+ 
+@@ -134,29 +133,27 @@
+ 
+    /* Openssl create the corresponding cipher
+       AES with a 256 bit key, Cipher Block Chaining mode */
+-   EVP_CIPHER_CTX_init(&ctx);
+-   if (!EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, ik, iv))
++   ctx = EVP_CIPHER_CTX_new();
++   if (!EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, ik, iv))
+      goto on_error;
+ 
+-   opened = 1;
+-
+    memset(iv, 0, sizeof (iv));
+    memset(ik, 0, sizeof (ik));
+ 
+    pointer = (unsigned char*) eina_binbuf_string_get(result);
+ 
+    /* Openssl encrypt */
+-   if (!EVP_EncryptUpdate(&ctx, pointer + sizeof (int), &tmp_len,
++   if (!EVP_EncryptUpdate(ctx, pointer + sizeof (int), &tmp_len,
+                           (unsigned char *)buffer,
+                           eina_binbuf_length_get(data) + sizeof(unsigned int)))
+      goto on_error;
+ 
+    /* Openssl close the cipher */
+-   if (!EVP_EncryptFinal_ex(&ctx, pointer + sizeof (int) + tmp_len,
++   if (!EVP_EncryptFinal_ex(ctx, pointer + sizeof (int) + tmp_len,
+                             &tmp_len))
+      goto on_error;
+ 
+-   EVP_CIPHER_CTX_cleanup(&ctx);
++   EVP_CIPHER_CTX_free(ctx);
+    free(buffer);
+ 
+    return result;
+@@ -166,8 +163,8 @@
+    memset(ik, 0, sizeof (ik));
+ 
+    /* Openssl error */
+-   if (opened)
+-     EVP_CIPHER_CTX_cleanup(&ctx);
++   if (ctx)
++     EVP_CIPHER_CTX_cleanup(ctx);
+ 
+    free(buffer);
+ 
+@@ -186,7 +183,7 @@
+ {
+    Eina_Binbuf *result = NULL;
+    unsigned int *over;
+-   EVP_CIPHER_CTX ctx;
++   EVP_CIPHER_CTX *ctx = NULL;
+    unsigned char ik[MAX_KEY_LEN];
+    unsigned char iv[MAX_IV_LEN];
+    unsigned char key_material[MAX_KEY_LEN + MAX_IV_LEN];
+@@ -194,7 +191,6 @@
+    unsigned int size;
+    int tmp_len;
+    int tmp = 0;
+-   int opened = 0;
+ 
+    if (algo != EMILE_AES256_CBC) return NULL;
+    if (!emile_cipher_init()) return NULL;
+@@ -230,23 +226,23 @@
+    eina_binbuf_append_length(result, (unsigned char*) (over + 1), tmp_len);
+ 
+    /* Openssl create the corresponding cipher */
+-   EVP_CIPHER_CTX_init(&ctx);
+-   opened = 1;
++   ctx = EVP_CIPHER_CTX_new();
+ 
+-   if (!EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, ik, iv))
++   if (!EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, ik, iv))
+      goto on_error;
+ 
+    memset(iv, 0, sizeof (iv));
+    memset(ik, 0, sizeof (ik));
+ 
+    /* Openssl decrypt */
+-   if (!EVP_DecryptUpdate(&ctx,
++   if (!EVP_DecryptUpdate(ctx,
+                           (void*) eina_binbuf_string_get(result), &tmp,
+                           (void*) (over + 1), tmp_len))
+      goto on_error;
+ 
+    /* Openssl close the cipher*/
+-   EVP_CIPHER_CTX_cleanup(&ctx);
++   EVP_CIPHER_CTX_free(ctx);
++   ctx = NULL;
+ 
+    /* Get the decrypted data size */
+    tmp = *(unsigned int*)(eina_binbuf_string_get(result));
+@@ -264,8 +260,8 @@
+    memset(iv, 0, sizeof (iv));
+    memset(ik, 0, sizeof (ik));
+ 
+-   if (opened)
+-     EVP_CIPHER_CTX_cleanup(&ctx);
++   if (ctx)
++     EVP_CIPHER_CTX_free(ctx);
+ 
+    eina_binbuf_free(result);
+ 
+# source
+https://download.enlightenment.org/rel/libs/efl/efl-1.17.2.tar.xz

@@ -249,7 +249,7 @@ exit
  if BUILD_SOFTWARE_16_WINCE
 --- expedite-1.2.0.orig/src/bin/engine_fb.c
 +++ expedite-1.2.0/src/bin/engine_fb.c
-@@ -1,6 +1,12 @@
+@@ -1,12 +1,17 @@
  #include "main.h"
  
  #include <Evas_Engine_FB.h>
@@ -262,7 +262,13 @@ exit
  
  Eina_Bool
  engine_fb_args(const char *engine, int width, int height)
-@@ -16,6 +22,37 @@
+ {
+    Evas_Engine_Info_FB *einfo;
+-   int i;
+ 
+    evas_output_method_set(evas, evas_render_method_lookup("fb"));
+    einfo = (Evas_Engine_Info_FB *)evas_engine_info_get(evas);
+@@ -16,6 +21,37 @@
  	return EINA_FALSE;
       }
  
@@ -300,7 +306,7 @@ exit
     einfo->info.virtual_terminal = 0;
     einfo->info.device_number = 0;
     einfo->info.device_number = 0;
-@@ -33,11 +70,54 @@
+@@ -33,11 +69,54 @@
  void
  engine_fb_loop(void)
  {

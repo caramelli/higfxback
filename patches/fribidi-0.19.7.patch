@@ -1,0 +1,94 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/fribidi
+install -m 644 charset/fribidi-char-sets.h $DESTDIR/include/fribidi
+install -m 644 charset/fribidi-char-sets-list.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-arabic.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-begindecls.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-bidi-types-list.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-bidi-types.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-bidi.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-common.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-config.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-deprecated.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-enddecls.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-flags.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-joining-types-list.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-joining-types.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-joining.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-mirroring.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-shape.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-types.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-unicode-version.h $DESTDIR/include/fribidi
+install -m 644 lib/fribidi-unicode.h $DESTDIR/include/fribidi
+install -d $DESTDIR/lib
+install lib/.libs/libfribidi.so.0 $DESTDIR/lib
+ln -sf libfribidi.so.0 $DESTDIR/lib/libfribidi.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 fribidi.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/fribidi-build.pc << EOF
+Name: fribidi
+Version: 0.19.7
+Description: Unicode Bidirectional Algorithm library
+Requires: $REQUIRES
+
+devel=\\
+/include/fribidi/fribidi.h \\
+/include/fribidi/fribidi-arabic.h \\
+/include/fribidi/fribidi-begindecls.h \\
+/include/fribidi/fribidi-bidi-types-list.h \\
+/include/fribidi/fribidi-bidi-types.h \\
+/include/fribidi/fribidi-bidi.h \\
+/include/fribidi/fribidi-char-sets-list.h \\
+/include/fribidi/fribidi-char-sets.h \\
+/include/fribidi/fribidi-common.h \\
+/include/fribidi/fribidi-config.h \\
+/include/fribidi/fribidi-deprecated.h \\
+/include/fribidi/fribidi-enddecls.h \\
+/include/fribidi/fribidi-flags.h \\
+/include/fribidi/fribidi-joining-types-list.h \\
+/include/fribidi/fribidi-joining-types.h \\
+/include/fribidi/fribidi-joining.h \\
+/include/fribidi/fribidi-mirroring.h \\
+/include/fribidi/fribidi-shape.h \\
+/include/fribidi/fribidi-types.h \\
+/include/fribidi/fribidi-unicode-version.h \\
+/include/fribidi/fribidi-unicode.h \\
+/lib/libfribidi.so \\
+/lib/pkgconfig/fribidi.pc
+
+exec=\\
+/lib/libfribidi.so.0
+EOF
+
+exit
+
+--- fribidi-0.19.7.orig/configure.ac
++++ fribidi-0.19.7/configure.ac
+@@ -50,6 +50,7 @@
+ 
+ AM_INIT_AUTOMAKE([1.11.1 gnits dist-bzip2 no-dist-gzip -Wall no-define])
+ AM_SILENT_RULES([yes])
++AM_MAINTAINER_MODE
+ 
+ AM_PROG_AR
+ 
+# source
+https://github.com/fribidi/fribidi/releases/download/0.19.7/fribidi-0.19.7.tar.bz2

@@ -1,0 +1,145 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build expat-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
+./configure --disable-static --with-dbus-user=root --libexecdir=/lib/dbus-1 --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install bus/.libs/dbus-daemon $DESTDIR/bin
+install tools/dbus-cleanup-sockets $DESTDIR/bin
+install tools/.libs/dbus-launch $DESTDIR/bin
+install tools/.libs/dbus-monitor $DESTDIR/bin
+install tools/.libs/dbus-run-session $DESTDIR/bin
+install tools/.libs/dbus-send $DESTDIR/bin
+install tools/.libs/dbus-test-tool $DESTDIR/bin
+install tools/.libs/dbus-update-activation-environment $DESTDIR/bin
+install tools/.libs/dbus-uuidgen $DESTDIR/bin
+install -d $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-address.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-arch-deps.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-bus.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-connection.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-errors.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-macros.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-memory.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-message.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-misc.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-pending-call.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-protocol.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-server.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-signature.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-shared.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-syntax.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-threads.h $DESTDIR/include/dbus-1.0/dbus
+install -m 644 dbus/dbus-types.h $DESTDIR/include/dbus-1.0/dbus
+install -d $DESTDIR/lib
+install dbus/.libs/libdbus-1.so.3 $DESTDIR/lib
+ln -sf libdbus-1.so.3 $DESTDIR/lib/libdbus-1.so
+install -d $DESTDIR/lib/dbus-1
+install bus/.libs/dbus-daemon-launch-helper $DESTDIR/lib/dbus-1
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 dbus-1.pc $DESTDIR/lib/pkgconfig
+install -d $DESTDIR/share/dbus-1
+install -m 644 bus/session.conf $DESTDIR/share/dbus-1
+install -m 644 bus/system.conf $DESTDIR/share/dbus-1
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/dbus-build.pc << EOF
+Name: dbus
+Version: 1.10.32
+Description: Message bus for inter-process communication
+Requires: $REQUIRES
+
+devel=\\
+/include/dbus-1.0/dbus/dbus-address.h \\
+/include/dbus-1.0/dbus/dbus-arch-deps.h \\
+/include/dbus-1.0/dbus/dbus-bus.h \\
+/include/dbus-1.0/dbus/dbus-connection.h \\
+/include/dbus-1.0/dbus/dbus-errors.h \\
+/include/dbus-1.0/dbus/dbus-macros.h \\
+/include/dbus-1.0/dbus/dbus-memory.h \\
+/include/dbus-1.0/dbus/dbus-message.h \\
+/include/dbus-1.0/dbus/dbus-misc.h \\
+/include/dbus-1.0/dbus/dbus-pending-call.h \\
+/include/dbus-1.0/dbus/dbus-protocol.h \\
+/include/dbus-1.0/dbus/dbus-server.h \\
+/include/dbus-1.0/dbus/dbus-shared.h \\
+/include/dbus-1.0/dbus/dbus-signature.h \\
+/include/dbus-1.0/dbus/dbus-syntax.h \\
+/include/dbus-1.0/dbus/dbus-threads.h \\
+/include/dbus-1.0/dbus/dbus-types.h \\
+/include/dbus-1.0/dbus/dbus.h \\
+/lib/libdbus-1.so \\
+/lib/pkgconfig/dbus-1.pc
+
+exec=\\
+/bin/dbus-cleanup-sockets \\
+/bin/dbus-daemon \\
+/bin/dbus-launch \\
+/bin/dbus-monitor \\
+/bin/dbus-run-session \\
+/bin/dbus-send \\
+/bin/dbus-test-tool \\
+/bin/dbus-update-activation-environment \\
+/bin/dbus-uuidgen \\
+/lib/libdbus-1.so.3 \\
+/lib/dbus-1/dbus-daemon-launch-helper \\
+/share/dbus-1/session.conf \\
+/share/dbus-1/system.conf
+EOF
+
+exit
+
+# patch
+--- dbus-1.10.32.orig/configure.ac
++++ dbus-1.10.32/configure.ac
+@@ -22,7 +22,7 @@
+ 
+ # By default, rebuild autotools files on demand; only use ./missing if the
+ # user says --disable-maintainer-mode (some distributions like to do this)
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+ 
+--- dbus-1.10.32.orig/dbus/Makefile.am
++++ dbus-1.10.32/dbus/Makefile.am
+@@ -29,7 +29,6 @@
+ AM_LDFLAGS = @R_DYNAMIC_LDFLAG@
+ 
+ dbusincludedir=$(includedir)/dbus-1.0/dbus
+-dbusarchincludedir=$(libdir)/dbus-1.0/include/dbus
+ 
+ lib_LTLIBRARIES=libdbus-1.la
+ 
+@@ -146,7 +145,7 @@
+ 	dbus-types.h
+ 
+ 
+-nodist_dbusarchinclude_HEADERS=			\
++nodist_dbusinclude_HEADERS=			\
+ 	dbus-arch-deps.h
+ 
+ ### source code that goes in the installed client library
+--- dbus-1.10.32.orig/dbus-1.pc.in
++++ dbus-1.10.32/dbus-1.pc.in
+@@ -17,4 +17,4 @@
+ Version: @VERSION@
+ Libs: -L${libdir} -ldbus-1
+ Libs.private: @LIBDBUS_LIBS@
+-Cflags: -I${includedir}/dbus-1.0 -I${libdir}/dbus-1.0/include @DBUS_STATIC_BUILD_CPPFLAGS@
++Cflags: -I${includedir}/dbus-1.0 @DBUS_STATIC_BUILD_CPPFLAGS@
+
+# source
+https://dbus.freedesktop.org/releases/dbus/dbus-1.10.32.tar.gz

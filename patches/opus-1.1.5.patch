@@ -1,0 +1,62 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/include/opus
+install -m 644 include/opus.h $DESTDIR/include/opus
+install -m 644 include/opus_defines.h $DESTDIR/include/opus
+install -m 644 include/opus_multistream.h $DESTDIR/include/opus
+install -m 644 include/opus_types.h $DESTDIR/include/opus
+install -d $DESTDIR/lib
+install .libs/libopus.so.0 $DESTDIR/lib
+ln -sf libopus.so.0 $DESTDIR/lib/libopus.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 opus.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/opus-build.pc << EOF
+Name: opus
+Version: 1.1.5
+Description: Opus encoding / decoding library
+Requires: $REQUIRES
+
+devel=\\
+/include/opus/opus.h \\
+/include/opus/opus_defines.h \\
+/include/opus/opus_multistream.h \\
+/include/opus/opus_types.h \\
+/lib/libopus.so \\
+/lib/pkgconfig/opus.pc
+
+exec=\\
+/lib/libopus.so.0
+EOF
+
+exit
+
+--- opus-1.1.5.orig/configure.ac
++++ opus-1.1.5/configure.ac
+@@ -31,7 +31,7 @@
+ AC_SUBST(OPUS_LT_AGE)
+ 
+ AM_INIT_AUTOMAKE([no-define])
+-AM_MAINTAINER_MODE([enable])
++AM_MAINTAINER_MODE
+ 
+ AC_CANONICAL_HOST
+ AC_MINGW32
+
+# source
+http://downloads.xiph.org/releases/opus/opus-1.1.5.tar.gz

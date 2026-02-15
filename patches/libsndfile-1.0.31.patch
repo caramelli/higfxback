@@ -1,0 +1,67 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+pkg-config --exists flac-build libvorbis-build opus-build && REQUIRES="$REQUIRES flac-build libvorbis-build opus-build"
+
+# configure (ac-2.69; am-1.16; lt-2.4.6)
+libtoolize -c -f; aclocal; autoheader; autoconf; automake -a -c
+./configure --disable-static --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install programs/.libs/sndfile-cmp $DESTDIR/bin
+install programs/.libs/sndfile-concat $DESTDIR/bin
+install programs/.libs/sndfile-convert $DESTDIR/bin
+install programs/.libs/sndfile-deinterleave $DESTDIR/bin
+install programs/.libs/sndfile-info $DESTDIR/bin
+install programs/.libs/sndfile-interleave $DESTDIR/bin
+install programs/.libs/sndfile-metadata-get $DESTDIR/bin
+install programs/.libs/sndfile-metadata-set $DESTDIR/bin
+install programs/.libs/sndfile-play $DESTDIR/bin
+install programs/.libs/sndfile-salvage $DESTDIR/bin
+install -d $DESTDIR/include
+install -m 644 include/sndfile.h $DESTDIR/include
+install -d $DESTDIR/lib
+install src/.libs/libsndfile.so.1 $DESTDIR/lib
+ln -sf libsndfile.so.1 $DESTDIR/lib/libsndfile.so
+install -d $DESTDIR/lib/pkgconfig
+install -m 644 sndfile.pc $DESTDIR/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/libsndfile-build.pc << EOF
+Name: libsndfile
+Version: 1.0.31
+Description: library for reading / writing sound files
+Requires: $REQUIRES
+
+devel=\\
+/include/sndfile.h \\
+/lib/libsndfile.so \\
+/lib/pkgconfig/sndfile.pc
+
+exec=\\
+/bin/sndfile-cmp \\
+/bin/sndfile-concat \\
+/bin/sndfile-convert \\
+/bin/sndfile-deinterleave \\
+/bin/sndfile-info \\
+/bin/sndfile-interleave \\
+/bin/sndfile-metadata-get \\
+/bin/sndfile-metadata-set \\
+/bin/sndfile-play \\
+/bin/sndfile-salvage \\
+/lib/libsndfile.so.1
+EOF
+
+exit
+
+# source
+https://github.com/libsndfile/libsndfile/releases/download/1.0.31/libsndfile-1.0.31.tar.bz2
