@@ -27,6 +27,16 @@ if pkg-config --exists openal-soft-build; then
   REQUIRES="$REQUIRES openal-soft-build"
 fi
 
+if pkg-config --exists opus-build; then
+  OPUS=1
+  REQUIRES="$REQUIRES opus-build"
+fi
+
+if pkg-config --exists libsndfile-build; then
+  SNDFILE=1
+  REQUIRES="$REQUIRES libsndfile-build"
+fi
+
 if pkg-config --exists x265-build; then
   X265=1
   REQUIRES="$REQUIRES x265-build"
@@ -51,6 +61,7 @@ install gst-libs/gst/uridownloader/.libs/libgsturidownloader-1.0.so.0 $DESTDIR/d
 install -d $DESTDIR/drm/lib/gstreamer-1.0
 test $AOM && install ext/aom/.libs/libgstaom.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/bz2/.libs/libgstbz2.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/closedcaption/.libs/libgstclosedcaption.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/curl/.libs/libgstcurl.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dash/.libs/libgstdashdemux.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/dtls/.libs/libgstdtls.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -58,7 +69,10 @@ install ext/hls/.libs/libgsthls.so $DESTDIR/drm/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstde265.so $DESTDIR/drm/lib/gstreamer-1.0
 test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/drm/lib/gstreamer-1.0
+test $OPUS && install ext/opus/.libs/libgstopusparse.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/drm/lib/gstreamer-1.0
+test $SNDFILE && install ext/sndfile/.libs/libgstsndfile.so $DESTDIR/drm/lib/gstreamer-1.0
+install ext/ttml/.libs/libgstttmlsubs.so $DESTDIR/drm/lib/gstreamer-1.0
 install ext/webp/.libs/libgstwebp.so $DESTDIR/drm/lib/gstreamer-1.0
 test $X265 && install ext/x265/.libs/libgstx265.so $DESTDIR/drm/lib/gstreamer-1.0
 install gst/accurip/.libs/libgstaccurip.so $DESTDIR/drm/lib/gstreamer-1.0
@@ -161,6 +175,7 @@ cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstbayer.so \\
 /drm/lib/gstreamer-1.0/libgstbz2.so \\
 /drm/lib/gstreamer-1.0/libgstcamerabin.so \\
+/drm/lib/gstreamer-1.0/libgstclosedcaption.so \\
 /drm/lib/gstreamer-1.0/libgstcoloreffects.so \\
 /drm/lib/gstreamer-1.0/libgstcurl.so \\
 /drm/lib/gstreamer-1.0/libgstdashdemux.so \\
@@ -206,6 +221,11 @@ test $OPENAL && cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << 
 EOF
 cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstopenjpeg.so \\
+EOF
+test $OPUS && cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/drm/lib/gstreamer-1.0/libgstopusparse.so \\
+EOF
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstpcapparse.so \\
 /drm/lib/gstreamer-1.0/libgstpnm.so \\
 /drm/lib/gstreamer-1.0/libgstproxy.so \\
@@ -218,9 +238,15 @@ cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstsiren.so \\
 /drm/lib/gstreamer-1.0/libgstsmooth.so \\
 /drm/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+EOF
+test $SNDFILE && cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/drm/lib/gstreamer-1.0/libgstsndfile.so \\
+EOF
+cat >> $DESTDIR/drm/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /drm/lib/gstreamer-1.0/libgstspeed.so \\
 /drm/lib/gstreamer-1.0/libgstsubenc.so \\
 /drm/lib/gstreamer-1.0/libgsttimecode.so \\
+/drm/lib/gstreamer-1.0/libgstttmlsubs.so \\
 /drm/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
 /drm/lib/gstreamer-1.0/libgstvideoframe_audiolevel.so \\
 /drm/lib/gstreamer-1.0/libgstvideoparsersbad.so \\

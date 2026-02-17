@@ -15,6 +15,11 @@ if PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists egl-opengl-stubs-buil
   REQUIRES="$REQUIRES egl-opengl-stubs-build wayland-build"
 fi
 
+if pkg-config --exists opus-build; then
+  OPUS=1
+  REQUIRES="$REQUIRES opus-build"
+fi
+
 if pkg-config --exists tremor-build; then
   TREMOR=1
   REQUIRES="$REQUIRES tremor-build"
@@ -246,6 +251,7 @@ install -d $DESTDIR/wl/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/wl/lib/gstreamer-1.0
 test $GL && install ext/gl/.libs/libgstopengl.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/ogg/.libs/libgstogg.so $DESTDIR/wl/lib/gstreamer-1.0
+test $OPUS && install ext/opus/.libs/libgstopus.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/pango/.libs/libgstpango.so $DESTDIR/wl/lib/gstreamer-1.0
 test $TREMOR && install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/wl/lib/gstreamer-1.0
@@ -546,6 +552,9 @@ cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc << EOF
 EOF
 test $GL && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstopengl.so \\
+EOF
+test $OPUS && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc << EOF
+/wl/lib/gstreamer-1.0/libgstopus.so \\
 EOF
 cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstpango.so \\

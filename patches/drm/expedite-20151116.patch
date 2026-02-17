@@ -1,0 +1,214 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build efl-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.15; lt-2.4.6)
+libtoolize -c -f; aclocal -I m4; autoheader; autoconf; automake -a -c
+PKG_CONFIG_PATH=/drm/lib/pkgconfig LDFLAGS=-Wl,-rpath,/drm/lib ./configure --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install src/bin/expedite $DESTDIR/drm/bin
+install src/bin/expedite-cmp $DESTDIR/drm/bin
+install -d $DESTDIR/drm/share/expedite/data
+install -m 644 data/3d.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/bar.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/blend.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/bug.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/bulb.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/camera.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/colorbox.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/cube1.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/cube2.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/cube3.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/cube4.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/cube5.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/cube6.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/data.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/e.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/e-logo-2.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/e-logo-mask.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/e-logo.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/error.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/exit.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/flower.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/fonts.alias $DESTDIR/drm/share/expedite/data
+install -m 644 data/fonts.dir $DESTDIR/drm/share/expedite/data
+install -m 644 data/frame.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/house.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/icon_sel.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/im1.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/im2.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/image.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/Kochi.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/logo.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/map.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/mushroom.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/pan.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/pulse.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/rect.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/text.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/text_sel.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/texture.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/tp.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/tp.yuv $DESTDIR/drm/share/expedite/data
+install -m 644 data/typewriter.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/vector.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/Vera.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraBI.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraBd.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraIt.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraMoBI.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraMoBd.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraMoIt.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraMono.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraSe.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/VeraSeBd.ttf $DESTDIR/drm/share/expedite/data
+install -m 644 data/warning.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/watch.png $DESTDIR/drm/share/expedite/data
+install -m 644 data/widgets.png $DESTDIR/drm/share/expedite/data
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/expedite-build.pc << EOF
+Name: expedite
+Version: 20151116
+Description: A collection of Evas demos and test programs
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/expedite \\
+/drm/bin/expedite-cmp \\
+/drm/share/expedite/data/3d.png \\
+/drm/share/expedite/data/bar.png \\
+/drm/share/expedite/data/blend.png \\
+/drm/share/expedite/data/bug.png \\
+/drm/share/expedite/data/bulb.png \\
+/drm/share/expedite/data/camera.png \\
+/drm/share/expedite/data/colorbox.png \\
+/drm/share/expedite/data/cube1.png \\
+/drm/share/expedite/data/cube2.png \\
+/drm/share/expedite/data/cube3.png \\
+/drm/share/expedite/data/cube4.png \\
+/drm/share/expedite/data/cube5.png \\
+/drm/share/expedite/data/cube6.png \\
+/drm/share/expedite/data/data.png \\
+/drm/share/expedite/data/e.png \\
+/drm/share/expedite/data/e-logo-2.png \\
+/drm/share/expedite/data/e-logo-mask.png \\
+/drm/share/expedite/data/e-logo.png \\
+/drm/share/expedite/data/error.png \\
+/drm/share/expedite/data/exit.png \\
+/drm/share/expedite/data/flower.png \\
+/drm/share/expedite/data/fonts.alias \\
+/drm/share/expedite/data/fonts.dir \\
+/drm/share/expedite/data/frame.png \\
+/drm/share/expedite/data/house.png \\
+/drm/share/expedite/data/icon_sel.png \\
+/drm/share/expedite/data/im1.png \\
+/drm/share/expedite/data/im2.png \\
+/drm/share/expedite/data/image.png \\
+/drm/share/expedite/data/Kochi.ttf \\
+/drm/share/expedite/data/logo.png \\
+/drm/share/expedite/data/map.png \\
+/drm/share/expedite/data/mushroom.png \\
+/drm/share/expedite/data/pan.png \\
+/drm/share/expedite/data/pulse.png \\
+/drm/share/expedite/data/rect.png \\
+/drm/share/expedite/data/text.png \\
+/drm/share/expedite/data/text_sel.png \\
+/drm/share/expedite/data/texture.png \\
+/drm/share/expedite/data/tp.png \\
+/drm/share/expedite/data/tp.yuv \\
+/drm/share/expedite/data/typewriter.png \\
+/drm/share/expedite/data/vector.png \\
+/drm/share/expedite/data/Vera.ttf \\
+/drm/share/expedite/data/VeraBI.ttf \\
+/drm/share/expedite/data/VeraBd.ttf \\
+/drm/share/expedite/data/VeraIt.ttf \\
+/drm/share/expedite/data/VeraMoBI.ttf \\
+/drm/share/expedite/data/VeraMoBd.ttf \\
+/drm/share/expedite/data/VeraMoIt.ttf \\
+/drm/share/expedite/data/VeraMono.ttf \\
+/drm/share/expedite/data/VeraSe.ttf \\
+/drm/share/expedite/data/VeraSeBd.ttf \\
+/drm/share/expedite/data/warning.png \\
+/drm/share/expedite/data/watch.png \\
+/drm/share/expedite/data/widgets.png
+EOF
+
+exit
+
+# patch
+--- expedite-20151116.orig/Makefile.in
++++ expedite-20151116/Makefile.in
+@@ -0,0 +1 @@
++# Makefile.in generated by automake 1.15.1
+--- expedite-20151116.orig/configure
++++ expedite-20151116/configure
+@@ -0,0 +1 @@
++# Generated by GNU Autoconf 2.69
+--- expedite-20151116.orig/configure.ac
++++ expedite-20151116/configure.ac
+@@ -11,6 +11,7 @@
+ AC_CANONICAL_HOST
+ 
+ AM_INIT_AUTOMAKE([1.6 dist-bzip2])
++AM_MAINTAINER_MODE
+ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+ 
+ PKG_PROG_PKG_CONFIG
+@@ -50,7 +51,7 @@
+ 
+ # EFL dependencies
+ 
+-PKG_CHECK_MODULES([EFL], eina >= 1.7.99 efl >= 1.13.0 eo >= 1.7.99 evas >= 1.7.99 eet >= 1.7.99 ecore-evas >= 1.7.99 ecore >= 1.7.99)
++PKG_CHECK_MODULES([EFL], eina >= 1.7.99 efl >= 1.13.0 eo >= 1.7.99 evas >= 1.7.99 ecore-evas >= 1.7.99 ecore >= 1.7.99)
+ 
+ EFL_ENABLE_EO_API_SUPPORT
+ EFL_ENABLE_BETA_API_SUPPORT
+--- expedite-20151116.orig/ltmain.sh
++++ expedite-20151116/ltmain.sh
+@@ -0,0 +1 @@
++# libtool (GNU libtool) 2.4.6
+--- expedite-20151116.orig/src/bin/expedite-cmp
++++ expedite-20151116/src/bin/expedite-cmp
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/env python
+ 
+ import sys
+ import os
+--- expedite-20151116.orig/src/bin/main.c
++++ expedite-20151116/src/bin/main.c
+@@ -5,10 +5,10 @@
+ #include <Ecore.h>
+ 
+ Evas *evas = NULL;
+-const char *profile = "n800";
++const char *profile = "xga";
+ const char *choosen_engine = NULL;
+ char *output = NULL;
+-int win_w = 720, win_h = 420;
++int win_w = 1024, win_h = 768;
+ int loops = LOOPS;
+ int one_test = 0;
+ Eina_Bool fullscreen = EINA_FALSE;
+@@ -1209,7 +1209,7 @@
+    Ecore_Evas *ee;
+    char *resolution = NULL;
+    char *engine = NULL;
+-   int resolution_index = 14; /* == svga */
++   int resolution_index = 10; /* == xga */
+    int test = -1;
+    Eina_Bool resolution_list = EINA_FALSE;
+    Eina_Bool tests_list = EINA_FALSE;
+
+# source
+https://github.com/caramelli/expedite/archive/58857a657c6e5303bcd36d9d83d29bc5d28efaa7/expedite-20151116.tar.gz

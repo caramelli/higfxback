@@ -10,6 +10,11 @@ if pkg-config --exists alsa-lib-build; then
   REQUIRES="$REQUIRES alsa-lib-build"
 fi
 
+if pkg-config --exists opus-build; then
+  OPUS=1
+  REQUIRES="$REQUIRES opus-build"
+fi
+
 if pkg-config --exists tremor-build; then
   TREMOR=1
   REQUIRES="$REQUIRES tremor-build"
@@ -168,6 +173,7 @@ ln -sf libgstvideo-1.0.so.0 $DESTDIR/dfb/lib/libgstvideo-1.0.so
 install -d $DESTDIR/dfb/lib/gstreamer-1.0
 test $ALSA && install ext/alsa/.libs/libgstalsa.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/ogg/.libs/libgstogg.so $DESTDIR/dfb/lib/gstreamer-1.0
+test $OPUS && install ext/opus/.libs/libgstopus.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/pango/.libs/libgstpango.so $DESTDIR/dfb/lib/gstreamer-1.0
 test $TREMOR && install ext/vorbis/.libs/libgstivorbisdec.so $DESTDIR/dfb/lib/gstreamer-1.0
 install ext/vorbis/.libs/libgstvorbis.so $DESTDIR/dfb/lib/gstreamer-1.0
@@ -373,6 +379,11 @@ test $TREMOR && cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc <<
 EOF
 cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstogg.so \\
+EOF
+test $OPUS && cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
+/dfb/lib/gstreamer-1.0/libgstopus.so \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/gst-plugins-base-build.pc << EOF
 /dfb/lib/gstreamer-1.0/libgstpango.so \\
 /dfb/lib/gstreamer-1.0/libgstplayback.so \\
 /dfb/lib/gstreamer-1.0/libgstsubparse.so \\

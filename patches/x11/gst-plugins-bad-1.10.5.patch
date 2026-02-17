@@ -27,6 +27,16 @@ if pkg-config --exists openal-soft-build; then
   REQUIRES="$REQUIRES openal-soft-build"
 fi
 
+if pkg-config --exists opus-build; then
+  OPUS=1
+  REQUIRES="$REQUIRES opus-build"
+fi
+
+if pkg-config --exists libsndfile-build; then
+  SNDFILE=1
+  REQUIRES="$REQUIRES libsndfile-build"
+fi
+
 if pkg-config --exists x265-build; then
   X265=1
   REQUIRES="$REQUIRES x265-build"
@@ -61,7 +71,9 @@ install ext/hls/.libs/libgsthls.so $DESTDIR/x11/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstlibde265.so $DESTDIR/x11/lib/gstreamer-1.0
 test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/x11/lib/gstreamer-1.0
+test $OPUS && install ext/opus/.libs/libgstopusparse.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/x11/lib/gstreamer-1.0
+test $SNDFILE && install ext/sndfile/.libs/libgstsndfile.so $DESTDIR/x11/lib/gstreamer-1.0
 install ext/webp/.libs/libgstwebp.so $DESTDIR/x11/lib/gstreamer-1.0
 test $X265 && install ext/x265/.libs/libgstx265.so $DESTDIR/x11/lib/gstreamer-1.0
 install gst/accurip/.libs/libgstaccurip.so $DESTDIR/x11/lib/gstreamer-1.0
@@ -208,6 +220,11 @@ test $GL && cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 EOF
 cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstopenjpeg.so \\
+EOF
+test $OPUS && cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstopusparse.so \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstpcapparse.so \\
 /x11/lib/gstreamer-1.0/libgstpnm.so \\
 /x11/lib/gstreamer-1.0/libgstrawparse.so \\
@@ -220,6 +237,11 @@ cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstsiren.so \\
 /x11/lib/gstreamer-1.0/libgstsmooth.so \\
 /x11/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+EOF
+test $SNDFILE && cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/x11/lib/gstreamer-1.0/libgstsndfile.so \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /x11/lib/gstreamer-1.0/libgstspeed.so \\
 /x11/lib/gstreamer-1.0/libgststereo.so \\
 /x11/lib/gstreamer-1.0/libgstsubenc.so \\

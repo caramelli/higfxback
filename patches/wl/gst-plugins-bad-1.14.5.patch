@@ -1,7 +1,7 @@
 # This file is part of HiGFXback
 
 # requires
-REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libxml2-build libwebp-build openssl-build wayland-build"
+REQUIRES="autotools-wrappers-lt-build curl-build gst-plugins-base-build libxml2-build libwebp-build openssl-build wayland-protocols-build"
 
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
@@ -27,6 +27,16 @@ PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --print-requires gst-plugins-base
 if pkg-config --exists openal-soft-build; then
   OPENAL=1
   REQUIRES="$REQUIRES openal-soft-build"
+fi
+
+if pkg-config --exists opus-build; then
+  OPUS=1
+  REQUIRES="$REQUIRES opus-build"
+fi
+
+if pkg-config --exists libsndfile-build; then
+  SNDFILE=1
+  REQUIRES="$REQUIRES libsndfile-build"
 fi
 
 if pkg-config --exists x265-build; then
@@ -63,7 +73,10 @@ install ext/hls/.libs/libgsthls.so $DESTDIR/wl/lib/gstreamer-1.0
 test $DE265 && install ext/libde265/.libs/libgstde265.so $DESTDIR/wl/lib/gstreamer-1.0
 test $OPENAL && install ext/openal/.libs/libgstopenal.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/openjpeg/.libs/libgstopenjpeg.so $DESTDIR/wl/lib/gstreamer-1.0
+test $OPUS && install ext/opus/.libs/libgstopusparse.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/smoothstreaming/.libs/libgstsmoothstreaming.so $DESTDIR/wl/lib/gstreamer-1.0
+test $SNDFILE && install ext/sndfile/.libs/libgstsndfile.so $DESTDIR/wl/lib/gstreamer-1.0
+install ext/ttml/.libs/libgstttmlsubs.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/wayland/.libs/libgstwaylandsink.so $DESTDIR/wl/lib/gstreamer-1.0
 install ext/webp/.libs/libgstwebp.so $DESTDIR/wl/lib/gstreamer-1.0
 test $X265 && install ext/x265/.libs/libgstx265.so $DESTDIR/wl/lib/gstreamer-1.0
@@ -219,6 +232,11 @@ test $GL && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 EOF
 cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstopenjpeg.so \\
+EOF
+test $OPUS && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/wl/lib/gstreamer-1.0/libgstopusparse.so \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstpcapparse.so \\
 /wl/lib/gstreamer-1.0/libgstpnm.so \\
 /wl/lib/gstreamer-1.0/libgstproxy.so \\
@@ -231,10 +249,16 @@ cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstsiren.so \\
 /wl/lib/gstreamer-1.0/libgstsmooth.so \\
 /wl/lib/gstreamer-1.0/libgstsmoothstreaming.so \\
+EOF
+test $SNDFILE && cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
+/wl/lib/gstreamer-1.0/libgstsndfile.so \\
+EOF
+cat >> $DESTDIR/wl/share/pkgconfig/gst-plugins-bad-build.pc << EOF
 /wl/lib/gstreamer-1.0/libgstspeed.so \\
 /wl/lib/gstreamer-1.0/libgststereo.so \\
 /wl/lib/gstreamer-1.0/libgstsubenc.so \\
 /wl/lib/gstreamer-1.0/libgsttimecode.so \\
+/wl/lib/gstreamer-1.0/libgstttmlsubs.so \\
 /wl/lib/gstreamer-1.0/libgstvcdsrc.so \\
 /wl/lib/gstreamer-1.0/libgstvideofiltersbad.so \\
 /wl/lib/gstreamer-1.0/libgstvideoframe_audiolevel.so \\
