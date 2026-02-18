@@ -1,0 +1,191 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libdrm-build libpng-build libtsm-build libudev-build make-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/drm/lib/pkgconfig sh ./Configure --disable-dbus --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install frecon $DESTDIR/drm/bin
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/frecon-build.pc << EOF
+Name: frecon
+Version: 20160331
+Description: KMS/DRM terminal emulator
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/frecon
+EOF
+
+exit
+
+# patch
+diff -Naur frecon-20160331.orig/Configure frecon-20160331/Configure
+--- frecon-20160331.orig/Configure	1970-01-01 00:00:00.000000000 +0000
++++ frecon-20160331/Configure	2026-02-16 05:52:09.916376186 +0000
+@@ -0,0 +1,25 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++DBUS=1
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) prefix=${1#*=};;
++    --disable-dbus) DBUS=0;;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
++
++sed -i "/^DBUS/s|=.*|= $DBUS|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++else
++  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
++fi
+diff -Naur frecon-20160331.orig/Makefile frecon-20160331/Makefile
+--- frecon-20160331.orig/Makefile	2026-02-16 04:36:31.014376186 +0000
++++ frecon-20160331/Makefile	2026-02-16 04:43:26.572376186 +0000
+@@ -4,6 +4,8 @@
+ 
+ include common.mk
+ 
++PREFIX ?= /usr/local
++PKG_CONFIG ?= pkg-config
+ DBUS ?= 1
+ 
+ PC_DEPS = libdrm libudev libpng libtsm
+@@ -32,5 +34,5 @@
+ clean: CLEAN(frecon)
+ 
+ install: all
+-	mkdir -p $(DESTDIR)/sbin
+-	install -m 755 $(OUT)/frecon $(DESTDIR)/sbin
++	mkdir -p $(DESTDIR)$(PREFIX)/bin
++	install -m 755 $(OUT)/frecon $(DESTDIR)$(PREFIX)/bin
+diff -Naur frecon-20160331.orig/dbus.c frecon-20160331/dbus.c
+--- frecon-20160331.orig/dbus.c	2026-02-16 04:36:31.013376186 +0000
++++ frecon-20160331/dbus.c	2026-02-16 05:51:33.862376186 +0000
+@@ -7,6 +7,7 @@
+ #if DBUS
+ #include <dbus/dbus.h>
+ #include <stdlib.h>
++#include <unistd.h>
+ 
+ #include "dbus.h"
+ #include "dbus_interface.h"
+diff -Naur frecon-20160331.orig/dev.c frecon-20160331/dev.c
+--- frecon-20160331.orig/dev.c	2026-02-16 04:36:31.013376186 +0000
++++ frecon-20160331/dev.c	2026-02-16 05:51:39.196376186 +0000
+@@ -7,6 +7,7 @@
+ 
+ #include <errno.h>
+ #include <libudev.h>
++#include <string.h>
+ 
+ #include "dev.h"
+ #include "input.h"
+diff -Naur frecon-20160331.orig/edid_utils.h frecon-20160331/edid_utils.h
+--- frecon-20160331.orig/edid_utils.h	1970-01-01 00:00:00.000000000 +0000
++++ frecon-20160331/edid_utils.h	2026-02-16 04:57:06.735376186 +0000
+@@ -0,0 +1,36 @@
++// Copyright 2010 The ChromiumOS Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef EDID_UTILS_H
++#define EDID_UTILS_H
++
++// There are 4 DTD blocks in the EDID
++#define EDID_DTD_BASE 0x36
++#define EDID_N_DTDS 4
++
++// EDID size
++#define EDID_SIZE 0x80
++
++// 18 byte DTD structure
++#define DTD_PCLK_LO 0
++#define DTD_PCLK_HI 1
++#define DTD_HA_LO 2
++#define DTD_HBL_LO 3
++#define DTD_HABL_HI 4
++#define DTD_VA_LO 5
++#define DTD_VBL_LO 6
++#define DTD_VABL_HI 7
++#define DTD_HSO_LO 8
++#define DTD_HSW_LO 9
++#define DTD_VSX_LO 10
++#define DTD_HVSX_HI 11
++#define DTD_HSIZE_LO 12
++#define DTD_VSIZE_LO 13
++#define DTD_HVSIZE_HI 14
++#define DTD_HBORDER 15
++#define DTD_VBORDER 16
++#define DTD_FLAGS 17
++#define DTD_SIZE 18
++
++#endif
+diff -Naur frecon-20160331.orig/fb.c frecon-20160331/fb.c
+--- frecon-20160331.orig/fb.c	2026-02-16 04:36:31.013376186 +0000
++++ frecon-20160331/fb.c	2026-02-16 05:51:55.764376186 +0000
+@@ -169,6 +169,7 @@
+ 
+ 	width = fb->drm->crtc->mode.hdisplay;
+ 	height = fb->drm->crtc->mode.vdisplay;
++	pitch = width * 4;
+ 
+ 	r = fb_buffer_create(fb, &pitch);
+ 	if (r < 0) {
+@@ -258,7 +259,9 @@
+ 			0, 0, fb->buffer_properties.width, fb->buffer_properties.height
+ 		};
+ 		munmap(fb->lock.map, fb->buffer_properties.size);
++		drmSetMaster(fb->drm->fd);
+ 		drmModeDirtyFB(fb->drm->fd, fb->fb_id, &clip_rect, 1);
++		drmDropMaster(fb->drm->fd);
+ 	}
+ }
+ 
+diff -Naur frecon-20160331.orig/term.c frecon-20160331/term.c
+--- frecon-20160331.orig/term.c	2026-02-16 04:36:31.013376186 +0000
++++ frecon-20160331/term.c	2026-02-16 05:52:06.430376186 +0000
+@@ -44,10 +44,7 @@
+ 
+ 
+ static char* interactive_cmd_line[] = {
+-	"/sbin/agetty",
+-	"-",
+-	"9600",
+-	"xterm",
++	"/bin/sh",
+ 	NULL
+ };
+ 
+@@ -66,7 +63,7 @@
+ 	exit(1);
+ }
+ 
+-static int term_draw_cell(struct tsm_screen* screen, uint32_t id,
++static int term_draw_cell(struct tsm_screen* screen, uint64_t id,
+ 			  const uint32_t* ch, size_t len,
+ 			  unsigned int cwidth, unsigned int posx,
+ 			  unsigned int posy,
+
+# source
+https://chromium.googlesource.com/chromiumos/platform/frecon/+archive/d4d56278ce9927e2d740fa436c1567bc71b1ed00.tar.gz
