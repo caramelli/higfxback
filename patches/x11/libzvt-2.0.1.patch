@@ -1,0 +1,664 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build glib-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/x11/share/pkgconfig pkg-config --exists gtk2-build; then
+  ZTERM=1
+  REQUIRES="$REQUIRES gtk2-build"
+else
+  GTK=--disable-gtk
+fi
+
+# configure (ac-2.52; am-1.4; lt-1.5.24)
+libtoolize -c -f; aclocal -I .; autoheader; autoconf; automake -a -c
+PKG_CONFIG_PATH=/x11/lib/pkgconfig CPPFLAGS=-D_NO_UT_TIME LDFLAGS=-Wl,-rpath,/x11/lib ./configure $GTK --disable-static --libexecdir=/x11/lib  --prefix=/x11
+
+# build
+make
+
+# install
+install -d $DESTDIR/x11/bin
+test $ZTERM && install libzvt/.libs/zterm $DESTDIR/x11/bin
+install -d $DESTDIR/x11/include/libzvt-2.0/libzvt
+install -m 644 libzvt/lists.h $DESTDIR/x11/include/libzvt-2.0/libzvt
+install -m 644 libzvt/vt.h $DESTDIR/x11/include/libzvt-2.0/libzvt
+install -m 644 libzvt/vtx.h $DESTDIR/x11/include/libzvt-2.0/libzvt
+install -d $DESTDIR/lib/x11
+install libzvt/.libs/libzvt-2.0.so.0 $DESTDIR/x11/lib
+ln -sf libzvt-2.0.so.0 $DESTDIR/x11/lib/libzvt-2.0.so
+install -d $DESTDIR/x11/lib/libzvt-2.0
+install libzvt/gnome-pty-helper $DESTDIR/x11/lib/libzvt-2.0
+install -d $DESTDIR/x11/lib/pkgconfig
+install -m 644 libzvt/libzvt-2.0.pc $DESTDIR/x11/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/x11/share/pkgconfig
+cat > $DESTDIR/x11/share/pkgconfig/libzvt-build.pc << EOF
+Name: libzvt
+Version: 2.0.1
+Description: Zed's Virtual Terminal emulation library
+Requires: $REQUIRES
+
+devel=\\
+/x11/include/libzvt-2.0/libzvt/lists.h \\
+/x11/include/libzvt-2.0/libzvt/vt.h \\
+/x11/include/libzvt-2.0/libzvt/vtx.h \\
+/x11/lib/libzvt-2.0.so \\
+/x11/lib/pkgconfig/libzvt-2.0.pc
+
+exec=\\
+EOF
+test $ZTERM && cat >> $DESTDIR/x11/share/pkgconfig/libzvt-build.pc << EOF
+/x11/bin/zterm \\
+EOF
+cat >> $DESTDIR/x11/share/pkgconfig/libzvt-build.pc << EOF
+/x11/lib/libzvt-2.0.so.0 \\
+/x11/lib/libzvt-2.0/gnome-pty-helper
+EOF
+
+exit
+
+# patch
+--- libzvt-2.0.1.orig/check-utmp.m4
++++ libzvt-2.0.1/check-utmp.m4
+@@ -0,0 +1,243 @@
++# Checks for availability of various utmp fields
++#
++# Original code by Bernhard Rosenkraenzer (bero@linux.net.eu.org), 1998.
++# Modifications by Timur Bakeyev (timur@gnu.org), 1999.
++#
++
++dnl AC_CHECK_UTMP()
++dnl Test for presence of the field and define HAVE_UT_UT_field macro
++dnl
++
++AC_DEFUN(AC_CHECK_UTMP,[
++
++AC_CHECK_HEADERS(sys/time.h utmp.h utmpx.h)
++AC_HEADER_TIME
++
++if test "$ac_cv_header_utmpx_h" = "yes"; then
++    AC_DEFINE(UTMP,[struct utmpx])
++else
++    AC_DEFINE(UTMP,[struct utmp])
++fi
++
++dnl some systems (BSD4.4-like) require time.h to be included before utmp.h :/
++AC_MSG_CHECKING(for ut_host field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; char *p; p=ut.ut_host;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_HOST)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_pid field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; int i; i=ut.ut_pid;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_PID)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_id field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; char *p; p=ut.ut_id;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_ID)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_name field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; char *p; p=ut.ut_name;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_NAME)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_type field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; int i; i=(int) ut.ut_type;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_TYPE)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_exit.e_termination field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; ut.ut_exit.e_termination=0;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_EXIT_E_TERMINATION)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_user field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; char *p; p=ut.ut_user;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_USER)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_time field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; ut.ut_time=0;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_TIME)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_tv field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; ut.ut_tv={0, 0};],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_TV)
++fi
++AC_MSG_RESULT($result)
++
++AC_MSG_CHECKING(for ut_syslen field in the utmp structure)
++AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
++#include <sys/time.h>
++#include <time.h>
++#else
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#else
++#include <time.h>
++#endif
++#endif
++#ifdef HAVE_UTMP_H
++#include <utmp.h>
++#endif
++#ifdef HAVE_UTMPX_H
++#include <utmpx.h>
++#endif],[UTMP ut; ut.ut_syslen=0;],result=yes,result=no)
++if test "$result" = "yes"; then
++  AC_DEFINE(HAVE_UT_UT_SYSLEN)
++fi
++AC_MSG_RESULT($result)
++
++])
+--- libzvt-2.0.1.orig/configure.in
++++ libzvt-2.0.1/configure.in
+@@ -46,6 +46,8 @@
+ AC_STDC_HEADERS
+ AM_PROG_LIBTOOL
+ 
++PKG_PROG_PKG_CONFIG
++
+ dnl
+ dnl zvt checks
+ dnl
+@@ -123,13 +125,28 @@
+ AC_SUBST(PTY_HELPER_UID)
+ AC_SUBST(PTY_HELPER_GID)
+ 
+-PKG_CHECK_MODULES(ZVT,
+-[
+-	glib-2.0 >= 1.3.11
+-	gmodule-2.0 >= 1.3.11
+-	gtk+-2.0 >= 1.3.11
+-	libart-2.0 >= 2.3.5
+-])
++
++AC_ARG_ENABLE(gtk,
++	AS_HELP_STRING([--disable-gtk], [disable use of GTK]),
++	[],
++	[enable_gtk=yes])
++
++if test x$enable_gtk = xyes; then
++	PKG_CHECK_MODULES(ZVT,
++	[
++		glib-2.0 >= 1.3.11
++		gtk+-2.0 >= 1.3.11
++	])
++	PC_REQUIRES="Requires: gtk+-2.0"
++else
++	PKG_CHECK_MODULES(ZVT, [glib-2.0 >= 1.3.11])
++	PC_REQUIRES=""
++fi
++
++AC_SUBST(PC_REQUIRES)
++AC_SUBST(PC_REQUIRES_PRIVATE)
++
++AM_CONDITIONAL(ENABLE_GTK, test x$enable_gtk = xyes)
+ 
+ AC_SUBST(ZVT_LIBS)
+ AC_SUBST(ZVT_CFLAGS)
+--- libzvt-2.0.1.orig/libzvt/Makefile.am
++++ libzvt-2.0.1/libzvt/Makefile.am
+@@ -1,6 +1,9 @@
+ ptyhelperdir = $(libexecdir)/libzvt-2.0
+ 
+-noinst_PROGRAMS = zterm test-utmp
++if ENABLE_GTK
++ZTERM = zterm
++endif
++noinst_PROGRAMS = $(ZTERM) test-utmp
+ ptyhelper_PROGRAMS = gnome-pty-helper
+ lib_LTLIBRARIES = libzvt-2.0.la
+ 
+@@ -10,28 +13,15 @@
+ INCLUDES = \
+ 	-I$(top_srcdir) 				\
+ 	$(ZVT_CFLAGS)					\
+-        -DGNOMEZVTLIBDIR=\""$(libdir)"\" 		\
+-        -DGNOMEZVTDATADIR=\""$(datadir)"\" 		\
+-        -DGNOMEZVTPIXMAPDIR=\""$(datadir)/pixmaps"\"	\
+-        -DGNOMEZVTBINDIR=\""$(bindir)"\" 		\
+-        -DGNOMEZVTLOCALSTATEDIR=\""$(localstatedir)"\" 	\
+-        -DGNOMEZVTLOCALEDIR=\""$(gnomelocaledir)"\" 	\
+-	-DGTK_VERSION=\""$(GTK_VERSION)"\"		\
+ 	-DG_LOG_DOMAIN=\"ZVT\"				\
+-	-DPTY_HELPER_DIR=\""$(ptyhelperdir)"\"		\
+-	-DG_DISABLE_DEPRECATED		\
+-	-DGDK_DISABLE_DEPRECATED	\
+-	-DGDK_PIXBUF_DISABLE_DEPRECATED \
+-	-DGTK_DISABLE_DEPRECATED
++	-DPTY_HELPER_DIR=\""$(ptyhelperdir)"\"
+ 
+ libzvt_2_includedir = $(includedir)/libzvt-2.0/libzvt
+ 
+ libzvt_2_include_HEADERS = \
+ 	libzvt.h lists.h background.h vt.h vtx.h
+ 
+-libzvt_2_0_la_SOURCES = \
+-	libzvt.h \
+-	libzvt-init.c \
++LIBZVT_SOURCES = \
+ 	gnome-login-support.h	\
+ 	gnome-login-support.c	\
+ 	lists.h			\
+@@ -42,7 +32,13 @@
+ 	update.c		\
+ 	vt.c			\
+ 	vt.h			\
+-	vtx.h			\
++	vtx.h
++
++if ENABLE_GTK
++libzvt_2_0_la_SOURCES = \
++	$(LIBZVT_SOURCES) \
++	libzvt.h \
++	libzvt-init.c \
+ 	background.c		\
+ 	background.h		\
+ 	zvtterm.c		\
+@@ -52,6 +48,9 @@
+ 	zvt-accessible.h	\
+ 	zvt-accessible-factory.c	\
+ 	zvt-accessible-factory.h
++else
++libzvt_2_0_la_SOURCES = $(LIBZVT_SOURCES)
++endif
+ 
+ libzvt_2_0_la_LIBADD = $(ZVT_LIBS)
+ 
+@@ -86,12 +85,14 @@
+ EXTRA_DIST = TODO BUGS README	\
+ 	gnome-pty.h gnome-pty-helper.c gnome-utmp.c zvt-marshal.list zvt-marshal.c
+ 
++if ENABLE_GTK
+ zterm_SOURCES	= zterm.c
+ zterm_INCLUDES	= $(INCLUDES)
+ 
+ zterm_LDADD	= 			\
+ 	libzvt-2.0.la			\
+ 	$(ZVT_LIBS) $(UTIL_LIBS)
++endif
+ 
+ test_utmp_SOURCES =			\
+ 	gnome-utmp.c			\
+--- libzvt-2.0.1.orig/libzvt/background.c
++++ libzvt-2.0.1/libzvt/background.c
+@@ -18,21 +18,7 @@
+  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+-#include <gdk/gdk.h>
+-
+ #include <gdk/gdkx.h>
+-#include <gdk-pixbuf/gdk-pixbuf.h>
+-
+-#include <libart_lgpl/art_misc.h>
+-#include <libart_lgpl/art_filterlevel.h>
+-#include <libart_lgpl/art_affine.h>
+-#include <libart_lgpl/art_rgb_affine.h>
+-#include <libart_lgpl/art_rgb_rgba_affine.h>
+-
+-#include <X11/Xlib.h>
+-#include <X11/Xutil.h>
+-#include <X11/Xatom.h>
+-#include <X11/Xos.h>
+ 
+ #include <libzvt/libzvt.h>
+ 
+--- libzvt-2.0.1.orig/libzvt/gnome-pty-helper.c
++++ libzvt-2.0.1/libzvt/gnome-pty-helper.c
+@@ -52,7 +52,6 @@
+ #include <stdio.h>
+ #include <utmp.h>
+ #include <grp.h>
+-#include <glib/galloca.h>
+ #include "gnome-pty.h"
+ #include "gnome-login-support.h"
+ 
+@@ -129,7 +128,8 @@
+ 	cmptr->cmsg_level = SOL_SOCKET;
+ 	cmptr->cmsg_type  = SCM_RIGHTS;
+ 	cmptr->cmsg_len   = CONTROLLEN;
+-	*(int *)CMSG_DATA (cmptr) = fd;
++	int *fd_data = (int *)CMSG_DATA (cmptr);
++	*fd_data = fd;
+ 
+ 	if (sendmsg (client_fd, &msg, 0) != 1)
+ 		return -1;
+@@ -475,7 +475,7 @@
+ 	struct group *group_info;
+ 	struct termios term;
+ 	
+-	term_name = (char *) g_alloca (path_max () + 1);
++	term_name = (char *) alloca (path_max () + 1);
+ 
+ 	if (term_name == NULL){
+ 		exit (1);
+--- libzvt-2.0.1.orig/libzvt/gnome-utmp.c
++++ libzvt-2.0.1/libzvt/gnome-utmp.c
+@@ -44,6 +44,7 @@
+ #endif
+ 
+ #if defined(HAVE_UTMPX_H)
++#    define __USE_GNU
+ #    include <utmpx.h>
+ #endif
+ 
+--- libzvt-2.0.1.orig/libzvt/libzvt-2.0.pc.in
++++ libzvt-2.0.1/libzvt/libzvt-2.0.pc.in
+@@ -5,7 +5,8 @@
+ 
+ Name: libzvt-2.0
+ Description: libzvt
+-Requires: gtk+-2.0 libart-2.0
++@PC_REQUIRES@
++Requires.private: glib-2.0
+ Version: @VERSION@
+ Libs: -L${libdir} -lzvt-2.0 @UTIL_LIBS@
+ Cflags: -I${includedir}/libzvt-2.0
+--- libzvt-2.0.1.orig/libzvt/subshell.c
++++ libzvt-2.0.1/libzvt/subshell.c
+@@ -126,7 +126,9 @@
+ 	if (recvmsg (helper_fd, &msg, 0) <= 0)
+ 		return -1;
+ 
+-	return *(int *) CMSG_DATA (cmptr);
++	int *ret_data = (int *) CMSG_DATA (cmptr);
++
++	return *ret_data;
+ }
+ 
+ static int
+--- libzvt-2.0.1.orig/libzvt/update.c
++++ libzvt-2.0.1/libzvt/update.c
+@@ -58,8 +58,7 @@
+   int i;
+   int run, commonrun;
+   int runstart;
+-  char *p;
+-  uint32 attr, newattr, oldattr, oldchar, newchar, oldback, lastchar;
++  uint32 attr, newattr, oldattr, oldchar, newchar, lastchar;
+   /*  struct vt_line *bl;*/
+   int sx, ex;			/* start/end selection */
+   int force;
+@@ -117,8 +116,6 @@
+   run = 0;
+   attr = 0;
+   runstart = 0;
+-  p = NULL;
+-  oldback = 0;
+   commonrun = 0;
+   lastchar = 0;
+ 
+@@ -735,7 +732,6 @@
+ */
+ void vt_update_rect(struct _vtx *vx, int fill, int csx, int csy, int cex, int cey)
+ {
+-  int lines;
+   struct vt_line *wn, *nn;
+   int old_state;
+   int i;
+@@ -757,8 +753,6 @@
+   if (csy>=vx->vt.height)
+     csy = vx->vt.height-1;
+ 
+-  lines = cey-csy;
+-
+   /* check scrollback for current line */
+   if ((vx->vt.scrollbackoffset+csy)<0) {
+     wn = (struct vt_line *)vt_list_index(&vx->vt.scrollback, vx->vt.scrollbackoffset+csy);
+@@ -1056,7 +1050,7 @@
+   break;
+   case 1:
+   default: {
+-    unsigned char *o = out;
++    unsigned char *o = (unsigned char *)out;
+     for (i=start;i<end;i++) {
+       c = l->data[i] & VTATTR_DATAMASK;
+       if (state==0) {
+@@ -1078,7 +1072,7 @@
+     }
+     if (lf)
+       *o++='\n';
+-    out = o;
++    out = (char*)o;
+   }
+   break;
+   }
+--- libzvt-2.0.1.orig/libzvt/vt.c
++++ libzvt-2.0.1/libzvt/vt.c
+@@ -2037,11 +2037,10 @@
+  */
+ void vt_resize(struct vt_em *vt, int width, int height, int pixwidth, int pixheight)
+ {
+-  int i, count, old_width;
++  int i, count;
+   uint32 c;
+   struct vt_line *wn, *nn;
+ 
+-  old_width = vt->width;
+   vt->width = width;
+ 
+   /* update scroll bottom constant */
+--- libzvt-2.0.1.orig/libzvt/zvt-accessible.c
++++ libzvt-2.0.1/libzvt/zvt-accessible.c
+@@ -536,35 +536,35 @@
+       AtkAttribute *at = g_new (AtkAttribute, 1);
+       at->name = g_strdup ("bold");
+       at->value = g_strdup ("true");
+-      g_slist_append (set, at);
++      (void)!g_slist_append (set, at);
+     }
+   if (attr & VTATTR_UNDERLINE)
+     {
+       AtkAttribute *at = g_new (AtkAttribute, 1);
+       at->name = g_strdup ("underline");
+       at->value = g_strdup ("true");
+-      g_slist_append (set, at);
++      (void)!g_slist_append (set, at);
+     }
+   if (attr & VTATTR_BLINK)
+     {
+       AtkAttribute *at = g_new (AtkAttribute, 1);
+       at->name = g_strdup ("blink");
+       at->value = g_strdup ("true");
+-      g_slist_append (set, at);
++      (void)!g_slist_append (set, at);
+     }
+   if (attr & VTATTR_REVERSE)
+     {
+       AtkAttribute *at = g_new (AtkAttribute, 1);
+       at->name = g_strdup ("reverse");
+       at->value = g_strdup ("true");
+-      g_slist_append (set, at);
++      (void)!g_slist_append (set, at);
+     }
+   if (attr & VTATTR_CONCEALED)
+     {
+       AtkAttribute *at = g_new (AtkAttribute, 1);
+       at->name = g_strdup ("concealed");
+       at->value = g_strdup ("true");
+-      g_slist_append (set, at);
++      (void)!g_slist_append (set, at);
+     }
+   return set;
+ }
+@@ -772,7 +772,7 @@
+   term = ZVT_TERM (widget);
+   component = ATK_COMPONENT(accessible);
+   
+-  atk_component_get_position (component, &base_x, &base_y, coords);
++  atk_component_get_extents (component, &base_x, &base_y, NULL, NULL, coords);
+   _zvt_term_xy_from_offset (term, offset, x, y);
+   *x *= term->charwidth;
+   *y *= term->charheight;
+@@ -884,7 +884,7 @@
+   term = ZVT_TERM (widget);
+   component = ATK_COMPONENT(accessible);
+   
+-  atk_component_get_position (component, &base_x, &base_y, coords);
++  atk_component_get_extents (component, &base_x, &base_y, NULL, NULL, coords);
+   x -= base_x;
+   y -= base_y;
+   x /= term->charwidth;
+
+# source
+https://download.gnome.org/sources/libzvt/2.0/libzvt-2.0.1.tar.bz2

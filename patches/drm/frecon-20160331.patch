@@ -30,9 +30,8 @@ EOF
 exit
 
 # patch
-diff -Naur frecon-20160331.orig/Configure frecon-20160331/Configure
---- frecon-20160331.orig/Configure	1970-01-01 00:00:00.000000000 +0000
-+++ frecon-20160331/Configure	2026-02-16 05:52:09.916376186 +0000
+--- frecon-20160331.orig/Configure
++++ frecon-20160331/Configure
 @@ -0,0 +1,25 @@
 +#!/bin/sh
 +
@@ -42,7 +41,7 @@ diff -Naur frecon-20160331.orig/Configure frecon-20160331/Configure
 +
 +while [ $# != 0 ]; do
 +  case $1 in
-+    --prefix=*) prefix=${1#*=};;
++    --prefix=*) PREFIX=${1#*=};;
 +    --disable-dbus) DBUS=0;;
 +    *) echo "Unknown option: '$1'"; exit 1;;
 +  esac
@@ -55,23 +54,30 @@ diff -Naur frecon-20160331.orig/Configure frecon-20160331/Configure
 +
 +test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
-+  sed -i "/^PKG_CONFIG/s|=.*|= PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++  sed -i "s|PKG_CONFIG.*|PKG_CONFIG,PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG))|" common.mk
 +else
-+  sed -i "/^PKG_CONFIG/s|=.*|= $PKG_CONFIG|" Makefile
++  sed -i "s|PKG_CONFIG.*|PKG_CONFIG,$PKG_CONFIG))|" common.mk
 +fi
-diff -Naur frecon-20160331.orig/Makefile frecon-20160331/Makefile
---- frecon-20160331.orig/Makefile	2026-02-16 04:36:31.014376186 +0000
-+++ frecon-20160331/Makefile	2026-02-16 04:43:26.572376186 +0000
-@@ -4,6 +4,8 @@
+--- frecon-20160331.orig/Makefile
++++ frecon-20160331/Makefile
+@@ -4,6 +4,7 @@
  
  include common.mk
  
 +PREFIX ?= /usr/local
-+PKG_CONFIG ?= pkg-config
  DBUS ?= 1
  
  PC_DEPS = libdrm libudev libpng libtsm
-@@ -32,5 +34,5 @@
+@@ -18,7 +19,7 @@
+ CFLAGS += -Wall -Wsign-compare -Wpointer-arith -Wcast-qual -Wcast-align
+ 
+ CPPFLAGS += $(PC_CFLAGS) -I$(OUT)
+-LDLIBS += $(PC_LIBS)
++LDLIBS += $(PC_LIBS) -Wl,-rpath,$(PREFIX)/lib
+ 
+ $(OUT)glyphs.h: $(SRC)/font_to_c.py $(SRC)/ter-u16n.bdf
+ 	python2 $(SRC)/font_to_c.py $(SRC)/ter-u16n.bdf $(OUT)glyphs.h
+@@ -32,5 +33,5 @@
  clean: CLEAN(frecon)
  
  install: all
@@ -79,9 +85,8 @@ diff -Naur frecon-20160331.orig/Makefile frecon-20160331/Makefile
 -	install -m 755 $(OUT)/frecon $(DESTDIR)/sbin
 +	mkdir -p $(DESTDIR)$(PREFIX)/bin
 +	install -m 755 $(OUT)/frecon $(DESTDIR)$(PREFIX)/bin
-diff -Naur frecon-20160331.orig/dbus.c frecon-20160331/dbus.c
---- frecon-20160331.orig/dbus.c	2026-02-16 04:36:31.013376186 +0000
-+++ frecon-20160331/dbus.c	2026-02-16 05:51:33.862376186 +0000
+--- frecon-20160331.orig/dbus.c
++++ frecon-20160331/dbus.c
 @@ -7,6 +7,7 @@
  #if DBUS
  #include <dbus/dbus.h>
@@ -90,9 +95,8 @@ diff -Naur frecon-20160331.orig/dbus.c frecon-20160331/dbus.c
  
  #include "dbus.h"
  #include "dbus_interface.h"
-diff -Naur frecon-20160331.orig/dev.c frecon-20160331/dev.c
---- frecon-20160331.orig/dev.c	2026-02-16 04:36:31.013376186 +0000
-+++ frecon-20160331/dev.c	2026-02-16 05:51:39.196376186 +0000
+--- frecon-20160331.orig/dev.c
++++ frecon-20160331/dev.c
 @@ -7,6 +7,7 @@
  
  #include <errno.h>
@@ -101,9 +105,8 @@ diff -Naur frecon-20160331.orig/dev.c frecon-20160331/dev.c
  
  #include "dev.h"
  #include "input.h"
-diff -Naur frecon-20160331.orig/edid_utils.h frecon-20160331/edid_utils.h
---- frecon-20160331.orig/edid_utils.h	1970-01-01 00:00:00.000000000 +0000
-+++ frecon-20160331/edid_utils.h	2026-02-16 04:57:06.735376186 +0000
+--- frecon-20160331.orig/edid_utils.h
++++ frecon-20160331/edid_utils.h
 @@ -0,0 +1,36 @@
 +// Copyright 2010 The ChromiumOS Authors
 +// Use of this source code is governed by a BSD-style license that can be
@@ -141,9 +144,8 @@ diff -Naur frecon-20160331.orig/edid_utils.h frecon-20160331/edid_utils.h
 +#define DTD_SIZE 18
 +
 +#endif
-diff -Naur frecon-20160331.orig/fb.c frecon-20160331/fb.c
---- frecon-20160331.orig/fb.c	2026-02-16 04:36:31.013376186 +0000
-+++ frecon-20160331/fb.c	2026-02-16 05:51:55.764376186 +0000
+--- frecon-20160331.orig/fb.c
++++ frecon-20160331/fb.c
 @@ -169,6 +169,7 @@
  
  	width = fb->drm->crtc->mode.hdisplay;
@@ -162,9 +164,8 @@ diff -Naur frecon-20160331.orig/fb.c frecon-20160331/fb.c
  	}
  }
  
-diff -Naur frecon-20160331.orig/term.c frecon-20160331/term.c
---- frecon-20160331.orig/term.c	2026-02-16 04:36:31.013376186 +0000
-+++ frecon-20160331/term.c	2026-02-16 05:52:06.430376186 +0000
+--- frecon-20160331.orig/term.c
++++ frecon-20160331/term.c
 @@ -44,10 +44,7 @@
  
  

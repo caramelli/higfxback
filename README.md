@@ -285,10 +285,8 @@ Once these prerequisites are in place:
 # pkg-build m4
 # pkg-build bzip2 zlib
 # pkg-build perl
-# pkg-build autotools-wrappers-ac autotools-wrappers-am mawk autotools-wrappers-lt
+# pkg-build autotools-wrappers-ac autotools-wrappers-am autotools-wrappers-lt
 ```
-
->Note that building _**autotools-wrappers-lt**_ requires _**mawk**_, as an _awk-based_ script named _inline-source_, involved in the generation of _libtoolize_, fails when executed with _**busybox**_ _awk_.
 
 It is often convenient to have mouse support in virtual consoles to allow copy-and-paste operations instead of typing everything by hand, which is provided by the _**gpm**_ daemon:
 

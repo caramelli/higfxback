@@ -7,12 +7,12 @@ pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
 cd autoconf-2.13; ./configure --program-suffix=-2.13 --prefix=; cd -
+cd autoconf-2.52; ./configure --program-suffix=-2.52 --prefix=/; cd -
 cd autoconf-2.52-20101002; ./configure --program-suffix=-2.52.20101002 --prefix=; cd -
 cd autoconf-2.52-20121002; ./configure --program-suffix=-2.52.20121002 --prefix=; cd -
 cd autoconf-2.52-20141204; ./configure --program-suffix=-2.52.20141204 --prefix=; cd -
 cd autoconf-2.52-20150926; ./configure --program-suffix=-2.52.20150926 --prefix=; cd -
 cd autoconf-2.52-20170501; ./configure --program-suffix=-2.52.20170501 --prefix=; cd -
-cd autoconf-2.52-20200111; ./configure --program-suffix=-2.52.20200111 --prefix=; cd -
 cd autoconf-2.52-20231210; ./configure --program-suffix=-2.52.20231210 --prefix=; cd -
 cd autoconf-2.59; ./configure --program-suffix=-2.59 --prefix=; cd -
 cd autoconf-2.60; ./configure --program-suffix=-2.60 --prefix=; cd -
@@ -31,12 +31,12 @@ cd autoconf-2.72; ./configure --program-suffix=-2.72 --prefix=; cd -
 
 # build
 make acdatadir=/share/autoconf-2.13 -C autoconf-2.13
+make pkgdatadir=/share/autoconf-2.52 -C autoconf-2.52
 make pkgdatadir=/share/autoconf-2.52.20101002 -C autoconf-2.52-20101002
 make pkgdatadir=/share/autoconf-2.52.20121002 -C autoconf-2.52-20121002
 make pkgdatadir=/share/autoconf-2.52.20141204 -C autoconf-2.52-20141204
 make pkgdatadir=/share/autoconf-2.52.20150926 -C autoconf-2.52-20150926
 make pkgdatadir=/share/autoconf-2.52.20170501 -C autoconf-2.52-20170501
-make pkgdatadir=/share/autoconf-2.52.20200111 -C autoconf-2.52-20200111
 make pkgdatadir=/share/autoconf-2.52.20231210 -C autoconf-2.52-20231210
 make pkgdatadir=/share/autoconf-2.59 -C autoconf-2.59
 make pkgdatadir=/share/autoconf-2.60 -C autoconf-2.60
@@ -67,6 +67,11 @@ install -m 644 autoconf-2.13/acconfig.h $DESTDIR/share/autoconf-2.13
 install -m 644 autoconf-2.13/autoconf.m4f $DESTDIR/share/autoconf-2.13
 install -m 644 autoconf-2.13/autoheader.m4f $DESTDIR/share/autoconf-2.13
 
+install autoconf-2.52/autoconf $DESTDIR/bin/autoconf-2.52
+install autoconf-2.52/autoheader $DESTDIR/bin/autoheader-2.52
+install -d $DESTDIR/share/autoconf-2.52
+install -m 644 autoconf-2.52/autoconf.m4f $DESTDIR/share/autoconf-2.52
+
 install autoconf-2.52-20101002/autoconf $DESTDIR/bin/autoconf-2.52.20101002
 install autoconf-2.52-20101002/autoheader $DESTDIR/bin/autoheader-2.52.20101002
 install -d $DESTDIR/share/autoconf-2.52.20101002
@@ -91,11 +96,6 @@ install autoconf-2.52-20170501/autoconf $DESTDIR/bin/autoconf-2.52.20170501
 install autoconf-2.52-20170501/autoheader $DESTDIR/bin/autoheader-2.52.20170501
 install -d $DESTDIR/share/autoconf-2.52.20170501
 install -m 644 autoconf-2.52-20170501/autoconf.m4f $DESTDIR/share/autoconf-2.52.20170501
-
-install autoconf-2.52-20200111/autoconf $DESTDIR/bin/autoconf-2.52.20200111
-install autoconf-2.52-20200111/autoheader $DESTDIR/bin/autoheader-2.52.20200111
-install -d $DESTDIR/share/autoconf-2.52.20200111
-install -m 644 autoconf-2.52-20200111/autoconf.m4f $DESTDIR/share/autoconf-2.52.20200111
 
 install autoconf-2.52-20231210/autoconf $DESTDIR/bin/autoconf-2.52.20231210
 install autoconf-2.52-20231210/autoheader $DESTDIR/bin/autoheader-2.52.20231210
@@ -424,12 +424,12 @@ devel=\\
 /bin/ac-wrapper.sh \\
 /bin/autoconf \\
 /bin/autoconf-2.13 \\
+/bin/autoconf-2.52 \\
 /bin/autoconf-2.52.20101002 \\
 /bin/autoconf-2.52.20121002 \\
 /bin/autoconf-2.52.20141204 \\
 /bin/autoconf-2.52.20150926 \\
 /bin/autoconf-2.52.20170501 \\
-/bin/autoconf-2.52.20200111 \\
 /bin/autoconf-2.52.20231210 \\
 /bin/autoconf-2.59 \\
 /bin/autoconf-2.60 \\
@@ -447,12 +447,12 @@ devel=\\
 /bin/autoconf-2.72 \\
 /bin/autoheader \\
 /bin/autoheader-2.13 \\
+/bin/autoheader-2.52 \\
 /bin/autoheader-2.52.20101002 \\
 /bin/autoheader-2.52.20121002 \\
 /bin/autoheader-2.52.20141204 \\
 /bin/autoheader-2.52.20150926 \\
 /bin/autoheader-2.52.20170501 \\
-/bin/autoheader-2.52.20200111 \\
 /bin/autoheader-2.52.20231210 \\
 /bin/autoheader-2.59 \\
 /bin/autoheader-2.60 \\
@@ -486,12 +486,12 @@ devel=\\
 /share/autoconf-2.13/acconfig.h \\
 /share/autoconf-2.13/autoconf.m4f \\
 /share/autoconf-2.13/autoheader.m4f \\
+/share/autoconf-2.52/autoconf.m4f \\
 /share/autoconf-2.52.20101002/autoconf.m4f \\
 /share/autoconf-2.52.20121002/autoconf.m4f \\
 /share/autoconf-2.52.20141204/autoconf.m4f \\
 /share/autoconf-2.52.20150926/autoconf.m4f \\
 /share/autoconf-2.52.20170501/autoconf.m4f \\
-/share/autoconf-2.52.20200111/autoconf.m4f \\
 /share/autoconf-2.52.20231210/autoconf.m4f \\
 /share/autoconf-2.59/autom4te.cfg \\
 /share/autoconf-2.59/autoconf/autoconf.m4f \\
@@ -709,6 +709,17 @@ exit
  #
  # Now try to run the binary
  #
+--- autotools-wrappers-ac-20231224.orig/autoconf-2.52/autoconf.in
++++ autotools-wrappers-ac-20231224/autoconf-2.52/autoconf.in
+@@ -706,7 +706,7 @@
+     # sometimes and `m4_BUILTIN' at others.  We should render a unique name,
+     # the one specified by the user.
+     base_name=`echo "$macro_name" | sed 's/^m4_//'`
+-    if echo "ifdef(\`$base_name', \`', \`m4exit(-1)')" | $M4; then
++    if echo "ifdef(\`$base_name', \`', \`m4exit(1)')" | $M4; then
+       # BASE_NAME is a builtin.
+       trace_opt="$trace_opt -t $base_name -t m4_$base_name"
+       echo "$base_name$trace_format" |
 --- autotools-wrappers-ac-20231224.orig/autoconf-2.60/bin/Makefile.in
 +++ autotools-wrappers-ac-20231224/autoconf-2.60/bin/Makefile.in
 @@ -477,6 +477,8 @@
@@ -772,12 +783,12 @@ exit
 
 # source
 https://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.52.tar.bz2
 https://invisible-island.net/archives/autoconf/autoconf-2.52-20101002.tgz
 https://invisible-island.net/archives/autoconf/autoconf-2.52-20121002.tgz
 https://invisible-island.net/archives/autoconf/autoconf-2.52-20141204.tgz
 https://invisible-island.net/archives/autoconf/autoconf-2.52-20150926.tgz
 https://invisible-island.net/archives/autoconf/autoconf-2.52-20170501.tgz
-https://invisible-island.net/archives/autoconf/autoconf-2.52-20200111.tgz
 https://invisible-island.net/archives/autoconf/autoconf-2.52-20231210.tgz
 https://ftp.gnu.org/gnu/autoconf/autoconf-2.59.tar.bz2
 https://ftp.gnu.org/gnu/autoconf/autoconf-2.60.tar.bz2
