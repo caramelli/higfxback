@@ -251,8 +251,6 @@ rootfs-%: linux busybox-% pkg-config-%
 	@install $(PKG_CONFIG)/$*-build/pkg-config                                                   rootfs-$*/bin/pkg-config
 	@install $(STAGING_DIR)/$*/bin/getconf                                                       rootfs-$*/bin/getconf
 	@cp -P $(STAGING_DIR)/$*/bin/ldd                                                             rootfs-$*/bin/ldd
-	@install pkg-build                                                                           rootfs-$*/bin/pkg-build
-	@install pkg-get                                                                             rootfs-$*/bin/pkg-get
 	@install ../scripts/*                                                                        rootfs-$*/bin
 	@install -d                                                                                  rootfs-$*/boot
 	@install $(LINUX)/arch/x86/boot/bzImage                                                      rootfs-$*/boot/bzImage

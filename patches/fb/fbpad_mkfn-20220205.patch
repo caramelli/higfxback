@@ -1,0 +1,95 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="freetype-build make-build stb-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -f stb_truetype.h
+sh ./Configure --with-stb-truetype-file=stb/stb_truetype.h --prefix=/fb
+
+# build
+make
+
+# install
+install -d $DESTDIR/fb/bin
+install mkfn_ft $DESTDIR/fb/bin
+install mkfn_stb $DESTDIR/fb/bin
+
+# build.pc
+install -d $DESTDIR/fb/share/pkgconfig
+cat > $DESTDIR/fb/share/pkgconfig/fbpad_mkfn-build.pc << EOF
+Name: fbpad_mkfn
+Version: 20220205
+Description: Utility for creating tinyfont files
+Requires: $REQUIRES
+
+exec=\\
+/fb/bin/mkfn_ft \\
+/fb/bin/mkfn_stb
+EOF
+
+exit
+
+# patch
+--- fbpad_mkfn-20220205.orig/Configure
++++ fbpad_mkfn-20220205/Configure
+@@ -0,0 +1,18 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++STB_TRUETYPE_FILE=stb_truetype.h
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --with-stb-truetype-file=*) STB_TRUETYPE_FILE=${1#*=};;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
++
++sed -i "/^STB_TRUETYPE_FILE/s|=.*|= $STB_TRUETYPE_FILE|" Makefile
+--- fbpad_mkfn-20220205.orig/Makefile
++++ fbpad_mkfn-20220205/Makefile
+@@ -1,6 +1,7 @@
+ # fbpad_mkfn makefile
++PREFIX = /usr/local
+ CC = cc
+-
++STB_TRUETYPE_FILE = stb_truetype.h
+ CFLAGS = -O2 -Wall
+ LDFLAGS =
+ 
+@@ -10,9 +11,11 @@
+ mkfn_ft: mkfn_ft.c mkfn.o isdw.o
+ 	$(CC) -c $(CFLAGS) `pkg-config --cflags freetype2` mkfn_ft.c
+ 	$(CC) -o $@ mkfn_ft.o mkfn.o isdw.o $(LDFLAGS) `pkg-config --libs freetype2`
+-
+ mkfn_stb: mkfn_stb.c mkfn.o isdw.o
+-	$(CC) -c $(CFLAGS) -DSTB_TRUETYPE_IMPLEMENTATION mkfn_stb.c
++	$(CC) -c $(CFLAGS) -DSTB_TRUETYPE_FILE=\"$(STB_TRUETYPE_FILE)\" -DSTB_TRUETYPE_IMPLEMENTATION mkfn_stb.c
+ 	$(CC) -o $@ mkfn_stb.o mkfn.o isdw.o $(LDFLAGS) -lm
+ clean:
+ 	rm -f *.o mkfn_ft mkfn_stb
++install: all
++	install -d $(DESTDIR)$(PREFIX)/bin
++	install mkfn_ft mkfn_stb $(DESTDIR)$(PREFIX)/bin
+--- fbpad_mkfn-20220205.orig/mkfn_stb.c
++++ fbpad_mkfn-20220205/mkfn_stb.c
+@@ -3,7 +3,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <unistd.h>
+-#include "stb_truetype.h"
++#include STB_TRUETYPE_FILE
+ #include "mkfn.h"
+ 
+ #define LIMIT(n, a, b)	((n) < (a) ? (a) : ((n) > (b) ? (b) : (n)))
+
+# source
+https://github.com/aligrudi/fbpad_mkfn/archive/3ed3d3d18fb7f39c83919769696bb790328666a5/fbpad_mkfn-20220205.tar.gz
