@@ -1,0 +1,45 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build ncurses-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.71; am-1.16)
+aclocal; autoheader; autoconf; automake -a -c
+./configure --disable-unicode --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install htop $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/htop-build.pc << EOF
+Name: htop
+Version: 3.2.2
+Description: interactive process viewer
+Requires: $REQUIRES
+
+exec=\\
+/bin/htop
+EOF
+
+exit
+
+# patch
+--- htop-3.2.2.orig/configure.ac
++++ htop-3.2.2/configure.ac
+@@ -14,6 +14,7 @@
+ 
+ AC_CANONICAL_HOST
+ AM_INIT_AUTOMAKE([-Wall std-options subdir-objects])
++AM_MAINTAINER_MODE
+ 
+ # ----------------------------------------------------------------------
+ 
+# source
+https://github.com/htop-dev/htop/releases/download/3.2.2/htop-3.2.2.tar.xz

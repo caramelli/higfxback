@@ -1,0 +1,67 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libxkbcommon-build meson-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+rm -rf external/xkbcommon
+meson setup --prefix=/drm build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/drm/include
+install -m 644 src/tsm/libtsm.h $DESTDIR/drm/include
+install -d $DESTDIR/drm/lib
+install build/src/tsm/libtsm.so.4 $DESTDIR/drm/lib
+ln -sf libtsm.so.4 $DESTDIR/drm/lib/libtsm.so
+install -d $DESTDIR/drm/lib/pkgconfig
+install -m 644 build/meson-private/libtsm.pc $DESTDIR/drm/lib/pkgconfig
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/libtsm-build.pc << EOF
+Name: libtsm
+Version: 4.4.2
+Description: Terminal-emulator State Machine library
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/libtsm.h \\
+/drm/lib/libtsm.so \\
+/drm/lib/pkgconfig/libtsm.pc
+
+exec=\\
+/drm/lib/libtsm.so.4
+EOF
+
+exit
+
+# patch
+--- libtsm-4.4.2.orig/meson.build
++++ libtsm-4.4.2/meson.build
+@@ -5,7 +5,6 @@
+     'c',
+     version: '4.4.2',
+     license: 'MIT',
+-    meson_version: '>=1.1',
+     default_options: [
+         'warning_level=1',
+         'werror=true',
+--- libtsm-4.4.2.orig/src/tsm/tsm-screen.c
++++ libtsm-4.4.2/src/tsm/tsm-screen.c
+@@ -993,7 +993,7 @@
+ 	con->age = con->age_cnt;
+ 
+ 	con->sb_pos = NULL;
+-	con->sb_pos_num = 0;
++	con->sb_pos_num = con->sb_count;
+ }
+ 
+ unsigned int tsm_screen_sb_get_line_count(struct tsm_screen *con)
+
+# source
+https://github.com/kmscon/libtsm/archive/v4.4.2/libtsm-4.4.2.tar.gz

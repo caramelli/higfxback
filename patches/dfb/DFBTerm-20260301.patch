@@ -1,0 +1,54 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="lite-build meson-build"
+
+PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libtsm-build; then
+  EMULATOR=-Demulator=libtsm
+  REQUIRES="$REQUIRES libtsm-build"
+elif PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libzvt-build; then
+  EMULATOR=-Dsystem-libzvt=true
+  REQUIRES="$REQUIRES libzvt-build"
+else
+  EMULATOR=--libexecdir=/dfb/lib
+  PTY_HELPER=1
+fi
+
+# configure
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig meson setup $EMULATOR --prefix=/dfb build
+
+# build
+meson compile -C build
+
+# install
+install -d $DESTDIR/dfb/bin
+install build/src/dfbterm $DESTDIR/dfb/bin
+test $PTY_HELPER && install -d $DESTDIR/dfb/lib/dfbterm
+test $PTY_HELPER && install build/src/dfbterm-pty-helper $DESTDIR/dfb/lib/dfbterm
+install -d $DESTDIR/dfb/share/dfbterm
+install -m 644 data/Misc-Fixed.dgiff $DESTDIR/dfb/share/dfbterm
+
+# build.pc
+install -d $DESTDIR/dfb/share/pkgconfig
+cat > $DESTDIR/dfb/share/pkgconfig/dfbterm-build.pc << EOF
+Name: DFBTerm
+Version: 20260301
+Description: DirectFB terminal emulator
+Requires: $REQUIRES
+
+exec=\\
+/dfb/bin/dfbterm \\
+EOF
+test $PTY_HELPER && cat >> $DESTDIR/dfb/share/pkgconfig/dfbterm-build.pc << EOF
+/dfb/lib/dfbterm/dfbterm-pty-helper \\
+EOF
+cat >> $DESTDIR/dfb/share/pkgconfig/dfbterm-build.pc << EOF
+/dfb/share/dfbterm/Misc-Fixed.dgiff
+EOF
+
+exit
+
+# source
+https://github.com/directfb2/DFBTerm/archive/f038008916698cb0ffa58416702aa6924c3903df/DFBTerm-20260301.tar.gz

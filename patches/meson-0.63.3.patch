@@ -360,5 +360,87 @@ exit
  
  # Copyright 2016 The Meson development team
  
+--- meson-0.63.3.orig/mesonbuild/ast/introspection.py
++++ meson-0.63.3/mesonbuild/ast/introspection.py
+@@ -76,7 +76,6 @@
+             self.environment = env
+         self.subproject_dir = subproject_dir
+         self.coredata = self.environment.get_coredata()
+-        self.option_file = os.path.join(self.source_root, self.subdir, 'meson_options.txt')
+         self.backend = backend
+         self.default_options = {OptionKey('backend'): self.backend}
+         self.project_data = {}    # type: T.Dict[str, T.Any]
+@@ -113,9 +112,12 @@
+             proj_vers = 'undefined'
+         self.project_data = {'descriptive_name': proj_name, 'version': proj_vers}
+ 
+-        if os.path.exists(self.option_file):
++        optfile = os.path.join(self.source_root, self.subdir, 'meson.options')
++        if not os.path.exists(optfile):
++            optfile = os.path.join(self.source_root, self.subdir, 'meson_options.txt')
++        if os.path.exists(optfile):
+             oi = optinterpreter.OptionInterpreter(self.subproject)
+-            oi.process(self.option_file)
++            oi.process(optfile)
+             self.coredata.update_project_options(oi.options)
+ 
+         def_opts = self.flatten_args(kwargs.get('default_options', []))
+--- meson-0.63.3.orig/mesonbuild/interpreter/interpreter.py
++++ meson-0.63.3/mesonbuild/interpreter/interpreter.py
+@@ -23,8 +23,9 @@
+ from .. import envconfig
+ from ..wrap import wrap, WrapMode
+ from .. import mesonlib
+-from ..mesonlib import (MesonBugException, HoldableObject, FileMode, MachineChoice, OptionKey,
+-                        listify, extract_as_list, has_path_sep, PerMachine)
++from ..mesonlib import (MesonBugException, MesonException, HoldableObject,
++                        FileMode, MachineChoice, OptionKey, listify,
++                        extract_as_list, has_path_sep, PerMachine)
+ from ..programs import ExternalProgram, NonExistingExternalProgram
+ from ..dependencies import Dependency
+ from ..depfile import DepFile
+@@ -304,7 +305,6 @@
+         # be different for dependencies provided by wrap files.
+         self.subproject_directory_name = subdir.split(os.path.sep)[-1]
+         self.subproject_dir = subproject_dir
+-        self.option_file = os.path.join(self.source_root, self.subdir, 'meson_options.txt')
+         self.relaxations = relaxations or set()
+         if not mock and ast is None:
+             self.load_root_meson_file()
+@@ -1164,11 +1164,20 @@
+                 raise InterpreterException(f'Meson version is {cv} but project requires {pv}')
+             mesonlib.project_meson_versions[self.subproject] = kwargs['meson_version']
+ 
+-        if os.path.exists(self.option_file):
++        option_file = os.path.join(self.source_root, self.subdir, 'meson.options')
++        old_option_file = os.path.join(self.source_root, self.subdir, 'meson_options.txt')
++
++        if os.path.exists(option_file):
++            if os.path.exists(old_option_file):
++                if not os.path.samefile(option_file, old_option_file):
++                    raise MesonException("meson.options and meson_options.txt both exist, but are not the same file.")
++        else:
++            option_file = old_option_file
++        if os.path.exists(option_file):
+             oi = optinterpreter.OptionInterpreter(self.subproject)
+-            oi.process(self.option_file)
++            oi.process(option_file)
+             self.coredata.update_project_options(oi.options)
+-            self.add_build_def_file(self.option_file)
++            self.add_build_def_file(option_file)
+ 
+         # Do not set default_options on reconfigure otherwise it would override
+         # values previously set from command line. That means that changing
+--- meson-0.63.3.orig/mesonbuild/mintro.py
++++ meson-0.63.3/mesonbuild/mintro.py
+@@ -320,7 +320,7 @@
+     filelist = []  # type: T.List[str]
+     for root, _, files in os.walk(src_dir):
+         for f in files:
+-            if f == 'meson.build' or f == 'meson_options.txt':
++            if f == 'meson.build' or f == 'meson.options' or f == 'meson_options.txt':
+                 filelist.append(os.path.relpath(os.path.join(root, f), src_dir))
+     return filelist
+ 
 # source
 https://github.com/mesonbuild/meson/archive/0.63.3/meson-0.63.3.tar.gz
