@@ -30,6 +30,12 @@ aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
 cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
 ./configure --program-suffix=-2.2.6b --prefix=
 cd ..
+# configure (ac-2.65; am-1.10)
+cd libtool-2.2.7a
+aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
+cd libltdl; aclocal -I m4; autoheader; autoconf; automake -a -c; cd -
+./configure --program-suffix=-2.2.7a --prefix=
+cd ..
 # configure (ac-2.65; am-1.11)
 cd libtool-2.2.10
 aclocal -I libltdl/m4; autoheader; autoconf; automake -a -c
@@ -78,6 +84,7 @@ make -C libtool-1.5.24
 make aclocaldir=/share/libtool-2.2.4/aclocal pkgdatadir=/share/libtool-2.2.4 -C libtool-2.2.4
 make aclocaldir=/share/libtool-2.2.6/aclocal pkgdatadir=/share/libtool-2.2.6 -C libtool-2.2.6
 make aclocaldir=/share/libtool-2.2.6b/aclocal pkgdatadir=/share/libtool-2.2.6b -C libtool-2.2.6b
+make aclocaldir=/share/libtool-2.2.7a/aclocal pkgdatadir=/share/libtool-2.2.7a -C libtool-2.2.7a
 make aclocaldir=/share/libtool-2.2.10/aclocal pkgdatadir=/share/libtool-2.2.10 -C libtool-2.2.10
 make aclocaldir=/share/libtool-2.4/aclocal pkgdatadir=/share/libtool-2.4 -C libtool-2.4
 make aclocaldir=/share/libtool-2.4.2/aclocal pkgdatadir=/share/libtool-2.4.2 -C libtool-2.4.2
@@ -285,6 +292,62 @@ install -m 644 libtool-2.2.6b/libltdl/loaders/load_add_on.c $DESTDIR/share/libto
 install -m 644 libtool-2.2.6b/libltdl/loaders/loadlibrary.c $DESTDIR/share/libtool-2.2.6b/libltdl/loaders
 install -m 644 libtool-2.2.6b/libltdl/loaders/preopen.c $DESTDIR/share/libtool-2.2.6b/libltdl/loaders
 install -m 644 libtool-2.2.6b/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2.2.6b/libltdl/loaders
+
+install -d $DESTDIR/bin
+install libtool-2.2.7a/libtoolize $DESTDIR/bin/libtoolize-2.2.7a
+install -d $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/argz.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/libtool.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/ltdl.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/ltoptions.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/ltsugar.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/ltversion.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -m 644 libtool-2.2.7a/libltdl/m4/lt~obsolete.m4 $DESTDIR/share/libtool-2.2.7a/aclocal
+install -d $DESTDIR/share/libtool-2.2.7a/config
+install libtool-2.2.7a/libltdl/config/compile $DESTDIR/share/libtool-2.2.7a/config
+install libtool-2.2.7a/libltdl/config/config.guess $DESTDIR/share/libtool-2.2.7a/config
+install libtool-2.2.7a/libltdl/config/config.sub $DESTDIR/share/libtool-2.2.7a/config
+install libtool-2.2.7a/libltdl/config/depcomp $DESTDIR/share/libtool-2.2.7a/config
+install libtool-2.2.7a/libltdl/config/install-sh $DESTDIR/share/libtool-2.2.7a/config
+install -m 644 libtool-2.2.7a/libltdl/config/ltmain.sh $DESTDIR/share/libtool-2.2.7a/config
+install libtool-2.2.7a/libltdl/config/missing $DESTDIR/share/libtool-2.2.7a/config
+install -d $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/aclocal.m4 $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/argz_.h $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/argz.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/config-h.in $DESTDIR/share/libtool-2.2.7a/libltdl
+install libtool-2.2.7a/libltdl/configure $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/configure.ac $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/COPYING.LIB $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/lt__alloc.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/lt__dirent.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/lt__strl.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/lt_dlloader.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/lt_error.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/ltdl.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/ltdl.h $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/Makefile.am $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/Makefile.in $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/README $DESTDIR/share/libtool-2.2.7a/libltdl
+install -m 644 libtool-2.2.7a/libltdl/slist.c $DESTDIR/share/libtool-2.2.7a/libltdl
+install -d $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt__alloc.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt__dirent.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt__glibc.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt__private.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt__strl.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt_dlloader.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt_error.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/lt_system.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -m 644 libtool-2.2.7a/libltdl/libltdl/slist.h $DESTDIR/share/libtool-2.2.7a/libltdl/libltdl
+install -d $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/dld_link.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/dlopen.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/dyld.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/load_add_on.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/loadlibrary.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/preopen.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
+install -m 644 libtool-2.2.7a/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2.2.7a/libltdl/loaders
 
 install -d $DESTDIR/bin
 install libtool-2.2.10/libtoolize $DESTDIR/bin/libtoolize-2.2.10
@@ -678,7 +741,7 @@ install -m 644 libtool-2.4.7/libltdl/loaders/shl_load.c $DESTDIR/share/libtool-2
 install -d $DESTDIR/share/pkgconfig
 cat > $DESTDIR/share/pkgconfig/autotools-wrappers-lt-build.pc << EOF
 Name: autotools-wrappers-lt
-Version: 20250503
+Version: 20260304
 Description: GNU Libtool wrapper
 Requires: $REQUIRES
 
@@ -688,6 +751,7 @@ devel=\\
 /bin/libtoolize-2.2.4 \\
 /bin/libtoolize-2.2.6 \\
 /bin/libtoolize-2.2.6b \\
+/bin/libtoolize-2.2.7a \\
 /bin/libtoolize-2.2.10 \\
 /bin/libtoolize-2.4 \\
 /bin/libtoolize-2.4.2 \\
@@ -862,6 +926,54 @@ devel=\\
 /share/libtool-2.2.6b/libltdl/loaders/loadlibrary.c \\
 /share/libtool-2.2.6b/libltdl/loaders/preopen.c \\
 /share/libtool-2.2.6b/libltdl/loaders/shl_load.c \\
+/share/libtool-2.2.7a/aclocal/argz.m4 \\
+/share/libtool-2.2.7a/aclocal/libtool.m4 \\
+/share/libtool-2.2.7a/aclocal/ltdl.m4 \\
+/share/libtool-2.2.7a/aclocal/ltoptions.m4 \\
+/share/libtool-2.2.7a/aclocal/ltsugar.m4 \\
+/share/libtool-2.2.7a/aclocal/ltversion.m4 \\
+/share/libtool-2.2.7a/aclocal/lt~obsolete.m4 \\
+/share/libtool-2.2.7a/config/compile \\
+/share/libtool-2.2.7a/config/config.guess \\
+/share/libtool-2.2.7a/config/config.sub \\
+/share/libtool-2.2.7a/config/depcomp \\
+/share/libtool-2.2.7a/config/install-sh \\
+/share/libtool-2.2.7a/config/ltmain.sh \\
+/share/libtool-2.2.7a/config/missing \\
+/share/libtool-2.2.7a/libltdl/aclocal.m4 \\
+/share/libtool-2.2.7a/libltdl/argz_.h \\
+/share/libtool-2.2.7a/libltdl/argz.c \\
+/share/libtool-2.2.7a/libltdl/config-h.in \\
+/share/libtool-2.2.7a/libltdl/configure \\
+/share/libtool-2.2.7a/libltdl/configure.ac \\
+/share/libtool-2.2.7a/libltdl/COPYING.LIB \\
+/share/libtool-2.2.7a/libltdl/lt__alloc.c \\
+/share/libtool-2.2.7a/libltdl/lt__dirent.c \\
+/share/libtool-2.2.7a/libltdl/lt__strl.c \\
+/share/libtool-2.2.7a/libltdl/lt_dlloader.c \\
+/share/libtool-2.2.7a/libltdl/lt_error.c \\
+/share/libtool-2.2.7a/libltdl/ltdl.c \\
+/share/libtool-2.2.7a/libltdl/ltdl.h \\
+/share/libtool-2.2.7a/libltdl/Makefile.am \\
+/share/libtool-2.2.7a/libltdl/Makefile.in \\
+/share/libtool-2.2.7a/libltdl/README \\
+/share/libtool-2.2.7a/libltdl/slist.c \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt__alloc.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt__dirent.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt__glibc.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt__private.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt__strl.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt_dlloader.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt_error.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/lt_system.h \\
+/share/libtool-2.2.7a/libltdl/libltdl/slist.h \\
+/share/libtool-2.2.7a/libltdl/loaders/dld_link.c \\
+/share/libtool-2.2.7a/libltdl/loaders/dlopen.c \\
+/share/libtool-2.2.7a/libltdl/loaders/dyld.c \\
+/share/libtool-2.2.7a/libltdl/loaders/load_add_on.c \\
+/share/libtool-2.2.7a/libltdl/loaders/loadlibrary.c \\
+/share/libtool-2.2.7a/libltdl/loaders/preopen.c \\
+/share/libtool-2.2.7a/libltdl/loaders/shl_load.c \\
 /share/libtool-2.2.10/aclocal/argz.m4 \\
 /share/libtool-2.2.10/aclocal/libtool.m4 \\
 /share/libtool-2.2.10/aclocal/ltdl.m4 \\
@@ -1203,8 +1315,8 @@ EOF
 exit
 
 # patch
---- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/configure.ac
-+++ autotools-wrappers-lt-20250503/libtool-1.5.24/configure.ac
+--- autotools-wrappers-lt-20260304.orig/libtool-1.5.24/configure.ac
++++ autotools-wrappers-lt-20260304/libtool-1.5.24/configure.ac
 @@ -58,10 +58,12 @@
  ## ------------------------------- ##
  ## Libtool specific configuration. ##
@@ -1220,8 +1332,8 @@ exit
  AC_SUBST([aclocaldir])
  
  AC_ARG_ENABLE(ltdl-install,
---- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-1.5.24/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-1.5.24/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-1.5.24/libtool.m4
 @@ -7,7 +7,7 @@
  ## unlimited permission to copy and/or distribute it, with or without
  ## modifications, as long as this notice is preserved.
@@ -1350,8 +1462,8 @@ exit
  
  # Cheap backport of AS_EXECUTABLE_P and required macros
  # from Autoconf 2.59; we should not use $as_executable_p directly.
---- autotools-wrappers-lt-20250503.orig/libtool-1.5.24/libtoolize.in
-+++ autotools-wrappers-lt-20250503/libtool-1.5.24/libtoolize.in
+--- autotools-wrappers-lt-20260304.orig/libtool-1.5.24/libtoolize.in
++++ autotools-wrappers-lt-20260304/libtool-1.5.24/libtoolize.in
 @@ -364,6 +364,18 @@
    fi
  done
@@ -1371,8 +1483,8 @@ exit
  exit $status
  
  # Local Variables:
---- autotools-wrappers-lt-20250503.orig/libtool-2.2.10/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.2.10/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.2.10/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.2.10/libltdl/m4/libtool.m4
 @@ -169,6 +169,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1476,8 +1588,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20250503.orig/libtool-2.2.4/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.2.4/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.2.4/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.2.4/libltdl/m4/libtool.m4
 @@ -161,6 +161,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1581,8 +1693,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20250503.orig/libtool-2.2.6/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.2.6/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.2.6/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.2.6/libltdl/m4/libtool.m4
 @@ -161,6 +161,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1686,8 +1798,8 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20250503.orig/libtool-2.2.6b/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.2.6b/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.2.6b/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.2.6b/libltdl/m4/libtool.m4
 @@ -161,6 +161,7 @@
  m4_require([_LT_FILEUTILS_DEFAULTS])dnl
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
@@ -1777,15 +1889,7 @@ exit
    lt_cv_file_magic_test_file=/usr/lib/libnls.so
    ;;
  
-@@ -7005,7 +7006,6 @@
- AC_SUBST([GREP])
- ])
- 
--
- # _LT_DECL_OBJDUMP
- # --------------
- # If we don't have a new enough Autoconf to choose the best objdump
-@@ -7017,6 +7017,13 @@
+@@ -7017,6 +7018,13 @@
  AC_SUBST([OBJDUMP])
  ])
  
@@ -1799,8 +1903,114 @@ exit
  
  # _LT_DECL_SED
  # ------------
---- autotools-wrappers-lt-20250503.orig/libtool-2.4/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.4/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.2.7a/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.2.7a/libltdl/m4/libtool.m4
+@@ -167,6 +167,7 @@
+ m4_require([_LT_FILEUTILS_DEFAULTS])dnl
+ m4_require([_LT_CHECK_SHELL_FEATURES])dnl
+ m4_require([_LT_CMD_RELOAD])dnl
++m4_require([_LT_DECL_FILECMD])dnl
+ m4_require([_LT_CHECK_MAGIC_METHOD])dnl
+ m4_require([_LT_CMD_OLD_ARCHIVE])dnl
+ m4_require([_LT_CMD_GLOBAL_SYMBOLS])dnl
+@@ -1176,7 +1177,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.$ac_objext` in
++    case `$FILECMD conftest.$ac_objext` in
+       *ELF-32*)
+ 	HPUX_IA64_MODE="32"
+ 	;;
+@@ -1192,7 +1193,7 @@
+   echo '[#]line '$LINENO' "configure"' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+     if test "$lt_cv_prog_gnu_ld" = yes; then
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -melf32bsmip"
+ 	  ;;
+@@ -1204,7 +1205,7 @@
+ 	;;
+       esac
+     else
+-      case `/usr/bin/file conftest.$ac_objext` in
++      case `$FILECMD conftest.$ac_objext` in
+ 	*32-bit*)
+ 	  LD="${LD-ld} -32"
+ 	  ;;
+@@ -1225,7 +1226,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+       *32-bit*)
+ 	case $host in
+ 	  x86_64-*kfreebsd*-gnu)
+@@ -1286,7 +1287,7 @@
+   # Find out which ABI we are using.
+   echo 'int i;' > conftest.$ac_ext
+   if AC_TRY_EVAL(ac_compile); then
+-    case `/usr/bin/file conftest.o` in
++    case `$FILECMD conftest.o` in
+     *64-bit*)
+       case $lt_cv_prog_gnu_ld in
+       yes*) LD="${LD-ld} -m elf64_sparc" ;;
+@@ -2988,7 +2989,7 @@
+ 
+ bsdi[[45]]*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (shared object|dynamic lib)'
+-  lt_cv_file_magic_cmd='/usr/bin/file -L'
++  lt_cv_file_magic_cmd='$FILECMD -L'
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+@@ -3029,7 +3030,7 @@
+       # Not sure whether the presence of OpenBSD here was a mistake.
+       # Let's accept both of them until this is cleared up.
+       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[[3-9]]86 (compact )?demand paged shared library'
+-      lt_cv_file_magic_cmd=/usr/bin/file
++      lt_cv_file_magic_cmd=$FILECMD
+       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
+       ;;
+     esac
+@@ -3047,7 +3048,7 @@
+   ;;
+ 
+ hpux10.20* | hpux11*)
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   case $host_cpu in
+   ia64*)
+     lt_cv_deplibs_check_method='file_magic (s[[0-9]][[0-9]][[0-9]]|ELF-[[0-9]][[0-9]]) shared object file - IA64'
+@@ -3094,7 +3095,7 @@
+ 
+ newos6*)
+   lt_cv_deplibs_check_method='file_magic ELF [[0-9]][[0-9]]*-bit [[ML]]SB (executable|dynamic lib)'
+-  lt_cv_file_magic_cmd=/usr/bin/file
++  lt_cv_file_magic_cmd=$FILECMD
+   lt_cv_file_magic_test_file=/usr/lib/libnls.so
+   ;;
+ 
+@@ -7095,6 +7096,14 @@
+ ])
+ 
+ 
++# _LT_DECL_FILECMD
++# ----------------
++# Check for a file(cmd) program that can be used to detect file type and magic
++m4_defun([_LT_DECL_FILECMD],
++[AC_CHECK_TOOL([FILECMD], [file], [:])
++_LT_DECL([], [FILECMD], [1], [A file(cmd) program that detects file types])
++])# _LT_DECL_FILECMD
++ 
+ # _LT_DECL_SED
+ # ------------
+ # Check for a fully-functional sed program, that truncates
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.4/libltdl/m4/libtool.m4
 @@ -170,6 +170,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -1905,8 +2115,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.2/libltdl/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.4.2/libltdl/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.2/libltdl/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.4.2/libltdl/m4/libtool.m4
 @@ -172,6 +172,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2011,8 +2221,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.4/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.4.4/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.4/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.4.4/m4/libtool.m4
 @@ -164,6 +164,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2152,8 +2362,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.5/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.4.5/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.5/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.4.5/m4/libtool.m4
 @@ -181,6 +181,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2293,8 +2503,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.6/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.4.6/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.6/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.4.6/m4/libtool.m4
 @@ -181,6 +181,7 @@
  m4_require([_LT_CHECK_SHELL_FEATURES])dnl
  m4_require([_LT_PATH_CONVERSION_FUNCTIONS])dnl
@@ -2434,8 +2644,8 @@ exit
  # _LT_DECL_SED
  # ------------
  # Check for a fully-functional sed program, that truncates
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.7/Makefile.am
-+++ autotools-wrappers-lt-20250503/libtool-2.4.7/Makefile.am
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.7/Makefile.am
++++ autotools-wrappers-lt-20260304/libtool-2.4.7/Makefile.am
 @@ -289,6 +289,8 @@
  	$(AM_V_GEN)$(configure_edit) '$(libtoolize_in)' > '$@'
  	$(AM_V_at)chmod a+x '$@'
@@ -2454,8 +2664,8 @@ exit
  	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
  $(libtoolize_1): $(libtoolize_in)
  	$(AM_V_GEN)$(update_mans) libtoolize
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.7/configure.ac
-+++ autotools-wrappers-lt-20250503/libtool-2.4.7/configure.ac
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.7/configure.ac
++++ autotools-wrappers-lt-20260304/libtool-2.4.7/configure.ac
 @@ -85,6 +85,7 @@
  ## Shell tools. ##
  ## ------------ ##
@@ -2464,8 +2674,8 @@ exit
  AC_PROG_GNU_M4
  
  
---- autotools-wrappers-lt-20250503.orig/libtool-2.4.7/m4/libtool.m4
-+++ autotools-wrappers-lt-20250503/libtool-2.4.7/m4/libtool.m4
+--- autotools-wrappers-lt-20260304.orig/libtool-2.4.7/m4/libtool.m4
++++ autotools-wrappers-lt-20260304/libtool-2.4.7/m4/libtool.m4
 @@ -8218,7 +8218,7 @@
  m4_defun([_LT_DECL_FILECMD],
  [AC_CHECK_TOOL([FILECMD], [file], [:])
@@ -2481,6 +2691,7 @@ https://ftp.gnu.org/gnu/libtool/libtool-1.5.24.tar.gz
 https://ftp.gnu.org/gnu/libtool/libtool-2.2.4.tar.gz
 https://ftp.gnu.org/gnu/libtool/libtool-2.2.6a.tar.gz
 https://ftp.gnu.org/gnu/libtool/libtool-2.2.6b.tar.gz
+https://raw.githubusercontent.com/caramelli/libtool-legacy/master/libtool-2.2.7a.tar.bz2
 https://ftp.gnu.org/gnu/libtool/libtool-2.2.10.tar.gz
 https://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.xz
 https://ftp.gnu.org/gnu/libtool/libtool-2.4.2.tar.xz
@@ -2488,4 +2699,4 @@ https://ftp.gnu.org/gnu/libtool/libtool-2.4.4.tar.xz
 https://ftp.gnu.org/gnu/libtool/libtool-2.4.5.tar.xz
 https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz
 https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz
-https://github.com/caramelli/autotools-wrappers-lt/archive/20250503/autotools-wrappers-lt-20250503.tar.gz
+https://github.com/caramelli/autotools-wrappers-lt/archive/20260304/autotools-wrappers-lt-20260304.tar.gz

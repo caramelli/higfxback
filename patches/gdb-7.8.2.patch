@@ -1,0 +1,57 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-lt-build ncurses-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.64; am-1.11; lt-2.2.7a)
+libtoolize -c -f -i; autoconf
+cd bfd; aclocal -I . -I .. -I ../config; autoheader; autoconf; automake -a -c; cd -
+cd gdb; aclocal; autoheader; autoconf; cd -
+cd gdb/gnulib; aclocal -I import/m4; autoheader; autoconf; automake -a -c; cd -
+cd gdb/testsuite; autoconf; cd -
+cd libdecnumber; aclocal -I ../config; autoheader; autoconf; cd -
+cd libiberty; autoheader; autoconf; cd -
+cd opcodes; aclocal -I .. -I ../bfd -I ../config; autoheader; autoconf; automake -a -c; cd -
+cd readline; autoconf; cd -
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install gdb/gcore $DESTDIR/bin
+install gdb/gdb $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/gdb-build.pc << EOF
+Name: gdb
+Version: 7.8.2
+Description: GNU debugger
+Requires: $REQUIRES
+
+exec=\\
+/bin/gcore \\
+/bin/gdb
+EOF
+
+exit
+
+# patch
+--- gdb-7.8.2.orig/configure.ac
++++ gdb-7.8.2/configure.ac
+@@ -19,6 +19,8 @@
+ ##############################################################################
+ ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
+ 
++AC_CONFIG_MACRO_DIR([.])
++
+ m4_include(config/acx.m4)
+ m4_include(config/override.m4)
+ m4_include(config/proginstall.m4)
+
+# source
+https://ftp.gnu.org/gnu/gdb/gdb-7.8.2.tar.xz

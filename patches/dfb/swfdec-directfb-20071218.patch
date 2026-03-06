@@ -15,11 +15,11 @@ make
 # install
 install -d $DESTDIR/dfb/bin
 install player/.libs/swfdec-directfb-player $DESTDIR/dfb/bin
-install -d $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
-install -m 644 swfdec-directfb/swfdec-directfb.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
-install -m 644 swfdec-directfb/swfdec_directfb_main.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
-install -m 644 swfdec-directfb/swfdec_directfb_player.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
-install -m 644 swfdec-directfb/swfdec_directfb_renderer.h $DESTDIR/dfb/include/swfdec-0.5/swfdec-directfb
+install -d $DESTDIR/dfb/include/swfdec-0.5/libswfdec-directfb
+install -m 644 swfdec-directfb/swfdec-directfb.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec-directfb
+install -m 644 swfdec-directfb/swfdec_directfb_main.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec-directfb
+install -m 644 swfdec-directfb/swfdec_directfb_player.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec-directfb
+install -m 644 swfdec-directfb/swfdec_directfb_renderer.h $DESTDIR/dfb/include/swfdec-0.5/libswfdec-directfb
 install -d $DESTDIR/dfb/lib
 install swfdec-directfb/.libs/libswfdec-directfb-0.5.so.0 $DESTDIR/dfb/lib
 ln -sf libswfdec-directfb-0.5.so.0 $DESTDIR/dfb/lib/libswfdec-directfb-0.5.so
@@ -35,10 +35,10 @@ Description: DirectFB Swfdec player
 Requires: $REQUIRES
 
 devel=\\
-/dfb/include/swfdec-0.5/swfdec-directfb/swfdec-directfb.h \\
-/dfb/include/swfdec-0.5/swfdec-directfb/swfdec_directfb_main.h \\
-/dfb/include/swfdec-0.5/swfdec-directfb/swfdec_directfb_player.h \\
-/dfb/include/swfdec-0.5/swfdec-directfb/swfdec_directfb_renderer.h \\
+/dfb/include/swfdec-0.5/libswfdec-directfb/swfdec-directfb.h \\
+/dfb/include/swfdec-0.5/libswfdec-directfb/swfdec_directfb_main.h \\
+/dfb/include/swfdec-0.5/libswfdec-directfb/swfdec_directfb_player.h \\
+/dfb/include/swfdec-0.5/libswfdec-directfb/swfdec_directfb_renderer.h \\
 /dfb/lib/libswfdec-directfb-0.5.so \\
 /dfb/lib/pkgconfig/swfdec-directfb-0.5.pc
 
@@ -82,7 +82,7 @@ exit
 --- swfdec-directfb-20071218.orig/ltmain.sh
 +++ swfdec-directfb-20071218/ltmain.sh
 @@ -0,0 +1 @@
-+# ltmain.sh - Provide generalized library-building support services
++# ltmain.sh - Provide generalized library-building support services.
 --- swfdec-directfb-20071218.orig/player/main.c
 +++ swfdec-directfb-20071218/player/main.c
 @@ -42,6 +42,7 @@
@@ -110,17 +110,6 @@ exit
    }
  
    ERROR_CHECK (dfb->CreateSurface (dfb, &dsc, &surface));
---- swfdec-directfb-20071218.orig/swfdec-directfb/Makefile.am
-+++ swfdec-directfb-20071218/swfdec-directfb/Makefile.am
-@@ -19,7 +19,7 @@
- 	-export-symbols-regex '^(swfdec_.*)' \
- 	$(GTK_LIBS) $(SWFDEC_LIBS) $(AUDIO_LIBS) $(CAIRO_LIBS)
- 
--libswfdec_@SWFDEC_MAJORMINOR@includedir = $(includedir)/swfdec-@SWFDEC_MAJORMINOR@/libswfdec-directfb
-+libswfdec_@SWFDEC_MAJORMINOR@includedir = $(includedir)/swfdec-@SWFDEC_MAJORMINOR@/swfdec-directfb
- libswfdec_@SWFDEC_MAJORMINOR@include_HEADERS = \
- 	swfdec-directfb.h \
- 	swfdec_directfb_main.h \
 --- swfdec-directfb-20071218.orig/swfdec-directfb/swfdec_source.c
 +++ swfdec-directfb-20071218/swfdec-directfb/swfdec_source.c
 @@ -52,7 +52,7 @@

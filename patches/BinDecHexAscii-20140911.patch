@@ -1,0 +1,47 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="autotools-wrappers-am-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure (ac-2.69; am-1.14)
+aclocal; autoconf; automake -a -c
+./configure --prefix=
+
+# build
+make
+
+# install
+install -d $DESTDIR/bin
+install src/bindechexascii $DESTDIR/bin
+
+# build.pc
+install -d $DESTDIR/share/pkgconfig
+cat > $DESTDIR/share/pkgconfig/bindechexascii-build.pc << EOF
+Name: BinDecHexAscii
+Version: 20140911
+Description: binary, octal, decimal, hexadecimal, ASCII converter
+Requires: $REQUIRES
+
+exec=\\
+/bin/bindechexascii
+EOF
+
+exit
+
+# patch
+diff -Naur BinDecHexAscii-20140911.orig/configure.ac BinDecHexAscii-20140911/configure.ac
+--- BinDecHexAscii-20140911.orig/configure.ac	2026-03-04 19:27:01.295215847 +0000
++++ BinDecHexAscii-20140911/configure.ac	2026-03-04 19:27:09.067216471 +0000
+@@ -1,7 +1,6 @@
+ AC_INIT([bindechexascii], [0.3a], [leonid.x212@gmail.com])
+ AM_INIT_AUTOMAKE([foreign])
+ AC_PROG_CC
+-AC_CONFIG_HEADERS([config.h])
+ AC_CONFIG_FILES([
+  Makefile
+  man/Makefile
+
+# source
+https://github.com/xfuw89/BinDecHexAscii/archive/2cf0be2d4a06addb29fffacb374ff2a880596d36/BinDecHexAscii-20140911.tar.gz
