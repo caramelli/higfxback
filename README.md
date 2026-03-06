@@ -345,7 +345,7 @@ For the _Linux Framebuffer_ graphics backend:
 ```
 # pkg-build byacc flex bison fbset
 # pkg-build util-macros libfontenc freetype mkfontscale mkfontdir ttf-bitstream-vera
-# pkg-build fb/ft2tf fb/fbpad
+# pkg-build fb/fbpad_mkfn fb/fbpad
 ```
 
 For the _KMS/DRM_ graphics backend graphics backend:

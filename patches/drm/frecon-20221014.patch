@@ -1,0 +1,151 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="libdrm-build libpng-build libtsm-build make-build"
+
+PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
+
+# configure
+PKG_CONFIG_PATH=/drm/lib/pkgconfig sh ./Configure --enable-lite --prefix=/drm
+
+# build
+make
+
+# install
+install -d $DESTDIR/drm/bin
+install frecon-lite $DESTDIR/drm/bin/frecon
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/frecon-build.pc << EOF
+Name: frecon
+Version: 20221014
+Description: KMS/DRM terminal emulator
+Requires: $REQUIRES
+
+exec=\\
+/drm/bin/frecon
+EOF
+
+exit
+
+# patch
+--- frecon-20221014.orig/Configure
++++ frecon-20221014/Configure
+@@ -0,0 +1,25 @@
++#!/bin/sh
++
++PREFIX=/usr/local
++
++FRECON_LITE=0
++
++while [ $# != 0 ]; do
++  case $1 in
++    --prefix=*) PREFIX=${1#*=};;
++    --enable-lite) FRECON_LITE=1;;
++    *) echo "Unknown option: '$1'"; exit 1;;
++  esac
++  shift
++done
++
++sed -i "/^PREFIX/s|=.*|= $PREFIX|" Makefile
++
++sed -i "/^FRECON_LITE/s|=.*|= $FRECON_LITE|" Makefile
++
++test $PKG_CONFIG || PKG_CONFIG=pkg-config
++if test $PKG_CONFIG_PATH; then
++  sed -i "s|PKG_CONFIG.*|PKG_CONFIG,PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG))|" common.mk
++else
++  sed -i "s|PKG_CONFIG.*|PKG_CONFIG,$PKG_CONFIG))|" common.mk
++fi
+--- frecon-20221014.orig/Makefile
++++ frecon-20221014/Makefile
+@@ -4,6 +4,7 @@
+ 
+ include common.mk
+ 
++PREFIX ?= /usr/local
+ FRECON_LITE ?= 0
+ 
+ PC_DEPS = libdrm libpng libtsm
+@@ -25,7 +26,7 @@
+ CFLAGS += -Wall -Wsign-compare -Wpointer-arith -Wcast-qual -Wcast-align
+ 
+ CPPFLAGS += $(PC_CFLAGS) -I$(OUT)
+-LDLIBS += $(PC_LIBS)
++LDLIBS += $(PC_LIBS) -Wl,-rpath,$(PREFIX)/lib
+ 
+ $(OUT)glyphs.h: $(SRC)/font_to_c.py $(SRC)/ter-u16n.bdf
+ 	$(SRC)/font_to_c $(SRC)/ter-u16n.bdf $(OUT)glyphs.h
+@@ -39,5 +40,5 @@
+ clean: CLEAN($(TARGET))
+ 
+ install: all
+-	mkdir -p $(DESTDIR)/sbin
+-	install -m 755 $(OUT)/$(TARGET) $(DESTDIR)/sbin
++	mkdir -p $(DESTDIR)$(PREFIX)/bin
++	install -m 755 $(OUT)/$(TARGET) $(DESTDIR)$(PREFIX)/bin
+--- frecon-20221014.orig/drm.c
++++ frecon-20221014/drm.c
+@@ -821,7 +821,7 @@
+ int32_t drm_setmode(drm_t* drm, uint32_t fb_id)
+ {
+ 	int conn;
+-	int32_t ret;
++	int32_t ret = -ENOENT;
+ 	uint32_t existing_console_crtc_id = 0;
+ 
+ 	if (drm->atomic)
+--- frecon-20221014.orig/fb.c
++++ frecon-20221014/fb.c
+@@ -184,6 +184,7 @@
+ 
+ 	width = fb->drm->console_mode_info.hdisplay;
+ 	height = fb->drm->console_mode_info.vdisplay;
++	pitch = width * 4;
+ 
+ 	r = fb_buffer_create(fb, &pitch);
+ 	if (r < 0) {
+--- frecon-20221014.orig/font_to_c.py
++++ frecon-20221014/font_to_c.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python3
++#!/bin/env python3
+ # -*- coding: utf-8 -*-
+ # Copyright 2015 The ChromiumOS Authors
+ # Use of this source code is governed by a BSD-style license that can be
+--- frecon-20221014.orig/term.c
++++ frecon-20221014/term.c
+@@ -52,10 +52,7 @@
+ 
+ 
+ static char* interactive_cmd_line[] = {
+-	"/sbin/agetty",
+-	"-",
+-	"9600",
+-	"xterm",
++	"/bin/sh",
+ 	NULL
+ };
+ 
+@@ -76,7 +73,7 @@
+ 	}
+ }
+ 
+-static int term_draw_cell(struct tsm_screen* screen, uint32_t id,
++static int term_draw_cell(struct tsm_screen* screen, uint64_t id,
+ 			  const uint32_t* ch, size_t len,
+ 			  unsigned int cwidth, unsigned int posx,
+ 			  unsigned int posy,
+@@ -344,7 +341,7 @@
+ 	return false;
+ }
+ 
+-static void term_osc_cb(struct tsm_vte *vte, const uint32_t *osc_string,
++static void term_osc_cb(struct tsm_vte *vte, const char *osc_string,
+ 			size_t osc_len, void *data)
+ {
+ 	terminal_t* terminal = (terminal_t*)data;
+
+# source
+https://chromium.googlesource.com/chromiumos/platform/frecon/+archive/bcab826ae006c9d964106374fce2549b4a03ce59.tar.gz
