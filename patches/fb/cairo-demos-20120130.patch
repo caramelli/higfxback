@@ -8,10 +8,12 @@ PKG_CONFIG_PATH=/fb/share/pkgconfig pkg-config --exists --print-errors $REQUIRES
 # configure
 rm -f kapow/kapow.o
 rm -f png/star_and_ring
+rm -f PS/write_png.h
 PKG_CONFIG_PATH=/fb/lib/pkgconfig sh ./Configure --with-backgroundsdir=/share/backgrounds --with-demosdatadir=/fb/share/cairo-demos --prefix=/fb
 
 # build
 make
+make -C fbdev
 make -C kapow
 make -C png
 make -C PS
@@ -27,6 +29,7 @@ install slideshow-demo $DESTDIR/fb/bin
 install spinner-demo $DESTDIR/fb/bin
 install spiral-demo $DESTDIR/fb/bin
 install tiger-demo $DESTDIR/fb/bin
+install fbdev/cairo-fb $DESTDIR/fb/bin
 install kapow/kapow $DESTDIR/fb/bin
 install png/bevels $DESTDIR/fb/bin
 install png/caps_joins $DESTDIR/fb/bin
@@ -56,6 +59,7 @@ Requires: $REQUIRES
 exec=\\
 /fb/bin/basket \\
 /fb/bin/bevels \\
+/fb/bin/cairo-fb \\
 /fb/bin/caps_joins \\
 /fb/bin/chart-demo \\
 /fb/bin/fish-demo \\
@@ -86,7 +90,7 @@ exit
 # patch
 --- cairo-demos-20120130.orig/Configure
 +++ cairo-demos-20120130/Configure
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,42 @@
 +#!/bin/sh
 +
 +PREFIX=/usr/local
@@ -106,6 +110,7 @@ exit
 +done
 +
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" Makefile
++sed -i "/^PREFIX/s|=.*|=$PREFIX|" fbdev/Makefile
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" kapow/Makefile
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" png/Makefile
 +sed -i "/^PREFIX/s|=.*|=$PREFIX|" PS/Makefile
@@ -117,11 +122,13 @@ exit
 +test $PKG_CONFIG || PKG_CONFIG=pkg-config
 +if test $PKG_CONFIG_PATH; then
 +  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" fbdev/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" kapow/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" png/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG|" PS/Makefile
 +else
 +  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" Makefile
++  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" fbdev/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" kapow/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" png/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" PS/Makefile
@@ -357,6 +364,67 @@ exit
  cairo_surface_t *
  _cairo_image_surface_create_from_pixbuf(const GdkPixbuf *pixbuf);
  
+--- cairo-demos-20120130.orig/fbdev/Makefile
++++ cairo-demos-20120130/fbdev/Makefile
+@@ -1,10 +1,14 @@
++PREFIX=/usr/local
++
++PKG_CONFIG=pkg-config
++
+ APPS    = cairo-fb
+ 
+ CFLAGS  = -Wall
+ LDFLAGS = -lm
+ 
+-CFLAGS  += `pkg-config cairo --cflags`
+-LDFLAGS += `pkg-config cairo --libs`
++CFLAGS  += `$(PKG_CONFIG) cairo --cflags`
++LDFLAGS += `$(PKG_CONFIG) cairo --libs` -Wl,-rpath,$(PREFIX)/lib
+ 
+ all: $(APPS) 
+ 
+--- cairo-demos-20120130.orig/fbdev/cairo-fb.c
++++ cairo-demos-20120130/fbdev/cairo-fb.c
+@@ -6,8 +6,10 @@
+ 
+ #include <unistd.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <fcntl.h>
+ #include <linux/fb.h>
++#include <sys/ioctl.h>
+ #include <sys/mman.h>
+ #include <cairo.h>
+ 
+@@ -16,7 +18,7 @@
+ 	struct fb_var_screeninfo vinfo;
+ 	struct fb_fix_screeninfo finfo;
+ 	long int screensize = 0;
+-	char* fbp = 0;
++	unsigned char* fbp = 0;
+ 	cairo_t* cr;
+ 	cairo_surface_t *surface;
+ 
+@@ -47,9 +49,9 @@
+ 	screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
+ 
+ 	// map the device to memory 
+-	fbp = (char*) mmap (0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
++	fbp = mmap (0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
+ 
+-	if ((int)fbp == -1) {
++	if (fbp == MAP_FAILED) {
+ 		printf ("Error: failed to map framebuffer device to memory\n");
+ 		close (fbfd);
+ 		exit (4);
+@@ -60,6 +62,7 @@
+ 	surface = cairo_image_surface_create_for_data (fbp, CAIRO_FORMAT_ARGB32, 
+ 		vinfo.xres, vinfo.yres, finfo.line_length); 
+ 	cr = cairo_create (surface);
++	cairo_set_source_rgb (cr, 1, 1, 1);
+ 	cairo_move_to (cr, 100, 100);
+ 	cairo_line_to (cr, 300, 300);
+ 	cairo_stroke (cr);
 --- cairo-demos-20120130.orig/fbdev.c
 +++ cairo-demos-20120130/fbdev.c
 @@ -0,0 +1,110 @@
@@ -822,4 +890,4 @@ exit
  			frames++;
 
 # source
-https://github.com/caramelli/cairo-demos/archive/de0b06d10b7cd05bf6ef193a2bbc93d8eb94bbfc/cairo-demos-20120130.tar.gz
+https://github.com/caramelli/cairo-demos/archive/893b62c9f246b2062cef6e83fe904ff928c87050/cairo-demos-20120130.tar.gz

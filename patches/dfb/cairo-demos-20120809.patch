@@ -8,6 +8,7 @@ PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists --print-errors $REQUIRE
 # configure
 rm -f kapow/kapow.o
 rm -f png/star_and_ring
+rm -f PS/write_png.h
 PKG_CONFIG_PATH=/dfb/lib/pkgconfig sh ./Configure --with-backgroundsdir=/share/backgrounds --with-demosdatadir=/dfb/share/cairo-demos --prefix=/dfb
 
 # build
@@ -58,7 +59,7 @@ install -m 644 images/4000x4000/202672-4000x4000.jpg $DESTDIR/dfb/share/cairo-de
 install -d $DESTDIR/dfb/share/pkgconfig
 cat > $DESTDIR/dfb/share/pkgconfig/cairo-demos-build.pc << EOF
 Name: cairo-demos
-Version: 20120812
+Version: 20120809
 Description: A collection of Cairo demos and test programs
 Requires: $REQUIRES
 
@@ -101,8 +102,8 @@ EOF
 exit
 
 # patch
---- cairo-demos-20120812.orig/Configure
-+++ cairo-demos-20120812/Configure
+--- cairo-demos-20120809.orig/Configure
++++ cairo-demos-20120809/Configure
 @@ -0,0 +1,39 @@
 +#!/bin/sh
 +
@@ -143,8 +144,8 @@ exit
 +  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" png/Makefile
 +  sed -i "/^PKG_CONFIG/s|=.*|=$PKG_CONFIG|" PS/Makefile
 +fi
---- cairo-demos-20120812.orig/Makefile
-+++ cairo-demos-20120812/Makefile
+--- cairo-demos-20120809.orig/Makefile
++++ cairo-demos-20120809/Makefile
 @@ -1,3 +1,11 @@
 +PREFIX=/usr/local
 +
@@ -204,16 +205,7 @@ exit
  ifneq ($(COGL),0)
  DEFINES+=-DHAVE_COGL=1
  SOURCES+=cogl.c
-@@ -46,7 +63,7 @@
- DEFINES+=-DHAVE_COGL=0
- endif
- 
--SKIA:=$(shell pkg-config --exists cairo-skia && echo 1 || echo 0)
-+SKIA:=$(shell $(PKG_CONFIG) --exists cairo-skia && echo 1 || echo 0)
- ifneq ($(SKIA),0)
- DEFINES+=-DHAVE_SKIA=1
- SOURCES+=skia.c
-@@ -57,22 +74,24 @@
+@@ -48,22 +65,24 @@
  
  all: spiral-demo tiger-demo fish-demo flowers-demo gears-demo gradient-demo chart-demo waterfall-demo dragon-demo pythagoras-demo wave-demo sierpinski-demo maze-demo
  
@@ -243,8 +235,8 @@ exit
  spiral-demo: spiral-demo.c $(SOURCES) demo.h Makefile
  	$(CC) $(DEFINES) $(CFLAGS) -o $@ spiral-demo.c $(SOURCES) $(LIBS)
  slideshow-demo: slideshow-demo.c $(SOURCES) demo.h Makefile
---- cairo-demos-20120812.orig/PS/Makefile
-+++ cairo-demos-20120812/PS/Makefile
+--- cairo-demos-20120809.orig/PS/Makefile
++++ cairo-demos-20120809/PS/Makefile
 @@ -1,3 +1,7 @@
 +PREFIX=/usr/local
 +
@@ -273,8 +265,8 @@ exit
  clean:
 -	rm -f ${EXAMPLES} *.o
 +	rm -f ${EXAMPLES} *.o *.ps
---- cairo-demos-20120812.orig/chart-demo.c
-+++ cairo-demos-20120812/chart-demo.c
+--- cairo-demos-20120809.orig/chart-demo.c
++++ cairo-demos-20120809/chart-demo.c
 @@ -295,7 +295,7 @@
  		for (n = 0; n < 5; n++)
  			chart_update(&c[n]);
@@ -284,8 +276,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/demo.c
-+++ cairo-demos-20120812/demo.c
+--- cairo-demos-20120809.orig/demo.c
++++ cairo-demos-20120809/demo.c
 @@ -143,6 +143,7 @@
      struct device *device = 0;
      enum {
@@ -293,8 +285,8 @@ exit
 +	DIRECTFB,
  	XLIB,
  	XIMAGE,
- 	SKIA,
-@@ -154,7 +155,9 @@
+ 	XCB,
+@@ -153,7 +154,9 @@
      int n;
  
      for (n = 1; n < argc; n++) {
@@ -305,7 +297,7 @@ exit
  	    backend = XLIB;
  	} else if (strcmp (argv[n], "--xcb") == 0) {
  	    backend = XCB;
-@@ -174,6 +177,8 @@
+@@ -171,6 +174,8 @@
      if (backend == AUTO) {
  	if (device == 0 && HAVE_DRM)
  	    device = drm_open (argc, argv);
@@ -314,8 +306,8 @@ exit
  	if (device == 0 && HAVE_XLIB)
  	    device = xlib_open (argc, argv);
  	if (device == 0 && HAVE_XCB)
-@@ -188,6 +193,9 @@
- 	    device = skia_open (argc, argv);
+@@ -183,6 +188,9 @@
+ 	    device = ximage_open (argc, argv);
      } else switch (backend) {
      case AUTO:
 +    case DIRECTFB:
@@ -324,7 +316,7 @@ exit
      case XLIB:
  	device = xlib_open (argc, argv);
  	break;
-@@ -218,7 +226,10 @@
+@@ -210,7 +218,10 @@
  	exit(1);
      }
  
@@ -336,7 +328,7 @@ exit
      return device;
  }
  
-@@ -298,6 +309,8 @@
+@@ -290,6 +301,8 @@
  		cairo_pixels += cairo_stride;
  	}
  
@@ -345,7 +337,7 @@ exit
  	return surface;
  }
  #endif
-@@ -340,11 +353,11 @@
+@@ -332,11 +345,11 @@
  			      name, frame_count, frame_count == 1 ? "" : "s");
      } else {
  	    if (version)
@@ -361,9 +353,9 @@ exit
      }
      cairo_set_font_size (cr, 18);
      cairo_text_extents (cr, buf, &extents);
---- cairo-demos-20120812.orig/demo.h
-+++ cairo-demos-20120812/demo.h
-@@ -89,6 +89,12 @@
+--- cairo-demos-20120809.orig/demo.h
++++ cairo-demos-20120809/demo.h
+@@ -87,6 +87,12 @@
  static inline struct device *ximage_open (int argc, char **argv) { return 0; }
  #endif
  
@@ -376,8 +368,8 @@ exit
  #if HAVE_DRM
  struct device *drm_open (int argc, char **argv);
  #else
---- cairo-demos-20120812.orig/directfb.c
-+++ cairo-demos-20120812/directfb.c
+--- cairo-demos-20120809.orig/directfb.c
++++ cairo-demos-20120809/directfb.c
 @@ -0,0 +1,69 @@
 +#include <cairo-directfb.h>
 +
@@ -448,8 +440,8 @@ exit
 +
 +    return &device->base;
 +}
---- cairo-demos-20120812.orig/dragon-demo.c
-+++ cairo-demos-20120812/dragon-demo.c
+--- cairo-demos-20120809.orig/dragon-demo.c
++++ cairo-demos-20120809/dragon-demo.c
 @@ -27,6 +27,7 @@
   */
  
@@ -481,9 +473,9 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/fish-demo.c
-+++ cairo-demos-20120812/fish-demo.c
-@@ -30,7 +30,7 @@
+--- cairo-demos-20120809.orig/fish-demo.c
++++ cairo-demos-20120809/fish-demo.c
+@@ -25,7 +25,7 @@
  	double sf;
  	cairo_t *cr;
  
@@ -492,7 +484,7 @@ exit
  
  	height = cairo_image_surface_get_height(image);
  	width = cairo_image_surface_get_width(image);
-@@ -65,7 +65,7 @@
+@@ -60,7 +60,7 @@
  	int width, height, x, y;
  	cairo_t *cr;
  
@@ -501,7 +493,7 @@ exit
  	width = cairo_image_surface_get_width(image);
  	height = cairo_image_surface_get_height(image);
  	surface = cairo_surface_create_similar(device->scanout,
-@@ -265,7 +265,7 @@
+@@ -254,7 +254,7 @@
  		fb->show (fb);
  		fb->destroy (fb);
  
@@ -510,8 +502,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/flowers-demo.c
-+++ cairo-demos-20120812/flowers-demo.c
+--- cairo-demos-20120809.orig/flowers-demo.c
++++ cairo-demos-20120809/flowers-demo.c
 @@ -422,7 +422,7 @@
  
  		flowers_update(device->width, device->height);
@@ -521,8 +513,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/gradient-demo.c
-+++ cairo-demos-20120812/gradient-demo.c
+--- cairo-demos-20120809.orig/gradient-demo.c
++++ cairo-demos-20120809/gradient-demo.c
 @@ -219,7 +219,7 @@
  		fb->show (fb);
  		fb->destroy (fb);
@@ -532,13 +524,13 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/kapow/.gitignore
-+++ cairo-demos-20120812/kapow/.gitignore
+--- cairo-demos-20120809.orig/kapow/.gitignore
++++ cairo-demos-20120809/kapow/.gitignore
 @@ -1 +1,2 @@
  kapow
 +kapow.o
---- cairo-demos-20120812.orig/kapow/Makefile
-+++ cairo-demos-20120812/kapow/Makefile
+--- cairo-demos-20120809.orig/kapow/Makefile
++++ cairo-demos-20120809/kapow/Makefile
 @@ -1,5 +1,9 @@
 -MYCFLAGS= $(shell pkg-config --cflags cairo libpng) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
 -LDLIBS	= $(shell pkg-config --libs cairo libpng) -g
@@ -557,8 +549,8 @@ exit
  clean :
 -	rm kapow.o kapow
 +	rm -f kapow.o kapow kapow.png
---- cairo-demos-20120812.orig/maze-demo.c
-+++ cairo-demos-20120812/maze-demo.c
+--- cairo-demos-20120809.orig/maze-demo.c
++++ cairo-demos-20120809/maze-demo.c
 @@ -259,7 +259,6 @@
  	int show_fps = 1;
  	int benchmark;
@@ -567,8 +559,8 @@ exit
  
  	int n;
  
---- cairo-demos-20120812.orig/png/.gitignore
-+++ cairo-demos-20120812/png/.gitignore
+--- cairo-demos-20120809.orig/png/.gitignore
++++ cairo-demos-20120809/png/.gitignore
 @@ -4,7 +4,9 @@
  outline
  snapping
@@ -579,8 +571,8 @@ exit
  stars
  text
  text-rotate
---- cairo-demos-20120812.orig/png/Makefile
-+++ cairo-demos-20120812/png/Makefile
+--- cairo-demos-20120809.orig/png/Makefile
++++ cairo-demos-20120809/png/Makefile
 @@ -1,4 +1,8 @@
 -EXAMPLES=bevels caps_joins hering outline spiral splines_tolerance snapping stars star_and_ring text text-rotate
 +PREFIX=/usr/local
@@ -608,8 +600,8 @@ exit
  %: %.c
  	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
  
---- cairo-demos-20120812.orig/png/snapping.c
-+++ cairo-demos-20120812/png/snapping.c
+--- cairo-demos-20120809.orig/png/snapping.c
++++ cairo-demos-20120809/png/snapping.c
 @@ -43,6 +43,13 @@
  #include <cairo.h>
  #include <math.h>
@@ -664,8 +656,8 @@ exit
      if (fabs(y_width_snapped) < 1.0) {
  	if (y_width > 0)
  	    y_width_snapped = 1.0;
---- cairo-demos-20120812.orig/pythagoras-demo.c
-+++ cairo-demos-20120812/pythagoras-demo.c
+--- cairo-demos-20120809.orig/pythagoras-demo.c
++++ cairo-demos-20120809/pythagoras-demo.c
 @@ -27,6 +27,7 @@
  
  #define _USE_MATH_DEFINES /* for M_SQRT2 on win32 */
@@ -698,8 +690,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/sierpinski-demo.c
-+++ cairo-demos-20120812/sierpinski-demo.c
+--- cairo-demos-20120809.orig/sierpinski-demo.c
++++ cairo-demos-20120809/sierpinski-demo.c
 @@ -1,4 +1,5 @@
  #include "demo.h"
 +#include <stdlib.h>
@@ -730,8 +722,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/slideshow-demo.c
-+++ cairo-demos-20120812/slideshow-demo.c
+--- cairo-demos-20120809.orig/slideshow-demo.c
++++ cairo-demos-20120809/slideshow-demo.c
 @@ -142,7 +142,7 @@
  	}
  	closedir(dir);
@@ -767,9 +759,9 @@ exit
  			printf("%.2f fps\n", frames/delta);
  			last_tty = now;
  			frames = 0;
---- cairo-demos-20120812.orig/spinner-demo.c
-+++ cairo-demos-20120812/spinner-demo.c
-@@ -119,7 +119,7 @@
+--- cairo-demos-20120809.orig/spinner-demo.c
++++ cairo-demos-20120809/spinner-demo.c
+@@ -121,7 +121,7 @@
  {
  	struct device *device;
  	struct timeval start, last_tty, last_fps, now;
@@ -778,7 +770,7 @@ exit
  	int frames, n;
  	int frame = 0;
  	double factor = 1.0125;
-@@ -200,7 +200,7 @@
+@@ -202,7 +202,7 @@
  		fb->show (fb);
  		fb->destroy (fb);
  
@@ -787,8 +779,8 @@ exit
  			frames++;
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
---- cairo-demos-20120812.orig/spiral-complex.c
-+++ cairo-demos-20120812/spiral-complex.c
+--- cairo-demos-20120809.orig/spiral-complex.c
++++ cairo-demos-20120809/spiral-complex.c
 @@ -124,7 +124,7 @@
  	}
  	closedir(dir);
@@ -837,8 +829,8 @@ exit
  			printf("%.2f fps\n", frames/delta);
  			last_tty = now;
  			frames = 0;
---- cairo-demos-20120812.orig/spiral-demo.c
-+++ cairo-demos-20120812/spiral-demo.c
+--- cairo-demos-20120809.orig/spiral-demo.c
++++ cairo-demos-20120809/spiral-demo.c
 @@ -148,7 +148,7 @@
  		fb->show (fb);
  		fb->destroy (fb);
@@ -848,8 +840,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/tiger-demo.c
-+++ cairo-demos-20120812/tiger-demo.c
+--- cairo-demos-20120809.orig/tiger-demo.c
++++ cairo-demos-20120809/tiger-demo.c
 @@ -15,6 +15,7 @@
   */
  
@@ -871,8 +863,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/waterfall-demo.c
-+++ cairo-demos-20120812/waterfall-demo.c
+--- cairo-demos-20120809.orig/waterfall-demo.c
++++ cairo-demos-20120809/waterfall-demo.c
 @@ -170,7 +170,7 @@
  		fb->show (fb);
  		fb->destroy (fb);
@@ -882,8 +874,8 @@ exit
  			delta = now.tv_sec - last_tty.tv_sec;
  			delta += (now.tv_usec - last_tty.tv_usec)*1e-6;
  			frames++;
---- cairo-demos-20120812.orig/wave-demo.c
-+++ cairo-demos-20120812/wave-demo.c
+--- cairo-demos-20120809.orig/wave-demo.c
++++ cairo-demos-20120809/wave-demo.c
 @@ -123,13 +123,11 @@
  	int show_fps = 1;
  	int benchmark;
@@ -909,4 +901,4 @@ exit
  			frames++;
 
 # source
-https://github.com/caramelli/cairo-demos/archive/d4615ba601887ada73682682b0c8090636142bd9/cairo-demos-20120812.tar.gz
+https://github.com/caramelli/cairo-demos/archive/9c5dd77243e32857267d996a6827e87fe8308296/cairo-demos-20120809.tar.gz

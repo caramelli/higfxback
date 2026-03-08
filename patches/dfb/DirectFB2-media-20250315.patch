@@ -299,5 +299,22 @@ sed -i '$ s/ \\//' $DESTDIR/dfb/share/pkgconfig/directfb2-media-build.pc
 
 exit
 
+# patch
+--- DirectFB2-media-20250315.orig/interfaces/IDirectFBFont/idirectfbfont_stb.c
++++ DirectFB2-media-20250315/interfaces/IDirectFBFont/idirectfbfont_stb.c
+@@ -208,10 +208,9 @@
+ static DFBResult
+ Probe( IDirectFBFont_ProbeContext *ctx )
+ {
+-     int            err;
+-     stbtt_fontinfo fontinfo;
++     int err;
+ 
+-     err = stbtt_InitFont( &fontinfo, ctx->content, 0 );
++     err = stbtt__isfont( ctx->content );
+ 
+      return err ? DFB_OK : DFB_UNSUPPORTED;
+ }
+
 # source
 https://github.com/directfb2/DirectFB2-media/archive/6ed3fe63185bd9c933ab0d4ef1df4456e7b58b7f/DirectFB2-media-20250315.tar.gz
