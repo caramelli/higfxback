@@ -5,7 +5,7 @@ REQUIRES="premake-build"
 
 pkg-config --exists --print-errors $REQUIRES || exit 1
 
-if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists sdl2-build stb-build; then
+if PKG_CONFIG_PATH=/dfb/share/pkgconfig pkg-config --exists libstdc++-build sdl2-build stb-build; then
   SDL2=1
   REQUIRES="$REQUIRES sdl2-build stb-build"
 fi
@@ -13,9 +13,9 @@ fi
 # configure
 rm -f glcommon/stb_*
 rm -rf demos/imgui
-premake5 --file=demos/premake4.lua --demosdatadir=/dfb/share/PortableGL/media --with-stb-dir=/include/stb --prefix=/dfb gmake
-premake5 --file=examples/premake5.lua --prefix=/dfb gmake
-premake5 --file=testing/premake4.lua --testingdatadir=/dfb/share/PortableGL/media --with-stb-dir=/include/stb --prefix=/dfb gmake
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig premake5 --file=demos/premake4.lua --demosdatadir=/dfb/share/PortableGL/media --with-stb-dir=/include/stb gmake
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig premake5 --file=examples/premake5.lua gmake
+PKG_CONFIG_PATH=/dfb/lib/pkgconfig premake5 --file=testing/premake4.lua --testingdatadir=/dfb/share/PortableGL/media --with-stb-dir=/include/stb gmake
 
 # build
 test $SDL2 && make -C demos
@@ -32,10 +32,11 @@ test $SDL2 && install demos/grass $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/modelviewer $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/multidraw $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/pointsprites $DESTDIR/dfb/share/PortableGL/demos
+test $SDL2 && install demos/qwerty_controls.config $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/raytracing_1weekend $DESTDIR/dfb/share/PortableGL/demos
+test $SDL2 && install demos/shadertoy $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/sphereworld $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/sphereworld_color $DESTDIR/dfb/share/PortableGL/demos
-test $SDL2 && install demos/shadertoy $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/swrenderer $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/testprimitives $DESTDIR/dfb/share/PortableGL/demos
 test $SDL2 && install demos/texturing $DESTDIR/dfb/share/PortableGL/demos
@@ -73,7 +74,6 @@ test $SDL2 && install -m 644 media/textures/skybox/right.jpg $DESTDIR/dfb/share/
 test $SDL2 && install -m 644 media/textures/skybox/top.jpg $DESTDIR/dfb/share/PortableGL/media/textures/skybox
 test $SDL2 && install -d $DESTDIR/dfb/share/PortableGL/testing
 test $SDL2 && install testing/perf_tests $DESTDIR/dfb/share/PortableGL/testing
-test $SDL2 && install testing/run_tests $DESTDIR/dfb/share/PortableGL/testing
 
 # build.pc
 install -d $DESTDIR/dfb/share/pkgconfig
@@ -95,6 +95,7 @@ exec=\\
 /dfb/share/PortableGL/demos/modelviewer \\
 /dfb/share/PortableGL/demos/multidraw \\
 /dfb/share/PortableGL/demos/pointsprites \\
+/dfb/share/PortableGL/demos/qwerty_controls.config \\
 /dfb/share/PortableGL/demos/raytracing_1weekend \\
 /dfb/share/PortableGL/demos/shadertoy \\
 /dfb/share/PortableGL/demos/sphereworld \\
@@ -130,8 +131,7 @@ exec=\\
 /dfb/share/PortableGL/media/textures/skybox/left.jpg \\
 /dfb/share/PortableGL/media/textures/skybox/right.jpg \\
 /dfb/share/PortableGL/media/textures/skybox/top.jpg \\
-/dfb/share/PortableGL/testing/perf_tests \\
-/dfb/share/PortableGL/testing/run_tests
+/dfb/share/PortableGL/testing/perf_tests
 EOF
 
 exit
@@ -160,6 +160,21 @@ exit
  
 --- PortableGL-0.97.1.orig/demos/main.cpp
 +++ PortableGL-0.97.1/demos/main.cpp
+@@ -190,11 +190,11 @@
+ 	zmin = 1;
+ 	zmax = 50;
+ 	
+-	const char* controls_file = NULL;
++	char controls_file[PATH_MAX];
+ 	if (argc == 2)
+-		controls_file = argv[1];
++		strncpy(controls_file, argv[1], sizeof(controls_file));
+ 	else 
+-		controls_file = "./qwerty_controls.config";
++		snprintf(controls_file, sizeof(controls_file), "%.*s/qwerty_controls.config", (int)(strrchr(argv[0], '/') - argv[0]), argv[0]);
+ 
+ 	parse_config_file(controls_file, control_keys, (int*)keyvalues, NCONTROLS);
+ 
 @@ -210,7 +210,7 @@
  
  	srand(time(NULL));
@@ -202,7 +217,16 @@ exit
  		printf("failed to load texture\n");
  		return 0;
  	}
-@@ -486,9 +487,6 @@
+@@ -386,8 +387,6 @@
+ 
+ 	glEnable(GL_CULL_FACE);
+ 
+-	mat4 translate = translation_mat4(vec3(0, 0, -20));
+-
+ 
+ 	GLFrame modelframe;
+ 	mat4 camera, VP, MVP;
+@@ -486,9 +485,6 @@
  		glDrawArrays(GL_LINES, 0, line_verts.size());
  
  
@@ -212,7 +236,7 @@ exit
  		glinternal_vec2 p1, p2, p3;
  		SET_VEC2(p1, 10, 10);
  		SET_VEC2(p2, 90, 150);
-@@ -497,6 +495,9 @@
+@@ -497,6 +493,9 @@
  		/*
  		 * Just testing drawing directly to screen, bypassing gl state
  		 * could be used to draw text/GUIs/HUD etc more simply
@@ -265,32 +289,34 @@ exit
 +		description = "Directory for stb image headers",
 +		default     = "../stb"
 +	}
-+	
++
 +	newoption {
 +		trigger     = "demosdatadir",
 +		value       = "PATH",
 +		description = "Use the given path for demos data files",
 +		default     = "../media"
 +	}
-+	
-+	newoption {
-+		trigger     = "prefix",
-+		value       = "PATH",
-+		description = "Installation prefix; default is '/usr/local'",
-+		default     = "/usr/local"
-+	}
 +
-+	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
++	s = os.outputof("pkg-config --cflags sdl2")
++	sdl_incdir = s:match("%-I([^%s]+)")
++	s = os.outputof("pkg-config --libs sdl2")
++	sdl_libdir = s:match("%-L([^%s]+)")
++	print(sdl_incdir, sdl_libdir)
++
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", sdl_incdir }
++	libdirs { sdl_libdir }
  
  	-- stuff up here common to all projects
  	kind "ConsoleApp"
-@@ -10,29 +31,31 @@
+@@ -10,29 +31,32 @@
  	--targetdir "build"
  	targetdir "."
  
 -	configuration "linux"
++	buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
++
 +	filter "system:linux"
-+		linkoptions { "-L" .. _OPTIONS["prefix"] .. "/lib", "-Wl,-rpath," .. _OPTIONS["prefix"] .. "/lib" }
++		linkoptions { "-Wl,-rpath," .. sdl_libdir }
  		links { "SDL2", "m" }
  	
 -	configuration "windows"
@@ -319,17 +345,15 @@ exit
  	project "swrenderer"
  		language "C++"
 -		configuration { "gmake" }
-+		buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
 +		filter { "action:gmake" }
  			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
  		files {
  			"./main.cpp",
-@@ -46,7 +69,8 @@
+@@ -46,7 +70,7 @@
  
  	project "sphereworld"
  		language "C++"
 -		configuration { "gmake" }
-+		buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
 +		filter { "action:gmake" }
  			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
  		files {
@@ -343,12 +367,11 @@ exit
  			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
  		files {
  			"./sphereworld_color.cpp",
-@@ -76,20 +100,20 @@
+@@ -76,20 +100,19 @@
  
  	project "cubemap"
  		language "C++"
 -		configuration { "gmake" }
-+		buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
 +		filter { "action:gmake" }
  			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
  		files {
@@ -368,7 +391,7 @@ exit
  			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
  		files {
  			"./grass.cpp",
-@@ -99,7 +123,7 @@
+@@ -99,7 +122,7 @@
  
  	project "gears"
  		language "C"
@@ -377,7 +400,7 @@ exit
  			buildoptions { "-std=c99", "-pedantic-errors", "-Wunused-variable", "-Wreturn-type" }
  		files {
  			"./gears.c"
-@@ -107,7 +131,7 @@
+@@ -107,7 +130,7 @@
  
  	project "modelviewer"
  		language "C"
@@ -386,12 +409,11 @@ exit
  			buildoptions { "-std=c99", "-pedantic-errors", "-Wunused-variable", "-Wreturn-type" }
  		files {
  			"./modelviewer.c",
-@@ -117,78 +141,77 @@
+@@ -117,78 +140,74 @@
  
  	project "pointsprites"
  		language "C"
 -		configuration { "gmake" }
-+		buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
 +		filter { "action:gmake" }
  			buildoptions { "-std=c99", "-pedantic-errors", "-Wunused-variable", "-Wreturn-type" }
  		files {
@@ -406,7 +428,6 @@ exit
 -		configuration { "gmake" }
 -			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type", "-fopenmp" }
 -			links { "SDL2", "m", "gomp" }
-+		buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
 +		filter { "action:gmake" }
 +			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
 +			links { "SDL2", "m" }
@@ -439,7 +460,6 @@ exit
 -		configuration { "gmake" }
 -			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type", "-fopenmp" }
 -			links { "SDL2", "m", "gomp" }
-+		buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
 +		filter { "action:gmake" }
 +			buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
 +			links { "SDL2", "m" }
@@ -490,7 +510,7 @@ exit
  		includedirs { "./imgui", "./imgui/backends" }
  		files {
  			"./imgui/main.cpp",
-@@ -200,8 +223,10 @@
+@@ -200,18 +219,21 @@
  			"./imgui/backends/imgui_impl_sdl.cpp",
  			"./imgui/backends/imgui_impl_sdlrenderer.cpp"
  		}
@@ -501,7 +521,9 @@ exit
  	project "assimp_convert"
  		language "C"
  		files {
-@@ -210,8 +235,9 @@
+-			"./assimp_convert.c",
++			"./assimp_convert.c"
+ 		}
  
  		links { "assimp", "m"}
  
@@ -550,6 +572,21 @@ exit
  	}
 --- PortableGL-0.97.1.orig/demos/sphereworld.cpp
 +++ PortableGL-0.97.1/demos/sphereworld.cpp
+@@ -230,11 +230,11 @@
+ 	zmin = 0.5;
+ 	zmax = 100;
+ 	
+-	const char* controls_file = NULL;
++	char controls_file[PATH_MAX];
+ 	if (argc == 2)
+-		controls_file = argv[1];
++		strncpy(controls_file, argv[1], sizeof(controls_file));
+ 	else 
+-		controls_file = "./qwerty_controls.config";
++		snprintf(controls_file, sizeof(controls_file), "%.*s/qwerty_controls.config", (int)(strrchr(argv[0], '/') - argv[0]), argv[0]);
+ 
+ 	parse_config_file(controls_file, control_keys, (int*)keyvalues, NCONTROLS);
+ 
 @@ -252,19 +252,19 @@
  
  	glGenTextures(NUM_TEXTURES, textures);
@@ -621,27 +658,28 @@ exit
  	}
 --- PortableGL-0.97.1.orig/examples/premake5.lua
 +++ PortableGL-0.97.1/examples/premake5.lua
-@@ -1,13 +1,21 @@
+@@ -1,13 +1,22 @@
  
  workspace "Polished_Examples"
 -	configurations { "Debug", "Release" }
 +	configurations { "Release", "Debug" }
-+
-+	newoption {
-+		trigger     = "prefix",
-+		value       = "PATH",
-+		description = "Installation prefix; default is '/usr/local'",
-+		default     = "/usr/local"
-+	}
  	
  	targetdir "."
 -	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
-+	includedirs { "../", "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
  
++	s = os.outputof("pkg-config --cflags sdl2")
++	sdl_incdir = s:match("%-I([^%s]+)")
++	s = os.outputof("pkg-config --libs sdl2")
++	sdl_libdir = s:match("%-L([^%s]+)")
++	print(sdl_incdir, sdl_libdir)
++
++	includedirs { "../", "../glcommon", sdl_incdir }
++	libdirs { sdl_libdir }
++	
  	kind "ConsoleApp"
  
  	filter "system:linux"
-+		linkoptions { "-L" .. _OPTIONS["prefix"] .. "/lib", "-Wl,-rpath," .. _OPTIONS["prefix"] .. "/lib" }
++		linkoptions { "-Wl,-rpath," .. sdl_libdir }
  		links { "SDL2", "m" }
  
  	filter "system:windows"
@@ -655,6 +693,46 @@ exit
  
  
  	cvector_vec3 face_normals = { 0 };
+--- PortableGL-0.97.1.orig/glcommon/cprimitives.c
++++ PortableGL-0.97.1/glcommon/cprimitives.c
+@@ -148,7 +148,6 @@
+ 	int i = 0, j = 0;
+ 
+ 	float stack_height = height/stacks;
+-	float cur_radius;
+ 	double theta = RM_2PI/slices;
+ 
+ 	int vert_start = verts->size;
+@@ -158,7 +157,6 @@
+ 	cvec_push_vec3(verts, make_vec3(0, 0, 0));
+ 
+ 	for (i = 0; i <= stacks; i++) {
+-		cur_radius = i/stacks * top_radius + (1.0 - i/stacks) * radius;
+ 		for (j = 0; j < slices; j++) {
+ 			cvec_push_vec3(verts, make_vec3(radius*cos(j*theta), radius*sin(j*theta), i*stack_height));
+ 		}
+@@ -437,19 +435,16 @@
+     double minor_step = RM_2PI / minor_slices;
+     int i, j;
+ 
+-	double a0, a1, b;
+-	float x0, y0, x1, y1, c, r, z;
++	double a0, b;
++	float x0, y0, c, r, z;
+ 
+ 	int vert_start = verts->size;
+ 	int tri_start = tris->size;
+ 
+ 	for (i=0; i<major_slices; ++i) {
+ 		a0 = i * major_step;
+-		a1 = a0 + major_step;
+ 		x0 = (float) cos(a0);
+ 		y0 = (float) sin(a0);
+-		x1 = (float) cos(a1);
+-		y1 = (float) sin(a1);
+ 
+ 		for (j=0; j<minor_slices; ++j) {
+ 			b = j * minor_step;
 --- PortableGL-0.97.1.orig/glcommon/gltools.c
 +++ PortableGL-0.97.1/glcommon/gltools.c
 @@ -375,7 +375,7 @@
@@ -1709,15 +1787,15 @@ exit
  solution "Testing"
 -	configurations { "Debug", "Release" }
 +	configurations { "Release", "Debug" }
-+
+ 	
+-	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
 +	newoption {
 +		trigger     = "with-stb-dir",
 +		value       = "PATH",
 +		description = "Directory for stb image headers",
 +		default     = "../stb"
 +	}
- 	
--	includedirs { "../", "../glcommon", "/usr/include/SDL2" }
++
 +	newoption {
 +		trigger     = "testingdatadir",
 +		value       = "PATH",
@@ -1725,24 +1803,26 @@ exit
 +		default     = "../media"
 +	}
 +
-+	newoption {
-+		trigger     = "prefix",
-+		value       = "PATH",
-+		description = "Installation prefix; default is '/usr/local'",
-+		default     = "/usr/local"
-+	}
++	s = os.outputof("pkg-config --cflags sdl2")
++	sdl_incdir = s:match("%-I([^%s]+)")
++	s = os.outputof("pkg-config --libs sdl2")
++	sdl_libdir = s:match("%-L([^%s]+)")
++	print(sdl_incdir, sdl_libdir)
 +
-+	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", _OPTIONS["prefix"] .. "/include/SDL2" }
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", sdl_incdir }
++	libdirs { sdl_libdir }
  
  	-- stuff up here common to all projects
  	kind "ConsoleApp"
-@@ -11,34 +32,36 @@
+@@ -11,29 +32,32 @@
  	--targetdir "build"
  	targetdir "."
  
 -	configuration "linux"
++	buildoptions { '-DTESTING_DATA_DIR=\\"' .. _OPTIONS["testingdatadir"] .. '\\"' }
++
 +	filter "system:linux"
-+		linkoptions { "-L" .. _OPTIONS["prefix"] .. "/lib", "-Wl,-rpath," .. _OPTIONS["prefix"] .. "/lib" }
++		linkoptions { "-Wl,-rpath," .. sdl_libdir }
  		links { "SDL2", "m" }
  	
 -	configuration "windows"
@@ -1776,12 +1856,6 @@ exit
  		buildoptions { "-fsanitize=address" }
  		linkoptions { "-fsanitize=address" }
  
- 	-- A project defines one build target
- 	project "run_tests"
-+		buildoptions { '-DTESTING_DATA_DIR=\\"' .. _OPTIONS["testingdatadir"] .. '\\"' }
- 		files {
- 			"./run_tests.cpp",
- 			"../glcommon/gltools.cpp"
 --- PortableGL-0.97.1.orig/testing/test_texturing.cpp
 +++ PortableGL-0.97.1/testing/test_texturing.cpp
 @@ -113,7 +113,7 @@

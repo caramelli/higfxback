@@ -1,0 +1,1535 @@
+# This file is part of HiGFXback
+
+# requires
+REQUIRES="premake-build"
+
+pkg-config --exists --print-errors $REQUIRES || exit 1
+
+if PKG_CONFIG_PATH=/drm/share/pkgconfig pkg-config --exists glm libstdc++-build sdl2-build stb-build; then
+  SDL2=1
+  REQUIRES="$REQUIRES sdl2-build stb-build"
+fi
+
+# configure
+rm -f glcommon/stb_*
+rm -rf external/glm
+rm -rf external/imgui
+PKG_CONFIG_PATH=/drm/lib/pkgconfig premake5 --file=demos/premake5.lua --demosdatadir=/drm/share/PortableGL/media --with-stb-dir=/include/stb gmake
+PKG_CONFIG_PATH=/drm/lib/pkgconfig premake5 --file=examples/premake5.lua --examplesdatadir=/drm/share/PortableGL/media --with-stb-dir=/include/stb gmake
+PKG_CONFIG_PATH=/drm/lib/pkgconfig premake5 --file=testing/premake5.lua --testingdatadir=/drm/share/PortableGL/media --with-stb-dir=/include/stb gmake
+
+# build
+test $SDL2 && make -C demos
+test $SDL2 && make -C examples
+test $SDL2 && make -C testing
+
+# install
+install -d $DESTDIR/drm/include
+install -m 644 portablegl.h $DESTDIR/drm/include
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/cubemap $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/glm_sphereworld_color $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/grass $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/modelviewer $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/multidraw $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/particles $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/pointsprites $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/qwerty_controls.config $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/raytracing_1weekend $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/shadertoy $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/sphereworld $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/sphereworld_color $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/swrenderer $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/testprimitives $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/texturing $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install demos/texturing_ext $DESTDIR/drm/share/PortableGL/demos
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/examples/classic
+test $SDL2 && install examples/classic/gears $DESTDIR/drm/share/PortableGL/examples/classic
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/c_ex1 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/c_ex2 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/c_ex3 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/ex1 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/ex2 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/ex3 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/std_shader_ex1 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install examples/original/std_shader_ex2 $DESTDIR/drm/share/PortableGL/examples/original
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson1 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson2 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson3 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson4 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson5 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson6 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson7 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson8 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson9 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson10 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson11 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson12 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson13 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson14 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson15 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install examples/webgl_lessons/lesson16 $DESTDIR/drm/share/PortableGL/examples/webgl_lessons
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/media/models
+test $SDL2 && install -m 644 media/models/stanford_bunny.txt $DESTDIR/drm/share/PortableGL/media/models
+test $SDL2 && install -m 644 media/models/stanford_dragon.txt $DESTDIR/drm/share/PortableGL/media/models
+test $SDL2 && install -m 644 media/models/world.txt $DESTDIR/drm/share/PortableGL/media/models
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/arroway.de_metal+structure+06_d100_flat.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/clouds.tga $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/crate.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/earth.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/earth-specular.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/glass.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/Nathan_Fillion_awesome_smaller2.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/marble.tga $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/mars.tga $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/moon.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/moon.tga $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/mud.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/nehe.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/star.gif $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/test1.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/test2.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/tex00.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/tex01.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/tex02.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/tex04.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/tex06.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -m 644 media/textures/tex09.jpg $DESTDIR/drm/share/PortableGL/media/textures
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -m 644 media/textures/skybox/back.jpg $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -m 644 media/textures/skybox/bottom.jpg $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -m 644 media/textures/skybox/front.jpg $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -m 644 media/textures/skybox/left.jpg $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -m 644 media/textures/skybox/right.jpg $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -m 644 media/textures/skybox/top.jpg $DESTDIR/drm/share/PortableGL/media/textures/skybox
+test $SDL2 && install -d $DESTDIR/drm/share/PortableGL/testing
+test $SDL2 && install testing/line_testing $DESTDIR/drm/share/PortableGL/testing
+test $SDL2 && install testing/perf_tests $DESTDIR/drm/share/PortableGL/testing
+test $SDL2 && install testing/skybox_clipping $DESTDIR/drm/share/PortableGL/testing
+
+# build.pc
+install -d $DESTDIR/drm/share/pkgconfig
+cat > $DESTDIR/drm/share/pkgconfig/portablegl-build.pc << EOF
+Name: PortableGL
+Version: 0.100.0
+Description: single-file OpenGL library
+Requires: $REQUIRES
+
+devel=\\
+/drm/include/portablegl.h
+EOF
+test $SDL2 && cat >> $DESTDIR/drm/share/pkgconfig/portablegl-build.pc << EOF
+
+exec=\\
+/drm/share/PortableGL/demos/cubemap \\
+/drm/share/PortableGL/demos/glm_sphereworld_color \\
+/drm/share/PortableGL/demos/grass \\
+/drm/share/PortableGL/demos/modelviewer \\
+/drm/share/PortableGL/demos/multidraw \\
+/drm/share/PortableGL/demos/particles \\
+/drm/share/PortableGL/demos/pointsprites \\
+/drm/share/PortableGL/demos/qwerty_controls.config \\
+/drm/share/PortableGL/demos/raytracing_1weekend \\
+/drm/share/PortableGL/demos/shadertoy \\
+/drm/share/PortableGL/demos/sphereworld \\
+/drm/share/PortableGL/demos/sphereworld_color \\
+/drm/share/PortableGL/demos/swrenderer \\
+/drm/share/PortableGL/demos/testprimitives \\
+/drm/share/PortableGL/demos/texturing \\
+/drm/share/PortableGL/demos/texturing_ext \\
+/drm/share/PortableGL/examples/classic/gears \\
+/drm/share/PortableGL/examples/original/c_ex1 \\
+/drm/share/PortableGL/examples/original/c_ex2 \\
+/drm/share/PortableGL/examples/original/c_ex3 \\
+/drm/share/PortableGL/examples/original/ex1 \\
+/drm/share/PortableGL/examples/original/ex2 \\
+/drm/share/PortableGL/examples/original/ex3 \\
+/drm/share/PortableGL/examples/original/std_shader_ex1 \\
+/drm/share/PortableGL/examples/original/std_shader_ex2 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson1 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson2 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson3 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson4 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson5 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson6 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson7 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson8 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson9 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson10 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson11 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson12 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson13 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson14 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson15 \\
+/drm/share/PortableGL/examples/webgl_lessons/lesson16 \\
+/drm/share/PortableGL/media/models/stanford_bunny.txt \\
+/drm/share/PortableGL/media/models/stanford_dragon.txt \\
+/drm/share/PortableGL/media/models/world.txt \\
+/drm/share/PortableGL/media/textures/arroway.de_metal+structure+06_d100_flat.jpg \\
+/drm/share/PortableGL/media/textures/clouds.tga \\
+/drm/share/PortableGL/media/textures/crate.gif \\
+/drm/share/PortableGL/media/textures/earth.jpg \\
+/drm/share/PortableGL/media/textures/earth-specular.gif \\
+/drm/share/PortableGL/media/textures/glass.gif \\
+/drm/share/PortableGL/media/textures/Nathan_Fillion_awesome_smaller2.gif \\
+/drm/share/PortableGL/media/textures/marble.tga \\
+/drm/share/PortableGL/media/textures/mars.tga \\
+/drm/share/PortableGL/media/textures/moon.gif \\
+/drm/share/PortableGL/media/textures/moon.tga \\
+/drm/share/PortableGL/media/textures/mud.gif \\
+/drm/share/PortableGL/media/textures/nehe.gif \\
+/drm/share/PortableGL/media/textures/star.gif \\
+/drm/share/PortableGL/media/textures/test1.jpg \\
+/drm/share/PortableGL/media/textures/test2.jpg \\
+/drm/share/PortableGL/media/textures/tex00.jpg \\
+/drm/share/PortableGL/media/textures/tex01.jpg \\
+/drm/share/PortableGL/media/textures/tex02.jpg \\
+/drm/share/PortableGL/media/textures/tex04.jpg \\
+/drm/share/PortableGL/media/textures/tex06.jpg \\
+/drm/share/PortableGL/media/textures/tex09.jpg \\
+/drm/share/PortableGL/media/textures/skybox/back.jpg \\
+/drm/share/PortableGL/media/textures/skybox/bottom.jpg \\
+/drm/share/PortableGL/media/textures/skybox/front.jpg \\
+/drm/share/PortableGL/media/textures/skybox/left.jpg \\
+/drm/share/PortableGL/media/textures/skybox/right.jpg \\
+/drm/share/PortableGL/media/textures/skybox/top.jpg \\
+/drm/share/PortableGL/testing/line_testing \\
+/drm/share/PortableGL/testing/perf_tests \\
+/drm/share/PortableGL/testing/skybox_clipping
+EOF
+
+exit
+
+# patch
+--- PortableGL-0.100.0.orig/demos/cubemap.cpp
++++ PortableGL-0.100.0/demos/cubemap.cpp
+@@ -92,12 +92,12 @@
+ 	//"../media/textures/pos_z.tga",
+ 	//"../media/textures/neg_z.tga"
+ 	
+-	"../media/textures/skybox/right.jpg",
+-	"../media/textures/skybox/left.jpg",
+-	"../media/textures/skybox/top.jpg",
+-	"../media/textures/skybox/bottom.jpg",
+-	"../media/textures/skybox/front.jpg",
+-	"../media/textures/skybox/back.jpg"
++	DEMOS_DATA_DIR "/textures/skybox/right.jpg",
++	DEMOS_DATA_DIR "/textures/skybox/left.jpg",
++	DEMOS_DATA_DIR "/textures/skybox/top.jpg",
++	DEMOS_DATA_DIR "/textures/skybox/bottom.jpg",
++	DEMOS_DATA_DIR "/textures/skybox/front.jpg",
++	DEMOS_DATA_DIR "/textures/skybox/back.jpg"
+ };
+ 
+ 
+--- PortableGL-0.100.0.orig/demos/glm_sphereworld_color.cpp
++++ PortableGL-0.100.0/demos/glm_sphereworld_color.cpp
+@@ -35,6 +35,7 @@
+ //TODO
+ #define RM_PI (3.14159265358979323846)
+ #define RM_2PI (2.0 * RM_PI)
++#undef PI_DIV_180
+ #define PI_DIV_180 (0.017453292519943296f)
+ #define INV_PI_DIV_180 (57.2957795130823229)
+ 
+@@ -266,7 +267,6 @@
+ 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+ 
+ 	size_t total_size = (torus.tris.size()*3 + sphere.tris.size()*3) * sizeof(vert_attribs);
+-	size_t sphere_offset = torus.tris.size()*3;
+ 	glBufferData(GL_ARRAY_BUFFER, total_size, &vert_data[0], GL_STATIC_DRAW);
+ 
+ 	glEnableVertexAttribArray(ATTR_VERTEX);
+@@ -463,7 +463,6 @@
+ {
+ 	SDL_Event event;
+ 	int sc;
+-	bool remake_projection = false;
+ 
+ 	while (SDL_PollEvent(&event)) {
+ 		switch (event.type) {
+@@ -497,8 +496,6 @@
+ 				width = event.window.data1;
+ 				height = event.window.data2;
+ 
+-				remake_projection = true;
+-
+ 				pglResizeFramebuffer(width, height);
+ 				bbufpix = (pix_t*)pglGetBackBuffer();
+ 				glViewport(0, 0, width, height);
+@@ -557,53 +554,6 @@
+ 	if (state[controls[TILTRIGHT]]) {
+ 		camera_frame.rotate_local_z(DEG_TO_RAD(60*time));
+ 	}
+-	/*
+-	if (state[controls[FOVUP]]) {
+-		if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_RCTRL]) {
+-			if (zmax < 2000)
+-				zmax += 1;
+-		} else {
+-			if (fov < 170)
+-				fov += 0.2;
+-		}
+-		printf("zmax = %f\nfov = %f\n", zmax, fov);
+-		remake_projection = true;
+-	}
+-	if (state[controls[FOVDOWN]]) {
+-		if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_RCTRL]) {
+-			if (zmax > 20)
+-				zmax -= 1;
+-		} else {
+-			if (fov > 10)
+-				fov -= 0.2;
+-		}
+-		printf("zmax = %f\nfov = %f\n", zmax, fov);
+-		remake_projection = true;
+-	}
+-	if (state[controls[ZMINUP]]) {
+-		if (zmin < 50) {
+-			zmin += 0.1;
+-			remake_projection = true;
+-			printf("zmin = %f\n", zmin);
+-		}
+-	}
+-	if (state[controls[ZMINDOWN]]) {
+-		if (zmin > 0.5) {
+-			zmin -= 0.1;
+-			remake_projection = true;
+-			printf("zmin = %f\n", zmin);
+-		}
+-	}
+-	*/
+-
+-
+-	/*
+-	if (remake_projection) {
+-		rsw::make_perspective_matrix(proj_mat, DEG_TO_RAD(fov), float(width)/float(height), zmin, zmax);
+-		remake_projection = false;
+-	}
+-	*/
+-
+ 
+ 	return 0;
+ }
+--- PortableGL-0.100.0.orig/demos/main.cpp
++++ PortableGL-0.100.0/demos/main.cpp
+@@ -182,11 +182,11 @@
+ 	zmin = 1;
+ 	zmax = 50;
+ 
+-	const char* controls_file = NULL;
++	char controls_file[PATH_MAX];
+ 	if (argc == 2)
+-		controls_file = argv[1];
++		strncpy(controls_file, argv[1], sizeof(controls_file));
+ 	else
+-		controls_file = "./qwerty_controls.config";
++		snprintf(controls_file, sizeof(controls_file), "%.*s/qwerty_controls.config", (int)(strrchr(argv[0], '/') - argv[0]), argv[0]);
+ 
+ 	parse_config_file(controls_file, control_keys, (int*)keyvalues, NCONTROLS);
+ 
+@@ -202,7 +202,7 @@
+ 
+ 	srand(time(NULL));
+ 
+-	GLuint plane_buf, plane_color_buf, plane_elem_buf, plane_vao, plane_tex_buf;
++	GLuint plane_buf, plane_color_buf, plane_vao, plane_tex_buf;
+ 	vector<vec3> plane_verts;
+ 	vector<ivec3> plane_tris;
+ 	vector<vec2> plane_tex;
+@@ -241,7 +241,7 @@
+ 
+ 
+ 
+-	GLuint box_buf, color_buf, inst_buf, elem_buf, box_tex_buf;
++	GLuint box_buf, color_buf, inst_buf, box_tex_buf;
+ 	//make_cylinder(cylinder, 2, 8, 100, 50);
+ 	make_box(box_verts, box_tris, box_tex, 6, 3, 1.5);
+ 	vector<vec3> colors;
+@@ -292,6 +292,7 @@
+ 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+ 
+ 	/*
++	GLuint elem_buf;
+ 	glGenBuffers(1, &elem_buf);
+ 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elem_buf);
+ 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, box_tris.size()*3*sizeof(int), &box_tris[0], GL_STATIC_DRAW);
+@@ -349,13 +350,13 @@
+ 	glGenTextures(NUM_TEXTURES, textures);
+ 	printf("textures = %d %d\n", textures[0], textures[1]);
+ 	glBindTexture(GL_TEXTURE_2D, textures[0]);
+-	if (!load_texture2D("../media/textures/test1.jpg", GL_LINEAR, GL_LINEAR, GL_REPEAT, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test1.jpg", GL_LINEAR, GL_LINEAR, GL_REPEAT, false, false, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[1]);
+ 
+-	if (!load_texture2D("../media/textures/test2.jpg", GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test2.jpg", GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, false, false, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+@@ -378,8 +379,6 @@
+ 
+ 	glEnable(GL_CULL_FACE);
+ 
+-	mat4 translate = translation_mat4(vec3(0, 0, -20));
+-
+ 
+ 	GLFrame modelframe;
+ 	mat4 camera, VP, MVP;
+@@ -479,9 +478,6 @@
+ 		glDrawArrays(GL_LINES, 0, line_verts.size());
+ 
+ 
+-		pgl_Color red = { 255, 0, 0, 255 };
+-		pgl_Color green = { 0, 255, 0, 255 };
+-		pgl_Color blue = { 0, 0, 255, 255 };
+ 		pgl_vec2 p1, p2, p3;
+ 		SET_V2(p1, 10, 10);
+ 		SET_V2(p2, 90, 150);
+@@ -490,6 +486,9 @@
+ 		/*
+ 		 * Just testing drawing directly to screen, bypassing gl state
+ 		 * could be used to draw text/GUIs/HUD etc more simply
++		pgl_Color red = { 255, 0, 0, 255 };
++		pgl_Color green = { 0, 255, 0, 255 };
++		pgl_Color blue = { 0, 0, 255, 255 };
+ 		for (int k=0; k<1; ++k) {
+ 			put_line(green, rand()%width, rand()%height, rand()%width, rand()%height);
+ 			put_triangle(red, green, blue, p1, p2, p3);
+--- PortableGL-0.100.0.orig/demos/multidraw.cpp
++++ PortableGL-0.100.0/demos/multidraw.cpp
+@@ -6,7 +6,7 @@
+ #include <rsw_matstack.h>
+ 
+ 
+-#include <SDL2/SDL.h>
++#include <SDL.h>
+ 
+ #include <stdio.h>
+ 
+--- PortableGL-0.100.0.orig/demos/particles.cpp
++++ PortableGL-0.100.0/demos/particles.cpp
+@@ -87,15 +87,8 @@
+ 
+ 
+ 	point_data tmp = {};
+-	float theta, phi;
+ 	float start = SDL_GetTicks()/1000.0f;
+ 	for (int i=0; i<MAX_POINTS; i++) {
+-		//theta = mix(0, RM_PI/6.0f, rsw_randf())
+-		//phi = mix(0, RM_2PI, rsw_randf())
+-
+-		// float tmp = sinf(theta) * cosf(phi);
+-		//tmp.vel = make_vec3(tmp, tmp, tmp)
+-
+ 		tmp.pos = vec3(0, 0, 0);
+ 		tmp.vel = ball_rand(0.3);
+ 		tmp.start_t = start;
+@@ -252,9 +245,6 @@
+ 
+ void update_points(vector<point_data>& points, float time)
+ {
+-	point_data tmp = {};
+-	float theta, phi;
+-
+ 	for (int i=0; i<n_pts; i++) {
+ 		// if it's been alive longer than our lifetime, reset start to recycle
+ 		if (time - points[i].start_t > the_uniforms.lifetime) {
+--- PortableGL-0.100.0.orig/demos/pointsprites.c
++++ PortableGL-0.100.0/demos/pointsprites.c
+@@ -54,12 +54,12 @@
+ 	GLuint textures[2];
+ 	glGenTextures(2, textures);
+ 	glBindTexture(GL_TEXTURE_2D, textures[0]);
+-	if (!load_texture2D("../media/textures/test1.jpg", GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test1.jpg", GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[1]);
+-	if (!load_texture2D("../media/textures/clouds.tga", GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/clouds.tga", GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/demos/premake5.lua
++++ PortableGL-0.100.0/demos/premake5.lua
+@@ -1,40 +1,40 @@
+-
+-function os.capture(cmd, raw)
+-  local f = assert(io.popen(cmd, 'r'))
+-  local s = assert(f:read('*a'))
+-  f:close()
+-  if raw then return s end
+-  s = string.gsub(s, '^%s+', '')
+-  s = string.gsub(s, '%s+$', '')
+-  s = string.gsub(s, '[\n\r]+', ' ')
+-  return s
+-end
+-
+-
+ -- A solution contains projects, and defines the available configurations
+ workspace "Demos"
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
++
++	newoption {
++		trigger     = "with-stb-dir",
++		value       = "PATH",
++		description = "Directory for stb image headers",
++		default     = "../stb"
++	}
++
++	newoption {
++		trigger     = "demosdatadir",
++		value       = "PATH",
++		description = "Use the given path for demos data files",
++		default     = "../media"
++	}
++
+ 	-- stuff up here common to all projects
+ 	kind "ConsoleApp"
+ 	--location "build"
+ 	--targetdir "build"
+ 	targetdir "."
+ 
+-	s = os.capture("sdl2-config --cflags --libs")
++	s = os.outputof("pkg-config --cflags sdl2")
++	sdl_incdir = s:match("%-I([^%s]+)")
++	s = os.outputof("pkg-config --libs sdl2")
++	sdl_libdir = s:match("%-L([^%s]+)")
++	print(sdl_incdir, sdl_libdir)
+ 
+-	--sdl_incdir = string.match(s, "-I(%g+)%s")
+-	sdl_incdir, sdl_def, sdl_libdir = string.match(s, "-I(%g+)%s+-D(%g+)%s+-L(%g+)")
+-	if not sdl_incdir then
+-		sdl_incdir, sdl_def = string.match(s, "-I(%g+)%s+-D(%g+)")
+-		--not really necessary since if it should be in a standard search path if
+-		--sdl2-config didn't specify a -L
+-		sdl_libdir = os.findlib("SDL2")
+-	end
+-	print(sdl_incdir, sdl_def, sdl_libdir)
+-	includedirs { "../", "../glcommon", "../external", sdl_incdir }
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", "../external", sdl_incdir }
+ 	libdirs { sdl_libdir }
+ 
++	buildoptions { '-DDEMOS_DATA_DIR=\\"' .. _OPTIONS["demosdatadir"] .. '\\"' }
++
+ 	filter "system:linux"
++		linkoptions { "-Wl,-rpath," .. sdl_libdir }
+ 		links { "SDL2", "m" }
+ 	
+ 	filter "system:windows"
+@@ -117,8 +117,7 @@
+ 			"../glcommon/rsw_math.cpp",
+ 			"../glcommon/rsw_primitives.cpp",
+ 			"../glcommon/gltools.cpp",
+-			"../glcommon/rsw_glframe.cpp",
+-			"../glcommon/stb_image.h"
++			"../glcommon/rsw_glframe.cpp"
+ 		}
+ 
+ 	project "grass"
+@@ -141,8 +140,7 @@
+ 		language "C"
+ 		files {
+ 			"./pointsprites.c",
+-			"../glcommon/gltools.c",
+-			"../glcommon/gltools.h"
++			"../glcommon/gltools.c"
+ 		}
+ 
+ 	project "shadertoy"
+@@ -152,8 +150,7 @@
+ 		files {
+ 			"./shadertoy.cpp",
+ 			"../glcommon/rsw_math.cpp",
+-			"../glcommon/gltools.cpp",
+-			"../glcommon/stb_image.h"
++			"../glcommon/gltools.cpp"
+ 		}
+ 
+ 	project "raytracing_1weekend"
+@@ -163,8 +160,7 @@
+ 		files {
+ 			"./raytracing_1weekend.cpp",
+ 			"../glcommon/rsw_math.cpp",
+-			"../glcommon/gltools.cpp",
+-			"../glcommon/stb_image.h"
++			"../glcommon/gltools.cpp"
+ 		}
+ 
+ 	project "texturing"
+@@ -172,8 +168,7 @@
+ 		files {
+ 			"./texturing.cpp",
+ 			"../glcommon/rsw_math.cpp",
+-			"../glcommon/gltools.cpp",
+-			"../glcommon/stb_image.h"
++			"../glcommon/gltools.cpp"
+ 		}
+ 
+ 	project "texturing_ext"
+@@ -181,24 +176,21 @@
+ 		files {
+ 			"./texturing_ext.cpp",
+ 			"../glcommon/rsw_math.cpp",
+-			"../glcommon/gltools.cpp",
+-			"../glcommon/stb_image.h"
++			"../glcommon/gltools.cpp"
+ 		}
+ 
+ 	project "multidraw"
+ 		language "C++"
+ 		files {
+ 			"./multidraw.cpp",
+-			"../glcommon/rsw_math.cpp",
+-			"../glcommon/rsw_matstack.h",
++			"../glcommon/rsw_math.cpp"
+ 		}
+ 
+ --	project "polyline"
+ --		language "C++"
+ --		files {
+ --			"./polyline.cpp",
+---			"../glcommon/rsw_math.cpp",
+---			"../glcommon/rsw_matstack.h",
++--			"../glcommon/rsw_math.cpp"
+ --		}
+ 
+ 	project "testprimitives"
+@@ -207,16 +199,17 @@
+ 			"./testprimitives.cpp",
+ 			"../glcommon/rsw_math.cpp",
+ 			"../glcommon/rsw_halfedge.cpp",
+-			"../glcommon/rsw_primitives.cpp",
++			"../glcommon/rsw_primitives.cpp"
+ 		}
+ 
+ 	project "particles"
+ 		language "C++"
+ 		files {
+ 			"./particles.cpp",
+-			"../glcommon/rsw_math.cpp",
++			"../glcommon/rsw_math.cpp"
+ 		}
+ 
++if os.isdir("../external/imgui") then
+ 	project "sdl_renderer_imgui"
+ 		language "C++"
+ 		includedirs { "../external/imgui", "../external/imgui/backends" }
+@@ -249,11 +242,13 @@
+ 			"../external/imgui/backends/imgui_impl_pgl_geometry.cpp"
+ 			--"./imgui/backends/imgui_impl_pgl_geometry.cpp"
+ 		}
++end
+ 
++if os.findlib("assimp") then
+ 	project "assimp_convert"
+ 		language "C"
+ 		links { "assimp", "m"}
+ 		files {
+-			"./assimp_convert.c",
++			"./assimp_convert.c"
+ 		}
+-
++end
+--- PortableGL-0.100.0.orig/demos/shadertoy.cpp
++++ PortableGL-0.100.0/demos/shadertoy.cpp
+@@ -110,27 +110,27 @@
+ 
+ 	glGenTextures(NUM_TEXTURES, textures);
+ 	glBindTexture(GL_TEXTURE_2D, textures[0]);
+-	if (!load_texture2D("../media/textures/tex00.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/tex00.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[1]);
+-	if (!load_texture2D("../media/textures/tex02.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/tex02.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[2]);
+-	if (!load_texture2D("../media/textures/tex06.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/tex06.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[3]);
+-	if (!load_texture2D("../media/textures/tex01.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/tex01.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[4]);
+-	if (!load_texture2D("../media/textures/tex09.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/tex09.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_FALSE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/demos/sphereworld.cpp
++++ PortableGL-0.100.0/demos/sphereworld.cpp
+@@ -221,11 +221,11 @@
+ 	zmin = 0.5;
+ 	zmax = 100;
+ 	
+-	const char* controls_file = NULL;
++	char controls_file[PATH_MAX];
+ 	if (argc == 2)
+-		controls_file = argv[1];
++		strncpy(controls_file, argv[1], sizeof(controls_file));
+ 	else 
+-		controls_file = "./qwerty_controls.config";
++		snprintf(controls_file, sizeof(controls_file), "%.*s/qwerty_controls.config", (int)(strrchr(argv[0], '/') - argv[0]), argv[0]);
+ 
+ 	parse_config_file(controls_file, control_keys, (int*)keyvalues, NCONTROLS);
+ 
+@@ -243,19 +243,19 @@
+ 
+ 	glGenTextures(NUM_TEXTURES, textures);
+ 	glBindTexture(GL_TEXTURE_2D, textures[0]);
+-	if (!load_texture2D("../media/textures/marble.tga", GL_LINEAR, GL_LINEAR, GL_REPEAT, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/marble.tga", GL_LINEAR, GL_LINEAR, GL_REPEAT, false, false, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glBindTexture(GL_TEXTURE_2D, textures[1]);
+ 
+-	if (!load_texture2D("../media/textures/mars.tga", GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/mars.tga", GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, false, false, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 
+ 	glBindTexture(GL_TEXTURE_2D, textures[2]);
+-	if (!load_texture2D("../media/textures/moon.tga", GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/moon.tga", GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, false, false, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/demos/texturing.cpp
++++ PortableGL-0.100.0/demos/texturing.cpp
+@@ -112,7 +112,7 @@
+ 
+ 	glGenTextures(NUM_TEXTURES, textures);
+ 	glBindTexture(GL_TEXTURE_2D, textures[0]);
+-	if (!load_texture2D("../media/textures/test1.jpg", GL_NEAREST, GL_NEAREST, GL_MIRRORED_REPEAT, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test1.jpg", GL_NEAREST, GL_NEAREST, GL_MIRRORED_REPEAT, false, false, NULL, NULL)) {
+ 		puts("failed to load texture");
+ 		return 0;
+ 	}
+@@ -120,7 +120,7 @@
+ 
+ 	glBindTexture(GL_TEXTURE_2D, textures[1]);
+ 
+-	if (!load_texture2D("../media/textures/test2.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test2.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, false, false, NULL, NULL)) {
+ 		puts("failed to load texture");
+ 		return 0;
+ 	}
+@@ -133,13 +133,13 @@
+ 	glBindTexture(GL_TEXTURE_2D_ARRAY, textures[3]);
+ 
+ 	int frames;
+-	if (!(frames = load_texture2D_array_gif("../media/textures/Nathan_Fillion_awesome_smaller2.gif", GL_NEAREST, GL_NEAREST, GL_REPEAT))) {
++	if (!(frames = load_texture2D_array_gif(DEMOS_DATA_DIR "/textures/Nathan_Fillion_awesome_smaller2.gif", GL_NEAREST, GL_NEAREST, GL_REPEAT))) {
+ 		puts("failed to load texture");
+ 		return 0;
+ 	}
+ 
+ 	glBindTexture(GL_TEXTURE_RECTANGLE, textures[4]);
+-	if (!load_texture_rect("../media/textures/tex04.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, false)) {
++	if (!load_texture_rect(DEMOS_DATA_DIR "/textures/tex04.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, false)) {
+ 		puts("failed to load texture");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/demos/texturing_ext.cpp
++++ PortableGL-0.100.0/demos/texturing_ext.cpp
+@@ -104,7 +104,7 @@
+ 
+ 	glGenTextures(NUM_TEXTURES, textures);
+ 	glBindTexture(GL_TEXTURE_2D, textures[0]);
+-	if (!load_texture2D("../media/textures/test1.jpg", GL_NEAREST, GL_NEAREST, GL_MIRRORED_REPEAT, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test1.jpg", GL_NEAREST, GL_NEAREST, GL_MIRRORED_REPEAT, false, false, NULL, NULL)) {
+ 		puts("failed to load texture");
+ 		return 0;
+ 	}
+@@ -112,7 +112,7 @@
+ 
+ 	glBindTexture(GL_TEXTURE_2D, textures[1]);
+ 
+-	if (!load_texture2D("../media/textures/test2.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, false, false, NULL, NULL)) {
++	if (!load_texture2D(DEMOS_DATA_DIR "/textures/test2.jpg", GL_NEAREST, GL_NEAREST, GL_REPEAT, false, false, NULL, NULL)) {
+ 		puts("failed to load texture");
+ 		return 0;
+ 	}
+@@ -124,7 +124,6 @@
+ 
+ 	glClearColor(0, 0, 0, 1);
+ 
+-	unsigned int orig_time = SDL_GetTicks();
+ 	unsigned int old_time = 0, new_time=0, counter = 0;
+ 
+ 	while (1) {
+@@ -239,13 +238,6 @@
+ 	//SDL_PumpEvents() is called above in SDL_PollEvent()
+ 	const Uint8 *state = SDL_GetKeyboardState(NULL);
+ 
+-	static unsigned int last_time = 0, cur_time;
+-
+-	cur_time = SDL_GetTicks();
+-	float time = (cur_time - last_time)/1000.0f;
+-
+-#define MOVE_SPEED DEG_TO_RAD(30)
+-
+ 	int do_update = 0;
+ 	
+ 	if (state[SDL_SCANCODE_LEFT]) {
+@@ -280,8 +272,6 @@
+ 		}
+ 	}
+ 
+-	last_time = cur_time;
+-
+ 	return false;
+ }
+ 
+--- PortableGL-0.100.0.orig/examples/original/ex3.c
++++ PortableGL-0.100.0/examples/original/ex3.c
+@@ -81,7 +81,7 @@
+ 
+ 	int old_time = 0, new_time=0, counter = 0;
+ 	int ms = 0;
+-	int last_frame;
++	int last_frame = 0;
+ 	float frame_time = 0;
+ 	while (handle_events()) {
+ 		new_time = SDL_GetTicks();
+--- PortableGL-0.100.0.orig/examples/original/ex3.cpp
++++ PortableGL-0.100.0/examples/original/ex3.cpp
+@@ -87,7 +87,7 @@
+ 
+ 	int old_time = 0, new_time=0, counter = 0;
+ 	int ms = 0;
+-	int last_frame;
++	int last_frame = 0;
+ 	float frame_time = 0;
+ 	while (handle_events()) {
+ 		new_time = SDL_GetTicks();
+--- PortableGL-0.100.0.orig/examples/premake5.lua
++++ PortableGL-0.100.0/examples/premake5.lua
+@@ -1,35 +1,36 @@
+-function os.capture(cmd, raw)
+-  local f = assert(io.popen(cmd, 'r'))
+-  local s = assert(f:read('*a'))
+-  f:close()
+-  if raw then return s end
+-  s = string.gsub(s, '^%s+', '')
+-  s = string.gsub(s, '%s+$', '')
+-  s = string.gsub(s, '[\n\r]+', ' ')
+-  return s
+-end
+-
+ workspace "Polished_Examples"
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
++
++	newoption {
++		trigger     = "with-stb-dir",
++		value       = "PATH",
++		description = "Directory for stb image headers",
++		default     = "../stb"
++	}
++
++	newoption {
++		trigger     = "examplesdatadir",
++		value       = "PATH",
++		description = "Use the given path for examples data files",
++		default     = "../../media"
++	}
++
+ 	kind "ConsoleApp"
+ 	targetdir "."
+ 
+-	s = os.capture("sdl2-config --cflags --libs")
++	s = os.outputof("pkg-config --cflags sdl2")
++	sdl_incdir = s:match("%-I([^%s]+)")
++	s = os.outputof("pkg-config --libs sdl2")
++	sdl_libdir = s:match("%-L([^%s]+)")
++	print(sdl_incdir, sdl_libdir)
+ 
+-	--sdl_incdir = string.match(s, "-I(%g+)%s")
+-	sdl_incdir, sdl_def, sdl_libdir = string.match(s, "-I(%g+)%s+-D(%g+)%s+-L(%g+)")
+-	if not sdl_incdir then
+-		sdl_incdir, sdl_def = string.match(s, "-I(%g+)%s+-D(%g+)")
+-		--not really necessary since if it should be in a standard search path if
+-		--sdl2-config didn't specify a -L
+-		sdl_libdir = os.findlib("SDL2")
+-	end
+-	print(sdl_incdir, sdl_def, sdl_libdir)
+-	includedirs { "../", "../glcommon", "../external", sdl_incdir }
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", "../external", sdl_incdir }
+ 	libdirs { sdl_libdir }
+ 
++	buildoptions { '-DEXAMPLES_DATA_DIR=\\"' .. _OPTIONS["examplesdatadir"] .. '\\"' }
+ 
+ 	filter "system:linux"
++		linkoptions { "-Wl,-rpath," .. sdl_libdir }
+ 		links { "SDL2", "m" }
+ 
+ 	filter "system:windows"
+@@ -50,7 +51,6 @@
+ 		cdialect "C99"
+ 		buildoptions { "-pedantic-errors", "-Wall", "-Wextra", "-Wstrict-prototypes", "-Wno-unused-parameter", "-Wno-unknown-pragmas" }
+ 	filter { "action:gmake", "language:C++" }
+-		cppdialect "C++20"
+ 		-- Stupid C++ warns about the standard = {0} initialization, but not the C++ only equivalent {} smh
+ 		buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wall", "-Wextra", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wno-unknown-pragmas" }
+ 
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson10.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson10.cpp
+@@ -2,7 +2,6 @@
+ #define PORTABLEGL_IMPLEMENTATION
+ #include "gltools.h"
+ 
+-#define CUTILS_SIZE_T int
+ #include "c_utils.h"
+ 
+ #include <SDL.h>
+@@ -83,13 +82,13 @@
+ 	vector<vec3> verts;
+ 	vector<vec2> texcoords;
+ 
+-	load_world("../../media/models/world.txt", verts, texcoords);
++	load_world(EXAMPLES_DATA_DIR "/models/world.txt", verts, texcoords);
+ 
+ 
+ 	GLuint texture;
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/mud.gif", GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/mud.gif", GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+@@ -300,7 +299,7 @@
+ 	vec2 t;
+ 
+ 	char** lns = (char**)lines.data;
+-	for (int i=0; i<lines.len; i++) {
++	for (cu_size_t i=0; i<lines.len; i++) {
+ 		// Honestly should just simplify the format to just geometry data
+ 		// but for now we'll do this
+ 		if (lns[i][0] && lns[i][0] != '/' && lns[i][0] != 'N') {
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson11.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson11.cpp
+@@ -5,6 +5,7 @@
+ #include <SDL.h>
+ 
+ #include <glm/glm.hpp>
++#include <glm/gtc/matrix_transform.hpp>
+ #include <glm/gtc/type_ptr.hpp>
+ 
+ #include <stdio.h>
+@@ -152,7 +153,7 @@
+ 	GLuint texture;
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson12.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson12.cpp
+@@ -105,14 +105,14 @@
+ 	GLuint box_tex, moon_tex;
+ 	glGenTextures(1, &box_tex);
+ 	glBindTexture(GL_TEXTURE_2D, box_tex);
+-	if (!load_texture2D("../../media/textures/crate.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/crate.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 
+ 	glGenTextures(1, &moon_tex);
+ 	glBindTexture(GL_TEXTURE_2D, moon_tex);
+-	if (!load_texture2D("../../media/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson13.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson13.cpp
+@@ -109,14 +109,14 @@
+ 	GLuint box_tex, moon_tex;
+ 	glGenTextures(1, &box_tex);
+ 	glBindTexture(GL_TEXTURE_2D, box_tex);
+-	if (!load_texture2D("../../media/textures/crate.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/crate.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 
+ 	glGenTextures(1, &moon_tex);
+ 	glBindTexture(GL_TEXTURE_2D, moon_tex);
+-	if (!load_texture2D("../../media/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson14.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson14.cpp
+@@ -5,6 +5,7 @@
+ #include <SDL.h>
+ 
+ #include <glm/glm.hpp>
++#include <glm/gtc/matrix_transform.hpp>
+ #include <glm/gtc/type_ptr.hpp>
+ 
+ #include <stdio.h>
+@@ -105,13 +106,13 @@
+ 	GLuint earth_tex, galvanized_tex;
+ 	glGenTextures(1, &earth_tex);
+ 	glBindTexture(GL_TEXTURE_2D, earth_tex);
+-	if (!load_texture2D("../../media/textures/earth.jpg", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/earth.jpg", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glGenTextures(1, &galvanized_tex);
+ 	glBindTexture(GL_TEXTURE_2D, galvanized_tex);
+-	if (!load_texture2D("../../media/textures/arroway.de_metal+structure+06_d100_flat.jpg", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/arroway.de_metal+structure+06_d100_flat.jpg", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson15.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson15.cpp
+@@ -5,7 +5,7 @@
+ #include <SDL.h>
+ 
+ #include <glm/glm.hpp>
+-//#include <glm/gtc/matrix_transform.hpp>
++#include <glm/gtc/matrix_transform.hpp>
+ #include <glm/gtc/type_ptr.hpp>
+ 
+ #include <stdio.h>
+@@ -111,14 +111,14 @@
+ 	GLuint earth_tex, specular_tex;
+ 	glGenTextures(1, &earth_tex);
+ 	glBindTexture(GL_TEXTURE_2D, earth_tex);
+-	if (!load_texture2D("../../media/textures/earth.jpg", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/earth.jpg", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 	glActiveTexture(GL_TEXTURE1);
+ 	glGenTextures(1, &specular_tex);
+ 	glBindTexture(GL_TEXTURE_2D, specular_tex);
+-	if (!load_texture2D("../../media/textures/earth-specular.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/earth-specular.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson16.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson16.cpp
+@@ -108,14 +108,14 @@
+ 
+ 	glGenTextures(1, &box_tex);
+ 	glBindTexture(GL_TEXTURE_2D, box_tex);
+-	if (!load_texture2D("../../media/textures/crate.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/crate.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+ 
+ 	glGenTextures(1, &moon_tex);
+ 	glBindTexture(GL_TEXTURE_2D, moon_tex);
+-	if (!load_texture2D("../../media/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/moon.gif", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+@@ -347,13 +347,6 @@
+ {
+ 	free_glContext(&the_Context);
+ 
+-	// Need to do this because of the render to texture hack
+-	// the framebuffer texture will be freed as a texture
+-	// but because we were swapping back and forth with pglSetBackBuffer()
+-	// pgl sets the color buffer to "user managed/alloced" and does not
+-	// free it for us
+-	free(bbufpix);
+-
+ 	SDL_DestroyTexture(tex);
+ 	SDL_DestroyRenderer(ren);
+ 	SDL_DestroyWindow(window);
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson5.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson5.cpp
+@@ -62,7 +62,7 @@
+ 	GLuint texture;
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/nehe.gif", GL_NEAREST, GL_NEAREST, GL_MIRRORED_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/nehe.gif", GL_NEAREST, GL_NEAREST, GL_MIRRORED_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson6.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson6.cpp
+@@ -65,7 +65,7 @@
+ 
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/crate.gif", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/crate.gif", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson7.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson7.cpp
+@@ -102,7 +102,7 @@
+ 
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/crate.gif", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/crate.gif", GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson8.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson8.cpp
+@@ -104,7 +104,7 @@
+ 
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/glass.gif", GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/glass.gif", GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+--- PortableGL-0.100.0.orig/examples/webgl_lessons/lesson9.cpp
++++ PortableGL-0.100.0/examples/webgl_lessons/lesson9.cpp
+@@ -208,7 +208,7 @@
+ 
+ 	glGenTextures(1, &texture);
+ 	glBindTexture(GL_TEXTURE_2D, texture);
+-	if (!load_texture2D("../../media/textures/star.gif", GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
++	if (!load_texture2D(EXAMPLES_DATA_DIR "/textures/star.gif", GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_TRUE, GL_FALSE, NULL, NULL)) {
+ 		printf("failed to load texture\n");
+ 		return 0;
+ 	}
+@@ -269,7 +269,7 @@
+ 		elapsed = new_time - last_time;
+ 		last_time = new_time;
+ 
+-		for (int i=0; i<ssize(stars); i++) {
++		for (size_t i=0; i<stars.size(); i++) {
+ 			stars[i].animate(elapsed);
+ 		}
+ 
+@@ -285,7 +285,7 @@
+ 
+ 		glBindVertexArray(vao);
+ 
+-		for (int i=0; i<ssize(stars); i++) {
++		for (size_t i=0; i<stars.size(); i++) {
+ 			stars[i].draw(tilt, spin, do_twinkle);
+ 			spin += 0.1;
+ 		}
+--- PortableGL-0.100.0.orig/glcommon/c_utils.c
++++ PortableGL-0.100.0/glcommon/c_utils.c
+@@ -123,7 +123,7 @@
+ /** Writes contents of out to file and closes file */
+ int file_write(FILE* file, c_array* out)
+ {
+-	int ret = fwrite(out->data, out->elem_size, out->len, file);
++	size_t ret = fwrite(out->data, out->elem_size, out->len, file);
+ 	fclose(file);
+ 	return (ret == out->len);
+ }
+@@ -145,7 +145,8 @@
+  */
+ int file_readlines(FILE* file, c_array* lines, c_array* file_contents)
+ {
+-	int i, pos, len;
++	int i, len;
++	size_t pos;
+ 	char** char_ptr = NULL;
+ 	char* nl = NULL;
+ 
+@@ -212,7 +213,7 @@
+ int freadstring_into_str(FILE* input, int delim, char* str, cu_size_t len)
+ {
+ 	int temp;
+-	int i=0;
++	size_t i = 0;
+ 
+ 	if (feof(input))
+ 		return 0;
+@@ -251,7 +252,7 @@
+ {
+ 	char* string = NULL, *tmp_str = NULL;
+ 	int temp;
+-	int i = 0;
++	size_t i = 0;
+ 	int inf = 0;
+ 
+ 	if (feof(input))
+@@ -322,7 +323,7 @@
+ int readstring_into_str(c_array* input, char delim, char* str, cu_size_t len)
+ {
+ 	char temp;
+-	int i=0;
++	size_t i = 0;
+ 	char* p = (char*) input->data;
+ 
+ 	if (!input->len || !input->elem_size)
+@@ -353,7 +354,7 @@
+ {
+ 	char* string = NULL, *tmp_str = NULL;
+ 	char temp;
+-	int i=0;
++	size_t i = 0;
+ 	int inf = 0;
+ 	char* p = (char*) input->data;
+ 
+--- PortableGL-0.100.0.orig/glcommon/chalfedge.c
++++ PortableGL-0.100.0/glcommon/chalfedge.c
+@@ -156,7 +156,6 @@
+ 
+ 	half_edge* he_array = he_data.he_array;
+ 	int* v_array = he_data.v_array;
+-	int* face_array = he_data.face_array;
+ 
+ 
+ 	cvector_vec3 face_normals = { 0 };
+--- PortableGL-0.100.0.orig/glcommon/cprimitives.c
++++ PortableGL-0.100.0/glcommon/cprimitives.c
+@@ -148,7 +148,6 @@
+ 	int i = 0, j = 0;
+ 
+ 	float stack_height = height/stacks;
+-	float cur_radius;
+ 	double theta = RM_2PI/slices;
+ 
+ 	int vert_start = verts->size;
+@@ -158,7 +157,6 @@
+ 	cvec_push_vec3(verts, make_v3(0, 0, 0));
+ 
+ 	for (i = 0; i <= stacks; i++) {
+-		cur_radius = i/stacks * top_radius + (1.0 - i/stacks) * radius;
+ 		for (j = 0; j < slices; j++) {
+ 			cvec_push_vec3(verts, make_v3(radius*cos(j*theta), radius*sin(j*theta), i*stack_height));
+ 		}
+@@ -437,19 +435,16 @@
+     double minor_step = RM_2PI / minor_slices;
+     int i, j;
+ 
+-	double a0, a1, b;
+-	float x0, y0, x1, y1, c, r, z;
++	double a0, b;
++	float x0, y0, c, r, z;
+ 
+ 	int vert_start = verts->size;
+ 	int tri_start = tris->size;
+ 
+ 	for (i=0; i<major_slices; ++i) {
+ 		a0 = i * major_step;
+-		a1 = a0 + major_step;
+ 		x0 = (float) cos(a0);
+ 		y0 = (float) sin(a0);
+-		x1 = (float) cos(a1);
+-		y1 = (float) sin(a1);
+ 
+ 		for (j=0; j<minor_slices; ++j) {
+ 			b = j * minor_step;
+--- PortableGL-0.100.0.orig/glcommon/glm_halfedge.cpp
++++ PortableGL-0.100.0/glcommon/glm_halfedge.cpp
+@@ -266,7 +266,6 @@
+ 
+ 	half_edge* he_array = he_data.he_array;
+ 	int* v_array = he_data.v_array;
+-	int* face_array = he_data.face_array;
+ 
+ 	vector<vec3> face_normals;
+ 	for (int i=0; i<t.size(); ++i) {
+--- PortableGL-0.100.0.orig/glcommon/glm_primitives.cpp
++++ PortableGL-0.100.0/glcommon/glm_primitives.cpp
+@@ -379,19 +379,16 @@
+     double minor_step = RM_2PI / minor_slices;
+     int i, j;
+ 
+-	double a0, a1, b;
+-	float x0, y0, x1, y1, c, r, z;
++	double a0, b;
++	float x0, y0, c, r, z;
+ 
+ 	int vert_start = verts.size();
+ 	int tri_start = tris.size();
+ 
+ 	for (i=0; i<major_slices; ++i) {
+ 		a0 = i * major_step;
+-		a1 = a0 + major_step;
+ 		x0 = (float) cos(a0);
+ 		y0 = (float) sin(a0);
+-		x1 = (float) cos(a1);
+-		y1 = (float) sin(a1);
+ 
+ 		for (j=0; j<minor_slices; ++j) {
+ 			b = j * minor_step;
+--- PortableGL-0.100.0.orig/glcommon/gltools.c
++++ PortableGL-0.100.0/glcommon/gltools.c
+@@ -462,7 +462,6 @@
+ 	}
+ #endif
+ 
+-	int prev_w, prev_h;
+ 	for (int i=0; i<6; ++i) {
+ 		if (!(images[i] = stbi_load(filename[i], &w, &h, &n, STBI_rgb_alpha))) {
+ 			fprintf(stdout, "Error loading image %s\n\n", filename[i]);
+@@ -471,8 +470,6 @@
+ 		if (i) {
+ 			assert(w == prev_w && h == prev_h);
+ 		}
+-		prev_w = w;
+-		prev_h = h;
+ 
+ 		// handle flip in _mem() sub-function
+ 		/*if (flip) {*/
+@@ -498,8 +495,8 @@
+ int load_texture2D_array_gif(const char* filename, GLenum min_filter, GLenum mag_filter, GLenum wrap_mode)
+ {
+ 	GLubyte* image = NULL;
+-	int w, h, n, frames, delay;
+-	if (!(image = stbi_xload(filename, &w, &h, &n, STBI_rgb_alpha, &frames, &delay))) {
++	int w, h, n, frames;
++	if (!(image = stbi_xload(filename, &w, &h, &n, STBI_rgb_alpha, &frames, NULL))) {
+ 		fprintf(stdout, "Error loading image %s: %s\n\n", filename, stbi_failure_reason());
+ 		return GL_FALSE;
+ 	}
+--- PortableGL-0.100.0.orig/glcommon/rsw_halfedge.cpp
++++ PortableGL-0.100.0/glcommon/rsw_halfedge.cpp
+@@ -258,7 +258,6 @@
+ 
+ 	half_edge* he_array = he_data.he_array;
+ 	int* v_array = he_data.v_array;
+-	int* face_array = he_data.face_array;
+ 
+ 	vector<vec3> face_normals;
+ 	for (int i=0; i<t.size(); ++i) {
+--- PortableGL-0.100.0.orig/portablegl.h
++++ PortableGL-0.100.0/portablegl.h
+@@ -759,6 +759,11 @@
+ #define CRSW_MATH_H
+ 
+ #include <math.h>
++#ifdef __cplusplus
++#include <cmath>
++using std::isnan;
++using std::isinf;
++#endif
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <stdint.h>
+@@ -769,7 +774,9 @@
+ // unlike clang
+ //
+ //  https://stackoverflow.com/questions/43352510/difference-in-gcc-ffp-contract-options
++#ifdef __clang__
+ #pragma STDC FP_CONTRACT OFF
++#endif
+ 
+ #define RM_PI (3.14159265358979323846)
+ #define RM_2PI (2.0 * RM_PI)
+@@ -11645,6 +11652,7 @@
+ 
+ 	target -= GL_ARRAY_BUFFER;
+ 	PGL_ERR(!c->bound_buffers[target], GL_INVALID_OPERATION);
++	PGL_ERR(target >= GL_NUM_BUFFER_TYPES-GL_ARRAY_BUFFER, GL_INVALID_OPERATION);
+ 
+ 	// data can't be null for user_owned data
+ 	PGL_ERR(!data, GL_INVALID_VALUE);
+--- PortableGL-0.100.0.orig/testing/clipping.c
++++ PortableGL-0.100.0/testing/clipping.c
+@@ -278,7 +278,6 @@
+ 	glEnableVertexAttribArray(1);
+ 	pglVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 3*sizeof(float));
+ 
+-	GLenum smooth[] = { PGL_SMOOTH3 };
+ 	GLenum flat[] = { PGL_FLAT3 };
+ 	GLuint shader = pglCreateProgram(skybox_vs, skybox_fs, 3, flat, GL_FALSE);
+ 	glUseProgram(shader);
+--- PortableGL-0.100.0.orig/testing/lines.c
++++ PortableGL-0.100.0/testing/lines.c
+@@ -112,10 +112,10 @@
+ 	float frame_time = 0;
+ 
+ 	mat3 rot_mat;
+-	Color red = { 255, 0, 0, 255 };
+-	Color green = { 0, 255, 0, 255 };
+-	Color blue = { 0, 0, 255, 255 };
+-	Color white = { 255, 255, 255, 255 };
++	//Color red = { 255, 0, 0, 255 };
++	//Color green = { 0, 255, 0, 255 };
++	//Color blue = { 0, 0, 255, 255 };
++	//Color white = { 255, 255, 255, 255 };
+ 
+ 	while (handle_events()) {
+ 		SDL_Delay(14);
+--- PortableGL-0.100.0.orig/testing/math_testing.cpp
++++ PortableGL-0.100.0/testing/math_testing.cpp
+@@ -7,8 +7,6 @@
+ #include <glm/glm.hpp>
+ #include <glm/gtc/matrix_transform.hpp>
+ #include <glm/gtc/type_ptr.hpp>
+-#define GLM_ENABLE_EXPERIMENTAL
+-#include <glm/gtx/string_cast.hpp>
+ 
+ #define WIDTH 640
+ #define HEIGHT 480
+--- PortableGL-0.100.0.orig/testing/premake5.lua
++++ PortableGL-0.100.0/testing/premake5.lua
+@@ -1,32 +1,28 @@
+-
+-function os.capture(cmd, raw)
+-  local f = assert(io.popen(cmd, 'r'))
+-  local s = assert(f:read('*a'))
+-  f:close()
+-  if raw then return s end
+-  s = string.gsub(s, '^%s+', '')
+-  s = string.gsub(s, '%s+$', '')
+-  s = string.gsub(s, '[\n\r]+', ' ')
+-  return s
+-end
+-
+-
+ -- A solution contains projects, and defines the available configurations
+ solution "Testing"
+-	configurations { "Debug", "Release" }
++	configurations { "Release", "Debug" }
+ 	
+-	s = os.capture("sdl2-config --cflags --libs")
++	newoption {
++		trigger     = "with-stb-dir",
++		value       = "PATH",
++		description = "Directory for stb image headers",
++		default     = "../stb"
++	}
++
++	newoption {
++		trigger     = "testingdatadir",
++		value       = "PATH",
++		description = "Use the given path for demos data files",
++		default     = "../media"
++	}
++
++	s = os.outputof("pkg-config --cflags sdl2")
++	sdl_incdir = s:match("%-I([^%s]+)")
++	s = os.outputof("pkg-config --libs sdl2")
++	sdl_libdir = s:match("%-L([^%s]+)")
++	print(sdl_incdir, sdl_libdir)
+ 
+-	--sdl_incdir = string.match(s, "-I(%g+)%s")
+-	sdl_incdir, sdl_def, sdl_libdir = string.match(s, "-I(%g+)%s+-D(%g+)%s+-L(%g+)")
+-	if not sdl_incdir then
+-		sdl_incdir, sdl_def = string.match(s, "-I(%g+)%s+-D(%g+)")
+-		--not really necessary since if it should be in a standard search path if
+-		--sdl2-config didn't specify a -L
+-		sdl_libdir = os.findlib("SDL2")
+-	end
+-	print(sdl_incdir, sdl_def, sdl_libdir)
+-	includedirs { "../", "../glcommon", "../external", sdl_incdir }
++	includedirs { "../", _OPTIONS["with-stb-dir"], "../glcommon", "../external", sdl_incdir }
+ 	libdirs { sdl_libdir }
+ 
+ 	-- stuff up here common to all projects
+@@ -36,7 +32,10 @@
+ 	--targetdir "build"
+ 	targetdir "."
+ 
++	buildoptions { '-DTESTING_DATA_DIR=\\"' .. _OPTIONS["testingdatadir"] .. '\\"' }
++
+ 	filter "system:linux"
++		linkoptions { "-Wl,-rpath," .. sdl_libdir }
+ 		links { "m" }
+ 	
+ 	filter "system:windows"
+@@ -44,8 +43,11 @@
+ 		--buildoptions "-mwindows"
+ 		links { "mingw32", "SDL2main" }
+ 
+-	filter { "action:gmake" }
+-		buildoptions { "-ffp-contract=off", "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
++	filter { "action:gmake", "language:C" }
++		buildoptions { "-ffp-contract=off", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
++
++	filter { "action:gmake", "language:C++" }
++		buildoptions { "-fno-rtti", "-fno-exceptions", "-fno-strict-aliasing", "-Wunused-variable", "-Wreturn-type" }
+ 
+ 	filter "Debug"
+ 		defines { "DEBUG", "USING_PORTABLEGL", sdl_def }
+--- PortableGL-0.100.0.orig/testing/skybox_clipping.cpp
++++ PortableGL-0.100.0/testing/skybox_clipping.cpp
+@@ -92,12 +92,12 @@
+ 	//"../media/textures/pos_z.tga",
+ 	//"../media/textures/neg_z.tga"
+ 	
+-	"../media/textures/skybox/right.jpg",
+-	"../media/textures/skybox/left.jpg",
+-	"../media/textures/skybox/top.jpg",
+-	"../media/textures/skybox/bottom.jpg",
+-	"../media/textures/skybox/front.jpg",
+-	"../media/textures/skybox/back.jpg"
++	TESTING_DATA_DIR "/textures/skybox/right.jpg",
++	TESTING_DATA_DIR "/textures/skybox/left.jpg",
++	TESTING_DATA_DIR "/textures/skybox/top.jpg",
++	TESTING_DATA_DIR "/textures/skybox/bottom.jpg",
++	TESTING_DATA_DIR "/textures/skybox/front.jpg",
++	TESTING_DATA_DIR "/textures/skybox/back.jpg"
+ };
+ 
+ 
+--- PortableGL-0.100.0.orig/testing/stencil.cpp
++++ PortableGL-0.100.0/testing/stencil.cpp
+@@ -30,7 +30,7 @@
+ 	glEnableVertexAttribArray(PGL_ATTR_COLOR);
+ 	glVertexAttribPointer(PGL_ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, 0);
+ 
+-	pgl_uniforms the_uniforms = { .mvp_mat = IDENTITY_M4(), .color = { 1.0f, 0.0f, 0.0f, 1.0f } };
++	pgl_uniforms the_uniforms = { IDENTITY_M4(), { 0 }, { 0 }, { 0 }, { 1.0f, 0.0f, 0.0f, 1.0f }, 0, { 0 } };
+ 	SET_IDENTITY_M4(the_uniforms.mvp_mat);
+ 
+ 	GLuint std_shaders[PGL_NUM_SHADERS];
+--- PortableGL-0.100.0.orig/testing/test_texturing.cpp
++++ PortableGL-0.100.0/testing/test_texturing.cpp
+@@ -100,7 +100,7 @@
+ 
+ 	GLenum magfilter = (argc) ? GL_LINEAR : GL_NEAREST;
+ 	GLenum wrapping = GL_REPEAT; // doesn't really matter, not tested in this test
+-	if (!load_texture_rect("../media/textures/tex04.jpg", GL_NEAREST, magfilter, wrapping, GL_FALSE)) {
++	if (!load_texture_rect(TESTING_DATA_DIR "/textures/tex04.jpg", GL_NEAREST, magfilter, wrapping, GL_FALSE)) {
+ 		puts("failed to load texture");
+ 		return;
+ 	}
+@@ -262,7 +262,7 @@
+ 	}
+ 
+ 	// LINEAR is default for both with tex rects
+-	if (!load_texture_rect("../media/textures/tex04.jpg", GL_NEAREST, GL_NEAREST, wrapping, GL_FALSE)) {
++	if (!load_texture_rect(TESTING_DATA_DIR "/textures/tex04.jpg", GL_NEAREST, GL_NEAREST, wrapping, GL_FALSE)) {
+ 		puts("failed to load texture");
+ 		return;
+ 	}
+
+# source
+https://github.com/rswinkle/PortableGL/archive/0.100.0/PortableGL-0.100.0.tar.gz

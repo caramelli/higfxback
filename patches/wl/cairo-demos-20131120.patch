@@ -6,8 +6,8 @@ REQUIRES="cairo-build gdk-pixbuf-build gnome-backgrounds-build make-build"
 PKG_CONFIG_PATH=/wl/share/pkgconfig pkg-config --exists --print-errors $REQUIRES || exit 1
 
 # configure
-rm -f kapow/kapow.o
-rm -f png/star_and_ring
+rm -f kapow/kapow.o kapow/kapow.png
+rm -f png/star_and_ring png/text-rotate.ps
 rm -f PS/write_png.h
 PKG_CONFIG_PATH=/wl/lib/pkgconfig sh ./Configure --with-backgroundsdir=/share/backgrounds --with-demosdatadir=/wl/share/cairo-demos --prefix=/wl
 
@@ -269,8 +269,8 @@ exit
  
 -MYCFLAGS=`pkg-config --cflags cairo libpng12`
 -MYLDFLAGS=`pkg-config --libs cairo libpng12`
-+MYCFLAGS=`$(PKG_CONFIG) --cflags cairo libpng`
-+MYLDFLAGS=`$(PKG_CONFIG) --libs cairo libpng` -Wl,-rpath,$(PREFIX)/lib
++MYCFLAGS=`$(PKG_CONFIG) --cflags cairo`
++MYLDFLAGS=`$(PKG_CONFIG) --libs cairo` -Wl,-rpath,$(PREFIX)/lib
  
  all: ${EXAMPLES}
  
@@ -282,7 +282,7 @@ exit
  
  clean:
 -	rm -f ${EXAMPLES} *.o
-+	rm -f ${EXAMPLES} *.o *.ps
++	rm -f ${EXAMPLES} *.ps
 --- cairo-demos-20131120.orig/bubble-demo.c
 +++ cairo-demos-20131120/bubble-demo.c
 @@ -29,7 +29,7 @@
@@ -498,9 +498,10 @@ exit
  			frames++;
 --- cairo-demos-20131120.orig/kapow/.gitignore
 +++ cairo-demos-20131120/kapow/.gitignore
-@@ -1 +1,2 @@
+@@ -1 +1,3 @@
  kapow
-+kapow.o
++*.o
++*.png
 --- cairo-demos-20131120.orig/kapow/Makefile
 +++ cairo-demos-20131120/kapow/Makefile
 @@ -1,5 +1,9 @@
@@ -510,8 +511,8 @@ exit
 +
 +PKG_CONFIG=pkg-config
 +
-+MYCFLAGS= $(shell $(PKG_CONFIG) --cflags cairo libpng) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
-+LDLIBS	= $(shell $(PKG_CONFIG) --libs cairo libpng) -lm -Wl,-rpath,$(PREFIX)/lib
++MYCFLAGS= $(shell $(PKG_CONFIG) --cflags cairo) -Wall -g -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -fno-strict-aliasing
++LDLIBS	= $(shell $(PKG_CONFIG) --libs cairo) -lm -Wl,-rpath,$(PREFIX)/lib
  
  all: kapow
  
@@ -520,7 +521,7 @@ exit
  
  clean :
 -	rm kapow.o kapow
-+	rm -f kapow.o kapow kapow.png
++	rm -f kapow *.o *.png
 --- cairo-demos-20131120.orig/maze-demo.c
 +++ cairo-demos-20131120/maze-demo.c
 @@ -316,7 +316,6 @@
@@ -561,8 +562,8 @@ exit
  
 -MYCFLAGS=`pkg-config --cflags cairo libpng12`
 -MYLDFLAGS=`pkg-config --libs cairo libpng12`
-+MYCFLAGS=`$(PKG_CONFIG) --cflags cairo libpng`
-+MYLDFLAGS=`$(PKG_CONFIG) --libs cairo libpng` -Wl,-rpath,$(PREFIX)/lib
++MYCFLAGS=`$(PKG_CONFIG) --cflags cairo`
++MYLDFLAGS=`$(PKG_CONFIG) --libs cairo` -Wl,-rpath,$(PREFIX)/lib
  
  all: $(EXAMPLES)
  
@@ -572,23 +573,51 @@ exit
  %: %.c
  	$(CC) $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} ${MYLDFLAGS} $^ -o $@
  
+--- cairo-demos-20131120.orig/png/bevels.c
++++ cairo-demos-20131120/png/bevels.c
+@@ -52,9 +52,11 @@
+  */
+ 
+ #include <cairo.h>
+-#include <math.h>
+ #include <stdint.h>
+ 
++#define M_PI   3.14159265358979323846
++#define M_PI_4 0.78539816339744830962
++
+ #define WIDTH 100
+ #define HEIGHT 70
+ #define STRIDE (WIDTH * 4)
+--- cairo-demos-20131120.orig/png/hering.c
++++ cairo-demos-20131120/png/hering.c
+@@ -26,7 +26,8 @@
+  */
+ 
+ #include <cairo.h>
+-#include <math.h>
++
++#define M_PI_2 1.57079632679489661923
+ 
+ void
+ draw_hering (cairo_t *cr, int width, int height);
 --- cairo-demos-20131120.orig/png/snapping.c
 +++ cairo-demos-20131120/png/snapping.c
-@@ -43,6 +43,13 @@
- #include <cairo.h>
- #include <math.h>
+@@ -41,7 +41,13 @@
+  */
  
-+static inline int
+ #include <cairo.h>
+-#include <math.h>
++
++static int
 +fast_floor (double x)
 +{
 +    int i = (int) x;
 +    return i - (i > x);
 +}
-+
+ 
  #define WIDTH 175
  #define HEIGHT 175
- #define STRIDE (WIDTH * 4)
-@@ -62,8 +69,8 @@
+@@ -62,8 +68,8 @@
  {
      /* Convert to device space, round, then convert back to user space. */
      cairo_user_to_device (cr, x, y);
@@ -599,7 +628,7 @@ exit
      cairo_device_to_user (cr, x, y);
  }
  
-@@ -98,8 +105,8 @@
+@@ -98,8 +104,8 @@
      y_offset = y_width_dev_2 - (int) (y_width_dev_2);
  
      cairo_user_to_device (cr, x, y);
@@ -610,7 +639,7 @@ exit
      *x -= x_offset;
      *y -= y_offset;
      cairo_device_to_user (cr, x, y);
-@@ -125,7 +132,7 @@
+@@ -125,7 +131,7 @@
      /* If the line width is less than 1 then it will round to 0 and
       * disappear. Instead, we clamp it to 1.0, but we must preserve
       * its sign for the case of a reflecting transformation. */
@@ -619,7 +648,7 @@ exit
      if (fabs(x_width_snapped) < 1.0) {
  	if (x_width > 0)
  	    x_width_snapped = 1.0;
-@@ -133,7 +140,7 @@
+@@ -133,7 +139,7 @@
  	    x_width_snapped = -1.0;
      }
  
@@ -628,6 +657,61 @@ exit
      if (fabs(y_width_snapped) < 1.0) {
  	if (y_width > 0)
  	    y_width_snapped = 1.0;
+--- cairo-demos-20131120.orig/png/spline-pipelines.c
++++ cairo-demos-20131120/png/spline-pipelines.c
+@@ -1,5 +1,4 @@
+-/* cc `pkg-config --cflags --libs cairo libpng12` spline-pipelines.c -o spline-pipelines
+- *
++/*
+  * Copyright © 2006 Red Hat, Inc.
+  *
+  * Permission to use, copy, modify, distribute, and sell this software
+--- cairo-demos-20131120.orig/png/star_and_ring.c
++++ cairo-demos-20131120/png/star_and_ring.c
+@@ -24,7 +24,6 @@
+  */
+ 
+ #include <cairo.h>
+-#include <math.h>
+ 
+ #define WIDTH 600
+ #define HEIGHT 600
+--- cairo-demos-20131120.orig/png/stars.c
++++ cairo-demos-20131120/png/stars.c
+@@ -26,7 +26,8 @@
+  */
+ 
+ #include <cairo.h>
+-#include <math.h>
++
++#define M_PI 3.14159265358979323846
+ 
+ void
+ draw_stars (cairo_t *cr, int width, int height);
+--- cairo-demos-20131120.orig/png/text-rotate.c
++++ cairo-demos-20131120/png/text-rotate.c
+@@ -26,7 +26,8 @@
+  */
+ 
+ #include <cairo.h>
+-#include <math.h>
++
++#define M_PI 3.14159265358979323846
+ 
+ #define TEXT "hello, world"
+ 
+--- cairo-demos-20131120.orig/png/text.c
++++ cairo-demos-20131120/png/text.c
+@@ -26,7 +26,8 @@
+  */
+ 
+ #include <cairo.h>
+-#include <math.h>
++
++#define M_PI 3.14159265358979323846
+ 
+ #define TEXT "hello, world"
+ 
 --- cairo-demos-20131120.orig/pythagoras-demo.c
 +++ cairo-demos-20131120/pythagoras-demo.c
 @@ -27,6 +27,7 @@
